@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+require 'readline'
+require 'socket'
+
+port = ARGV.shift || 4444
+
+TCPSocket.open("localhost", port) do |socket|
+  while line = Readline.readline("firefox> ", true)
+    socket.puts(line)
+    buf = ""
+    while IO.select([socket], [], [], 0.05)
+      socket.readpartial(4096, buf)
+    end
+    puts buf unless buf.empty?
+  end
+end

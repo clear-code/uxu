@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/"?>
+<!DOCTYPE window SYSTEM "chrome://uxu/locale/uxu.dtd">
+<window id="uxu-window"
+	title="&uxu.server.title;"
+	windowtype="uxu:server"
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	onload="Startup()"
+	onunload="Shutdown()"
+	persist="width height screenX screenY">
+
+<script src="chrome://global/content/nsUserSettings.js"/>
+<script type="application/javascript;version=1.7" src="chrome://uxu/content/lib/module_manager.js"/>
+<script type="application/javascript;version=1.7" src="chrome://uxu/content/ui/uxu.js"/>
+
+<scrollbox id="log" orient="vertical" flex="1"
+	style="min-height: 10em; min-width: 20em; overflow: auto; border: thin -moz-bg-inset;">
+</scrollbox>
+
+<hbox>
+	<hbox align="center" flex="1">
+		<spacer flex="1"/>
+		<description value="&uxu.server.running;"/>
+		<button label="&uxu.server.close.label;"
+			oncommand="window.close()"/>
+		<spacer flex="1"/>
+	</hbox>
+	<resizer dir="bottomright"/>
+</hbox>
+</window>
+

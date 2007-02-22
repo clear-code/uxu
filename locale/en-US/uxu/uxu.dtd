@@ -1,0 +1,5 @@
+<!ENTITY uxu.server.title        "UXU - UnitTest.XUL">
+<!ENTITY uxu.server.running      "UXU Server is available.">
+<!ENTITY uxu.server.close.label  "Stop">
+
+<!ENTITY uxu.tools.start.label   "Start UXU Server">

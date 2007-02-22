@@ -1,0 +1,5 @@
+<!ENTITY uxu.server.title        "UXU - UnitTest.XUL">
+<!ENTITY uxu.server.running      "UXUサーバ動作中">
+<!ENTITY uxu.server.close.label  "停止">
+
+<!ENTITY uxu.tools.start.label   "UXUサーバを起動">

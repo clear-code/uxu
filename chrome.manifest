@@ -1,0 +1,6 @@
+content	uxu	jar:chrome/uxu.jar!/content/uxu/
+
+overlay	chrome://browser/content/browser.xul	chrome://uxu/content/browserOverlay.xul
+
+locale	uxu	en-US	jar:chrome/uxu.jar!/locale/en-US/uxu/
+locale	uxu	ja	jar:chrome/uxu.jar!/locale/ja/uxu/

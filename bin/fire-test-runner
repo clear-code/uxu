@@ -1,0 +1,106 @@
+#!/usr/bin/env ruby
+
+require 'socket'
+require 'optparse'
+require 'ostruct'
+
+options = OpenStruct.new
+options.host = "localhost"
+options.port = 4444
+options.firefox = "firefox &"
+options.wait = 1.5
+
+opts = OptionParser.new("Usage: #{$0} [options] test...") do |opts|
+  opts.on("--host=HOST",
+          "host name to connect Firefox (#{options.host})") {|options.host|}
+  opts.on("-pPORT", "--port=PORT", Integer,
+          "port number to connect Firefox (#{options.port})") {|options.port|}
+  opts.on("--firefox=FIREFOX",
+          "command to start Firefox (#{options.firefox})") {|options.firefox|}
+  opts.on("--wait=SECONDS", Float,
+          "how log wait to start Firefox (#{options.wait})") {|options.wait|}
+
+  opts.separator ""
+  opts.on_tail("--help", "Show this message") do
+    puts opts
+    exit
+  end
+end
+tests = opts.parse!(ARGV)
+if tests.empty?
+  $stderr.puts opts
+  exit 1
+end
+
+class Runner
+  def initialize(socket, file_name, output=$stdout)
+    @socket = socket
+    @output = output
+    @output.sync = true
+    @file_name = file_name
+    @reporter_var_name = "reporter"
+    @shown_result_index = 0
+  end
+
+  def run
+    if File::ALT_SEPARATOR
+      normalized_file_name = @file_name.gsub(/\//, File::ALT_SEPARATOR)
+    else
+      normalized_file_name = @file_name
+    end
+    escaped_file_name = normalized_file_name.gsub(/\\/, "\\\\\\")
+    escaped_file_name = escaped_file_name.gsub(/'/, "\\'")
+    @socket.puts("#{@reporter_var_name} = runTest('#{escaped_file_name}')")
+
+    show_result while running?
+    show_result
+    @output.puts
+  end
+
+  def read
+    buf = ""
+    while IO.select([@socket], [], [], 0.1)
+      @socket.readpartial(4096, buf)
+    end
+    buf
+  end
+
+  def running?
+    @socket.puts("#{@reporter_var_name}.isFinished()")
+    result = nil
+    loop do
+      result = read.chomp
+      break unless result.empty?
+    end
+
+    $stderr.puts(result.inspect) unless ["true", "false"].include?(result)
+    result != "true"
+  end
+
+  def show_result
+    @socket.puts("#{@reporter_var_name}.result")
+    sleep 0.5
+    result = (read[@shown_result_index..-1] || "").chomp
+    unless result.empty?
+      @output.print(result)
+      @shown_result_index += result.size
+    end
+  end
+end
+
+def run(tests, options)
+  TCPSocket.open(options.host, options.port) do |socket|
+    tests.each do |test|
+      runner = Runner.new(socket, File.expand_path(test))
+      runner.run
+    end
+  end
+end
+
+begin
+  run(tests, options)
+rescue SystemCallError
+  system(options.firefox)
+  sleep options.wait
+  run(tests, options)
+end

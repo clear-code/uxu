@@ -1,0 +1,51 @@
+﻿<?xml version="1.0"?>
+<!DOCTYPE overlay SYSTEM "chrome://uxu/locale/uxu.dtd">
+<overlay id="uxu-overlay"
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+<script src="chrome://global/content/nsUserSettings.js"/>
+
+<script type="application/x-javascript"><![CDATA[
+
+function startUXU() {
+	const WindowManager = Components.classes['@mozilla.org/appshell/window-mediator;1'].getService(Components.interfaces.nsIWindowMediator);
+
+	var targets = WindowManager.getEnumerator('uxu:server');
+	if (targets.hasMoreElements()) return;
+
+	window.openDialog('chrome://uxu/content/ui/uxu.xul', '_blank', 'chrome,all');
+}
+
+if (nsPreferences.getBoolPref('extensions.uxu.auto.start'))
+	startUXU();
+
+
+window.addEventListener('unload', function() {
+	window.removeEventListener('unload', arguments.callee, false);
+
+	const WindowManager = Components.classes['@mozilla.org/appshell/window-mediator;1'].getService(Components.interfaces.nsIWindowMediator);
+
+	var targets = WindowManager.getEnumerator('navigator:browser');
+	if (nsPreferences.getBoolPref('extensions.uxu.auto.exit') &&
+		!targets.hasMoreElements()) {
+		var uxu = WindowManager.getMostRecentWindow('uxu:server');
+		if (uxu)
+			uxu.close();
+	}
+
+}, false);
+
+
+]]></script>
+
+
+<menupopup id="menu_ToolsPopup">
+	<menuitem id="tools-uxu-menuitem"
+		insertbefore="devToolsSeparator"
+		label="&uxu.tools.start.label;"
+		oncommand="startUXU()"/>
+</menupopup>
+
+
+</overlay>
+
