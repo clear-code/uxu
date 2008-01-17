@@ -347,7 +347,7 @@ function run() {
 			}
 
 			if(!testsFound)
-				throw new Error('No tests found in ' + aFile);
+				throw new Error('No tests found in ' + suite.fileURL);
 
 		} catch(e) {
 			onError(e);
@@ -359,10 +359,21 @@ function loadFolder(aFolder) {
 	var files = aFolder.directoryEntries;
 	var file;
 	var suites = [];
+	var ignoreHiddenFiles = test_utils.getPref('extensions.uxu.ignoreHiddenFiles');
 	while (files.hasMoreElements())
 	{
 		file = files.getNext()
 				.QueryInterface(Components.interfaces.nsILocalFile);
+
+		if (
+			ignoreHiddenFiles &&
+			(
+				file.isHidden() ||
+				file.leafName.indexOf('.') == 0
+			)
+			)
+			continue;
+
 		if (file.isDirectory())
 			suites = suites.concat(loadFolder(file));
 		else {
