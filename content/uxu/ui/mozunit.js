@@ -175,48 +175,57 @@ function openTestCase(aIsFolder) {
 		_('file').value = file.path;
 }
 
-function getTestCaseReport(title) {
-    return _('testcase-reports', {title: title}) ||
-        (function() {
-            wTestCaseReport = clone('testcase-report');
-            wTestCaseReport.setAttribute('title', title);
-            _(wTestCaseReport, 'title').value = title;
-            barOf(_(wTestCaseReport, 'bar')).setAttribute('class', 'testcase-fine');
-            _('testcase-reports').appendChild(wTestCaseReport);
-            return wTestCaseReport;
-        })();
+function TestReportHandler(aTestCase) {
+	this.testCase = aTestCase;
 }
+TestReportHandler.prototype = {
+	getTestCaseReport : function(title)
+	{
+		var id = 'testcase-report-'+encodeURIComponent(title);
+	    return _(id) ||
+	        (function() {
+	            var wTestCaseReport = clone('testcase-report');
+	            wTestCaseReport.setAttribute('id', id);
+	            wTestCaseReport.setAttribute('title', title);
+	            _(wTestCaseReport, 'title').value = title;
+	            barOf(_(wTestCaseReport, 'bar')).setAttribute('class', 'testcase-fine');
+	            _('testcase-reports').appendChild(wTestCaseReport);
+	            return wTestCaseReport;
+	        })();
+	},
+	handleReport : function(report) {
+	    var wTestCaseReport = this.getTestCaseReport(this.testCase.title);
+	    _(wTestCaseReport, 'bar').setAttribute('mode', 'determined');
+	    _(wTestCaseReport, 'bar').setAttribute(
+	        'value', parseInt(report.testIndex / report.testCount * 100));
+	    _(wTestCaseReport, 'total-counter').value = report.testCount;
 
-function testReportHandler(report) {
-    wTestCaseReport = getTestCaseReport(report.testOwner.title);
-    _(wTestCaseReport, 'bar').setAttribute('mode', 'determined');
-    _(wTestCaseReport, 'bar').setAttribute(
-        'value', parseInt(report.testIndex / report.testCount * 100));
-    _(wTestCaseReport, 'total-counter').value = report.testCount;
+	    if(report.result == 'success') {
+	        var successes = parseInt(_(wTestCaseReport, 'success-counter').value);
+	        _(wTestCaseReport, 'success-counter').value = successes + 1;
+	        return;        
+	    }
 
-    if(report.result == 'success') {
-        var successes = parseInt(_(wTestCaseReport, 'success-counter').value);
-        _(wTestCaseReport, 'success-counter').value = successes + 1;
-        return;        
-    }
+	    barOf(_(wTestCaseReport, 'bar')).setAttribute('class', 'testcase-problems');
 
-    barOf(_(wTestCaseReport, 'bar')).setAttribute('class', 'testcase-problems');
+		var id = 'test-report-'+encodeURIComponent(title)+'-'+_(wTestCaseReport, 'test-reports').childNodes.length;
+	    var wTestReport = clone('test-report');
+	    wTestReport.setAttribute('id', id);
+	    _(wTestReport, 'result').value = bundle.getString('report_result_'+report.result);
+	    _(wTestReport, 'icon').setAttribute('class', 'test-' + report.result);
+	    _(wTestReport, 'description').value = report.testDescription;
+	    _(wTestReport, 'description').setAttribute('tooltiptext', report.testDescription);
+	    if(report.exception) {
+	        _(wTestReport, 'additionalInfo').value = report.exception.message;
+	        if(report.exception.stack) {
+	            displayStackTrace(report.exception.stack, _(wTestReport, 'stack-trace'));
+	            _(wTestReport, 'stack-trace').hidden = false;
+	        }
+	    }
 
-    var wTestReport = clone('test-report');
-    _(wTestReport, 'result').value = bundle.getString('report_result_'+report.result);
-    _(wTestReport, 'icon').setAttribute('class', 'test-' + report.result);
-    _(wTestReport, 'description').value = report.testDescription;
-    _(wTestReport, 'description').setAttribute('tooltiptext', report.testDescription);
-    if(report.exception) {
-        _(wTestReport, 'additionalInfo').value = report.exception.message;
-        if(report.exception.stack) {
-            displayStackTrace(report.exception.stack, _(wTestReport, 'stack-trace'));
-            _(wTestReport, 'stack-trace').hidden = false;
-        }
-    }
-
-    _(wTestCaseReport, 'test-reports').appendChild(wTestReport);
-}
+	    _(wTestCaseReport, 'test-reports').appendChild(wTestReport);
+	}
+};
 
 function displayStackTrace(trace, listbox) {
     for each(var line in trace.split('\n'))
@@ -293,20 +302,23 @@ function run() {
 
 			for (var thing in suite) {
 				if (!suite[thing]) continue;
-				if(suite[thing].__proto__ == mozlab.mozunit.TestCase.prototype) {
+				if (suite[thing].__proto__ == mozlab.mozunit.TestCase.prototype) {
 					testsFound = true;
 					setRunningState(true);
-					_('testRunningProgressMeter').setAttribute('value', parseInt(((aIndex + 1) / (suites.length + 1)) * 100));
+					_('testRunningProgressMeter').setAttribute('value',
+							parseInt(((aIndex + 1) / (suites.length + 1)) * 100));
 					_('testRunningProgressMeter').setAttribute('mode', 'determined');
 					var testCase = suite[thing];
-					testCase.reportHandler = testReportHandler;
+					testCase.reportHandler = new TestReportHandler(testCase);
 					allTestCount++;
 					if (testCase.runStrategy == 'async') {
 						asyncTestCount++;
-						testCase.run(onAsyncTestEnd);
+						testCase.reportHandler.onFinish = onAsyncTestEnd;
+						testCase.run();
 					}
 					else {
-						testCase.run(onTestEnd);
+						testCase.reportHandler.onFinish = onTestEnd;
+						testCase.run();
 					}
 				}
 			}

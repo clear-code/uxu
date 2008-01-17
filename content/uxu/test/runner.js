@@ -41,10 +41,10 @@ function run(reporter)
 
             try {
                 this.start_test(reporter);
-                test.reportHandler = function(report) {reporter.report(report)};
-                test.onTestRunFinished = function() {
-					runner.finish_test(reporter)
-				};
+                test.reportHandler = {
+                	handleReport : function(report) {reporter.report(report) },
+                	onFinish     : function() { runner.finish_test(reporter) }
+                };
                 test.run();
             } catch (e) {
 				var report = {

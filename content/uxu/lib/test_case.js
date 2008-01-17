@@ -74,6 +74,10 @@ function constructor(title, opts) {
         'reportHandler', function(callback) {
             this._reportHandler = callback;
         });
+    this.__defineGetter__(
+        'reportHandler', function(callback) {
+            return this._reportHandler;
+        });
 
     this.__defineGetter__(
         'title', function() {
@@ -144,9 +148,9 @@ function setTests(hash) {
  *
  */
 
-function run(aFinishCallback) {
+function run() {
     this[this._runStrategy == 'async' ? '_asyncRun1' : '_syncRun1'](
-        this._tests, this._setUp, this._tearDown, this._reportHandler, aFinishCallback);
+        this._tests, this._setUp, this._tearDown, this._reportHandler);
 }
 
 /**
@@ -326,7 +330,7 @@ function _exec1(code, setUp, tearDown, context, continuation, aReport) {
     return report;
 }
 
-function _syncRun1(tests, setUp, tearDown, reportHandler, onTestRunFinished) {
+function _syncRun1(tests, setUp, tearDown, reportHandler) {
     var test, context, report;
     for(var i=0, l=tests.length; i<l; i++) {
         test = tests[i];
@@ -337,13 +341,18 @@ function _syncRun1(tests, setUp, tearDown, reportHandler, onTestRunFinished) {
         report.testCode = test.code;
         report.testIndex = i+1;
         report.testCount = l;
-        reportHandler(report);
+        if (typeof reportHandler == 'function')
+            reportHandler(report);
+        else if (reportHandler && 'handleReport' in reportHandler)
+            reportHandler.handleReport(report);
+        else
+            throw 'invalid report handler';
     }
-    if (onTestRunFinished)
-    	onTestRunFinished();
+    if (reportHandler && 'onFinish' in reportHandler)
+        reportHandler.onFinish();
 }
 
-function _asyncRun1(tests, setUp, tearDown, reportHandler, onTestRunFinished) {
+function _asyncRun1(tests, setUp, tearDown, reportHandler) {
     var testIndex = 0;
     var context;
     var report = { report : null };
@@ -413,7 +422,12 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler, onTestRunFinished) {
             report.report.testOwner = _this;
             report.report.testIndex = testIndex + 1;
             report.report.testCount = tests.length;
-            reportHandler(report.report);
+            if (typeof reportHandler == 'function')
+                reportHandler(report.report);
+            else if (reportHandler && 'handleReport' in reportHandler)
+                reportHandler.handleReport(report.report);
+            else
+                throw 'invalid report handler';
             continuation('ok');
         },
         doTearDown: function(continuation) { // exceptions in setup/teardown are not reported correctly
@@ -447,8 +461,8 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler, onTestRunFinished) {
             tests[testIndex] ? continuation('ok') : continuation('ko');
         },
         finished: function(continuation) {
-            if(onTestRunFinished)
-                onTestRunFinished();
+            if (reportHandler && 'onFinish' in reportHandler)
+                reportHandler.onFinish();
         }
     }
 
