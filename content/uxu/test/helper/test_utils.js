@@ -312,7 +312,7 @@ this.getPref = function(aKey) {
 		switch (Pref.getPrefType(aKey))
 		{
 			case Pref.PREF_STRING:
-				return decodeURIComponent(escape(Pref.getCharPref(aKey)));
+				return this.UTF8ToUnicode(Pref.getCharPref(aKey));
 				break;
 			case Pref.PREF_INT:
 				return Pref.getIntPref(aKey);
@@ -340,7 +340,7 @@ this.setPref = function(aKey, aValue) {
 		switch (type)
 		{
 			case 'string':
-				Pref.setCharPref(aKey, unescape(encodeURIComponent(aValue)));
+				Pref.setCharPref(aKey, this.UnicodeToUTF8(aValue));
 				break;
 			case 'number':
 				Pref.setIntPref(aKey, parseInt(aValue));
@@ -362,3 +362,21 @@ this.include = function(aSource, aEnvironment) {
 	(aEnvironment || {}).eval(this.readFrom(aSource));
 };
 
+
+this.UTF8ToUnicode = function(aInput) {
+	return decodeURIComponent(escape(aInput));
+};
+this.UnicodeToUTF8 = function(aInput) {
+	return unescape(encodeURIComponent(aInput));
+};
+
+this.convertFromDefaultEncoding = function(aInput) {
+	switch (this.getPref('extensions.uxu.defaultEncoding'))
+	{
+		case 'UTF-8':
+			return this.UTF8ToUnicode(aInput);
+
+		default:
+			return aInput;
+	}
+};

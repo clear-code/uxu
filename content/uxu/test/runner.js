@@ -1,9 +1,5 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
-var loader = Components
-    .classes['@mozilla.org/moz/jssubscript-loader;1']
-    .getService(Components.interfaces.mozIJSSubScriptLoader);
-
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var assertions = lib_module.require('package', 'assertions');
 var fsm        = lib_module.require('package', 'fsm');
@@ -124,9 +120,12 @@ function loadFile(aFile, aReporter) {
         suite.fileURL       = utils.getURLSpecFromFilePath(aFile.path);
         suite.baseURL       = suite.fileURL.replace(/[^/]*$/, '');
         suite.include = function(aSource) {
+          aSource = test_utils.convertFromDefaultEncoding(aSource);
           test_utils.include(aSource, suite);
         };
-        loader.loadSubScript(suite.fileURL, suite);
+        var script = test_utils.readFrom(suite.fileURL);
+        script = test_utils.convertFromDefaultEncoding(script);
+        suite.eval(script);
 
         for (var thing in suite) {
             if (!suite[thing]) continue;
