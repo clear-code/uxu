@@ -375,6 +375,9 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler, onTestRunFinished) {
                 if (result == '[object Generator]' &&
                     'next' in result) {
                     processGenerator(result, {
+                        onEnd : function(e) {
+                            if (setUp.arity == 0) continuation('ok');
+                        },
                         onError : function(e) {
                             report.report.result = 'error';
                             report.report.exception = e;
@@ -382,6 +385,9 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler, onTestRunFinished) {
                             continuation('ko');
                         }
                     });
+                }
+                else {
+                    if (setUp.arity == 0) continuation('ok');
                 }
             } catch(e) {
                 report.report.result = 'error';

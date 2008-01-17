@@ -28,27 +28,42 @@ unitTest.tests = {
 var functionalTest = new TestCase('functional test', {runStrategy: 'async'});
 
 functionalTest.tests = {
-    setUp : function(continuation) {
-        // in "async" tests, you have to call "continuation" function
-        // with the argument "ok" to continue test.
+    setUp : function() {
         var loadedFlag = utils.setUpTestWindow();
-        // After the testing window completely loaded, go to the next step.
+
+        // After the testing window completely loaded, go to the next line.
         // (*see following testcase)
         yield loadedFlag;
-        continuation("ok");
+
+        var browser = utils.getBrowser();
+        browser.removeAllTabsBut(browser.addTab('about:blank'));
     },
+
+//    // If you receive "continuation" function as the argument of "setUp",
+//    // test runner doesn't start test until you execute "continuation('ok')".
+//    setUp : function(continuation) {
+//        utils.setUpTestWindow();
+//        utils.getTestWindow().addEventListener('load', function() {
+//            var browser = utils.getBrowser();
+//            browser.removeAllTabsBut(browser.addTab('about:blank'));
+//            // In other words, you can start tests when you feel like it.
+//            continuation("ok");
+//        }, false);
+//    },
 
     tearDown : function() {
         utils.tearDownTestWindow();
     },
 
     'page loading test': function() {
-        var loadedFlag = { value : false };
         var win = utils.getTestWindow();
-        win.gBrowser.addEventListener('load', function() {
+
+        var loadedFlag = { value : false };
+        var browser = utils.getBrowser();
+        browser.addEventListener('load', function() {
             loadedFlag.value = true;
         }, true);
-        win.gBrowser.loadURI('http://www.mozilla.org/');
+        browser.loadURI('http://www.mozilla.org/');
 
         // Wait for the loading. If you return an object which has
         // "value" property, test runner waits the time that the "value"

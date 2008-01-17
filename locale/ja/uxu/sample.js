@@ -31,27 +31,44 @@ unitTest.tests = {
 var functionalTest = new TestCase('機能テストの例', {runStrategy: 'async'});
 
 functionalTest.tests = {
-    setUp : function(continuation) {
-        // 非同期のテストでは、テストを続行するために
-        // continuation("ok") を実行する必要があります。
+    setUp : function() {
         var loadedFlag = utils.setUpTestWindow();
-        // テスト用ウィンドウが開かれたら次の処理に進みます。
+
+        // テスト用ウィンドウが開かれたら次の行に進みます。
         // （※下のテストケースを参照）
         yield loadedFlag;
-        continuation("ok");
+
+        var browser = utils.getBrowser();
+        browser.removeAllTabsBut(browser.addTab('about:blank'));
     },
+
+//    // setUpの引数としてcontinuation関数を受け取ると、
+//    // continuation関数に 'ok' を渡して実行するまでは
+//    // 次の処理に進まなくなります。
+//    setUp : function(continuation) {
+//        utils.setUpTestWindow();
+//        utils.getTestWindow().addEventListener('load', function() {
+//            var browser = utils.getBrowser();
+//            browser.removeAllTabsBut(browser.addTab('about:blank'));
+//            // 換言すれば、continuation関数を使って任意のタイミングで
+//            // テストを開始することができます。
+//            continuation("ok");
+//        }, false);
+//    },
 
     tearDown : function() {
         utils.tearDownTestWindow();
     },
 
     'ページ読み込みのテスト': function() {
-        var loadedFlag = { value : false };
         var win = utils.getTestWindow();
-        win.gBrowser.addEventListener('load', function() {
+
+        var loadedFlag = { value : false };
+        var browser = utils.getBrowser();
+        browser.addEventListener('load', function() {
             loadedFlag.value = true;
         }, true);
-        win.gBrowser.loadURI('http://www.mozilla.org/');
+        browser.loadURI('http://www.mozilla.org/');
 
         // ページ読み込みの完了を待ちます。
         // yield文で「value」プロパティを持つオブジェクトを返すと、
