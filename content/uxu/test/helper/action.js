@@ -23,16 +23,16 @@ this.createMouseEventOnElement = function(aWindow, aElement, aOptions) {
 	var node = aElement;
 	if (!node) return null;
 
-	var box = node.ownerDocument.getBoxObjectFor(node);
+	var box = this.getDocumentFromEventTarget(node).getBoxObjectFor(node);
 	if (!('x' in aOptions)) aOptions.x = box.screenX + parseInt(box.width / 2);
 	if (!('y' in aOptions)) aOptions.y = box.screenY + parseInt(box.height / 2);
 
-	var event = node.ownerDocument.createEvent('MouseEvents');
+	var event = this.getDocumentFromEventTarget(node).createEvent('MouseEvents');
 	event.initMouseEvent(
 		(aOptions.type || 'click'),
 		('canBubble' in aOptions ? aOptions.canBubble : true ),
 		('cancelable' in aOptions ? aOptions.cancelable : true ),
-		node.ownerDocument.defaultView,
+		this.getDocumentFromEventTarget(node).defaultView,
 		('detail' in aOptions ? aOptions.detail : 0),
 		aOptions.x,
 		aOptions.y,
@@ -44,6 +44,34 @@ this.createMouseEventOnElement = function(aWindow, aElement, aOptions) {
 		('metaKey' in aOptions ? aOptions.metaKey : false ),
 		('button' in aOptions ? aOptions.button : 0 ),
 		null
+	);
+	return event;
+};
+
+
+this.fireKeyEventOnElement = function(aWindow, aElement, aOptions) {
+	var event = this.createKeyEventOnElement(aWindow, aElement, aOptions);
+	if (event && aElement)
+		aElement.dispatchEvent(event);
+};
+
+this.createKeyEventOnElement = function(aWindow, aElement, aOptions) {
+	if (!aOptions) aOptions = {};
+	var node = aElement;
+	if (!node) return null;
+
+	var event = this.getDocumentFromEventTarget(node).createEvent('KeyEvents');
+	event.initKeyEvent(
+		(aOptions.type || 'keypress'),
+		('canBubble' in aOptions ? aOptions.canBubble : true ),
+		('cancelable' in aOptions ? aOptions.cancelable : true ),
+		this.getDocumentFromEventTarget(node).defaultView,
+		('ctrlKey' in aOptions ? aOptions.ctrlKey : false ),
+		('altKey' in aOptions ? aOptions.altKey : false ),
+		('shiftKey' in aOptions ? aOptions.shiftKey : false ),
+		('metaKey' in aOptions ? aOptions.metaKey : false ),
+		('keyCode' in aOptions ? aOptions.keyCode : 0 ),
+		('charCode' in aOptions ? aOptions.charCode : 0 )
 	);
 	return event;
 };
@@ -70,17 +98,22 @@ this.fireXULCommandEventOnElement = function(aWindow, aElement, aOptions) {
 this.createXULCommandEvent = function(aSourceEvent) {
 	var event = aSourceEvent.view.document.createEvent('XULCommandEvents');
 	event.initCommandEvent('command',
-		aSourceEvent.canBubble,
-		aSourceEvent.cancellable,
+		true,
+		true,
 		aSourceEvent.view,
 		0,
-		aSourceEvent.ctrlKey,
-		aSourceEvent.altKey,
-		aSourceEvent.shiftKey,
-		aSourceEvent.metaKey,
+		false,
+		false,
+		false,
+		false,
 		aSourceEvent
 	);
 	return event;
+};
+
+
+this.getDocumentFromEventTarget = function(aNode) {
+	return aNode.document || aNode.ownerDocument || aNode;
 };
 
 
