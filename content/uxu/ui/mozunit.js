@@ -141,7 +141,7 @@ function finish() {
 }
 
 function writeTemplate(filePath) {
-    var data = test_utils.readFrom('chrome://uxu/locale/sample.js');
+	var data = test_utils.readFrom('chrome://uxu/locale/sample.js');
 	test_utils.writeTo(data, filePath);
 }
 
@@ -157,20 +157,21 @@ function makeTestCaseFileOptions(aIsFolder) {
 }
 
 function newTestCase() {
-    var file = pickFile('save', makeTestCaseFileOptions());
-    if(file) {
-         _('file').value = file.path;
-         writeTemplate(file.path);
-         window.setTimeout(function() {
-	         openInEditor(file.path, 4, 29);
-	     }, 100);
-    }
+	var file = pickFile('save', makeTestCaseFileOptions());
+	if(file) {
+		if (file.exists()) file.remove(true);
+		_('file').value = file.path;
+		writeTemplate(file.path);
+		window.setTimeout(function() {
+			openInEditor(file.path, 4, 29);
+		}, 100);
+	}
 }
 
 function openTestCase(aIsFolder) {
-    var file = pickFile((aIsFolder ? 'getFolder' : '' ), makeTestCaseFileOptions(aIsFolder));
-    if(file)
-        _('file').value = file.path;
+	var file = pickFile((aIsFolder ? 'getFolder' : '' ), makeTestCaseFileOptions(aIsFolder));
+	if(file)
+		_('file').value = file.path;
 }
 
 function getTestCaseReport(title) {
