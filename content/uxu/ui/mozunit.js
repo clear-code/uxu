@@ -62,45 +62,52 @@ function clone(blueprintName) {
         .cloneNode(true);
 }
 
-function pickFile(mode, aDefault) {
-    mode = 'mode' + (mode ? 
-                     mode[0].toUpperCase() + mode.substr(1) :
-                     'open');
-    const nsIFilePicker = Components.interfaces.nsIFilePicker;
-    
-    var picker = Components
-        .classes["@mozilla.org/filepicker;1"]
-        .createInstance(nsIFilePicker);
-    picker.defaultExtension = 'js';
+function pickFile(aMode, aOptions) {
+	if (!aOptions) aOptions = {};
+	var mode = 'mode' + (aMode ? 
+						 aMode[0].toUpperCase() + aMode.substr(1) :
+						 'open');
+	const nsIFilePicker = Components.interfaces.nsIFilePicker;
+	
+	var picker = Components
+		.classes["@mozilla.org/filepicker;1"]
+		.createInstance(nsIFilePicker);
+	if (aOptions.defaultExtension)
+		picker.defaultExtension = aOptions.defaultExtension;
 
-	if (aDefault) {
+	if (aOptions.defaultFile) {
+		var defaultFile = aOptions.defaultFile;
 		try {
-			aDefault = aDefault.QueryInterface(Components.interfaces.nsILocalFile)
+			defaultFile = defaultFile.QueryInterface(Components.interfaces.nsILocalFile)
 		}
 		catch(e) {
-			aDefault = utils.makeFileWithPath(aDefault);
+			defaultFile = utils.makeFileWithPath(defaultFile);
 		}
-		if (aDefault) {
-			if (aDefault.exists() && aDefault.isDirectory()) {
-				picker.displayDirectory = aDefault;
+		if (defaultFile) {
+			if (defaultFile.exists() && defaultFile.isDirectory()) {
+				picker.displayDirectory = defaultFile;
 			}
-			else if (!aDefault.exists() || !aDefault.isDirectory()) {
-					picker.displayDirectory = aDefault.parent;
+			else if (!defaultFile.exists() || !defaultFile.isDirectory()) {
+					picker.displayDirectory = defaultFile.parent;
 			}
 		}
 	}
 
-    picker.init(window, 'New test file', nsIFilePicker[mode]);
-    picker.appendFilter('Javascript Files', '*.js');
-    picker.appendFilters(nsIFilePicker.filterAll);
-    var result = picker.show();
-    if(result == nsIFilePicker.returnOK ||
-       result == nsIFilePicker.returnReplace)
-        return picker.file;
+	picker.init(window, aOptions.title || '', nsIFilePicker[mode]);
+	if (aOptions.filters) {
+		for (var filter in aOptions.filters) {
+			picker.appendFilter(filter, aOptions.filters[filter]);
+		}
+	}
+	picker.appendFilters((aOptions.filter || 0) | nsIFilePicker.filterAll);
+	var result = picker.show();
+	if(result == nsIFilePicker.returnOK ||
+	   result == nsIFilePicker.returnReplace)
+		return picker.file;
 }
 
-function pickFileUrl(mode) {
-    var file = pickFile(mode);
+function pickFileUrl(mode, aOptions) {
+    var file = pickFile(mode, aOptions);
     if(file)
         return utils.getURLSpecFromFilePath(file.path);
 }
@@ -207,8 +214,19 @@ functionalTest.tests = {
 	test_utils.writeTo(data.toString(), filePath);
 }
 
+function makeTestCaseFileOptions(aIsFolder) {
+	return {
+		defaultFile : _('file').value,
+		defaultExtension : 'js',
+		filters : {
+			'Javascript Files' : '*.js'
+		},
+		title : (aIsFolder ? 'Choose a folder contains testcases' : 'New test file' )
+	};
+}
+
 function newTestCase() {
-    var file = pickFile('save', _('file').value);
+    var file = pickFile('save', makeTestCaseFileOptions());
     if(file) {
          _('file').value = file.path;
          writeTemplate(file.path);
@@ -219,7 +237,7 @@ function newTestCase() {
 }
 
 function openTestCase(aIsFolder) {
-    var file = pickFile((aIsFolder ? 'getFolder' : '' ), _('file').value);
+    var file = pickFile((aIsFolder ? 'getFolder' : '' ), makeTestCaseFileOptions(aIsFolder));
     if(file)
         _('file').value = file.path;
 }
@@ -272,8 +290,8 @@ function displayStackTrace(trace, listbox) {
 }
 
 
-function pickTestFile() {
-    var url = pickFileUrl();
+function pickTestFile(aOptions) {
+    var url = pickFileUrl(null, aOptions);
     if(url)
         _('file').value = url;
 }
@@ -455,14 +473,8 @@ function openInEditor(filePath, lineNumber, columnNumber, commandLine) {
 	lineNumber = lineNumber || 1;
 	columnNumber = columnNumber || 1;
 	commandLine = commandLine ||
-		Components
-		.classes["@mozilla.org/preferences-service;1"]
-		.getService(Components.interfaces.nsIPrefBranch)
-		.getCharPref('extensions.uxu.mozunit.editor') ||
-		Components
-		.classes["@mozilla.org/preferences-service;1"]
-		.getService(Components.interfaces.nsIPrefBranch)
-		.getCharPref('extensions.mozlab.mozunit.editor') ||
+		test_utils.getPref('extensions.uxu.mozunit.editor') ||
+		test_utils.getPref('extensions.mozlab.mozunit.editor') ||
 		'/usr/bin/x-terminal-emulator -e /usr/bin/emacsclient -t +%l:%c %f';
 
 	var executable = Components
@@ -480,6 +492,7 @@ function openInEditor(filePath, lineNumber, columnNumber, commandLine) {
 		char = commandLine.charAt(i);
 		if (char == '"' || char == "'") {
 			if (quot) {
+				quot = '';
 				tokens.push('');
 				continue;
 			}
@@ -506,9 +519,23 @@ function openInEditor(filePath, lineNumber, columnNumber, commandLine) {
 				replace('%f', filePath);
 		});
 
-	executable.initWithPath(argv.shift());
-	process.init(executable);
-	process.run(false, argv, argv.length);
+	try {
+		executable.initWithPath(argv.shift());
+		process.init(executable);
+		process.run(false, argv, argv.length);
+	}
+	catch(e) {
+		if (!executable.exists()) {
+			var editor = pickFile('open', {
+					title : 'Choose an external editor application',
+					defaultExtension : 'exe',
+					filter : Components.interfaces.nsIFilePicker.filterApps
+				});
+			if (!editor || !editor.path) return;
+			test_utils.setPref('extensions.uxu.mozunit.editor', '"'+editor.path+'" "%f"');
+			arguments.callee(filePath, lineNumber, columnNumber, commandLine);
+		}
+	}
 }
 
 function showSource(traceLine) {
