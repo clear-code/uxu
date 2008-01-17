@@ -9,16 +9,16 @@ this.fireMouseEvent = function(aWindow, aOptions) {
 				('y' in aOptions ? aOptions.y : 0)
 			);
 	if (node)
-		this.fireMouseEventOnElement(aWindow, node, aOptions);
+		this.fireMouseEventOnElement(node, aOptions);
 };
 
-this.fireMouseEventOnElement = function(aWindow, aElement, aOptions) {
-	var event = this.createMouseEventOnElement(aWindow, aElement, aOptions);
+this.fireMouseEventOnElement = function(aElement, aOptions) {
+	var event = this.createMouseEventOnElement(aElement, aOptions);
 	if (event && aElement)
 		aElement.dispatchEvent(event);
 };
 
-this.createMouseEventOnElement = function(aWindow, aElement, aOptions) {
+this.createMouseEventOnElement = function(aElement, aOptions) {
 	if (!aOptions) aOptions = {};
 	var node = aElement;
 	if (!node) return null;
@@ -49,13 +49,13 @@ this.createMouseEventOnElement = function(aWindow, aElement, aOptions) {
 };
 
 
-this.fireKeyEventOnElement = function(aWindow, aElement, aOptions) {
-	var event = this.createKeyEventOnElement(aWindow, aElement, aOptions);
+this.fireKeyEventOnElement = function(aElement, aOptions) {
+	var event = this.createKeyEventOnElement(aElement, aOptions);
 	if (event && aElement)
 		aElement.dispatchEvent(event);
 };
 
-this.createKeyEventOnElement = function(aWindow, aElement, aOptions) {
+this.createKeyEventOnElement = function(aElement, aOptions) {
 	if (!aOptions) aOptions = {};
 	var node = aElement;
 	if (!node) return null;
@@ -86,11 +86,11 @@ this.fireXULCommandEvent = function(aWindow, aOptions) {
 				('y' in aOptions ? aOptions.y : 0)
 			);
 	if (node)
-		this.fireXULCommandEventOnElement(aWindow, node, aOptions);
+		this.fireXULCommandEventOnElement(node, aOptions);
 };
 
-this.fireXULCommandEventOnElement = function(aWindow, aElement, aOptions) {
-	var event = this.createMouseEventOnElement(aWindow, aElement, aOptions);
+this.fireXULCommandEventOnElement = function(aElement, aOptions) {
+	var event = this.createMouseEventOnElement(aElement, aOptions);
 	if (event && aElement)
 		aElement.dispatchEvent(this.createXULCommandEvent(event));
 };
