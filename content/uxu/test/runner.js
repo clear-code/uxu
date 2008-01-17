@@ -8,6 +8,7 @@ var utils      = lib_module.require('package', 'utils');
 
 var helper_module = new ModuleManager(['chrome://uxu/content/test/helper']);
 var test_utils    = helper_module.require('package', 'test_utils');
+var action        = helper_module.require('package', 'action');
 
 function constructor(files)
 {
@@ -117,6 +118,7 @@ function loadFile(aFile, aReporter) {
         suite.Specification = TestCase;
         suite.assert        = assertions;
         suite.utils         = test_utils;
+        suite.action        = action;
         suite.fileURL       = utils.getURLSpecFromFilePath(aFile.path);
         suite.baseURL       = suite.fileURL.replace(/[^/]*$/, '');
         suite.include = function(aSource) {

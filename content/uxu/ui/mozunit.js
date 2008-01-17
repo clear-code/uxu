@@ -7,6 +7,7 @@ var bundle  = module.require('package', 'bundle');
 
 var helper_module = new ModuleManager(['chrome://uxu/content/test/helper']);
 var test_utils    = helper_module.require('package', 'test_utils');
+var action        = helper_module.require('package', 'action');
 
 /* UTILITIES */
 
@@ -341,6 +342,7 @@ function loadFile(aFile) {
 		suite.Specification = mozlab.mozunit.TestCase;
 		suite.assert        = mozlab.mozunit.assertions;
 		suite.utils         = test_utils;
+		suite.action        = action;
 		suite.fileURL       = url;
 		suite.baseURL       = suite.fileURL.replace(/[^/]*$/, '');
         suite.include = function(aSource) {
