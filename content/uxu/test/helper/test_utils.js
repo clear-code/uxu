@@ -370,13 +370,25 @@ this.UnicodeToUTF8 = function(aInput) {
 	return unescape(encodeURIComponent(aInput));
 };
 
+var UCONV = Components.classes['@mozilla.org/intl/scriptableunicodeconverter']
+			.getService(Components.interfaces.nsIScriptableUnicodeConverter);
+
 this.convertFromDefaultEncoding = function(aInput) {
-	switch (this.getPref('extensions.uxu.defaultEncoding'))
+	var encoding = this.getPref('extensions.uxu.defaultEncoding');
+	switch (encoding)
 	{
+
 		case 'UTF-8':
 			return this.UTF8ToUnicode(aInput);
 
 		default:
+			try {
+				UCONV.charset = encoding;
+				return UCONV.ConvertToUnicode(aInput);
+			}
+			catch(e) {
+			}
+		case '':
 			return aInput;
 	}
 };
