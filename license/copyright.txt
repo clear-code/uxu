@@ -1,0 +1,9 @@
+"UXU - UnitText.XUL" is released under the GPLv2 license.
+Contributor(s):
+	SHIMODA Hiroshi (piro@p.club.ne.jp) at ClearCode Inc.
+	SUTOU Kouhei (kou at cozmixng.org) at ClearCode Inc.
+
+----
+Original Version: "MozLab"
+Copyright ©2005-2007 by Massimiliano Mirra, released under the GPLv2 license.
+Darcs source repository and snapshot tarball available at http://repo.hyperstruct.net.
