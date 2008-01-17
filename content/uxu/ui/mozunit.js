@@ -297,7 +297,7 @@ function run() {
 				setRunningState(false);
 		};
 
-	suites.forEach(function(suite, aIndex) {
+	var runTest = function(suite, aIndex) {
 		if (!suite) return;
 		try {
 			var testsFound  = false;
@@ -331,14 +331,29 @@ function run() {
 		} catch(e) {
 			onError(e);
 		}
-	});
+	};
+
+	if (test_utils.getPref('extensions.uxu.run.async')) {
+		suites.forEach(runTest);
+	}
+	else {
+		var count = 0;
+		window.setTimeout(function() {
+			if (!allTestCount) {
+				var suite = suites.shift();
+				runTest(suite, count++);
+			}
+			if (suites.length)
+				window.setTimeout(arguments.callee, 100);
+		}, 100);
+	}
 }
 
 function loadFolder(aFolder) {
 	var files = aFolder.directoryEntries;
 	var file;
 	var suites = [];
-	var ignoreHiddenFiles = test_utils.getPref('extensions.uxu.ignoreHiddenFiles');
+	var ignoreHiddenFiles = test_utils.getPref('extensions.uxu.run.ignoreHiddenFiles');
 	while (files.hasMoreElements())
 	{
 		file = files.getNext()
