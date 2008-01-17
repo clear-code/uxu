@@ -1,8 +1,10 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
-function constructor(aTarget)
+var key = 'uxu-test-window-id';
+
+this.constructor = function(aTarget)
 {
-    this.target = parseInt(Math.random() * 10000) + (aTarget || '')
+    this.uniqueID = parseInt(Math.random() * 10000) + (aTarget || '')
 }
 
 
@@ -18,7 +20,8 @@ this.getTestWindow = function() {
 	{
 		target = targets.getNext().
 			QueryInterface(Components.interfaces.nsIDOMWindowInternal);
-		if (target['mozLabTestWindow'+this.target])
+		if (target[key] == this.uniqueID ||
+			target.document.documentElement.getAttribute(key) == this.uniqueID)
 			return target;
 	}
 
@@ -27,24 +30,27 @@ this.getTestWindow = function() {
 
 // テスト用のFirefoxウィンドウを開き直す
 this.reopenTestWindow = function(callback) {
-	var win = getTestWindow();
+	var win = this.getTestWindow();
 	if (win) win.close();
-	return openTestWindow(callback);
+	return this.openTestWindow(callback);
 };
 
 // テスト用のFirefoxウィンドウを開く
 this.openTestWindow = function(callback) {
-	var win = getTestWindow();
+	var win = this.getTestWindow();
 	if (win) {
 		if (callback) callback(win);
-	} else {
+	}
+	else {
 		win = window.openDialog('chrome://browser/content/browser.xul',
 								'_blank', 'chrome,all,dialog=no',
 								'about:blank');
-		win['mozLabTestWindow'+this.target] = true;
+		win[key] = this.uniqueID;
+		var id = this.uniqueID;
 		if (callback) {
 			win.addEventListener('load', function() {
 				win.removeEventListener('load', arguments.callee, false);
+				win.document.documentElement.setAttribute(key, id);
 				callback(win);
 			}, false);
 		}
@@ -54,7 +60,7 @@ this.openTestWindow = function(callback) {
 
 // テスト用のFirefoxウィンドウを閉じる
 this.closeTestWindow = function() {
-	var win = getTestWindow();
+	var win = this.getTestWindow();
 	if (win) win.close();
 };
 
@@ -82,7 +88,7 @@ this.tearDownTestWindow = this.closeTestWindow;
 
 // テスト用のFirefoxウィンドウの現在のタブにURIを読み込む
 this.loadURI = function(aURI, aLoadedFlag) {
-	var win = getTestWindow();
+	var win = this.getTestWindow();
 	if (!win) return false;
 
 	win.gBrowser.addEventListener('load', function() {
@@ -96,7 +102,7 @@ this.loadURI = function(aURI, aLoadedFlag) {
 
 // テスト用のFirefoxウィンドウで新しいタブを開く
 this.addTab = function(aURI, aLoadedFlag) {
-	var win = getTestWindow();
+	var win = this.getTestWindow();
 	if (!win) return false;
 
 	var tab = win.gBrowser.addTab();
@@ -111,13 +117,13 @@ this.addTab = function(aURI, aLoadedFlag) {
 };
 
 this.getBrowser = function() {
-	var win = getTestWindow();
+	var win = this.getTestWindow();
 	if (!win) return null;
 	return win.gBrowser;
 };
 
 this.getTabs = function() {
-	var win = getTestWindow();
+	var win = this.getTestWindow();
 	if (!win) return null;
 	return win.gBrowser.mTabContainer.childNodes;
 };
