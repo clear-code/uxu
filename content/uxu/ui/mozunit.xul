@@ -187,6 +187,12 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 
   <statusbar>
     <statusbarpanel flex="1"/>
+    <statusbarpanel>
+      <progressmeter id="testRunningProgressMeter"
+                     mode="undetermined"
+                     collapsed="true"
+                     value="0"/>
+    </statusbarpanel>
   </statusbar>
 </window>
 

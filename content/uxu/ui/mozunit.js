@@ -248,6 +248,18 @@ function reset() {
     hideSource();
 }
 
+function setRunningState(aRunning) {
+	if (aRunning) {
+		_('run').setAttribute('disabled', true);
+		_('testRunningProgressMeter').removeAttribute('collapsed');
+	}
+	else {
+		_('run').removeAttribute('disabled');
+		_('testRunningProgressMeter').setAttribute('mode', 'undetermined');
+		_('testRunningProgressMeter').setAttribute('collapsed', true);
+	}
+}
+
 function run() {
 	reset();
 
@@ -265,25 +277,27 @@ function run() {
 	var onTestEnd = function() {
 			allTestCount--;
 			if (!allTestCount && !asyncTestCount)
-				_('run').removeAttribute('disabled');
+				setRunningState(false);
 		};
 	var onAsyncTestEnd = function() {
 			allTestCount--;
 			asyncTestCount--;
 			if (!allTestCount && !asyncTestCount)
-				_('run').removeAttribute('disabled');
+				setRunningState(false);
 		};
 
-	suites.forEach(function(suite) {
+	suites.forEach(function(suite, aIndex) {
 		if (!suite) return;
 		try {
 			var testsFound  = false;
 
-			for(var thing in suite) {
+			for (var thing in suite) {
 				if (!suite[thing]) continue;
 				if(suite[thing].__proto__ == mozlab.mozunit.TestCase.prototype) {
 					testsFound = true;
-					_('run').setAttribute('disabled', true);
+					setRunningState(true);
+					_('testRunningProgressMeter').setAttribute('value', parseInt(((aIndex + 1) / (suites.length + 1)) * 100));
+					_('testRunningProgressMeter').setAttribute('mode', 'determined');
 					var testCase = suite[thing];
 					testCase.reportHandler = testReportHandler;
 					allTestCount++;
