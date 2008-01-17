@@ -10,7 +10,6 @@ var helper_module = new ModuleManager(['chrome://uxu/content/test/helper']);
 var TestUtils     = helper_module.require('class', 'test_utils');
 var action        = helper_module.require('package', 'action');
 
-var test_utils = new TestUtils();
 
 function constructor(files)
 {
@@ -74,7 +73,7 @@ function finish_test(reporter)
 	this.n_running_tests--;
 	if (this.n_running_tests == 0 && reporter.onFinished)
 		reporter.onFinished();
-	test_utils.cleanUpTempFiles();
+	//utils.cleanUpTempFiles();
 }
 
 function isRunning()
@@ -98,7 +97,7 @@ function loadFolder(aFolder, aReporter) {
 	var files = aFolder.directoryEntries;
 	var file;
 	var tests = [];
-	var ignoreHiddenFiles = test_utils.getPref('extensions.uxu.run.ignoreHiddenFiles');
+	var ignoreHiddenFiles = utils.getPref('extensions.uxu.run.ignoreHiddenFiles');
 	while (files.hasMoreElements())
 	{
 		file = files.getNext()
@@ -132,14 +131,13 @@ function loadFile(aFile, aReporter) {
         suite.assert        = assertions;
         suite.fileURL       = utils.getURLSpecFromFilePath(aFile.path);
         suite.baseURL       = suite.fileURL.replace(/[^/]*$/, '');
-		suite.utils         = new TestUtils(suite.fileURL);
+		suite.utils         = new TestUtils(suite);
 		suite.action        = action;
         suite.include = function(aSource) {
-          aSource = suite.utils.convertFromDefaultEncoding(aSource);
-          suite.utils.include(aSource, suite);
+			this.utils.include(aSource);
         };
-        var script = suite.utils.readFrom(suite.fileURL);
-        script = suite.utils.convertFromDefaultEncoding(script);
+        var script = utils.readFrom(suite.fileURL);
+        script = utils.convertFromDefaultEncoding(script);
         suite.eval(script);
 
         for (var thing in suite) {

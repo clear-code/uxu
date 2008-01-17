@@ -83,6 +83,12 @@ function constructor(title, opts) {
         'title', function() {
             return this._title;
         });
+
+	this._done = false;
+    this.__defineGetter__(
+        'done', function() {
+            return this._done;
+        });
 }
 
 /**
@@ -350,6 +356,8 @@ function _syncRun1(tests, setUp, tearDown, reportHandler) {
     }
     if (reportHandler && 'onFinish' in reportHandler)
         reportHandler.onFinish();
+
+    this._done = true;
 }
 
 function _asyncRun1(tests, setUp, tearDown, reportHandler) {
@@ -463,6 +471,7 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler) {
         finished: function(continuation) {
             if (reportHandler && 'onFinish' in reportHandler)
                 reportHandler.onFinish();
+            _this._done = true;
         }
     }
 

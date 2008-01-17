@@ -1,4 +1,4 @@
-var module = new ModuleManager(['chrome://uxu/content/lib']);
+var module = new ModuleManager(['chrome://uxu/content/lib']); 
 var mozlab = {
     mozunit: module.require('package', 'package')
 };
@@ -8,12 +8,10 @@ var bundle  = module.require('package', 'bundle');
 var helper_module = new ModuleManager(['chrome://uxu/content/test/helper']);
 var TestUtils     = helper_module.require('class', 'test_utils');
 var action        = helper_module.require('package', 'action');
-
-var test_utils = new TestUtils();
-
-/* UTILITIES */
-
-function x() {
+ 
+/* UTILITIES */ 
+	
+function x() { 
     var contextNode, path;
     if(arguments[0] instanceof XULElement) {
         contextNode = arguments[0];
@@ -42,8 +40,8 @@ function x() {
         XPathResult.ANY_UNORDERED_NODE_TYPE, null).
         singleNodeValue;
 }
-
-function _(idOrElement, subCriteria) {
+ 
+function _(idOrElement, subCriteria) { 
     var element = (idOrElement instanceof XULElement) ?
         idOrElement : document.getElementById(idOrElement);
 
@@ -57,19 +55,42 @@ function _(idOrElement, subCriteria) {
     else
         return element;
 }
-
-function clone(blueprintName) {
+ 
+function clone(blueprintName) { 
     return _('blueprints', blueprintName)
         .cloneNode(true);
 }
-
-function pickFile(aMode, aOptions) {
+ 
+function barOf(progressmeter) { 
+    return document.getAnonymousNodes(progressmeter)[0];
+}
+ 
+function removeChildrenOf(element) { 
+    while(element.lastChild)
+        element.removeChild(element.lastChild);
+}
+ 
+function padLeft(thing, width, padder) { 
+    var paddedString = '';
+    var string = thing.toString();
+    return (string.length < width) ?
+        (function() {
+            for(var i=0, l=width-string.length; i<l; i++)
+                paddedString += padder;
+            return paddedString + string;
+        })() :
+        string;
+}
+  
+/* file picker */ 
+	
+function pickFile(aMode, aOptions) { 
 	if (!aOptions) aOptions = {};
-	var mode = 'mode' + (aMode ? 
+	var mode = 'mode' + (aMode ?
 						 aMode[0].toUpperCase() + aMode.substr(1) :
 						 'open');
 	const nsIFilePicker = Components.interfaces.nsIFilePicker;
-	
+
 	var picker = Components
 		.classes["@mozilla.org/filepicker;1"]
 		.createInstance(nsIFilePicker);
@@ -106,60 +127,24 @@ function pickFile(aMode, aOptions) {
 	   result == nsIFilePicker.returnReplace)
 		return picker.file;
 }
-
-function pickFileUrl(mode, aOptions) {
+ 
+function pickFileUrl(mode, aOptions) { 
     var file = pickFile(mode, aOptions);
     if(file)
         return utils.getURLSpecFromFilePath(file.path);
 }
-
-function barOf(progressmeter) {
-    return document.getAnonymousNodes(progressmeter)[0];
+  
+/* DOMAIN */ 
+	
+function init() { 
 }
-
-function removeChildrenOf(element) {
-    while(element.lastChild)
-        element.removeChild(element.lastChild);
+ 
+function finish() { 
 }
-
-function padLeft(thing, width, padder) {
-    var paddedString = '';
-    var string = thing.toString();
-    return (string.length < width) ?
-        (function() {
-            for(var i=0, l=width-string.length; i<l; i++)
-                paddedString += padder;
-            return paddedString + string;
-        })() :
-        string;
-}
-
-/* DOMAIN */
-
-function init() {
-    
-}
-
-function finish() {
-}
-
-function writeTemplate(filePath) {
-	var data = test_utils.readFrom('chrome://uxu/locale/sample.js');
-	test_utils.writeTo(data, filePath);
-}
-
-function makeTestCaseFileOptions(aIsFolder) {
-	return {
-		defaultFile : _('file').value,
-		defaultExtension : 'js',
-		filters : {
-			'Javascript Files' : '*.js'
-		},
-		title : bundle.getString(aIsFolder ? 'picker_title_open_testcase_folder' : 'picker_title_open_testcase' )
-	};
-}
-
-function newTestCase() {
+  
+/* test cases */ 
+	 
+function newTestCase() { 
 	var file = pickFile('save', makeTestCaseFileOptions());
 	if(file) {
 		if (file.exists()) file.remove(true);
@@ -170,14 +155,38 @@ function newTestCase() {
 		}, 100);
 	}
 }
-
-function openTestCase(aIsFolder) {
+	
+function writeTemplate(filePath) { 
+	var data = utils.readFrom('chrome://uxu/locale/sample.js');
+	utils.writeTo(data, filePath);
+}
+  
+function openTestCase(aIsFolder) { 
 	var file = pickFile((aIsFolder ? 'getFolder' : '' ), makeTestCaseFileOptions(aIsFolder));
 	if(file)
 		_('file').value = file.path;
 }
-
-function TestReportHandler(aTestCase) {
+ 
+function pickTestFile(aOptions) { 
+    var url = pickFileUrl(null, aOptions);
+    if(url)
+        _('file').value = url;
+}
+ 
+function makeTestCaseFileOptions(aIsFolder) { 
+	return {
+		defaultFile : _('file').value,
+		defaultExtension : 'js',
+		filters : {
+			'Javascript Files' : '*.js'
+		},
+		title : bundle.getString(aIsFolder ? 'picker_title_open_testcase_folder' : 'picker_title_open_testcase' )
+	};
+}
+  
+/* runner */ 
+	 
+function TestReportHandler(aTestCase) { 
 	this.testCase = aTestCase;
 }
 TestReportHandler.prototype = {
@@ -205,7 +214,7 @@ TestReportHandler.prototype = {
 	    if(report.result == 'success') {
 	        var successes = parseInt(_(wTestCaseReport, 'success-counter').value);
 	        _(wTestCaseReport, 'success-counter').value = successes + 1;
-	        return;        
+	        return;
 	    }
 
 	    barOf(_(wTestCaseReport, 'bar')).setAttribute('class', 'testcase-problems');
@@ -228,50 +237,55 @@ TestReportHandler.prototype = {
 	    _(wTestCaseReport, 'test-reports').appendChild(wTestReport);
 	}
 };
+ 
+function onError(aError) 
+{
+	_('prerun-report', 'error').value = bundle.getFormattedString('error_failed', [aError.toString()]);
+	_('prerun-report', 'error').hidden = false;
 
-function displayStackTrace(trace, listbox) {
+	if(aError.stack) {
+		displayStackTrace(aError.stack, _('prerun-report', 'stack-trace'));
+		_('prerun-report', 'stack-trace').hidden = false;
+		_('prerun-report').hidden = false;
+	}
+}
+ 
+function displayStackTrace(trace, listbox) { 
     for each(var line in trace.split('\n'))
         listbox.appendItem(line).setAttribute('crop', 'center');
 }
-
-
-function pickTestFile(aOptions) {
-    var url = pickFileUrl(null, aOptions);
-    if(url)
-        _('file').value = url;
-}
-
-function toggleContent() {
+ 
+function toggleContent() { 
     _('content').collapsed = !_('content').collapsed;
     _('content-splitter').hidden = !_('content-splitter').hidden;
 }
-
-function hideSource() {
+ 
+function hideSource() { 
     _('source-viewer').collapsed = true;
     _('source-splitter').hidden = true;
 }
-
-function reset() {
+ 
+function reset() { 
     _('prerun-report', 'error').hidden = true;
     _('prerun-report', 'stack-trace').hidden = true;
     removeChildrenOf(_('prerun-report', 'stack-trace'));
     removeChildrenOf(_('testcase-reports'))
     hideSource();
 }
-
-function setRunningState(aRunning) {
+ 
+function setRunningState(aRunning) { 
 	if (aRunning) {
 		_('run').setAttribute('disabled', true);
-		_('testRunningProgressMeter').removeAttribute('collapsed');
+		_('testRunningProgressMeterPanel').removeAttribute('collapsed');
 	}
 	else {
 		_('run').removeAttribute('disabled');
 		_('testRunningProgressMeter').setAttribute('mode', 'undetermined');
-		_('testRunningProgressMeter').setAttribute('collapsed', true);
+		_('testRunningProgressMeterPanel').setAttribute('collapsed', true);
 	}
 }
-
-function run() {
+ 
+function run() { 
 	reset();
 
 	var path = _('file').value;
@@ -283,77 +297,44 @@ function run() {
 	else
 		suites = [loadFile(file)];
 
-	var allTestCount = 0;
-	var asyncTestCount = 0;
-	var onTestEnd = function() {
-			allTestCount--;
-			if (!allTestCount && !asyncTestCount)
-				setRunningState(false);
-		};
-	var onAsyncTestEnd = function() {
-			allTestCount--;
-			asyncTestCount--;
-			if (!allTestCount && !asyncTestCount)
-				setRunningState(false);
-		};
+	var tests = initializeTests(suites);
 
-	var runTest = function(suite, aIndex) {
-		if (!suite) return;
-		try {
-			var testsFound  = false;
-
-			for (var thing in suite) {
-				if (!suite[thing]) continue;
-				if (suite[thing].__proto__ == mozlab.mozunit.TestCase.prototype) {
-					testsFound = true;
-					setRunningState(true);
-					_('testRunningProgressMeter').setAttribute('value',
-							parseInt(((aIndex + 1) / (suites.length + 1)) * 100));
-					_('testRunningProgressMeter').setAttribute('mode', 'determined');
-					var testCase = suite[thing];
-					testCase.reportHandler = new TestReportHandler(testCase);
-					allTestCount++;
-					if (testCase.runStrategy == 'async') {
-						asyncTestCount++;
-						testCase.reportHandler.onFinish = onAsyncTestEnd;
-						testCase.run();
-					}
-					else {
-						testCase.reportHandler.onFinish = onTestEnd;
-						testCase.run();
-					}
-				}
+	var max = tests.length + 1;
+	var runTest = function(aTest, aIndex) {
+			try {
+				setRunningState(true);
+				_('testRunningProgressMeter').setAttribute('value',
+						parseInt(((aIndex + 1) / max) * 100));
+				_('testRunningProgressMeter').setAttribute('mode', 'determined');
+				aTest.run();
 			}
+			catch(e) {
+				onError(e);
+			}
+		};
 
-			if(!testsFound)
-				throw new Error(bundle.getFormattedString('error_test_not_found', [suite.fileURL]));
-
-		} catch(e) {
-			onError(e);
-		}
-	};
-
-	if (test_utils.getPref('extensions.uxu.run.async')) {
-		suites.forEach(runTest);
+	if (utils.getPref('extensions.uxu.run.async')) {
+		tests.forEach(runTest);
 	}
 	else {
 		var count = 0;
+		var test;
 		window.setTimeout(function() {
-			if (!allTestCount) {
-				var suite = suites.shift();
-				runTest(suite, count++);
+			if (!test || test.done) {
+				test = tests.shift();
+				runTest(test, count++);
 			}
-			if (suites.length)
+			if (tests.length)
 				window.setTimeout(arguments.callee, 100);
 		}, 100);
 	}
 }
-
-function loadFolder(aFolder) {
+	 
+function loadFolder(aFolder) { 
 	var files = aFolder.directoryEntries;
 	var file;
 	var suites = [];
-	var ignoreHiddenFiles = test_utils.getPref('extensions.uxu.run.ignoreHiddenFiles');
+	var ignoreHiddenFiles = utils.getPref('extensions.uxu.run.ignoreHiddenFiles');
 	while (files.hasMoreElements())
 	{
 		file = files.getNext()
@@ -376,8 +357,8 @@ function loadFolder(aFolder) {
 	}
 	return suites;
 }
-
-function loadFile(aFile) {
+ 
+function loadFile(aFile) { 
 	var url = utils.getURLSpecFromFilePath(aFile.path);
 
 	try {
@@ -387,14 +368,13 @@ function loadFile(aFile) {
 		suite.assert        = mozlab.mozunit.assertions;
 		suite.fileURL       = url;
 		suite.baseURL       = suite.fileURL.replace(/[^/]*$/, '');
-		suite.utils         = new TestUtils(suite.fileURL);
+		suite.utils         = new TestUtils(suite);
 		suite.action        = action;
         suite.include = function(aSource) {
-          aSource = suite.utils.convertFromDefaultEncoding(aSource);
-          suite.utils.include(aSource, suite);
-        };
-        var script = suite.utils.readFrom(url);
-        script = suite.utils.convertFromDefaultEncoding(script);
+			this.utils.include(aSource);
+		};
+        var script = utils.readFrom(url);
+        script = utils.convertFromDefaultEncoding(script);
         suite.eval(script);
 	} catch(e) {
 		if (/\.(js|jsm)$/i.test(aFile.leafName))
@@ -404,28 +384,65 @@ function loadFile(aFile) {
 
 	return suite;
 }
+ 
+function initializeTests(aSuites) { 
+	var syncTestCount = 0;
+	var asyncTestCount = 0;
 
-function onError(aError)
-{
-	_('prerun-report', 'error').value = bundle.getFormattedString('error_failed', [aError.toString()]);
-	_('prerun-report', 'error').hidden = false;
+	var onSyncTestEnd = function() {
+			syncTestCount--;
+			if (!syncTestCount && !asyncTestCount)
+				setRunningState(false);
+		};
+	var onAsyncTestEnd = function() {
+			asyncTestCount--;
+			if (!syncTestCount && !asyncTestCount)
+				setRunningState(false);
+		};
 
-	if(aError.stack) {
-		displayStackTrace(aError.stack, _('prerun-report', 'stack-trace'));
-		_('prerun-report', 'stack-trace').hidden = false;
-		_('prerun-report').hidden = false;
-	}
+	var tests = [];
+	aSuites.forEach(function(suite, aIndex) {
+		if (!suite) return;
+		try {
+			var testsFound  = false;
+			for (var thing in suite) {
+				if (!suite[thing]) continue;
+				if (suite[thing].__proto__ == mozlab.mozunit.TestCase.prototype) {
+					testsFound = true;
+
+					var testCase = suite[thing];
+					testCase.reportHandler = new TestReportHandler(testCase);
+					testCase.environment = suite;
+					if (testCase.runStrategy == 'async') {
+						testCase.reportHandler.onFinish = onAsyncTestEnd;
+						asyncTestCount++;
+					}
+					else {
+						testCase.reportHandler.onFinish = onSyncTestEnd;
+						syncTestCount++;
+					}
+					tests.push(testCase);
+				}
+			}
+
+			if(!testsFound)
+				throw new Error(bundle.getFormattedString('error_test_not_found', [suite.fileURL]));
+
+		} catch(e) {
+			onError(e);
+		}
+	});
+
+	return tests;
 }
-
-
-
-function stylizeSource(sourceDocument, lineCallback) {
+ 	 
+function stylizeSource(sourceDocument, lineCallback) { 
     var originalSource = sourceDocument.getElementsByTagName('pre')[0];
     var processedSource = sourceDocument.createElementNS('http://www.w3.org/1999/xhtml', 'pre');
     var sourceLines = originalSource.textContent.split('\n');
     var sourceLine, htmlLine, lineContent;
     for(var i=0, l=sourceLines.length; i<l; i++) {
-        if(lineCallback) 
+        if(lineCallback)
             htmlLine = lineCallback(sourceDocument, i+1, sourceLines[i]) ||
                 sourceDocument.createTextNode(sourceLines[i]);
 
@@ -444,8 +461,8 @@ function stylizeSource(sourceDocument, lineCallback) {
 
     sourceDocument.getElementsByTagName('head')[0].appendChild(cssLink);
 }
-
-function openInEditor(filePath, lineNumber, columnNumber, commandLine) {
+ 
+function openInEditor(filePath, lineNumber, columnNumber, commandLine) { 
 	if (utils.makeFileWithPath(filePath).isDirectory()) {
 		return;
 	}
@@ -453,10 +470,10 @@ function openInEditor(filePath, lineNumber, columnNumber, commandLine) {
 	lineNumber = lineNumber || 1;
 	columnNumber = columnNumber || 1;
 	commandLine = commandLine ||
-		test_utils.getPref('extensions.uxu.mozunit.editor') ||
-		test_utils.getPref('extensions.mozlab.mozunit.editor') ||
-		(test_utils.getPref('view_source.editor.path') ?
-			'"'+test_utils.getPref('view_source.editor.path')+'" "%f"' : '') ||
+		utils.getPref('extensions.uxu.mozunit.editor') ||
+		utils.getPref('extensions.mozlab.mozunit.editor') ||
+		(utils.getPref('view_source.editor.path') ?
+			'"'+utils.getPref('view_source.editor.path')+'" "%f"' : '') ||
 		'/usr/bin/x-terminal-emulator -e /usr/bin/emacsclient -t +%l:%c %f';
 
 	var executable = Components
@@ -514,19 +531,19 @@ function openInEditor(filePath, lineNumber, columnNumber, commandLine) {
 					filter : Components.interfaces.nsIFilePicker.filterApps
 				});
 			if (!editor || !editor.path) return;
-			test_utils.setPref('extensions.uxu.mozunit.editor', '"'+editor.path+'" "%f"');
+			utils.setPref('extensions.uxu.mozunit.editor', '"'+editor.path+'" "%f"');
 			arguments.callee(filePath, lineNumber, columnNumber, commandLine);
 		}
 	}
 }
-
-function showSource(traceLine) {
+ 
+function showSource(traceLine) { 
     var match = traceLine.match(/@(.*):(\d+)/);
     var sourceUrl = match[1];
     var lineNumber = match[2];
 
     if(sourceUrl) {
-        
+
         var frame = _('source-viewer', 'source');
         _('source-splitter').hidden = false;
         _('source-viewer').collapsed = false;
@@ -548,7 +565,7 @@ function showSource(traceLine) {
                             currentLine.setAttribute('class', 'link');
                             currentLine.addEventListener(
                                 'click', function(event) {
-                                    openInEditor(sourceUrl, lineNumber);                                        
+                                    openInEditor(sourceUrl, lineNumber);
                                 }, false);
                         }
 
@@ -570,3 +587,4 @@ function showSource(traceLine) {
 
     }
 }
+  

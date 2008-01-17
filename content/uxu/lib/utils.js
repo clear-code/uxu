@@ -45,19 +45,113 @@ function getFileFromURLSpec(aURI) {
 
 // URL文字列→ファイルのパス
 function getFilePathFromURLSpec(aURI) {
-	return this.getFileFromURLSpec(aURI).path;
+	return getFileFromURLSpec(aURI).path;
 };
  
 // ファイルのパス→nsIURI
 function getURLFromFilePath(aPath) {
-	var tempLocalFile = this.makeFileWithPath(aPath);
+	var tempLocalFile = makeFileWithPath(aPath);
 	return IOService.newFileURI(tempLocalFile);
 };
 
 // ファイルのパス→URL文字列
 function getURLSpecFromFilePath(aPath) {
-	return this.getURLFromFilePath(aPath).spec;
+	return getURLFromFilePath(aPath).spec;
 };
+
+
+
+// ファイルまたはURIで示された先のリソースを読み込み、文字列として返す
+function readFrom(aTarget) {
+	if (typeof aTarget == 'string') {
+		if (aTarget.match(/^\w+:\/\//))
+			aTarget = makeURIFromSpec(aTarget);
+		else
+			aTarget = makeFileWithPath(aTarget);
+	}
+
+	var stream;
+	try {
+		aTarget = aTarget.QueryInterface(Components.interfaces.nsIURI);
+		var channel = IOService.newChannelFromURI(aTarget);
+		stream = channel.open();
+	}
+	catch(e) {
+		aTarget = aTarget.QueryInterface(Components.interfaces.nsILocalFile)
+		stream = Components.classes['@mozilla.org/network/file-input-stream;1']
+					.createInstance(Components.interfaces.nsIFileInputStream);
+		try {
+			stream.init(aTarget, 1, 0, false); // open as "read only"
+		}
+		catch(ex) {
+			return null;
+		}
+	}
+
+	try {
+		var scriptableStream = Components.classes['@mozilla.org/scriptableinputstream;1']
+				.createInstance(Components.interfaces.nsIScriptableInputStream);
+		scriptableStream.init(stream);
+
+		var fileContents = scriptableStream.read(scriptableStream.available());
+
+		scriptableStream.close();
+		stream.close();
+
+		return fileContents;
+	}
+	catch(e) {
+	}
+
+	return null;
+}
+
+// ファイルパスまたはURLで示された先のテキストファイルに文字列を書き出す
+function writeTo(aContent, aTarget) {
+	if (typeof aTarget == 'string') {
+		if (aTarget.match(/^\w+:\/\//))
+			aTarget = makeURIFromSpec(aTarget);
+		else
+			aTarget = makeFileWithPath(aTarget);
+	}
+
+	try {
+		aTarget = aTarget.QueryInterface(Components.interfaces.nsILocalFile)
+	}
+	catch(e) {
+		aTarget = aTarget.QueryInterface(Components.interfaces.nsIURI);
+		aTarget = getFileFromURLSpec(aTarget.spec);
+	}
+
+
+	// create directories
+	var current = aTarget;
+	var dirs    = [];
+	while (current.parent && !current.parent.exists())
+	{
+		dirs.push(current.parent);
+		current = current.parent;
+	}
+
+	if (dirs.length) {
+		for (var i = dirs.length-1; i > -1; i--)
+			dirs[i].create(dirs[i].DIRECTORY_TYPE, 0644);
+	}
+
+
+	aTarget.create(aTarget.NORMAL_FILE_TYPE, 0666);
+
+	var stream = Components.classes['@mozilla.org/network/file-output-stream;1']
+			.createInstance(Components.interfaces.nsIFileOutputStream);
+	stream.init(aTarget, 2, 0x200, false); // open as "write only"
+
+	stream.write(aContent, aContent.length);
+
+	stream.close();
+
+	return aTarget;
+}
+
 
 
 
@@ -94,6 +188,86 @@ function formatStackTrace(exception)
 
 
 
-function loadScriot(aURL)
-{
+var Pref = Components.classes['@mozilla.org/preferences;1'] 
+		.getService(Components.interfaces.nsIPrefBranch)
+		.QueryInterface(Components.interfaces.nsIPrefBranch2);
+
+function getPref(aKey) {
+	try {
+		switch (Pref.getPrefType(aKey))
+		{
+			case Pref.PREF_STRING:
+				return UTF8ToUnicode(Pref.getCharPref(aKey));
+				break;
+			case Pref.PREF_INT:
+				return Pref.getIntPref(aKey);
+				break;
+			default:
+				return Pref.getBoolPref(aKey);
+				break;
+		}
+	}
+	catch(e) {
+	}
+	return null;
+}
+
+function setPref(aKey, aValue) {
+	var type;
+	try {
+		type = typeof aValue;
+	}
+	catch(e) {
+		type = null;
+	}
+
+	try {
+		switch (type)
+		{
+			case 'string':
+				Pref.setCharPref(aKey, UnicodeToUTF8(aValue));
+				break;
+			case 'number':
+				Pref.setIntPref(aKey, parseInt(aValue));
+				break;
+			default:
+				Pref.setBoolPref(aKey, aValue);
+				break;
+		}
+	}
+	catch(e) {
+		dump('Fail to set pref.\n'+e+'\n');
+	}
+	return aValue;
+}
+
+
+function UTF8ToUnicode(aInput) {
+	return decodeURIComponent(escape(aInput));
+}
+function UnicodeToUTF8(aInput) {
+	return unescape(encodeURIComponent(aInput));
+}
+
+var UCONV = Components.classes['@mozilla.org/intl/scriptableunicodeconverter']
+			.getService(Components.interfaces.nsIScriptableUnicodeConverter);
+
+function convertFromDefaultEncoding(aInput) {
+	var encoding = getPref('extensions.uxu.defaultEncoding');
+	switch (encoding)
+	{
+
+		case 'UTF-8':
+			return UTF8ToUnicode(aInput);
+
+		default:
+			try {
+				UCONV.charset = encoding;
+				return UCONV.ConvertToUnicode(aInput);
+			}
+			catch(e) {
+			}
+		case '':
+			return aInput;
+	}
 }

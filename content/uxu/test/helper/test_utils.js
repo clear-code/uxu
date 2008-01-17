@@ -1,10 +1,15 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
+var lib = new ModuleManager(['chrome://uxu/content/lib']);
+var utils = lib.require('package', 'utils');
+
+
 var key = 'uxu-test-window-id';
 
-this.constructor = function(aTarget)
+this.constructor = function(aEnvironment)
 {
-    this.uniqueID = parseInt(Math.random() * 10000) + (aTarget || '')
+	this.environment = aEnvironment || {};
+    this.uniqueID = parseInt(Math.random() * 10000000000);
 }
 
 
@@ -131,159 +136,6 @@ this.getTabs = function() {
 
 
 
-var IOService = Components.classes['@mozilla.org/network/io-service;1'].getService(Components.interfaces.nsIIOService);
-
-// URI文字列からnsIURIのオブジェクトを生成
-this.makeURIFromSpec = function(aURI) {
-	try {
-		var newURI;
-		aURI = aURI || '';
-		if (aURI && aURI.match(/^file:/)) {
-			var fileHandler = IOService.getProtocolHandler('file')
-								.QueryInterface(Components.interfaces.nsIFileProtocolHandler);
-			var tempLocalFile = fileHandler.getFileFromURLSpec(aURI);
-
-			newURI = IOService.newFileURI(tempLocalFile);
-		}
-		else {
-			newURI = IOService.newURI(aURI, null, null);
-		}
-
-		return newURI;
-	}
-	catch(e){
-	}
-	return null;
-};
-
-// ファイルのパスからnsIFileのオブジェクトを生成
-this.makeFileWithPath = function(aPath) {
-	var newFile = Components.classes['@mozilla.org/file/local;1']
-					.createInstance(Components.interfaces.nsILocalFile);
-	newFile.initWithPath(aPath);
-	return newFile;
-};
-
-
-// URL文字列→nsIFile
-this.getFileFromURLSpec = function(aURI) {
-	if ((aURI || '').indexOf('file://') != 0) return '';
-
-	var fileHandler = IOService.getProtocolHandler('file')
-						.QueryInterface(Components.interfaces.nsIFileProtocolHandler);
-	return fileHandler.getFileFromURLSpec(aURI);
-};
-
-// URL文字列→ファイルのパス
-this.getFilePathFromURLSpec = function(aURI) {
-	return this.getFileFromURLSpec(aURI).path;
-};
- 
-// ファイルのパス→nsIURI
-this.getURLFromFilePath = function(aPath) {
-	var tempLocalFile = this.makeFileWithPath(aPath);
-	return IOService.newFileURI(tempLocalFile);
-};
-
-// ファイルのパス→URL文字列
-this.getURLSpecFromFilePath = function(aPath) {
-	return this.getURLFromFilePath(aPath).spec;
-};
-
-
-
-// ファイルまたはURIで示された先のリソースを読み込み、文字列として返す
-this.readFrom = function(aTarget) {
-	if (typeof aTarget == 'string') {
-		if (aTarget.match(/^\w+:\/\//))
-			aTarget = this.makeURIFromSpec(aTarget);
-		else
-			aTarget = this.makeFileWithPath(aTarget);
-	}
-
-	var stream;
-	try {
-		aTarget = aTarget.QueryInterface(Components.interfaces.nsIURI);
-		var channel = IOService.newChannelFromURI(aTarget);
-		stream = channel.open();
-	}
-	catch(e) {
-		aTarget = aTarget.QueryInterface(Components.interfaces.nsILocalFile)
-		stream = Components.classes['@mozilla.org/network/file-input-stream;1']
-					.createInstance(Components.interfaces.nsIFileInputStream);
-		try {
-			stream.init(aTarget, 1, 0, false); // open as "read only"
-		}
-		catch(ex) {
-			return null;
-		}
-	}
-
-	try {
-		var scriptableStream = Components.classes['@mozilla.org/scriptableinputstream;1']
-				.createInstance(Components.interfaces.nsIScriptableInputStream);
-		scriptableStream.init(stream);
-
-		var fileContents = scriptableStream.read(scriptableStream.available());
-
-		scriptableStream.close();
-		stream.close();
-
-		return fileContents;
-	}
-	catch(e) {
-	}
-
-	return null;
-};
-
-// ファイルパスまたはURLで示された先のテキストファイルに文字列を書き出す
-this.writeTo = function(aContent, aTarget) {
-	if (typeof aTarget == 'string') {
-		if (aTarget.match(/^\w+:\/\//))
-			aTarget = this.makeURIFromSpec(aTarget);
-		else
-			aTarget = this.makeFileWithPath(aTarget);
-	}
-
-	try {
-		aTarget = aTarget.QueryInterface(Components.interfaces.nsILocalFile)
-	}
-	catch(e) {
-		aTarget = aTarget.QueryInterface(Components.interfaces.nsIURI);
-		aTarget = this.getFileFromURLSpec(aTarget.spec);
-	}
-
-
-	// create directories
-	var current = aTarget;
-	var dirs    = [];
-	while (current.parent && !current.parent.exists())
-	{
-		dirs.push(current.parent);
-		current = current.parent;
-	}
-
-	if (dirs.length) {
-		for (var i = dirs.length-1; i > -1; i--)
-			dirs[i].create(dirs[i].DIRECTORY_TYPE, 0644);
-	}
-
-
-	aTarget.create(aTarget.NORMAL_FILE_TYPE, 0666);
-
-	var stream = Components.classes['@mozilla.org/network/file-output-stream;1']
-			.createInstance(Components.interfaces.nsIFileOutputStream);
-	stream.init(aTarget, 2, 0x200, false); // open as "write only"
-
-	stream.write(aContent, aContent.length);
-
-	stream.close();
-
-	return aTarget;
-};
-
-
 this.tempFiles = [];
 this.makeTempFile = function(aOriginal) {
 	var DirectoryService = Components.classes['@mozilla.org/file/directory_service;1']
@@ -333,92 +185,35 @@ this.cleanUpTempFiles = function() {
 
 
 
-var Pref = Components.classes['@mozilla.org/preferences;1'] 
-		.getService(Components.interfaces.nsIPrefBranch)
-		.QueryInterface(Components.interfaces.nsIPrefBranch2);
-
-this.getPref = function(aKey) {
-	try {
-		switch (Pref.getPrefType(aKey))
-		{
-			case Pref.PREF_STRING:
-				return this.UTF8ToUnicode(Pref.getCharPref(aKey));
-				break;
-			case Pref.PREF_INT:
-				return Pref.getIntPref(aKey);
-				break;
-			default:
-				return Pref.getBoolPref(aKey);
-				break;
-		}
-	}
-	catch(e) {
-	}
-	return null;
-};
-
-this.setPref = function(aKey, aValue) {
-	var type;
-	try {
-		type = typeof aValue;
-	}
-	catch(e) {
-		type = null;
-	}
-
-	try {
-		switch (type)
-		{
-			case 'string':
-				Pref.setCharPref(aKey, this.UnicodeToUTF8(aValue));
-				break;
-			case 'number':
-				Pref.setIntPref(aKey, parseInt(aValue));
-				break;
-			default:
-				Pref.setBoolPref(aKey, aValue);
-				break;
-		}
-	}
-	catch(e) {
-		dump('Fail to set pref.\n'+e+'\n');
-	}
-	return aValue;
+this.include = function(aSource) {
+	var script = this.readFrom(aSource);
+	script = this.convertFromDefaultEncoding(script);
+	this.environment.eval(script);
 };
 
 
 
-this.include = function(aSource, aEnvironment) {
-	(aEnvironment || {}).eval(this.readFrom(aSource));
-};
 
 
-this.UTF8ToUnicode = function(aInput) {
-	return decodeURIComponent(escape(aInput));
-};
-this.UnicodeToUTF8 = function(aInput) {
-	return unescape(encodeURIComponent(aInput));
-};
+var _this = this;
+<><![CDATA[
+makeURIFromSpec
+makeFileWithPath
+getFileFromURLSpec
+getFilePathFromURLSpec
+getURLFromFilePath
+getURLSpecFromFilePath
+readFrom
+writeTo
+getPref
+setPref
+UTF8ToUnicode
+UnicodeToUTF8
+convertFromDefaultEncoding
+]]></>.toString()
+.replace(/^\s+|\s+$/g, '')
+.split('\n')
+.forEach(function(aFunc) {
+	_this[aFunc] = utils[aFunc];
+});
 
-var UCONV = Components.classes['@mozilla.org/intl/scriptableunicodeconverter']
-			.getService(Components.interfaces.nsIScriptableUnicodeConverter);
-
-this.convertFromDefaultEncoding = function(aInput) {
-	var encoding = this.getPref('extensions.uxu.defaultEncoding');
-	switch (encoding)
-	{
-
-		case 'UTF-8':
-			return this.UTF8ToUnicode(aInput);
-
-		default:
-			try {
-				UCONV.charset = encoding;
-				return UCONV.ConvertToUnicode(aInput);
-			}
-			catch(e) {
-			}
-		case '':
-			return aInput;
-	}
-};
