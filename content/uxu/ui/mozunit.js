@@ -315,8 +315,6 @@ function reset() {
 }
 
 function run() {
-	_('run').setAttribute('disabled', true);
-
 	reset();
 
 	var path = _('file').value;
@@ -351,6 +349,7 @@ function run() {
 				if (!suite[thing]) continue;
 				if(suite[thing].__proto__ == mozlab.mozunit.TestCase.prototype) {
 					testsFound = true;
+					_('run').setAttribute('disabled', true);
 					var testCase = suite[thing];
 					testCase.reportHandler = testReportHandler;
 					allTestCount++;
