@@ -6,6 +6,7 @@ var mozlab = {
     mozunit: module.require('package', 'package')
 };
 var utils  = module.require('package', 'utils');
+var bundle  = module.require('package', 'bundle');
 
 var helper_module = new ModuleManager(['chrome://uxu/content/test/helper']);
 var test_utils    = helper_module.require('package', 'test_utils');
@@ -221,7 +222,7 @@ function makeTestCaseFileOptions(aIsFolder) {
 		filters : {
 			'Javascript Files' : '*.js'
 		},
-		title : (aIsFolder ? 'Choose a folder contains testcases' : 'New test file' )
+		title : bundle.getString(aIsFolder ? 'picker_title_open_testcase_folder' : 'picker_title_open_testcase' )
 	};
 }
 
@@ -269,7 +270,7 @@ function testReportHandler(report) {
     barOf(_(wTestCaseReport, 'bar')).setAttribute('class', 'testcase-problems');
 
     var wTestReport = clone('test-report');
-    _(wTestReport, 'result').value = report.result.toUpperCase();
+    _(wTestReport, 'result').value = bundle.getString('report_result_'+report.result);
     _(wTestReport, 'icon').setAttribute('class', 'test-' + report.result);
     _(wTestReport, 'description').value = report.testDescription;
     _(wTestReport, 'description').setAttribute('tooltiptext', report.testDescription);
@@ -364,7 +365,7 @@ function run() {
 			}
 
 			if(!testsFound)
-				throw new Error('No tests found in ' + suite.fileURL);
+				throw new Error(bundle.getFormattedString('error_test_not_found', [suite.fileURL]));
 
 		} catch(e) {
 			onError(e);
@@ -426,7 +427,7 @@ function loadFile(aFile) {
 
 function onError(aError)
 {
-	_('prerun-report', 'error').value = 'Run failed. ' + aError.toString();
+	_('prerun-report', 'error').value = bundle.getFormattedString('error_failed', [aError.toString()]);
 	_('prerun-report', 'error').hidden = false;
 
 	if(aError.stack) {
@@ -528,7 +529,7 @@ function openInEditor(filePath, lineNumber, columnNumber, commandLine) {
 	catch(e) {
 		if (!executable.exists()) {
 			var editor = pickFile('open', {
-					title : 'Choose an external editor application',
+					title : bundle.getString('picker_title_external_editor'),
 					defaultExtension : 'exe',
 					filter : Components.interfaces.nsIFilePicker.filterApps
 				});

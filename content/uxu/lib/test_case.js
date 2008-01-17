@@ -25,6 +25,8 @@
 //const fsm = module.require('package', 'lib/fsm');
 var mozlab_custom_module = new ModuleManager(['chrome://uxu/content/lib']);
 const fsm = mozlab_custom_module.require('package', 'fsm');
+var bundle = mozlab_custom_module.require('package', 'bundle');
+
 
 /**
  * Invocation:
@@ -376,7 +378,7 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler, onTestRunFinished) {
                         onError : function(e) {
                             report.report.result = 'error';
                             report.report.exception = e;
-                            report.report.testDescription = 'Setup';
+                            report.report.testDescription = bundle.getString('report_description_setup');
                             continuation('ko');
                         }
                     });
@@ -384,7 +386,7 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler, onTestRunFinished) {
             } catch(e) {
                 report.report.result = 'error';
                 report.report.exception = e;
-                report.report.testDescription = 'Setup';
+                report.report.testDescription = bundle.getString('report_description_setup');
                 continuation('ko');
             }
         },
@@ -451,12 +453,15 @@ function _defaultReportHandler(report) {
     if(report.result == 'success')
         return;
         
-    var printout = '';
-    printout += 'Test ' + report.testIndex + '/' + report.testCount + ': ';
-    printout += report.testDescription + '\n';
-        
-    printout += report.result.toUpperCase();
-    if(report.exception) {
+
+    var printout = bundle.getFormattedString('report_default', [
+    		report.testIndex,
+    		report.testCount,
+    		report.testDescription,
+    		bundle.getString('report_result_'+report.result)
+    	])
+
+    if (report.exception) {
         printout += ': ' + report.exception + '\n';
         printout += _formatStackTrace1(report.exception);
     }

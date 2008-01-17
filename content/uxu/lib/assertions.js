@@ -16,24 +16,28 @@
 //
 // Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 
+var module = new ModuleManager(['chrome://uxu/content/lib']);
+var bundle = module.require('package', 'bundle');
+
+
 function equals(x, y) {
     if(y != x)
         throw new AssertionFailed(
-            'Expected ' + x + ', got ' + y + '.',
+        	bundle.getFormattedString('assert_equals', [x, y]),
             Components.stack.caller);
 }
 
 function notEquals(x, y) {
     if(y == x)
         throw new AssertionFailed(
-            'Expected ' + x + ' and ' + y + ' to be different, but they are equal.',
+        	bundle.getFormattedString('assert_not_equals', [x, y]),
             Components.stack.caller);
 }
 
 function isTrue(x) {
     if(!x)
         throw new AssertionFailed(
-            'Expected true or equivalent, got ' + x,
+        	bundle.getFormattedString('assert_is_true', [x]),
             Components.stack.caller);
 }
 
@@ -41,28 +45,28 @@ function isDefined(x) {
     if(x == null ||
        x == undefined)
         throw new AssertionFailed(
-            'Expected value to be defined, was undefined',
+        	bundle.getFormattedString('assert_is_defined', [x]),
             Components.stack.caller);
 }
 
 function isUndefined(x) {
     if(x != undefined)
         throw new AssertionFailed(
-            'Expected value to be undefined, was defined',
+        	bundle.getFormattedString('assert_is_undefined', [x]),
             Components.stack.caller);
 }
 
 function isFalse(x) {
     if(x)
         throw new AssertionFailed(
-            'Expected false or equivalent, got ' + x,
+        	bundle.getFormattedString('assert_is_false', [x]),
             Components.stack.caller);
 }
 
 function isNull(x) {
     if(x != null)
         throw new AssertionFailed(
-            'Expected null, got ' + x,
+        	bundle.getFormattedString('assert_is_null', [x]),
             Components.stack.caller);
 }
 
@@ -77,14 +81,14 @@ function raises(exception, code, context) {
     }
     if(!raised)
         throw new AssertionFailed(
-            'Expected to raise ' + exception + ', not raised',
+        	bundle.getFormattedString('assert_rases', [exception]),
             Components.stack.caller);
 }
 
 function matches(pattern, string) {
     if(!(string.match(pattern)))
         throw new AssertionFailed(
-            'Expected something matching ' + pattern + ', got "' + string + '"',
+        	bundle.getFormattedString('assert_matches', [pattern, string]),
             Components.stack.caller);
 }
 
