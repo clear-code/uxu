@@ -1,13 +1,40 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
 
+this.getWindowUtils = function(aWindow) {
+	return aWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+			.getInterface(Components.interfaces.nsIDOMWindowUtils);
+};
+
+
 this.fireMouseEvent = function(aWindow, aOptions) {
 	if (!aOptions) aOptions = {};
-	var node = this.getElementFromPoint(
-				aWindow,
-				('x' in aOptions ? aOptions.x : 0),
-				('y' in aOptions ? aOptions.y : 0)
-			);
+
+	var x = ('x' in aOptions ? aOptions.x : 0);
+	var y = ('y' in aOptions ? aOptions.y : 0);
+
+/*
+	var win = this.getWindowFromPoint(aWindow, x, y);
+	var utils = this.getWindowUtils(utils);
+	if (utils.sendMouseEvent) {
+		const nsIDOMNSEvent = Components.interfaces.nsIDOMNSEvent;
+		var flags = 0;
+		if (aOptions.ctrlKey) flags |= nsIDOMNSEvent.CONTROL_MASK;
+		if (aOptions.altKey) flags |= nsIDOMNSEvent.ALT_MASK;
+		if (aOptions.shiftKey) flags |= nsIDOMNSEvent.SHIFT_MASK;
+		if (aOptions.metaKey) flags |= nsIDOMNSEvent.META_MASK;
+		utils.sendMouseEvent(
+			(aOptions.type || 'click'),
+			x,
+			y,
+			(aOptions.button || 0),
+			(aOptions.detail || 1),
+			flags
+		);
+		return;
+	}
+*/
+	var node = this.getElementFromPoint(aWidnow, x, y);
 	if (node)
 		this.fireMouseEventOnElement(node, aOptions);
 };
@@ -33,7 +60,7 @@ this.createMouseEventOnElement = function(aElement, aOptions) {
 		('canBubble' in aOptions ? aOptions.canBubble : true ),
 		('cancelable' in aOptions ? aOptions.cancelable : true ),
 		this.getDocumentFromEventTarget(node).defaultView,
-		('detail' in aOptions ? aOptions.detail : 0),
+		('detail' in aOptions ? aOptions.detail : 1),
 		aOptions.x,
 		aOptions.y,
 		aOptions.x,
