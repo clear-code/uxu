@@ -11,7 +11,7 @@ echo "making .xpi"
 jar=$basename.jar
 jar_contents="content locale skin"
 xpi=$basename-$version.xpi
-xpi_contents="chrome defaults chrome.manifest install.rdf"
+xpi_contents="chrome license defaults chrome.manifest install.rdf"
 
 rm -f $jar $xpi
 
