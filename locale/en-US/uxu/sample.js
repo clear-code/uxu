@@ -31,8 +31,11 @@ functionalTest.tests = {
     setUp : function(continuation) {
         // in "async" tests, you have to call "continuation" function
         // with the argument "ok" to continue test.
-        utils.setUpTestWindow(continuation);
-        // continuation("ok");
+        var loadedFlag = utils.setUpTestWindow();
+        // After the testing window completely loaded, go to the next step.
+        // (*see following testcase)
+        yield loadedFlag;
+        continuation("ok");
     },
 
     tearDown : function() {

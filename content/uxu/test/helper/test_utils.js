@@ -54,14 +54,20 @@ this.closeTestWindow = function() {
 
 
 this.setUpTestWindow = function(aContinuation) {
+	var loadedFlag = { value : false };
 	if (this.getTestWindow()) {
-		aContinuation("ok");
+		if (aContinuation) aContinuation("ok");
+		loadedFlag.value = true;
 	}
 	else {
 		this.openTestWindow(function(win) {
-			window.setTimeout(function() {aContinuation('ok')}, 0);
+			window.setTimeout(function() {
+				if (aContinuation) aContinuation('ok');
+				loadedFlag.value = true;
+			}, 0);
 		});
 	}
+	return loadedFlag;
 };
 
 this.tearDownTestWindow = this.closeTestWindow;
@@ -96,6 +102,18 @@ this.addTab = function(aURI, aLoadedFlag) {
 	tab.linkedBrowser.loadURI(aURI);
 
 	return true;
+};
+
+this.getBrowser = function() {
+	var win = getTestWindow();
+	if (!win) return null;
+	return win.gBrowser;
+};
+
+this.getTabs = function() {
+	var win = getTestWindow();
+	if (!win) return null;
+	return win.gBrowser.mTabContainer.childNodes;
 };
 
 

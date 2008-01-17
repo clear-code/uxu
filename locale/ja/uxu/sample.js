@@ -34,10 +34,11 @@ functionalTest.tests = {
     setUp : function(continuation) {
         // 非同期のテストでは、テストを続行するために
         // continuation("ok") を実行する必要があります。
-        // utils.setUpTestWindow はメソッド内部で、
-        // 適切なタイミングで自動的に continuation("ok") を
-        // 実行します。
-        utils.setUpTestWindow(continuation);
+        var loadedFlag = utils.setUpTestWindow();
+        // テスト用ウィンドウが開かれたら次の処理に進みます。
+        // （※下のテストケースを参照）
+        yield loadedFlag;
+        continuation("ok");
     },
 
     tearDown : function() {
