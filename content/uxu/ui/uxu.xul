@@ -24,6 +24,9 @@
 		<button label="&uxu.server.close.label;"
 			oncommand="window.close()"/>
 		<spacer flex="1"/>
+		<checkbox id="autostart"
+			label="&uxu.server.autostart.label;"
+			oncommand="nsPreferences.setBoolPref('extensions.uxu.auto.start', this.checked)"/>
 	</hbox>
 	<resizer dir="bottomright"/>
 </hbox>

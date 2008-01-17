@@ -1,5 +1,37 @@
 <!ENTITY uxu.server.title        "UXU - UnitTest.XUL">
 <!ENTITY uxu.server.running      "UXU Server is available.">
 <!ENTITY uxu.server.close.label  "Stop">
+<!ENTITY uxu.server.autostart.label  "Auto Start">
 
+<!ENTITY uxu.tools.menu.label   "UnitTest.XUL">
 <!ENTITY uxu.tools.start.label   "Start UXU Server">
+<!ENTITY uxu.tools.mozunit.label   "MozUnit Test Runner">
+
+
+<!ENTITY mozunit.title "MozUnit">
+
+<!ENTITY mozunit.run.label     "Run">
+<!ENTITY mozunit.run.accesskey "R">
+<!ENTITY mozunit.toggleContent.label     "Toggle Content">
+<!ENTITY mozunit.toggleContent.accesskey "C">
+<!ENTITY mozunit.open.label     "Open...">
+<!ENTITY mozunit.open.accesskey "O">
+<!ENTITY mozunit.openFolder.label     "Open Folder...">
+<!ENTITY mozunit.openFolder.accesskey "F">
+<!ENTITY mozunit.new.label     "New...">
+<!ENTITY mozunit.new.accesskey "N">
+<!ENTITY mozunit.edit.label     "Edit...">
+<!ENTITY mozunit.edit.accesskey "E">
+<!ENTITY mozunit.quit.label     "Quit">
+<!ENTITY mozunit.quit.accesskey "Q">
+
+<!ENTITY mozunit.file.label     "File">
+<!ENTITY mozunit.file.accesskey "F">
+<!ENTITY mozunit.view.label     "View">
+<!ENTITY mozunit.view.accesskey "V">
+
+<!ENTITY mozunit.successes "Successes:">
+
+<!ENTITY mozunit.filePath "Working on:">
+<!ENTITY mozunit.source "Source">
+<!ENTITY mozunit.close "Close">

@@ -1,59 +1,65 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
-function convertURIToFilePath(aURI) {
-    const ioService = Components.classes['@mozilla.org/network/io-service;1']
-                                .getService(Components.interfaces.nsIIOService);
+var IOService = Components.classes['@mozilla.org/network/io-service;1'].getService(Components.interfaces.nsIIOService);
 
-    // nsIIOServiceのnewURIメソッドで新しいURIオブジェクトを作る。
-    var URI = ioService.newURI(aURI, null, null);
+// URI文字列からnsIURIのオブジェクトを生成
+function makeURIFromSpec(aURI) {
+	try {
+		var newURI;
+		aURI = aURI || '';
+		if (aURI && aURI.match(/^file:/)) {
+			var fileHandler = IOService.getProtocolHandler('file')
+								.QueryInterface(Components.interfaces.nsIFileProtocolHandler);
+			var tempLocalFile = fileHandler.getFileFromURLSpec(aURI);
 
-    if (!URI.schemeIs('file')) return ''; // リモートのリソースの場合は処理しない
+			newURI = IOService.newFileURI(tempLocalFile);
+		}
+		else {
+			newURI = IOService.newURI(aURI, null, null);
+		}
 
-    var tempLocalFile;
-    try {
-        var fileHandler = ioService.getProtocolHandler('file')
-                                   .QueryInterface(Components.interfaces.nsIFileProtocolHandler);
-        tempLocalFile = fileHandler.getFileFromURLSpec(aURI); // 「 URL 文字列からファイルを得る」機能
-    }
-    catch(e) {
-        try {
-            // Mozilla 1.1 までは nsIIOService のメソッドを使う
-            tempLocalFile = ioService.getFileFromURLSpec(aURI);
-        }
-        catch(ex) { // for Mozilla 1.0.x
-            try {
-                // 仮のファイルオブジェクトを作る
-                tempLocalFile = Components.classes['@mozilla.org/file/local;1']
-                                          .createInstance(Components.interfaces.nsILocalFile);
-                ioService.initFileFromURLSpec(tempLocalFile, aURI); // nsIIOService の「 URIURL からファイルを初期化する」機能を使う
-            }
-            catch(ex) {
-                tempLocalFile.URL = aURI; // NS6 の時点の仕様では、 URL プロパティに URI を代入するだけでいい
-            }
-        }
-    }
-    return tempLocalFile.path; // ファイルのパスを帰す
-}
+		return newURI;
+	}
+	catch(e){
+	}
+	return null;
+};
 
-function convertFilePathToURI(aFilePath) {
-    var tempLocalFile = Components.classes['@mozilla.org/file/local;1']
-                                  .createInstance(Components.interfaces.nsILocalFile);
-    tempLocalFile.initWithPath(aFilePath); // パスを渡してファイルオブジェクトを初期化する
+// ファイルのパスからnsIFileのオブジェクトを生成
+function makeFileWithPath(aPath) {
+	var newFile = Components.classes['@mozilla.org/file/local;1']
+					.createInstance(Components.interfaces.nsILocalFile);
+	newFile.initWithPath(aPath);
+	return newFile;
+};
 
-    const ioService = Components.classes['@mozilla.org/network/io-service;1']
-                                .getService(Components.interfaces.nsIIOService);
-    try {
-        // nsIIOService の「ファイルから URI のオブジェクトを得る」機能を使う
-        return ioService.newFileURI(tempLocalFile).spec;
-    }
-    catch(e) { // for Mozilla 1.0～1.1
-        try {
-            return ioService.getURLSpecFromFile(tempLocalFile); // nsIIOService の「ファイルから URL の文字列を得る」機能を使う
-        } catch(ex) { // for NS6
-            return tempLocalFile.URL; // NS6 の時点の仕様では、初期化した時点で URL プロパティに URL の文字列が入っている
-        }
-    }
-}
+
+// URL文字列→nsIFile
+function getFileFromURLSpec(aURI) {
+	if ((aURI || '').indexOf('file://') != 0) return '';
+
+	var fileHandler = IOService.getProtocolHandler('file')
+						.QueryInterface(Components.interfaces.nsIFileProtocolHandler);
+	return fileHandler.getFileFromURLSpec(aURI);
+};
+
+// URL文字列→ファイルのパス
+function getFilePathFromURLSpec(aURI) {
+	return this.getFileFromURLSpec(aURI).path;
+};
+ 
+// ファイルのパス→nsIURI
+function getURLFromFilePath(aPath) {
+	var tempLocalFile = this.makeFileWithPath(aPath);
+	return IOService.newFileURI(tempLocalFile);
+};
+
+// ファイルのパス→URL文字列
+function getURLSpecFromFilePath(aPath) {
+	return this.getURLFromFilePath(aPath).spec;
+};
+
+
 
 function formatError(e) {
 	return formatStackTrace(e) + e.toString() + '\n';
@@ -87,3 +93,7 @@ function formatStackTrace(exception)
 }
 
 
+
+function loadScriot(aURL)
+{
+}

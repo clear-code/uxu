@@ -1,5 +1,37 @@
 <!ENTITY uxu.server.title        "UXU - UnitTest.XUL">
 <!ENTITY uxu.server.running      "UXUサーバ動作中">
 <!ENTITY uxu.server.close.label  "停止">
+<!ENTITY uxu.server.autostart.label  "自動起動">
 
+<!ENTITY uxu.tools.menu.label   "UnitTest.XUL">
 <!ENTITY uxu.tools.start.label   "UXUサーバを起動">
+<!ENTITY uxu.tools.mozunit.label   "MozUnit テストランナー">
+
+
+<!ENTITY mozunit.title "MozUnit">
+
+<!ENTITY mozunit.run.label     "実行">
+<!ENTITY mozunit.run.accesskey "R">
+<!ENTITY mozunit.toggleContent.label     "内容の表示/非表示切り替え">
+<!ENTITY mozunit.toggleContent.accesskey "C">
+<!ENTITY mozunit.open.label     "開く...">
+<!ENTITY mozunit.open.accesskey "O">
+<!ENTITY mozunit.openFolder.label     "フォルダを開く...">
+<!ENTITY mozunit.openFolder.accesskey "F">
+<!ENTITY mozunit.new.label     "新しいテスト...">
+<!ENTITY mozunit.new.accesskey "N">
+<!ENTITY mozunit.edit.label     "編集...">
+<!ENTITY mozunit.edit.accesskey "E">
+<!ENTITY mozunit.quit.label     "終了">
+<!ENTITY mozunit.quit.accesskey "Q">
+
+<!ENTITY mozunit.file.label     "ファイル">
+<!ENTITY mozunit.file.accesskey "F">
+<!ENTITY mozunit.view.label     "表示">
+<!ENTITY mozunit.view.accesskey "V">
+
+<!ENTITY mozunit.successes "成功したテスト:">
+
+<!ENTITY mozunit.filePath "作業中のファイル:">
+<!ENTITY mozunit.source "ソース">
+<!ENTITY mozunit.close "閉じる">

@@ -52,6 +52,9 @@ function constructor(title, opts) {
 
     this._title = title;
     this._runStrategy = opts.runStrategy;
+    this.__defineGetter__('runStrategy', function() {
+        return this._runStrategy;
+    });
     this._tests = [];
     this._reportHandler = _defaultReportHandler;
 
@@ -139,9 +142,9 @@ function setTests(hash) {
  *
  */
 
-function run() {
+function run(aFinishCallback) {
     this[this._runStrategy == 'async' ? '_asyncRun1' : '_syncRun1'](
-        this._tests, this._setUp, this._tearDown, this._reportHandler);
+        this._tests, this._setUp, this._tearDown, this._reportHandler, aFinishCallback);
 }
 
 /**
@@ -232,6 +235,42 @@ function _formatStackTrace1(exception) {
     return trace;
 }
 
+function processGenerator(aGenerator, aCallbacks) {
+	if (!aCallbacks) aCallbacks = {};
+	(function(aFlagObject) {
+		try {
+			if (aFlagObject && !aFlagObject.value)
+				return window.setTimeout(arguments.callee, 10, aFlagObject);
+
+			var returnedValue = aGenerator.next();
+			if (returnedValue &&
+				typeof returnedValue == 'object' &&
+				'value' in returnedValue) {
+				window.setTimeout(arguments.callee, 10, returnedValue);
+			}
+			else {
+				var wait = returnedValue;
+				if (isNaN(wait)) wait = 0;
+				window.setTimeout(arguments.callee, wait, null);
+			}
+		}
+		catch(e if e instanceof StopIteration) {
+			if (aCallbacks.onEnd)
+				aCallbacks.onEnd(e);
+		}
+		catch(e if e.name == 'AssertionFailed') {
+			if (aCallbacks.onFail)
+				aCallbacks.onFail(e);
+			else if (aCallbacks.onError)
+				aCallbacks.onError(e);
+		}
+		catch(e) {
+			if (aCallbacks.onError)
+				aCallbacks.onError(e);
+		}
+	})(null);
+}
+
 function _exec1(code, setUp, tearDown, context, continuation, aReport) {
     var report = {
         result:    undefined,
@@ -242,40 +281,33 @@ function _exec1(code, setUp, tearDown, context, continuation, aReport) {
         if(setUp)
             setUp.call(context);
 
-        var generator = code.call(context);
+        var result = code.call(context);
 
-		if (generator &&
-			generator == '[object Generator]' &&
-			'next' in generator) {
-			aReport.report = report;
-			(function() {
-				try {
-					var wait;
-					wait = generator.next();
-					if (isNaN(wait)) wait = 0;
-					window.setTimeout(arguments.callee, wait);
-				}
-				catch(e if e instanceof StopIteration) {
-					aReport.report.result = 'success';
-					continuation('ok');
-				}
-				catch(e if e.name == 'AssertionFailed') {
-					aReport.report.result = 'failure';
-					aReport.report.exception = e;
-					continuation('ok');
-				}
-				catch(e) {
-					aReport.report.result = 'error';
-					aReport.report.exception = e;
-					continuation('ok');
-				}
-			})();
+        if (result == '[object Generator]' &&
+            'next' in result) {
+            aReport.report = report;
+            processGenerator(result, {
+                onEnd : function(e) {
+                    aReport.report.result = 'success';
+                    continuation('ok');
+                },
+                onFail : function(e) {
+                    aReport.report.result = 'failure';
+                    aReport.report.exception = e;
+                    continuation('ok');
+                },
+                onError : function(e) {
+                    aReport.report.result = 'error';
+                    aReport.report.exception = e;
+                    continuation('ok');
+                }
+            });
 
-	        if(tearDown)
-	            tearDown.call(context);
+            if(tearDown)
+                tearDown.call(context);
 
-			return report;
-		}
+            return report;
+        }
 
         if(tearDown)
             tearDown.call(context);
@@ -292,7 +324,7 @@ function _exec1(code, setUp, tearDown, context, continuation, aReport) {
     return report;
 }
 
-function _syncRun1(tests, setUp, tearDown, reportHandler) {
+function _syncRun1(tests, setUp, tearDown, reportHandler, onTestRunFinished) {
     var test, context, report;
     for(var i=0, l=tests.length; i<l; i++) {
         test = tests[i];
@@ -305,6 +337,8 @@ function _syncRun1(tests, setUp, tearDown, reportHandler) {
         report.testCount = l;
         reportHandler(report);
     }
+    if (onTestRunFinished)
+    	onTestRunFinished();
 }
 
 function _asyncRun1(tests, setUp, tearDown, reportHandler, onTestRunFinished) {
@@ -328,10 +362,25 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler, onTestRunFinished) {
             continuation('ok')
         },
         doSetUp: function(continuation) {
+            if (!setUp) {
+              continuation('ok');
+              return;
+            }
             context = {};
             report.report = {};
             try {
-                setUp.call(context, continuation);
+                var result = setUp.call(context, continuation);
+                if (result == '[object Generator]' &&
+                    'next' in result) {
+                    processGenerator(result, {
+                        onError : function(e) {
+                            report.report.result = 'error';
+                            report.report.exception = e;
+                            report.report.testDescription = 'Setup';
+                            continuation('ko');
+                        }
+                    });
+                }
             } catch(e) {
                 report.report.result = 'error';
                 report.report.exception = e;
@@ -360,10 +409,27 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler, onTestRunFinished) {
             continuation('ok');
         },
         doTearDown: function(continuation) { // exceptions in setup/teardown are not reported correctly
+            if (!tearDown) {
+              continuation('ok');
+              return;
+            }
             try {
                 // perhaps should pass continuation to tearDown as well
-                tearDown.call(context); 
-                continuation('ok');
+                var result = tearDown.call(context); 
+                if (result == '[object Generator]' &&
+                    'next' in result) {
+                    processGenerator(result, {
+                        onEnd : function(e) {
+                            continuation('ok');
+                        },
+                        onError : function(e) {
+                            continuation('ko');
+                        }
+                    });
+                }
+                else {
+                    continuation('ok');
+                }
             } catch(e) {
                 continuation('ko');
             }

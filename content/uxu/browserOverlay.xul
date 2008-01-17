@@ -10,10 +10,25 @@
 function startUXU() {
 	const WindowManager = Components.classes['@mozilla.org/appshell/window-mediator;1'].getService(Components.interfaces.nsIWindowMediator);
 
-	var targets = WindowManager.getEnumerator('uxu:server');
-	if (targets.hasMoreElements()) return;
+	var target = WindowManager.getMostRecentWindow('uxu:server');
+	if (target) {
+		target.focus();
+		return;
+	}
 
 	window.openDialog('chrome://uxu/content/ui/uxu.xul', '_blank', 'chrome,all');
+}
+
+function openUXUMozUnit() {
+	const WindowManager = Components.classes['@mozilla.org/appshell/window-mediator;1'].getService(Components.interfaces.nsIWindowMediator);
+
+	var target = WindowManager.getMostRecentWindow('uxu:mozunit');
+	if (target) {
+		target.focus();
+		return;
+	}
+
+	window.openDialog('chrome://uxu/content/ui/mozunit.xul', '_blank', 'chrome,all');
 }
 
 if (nsPreferences.getBoolPref('extensions.uxu.auto.start'))
@@ -40,10 +55,18 @@ window.addEventListener('unload', function() {
 
 
 <menupopup id="menu_ToolsPopup">
-	<menuitem id="tools-uxu-menuitem"
+	<menu id="tools-uxu-menu"
 		insertbefore="devToolsSeparator"
-		label="&uxu.tools.start.label;"
-		oncommand="startUXU()"/>
+		label="&uxu.tools.menu.label;">
+		<menupopup>
+			<menuitem id="tools-uxu-menuitem"
+				label="&uxu.tools.start.label;"
+				oncommand="startUXU()"/>
+			<menuitem id="tools-uxu-menuitem-mozunit"
+				label="&uxu.tools.mozunit.label;"
+				oncommand="openUXUMozUnit()"/>
+		</menupopup>
+	</menu>
 </menupopup>
 
 

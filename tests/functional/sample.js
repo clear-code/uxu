@@ -1,6 +1,6 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
-var tc = new TestCase('testcase description here', {runStrategy: 'async'});
+var tc = new TestCase('This is a functional test.', {runStrategy: 'async'});
 
 tc.tests = {
 	setUp : function(continuation) {
@@ -18,42 +18,33 @@ tc.tests = {
 		utils.closeTestWindow();
 	},
 
-	'test window open' : function() {
+	'yield' : function() {
 
-		alert('AFTER 2sec');
+		dump('AFTER 2sec\n');
 		yield 2000;
 
-		alert('AFTER 3sec');
+		dump('AFTER 3sec\n');
 		yield 3000;
 
 		assert.isTrue(true);
 	},
 
-
-	/* tests */
-
-	'First test is successful': function() {
-		alert('test2');
-
-		var loaded = { value : false };
+	'page loading test': function() {
+		var loaded = {
+				value : false
+			};
 		var win = utils.getTestWindow();
 		win.gBrowser.addEventListener('load', function() {
-			alert('LOADED');
+			dump('LOADED');
 			loaded.value = true;
 		}, true);
 		win.gBrowser.loadURI('http://www.google.com/');
 
 		while (!loaded.value) {
-			alert('NOT LOADED');
+			dump('NOT LOADED\n');
 			yield 1000;
 		}
-		alert('NEXT STEP');
-
-		assert.isTrue(false);
-	},
-
-	'Second test is successful': function() {
-		alert('test3');
+		dump('NEXT STEP\n');
 
 		assert.isTrue(true);
 	}

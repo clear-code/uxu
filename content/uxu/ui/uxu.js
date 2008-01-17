@@ -5,6 +5,7 @@ const ObserverService = Components.classes["@mozilla.org/observer-service;1"].ge
 
 var gServer;
 var gLog;
+var gAutoStart;
 
 function Startup() {
 	var module = new ModuleManager(['chrome://uxu/content']);
@@ -13,6 +14,9 @@ function Startup() {
 	gServer.start();
 
 	gLog = document.getElementById('log');
+	gAutoStart = document.getElementById('autostart');
+
+	gAutoStart.checked = nsPreferences.getBoolPref('extensions.uxu.auto.start');
 
 	ObserverService.addObserver(testEventObserver, 'UXU:TestStart', false);
 	ObserverService.addObserver(testEventObserver, 'UXU:TestFinish', false);

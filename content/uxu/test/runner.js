@@ -75,6 +75,7 @@ function finish_test(reporter)
 	this.n_running_tests--;
 	if (this.n_running_tests == 0 && reporter.onFinished)
 		reporter.onFinished();
+	test_utils.cleanUpTempFiles();
 }
 
 function isRunning()
@@ -82,9 +83,36 @@ function isRunning()
     return this.n_running_tests > 0;
 }
 
-function load(file, reporter)
+function load(aFilePath, aReporter)
 {
-    var tests = new Array();
+	var file = utils.makeFileWithPath(aFilePath);
+	var tests;
+	if (file.isDirectory())
+		tests = runFolder(file);
+	else
+		tests = runFile(file);
+
+	return tests;
+}
+
+function loadFolder(aFolder, aReporter) {
+	var files = aFolder.directoryEntries;
+	var file;
+	var tests = [];
+	while (files.hasMoreElements())
+	{
+		file = files.getNext()
+				.QueryInterface(Components.interfaces.nsILocalFile);
+		if (file.isDirectory())
+			tests = tests.concat(loadFolder(file, aReporter));
+		else
+			tests = tests.concat(loadFile(file, aReporter));
+	}
+	return tests;
+}
+
+function loadFile(aFile, aReporter) {
+    var tests = [];
 
     try {
         var suite = {};
@@ -93,21 +121,25 @@ function load(file, reporter)
         suite.Specification = TestCase;
         suite.assert        = assertions;
         suite.utils         = test_utils;
-        suite.fileURL       = utils.convertFilePathToURI(file);
+        suite.fileURL       = utils.getURLSpecFromFilePath(aFile.path);
         suite.baseURL       = suite.fileURL.replace(/[^/]*$/, '');
+        suite.include = function(aSource) {
+          test_utils.include(aSource, suite);
+        };
         loader.loadSubScript(suite.fileURL, suite);
 
         for (var thing in suite) {
+            if (!suite[thing]) continue;
             if (suite[thing].__proto__ == TestCase.prototype) {
                 tests.push(suite[thing]);
             }
         }
 
         if (tests.length == 0)
-            reporter.warn('No tests found in ' + file);
+            aReporter.warn('No tests found in ' + aFile.path);
     } catch (e) {
-        reporter.error("failed to load " + file);
-        reporter.error(e);
+        aReporter.error("failed to load " + aFile.path);
+        aReporter.error(e);
     }
 
     return tests;

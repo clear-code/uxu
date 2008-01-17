@@ -1,0 +1,552 @@
+var loader = Components
+    .classes['@mozilla.org/moz/jssubscript-loader;1']
+    .getService(Components.interfaces.mozIJSSubScriptLoader);
+var module = new ModuleManager(['chrome://uxu/content/lib']);
+var mozlab = {
+    mozunit: module.require('package', 'package')
+};
+var utils  = module.require('package', 'utils');
+
+var helper_module = new ModuleManager(['chrome://uxu/content/test/helper']);
+var test_utils    = helper_module.require('package', 'test_utils');
+
+/* UTILITIES */
+
+function x() {
+    var contextNode, path;
+    if(arguments[0] instanceof XULElement) {
+        contextNode = arguments[0];
+        path = arguments[1];
+    }
+    else {
+        path = arguments[0];
+        contextNode = document;
+    }
+
+    function resolver(prefix) {
+        switch(prefix) {
+        case 'xul':
+            return 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
+            break;
+        case 'hy':
+            return 'http://hyperstruct.net/';
+            break;
+        default:
+            return null;
+        }
+    }
+
+    return document.evaluate(
+        path, contextNode, resolver,
+        XPathResult.ANY_UNORDERED_NODE_TYPE, null).
+        singleNodeValue;
+}
+
+function _(idOrElement, subCriteria) {
+    var element = (idOrElement instanceof XULElement) ?
+        idOrElement : document.getElementById(idOrElement);
+
+    if(subCriteria)
+        if(typeof(subCriteria) == 'object') {
+            for(var attributeName in subCriteria)
+                return x(element, './/*[@' + attributeName + '=' +
+                         '"' + subCriteria[attributeName] + '"]');
+        } else
+            return x(element, './/*[@role="' + subCriteria + '"]');
+    else
+        return element;
+}
+
+function clone(blueprintName) {
+    return _('blueprints', blueprintName)
+        .cloneNode(true);
+}
+
+function pickFile(mode, aDefault) {
+    mode = 'mode' + (mode ? 
+                     mode[0].toUpperCase() + mode.substr(1) :
+                     'open');
+    const nsIFilePicker = Components.interfaces.nsIFilePicker;
+    
+    var picker = Components
+        .classes["@mozilla.org/filepicker;1"]
+        .createInstance(nsIFilePicker);
+    picker.defaultExtension = 'js';
+
+	if (aDefault) {
+		try {
+			aDefault = aDefault.QueryInterface(Components.interfaces.nsILocalFile)
+		}
+		catch(e) {
+			aDefault = utils.makeFileWithPath(aDefault);
+		}
+		if (aDefault) {
+			if (aDefault.exists() && aDefault.isDirectory()) {
+				picker.displayDirectory = aDefault;
+			}
+			else if (!aDefault.exists() || !aDefault.isDirectory()) {
+					picker.displayDirectory = aDefault.parent;
+			}
+		}
+	}
+
+    picker.init(window, 'New test file', nsIFilePicker[mode]);
+    picker.appendFilter('Javascript Files', '*.js');
+    picker.appendFilters(nsIFilePicker.filterAll);
+    var result = picker.show();
+    if(result == nsIFilePicker.returnOK ||
+       result == nsIFilePicker.returnReplace)
+        return picker.file;
+}
+
+function pickFileUrl(mode) {
+    var file = pickFile(mode);
+    if(file)
+        return utils.getURLSpecFromFilePath(file.path);
+}
+
+function barOf(progressmeter) {
+    return document.getAnonymousNodes(progressmeter)[0];
+}
+
+function removeChildrenOf(element) {
+    while(element.lastChild)
+        element.removeChild(element.lastChild);
+}
+
+function padLeft(thing, width, padder) {
+    var paddedString = '';
+    var string = thing.toString();
+    return (string.length < width) ?
+        (function() {
+            for(var i=0, l=width-string.length; i<l; i++)
+                paddedString += padder;
+            return paddedString + string;
+        })() :
+        string;
+}
+
+/* DOMAIN */
+
+function init() {
+    
+}
+
+function finish() {
+}
+
+function writeTemplate(filePath) {
+    var data =
+        <><![CDATA[// include(baseURL+'another.in.same.folder.js');
+// include('chrome://myaddon/content/myaddon.file.js');
+
+var unitTest = new TestCase('testcase description here');
+
+unitTest.tests = {
+    setUp : function() {
+      // put setup scripts here.
+    },
+
+    tearDown : function() {
+      // put teardown scripts here.
+    },
+
+    'First test is successful': function() {
+        assert.equals(0, [].length);
+        assert.notEquals(10, ''.length);
+        assert.isTrue(true);
+        assert.isFalse(false);
+        assert.isDefined(assert);
+        assert.isUndefined(void(0));
+        assert.isNull(null);
+        assert.matches(/patterns?/, 'pattern');
+    }
+};
+
+/*
+var functionalTest = new TestCase('functional test', {runStrategy: 'async'});
+
+functionalTest.tests = {
+    setUp : function(continuation) {
+        // in "async" tests, you have to call "continuation" function
+        // with the argument "ok" to continue test.
+        utils.setUpTestWindow(continuation);
+        // continuation("ok");
+    },
+
+    tearDown : function() {
+        utils.tearDownTestWindow();
+    },
+
+    'page loading test': function() {
+        var loadedFlag = { value : false };
+        var win = utils.getTestWindow();
+        win.gBrowser.addEventListener('load', function() {
+            loadedFlag.value = true;
+        }, true);
+        win.gBrowser.loadURI('http://www.mozilla.org/');
+
+        // Wait for the loading. If you return an object which has
+        // "value" property, test runner waits the time that the "value"
+        // property become to "true".
+        yield loadedFlag;
+
+        assert.equals(win.content.location.href, 'http://www.mozilla.org/');
+
+
+        // another style: you can wait for a second.
+        var beforeTime = (new Date()).getTime();
+        yield 1000;
+
+        var afterTime = (new Date()).getTime();
+        assert.isTrue((afterTime - beforeTime) > 10);
+    }
+};
+*/
+]]></>;
+	test_utils.writeTo(data.toString(), filePath);
+}
+
+function newTestCase() {
+    var file = pickFile('save', _('file').value);
+    if(file) {
+         _('file').value = file.path;
+         writeTemplate(file.path);
+         window.setTimeout(function() {
+	         openInEditor(file.path, 4, 29);
+	     }, 100);
+    }
+}
+
+function openTestCase(aIsFolder) {
+    var file = pickFile((aIsFolder ? 'getFolder' : '' ), _('file').value);
+    if(file)
+        _('file').value = file.path;
+}
+
+function getTestCaseReport(title) {
+    return _('testcase-reports', {title: title}) ||
+        (function() {
+            wTestCaseReport = clone('testcase-report');
+            wTestCaseReport.setAttribute('title', title);
+            _(wTestCaseReport, 'title').value = title;
+            barOf(_(wTestCaseReport, 'bar')).setAttribute('class', 'testcase-fine');
+            _('testcase-reports').appendChild(wTestCaseReport);
+            return wTestCaseReport;
+        })();
+}
+
+function testReportHandler(report) {
+    wTestCaseReport = getTestCaseReport(report.testOwner.title);
+    _(wTestCaseReport, 'bar').setAttribute(
+        'value', report.testIndex / report.testCount * 100 + '%');
+    _(wTestCaseReport, 'total-counter').value = report.testCount;
+
+    if(report.result == 'success') {
+        var successes = parseInt(_(wTestCaseReport, 'success-counter').value);
+        _(wTestCaseReport, 'success-counter').value = successes + 1;
+        return;        
+    }
+
+    barOf(_(wTestCaseReport, 'bar')).setAttribute('class', 'testcase-problems');
+
+    var wTestReport = clone('test-report');
+    _(wTestReport, 'result').value = report.result.toUpperCase();
+    _(wTestReport, 'icon').setAttribute('class', 'test-' + report.result);
+    _(wTestReport, 'description').value = report.testDescription;
+    _(wTestReport, 'description').setAttribute('tooltiptext', report.testDescription);
+    if(report.exception) {
+        _(wTestReport, 'additionalInfo').value = report.exception.message;
+        if(report.exception.stack) {
+            displayStackTrace(report.exception.stack, _(wTestReport, 'stack-trace'));
+            _(wTestReport, 'stack-trace').hidden = false;
+        }
+    }
+
+    _(wTestCaseReport, 'test-reports').appendChild(wTestReport);
+}
+
+function displayStackTrace(trace, listbox) {
+    for each(var line in trace.split('\n'))
+        listbox.appendItem(line).setAttribute('crop', 'center');
+}
+
+
+function pickTestFile() {
+    var url = pickFileUrl();
+    if(url)
+        _('file').value = url;
+}
+
+function toggleContent() {
+    _('content').collapsed = !_('content').collapsed;
+    _('content-splitter').hidden = !_('content-splitter').hidden;
+}
+
+function hideSource() {
+    _('source-viewer').collapsed = true;
+    _('source-splitter').hidden = true;
+}
+
+function reset() {
+    _('prerun-report', 'error').hidden = true;
+    _('prerun-report', 'stack-trace').hidden = true;
+    removeChildrenOf(_('prerun-report', 'stack-trace'));
+    removeChildrenOf(_('testcase-reports'))
+    hideSource();
+}
+
+function run() {
+	_('run').setAttribute('disabled', true);
+
+	reset();
+
+	var path = _('file').value;
+	var file = utils.makeFileWithPath(path);
+
+	var suites;
+	if (file.isDirectory())
+		suites = loadFolder(file);
+	else
+		suites = [loadFile(file)];
+
+	var allTestCount = 0;
+	var asyncTestCount = 0;
+	var onTestEnd = function() {
+			allTestCount--;
+			if (!allTestCount && !asyncTestCount)
+				_('run').removeAttribute('disabled');
+		};
+	var onAsyncTestEnd = function() {
+			allTestCount--;
+			asyncTestCount--;
+			if (!allTestCount && !asyncTestCount)
+				_('run').removeAttribute('disabled');
+		};
+
+	suites.forEach(function(suite) {
+		if (!suite) return;
+		try {
+			var testsFound  = false;
+
+			for(var thing in suite) {
+				if (!suite[thing]) continue;
+				if(suite[thing].__proto__ == mozlab.mozunit.TestCase.prototype) {
+					testsFound = true;
+					var testCase = suite[thing];
+					testCase.reportHandler = testReportHandler;
+					allTestCount++;
+					if (testCase.runStrategy == 'async') {
+						asyncTestCount++;
+						testCase.run(onAsyncTestEnd);
+					}
+					else {
+						testCase.run(onTestEnd);
+					}
+				}
+			}
+
+			if(!testsFound)
+				throw new Error('No tests found in ' + aFile);
+
+		} catch(e) {
+			onError(e);
+		}
+	});
+}
+
+function loadFolder(aFolder) {
+	var files = aFolder.directoryEntries;
+	var file;
+	var suites = [];
+	while (files.hasMoreElements())
+	{
+		file = files.getNext()
+				.QueryInterface(Components.interfaces.nsILocalFile);
+		if (file.isDirectory())
+			suites = suites.concat(loadFolder(file));
+		else {
+			suites.push(loadFile(file));
+		}
+	}
+	return suites;
+}
+
+function loadFile(aFile) {
+	var url = utils.getURLSpecFromFilePath(aFile.path);
+
+	try {
+		var suite = {};
+		suite.TestCase      = mozlab.mozunit.TestCase;
+		suite.Specification = mozlab.mozunit.TestCase;
+		suite.assert        = mozlab.mozunit.assertions;
+		suite.utils         = test_utils;
+		suite.fileURL       = url;
+		suite.baseURL       = suite.fileURL.replace(/[^/]*$/, '');
+        suite.include = function(aSource) {
+          test_utils.include(aSource, suite);
+        };
+		loader.loadSubScript(url, suite);
+	} catch(e) {
+		if (/\.(js|jsm)$/i.test(aFile.leafName))
+			onError(e);
+		suite = null;
+	}
+
+	return suite;
+}
+
+function onError(aError)
+{
+	_('prerun-report', 'error').value = 'Run failed. ' + aError.toString();
+	_('prerun-report', 'error').hidden = false;
+
+	if(aError.stack) {
+		displayStackTrace(aError.stack, _('prerun-report', 'stack-trace'));
+		_('prerun-report', 'stack-trace').hidden = false;
+		_('prerun-report').hidden = false;
+	}
+}
+
+
+
+function stylizeSource(sourceDocument, lineCallback) {
+    var originalSource = sourceDocument.getElementsByTagName('pre')[0];
+    var processedSource = sourceDocument.createElementNS('http://www.w3.org/1999/xhtml', 'pre');
+    var sourceLines = originalSource.textContent.split('\n');
+    var sourceLine, htmlLine, lineContent;
+    for(var i=0, l=sourceLines.length; i<l; i++) {
+        if(lineCallback) 
+            htmlLine = lineCallback(sourceDocument, i+1, sourceLines[i]) ||
+                sourceDocument.createTextNode(sourceLines[i]);
+
+        processedSource.appendChild(htmlLine)
+    }
+    processedSource.normalize();
+    originalSource.parentNode.replaceChild(processedSource, originalSource);
+
+    var cssLink = sourceDocument.createElementNS('http://www.w3.org/1999/xhtml', 'link');
+    cssLink.rel = 'stylesheet';
+    cssLink.type = 'text/css';
+    cssLink.href = 'data:text/css,' +
+        'body { margin: 0; }' +
+        '#current { font-weight: bold; background-color: #e5e5e5; }' +
+        '.link { color: blue; border-bottom: thin solid blue; cursor: pointer; }';
+
+    sourceDocument.getElementsByTagName('head')[0].appendChild(cssLink);
+}
+
+function openInEditor(filePath, lineNumber, columnNumber, commandLine) {
+	if (utils.makeFileWithPath(filePath).isDirectory()) {
+		return;
+	}
+
+	lineNumber = lineNumber || 1;
+	columnNumber = columnNumber || 1;
+	commandLine = commandLine ||
+		Components
+		.classes["@mozilla.org/preferences-service;1"]
+		.getService(Components.interfaces.nsIPrefBranch)
+		.getCharPref('extensions.uxu.mozunit.editor') ||
+		Components
+		.classes["@mozilla.org/preferences-service;1"]
+		.getService(Components.interfaces.nsIPrefBranch)
+		.getCharPref('extensions.mozlab.mozunit.editor') ||
+		'/usr/bin/x-terminal-emulator -e /usr/bin/emacsclient -t +%l:%c %f';
+
+	var executable = Components
+		.classes["@mozilla.org/file/local;1"].
+		createInstance(Components.interfaces.nsILocalFile);
+	var process = Components
+		.classes["@mozilla.org/process/util;1"].
+		createInstance(Components.interfaces.nsIProcess);
+
+	var tokens = [''];
+	var quot   = '';
+	var char;
+	for (var i = 0, maxi = commandLine.length; i < maxi; i++)
+	{
+		char = commandLine.charAt(i);
+		if (char == '"' || char == "'") {
+			if (quot) {
+				tokens.push('');
+				continue;
+			}
+			else {
+				quot = char;
+				continue;
+			}
+		}
+		else if (/\s/.test(char)) {
+			if (!quot) {
+				if (tokens[tokens.length-1]) tokens.push('');
+				continue;
+			}
+		}
+		tokens[tokens.length-1] += char;
+	}
+
+	var argv = tokens.map(
+		function(word) {
+			return word.
+				replace('%l', lineNumber).
+				replace('%c', columnNumber).
+				replace('%u', utils.getURLSpecFromFilePath(filePath)).
+				replace('%f', filePath);
+		});
+
+	executable.initWithPath(argv.shift());
+	process.init(executable);
+	process.run(false, argv, argv.length);
+}
+
+function showSource(traceLine) {
+    var match = traceLine.match(/@(.*):(\d+)/);
+    var sourceUrl = match[1];
+    var lineNumber = match[2];
+
+    if(sourceUrl) {
+        
+        var frame = _('source-viewer', 'source');
+        _('source-splitter').hidden = false;
+        _('source-viewer').collapsed = false;
+
+        function onLoad(event) {
+            _('source-viewer', 'source').removeEventListener('load', onLoad, true);
+
+            stylizeSource(
+                _('source-viewer', 'source').contentDocument,
+                function(sourceDoc, number, content) {
+                    content = padLeft(number, 3, 0) + ' ' + content + '\n';
+
+                    if(number == lineNumber) {
+                        var currentLine = sourceDoc.createElementNS('http://www.w3.org/1999/xhtml', 'div');
+                        currentLine.setAttribute('id', 'current');
+                        currentLine.textContent = content;
+
+                        if(sourceUrl.match(/^file:\/\//)) {
+                            currentLine.setAttribute('class', 'link');
+                            currentLine.addEventListener(
+                                'click', function(event) {
+                                    openInEditor(sourceUrl, lineNumber);                                        
+                                }, false);
+                        }
+
+                        return currentLine;
+                    } else
+                        return sourceDoc.createTextNode(content);
+                        });
+
+            _('source-viewer', 'source').contentWindow.scrollTo(
+                0, (frame.contentDocument.getElementById('current').offsetTop -
+                    frame.contentWindow.innerHeight/2));
+
+        }
+
+        _('source-viewer', 'source').addEventListener('load', onLoad, true);
+        _('source-viewer', 'source').webNavigation.
+            loadURI(sourceUrl, Components.interfaces.nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE,
+                    null, null, null);
+
+    }
+}
