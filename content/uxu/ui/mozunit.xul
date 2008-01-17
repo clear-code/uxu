@@ -72,7 +72,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
             onclick="this.nextSibling.hidden = !this.nextSibling.hidden">
         <label role="title" class="testcase-title"/>
         <hbox>
-          <progressmeter role="bar" mode="determined" value="0%" flex="1"/> 
+          <progressmeter role="bar" mode="undetermined" value="0" flex="1"/> 
           <label value="&mozunit.successes;"/>
           <label role="success-counter" value="0"/>
           <label value="/"/>

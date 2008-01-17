@@ -189,8 +189,9 @@ function getTestCaseReport(title) {
 
 function testReportHandler(report) {
     wTestCaseReport = getTestCaseReport(report.testOwner.title);
+    _(wTestCaseReport, 'bar').setAttribute('mode', 'determined');
     _(wTestCaseReport, 'bar').setAttribute(
-        'value', report.testIndex / report.testCount * 100 + '%');
+        'value', parseInt(report.testIndex / report.testCount * 100));
     _(wTestCaseReport, 'total-counter').value = report.testCount;
 
     if(report.result == 'success') {
