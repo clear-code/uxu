@@ -235,6 +235,29 @@ TestReportHandler.prototype = {
 	    }
 
 	    _(wTestCaseReport, 'test-reports').appendChild(wTestReport);
+	},
+	mFinishHandlers : [
+		(function() {
+			this.testCase.environment.utils.cleanUpTempFiles();
+		})
+	],
+	set onFinish(aValue) {
+		this.mFinishHandlers.push(aValue);
+		return aValue;
+	},
+	get onFinish() {
+		var handlers = this.mFinishHandlers;
+		var self = this;
+		return (function() {
+				handlers.forEach(function(aHandler) {
+					try {
+						aHandler.call(self);
+					}
+					catch(e) {
+						dump(e+'\n');
+					}
+				});
+			});
 	}
 };
  
