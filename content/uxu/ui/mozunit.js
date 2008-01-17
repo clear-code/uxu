@@ -475,6 +475,8 @@ function openInEditor(filePath, lineNumber, columnNumber, commandLine) {
 	commandLine = commandLine ||
 		test_utils.getPref('extensions.uxu.mozunit.editor') ||
 		test_utils.getPref('extensions.mozlab.mozunit.editor') ||
+		(test_utils.getPref('view_source.editor.path') ?
+			'"'+test_utils.getPref('view_source.editor.path')+'" "%f"' : '') ||
 		'/usr/bin/x-terminal-emulator -e /usr/bin/emacsclient -t +%l:%c %f';
 
 	var executable = Components
