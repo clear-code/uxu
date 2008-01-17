@@ -6,8 +6,10 @@ var utils  = module.require('package', 'utils');
 var bundle  = module.require('package', 'bundle');
 
 var helper_module = new ModuleManager(['chrome://uxu/content/test/helper']);
-var test_utils    = helper_module.require('package', 'test_utils');
+var TestUtils     = helper_module.require('class', 'test_utils');
 var action        = helper_module.require('package', 'action');
+
+var test_utils = new TestUtils();
 
 /* UTILITIES */
 
@@ -368,16 +370,16 @@ function loadFile(aFile) {
 		suite.TestCase      = mozlab.mozunit.TestCase;
 		suite.Specification = mozlab.mozunit.TestCase;
 		suite.assert        = mozlab.mozunit.assertions;
-		suite.utils         = test_utils;
-		suite.action        = action;
 		suite.fileURL       = url;
 		suite.baseURL       = suite.fileURL.replace(/[^/]*$/, '');
+		suite.utils         = new TestUtils(suite.fileURL);
+		suite.action        = action;
         suite.include = function(aSource) {
-          aSource = test_utils.convertFromDefaultEncoding(aSource);
-          test_utils.include(aSource, suite);
+          aSource = suite.utils.convertFromDefaultEncoding(aSource);
+          suite.utils.include(aSource, suite);
         };
-        var script = test_utils.readFrom(url);
-        script = test_utils.convertFromDefaultEncoding(script);
+        var script = suite.utils.readFrom(url);
+        script = suite.utils.convertFromDefaultEncoding(script);
         suite.eval(script);
 	} catch(e) {
 		if (/\.(js|jsm)$/i.test(aFile.leafName))

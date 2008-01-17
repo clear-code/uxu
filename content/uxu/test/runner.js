@@ -7,8 +7,10 @@ var TestCase   = lib_module.require('class', 'test_case');
 var utils      = lib_module.require('package', 'utils');
 
 var helper_module = new ModuleManager(['chrome://uxu/content/test/helper']);
-var test_utils    = helper_module.require('package', 'test_utils');
+var TestUtils     = helper_module.require('class', 'test_utils');
 var action        = helper_module.require('package', 'action');
+
+var test_utils = new TestUtils();
 
 function constructor(files)
 {
@@ -117,16 +119,16 @@ function loadFile(aFile, aReporter) {
         suite.TestCase      = TestCase;
         suite.Specification = TestCase;
         suite.assert        = assertions;
-        suite.utils         = test_utils;
-        suite.action        = action;
         suite.fileURL       = utils.getURLSpecFromFilePath(aFile.path);
         suite.baseURL       = suite.fileURL.replace(/[^/]*$/, '');
+		suite.utils         = new TestUtils(suite.fileURL);
+		suite.action        = action;
         suite.include = function(aSource) {
-          aSource = test_utils.convertFromDefaultEncoding(aSource);
-          test_utils.include(aSource, suite);
+          aSource = suite.utils.convertFromDefaultEncoding(aSource);
+          suite.utils.include(aSource, suite);
         };
-        var script = test_utils.readFrom(suite.fileURL);
-        script = test_utils.convertFromDefaultEncoding(script);
+        var script = suite.utils.readFrom(suite.fileURL);
+        script = suite.utils.convertFromDefaultEncoding(script);
         suite.eval(script);
 
         for (var thing in suite) {

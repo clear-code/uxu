@@ -1,5 +1,11 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
+function constructor(aTarget)
+{
+    this.target = parseInt(Math.random() * 10000) + (aTarget || '')
+}
+
+
 var WindowManager = Components.
 	classes['@mozilla.org/appshell/window-mediator;1'].
 	getService(Components.interfaces.nsIWindowMediator);
@@ -12,7 +18,7 @@ this.getTestWindow = function() {
 	{
 		target = targets.getNext().
 			QueryInterface(Components.interfaces.nsIDOMWindowInternal);
-		if (target.mozLabTestWindow)
+		if (target['mozLabTestWindow'+this.target])
 			return target;
 	}
 
@@ -35,7 +41,7 @@ this.openTestWindow = function(callback) {
 		win = window.openDialog('chrome://browser/content/browser.xul',
 								'_blank', 'chrome,all,dialog=no',
 								'about:blank');
-		win.mozLabTestWindow = true;
+		win['mozLabTestWindow'+this.target] = true;
 		if (callback) {
 			win.addEventListener('load', function() {
 				win.removeEventListener('load', arguments.callee, false);
