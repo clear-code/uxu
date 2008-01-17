@@ -5,7 +5,7 @@ var tc = new TestCase('This is a unit test.');
 // utils.import("myclass.js");
 
 tc.tests = {
-	setUp : function(continuation) {
+	setUp : function() {
 	},
 
 	tearDown : function() {

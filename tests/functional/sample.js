@@ -3,19 +3,14 @@
 var tc = new TestCase('This is a functional test.', {runStrategy: 'async'});
 
 tc.tests = {
-	setUp : function(continuation) {
-		if (utils.getTestWindow()) {
-			continuation("ok");
-		} else {
-			var open_callback = function(win) {
-				window.setTimeout(function() {continuation('ok')}, 0);
-			};
-			utils.openTestWindow(open_callback);
-		}
+	setUp : function() {
+        yield utils.setUpTestWindow();
+        var browser = utils.getBrowser();
+        browser.removeAllTabsBut(browser.addTab('about:blank'));
 	},
 
 	tearDown : function() {
-		utils.closeTestWindow();
+		utils.tearDownTestWindow();
 	},
 
 	'yield' : function() {
@@ -34,11 +29,12 @@ tc.tests = {
 				value : false
 			};
 		var win = utils.getTestWindow();
-		win.gBrowser.addEventListener('load', function() {
+        var browser = utils.getBrowser();
+		browser.addEventListener('load', function() {
 			dump('LOADED');
 			loaded.value = true;
 		}, true);
-		win.gBrowser.loadURI('http://www.google.com/');
+		browser.loadURI('http://www.google.com/');
 
 		while (!loaded.value) {
 			dump('NOT LOADED\n');
