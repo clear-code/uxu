@@ -188,7 +188,11 @@ this.cleanUpTempFiles = function() {
 this.include = function(aSource, aEnvironment) {
 	var script = this.readFrom(aSource);
 	script = this.convertFromDefaultEncoding(script);
-	(aEnvironment || this.environment).eval(script);
+	var environment = aEnvironment || this.environment;
+	if (environment.eval)
+		environment.eval(script);
+	else // in Firefox 3, 'Object.eval' doesn't work.
+		eval('(function() { '+script+' })', environment).call(environment);
 };
 
 

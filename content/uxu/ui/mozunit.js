@@ -343,7 +343,7 @@ function run() {
 		var count = 0;
 		var test;
 		window.setTimeout(function() {
-			if (!test || test.done) {
+			if ((!test || test.done) && tests.length) {
 				test = tests.shift();
 				runTest(test, count++);
 			}
@@ -393,9 +393,7 @@ function loadFile(aFile) {
 		suite.baseURL       = suite.fileURL.replace(/[^/]*$/, '');
 		suite.utils         = new TestUtils(suite);
 		suite.action        = action;
-        var script = utils.readFrom(url);
-        script = utils.convertFromDefaultEncoding(script);
-        suite.eval(script);
+		suite.utils.include(suite.fileURL);
 	} catch(e) {
 		if (/\.(js|jsm)$/i.test(aFile.leafName))
 			onError(e);
