@@ -11,7 +11,7 @@ xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 		<em:description>Provides features for unit tests and functional tests.</em:description>
 		<em:creator>ClearCode inc.</em:creator>
 		<!--em:optionsURL>chrome://uxu/content/config/config.xul</em:optionsURL-->
-		<em:homepageURL>http://www.clear-code.com/</em:homepageURL>
+		<em:homepageURL>http://www.clear-code.com/oss/uxu/</em:homepageURL>
 		<!--em:updateURL></em:updateURL-->
 
 		<em:targetApplication>
