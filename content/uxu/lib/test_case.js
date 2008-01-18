@@ -249,15 +249,21 @@ function _formatStackTrace1(exception) {
 
 function processGenerator(aGenerator, aCallbacks) {
 	if (!aCallbacks) aCallbacks = {};
-	(function(aFlagObject) {
+	(function(aObject) {
 		try {
-			if (aFlagObject && !aFlagObject.value)
-				return window.setTimeout(arguments.callee, 10, aFlagObject);
+			if (
+				!aObject ? false :
+				(typeof aObject == 'function') ? !aObject() :
+				(typeof aObject == 'object') ? !aObject.value :
+				false
+				)
+				return window.setTimeout(arguments.callee, 10, aObject);
 
 			var returnedValue = aGenerator.next();
-			if (returnedValue &&
-				typeof returnedValue == 'object' &&
-				'value' in returnedValue) {
+			if (!returnedValue ? false :
+				typeof returnedValue == 'object' ? 'value' in returnedValue :
+				typeof returnedValue == 'function'
+				) {
 				window.setTimeout(arguments.callee, 10, returnedValue);
 			}
 			else {
