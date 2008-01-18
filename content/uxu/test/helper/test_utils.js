@@ -185,10 +185,10 @@ this.cleanUpTempFiles = function() {
 
 
 
-this.include = function(aSource) {
+this.include = function(aSource, aEnvironment) {
 	var script = this.readFrom(aSource);
 	script = this.convertFromDefaultEncoding(script);
-	this.environment.eval(script);
+	(aEnvironment || this.environment).eval(script);
 };
 
 

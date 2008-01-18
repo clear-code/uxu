@@ -133,9 +133,6 @@ function loadFile(aFile, aReporter) {
         suite.baseURL       = suite.fileURL.replace(/[^/]*$/, '');
 		suite.utils         = new TestUtils(suite);
 		suite.action        = action;
-        suite.include = function(aSource) {
-			this.utils.include(aSource);
-        };
         var script = utils.readFrom(suite.fileURL);
         script = utils.convertFromDefaultEncoding(script);
         suite.eval(script);

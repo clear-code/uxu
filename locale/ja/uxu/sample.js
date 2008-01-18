@@ -1,8 +1,8 @@
 // 文字列等に非ASCII文字を使う場合は、ファイルのエンコーディングを
 // UTF-8にしてください。
 
-// include(baseURL+'another.in.same.folder.js');
-// include('chrome://myaddon/content/myaddon.file.js');
+// utils.include(baseURL+'another.in.same.folder.js');
+// utils.include('chrome://myaddon/content/myaddon.file.js');
 
 var unitTest = new TestCase('テストケースの説明をここに入力してください');
 

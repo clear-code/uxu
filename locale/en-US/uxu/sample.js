@@ -1,5 +1,5 @@
-// include(baseURL+'another.in.same.folder.js');
-// include('chrome://myaddon/content/myaddon.file.js');
+// utils.include(baseURL+'another.in.same.folder.js');
+// utils.include('chrome://myaddon/content/myaddon.file.js');
 
 var unitTest = new TestCase('testcase description here');
 
