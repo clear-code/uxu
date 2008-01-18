@@ -188,6 +188,11 @@ function makeTestCaseFileOptions(aIsFolder) {
 	 
 function TestReportHandler(aTestCase) { 
 	this.testCase = aTestCase;
+	this.mFinishHandlers = [
+		(function() {
+			this.testCase.environment.utils.cleanUpTempFiles();
+		})
+	];
 }
 TestReportHandler.prototype = {
 	getTestCaseReport : function(title)
@@ -236,11 +241,6 @@ TestReportHandler.prototype = {
 
 	    _(wTestCaseReport, 'test-reports').appendChild(wTestReport);
 	},
-	mFinishHandlers : [
-		(function() {
-			this.testCase.environment.utils.cleanUpTempFiles();
-		})
-	],
 	set onFinish(aValue) {
 		this.mFinishHandlers.push(aValue);
 		return aValue;
