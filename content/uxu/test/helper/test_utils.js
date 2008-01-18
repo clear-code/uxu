@@ -92,17 +92,19 @@ this.tearDownTestWindow = this.closeTestWindow;
 
 
 // テスト用のFirefoxウィンドウの現在のタブにURIを読み込む
-this.loadURI = function(aURI, aLoadedFlag) {
+this.loadURI = function(aURI) {
+	var loadedFlag = { value : false };
+
 	var win = this.getTestWindow();
-	if (!win) return false;
+	if (!win) return null;
 
 	win.gBrowser.addEventListener('load', function() {
-		aLoadedFlag.value = true;
+		loadedFlag.value = true;
 		win.gBrowser.removeEventListener('load', arguments.callee, true);
 	}, true);
 	win.gBrowser.loadURI(aURI);
 
-	return true;
+	return loadedFlag;
 };
 
 // テスト用のFirefoxウィンドウで新しいタブを開く
