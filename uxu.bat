@@ -1,6 +1,15 @@
 setlocal
 set appname=%~n0
 
+grep "<em:version>" install.rdf | sed -e "s#</\?em:version>##g" | sed -e "s#[ \t\r\n]##g" > version.txt
+for /F "usebackq" %%z in (`more version.txt`) do (
+	set version=%%z
+	goto :EXIT_FOR
+)
+:EXIT_FOR
+del version.txt
+
+
 rem 証明書データベースのパス
 set certpath=C:\cert
 rem 証明書の名前
@@ -11,9 +20,11 @@ set certpass=passowrd
 
 rmdir "jar_temp" /s /q
 rmdir "xpi_temp" /s /q
-del "%appname%.xpi"
-del "%appname%_en.xpi"
-del "%appname%.lzh"
+del "%appname%-*.xpi"
+del "%appname%-*_en.xpi"
+del "%appname%-*_noupdate.xpi"
+del "%appname%-*_noupdate_en.xpi"
+del "%appname%-*.lzh"
 
 
 :CREATEJARTEMPFILES
@@ -82,8 +93,13 @@ IF EXIST ..\install.js (
 rem cd ..
 rem signtool -d "%certpath%" -k "%certname%" -p "%certpass%" -X -Z "%appname%.xpi" xpi_temp
 rem cd xpi_temp
-zip -9 "..\%appname%.xpi" *.js *.light *.inf *.rdf *.cfg *.manifest
-zip -9 -r "..\%appname%.xpi" chrome defaults components license platform
+
+zip -9 "..\%appname%-%version%.xpi" *.js *.light *.inf *.rdf *.cfg *.manifest
+zip -9 -r "..\%appname%-%version%.xpi" chrome defaults components license platform
+
+sed -e "s#^.*<em:*\(updateURL\|updateKey\)>.*</em:*\(updateURL\|updateKey\)>##g" -e "s#^.*em:*\(updateURL\|updateKey\)=\(\".*\"\|'.*'\)##g" ..\install.rdf > install.rdf
+zip -9 "..\%appname%-%version%_noupdate.xpi" *.js *.light *.inf *.rdf *.cfg *.manifest
+zip -9 -r "..\%appname%-%version%_noupdate.xpi" chrome defaults components license platform
 
 
 
@@ -94,14 +110,20 @@ IF EXIST ..\readme.txt (
 
 :MAKEENOLD
 IF EXIST ..\install.js (
+	copy ..\install.rdf .\install.rdf
 	copy ..\en.inf .\locale.inf
 	copy "..\options.%appname%.en.inf" .\options.inf
-	chmod -cf 644 *.inf
+	chmod -cf 644 *.inf *.rdf
 	rem cd ..
 	rem signtool -d "%certpath%" -k "%certname%" -p "%certpass%" -X -Z "%appname%_en.xpi" xpi_temp
 	rem cd xpi_temp
+
 	zip -9 "..\%appname%_en.xpi" *.js *.light *.inf *.rdf *.cfg *.manifest
 	zip -9 -r "..\%appname%_en.xpi" chrome defaults components license platform
+
+	sed -e "s#^.*<em:*\(updateURL\|updateKey\)>.*</em:*\(updateURL\|updateKey\)>##g" -e "s#^.*em:*\(updateURL\|updateKey\)=\(\".*\"\|'.*'\)##g" ..\install.rdf > install.rdf
+	zip -9 "..\%appname%_noupdate_en.xpi" *.js *.light *.inf *.rdf *.cfg *.manifest
+	zip -9 -r "..\%appname%_noupdate_en.xpi" chrome defaults components license platform
 )
 
 
@@ -118,6 +140,9 @@ IF EXIST meta (
 	del "meta\%appname%.xpi"
 	copy "%appname%.xpi" meta\
 )
+
+:CREATEHASH
+sha1sum -b %appname%*.xpi > sha1hash.txt
 
 
 :ENDBATCH
