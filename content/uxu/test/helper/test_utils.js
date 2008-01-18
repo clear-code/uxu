@@ -108,19 +108,21 @@ this.loadURI = function(aURI) {
 };
 
 // テスト用のFirefoxウィンドウで新しいタブを開く
-this.addTab = function(aURI, aLoadedFlag) {
+this.addTab = function(aURI) {
+	var loadedFlag = { value : false, tab : null };
+
 	var win = this.getTestWindow();
-	if (!win) return false;
+	if (!win) return null;
 
 	var tab = win.gBrowser.addTab();
 	tab.linkedBrowser.addEventListener('load', function() {
-		aLoadedFlag.value = true;
-		aLoadedFlag.tab = tab;
+		loadedFlag.value = true;
+		loadedFlag.tab = tab;
 		tab.linkedBrowser.removeEventListener('load', arguments.callee, true);
 	}, true);
 	tab.linkedBrowser.loadURI(aURI);
 
-	return true;
+	return loadedFlag;
 };
 
 this.getBrowser = function() {
