@@ -3,6 +3,7 @@ pref("extensions.uxu.auto.exit",  true);
 pref("extensions.uxu.port",       4444);
 pref("extensions.uxu.mozunit.editor", "/usr/bin/gedit +%l %f");
 pref("extensions.uxu.run.async", false);
+pref("extensions.uxu.run.timeout", 10000);
 pref("extensions.uxu.run.ignoreHiddenFiles", true);
 pref("extensions.uxu.defaultEncoding", "UTF-8");
 

@@ -26,6 +26,7 @@
 var mozlab_custom_module = new ModuleManager(['chrome://uxu/content/lib']);
 const fsm = mozlab_custom_module.require('package', 'fsm');
 var bundle = mozlab_custom_module.require('package', 'bundle');
+var utils = mozlab_custom_module.require('package', 'utils');
 
 
 /**
@@ -249,8 +250,13 @@ function _formatStackTrace1(exception) {
 
 function processGenerator(aGenerator, aCallbacks) {
 	if (!aCallbacks) aCallbacks = {};
+	var lastRun = (new Date()).getTime();
+	var timeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout'));
 	(function(aObject) {
 		try {
+			if ((new Date()).getTime() - lastRun >= timeout)
+				throw new Error(bundle.getFormattedString('error_generator_timeout', [parseInt(timeout / 1000)]));
+
 			if (
 				!aObject ? false :
 				(typeof aObject == 'function') ? !aObject() :
@@ -260,6 +266,7 @@ function processGenerator(aGenerator, aCallbacks) {
 				return window.setTimeout(arguments.callee, 10, aObject);
 
 			var returnedValue = aGenerator.next();
+			lastRun = (new Date()).getTime();
 			if (!returnedValue ? false :
 				typeof returnedValue == 'object' ? 'value' in returnedValue :
 				typeof returnedValue == 'function'
@@ -358,7 +365,7 @@ function _syncRun1(tests, setUp, tearDown, reportHandler) {
         else if (reportHandler && 'handleReport' in reportHandler)
             reportHandler.handleReport(report);
         else
-            throw 'invalid report handler';
+            throw new Error('invalid report handler');
     }
     if (reportHandler && 'onFinish' in reportHandler)
         reportHandler.onFinish();
@@ -441,7 +448,7 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler) {
             else if (reportHandler && 'handleReport' in reportHandler)
                 reportHandler.handleReport(report.report);
             else
-                throw 'invalid report handler';
+                throw new Error('invalid report handler');
             continuation('ok');
         },
         doTearDown: function(continuation) { // exceptions in setup/teardown are not reported correctly
