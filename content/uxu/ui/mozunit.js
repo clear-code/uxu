@@ -271,7 +271,12 @@ function onError(aError)
  
 function displayStackTrace(trace, listbox) { 
     for each(var line in trace.split('\n'))
-        listbox.appendChild(document.createElement('listitem')).setAttribute('crop', 'center');
+    {
+		var item = document.createElement('listitem');
+		item.setAttribute('label', line);
+		item.setAttribute('crop', 'center');
+        listbox.appendChild(item);
+    }
 }
  
 function toggleContent() { 
@@ -552,9 +557,16 @@ function openInEditor(filePath, lineNumber, columnNumber, commandLine) {
 }
  
 function showSource(traceLine) { 
+try{
     var match = traceLine.match(/@(.*):(\d+)/);
     var sourceUrl = match[1];
     var lineNumber = match[2];
+}
+catch(e) {
+	dump(e+'\n');
+	dump(traceLine+'\n');
+
+}
 
     if(sourceUrl) {
 
