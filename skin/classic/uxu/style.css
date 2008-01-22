@@ -13,14 +13,16 @@
 {
   }
 
-.testcase-fine
+.testcase-fine > .progress-bar
 {
   background-color: green;
+  -moz-appearance: none;
   }
 
-.testcase-problems
+.testcase-problems > .progress-bar
 {
   background-color: red;
+  -moz-appearance: none;
   }
 
 .testcase-summary

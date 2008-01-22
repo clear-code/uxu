@@ -7,7 +7,7 @@ xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 
 		<em:id>uxu@clear-code.com</em:id>
 		<em:name>UXU - UnitTest.XUL</em:name>
-		<em:version>0.2.3</em:version>
+		<em:version>0.2.4</em:version>
 		<em:description>Provides features for unit tests and functional tests.</em:description>
 		<em:creator>ClearCode inc.</em:creator>
 		<!--em:optionsURL>chrome://uxu/content/config/config.xul</em:optionsURL-->
@@ -18,7 +18,7 @@ xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 			<Description>
 				<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
 				<em:minVersion>2.0</em:minVersion>
-				<em:maxVersion>2.0.0.*</em:maxVersion>
+				<em:maxVersion>3.0b2</em:maxVersion>
 			</Description>
 		</em:targetApplication>
 

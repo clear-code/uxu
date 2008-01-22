@@ -61,10 +61,6 @@ function clone(blueprintName) {
         .cloneNode(true);
 }
  
-function barOf(progressmeter) { 
-    return document.getAnonymousNodes(progressmeter)[0];
-}
- 
 function removeChildrenOf(element) { 
     while(element.lastChild)
         element.removeChild(element.lastChild);
@@ -204,7 +200,7 @@ TestReportHandler.prototype = {
 	            wTestCaseReport.setAttribute('id', id);
 	            wTestCaseReport.setAttribute('title', title);
 	            _(wTestCaseReport, 'title').value = title;
-	            barOf(_(wTestCaseReport, 'bar')).setAttribute('class', 'testcase-fine');
+	            _(wTestCaseReport, 'bar').setAttribute('class', 'testcase-fine');
 	            _('testcase-reports').appendChild(wTestCaseReport);
 	            return wTestCaseReport;
 	        })();
@@ -222,7 +218,7 @@ TestReportHandler.prototype = {
 	        return;
 	    }
 
-	    barOf(_(wTestCaseReport, 'bar')).setAttribute('class', 'testcase-problems');
+	    _(wTestCaseReport, 'bar').setAttribute('class', 'testcase-problems');
 
 		var id = 'test-report-'+encodeURIComponent(title)+'-'+_(wTestCaseReport, 'test-reports').childNodes.length;
 	    var wTestReport = clone('test-report');
@@ -275,7 +271,7 @@ function onError(aError)
  
 function displayStackTrace(trace, listbox) { 
     for each(var line in trace.split('\n'))
-        listbox.appendItem(line).setAttribute('crop', 'center');
+        listbox.appendChild(document.createElement('listitem')).setAttribute('crop', 'center');
 }
  
 function toggleContent() { 

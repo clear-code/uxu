@@ -189,14 +189,15 @@ this.cleanUpTempFiles = function() {
 
 
 
-this.include = function(aSource, aEnvironment) {
-	var script = this.readFrom(aSource);
-	script = this.convertFromDefaultEncoding(script);
-	var environment = aEnvironment || this.environment;
-	if (environment.eval)
-		environment.eval(script);
-	else // in Firefox 3, 'Object.eval' doesn't work.
-		eval('(function() { '+script+' })', environment).call(environment);
+var loader = Components.classes['@mozilla.org/moz/jssubscript-loader;1']
+			.getService(Components.interfaces.mozIJSSubScriptLoader);
+
+this.include = function(aSource, aEnvironment, aEncoding) {
+	var script = this.readFrom(aSource, aEncoding || getPref('extensions.uxu.defaultEncoding'));
+	loader.loadSubScript(
+		'data:application/x-javascript,'+encodeURIComponent(script),
+		aEnvironment || this.environment
+	);
 };
 
 
@@ -217,7 +218,8 @@ getPref
 setPref
 UTF8ToUnicode
 UnicodeToUTF8
-convertFromDefaultEncoding
+XToUnicode
+UnicodeToX
 ]]></>.toString()
 .replace(/^\s+|\s+$/g, '')
 .split('\n')

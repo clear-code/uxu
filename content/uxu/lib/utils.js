@@ -62,7 +62,7 @@ function getURLSpecFromFilePath(aPath) {
 
 
 // ファイルまたはURIで示された先のリソースを読み込み、文字列として返す
-function readFrom(aTarget) {
+function readFrom(aTarget, aEncoding) {
 	if (typeof aTarget == 'string') {
 		if (aTarget.match(/^\w+:\/\//))
 			aTarget = makeURIFromSpec(aTarget);
@@ -98,7 +98,7 @@ function readFrom(aTarget) {
 		scriptableStream.close();
 		stream.close();
 
-		return fileContents;
+		return aEncoding ? XToUnicode(fileContents, aEncoding) : fileContents ;
 	}
 	catch(e) {
 	}
@@ -107,7 +107,7 @@ function readFrom(aTarget) {
 }
 
 // ファイルパスまたはURLで示された先のテキストファイルに文字列を書き出す
-function writeTo(aContent, aTarget) {
+function writeTo(aContent, aTarget, aEncoding) {
 	if (typeof aTarget == 'string') {
 		if (aTarget.match(/^\w+:\/\//))
 			aTarget = makeURIFromSpec(aTarget);
@@ -144,6 +144,8 @@ function writeTo(aContent, aTarget) {
 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1']
 			.createInstance(Components.interfaces.nsIFileOutputStream);
 	stream.init(aTarget, 2, 0x200, false); // open as "write only"
+
+	if (aEncoding) aContent = UnicodeToX(aContent, aEncoding);
 
 	stream.write(aContent, aContent.length);
 
@@ -252,22 +254,25 @@ function UnicodeToUTF8(aInput) {
 var UCONV = Components.classes['@mozilla.org/intl/scriptableunicodeconverter']
 			.getService(Components.interfaces.nsIScriptableUnicodeConverter);
 
-function convertFromDefaultEncoding(aInput) {
-	var encoding = getPref('extensions.uxu.defaultEncoding');
-	switch (encoding)
-	{
-
-		case 'UTF-8':
-			return UTF8ToUnicode(aInput);
-
-		default:
-			try {
-				UCONV.charset = encoding;
-				return UCONV.ConvertToUnicode(aInput);
-			}
-			catch(e) {
-			}
-		case '':
-			return aInput;
+function XToUnicode(aInput, aEncoding) {
+	if (aEncoding == 'UTF-8') return UTF8ToUnicode(aInput);
+	try {
+		UCONV.charset = aEncoding;
+		return UCONV.ConvertToUnicode(aInput);
 	}
+	catch(e) {
+	}
+	return aInput;
+}
+
+function UnicodeToX(aInput, aEncoding) {
+	if (aEncoding == 'UTF-8') return UnicodeToUTF8(aInput);
+
+	try {
+		UCONV.charset = aEncoding;
+		return UCONV.ConvertFromUnicode(aInput);
+	}
+	catch(e) {
+	}
+	return aInput;
 }
