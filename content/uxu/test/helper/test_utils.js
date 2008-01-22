@@ -17,16 +17,33 @@ var WindowManager = Components.
 	classes['@mozilla.org/appshell/window-mediator;1'].
 	getService(Components.interfaces.nsIWindowMediator);
 
+this.getTestWindowTarget(aOptions) {
+	if (!aOptions) aOptions = {};
+	if (!aOptions.uri) {
+		aOptions.uri   = 'chrome://browser/content/browser.xul';
+		aOptions.type  = 'navigator:browser';
+		aOptions.flags = 'chrome,all,dialog=no';
+		aOptions.name  = '_blank';
+	}
+	else {
+		aOptions.type  = aOptions.type || null;
+		aOptions.flags = aOptions.flags || 'chrome,all';
+		aOptions.name  = aOptions.name || '_blank';
+	}
+	return aOptions;
+};
+
 // テスト用のFirefoxウィンドウを取得する
-this.getTestWindow = function() {
-	var targets = WindowManager.getEnumerator('navigator:browser'),
+this.getTestWindow = function(aOptions) {
+	var info = this.getTestWindowTarget(aOptions);
+	var targets = WindowManager.getEnumerator(info.type),
 		target;
 	while (targets.hasMoreElements())
 	{
 		target = targets.getNext().
 			QueryInterface(Components.interfaces.nsIDOMWindowInternal);
-		if (target[key] == this.uniqueID ||
-			target.document.documentElement.getAttribute(key) == this.uniqueID)
+		if (target[key] == target.location.href+'?'+this.uniqueID ||
+			target.document.documentElement.getAttribute(key) == target.location.href+'?'+this.uniqueID)
 			return target;
 	}
 
@@ -34,24 +51,23 @@ this.getTestWindow = function() {
 };
 
 // テスト用のFirefoxウィンドウを開き直す
-this.reopenTestWindow = function(callback) {
-	var win = this.getTestWindow();
+this.reopenTestWindow = function(aOptions, callback) {
+	var win = this.getTestWindow(aOptions);
 	if (win) win.close();
-	return this.openTestWindow(callback);
+	return this.openTestWindow(aOptions, callback);
 };
 
 // テスト用のFirefoxウィンドウを開く
-this.openTestWindow = function(callback) {
-	var win = this.getTestWindow();
+this.openTestWindow = function(aOptions, callback) {
+	var win = this.getTestWindow(aOptions);
 	if (win) {
 		if (callback) callback(win);
 	}
 	else {
-		win = window.openDialog('chrome://browser/content/browser.xul',
-								'_blank', 'chrome,all,dialog=no',
-								'about:blank');
+		var info = this.getTestWindowTarget(aOptions);
+		win = window.openDialog(info.uri, info.name, info.flags);
 		win[key] = this.uniqueID;
-		var id = this.uniqueID;
+		var id = info.uri+'?'+this.uniqueID;
 		if (callback) {
 			win.addEventListener('load', function() {
 				win.removeEventListener('load', arguments.callee, false);
@@ -64,15 +80,15 @@ this.openTestWindow = function(callback) {
 };
 
 // テスト用のFirefoxウィンドウを閉じる
-this.closeTestWindow = function() {
-	var win = this.getTestWindow();
+this.closeTestWindow = function(aOptions) {
+	var win = this.getTestWindow(aOptions);
 	if (win) win.close();
 };
 
 
-this.setUpTestWindow = function(aContinuation) {
+this.setUpTestWindow = function(aContinuation, aOptions) {
 	var loadedFlag = { value : false };
-	if (this.getTestWindow()) {
+	if (this.getTestWindow(aOptions)) {
 		if (aContinuation) aContinuation("ok");
 		loadedFlag.value = true;
 	}
@@ -82,7 +98,7 @@ this.setUpTestWindow = function(aContinuation) {
 				if (aContinuation) aContinuation('ok');
 				loadedFlag.value = true;
 			}, 0);
-		});
+		}, aOptions);
 	}
 	return loadedFlag;
 };
