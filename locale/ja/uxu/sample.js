@@ -65,6 +65,7 @@ functionalTest.tests = {
 
         var loadedFlag = { value : false };
         var browser = utils.getBrowser();
+        browser.stop();
         browser.addEventListener('load', function() {
             loadedFlag.value = true;
         }, true);
