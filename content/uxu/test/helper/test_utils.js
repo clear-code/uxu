@@ -17,7 +17,7 @@ var WindowManager = Components.
 	classes['@mozilla.org/appshell/window-mediator;1'].
 	getService(Components.interfaces.nsIWindowMediator);
 
-this.getTestWindowTarget(aOptions) {
+this.normalizeTestWindowOption = function(aOptions) {
 	if (!aOptions) aOptions = {};
 	if (!aOptions.uri) {
 		aOptions.uri   = 'chrome://browser/content/browser.xul';
@@ -35,7 +35,7 @@ this.getTestWindowTarget(aOptions) {
 
 // テスト用のFirefoxウィンドウを取得する
 this.getTestWindow = function(aOptions) {
-	var info = this.getTestWindowTarget(aOptions);
+	var info = this.normalizeTestWindowOption(aOptions);
 	var targets = WindowManager.getEnumerator(info.type),
 		target;
 	while (targets.hasMoreElements())
@@ -64,7 +64,7 @@ this.openTestWindow = function(aOptions, callback) {
 		if (callback) callback(win);
 	}
 	else {
-		var info = this.getTestWindowTarget(aOptions);
+		var info = this.normalizeTestWindowOption(aOptions);
 		win = window.openDialog(info.uri, info.name, info.flags);
 		win[key] = this.uniqueID;
 		var id = info.uri+'?'+this.uniqueID;
