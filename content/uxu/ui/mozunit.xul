@@ -139,9 +139,9 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
         </toolbaritem>
         <toolbarbutton command="edit"/>
       </toolbar>
-      <toolbar>
-        <toolbarbutton command="run" flex="1" style="font-weight: bold;"/>
-      </toolbar>
+      <hbox>
+        <button command="run" flex="1" style="font-weight: bold;"/>
+      </hbox>
 
       <hbox flex="1">
         <vbox flex="1" style="padding-top: 1em;">

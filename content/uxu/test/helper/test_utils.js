@@ -209,7 +209,8 @@ var loader = Components.classes['@mozilla.org/moz/jssubscript-loader;1']
 			.getService(Components.interfaces.mozIJSSubScriptLoader);
 
 this.include = function(aSource, aEnvironment, aEncoding) {
-	var script = this.readFrom(aSource, aEncoding || getPref('extensions.uxu.defaultEncoding'));
+	var script = this.readFrom(aSource, aEncoding || this.getPref('extensions.uxu.defaultEncoding'));
+	script = 'eval('+script.toSource().replace(/^\(new String\(|\)\)$/g, '')+')';
 	loader.loadSubScript(
 		'data:application/x-javascript,'+encodeURIComponent(script),
 		aEnvironment || this.environment
