@@ -108,10 +108,10 @@ this.tearDownTestWindow = this.closeTestWindow;
 
 
 // テスト用のFirefoxウィンドウの現在のタブにURIを読み込む
-this.loadURI = function(aURI) {
+this.loadURI = function(aURI, aOptions) {
 	var loadedFlag = { value : false };
 
-	var win = this.getTestWindow();
+	var win = this.getTestWindow(aOptions);
 	if (!win) return null;
 
 	win.gBrowser.addEventListener('load', function() {
@@ -124,10 +124,10 @@ this.loadURI = function(aURI) {
 };
 
 // テスト用のFirefoxウィンドウで新しいタブを開く
-this.addTab = function(aURI) {
+this.addTab = function(aURI, aOptions) {
 	var loadedFlag = { value : false, tab : null };
 
-	var win = this.getTestWindow();
+	var win = this.getTestWindow(aOptions);
 	if (!win) return null;
 
 	var tab = win.gBrowser.addTab();
@@ -141,14 +141,14 @@ this.addTab = function(aURI) {
 	return loadedFlag;
 };
 
-this.getBrowser = function() {
-	var win = this.getTestWindow();
+this.getBrowser = function(aOptions) {
+	var win = this.getTestWindow(aOptions);
 	if (!win) return null;
 	return win.gBrowser;
 };
 
-this.getTabs = function() {
-	var win = this.getTestWindow();
+this.getTabs = function(aOptions) {
+	var win = this.getTestWindow(aOptions);
 	if (!win) return null;
 	return win.gBrowser.mTabContainer.childNodes;
 };
