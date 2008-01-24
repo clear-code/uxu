@@ -7,7 +7,7 @@
 
 <script type="application/x-javascript"><![CDATA[
 
-function startUXU() {
+function startUxU() {
 	const WindowManager = Components.classes['@mozilla.org/appshell/window-mediator;1'].getService(Components.interfaces.nsIWindowMediator);
 
 	var target = WindowManager.getMostRecentWindow('uxu:server');
@@ -19,7 +19,7 @@ function startUXU() {
 	window.openDialog('chrome://uxu/content/ui/uxu.xul', '_blank', 'chrome,all');
 }
 
-function openUXUMozUnit() {
+function openUxUMozUnit() {
 	const WindowManager = Components.classes['@mozilla.org/appshell/window-mediator;1'].getService(Components.interfaces.nsIWindowMediator);
 
 	var target = WindowManager.getMostRecentWindow('uxu:mozunit');
@@ -32,7 +32,7 @@ function openUXUMozUnit() {
 }
 
 if (nsPreferences.getBoolPref('extensions.uxu.auto.start'))
-	startUXU();
+	startUxU();
 
 
 window.addEventListener('unload', function() {
@@ -61,10 +61,10 @@ window.addEventListener('unload', function() {
 		<menupopup>
 			<menuitem id="tools-uxu-menuitem"
 				label="&uxu.tools.start.label;"
-				oncommand="startUXU()"/>
+				oncommand="startUxU()"/>
 			<menuitem id="tools-uxu-menuitem-mozunit"
 				label="&uxu.tools.mozunit.label;"
-				oncommand="openUXUMozUnit()"/>
+				oncommand="openUxUMozUnit()"/>
 		</menupopup>
 	</menu>
 </menupopup>

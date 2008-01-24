@@ -1,10 +1,10 @@
-<!ENTITY uxu.server.title        "UXU - UnitTest.XUL">
-<!ENTITY uxu.server.running      "UXUサーバ動作中">
+<!ENTITY uxu.server.title        "UxU - UnitTest.XUL">
+<!ENTITY uxu.server.running      "UxUサーバ動作中">
 <!ENTITY uxu.server.close.label  "停止">
 <!ENTITY uxu.server.autostart.label  "自動起動">
 
 <!ENTITY uxu.tools.menu.label   "UnitTest.XUL">
-<!ENTITY uxu.tools.start.label   "UXUサーバを起動">
+<!ENTITY uxu.tools.start.label   "UxUサーバを起動">
 <!ENTITY uxu.tools.mozunit.label   "MozUnit テストランナー">
 
 

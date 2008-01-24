@@ -23,7 +23,7 @@ function onStart()
 {
 	this.finished = false;
 
-	ObserverService.notifyObservers(this, 'UXU:TestStart', null);
+	ObserverService.notifyObservers(this, 'UxU:TestStart', null);
 }
 
 function onFinished()
@@ -53,7 +53,7 @@ function onFinished()
 		results = results.join('\n');
 
 	var data = { result : results };
-	ObserverService.notifyObservers(this, 'UXU:TestFinish', data.toSource());
+	ObserverService.notifyObservers(this, 'UxU:TestFinish', data.toSource());
 }
 
 function report(rep)
@@ -74,7 +74,7 @@ function report(rep)
 			result      : (rep.result || 'unknown'),
 			exception   : rep.exception
 		};
-	ObserverService.notifyObservers(this, 'UXU:TestProgress', data.toSource());
+	ObserverService.notifyObservers(this, 'UxU:TestProgress', data.toSource());
 
     if (rep.exception)
         this.bad_results.push(rep);

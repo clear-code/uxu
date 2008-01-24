@@ -18,17 +18,17 @@ function Startup() {
 
 	gAutoStart.checked = nsPreferences.getBoolPref('extensions.uxu.auto.start');
 
-	ObserverService.addObserver(testEventObserver, 'UXU:TestStart', false);
-	ObserverService.addObserver(testEventObserver, 'UXU:TestFinish', false);
-	ObserverService.addObserver(testEventObserver, 'UXU:TestProgress', false);
+	ObserverService.addObserver(testEventObserver, 'UxU:TestStart', false);
+	ObserverService.addObserver(testEventObserver, 'UxU:TestFinish', false);
+	ObserverService.addObserver(testEventObserver, 'UxU:TestProgress', false);
 }
 
 function Shutdown() {
 	gServer.stop();
 
-	ObserverService.removeObserver(testEventObserver, 'UXU:TestStart');
-	ObserverService.removeObserver(testEventObserver, 'UXU:TestFinish');
-	ObserverService.removeObserver(testEventObserver, 'UXU:TestProgress');
+	ObserverService.removeObserver(testEventObserver, 'UxU:TestStart');
+	ObserverService.removeObserver(testEventObserver, 'UxU:TestFinish');
+	ObserverService.removeObserver(testEventObserver, 'UxU:TestProgress');
 }
 
 
@@ -66,21 +66,21 @@ var testEventObserver = {
 
 		switch(aTopic)
 		{
-			case 'UXU:TestStart':
+			case 'UxU:TestStart':
 				var node = document.createElement('label');
 				node.setAttribute('style', 'border: 1px solid; padding: 0.5em;');
 				node.setAttribute('value', 'New testcase starts');
 				gLog.appendChild(node);
 				break;
 
-			case 'UXU:TestFinish':
+			case 'UxU:TestFinish':
 				var node = document.createElement('label');
 				node.setAttribute('style', 'border: 1px solid; padding: 0.5em; white-space: pre;');
 				node.appendChild(document.createTextNode(aData.result));
 				gLog.appendChild(node);
 				break;
 
-			case 'UXU:TestProgress':
+			case 'UxU:TestProgress':
 				var color;
 				switch (aData.result)
 				{

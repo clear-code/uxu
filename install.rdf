@@ -6,7 +6,7 @@ xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 	<Description about="urn:mozilla:install-manifest">
 
 		<em:id>uxu@clear-code.com</em:id>
-		<em:name>UXU - UnitTest.XUL</em:name>
+		<em:name>UxU - UnitTest.XUL</em:name>
 		<em:version>0.2.4</em:version>
 		<em:description>Provides features for unit tests and functional tests.</em:description>
 		<em:creator>ClearCode inc.</em:creator>

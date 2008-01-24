@@ -19,7 +19,7 @@ function constructor(port)
 
 				server.handler = new Handler(input, output);
 			} catch (e) {
-				dump('UXU: Error: ' + e + '\n');
+				dump('UxU: Error: ' + e + '\n');
 			}
 		},
 

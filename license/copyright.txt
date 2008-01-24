@@ -1,4 +1,4 @@
-"UXU - UnitText.XUL" is released under the GPLv2 license.
+"UxU - UnitText.XUL" is released under the GPLv2 license.
 Contributor(s):
 	SHIMODA Hiroshi (piro@p.club.ne.jp) at ClearCode Inc.
 	SUTOU Kouhei (kou at cozmixng.org) at ClearCode Inc.
