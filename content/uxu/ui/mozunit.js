@@ -1,6 +1,6 @@
 var module = new ModuleManager(['chrome://uxu/content/lib']); 
 var mozlab = {
-    mozunit: module.require('package', 'package')
+	mozunit: module.require('package', 'package')
 };
 var utils  = module.require('package', 'utils');
 var bundle  = module.require('package', 'bundle');
@@ -12,70 +12,70 @@ var action        = helper_module.require('package', 'action');
 /* UTILITIES */ 
 	
 function x() { 
-    var contextNode, path;
-    if(arguments[0] instanceof XULElement) {
-        contextNode = arguments[0];
-        path = arguments[1];
-    }
-    else {
-        path = arguments[0];
-        contextNode = document;
-    }
+	var contextNode, path;
+	if(arguments[0] instanceof XULElement) {
+		contextNode = arguments[0];
+		path = arguments[1];
+	}
+	else {
+		path = arguments[0];
+		contextNode = document;
+	}
 
-    function resolver(prefix) {
-        switch(prefix) {
-        case 'xul':
-            return 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
-            break;
-        case 'hy':
-            return 'http://hyperstruct.net/';
-            break;
-        default:
-            return null;
-        }
-    }
+	function resolver(prefix) {
+		switch(prefix) {
+		case 'xul':
+			return 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
+			break;
+		case 'hy':
+			return 'http://hyperstruct.net/';
+			break;
+		default:
+			return null;
+		}
+	}
 
-    return document.evaluate(
-        path, contextNode, resolver,
-        XPathResult.ANY_UNORDERED_NODE_TYPE, null).
-        singleNodeValue;
+	return document.evaluate(
+		path, contextNode, resolver,
+		XPathResult.ANY_UNORDERED_NODE_TYPE, null).
+		singleNodeValue;
 }
  
 function _(idOrElement, subCriteria) { 
-    var element = (idOrElement instanceof XULElement) ?
-        idOrElement : document.getElementById(idOrElement);
+	var element = (idOrElement instanceof XULElement) ?
+		idOrElement : document.getElementById(idOrElement);
 
-    if(subCriteria)
-        if(typeof(subCriteria) == 'object') {
-            for(var attributeName in subCriteria)
-                return x(element, './/*[@' + attributeName + '=' +
-                         '"' + subCriteria[attributeName] + '"]');
-        } else
-            return x(element, './/*[@role="' + subCriteria + '"]');
-    else
-        return element;
+	if(subCriteria)
+		if(typeof(subCriteria) == 'object') {
+			for(var attributeName in subCriteria)
+				return x(element, './/*[@' + attributeName + '=' +
+						 '"' + subCriteria[attributeName] + '"]');
+		} else
+			return x(element, './/*[@role="' + subCriteria + '"]');
+	else
+		return element;
 }
  
 function clone(blueprintName) { 
-    return _('blueprints', blueprintName)
-        .cloneNode(true);
+	return _('blueprints', blueprintName)
+		.cloneNode(true);
 }
  
 function removeChildrenOf(element) { 
-    while(element.lastChild)
-        element.removeChild(element.lastChild);
+	while(element.lastChild)
+		element.removeChild(element.lastChild);
 }
  
 function padLeft(thing, width, padder) { 
-    var paddedString = '';
-    var string = thing.toString();
-    return (string.length < width) ?
-        (function() {
-            for(var i=0, l=width-string.length; i<l; i++)
-                paddedString += padder;
-            return paddedString + string;
-        })() :
-        string;
+	var paddedString = '';
+	var string = thing.toString();
+	return (string.length < width) ?
+		(function() {
+			for(var i=0, l=width-string.length; i<l; i++)
+				paddedString += padder;
+			return paddedString + string;
+		})() :
+		string;
 }
   
 /* file picker */ 
@@ -125,9 +125,9 @@ function pickFile(aMode, aOptions) {
 }
  
 function pickFileUrl(mode, aOptions) { 
-    var file = pickFile(mode, aOptions);
-    if(file)
-        return utils.getURLSpecFromFilePath(file.path);
+	var file = pickFile(mode, aOptions);
+	if(file)
+		return utils.getURLSpecFromFilePath(file.path);
 }
   
 /* DOMAIN */ 
@@ -164,9 +164,9 @@ function openTestCase(aIsFolder) {
 }
  
 function pickTestFile(aOptions) { 
-    var url = pickFileUrl(null, aOptions);
-    if(url)
-        _('file').value = url;
+	var url = pickFileUrl(null, aOptions);
+	if(url)
+		_('file').value = url;
 }
  
 function makeTestCaseFileOptions(aIsFolder) { 
@@ -194,48 +194,48 @@ TestReportHandler.prototype = {
 	getTestCaseReport : function(title)
 	{
 		var id = 'testcase-report-'+encodeURIComponent(title);
-	    return _(id) ||
-	        (function() {
-	            var wTestCaseReport = clone('testcase-report');
-	            wTestCaseReport.setAttribute('id', id);
-	            wTestCaseReport.setAttribute('title', title);
-	            _(wTestCaseReport, 'title').value = title;
-	            _(wTestCaseReport, 'bar').setAttribute('class', 'testcase-fine');
-	            _('testcase-reports').appendChild(wTestCaseReport);
-	            return wTestCaseReport;
-	        })();
+		return _(id) ||
+			(function() {
+				var wTestCaseReport = clone('testcase-report');
+				wTestCaseReport.setAttribute('id', id);
+				wTestCaseReport.setAttribute('title', title);
+				_(wTestCaseReport, 'title').value = title;
+				_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-fine');
+				_('testcase-reports').appendChild(wTestCaseReport);
+				return wTestCaseReport;
+			})();
 	},
 	handleReport : function(report) {
-	    var wTestCaseReport = this.getTestCaseReport(this.testCase.title);
-	    _(wTestCaseReport, 'bar').setAttribute('mode', 'determined');
-	    _(wTestCaseReport, 'bar').setAttribute(
-	        'value', parseInt(report.testIndex / report.testCount * 100));
-	    _(wTestCaseReport, 'total-counter').value = report.testCount;
+		var wTestCaseReport = this.getTestCaseReport(this.testCase.title);
+		_(wTestCaseReport, 'bar').setAttribute('mode', 'determined');
+		_(wTestCaseReport, 'bar').setAttribute(
+			'value', parseInt(report.testIndex / report.testCount * 100));
+		_(wTestCaseReport, 'total-counter').value = report.testCount;
 
-	    if(report.result == 'success') {
-	        var successes = parseInt(_(wTestCaseReport, 'success-counter').value);
-	        _(wTestCaseReport, 'success-counter').value = successes + 1;
-	        return;
-	    }
+		if(report.result == 'success') {
+			var successes = parseInt(_(wTestCaseReport, 'success-counter').value);
+			_(wTestCaseReport, 'success-counter').value = successes + 1;
+			return;
+		}
 
-	    _(wTestCaseReport, 'bar').setAttribute('class', 'testcase-problems');
+		_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-problems');
 
 		var id = 'test-report-'+encodeURIComponent(title)+'-'+_(wTestCaseReport, 'test-reports').childNodes.length;
-	    var wTestReport = clone('test-report');
-	    wTestReport.setAttribute('id', id);
-	    _(wTestReport, 'result').value = bundle.getString('report_result_'+report.result);
-	    _(wTestReport, 'icon').setAttribute('class', 'test-' + report.result);
-	    _(wTestReport, 'description').value = report.testDescription;
-	    _(wTestReport, 'description').setAttribute('tooltiptext', report.testDescription);
-	    if(report.exception) {
-	        _(wTestReport, 'additionalInfo').value = report.exception.message;
-	        if(report.exception.stack) {
-	            displayStackTrace(report.exception.stack, _(wTestReport, 'stack-trace'));
-	            _(wTestReport, 'stack-trace').hidden = false;
-	        }
-	    }
+		var wTestReport = clone('test-report');
+		wTestReport.setAttribute('id', id);
+		_(wTestReport, 'result').value = bundle.getString('report_result_'+report.result);
+		_(wTestReport, 'icon').setAttribute('class', 'test-' + report.result);
+		_(wTestReport, 'description').value = report.testDescription;
+		_(wTestReport, 'description').setAttribute('tooltiptext', report.testDescription);
+		if(report.exception) {
+			_(wTestReport, 'additionalInfo').value = report.exception.message;
+			if(report.exception.stack) {
+				displayStackTrace(report.exception.stack, _(wTestReport, 'stack-trace'));
+				_(wTestReport, 'stack-trace').hidden = false;
+			}
+		}
 
-	    _(wTestCaseReport, 'test-reports').appendChild(wTestReport);
+		_(wTestCaseReport, 'test-reports').appendChild(wTestReport);
 	},
 	set onFinish(aValue) {
 		this.mFinishHandlers.push(aValue);
@@ -270,31 +270,31 @@ function onError(aError)
 }
  
 function displayStackTrace(trace, listbox) { 
-    for each(var line in trace.split('\n'))
-    {
+	for each(var line in trace.split('\n'))
+	{
 		var item = document.createElement('listitem');
 		item.setAttribute('label', line);
 		item.setAttribute('crop', 'center');
-        listbox.appendChild(item);
-    }
+		listbox.appendChild(item);
+	}
 }
  
 function toggleContent() { 
-    _('content').collapsed = !_('content').collapsed;
-    _('content-splitter').hidden = !_('content-splitter').hidden;
+	_('content').collapsed = !_('content').collapsed;
+	_('content-splitter').hidden = !_('content-splitter').hidden;
 }
  
 function hideSource() { 
-    _('source-viewer').collapsed = true;
-    _('source-splitter').hidden = true;
+	_('source-viewer').collapsed = true;
+	_('source-splitter').hidden = true;
 }
  
 function reset() { 
-    _('prerun-report', 'error').hidden = true;
-    _('prerun-report', 'stack-trace').hidden = true;
-    removeChildrenOf(_('prerun-report', 'stack-trace'));
-    removeChildrenOf(_('testcase-reports'))
-    hideSource();
+	_('prerun-report', 'error').hidden = true;
+	_('prerun-report', 'stack-trace').hidden = true;
+	removeChildrenOf(_('prerun-report', 'stack-trace'));
+	removeChildrenOf(_('testcase-reports'))
+	hideSource();
 }
  
 function setRunningState(aRunning) { 
@@ -456,29 +456,29 @@ function initializeTests(aSuites) {
 }
  	 
 function stylizeSource(sourceDocument, lineCallback) { 
-    var originalSource = sourceDocument.getElementsByTagName('pre')[0];
-    var processedSource = sourceDocument.createElementNS('http://www.w3.org/1999/xhtml', 'pre');
-    var sourceLines = originalSource.textContent.split('\n');
-    var sourceLine, htmlLine, lineContent;
-    for(var i=0, l=sourceLines.length; i<l; i++) {
-        if(lineCallback)
-            htmlLine = lineCallback(sourceDocument, i+1, sourceLines[i]) ||
-                sourceDocument.createTextNode(sourceLines[i]);
+	var originalSource = sourceDocument.getElementsByTagName('pre')[0];
+	var processedSource = sourceDocument.createElementNS('http://www.w3.org/1999/xhtml', 'pre');
+	var sourceLines = originalSource.textContent.split('\n');
+	var sourceLine, htmlLine, lineContent;
+	for(var i=0, l=sourceLines.length; i<l; i++) {
+		if(lineCallback)
+			htmlLine = lineCallback(sourceDocument, i+1, sourceLines[i]) ||
+				sourceDocument.createTextNode(sourceLines[i]);
 
-        processedSource.appendChild(htmlLine)
-    }
-    processedSource.normalize();
-    originalSource.parentNode.replaceChild(processedSource, originalSource);
+		processedSource.appendChild(htmlLine)
+	}
+	processedSource.normalize();
+	originalSource.parentNode.replaceChild(processedSource, originalSource);
 
-    var cssLink = sourceDocument.createElementNS('http://www.w3.org/1999/xhtml', 'link');
-    cssLink.rel = 'stylesheet';
-    cssLink.type = 'text/css';
-    cssLink.href = 'data:text/css,' +
-        'body { margin: 0; }' +
-        '#current { font-weight: bold; background-color: #e5e5e5; }' +
-        '.link { color: blue; border-bottom: thin solid blue; cursor: pointer; }';
+	var cssLink = sourceDocument.createElementNS('http://www.w3.org/1999/xhtml', 'link');
+	cssLink.rel = 'stylesheet';
+	cssLink.type = 'text/css';
+	cssLink.href = 'data:text/css,' +
+		'body { margin: 0; }' +
+		'#current { font-weight: bold; background-color: #e5e5e5; }' +
+		'.link { color: blue; border-bottom: thin solid blue; cursor: pointer; }';
 
-    sourceDocument.getElementsByTagName('head')[0].appendChild(cssLink);
+	sourceDocument.getElementsByTagName('head')[0].appendChild(cssLink);
 }
  
 function openInEditor(filePath, lineNumber, columnNumber, commandLine) { 
@@ -557,53 +557,79 @@ function openInEditor(filePath, lineNumber, columnNumber, commandLine) {
 }
  
 function showSource(traceLine) { 
-    var match = traceLine.match(/@(.*):(\d+)/);
-    var sourceUrl = match[1];
-    var lineNumber = match[2];
+	var match = traceLine.match(/@(.*):(\d+)/);
+	var sourceUrl = match[1];
+	var lineNumber = match[2];
 
-    if(sourceUrl) {
+	if (!sourceUrl) return;
 
-        var frame = _('source-viewer', 'source');
-        _('source-splitter').hidden = false;
-        _('source-viewer').collapsed = false;
+	var frame = _('source-viewer', 'source');
+	_('source-splitter').hidden = false;
+	_('source-viewer').collapsed = false;
 
-        function onLoad(event) {
-            _('source-viewer', 'source').removeEventListener('load', onLoad, true);
+	var isIncludedSource = /^data:[^;]+;x-included=true,/i.test(sourceUrl);
+	if (isIncludedSource) {
+		sourceUrl = sourceUrl
+					.replace(/^data:[^,]+/, 'data:text/plain') // convert to a plain text
+					.replace(/eval\(%22/, '').replace(/%22\);?\s*$/, '') // remove 'eval("' and '")'
+					.replace(/%5Cr%5C%0A/g, '%0A'); // remove "\r\" on line ends
+	}
 
-            stylizeSource(
-                _('source-viewer', 'source').contentDocument,
-                function(sourceDoc, number, content) {
-                    content = padLeft(number, 3, 0) + ' ' + content + '\n';
+	function onLoad(event) {
+		_('source-viewer', 'source').removeEventListener('load', onLoad, true);
 
-                    if(number == lineNumber) {
-                        var currentLine = sourceDoc.createElementNS('http://www.w3.org/1999/xhtml', 'div');
-                        currentLine.setAttribute('id', 'current');
-                        currentLine.textContent = content;
+		stylizeSource(
+			_('source-viewer', 'source').contentDocument,
+			function(sourceDoc, number, content)
+			{
+				if (isIncludedSource) { // restore escaped non-ASCII characters
+					content = content.replace(
+									/(\\u[0-9a-fA-F]{1.4})/g,
+									function(aChar) {
+										return eval('"'+aChar+'"');
+									}
+								);
+				}
+				content = padLeft(number, 3, 0) + ' ' + content + '\n';
 
-                        if(sourceUrl.match(/^file:\/\//)) {
-                            currentLine.setAttribute('class', 'link');
-                            currentLine.addEventListener(
-                                'click', function(event) {
-                                    openInEditor(sourceUrl, lineNumber);
-                                }, false);
-                        }
+				if(number == lineNumber) {
+					var currentLine = sourceDoc.createElementNS('http://www.w3.org/1999/xhtml', 'div');
+					currentLine.setAttribute('id', 'current');
+					currentLine.textContent = content;
 
-                        return currentLine;
-                    } else
-                        return sourceDoc.createTextNode(content);
-                        });
+					if(sourceUrl.match(/^file:\/\//)) {
+						currentLine.setAttribute('class', 'link');
+						currentLine.addEventListener(
+							'click', function(event) {
+								openInEditor(sourceUrl, lineNumber);
+							}, false);
+					}
 
-            _('source-viewer', 'source').contentWindow.scrollTo(
-                0, (frame.contentDocument.getElementById('current').offsetTop -
-                    frame.contentWindow.innerHeight/2));
+					return currentLine;
+				}
+				else {
+					return sourceDoc.createTextNode(content);
+				}
+			}
+		);
 
-        }
+		_('source-viewer', 'source').contentWindow.scrollTo(
+			0,
+			(frame.contentDocument.getElementById('current').offsetTop -
+				frame.contentWindow.innerHeight/2)
+		);
 
-        _('source-viewer', 'source').addEventListener('load', onLoad, true);
-        _('source-viewer', 'source').webNavigation.
-            loadURI(sourceUrl, Components.interfaces.nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE,
-                    null, null, null);
+	}
 
-    }
+	if (isIncludedSource) {
+		sourceUrl = sourceUrl.replace(/eval\("/, '').replace(/\n\)$/, '');
+	}
+
+	_('source-viewer', 'source').addEventListener('load', onLoad, true);
+	_('source-viewer', 'source').webNavigation.loadURI(
+		sourceUrl,
+		Components.interfaces.nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE,
+		null, null, null
+	);
 }
   

@@ -209,10 +209,14 @@ var loader = Components.classes['@mozilla.org/moz/jssubscript-loader;1']
 			.getService(Components.interfaces.mozIJSSubScriptLoader);
 
 this.include = function(aSource, aEnvironment, aEncoding) {
-	var script = this.readFrom(aSource, aEncoding || this.getPref('extensions.uxu.defaultEncoding'));
-	script = 'eval('+script.toSource().replace(/^\(new String\(|\)\)$/g, '')+')';
+	var script = this.readFrom(aSource, aEncoding || this.getPref('extensions.uxu.defaultEncoding')) || '';
+	script = 'eval('+
+				script.toSource()
+					.replace(/^\(new String\(|\)\)$/g, '') // convert to a simple string literal
+					.replace(/\\n/g, '\\\n')+ // restore line-breaks
+			')';
 	loader.loadSubScript(
-		'data:application/x-javascript,'+encodeURIComponent(script),
+		'data:application/x-javascript;x-included=true,'+encodeURIComponent(script),
 		aEnvironment || this.environment
 	);
 };
