@@ -560,6 +560,7 @@ function showSource(traceLine) {
 	var match = traceLine.match(/@(.*):(\d+)/);
 	var sourceUrl = match[1];
 	var lineNumber = match[2];
+	var encoding;
 
 	if (!sourceUrl) return;
 
@@ -567,12 +568,11 @@ function showSource(traceLine) {
 	_('source-splitter').hidden = false;
 	_('source-viewer').collapsed = false;
 
-	var isIncludedSource = /^data:[^;]+;x-included=true,/i.test(sourceUrl);
-	if (isIncludedSource) {
-		sourceUrl = sourceUrl
-					.replace(/^data:[^,]+/, 'data:text/plain') // convert to a plain text
-					.replace(/eval\(%22/, '').replace(/%22\);?\s*$/, '') // remove 'eval("' and '")'
-					.replace(/%5Cr%5Cn/g, '%0A'); // restore line-breaks
+	match = sourceUrl.match(/^data:[^,]+;x-include-source=([^;,]+)/i);
+	var includeSource = match ? match[1] : null ;
+	if (includeSource) {
+		encoding = sourceUrl.match(/^data:[^,]+;charset=([^;,]+)/i)[1];
+		sourceUrl = decodeURIComponent(includeSource);
 	}
 
 	function onLoad(event) {
@@ -582,14 +582,6 @@ function showSource(traceLine) {
 			_('source-viewer', 'source').contentDocument,
 			function(sourceDoc, number, content)
 			{
-				if (isIncludedSource) { // restore escaped non-ASCII characters
-					content = content.replace(
-									/(\\u[0-9a-fA-F]{1,4})/g,
-									function(aChar) {
-										return eval('"'+aChar+'"');
-									}
-								);
-				}
 				content = padLeft(number, 3, 0) + ' ' + content + '\n';
 
 				if(number == lineNumber) {
@@ -621,8 +613,10 @@ function showSource(traceLine) {
 
 	}
 
-	if (isIncludedSource) {
-		sourceUrl = sourceUrl.replace(/eval\("/, '').replace(/\n\)$/, '');
+	if (encoding) {
+		var docCharset = _('source-viewer', 'source').docShell
+				.QueryInterface(Components.interfaces.nsIDocCharset);
+		docCharset.charset = encoding;
 	}
 
 	_('source-viewer', 'source').addEventListener('load', onLoad, true);
