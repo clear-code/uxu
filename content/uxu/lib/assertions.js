@@ -92,6 +92,13 @@ function matches(pattern, string) {
             Components.stack.caller);
 }
 
+function pattern(string, pattern) {
+    if(!(string.match(pattern)))
+        throw new AssertionFailed(
+        	bundle.getFormattedString('assert_pattern', [string, pattern]),
+            Components.stack.caller);
+}
+
 function fail(message) {
     throw new AssertionFailed(message, Components.stack.caller);
 }
