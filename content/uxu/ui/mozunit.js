@@ -572,7 +572,7 @@ function showSource(traceLine) {
 		sourceUrl = sourceUrl
 					.replace(/^data:[^,]+/, 'data:text/plain') // convert to a plain text
 					.replace(/eval\(%22/, '').replace(/%22\);?\s*$/, '') // remove 'eval("' and '")'
-					.replace(/%5Cr%5C%0A/g, '%0A'); // remove "\r\" on line ends
+					.replace(/%5Cr%5Cn/g, '%0A'); // restore line-breaks
 	}
 
 	function onLoad(event) {
@@ -584,7 +584,7 @@ function showSource(traceLine) {
 			{
 				if (isIncludedSource) { // restore escaped non-ASCII characters
 					content = content.replace(
-									/(\\u[0-9a-fA-F]{1.4})/g,
+									/(\\u[0-9a-fA-F]{1,4})/g,
 									function(aChar) {
 										return eval('"'+aChar+'"');
 									}
