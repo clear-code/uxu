@@ -568,11 +568,13 @@ function showSource(traceLine) {
 	_('source-splitter').hidden = false;
 	_('source-viewer').collapsed = false;
 
-	match = sourceUrl.match(/^data:[^,]+;x-include-source=([^;,]+)/i);
+	match = sourceUrl.match(/^chrome:\/\/uxu\/content\/test\/helper\/subScriptRunner\.js\?includeSource=([^;,]+)/i);
 	var includeSource = match ? match[1] : null ;
 	if (includeSource) {
-		encoding = sourceUrl.match(/^data:[^,]+;charset=([^;,]+)/i)[1];
+		encoding = sourceUrl.match(/[;\?]encoding=([^;,]+)/i)[1];
 		sourceUrl = decodeURIComponent(includeSource);
+alert(encoding);
+alert(sourceUrl);
 	}
 
 	function onLoad(event) {

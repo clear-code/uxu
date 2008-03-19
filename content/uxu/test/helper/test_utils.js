@@ -211,16 +211,13 @@ var loader = Components.classes['@mozilla.org/moz/jssubscript-loader;1']
 this.include = function(aSource, aEnvironment, aEncoding) {
 	var encoding = aEncoding || this.getPref('extensions.uxu.defaultEncoding')
 	var script = this.readFrom(aSource, encoding) || '';
-	script = 'eval('+
-				script.toSource()
-					.replace(/^\(new String\(|\)\)$/g, '')+ // convert to a simple string literal
-			')';
+	var env = aEnvironment || this.environment;
+	env._subScript = script;
 	loader.loadSubScript(
-		'data:application/x-javascript'+
-			';x-include-source='+encodeURIComponent(aSource)+
-			';charset='+encoding+
-			','+encodeURIComponent(script),
-		aEnvironment || this.environment
+		'chrome://uxu/content/test/helper/subScriptRunner.js?includeSource='+
+			encodeURIComponent(aSource)+
+			';encoding='+encoding,
+		env
 	);
 };
 
