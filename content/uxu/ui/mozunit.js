@@ -573,8 +573,6 @@ function showSource(traceLine) {
 	if (includeSource) {
 		encoding = sourceUrl.match(/[;\?]encoding=([^;,]+)/i)[1];
 		sourceUrl = decodeURIComponent(includeSource);
-alert(encoding);
-alert(sourceUrl);
 	}
 
 	function onLoad(event) {

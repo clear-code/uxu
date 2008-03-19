@@ -93,12 +93,15 @@ this.setUpTestWindow = function(aContinuation, aOptions) {
 		loadedFlag.value = true;
 	}
 	else {
-		this.openTestWindow(function(win) {
-			window.setTimeout(function() {
-				if (aContinuation) aContinuation('ok');
-				loadedFlag.value = true;
-			}, 0);
-		}, aOptions);
+		this.openTestWindow(
+			aOptions,
+			function(win) {
+				window.setTimeout(function() {
+					if (aContinuation) aContinuation('ok');
+					loadedFlag.value = true;
+				}, 0);
+			}
+		);
 	}
 	return loadedFlag;
 };
