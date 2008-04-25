@@ -70,7 +70,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
     <vbox role="testcase-report" class="inset" style="margin-bottom: 1em;">
       <vbox class="outset"
             onclick="this.nextSibling.hidden = !this.nextSibling.hidden">
-        <label role="title" class="testcase-title"/>
+        <hbox><label role="title" class="testcase-title" flex="1"/></hbox>
         <hbox>
           <progressmeter role="bar" mode="undetermined" value="0" flex="1"/> 
           <label value="&mozunit.successes;"/>
@@ -90,8 +90,8 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
         <label role="result"/> 
       </vbox>
       <vbox flex="1">
-        <label role="description"/>
-        <description role="additionalInfo" crop="right"/>
+        <hbox><label role="description" flex="1"/></hbox>
+        <hbox><description role="additionalInfo" flex="1"/></hbox>
 
         <listbox hidden="true" role="stack-trace"
                  flex="1" rows="5" class="inset"

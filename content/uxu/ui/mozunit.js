@@ -199,7 +199,7 @@ TestReportHandler.prototype = {
 				var wTestCaseReport = clone('testcase-report');
 				wTestCaseReport.setAttribute('id', id);
 				wTestCaseReport.setAttribute('title', title);
-				_(wTestCaseReport, 'title').value = title;
+				_(wTestCaseReport, 'title').textContent = title;
 				_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-fine');
 				_('testcase-reports').appendChild(wTestCaseReport);
 				return wTestCaseReport;
@@ -225,10 +225,10 @@ TestReportHandler.prototype = {
 		wTestReport.setAttribute('id', id);
 		_(wTestReport, 'result').value = bundle.getString('report_result_'+report.result);
 		_(wTestReport, 'icon').setAttribute('class', 'test-' + report.result);
-		_(wTestReport, 'description').value = report.testDescription;
+		_(wTestReport, 'description').textContent = report.testDescription;
 		_(wTestReport, 'description').setAttribute('tooltiptext', report.testDescription);
 		if(report.exception) {
-			_(wTestReport, 'additionalInfo').value = report.exception.message;
+			_(wTestReport, 'additionalInfo').textContent = report.exception.message;
 			if(report.exception.stack) {
 				displayStackTrace(report.exception.stack, _(wTestReport, 'stack-trace'));
 				_(wTestReport, 'stack-trace').hidden = false;
