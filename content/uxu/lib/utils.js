@@ -139,6 +139,7 @@ function writeTo(aContent, aTarget, aEncoding) {
 	}
 
 
+	if (aTarget.exists()) aTarget.remove(true);
 	aTarget.create(aTarget.NORMAL_FILE_TYPE, 0666);
 
 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1']
