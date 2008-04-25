@@ -53,10 +53,13 @@
   font-size: 1.2em;
   }
 
+
+/*
 *[role=additionalInfo]
 {
   font-size: 1.5em;
   }
+*/
 
 *[role=result-box]
 {
