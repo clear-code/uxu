@@ -184,6 +184,25 @@ this.getTabs = function(aOptions) {
 
 
 
+this.getChromeWindows = function(aOptions) {
+	var info = this.normalizeTestWindowOption(aOptions);
+	var targets = WindowManager.getEnumerator(info.type),
+		target;
+	var result = [];
+	while (targets.hasMoreElements())
+	{
+		target = targets.getNext().
+			QueryInterface(Components.interfaces.nsIDOMWindowInternal);
+		if (info.type)
+			result.push(target);
+		else if (info.uri == target.location.href)
+			result.push(target);
+	}
+
+	return result;
+};
+
+
 
 this.tempFiles = [];
 this.makeTempFile = function(aOriginal) {
