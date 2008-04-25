@@ -6,7 +6,7 @@
 <script src="chrome://global/content/nsUserSettings.js"/>
 <script src="chrome://uxu/content/browserOverlay.js"/>
 
-<menupopup id="menu_ToolsPopup">
+<menupopup id="taskPopup">
 	<menu id="tools-uxu-menu"
 		insertbefore="devToolsSeparator"
 		label="&uxu.tools.menu.label;">
@@ -21,6 +21,4 @@
 	</menu>
 </menupopup>
 
-
 </overlay>
-

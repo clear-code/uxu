@@ -1,7 +1,8 @@
 content	uxu	jar:chrome/uxu.jar!/content/uxu/
 
 overlay	chrome://browser/content/browser.xul	chrome://uxu/content/browserOverlay.xul
-overlay	chrome://messenger/content/messenger.xul	chrome://uxu/content/browserOverlay.xul
+overlay	chrome://messenger/content/messenger.xul	chrome://uxu/content/messengerOverlay.xul
+overlay	chrome://messenger/content/messengerWindow.xul	chrome://uxu/content/messengerOverlay.xul
 
 locale	uxu	en-US	jar:chrome/uxu.jar!/locale/en-US/uxu/
 locale	uxu	ja	jar:chrome/uxu.jar!/locale/ja/uxu/
