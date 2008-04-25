@@ -48,11 +48,13 @@ this.normalizeTestWindowOption = function(aOptions) {
 		aOptions.type  = defaultType;
 		aOptions.flags = defaultFlags;
 		aOptions.name  = defaultName;
+		aOptions.arguments = [];
 	}
 	else {
 		aOptions.type  = aOptions.type || null;
 		aOptions.flags = aOptions.flags || 'chrome,all';
-		aOptions.name  = aOptions.name || '_blank';
+		aOptions.name  = aOptions.name || '_blank';;
+		aOptions.arguments = aOptions.arguments || [];
 	}
 	return aOptions;
 };
@@ -89,7 +91,7 @@ this.openTestWindow = function(aOptions, callback) {
 	}
 	else {
 		var info = this.normalizeTestWindowOption(aOptions);
-		win = window.openDialog(info.uri, info.name, info.flags);
+		win = window.openDialog.apply(window, [info.uri, info.name, info.flags].concat(info.arguments));
 		win[key] = this.uniqueID;
 		var id = info.uri+'?'+this.uniqueID;
 		if (callback) {
