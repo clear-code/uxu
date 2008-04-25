@@ -13,6 +13,30 @@ this.constructor = function(aEnvironment)
 }
 
 
+
+var XULAppInfo = Components.
+	classes['@mozilla.org/xre/app-info;1']
+	.getService(Components.interfaces.nsIXULAppInfo);
+var defaultURI, defaultType, defaultFlags, defaultName;
+switch (XULAppInfo.ID)
+{
+	default:
+	case '{ec8030f7-c20a-464f-9b0e-13a3a9e97384}':
+		defaultURI = 'chrome://browser/content/browser.xul';
+		defaultType = 'navigator:browser';
+		defaultFlags = 'chrome,all,dialog=no';
+		defaultName = '_blank';
+		break;
+
+	case '{3550f703-e582-4d05-9a08-453d09bdfdc6}':
+		defaultURI = 'chrome://messenger/content/messenger.xul';
+		defaultType = null;
+		defaultFlags = 'chrome,all,dialog=no';
+		defaultName = '_blank';
+		break;
+}
+
+
 var WindowManager = Components.
 	classes['@mozilla.org/appshell/window-mediator;1'].
 	getService(Components.interfaces.nsIWindowMediator);
@@ -20,10 +44,10 @@ var WindowManager = Components.
 this.normalizeTestWindowOption = function(aOptions) {
 	if (!aOptions) aOptions = {};
 	if (!aOptions.uri) {
-		aOptions.uri   = 'chrome://browser/content/browser.xul';
-		aOptions.type  = 'navigator:browser';
-		aOptions.flags = 'chrome,all,dialog=no';
-		aOptions.name  = '_blank';
+		aOptions.uri   = defaultURI;
+		aOptions.type  = defaultType;
+		aOptions.flags = defaultFlags;
+		aOptions.name  = defaultName;
 	}
 	else {
 		aOptions.type  = aOptions.type || null;
