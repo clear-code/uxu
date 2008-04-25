@@ -469,15 +469,14 @@ function stylizeSource(sourceDocument, lineCallback) {
 	processedSource.normalize();
 	originalSource.parentNode.replaceChild(processedSource, originalSource);
 
-	var cssLink = sourceDocument.createElementNS('http://www.w3.org/1999/xhtml', 'link');
-	cssLink.rel = 'stylesheet';
-	cssLink.type = 'text/css';
-	cssLink.href = 'data:text/css,' +
+	var cssElem = sourceDocument.createElementNS('http://www.w3.org/1999/xhtml', 'style');
+	cssElem.type = 'text/css';
+	cssElem.textContent =
 		'body { margin: 0; }' +
 		'#current { font-weight: bold; background-color: #e5e5e5; }' +
 		'.link { color: blue; border-bottom: thin solid blue; cursor: pointer; }';
 
-	sourceDocument.getElementsByTagName('head')[0].appendChild(cssLink);
+	sourceDocument.getElementsByTagName('head')[0].appendChild(cssElem);
 }
  
 function openInEditor(filePath, lineNumber, columnNumber, commandLine) { 
@@ -556,7 +555,9 @@ function openInEditor(filePath, lineNumber, columnNumber, commandLine) {
 }
  
 function showSource(traceLine) { 
-	var match = traceLine.match(/@(.*):(\d+)/);
+	var match = traceLine.match(/@(\w+:.*)?:(\d+)/);
+	if (!match) return;
+
 	var sourceUrl = match[1];
 	var lineNumber = match[2];
 	var encoding;
@@ -583,7 +584,7 @@ function showSource(traceLine) {
 			{
 				content = padLeft(number, 3, 0) + ' ' + content + '\n';
 
-				if(number == lineNumber) {
+				if (number == lineNumber) {
 					var currentLine = sourceDoc.createElementNS('http://www.w3.org/1999/xhtml', 'div');
 					currentLine.setAttribute('id', 'current');
 					currentLine.textContent = content;
@@ -592,7 +593,7 @@ function showSource(traceLine) {
 						currentLine.setAttribute('class', 'link');
 						currentLine.addEventListener(
 							'click', function(event) {
-								openInEditor(sourceUrl, lineNumber);
+								openInEditor(utils.getFilePathFromURLSpec(sourceUrl), lineNumber);
 							}, false);
 					}
 
