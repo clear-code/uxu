@@ -375,9 +375,8 @@ function loadFolder(aFolder) {
 
 		if (file.isDirectory())
 			suites = suites.concat(loadFolder(file));
-		else {
+		else if (/\.js$/i.test(file.leafName))
 			suites.push(loadFile(file));
-		}
 	}
 	return suites;
 }
