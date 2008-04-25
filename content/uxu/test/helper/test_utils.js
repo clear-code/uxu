@@ -43,7 +43,7 @@ var WindowManager = Components.
 
 this.normalizeTestWindowOption = function(aOptions) {
 	if (!aOptions) aOptions = {};
-	if (!aOptions.uri) {
+	if (!aOptions.uri && !aOptions.type) {
 		aOptions.uri   = defaultURI;
 		aOptions.type  = defaultType;
 		aOptions.flags = defaultFlags;
