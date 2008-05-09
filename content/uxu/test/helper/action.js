@@ -13,32 +13,52 @@ this.fireMouseEvent = function(aWindow, aOptions) {
 	var x = ('x' in aOptions ? aOptions.x : 0);
 	var y = ('y' in aOptions ? aOptions.y : 0);
 
-/*
-	var win = this.getWindowFromPoint(aWindow, x, y);
-	var utils = this.getWindowUtils(utils);
-	if (utils.sendMouseEvent) {
+	var box = aWindow.document.getBoxObjectFor(aWindow.document.documentElement);
+	var screenX = ('screenX' in aOptions) ?
+			aOptions.screenX :
+			box.screenX + x + aWindow.scrollX;
+	var screenY = ('screenY' in aOptions) ?
+			aOptions.screenY :
+			box.screenY + y + aWindow.scrollY;
+
+	var win = this.getWindowFromScreenPoint(aWindow, screenX, screenY);
+
+	var utils = this.getWindowUtils(win);
+	if ('sendMouseEvent' in utils) {
 		const nsIDOMNSEvent = Components.interfaces.nsIDOMNSEvent;
 		var flags = 0;
 		if (aOptions.ctrlKey) flags |= nsIDOMNSEvent.CONTROL_MASK;
 		if (aOptions.altKey) flags |= nsIDOMNSEvent.ALT_MASK;
 		if (aOptions.shiftKey) flags |= nsIDOMNSEvent.SHIFT_MASK;
 		if (aOptions.metaKey) flags |= nsIDOMNSEvent.META_MASK;
-		utils.sendMouseEvent(
-			(aOptions.type || 'click'),
-			x,
-			y,
-			(aOptions.button || 0),
-			(aOptions.detail || 1),
-			flags
-		);
+
+		var button = (aOptions.button || 0);
+		var detail = (aOptions.detail || 1);
+		if (aOption.type == 'click' && detail == 2) aOption.type = 'dblclick';
+		switch (aOptions.type)
+		{
+			case 'mousedown':
+				utils.sendMouseEvent('mousedown', x, y, button, 1, flags);
+				break;
+			case 'mouseup':
+				utils.sendMouseEvent('mouseup', x, y, button, 1, flags);
+				break;
+			case 'dblclick':
+				utils.sendMouseEvent('mousedown', x, y, button, 1, flags);
+				utils.sendMouseEvent('mouseup', x, y, button, 1, flags);
+			case 'click':
+				utils.sendMouseEvent('mousedown', x, y, button, 1, flags);
+				utils.sendMouseEvent('mouseup', x, y, button, 1, flags);
+				break;
+		}
 		return;
 	}
-*/
-	var node = ('elementFromPoint' in aWindow.document) ?
-			aWindow.document.elementFromPoint(x, y) :
-			this.getElementFromPoint(aWindow, x, y);
+
+	var node = this.getElementFromScreenPoint(aWindow, screenX, screenY);
 	if (node)
 		this.fireMouseEventOnElement(node, aOptions);
+	else
+		throw '<fireMouseEvent> No element at the specified point ('+x+','+y+') !';
 };
 
 this.fireMouseEventOnElement = function(aElement, aOptions) {
@@ -52,19 +72,25 @@ this.createMouseEventOnElement = function(aElement, aOptions) {
 	var node = aElement;
 	if (!node) return null;
 
-	var box = this.getDocumentFromEventTarget(node).getBoxObjectFor(node);
-	if (!('x' in aOptions)) aOptions.x = box.screenX + parseInt(box.width / 2);
-	if (!('y' in aOptions)) aOptions.y = box.screenY + parseInt(box.height / 2);
+	var doc = this.getDocumentFromEventTarget(node);
+	var box = doc.getBoxObjectFor(node);
+	if (!('screenX' in aOptions)) aOptions.screenX = box.screenX + parseInt(box.width / 2);
+	if (!('screenY' in aOptions)) aOptions.screenY = box.screenY + parseInt(box.height / 2);
+
+	var root = doc.documentElement;
+	box = doc.getBoxObjectFor(root);
+	if (!('x' in aOptions)) aOptions.x = aOptions.screenX - box.screenX - doc.defaultView.scrollX;
+	if (!('y' in aOptions)) aOptions.y = aOptions.screenY - box.screenY - doc.defaultView.scrollY;
 
 	var event = this.getDocumentFromEventTarget(node).createEvent('MouseEvents');
 	event.initMouseEvent(
 		(aOptions.type || 'click'),
 		('canBubble' in aOptions ? aOptions.canBubble : true ),
 		('cancelable' in aOptions ? aOptions.cancelable : true ),
-		this.getDocumentFromEventTarget(node).defaultView,
+		doc.defaultView,
 		('detail' in aOptions ? aOptions.detail : 1),
-		aOptions.x,
-		aOptions.y,
+		aOptions.screenX,
+		aOptions.screenY,
 		aOptions.x,
 		aOptions.y,
 		('ctrlKey' in aOptions ? aOptions.ctrlKey : false ),
@@ -79,6 +105,35 @@ this.createMouseEventOnElement = function(aElement, aOptions) {
 
 
 this.fireKeyEventOnElement = function(aElement, aOptions) {
+	var doc = this.getDocumentFromEventTarget(aElement);
+
+	var utils = this.getWindowUtils(doc.defaultView);
+	if ('sendKeyEvent' in utils) {
+		const nsIDOMNSEvent = Components.interfaces.nsIDOMNSEvent;
+		var flags = 0;
+		if (aOptions.ctrlKey) flags |= nsIDOMNSEvent.CONTROL_MASK;
+		if (aOptions.altKey) flags |= nsIDOMNSEvent.ALT_MASK;
+		if (aOptions.shiftKey) flags |= nsIDOMNSEvent.SHIFT_MASK;
+		if (aOptions.metaKey) flags |= nsIDOMNSEvent.META_MASK;
+
+		var keyCode = ('keyCode' in aOptions ? aOptions.keyCode : 0 );
+		var charCode = ('charCode' in aOptions ? aOptions.charCode : 0 );
+		switch (aOptions.type)
+		{
+			case 'keydown':
+				utils.sendKeyEvent('keydown', keyCode, charCode, flags);
+				break;
+			case 'keyup':
+				utils.sendKeyEvent('keyup', keyCode, charCode, flags);
+				break;
+			case 'keypress':
+				utils.sendKeyEvent('keydown', keyCode, charCode, flags);
+				utils.sendKeyEvent('keyup', keyCode, charCode, flags);
+				break;
+		}
+		return;
+	}
+
 	var event = this.createKeyEventOnElement(aElement, aOptions);
 	if (event && aElement)
 		aElement.dispatchEvent(event);
@@ -89,12 +144,14 @@ this.createKeyEventOnElement = function(aElement, aOptions) {
 	var node = aElement;
 	if (!node) return null;
 
-	var event = this.getDocumentFromEventTarget(node).createEvent('KeyEvents');
+	var doc = this.getDocumentFromEventTarget(node);
+
+	var event = doc.createEvent('KeyEvents');
 	event.initKeyEvent(
 		(aOptions.type || 'keypress'),
 		('canBubble' in aOptions ? aOptions.canBubble : true ),
 		('cancelable' in aOptions ? aOptions.cancelable : true ),
-		this.getDocumentFromEventTarget(node).defaultView,
+		doc.defaultView,
 		('ctrlKey' in aOptions ? aOptions.ctrlKey : false ),
 		('altKey' in aOptions ? aOptions.altKey : false ),
 		('shiftKey' in aOptions ? aOptions.shiftKey : false ),
@@ -108,7 +165,7 @@ this.createKeyEventOnElement = function(aElement, aOptions) {
 
 this.fireXULCommandEvent = function(aWindow, aOptions) {
 	if (!aOptions) aOptions = {};
-	var node = this.getElementFromPoint(
+	var node = this.getElementFromScreenPoint(
 				aWindow,
 				('x' in aOptions ? aOptions.x : 0),
 				('y' in aOptions ? aOptions.y : 0)
@@ -141,7 +198,7 @@ this.createXULCommandEvent = function(aSourceEvent) {
 
 
 this.inputTextToField = function(aElement, aValue) {
-	aElement.value = aValue;
+	aElement.value = aValue || '';
 
 	var doc = this.getDocumentFromEventTarget(aElement);
 	var event = doc.createEvent('UIEvents');
@@ -158,15 +215,115 @@ this.getDocumentFromEventTarget = function(aNode) {
 
 
 // ç¿ïWÇ©ÇÁóvëfÉmÅ[ÉhÇéÊìæÇ∑ÇÈ
-this.getElementFromPoint = function(aWindow, aX, aY) {
-	var win = this.getWindowFromPoint(aWindow, aX, aY);
-	return this.getElementFromPointInternal(win, aX, aY);
+this.getElementFromScreenPoint = function(aWindow, aScreenX, aScreenY)
+{
+	var clientPos = this.getClientPointFromScreenPoint(aWindow, aScreenX, aScreenY);
+	if ('elementFromPoint' in aWindow.document) {
+		var elem = aWindow.document.elementFromPoint(clientPos.x, clientPos.y);
+		if (/^(i?frame|browser|tabbrowser)$/.test(elem.localName)) {
+			return this.getElementFromScreenPoint(
+					elem.contentWindow,
+					aScreenX + aWindow.scrollX,
+					aScreenY + aWindow.scrollY
+				);
+		}
+		return elem;
+	}
+
+	aWindow = this.getWindowFromScreenPoint(aWindow, aScreenX, aScreenY);
+
+	var accNode;
+	try {
+		var accService = Components.classes['@mozilla.org/accessibilityService;1']
+							.getService(Components.interfaces.nsIAccessibilityService);
+		var acc = accService.getAccessibleFor(aWindow.document);
+		accNode = acc.getChildAtPoint(clientPos.x, clientPos.y);
+		accNode = accNode.QueryInterface(Components.interfaces.nsIAccessNode).DOMNode;
+	}
+	catch(e) {
+	}
+
+	var doc = aWindow.document;
+	var startNode = accNode || doc;
+	var filter = function(aNode) {
+		return NodeFilter.FILTER_ACCEPT;
+	};
+	var nodes = [];
+	var walker = aWindow.document.createTreeWalker(startNode, NodeFilter.SHOW_ELEMENT, filter, false);
+	for (var node = walker.firstChild(); node != null; node = walker.nextNode())
+	{
+		var box = doc.getBoxObjectFor(node);
+		var l = box.screenX;
+		var t = box.screenY;
+		var r = l + box.width;
+		var b = t + box.height;
+		if (l <= aScreenX && aScreenX <= r && t <= aScreenY && aScreenY <= b)
+			nodes.push(node);
+	}
+
+	if (!nodes.length) return null;
+	if (nodes.length == 1) return nodes[0];
+
+	var smallest = [];
+	nodes.forEach(function(aNode) {
+		if (!smallest.length) {
+			smallest.push(aNode);
+			return
+		}
+		var box = doc.getBoxObjectFor(aNode);
+		var size = box.width * box.height;
+		var smallestBox = doc.getBoxObjectFor(smallest[0]);
+		var smallestSize = smallestBox.width * smallestBox.height;
+		if (size == smallestSize) {
+			smallest.push(aNode);
+		}
+		else if (size < smallestSize) {
+			smallest = [aNode];
+		}
+	});
+	if (smallest.length == 1) return smallest[0];
+
+	var deepest = [];
+	var deepestNest = 0;
+	nodes.forEach(function(aNode) {
+		var nest = 0;
+		var node = aNode;
+		for (; node.parentNode; nest++) { node = node.parentNode; }
+		if (!deepest.length) {
+			deepest.push(aNode);
+			deepestNest = nest;
+			return
+		}
+		if (nest == deepestNest) {
+			deepest.push(aNode);
+		}
+		else if (nest > deepestNest) {
+			deepest = [aNode];
+			deepestNest = nest;
+		}
+	});
+	if (deepest.length == 1) return deepest[0];
+
+	return deepest[deepest.length-1];
 };
 
-this.getWindowFromPoint = function(aWindow, aScreenX, aScreenY)
+this.getClientPointFromScreenPoint = function(aWindow, aScreenX, aScreenY)
 {
-	var wins = this.flattenWindows(aWindow);
+	var box = aWindow.document.getBoxObjectFor(aWindow.document.documentElement);
+	return {
+		x : aScreenX - box.screenX - aWindow.scrollX,
+		y : aScreenY - box.screenY - aWindow.scrollY
+	};
+}
 
+this.getWindowFromScreenPoint = function(aWindow, aScreenX, aScreenY)
+{
+	if ('elementFromPoint' in aWindow.document) {
+		var elem = this.getElementFromScreenPoint(aWindow, aScreenX, aScreenY);
+		return elem ? elem.ownerDocument.defaultView : null ;
+	}
+
+	var wins = this.flattenWindows(aWindow);
 	for (var i = wins.length - 1; i >= 0; i--) {
 		var win = wins[i];
 		var frameList = [];
@@ -194,7 +351,7 @@ this.getWindowFromPoint = function(aWindow, aScreenX, aScreenY)
 		if (l <= aScreenX && aScreenX <= r && t <= aScreenY && aScreenY <= b)
 			return frameList[j].contentWindow;
 	}
-	return aWindow;
+	return null;
 };
 
 this.flattenWindows = function(aWindow) 
@@ -203,41 +360,4 @@ this.flattenWindows = function(aWindow)
 	for (var i = 0; i < aWindow.frames.length; i++)
 		ret = ret.concat(this.flattenWindows(aWindow.frames[i]));
 	return ret;
-};
-
-this.getElementFromPointInternal = function(aWindow, aScreenX, aScreenY)
-{
-	var accNode;
-	try {
-		var accService = Components.classes['@mozilla.org/accessibilityService;1']
-							.getService(Components.interfaces.nsIAccessibilityService);
-		var acc = accService.getAccessibleFor(aWindow.document);
-		var box = aWindow.document.getBoxObjectFor(aWindow.document.documentElement);
-		accNode = /* acc.getChildAtPoint(aScreenX - box.screenX, aScreenY - box.screenY) || */ acc.getChildAtPoint(aScreenX, aScreenY);
-		accNode = accNode.QueryInterface(Components.interfaces.nsIAccessNode).DOMNode;
-		var clickable = accNode ? this.getParentClickableNode(accNode) : null ;
-		if (clickable)
-			return this.getImageInLink(clickable) || clickable;
-	}
-	catch(e) {
-//			dump(e+'\n');
-	}
-
-	var doc = aWindow.document;
-	var startNode = accNode || doc;
-	var filter = function(aNode) {
-		return NodeFilter.FILTER_ACCEPT;
-	};
-	var walker = aWindow.document.createTreeWalker(startNode, NodeFilter.SHOW_ELEMENT, filter, false);
-	for (var node = walker.firstChild(); node != null; node = walker.nextNode())
-	{
-		var box = doc.getBoxObjectFor(node);
-		var l = box.screenX;
-		var t = box.screenY;
-		var r = l + box.width;
-		var b = t + box.height;
-		if (l <= aScreenX && aScreenX <= r && t <= aScreenY && aScreenY <= b)
-			return node;
-	}
-	return doc.documentElement;
 };
