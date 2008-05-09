@@ -34,7 +34,9 @@ this.fireMouseEvent = function(aWindow, aOptions) {
 		return;
 	}
 */
-	var node = this.getElementFromPoint(aWidnow, x, y);
+	var node = ('elementFromPoint' in aWindow.document) ?
+			aWindow.document.elementFromPoint(x, y) :
+			this.getElementFromPoint(aWindow, x, y);
 	if (node)
 		this.fireMouseEventOnElement(node, aOptions);
 };
@@ -104,7 +106,6 @@ this.createKeyEventOnElement = function(aElement, aOptions) {
 };
 
 
-
 this.fireXULCommandEvent = function(aWindow, aOptions) {
 	if (!aOptions) aOptions = {};
 	var node = this.getElementFromPoint(
@@ -135,6 +136,17 @@ this.createXULCommandEvent = function(aSourceEvent) {
 		false,
 		aSourceEvent
 	);
+	return event;
+};
+
+
+this.inputTextToField = function(aElement, aValue) {
+	aElement.value = aValue;
+
+	var doc = this.getDocumentFromEventTarget(aElement);
+	var event = doc.createEvent('UIEvents');
+	event.initUIEvent('input', true, true, doc.defaultView, 0);
+	aElement.dispatchEvent(event);
 	return event;
 };
 
