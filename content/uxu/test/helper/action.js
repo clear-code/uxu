@@ -106,7 +106,6 @@ this.createMouseEventOnElement = function(aElement, aOptions) {
 
 this.fireKeyEventOnElement = function(aElement, aOptions) {
 	var doc = this.getDocumentFromEventTarget(aElement);
-
 	var utils = this.getWindowUtils(doc.defaultView);
 	if ('sendKeyEvent' in utils) {
 		const nsIDOMNSEvent = Components.interfaces.nsIDOMNSEvent;
@@ -118,19 +117,9 @@ this.fireKeyEventOnElement = function(aElement, aOptions) {
 
 		var keyCode = ('keyCode' in aOptions ? aOptions.keyCode : 0 );
 		var charCode = ('charCode' in aOptions ? aOptions.charCode : 0 );
-		switch (aOptions.type)
-		{
-			case 'keydown':
-				utils.sendKeyEvent('keydown', keyCode, charCode, flags);
-				break;
-			case 'keyup':
-				utils.sendKeyEvent('keyup', keyCode, charCode, flags);
-				break;
-			case 'keypress':
-				utils.sendKeyEvent('keydown', keyCode, charCode, flags);
-				utils.sendKeyEvent('keyup', keyCode, charCode, flags);
-				break;
-		}
+		if (doc.commandDispatcher.focusedElement != aElement)
+			utils.focus(aElement);
+		utils.sendKeyEvent((aOptions.type || 'keypress'), keyCode, charCode, flags);
 		return;
 	}
 
