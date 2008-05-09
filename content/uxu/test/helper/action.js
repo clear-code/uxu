@@ -6,6 +6,10 @@ this.getWindowUtils = function(aWindow) {
 			.getInterface(Components.interfaces.nsIDOMWindowUtils);
 };
 
+var Prefs = Components.classes['@mozilla.org/preferences;1'] 
+		.getService(Components.interfaces.nsIPrefBranch)
+		.QueryInterface(Components.interfaces.nsIPrefBranch2);
+
 
 this.fireMouseEvent = function(aWindow, aOptions) {
 	if (!aOptions) aOptions = {};
@@ -24,7 +28,8 @@ this.fireMouseEvent = function(aWindow, aOptions) {
 	var win = this.getWindowFromScreenPoint(aWindow, screenX, screenY);
 
 	var utils = this.getWindowUtils(win);
-	if ('sendMouseEvent' in utils) {
+	if ('sendMouseEvent' in utils &&
+		!Prefs.getBoolPref('extensions.uxu.action.fireMouseEvent.useOldMethod')) {
 		const nsIDOMNSEvent = Components.interfaces.nsIDOMNSEvent;
 		var flags = 0;
 		if (aOptions.ctrlKey) flags |= nsIDOMNSEvent.CONTROL_MASK;
@@ -103,11 +108,11 @@ this.createMouseEventOnElement = function(aElement, aOptions) {
 	return event;
 };
 
-
 this.fireKeyEventOnElement = function(aElement, aOptions) {
 	var doc = this.getDocumentFromEventTarget(aElement);
 	var utils = this.getWindowUtils(doc.defaultView);
-	if ('sendKeyEvent' in utils) {
+	if ('sendKeyEvent' in utils &&
+		!Prefs.getBoolPref('extensions.uxu.action.fireKeyEvent.useOldMethod')) {
 		const nsIDOMNSEvent = Components.interfaces.nsIDOMNSEvent;
 		var flags = 0;
 		if (aOptions.ctrlKey) flags |= nsIDOMNSEvent.CONTROL_MASK;
