@@ -52,6 +52,7 @@ this.fireMouseEvent = function(aWindow, aOptions) {
 				utils.sendMouseEvent('mousedown', x, y, button, 1, flags);
 				utils.sendMouseEvent('mouseup', x, y, button, 1, flags);
 			case 'click':
+			default:
 				utils.sendMouseEvent('mousedown', x, y, button, 1, flags);
 				utils.sendMouseEvent('mouseup', x, y, button, 1, flags);
 				break;
@@ -67,6 +68,27 @@ this.fireMouseEvent = function(aWindow, aOptions) {
 };
 
 this.fireMouseEventOnElement = function(aElement, aOptions) {
+	if (!aOptions) aOptions = { type : 'click' };
+	switch (aOptions.type)
+	{
+		case 'mousedown':
+		case 'mouseup':
+			break;
+		case 'dblclick':
+			var options = { type : 'mousedown', detail : 1 };
+			options.__proto__ = aOptions;
+			this.fireMouseEventOnElement(aElement, options);
+			options.type = 'mouseup';
+			this.fireMouseEventOnElement(aElement, options);
+		case 'click':
+		default:
+			var options = { type : 'mousedown', detail : 1 };
+			options.__proto__ = aOptions;
+			this.fireMouseEventOnElement(aElement, options);
+			options.type = 'mouseup';
+			this.fireMouseEventOnElement(aElement, options);
+			break;
+	}
 	var event = this.createMouseEventOnElement(aElement, aOptions);
 	if (event && aElement)
 		aElement.dispatchEvent(event);
@@ -128,6 +150,20 @@ this.fireKeyEventOnElement = function(aElement, aOptions) {
 		return;
 	}
 
+	switch (aOptions.type)
+	{
+		case 'keydown':
+		case 'keyup':
+			break;
+		case 'keypress':
+		default:
+			var options = { type : 'keydown', detail : 1 };
+			options.__proto__ = aOptions;
+			this.fireKeyEventOnElement(aElement, options);
+			options.type = 'keyup';
+			this.fireKeyEventOnElement(aElement, options);
+			break;
+	}
 	var event = this.createKeyEventOnElement(aElement, aOptions);
 	if (event && aElement)
 		aElement.dispatchEvent(event);
