@@ -41,6 +41,10 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
   <commandset>
     <command id="run" label="&mozunit.run.label;" accesskey="&mozunit.run.accesskey;"
              oncommand="run();"/>
+    <command id="stop" label="&mozunit.stop.label;" accesskey="&mozunit.stop.accesskey;"
+             oncommand="stop();"
+             disabled="true"
+             hidden="true"/>
     <command id="toggle-content" oncommand="toggleContent();"
              label="&mozunit.toggleContent.label;" accesskey="&mozunit.toggleContent.accesskey;"/>
     <command id="open" label="&mozunit.open.label;" accesskey="&mozunit.open.accesskey;"
@@ -62,6 +66,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
     <key id="key-open" command="open" key="o" modifiers="control"/>
     <key id="key-openFolder" command="openFolder" key="f" modifiers="control"/>
     <key id="key-run" command="run" key="r" modifiers="control"/>
+    <key id="key-stop" command="stop" key="s" modifiers="control"/>
   </keyset>
 
   <!-- BLUEPRINTS -->
@@ -113,6 +118,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
           <menuitem command="edit"/>
           <menuseparator/>
           <menuitem command="run" key="key-run"/>
+          <menuitem command="stop" key="key-stop"/>
           <menuseparator/>
           <menuitem command="quit"/>
         </menupopup>
@@ -141,6 +147,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
       </toolbar>
       <hbox>
         <button command="run" flex="1" style="font-weight: bold;"/>
+        <button command="stop" flex="1" style="font-weight: bold;"/>
       </hbox>
 
       <hbox flex="1">

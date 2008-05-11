@@ -12,6 +12,8 @@
 
 <!ENTITY mozunit.run.label     "Run">
 <!ENTITY mozunit.run.accesskey "R">
+<!ENTITY mozunit.stop.label     "Stop">
+<!ENTITY mozunit.stop.accesskey "S">
 <!ENTITY mozunit.toggleContent.label     "Toggle Content">
 <!ENTITY mozunit.toggleContent.accesskey "C">
 <!ENTITY mozunit.open.label     "Open...">

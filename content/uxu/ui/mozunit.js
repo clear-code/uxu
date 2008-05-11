@@ -300,10 +300,16 @@ function reset() {
 function setRunningState(aRunning) { 
 	if (aRunning) {
 		_('run').setAttribute('disabled', true);
+		_('run').setAttribute('hidden', true);
+		_('stop').removeAttribute('disabled');
+		_('stop').removeAttribute('hidden');
 		_('testRunningProgressMeterPanel').removeAttribute('collapsed');
 	}
 	else {
 		_('run').removeAttribute('disabled');
+		_('run').removeAttribute('hidden');
+		_('stop').setAttribute('disabled', true);
+		_('stop').setAttribute('hidden', true);
 		_('testRunningProgressMeter').setAttribute('mode', 'undetermined');
 		_('testRunningProgressMeterPanel').setAttribute('collapsed', true);
 	}
@@ -311,6 +317,8 @@ function setRunningState(aRunning) {
  
 function run() { 
 	reset();
+
+	shouldStopTest = false;
 
 	var path = _('file').value;
 	var file = utils.makeFileWithPath(path);
@@ -325,16 +333,24 @@ function run() {
 
 	var max = tests.length + 1;
 	var runTest = function(aTest, aIndex) {
+			if (shouldStopTest) {
+				setRunningState(false);
+				throw 'stop';
+			}
 			try {
 				setRunningState(true);
 				_('testRunningProgressMeter').setAttribute('value',
 						parseInt(((aIndex + 1) / max) * 100));
 				_('testRunningProgressMeter').setAttribute('mode', 'determined');
-				aTest.run();
+				aTest.run(stopper);
 			}
 			catch(e) {
 				onError(e);
 			}
+		};
+
+	var stopper = function() {
+			return shouldStopTest;
 		};
 
 	if (utils.getPref('extensions.uxu.run.async')) {
@@ -352,6 +368,12 @@ function run() {
 				window.setTimeout(arguments.callee, 100);
 		}, 100);
 	}
+}
+var shouldStopTest = false;
+ 
+function stop() { 
+	shouldStopTest = true;
+	_('stop').setAttribute('disabled', true);
 }
 	 
 function loadFolder(aFolder) { 

@@ -155,7 +155,8 @@ function setTests(hash) {
  *
  */
 
-function run() {
+function run(aStopper) {
+    this._stopper = aStopper;
     this[this._runStrategy == 'async' ? '_asyncRun1' : '_syncRun1'](
         this._tests, this._setUp, this._tearDown, this._reportHandler);
 }
@@ -197,8 +198,8 @@ function tearDown(fn) {
  *
  */
 
-function verify() {
-    this.run();
+function verify(aStopper) {
+    this.run(aStopper);
 }
 
 /**
@@ -301,6 +302,8 @@ function _exec1(code, setUp, tearDown, context, continuation, aReport) {
         result:    undefined,
         exception: undefined
     };
+
+    if (this._stopper && this._stopper()) return report;
 
     try {
         if(setUp)
@@ -478,6 +481,10 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler) {
             }
         },
         nextTest: function(continuation) {
+            if (_this._stopper && _this._stopper()) {
+            	continuation('ko');
+            	return;
+            }
             testIndex += 1;
             tests[testIndex] ? continuation('ok') : continuation('ko');
         },
