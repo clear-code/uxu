@@ -227,14 +227,26 @@ this.createXULCommandEvent = function(aSourceEvent) {
 };
 
 
-this.inputTextToField = function(aElement, aValue) {
-	aElement.value = aValue || '';
+this.inputTextToField = function(aElement, aValue, aKeyEventsEmulation) {
+	if (!aKeyEventsEmulation) {
+		aElement.value = aValue || '';
+		var doc = this.getDocumentFromEventTarget(aElement);
+		var event = doc.createEvent('UIEvents');
+		event.initUIEvent('input', true, true, doc.defaultView, 0);
+		aElement.dispatchEvent(event);
+		return;
+	}
 
-	var doc = this.getDocumentFromEventTarget(aElement);
-	var event = doc.createEvent('UIEvents');
-	event.initUIEvent('input', true, true, doc.defaultView, 0);
-	aElement.dispatchEvent(event);
-	return event;
+	var input = aElement;
+	if (input.localName == 'textbox') input = input.inputField;
+
+	var self = this;
+	String(aValue || '').split('').forEach(function(aChar) {
+		self.fireKeyEventOnElement(input, {
+			type     : 'keypress',
+			charCode : aChar.charCodeAt(0)
+		});
+	});
 };
 
 
