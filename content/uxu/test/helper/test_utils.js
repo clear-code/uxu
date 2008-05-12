@@ -278,33 +278,6 @@ this.include = function(aSource, aEnvironment, aEncoding) {
 };
 
 
-this.fixupIncompleteURI = function(aURIOrPart) {
-	if (/^(about|data|javascript|view-source|jar):/.test(aURIOrPart))
-		return aURIOrPart;
-
-	var uri = aURIOrPart;
-
-	try {
-		if (/^file:\/\//.test(uri))
-			getFileFromURLSpec(uri);
-		if (/^\w+:\/\//.test(uri))
-			makeURIFromSpec(uri);
-		else
-			getURLSpecFromFilePath(uri);
-	}
-	catch(e) {
-		uri = this.baseURL + uri;
-		try {
-			getFileFromURLSpec(uri);
-		}
-		catch(e) {
-			throw new Error('utils.fixupIncompleteURI::['+aURIOrPart+'] is not a valid file path or URL!');
-		}
-	}
-	return uri;
-};
-
-
 
 
 var _this = this;
@@ -323,6 +296,7 @@ UTF8ToUnicode
 UnicodeToUTF8
 XToUnicode
 UnicodeToX
+fixupIncompleteURI
 ]]></>.toString()
 .replace(/^\s+|\s+$/g, '')
 .split('\n')

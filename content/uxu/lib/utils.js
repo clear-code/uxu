@@ -64,6 +64,7 @@ function getURLSpecFromFilePath(aPath) {
 // ファイルまたはURIで示された先のリソースを読み込み、文字列として返す
 function readFrom(aTarget, aEncoding) {
 	if (typeof aTarget == 'string') {
+		aTarget = this.fixupIncompleteURI(aTarget);
 		if (aTarget.match(/^\w+:\/\//))
 			aTarget = makeURIFromSpec(aTarget);
 		else
@@ -109,6 +110,7 @@ function readFrom(aTarget, aEncoding) {
 // ファイルパスまたはURLで示された先のテキストファイルに文字列を書き出す
 function writeTo(aContent, aTarget, aEncoding) {
 	if (typeof aTarget == 'string') {
+		aTarget = this.fixupIncompleteURI(aTarget);
 		if (aTarget.match(/^\w+:\/\//))
 			aTarget = makeURIFromSpec(aTarget);
 		else
@@ -277,3 +279,31 @@ function UnicodeToX(aInput, aEncoding) {
 	}
 	return aInput;
 }
+
+
+this.fixupIncompleteURI = function(aURIOrPart) {
+	if (!this.baseURL ||
+		/^(about|data|javascript|view-source|jar):/.test(aURIOrPart))
+		return aURIOrPart;
+
+	var uri = aURIOrPart;
+
+	try {
+		if (/^file:\/\//.test(uri))
+			getFileFromURLSpec(uri);
+		if (/^\w+:\/\//.test(uri))
+			makeURIFromSpec(uri);
+		else
+			getURLSpecFromFilePath(uri);
+	}
+	catch(e) {
+		uri = this.baseURL + uri;
+		try {
+			getFileFromURLSpec(uri);
+		}
+		catch(e) {
+			throw new Error('utils.fixupIncompleteURI::['+aURIOrPart+'] is not a valid file path or URL!');
+		}
+	}
+	return uri;
+};
