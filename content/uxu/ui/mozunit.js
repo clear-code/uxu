@@ -79,7 +79,7 @@ function padLeft(thing, width, padder) {
 }
   
 /* file picker */ 
-	
+	 
 function pickFile(aMode, aOptions) { 
 	if (!aOptions) aOptions = {};
 	var mode = 'mode' + (aMode ?
@@ -129,7 +129,50 @@ function pickFileUrl(mode, aOptions) {
 	if(file)
 		return utils.getURLSpecFromFilePath(file.path);
 }
-  
+ 
+const fileDNDObserver = { 
+	 
+	isTestCase : function(aFile) 
+	{
+		return aFile && (aFile.isDirectory() || /\.js$/.test(aFile.leafName));
+	},
+ 
+	onDrop : function(aEvent, aTransferData, aSession) 
+	{
+		var file = aTransferData.data;
+		if (this.isTestCase(file))
+			_('file').value = file.path;
+	},
+ 
+	canDrop : function(aEvent, aSession) 
+	{
+		var XferDataSet = nsTransferable.get(
+				this.getSupportedFlavours(),
+				nsDragAndDrop.getDragData,
+				true
+			);
+		var XferData = XferDataSet.first.first;
+		var file = XferData.data;
+		return this.isTestCase(file);
+	},
+ 	
+	onDragOver : function(aEvent, aFlavour, aSession) 
+	{
+	},
+ 
+	onDragExit : function(aEvent, aFlavour, aSession) 
+	{
+	},
+ 
+	getSupportedFlavours : function () 
+	{
+		var flavours = new FlavourSet();
+		flavours.appendFlavour('application/x-moz-file', 'nsIFile');
+		return flavours;
+	}
+ 
+}; 
+   
 /* DOMAIN */ 
 	
 function init() { 
@@ -181,7 +224,7 @@ function makeTestCaseFileOptions(aIsFolder) {
 }
   
 /* runner */ 
-	 
+	
 function TestReportHandler(aTestCase) { 
 	this.testCase = aTestCase;
 	this.mFinishHandlers = [
@@ -477,7 +520,7 @@ function initializeTests(aSuites) {
 
 	return tests;
 }
- 	 
+  
 function stylizeSource(sourceDocument, lineCallback) { 
 	var originalSource = sourceDocument.getElementsByTagName('pre')[0];
 	var processedSource = sourceDocument.createElementNS('http://www.w3.org/1999/xhtml', 'pre');
@@ -517,13 +560,6 @@ function openInEditor(filePath, lineNumber, columnNumber, commandLine) {
 			'"'+utils.getPref('view_source.editor.path')+'" "%f"' : '') ||
 		'/usr/bin/x-terminal-emulator -e /usr/bin/emacsclient -t +%l:%c %f';
 
-	var executable = Components
-		.classes["@mozilla.org/file/local;1"].
-		createInstance(Components.interfaces.nsILocalFile);
-	var process = Components
-		.classes["@mozilla.org/process/util;1"].
-		createInstance(Components.interfaces.nsIProcess);
-
 	var tokens = [''];
 	var quot   = '';
 	var char;
@@ -559,22 +595,32 @@ function openInEditor(filePath, lineNumber, columnNumber, commandLine) {
 				replace('%f', filePath);
 		});
 
+	var editorPath;
+	var executable = Components
+		.classes["@mozilla.org/file/local;1"].
+		createInstance(Components.interfaces.nsILocalFile);
+	var process = Components
+		.classes["@mozilla.org/process/util;1"].
+		createInstance(Components.interfaces.nsIProcess);
 	try {
-		executable.initWithPath(argv.shift());
+		editorPath = argv.shift();
+		executable.initWithPath(editorPath);
 		process.init(executable);
 		process.run(false, argv, argv.length);
+		return;
 	}
 	catch(e) {
-		if (!executable.exists()) {
-			var editor = pickFile('open', {
-					title : bundle.getString('picker_title_external_editor'),
-					defaultExtension : 'exe',
-					filter : Components.interfaces.nsIFilePicker.filterApps
-				});
-			if (!editor || !editor.path) return;
-			utils.setPref('extensions.uxu.mozunit.editor', '"'+editor.path+'" "%f"');
-			arguments.callee(filePath, lineNumber, columnNumber, commandLine);
-		}
+		editorPath = '';
+	}
+	if (!editorPath || !executable.exists()) {
+		var editor = pickFile('open', {
+				title : bundle.getString('picker_title_external_editor'),
+				defaultExtension : 'exe',
+				filter : Components.interfaces.nsIFilePicker.filterApps
+			});
+		if (!editor || !editor.path) return;
+		utils.setPref('extensions.uxu.mozunit.editor', '"'+editor.path+'" "%f"');
+		arguments.callee(filePath, lineNumber, columnNumber);
 	}
 }
  
