@@ -150,6 +150,11 @@ this.fireKeyEventOnElement = function(aElement, aOptions) {
 		!(aElement instanceof Components.interfaces.nsIDOMElement))
 		throw new Error('action.fireKeyEventOnElement::['+aElement+'] is not an element!');
 
+	if (aElement.localName == 'textbox' &&
+		'inputField' in aElement &&
+		aElement.inputField instanceof Components.interfaces.nsIDOMElement)
+		aElement = aElement.inputField;
+
 	var doc = this.getDocumentFromEventTarget(aElement);
 	var utils = this.getWindowUtils(doc.defaultView);
 	if ('sendKeyEvent' in utils &&
@@ -184,6 +189,7 @@ this.fireKeyEventOnElement = function(aElement, aOptions) {
 			break;
 	}
 	var event = this.createKeyEventOnElement(aElement, aOptions);
+dump(event+'\n');
 	if (event && aElement)
 		aElement.dispatchEvent(event);
 };
@@ -195,10 +201,7 @@ this.createKeyEventOnElement = function(aElement, aOptions) {
 
 	if (!aOptions) aOptions = {};
 	var node = aElement;
-	if (!node) return null;
-
 	var doc = this.getDocumentFromEventTarget(node);
-
 	var event = doc.createEvent('KeyEvents');
 	event.initKeyEvent(
 		(aOptions.type || 'keypress'),
@@ -250,7 +253,8 @@ this.createXULCommandEvent = function(aSourceEvent) {
 };
 
 
-this.inputTextToField = function(aElement, aValue, aKeyEventsEmulation) {
+this.inputTextToField = function(aElement, aValue, aAppend, aDontFireKeyEvents) {
+dump('===================inputTextToField=================\n');
 	if (!aElement) {
 		throw new Error('action.inputTextToField::no target!');
 	}
@@ -263,8 +267,10 @@ this.inputTextToField = function(aElement, aValue, aKeyEventsEmulation) {
 		throw new Error('action.inputTextToField::['+aElement+'] is not an input field!');
 	}
 
-	if (!aKeyEventsEmulation) {
-		aElement.value = aValue || '';
+	if (!aAppend) aElement.value = '';
+
+	if (aDontFireKeyEvents || aValue == '') {
+		aElement.value += (aValue || '');
 		var doc = this.getDocumentFromEventTarget(aElement);
 		var event = doc.createEvent('UIEvents');
 		event.initUIEvent('input', true, true, doc.defaultView, 0);
@@ -276,13 +282,29 @@ this.inputTextToField = function(aElement, aValue, aKeyEventsEmulation) {
 	if (input.localName == 'textbox') input = input.inputField;
 
 	var self = this;
-	String(aValue || '').split('').forEach(function(aChar) {
-		self.fireKeyEventOnElement(input, {
-			type     : 'keypress',
-			charCode : aChar.charCodeAt(0)
-		});
+	var array = String(aValue || '').match(this.kINPUT_ARRAY_PATTERN);
+	if (!array) array = String(aValue || '').split('');
+	array.forEach(function(aChar) {
+dump(aChar+'\n');
+		if (self.kDIRECT_INPUT_PATTERN.test(aChar)) {
+			self.fireKeyEventOnElement(input, {
+				type     : 'keypress',
+				charCode : aChar.charCodeAt(0)
+			});
+		}
+		else {
+			self.fireKeyEventOnElement(input, {
+				type    : 'keypress',
+				keyCode : 0xE5
+			});
+			self.inputTextToField(input, aChar, true, true);
+		}
 	});
 };
+
+var withIMECharacters = '\u3040-\uA4CF\uF900-\uFAFF';
+this.kINPUT_ARRAY_PATTERN  = new RegExp('[^'+withIMECharacters+']|['+withIMECharacters+']+', 'g');
+this.kDIRECT_INPUT_PATTERN = new RegExp('[^'+withIMECharacters+']');
 
 
 this.getDocumentFromEventTarget = function(aNode) {
