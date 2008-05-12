@@ -12,6 +12,10 @@ var Prefs = Components.classes['@mozilla.org/preferences;1']
 
 
 this.fireMouseEvent = function(aWindow, aOptions) {
+	if (!aWindow ||
+		!(aWindow instanceof Components.interfaces.nsIDOMWindow))
+		throw new Error('action.fireMouseEventOnElement::['+aWindow+'] is not a frame!');
+
 	if (!aOptions) aOptions = {};
 
 	var x = ('x' in aOptions ? aOptions.x : 0);
@@ -26,6 +30,9 @@ this.fireMouseEvent = function(aWindow, aOptions) {
 			box.screenY + y + aWindow.scrollY;
 
 	var win = this.getWindowFromScreenPoint(aWindow, screenX, screenY);
+	if (!win ||
+		!(win instanceof Components.interfaces.nsIDOMWindow))
+		throw new Error('action.fireMouseEvent::there is no frame at ['+screenX+', '+screenY+']!');
 
 	var utils = this.getWindowUtils(win);
 	if ('sendMouseEvent' in utils &&
@@ -64,10 +71,14 @@ this.fireMouseEvent = function(aWindow, aOptions) {
 	if (node)
 		this.fireMouseEventOnElement(node, aOptions);
 	else
-		throw '<fireMouseEvent> No element at the specified point ('+x+','+y+') !';
+		throw new Error('action.fireMouseEvent::there is no element at [')+x+','+y+']!';
 };
 
 this.fireMouseEventOnElement = function(aElement, aOptions) {
+	if (!aElement ||
+		!(aElement instanceof Components.interfaces.nsIDOMElement))
+		throw new Error('action.fireMouseEventOnElement::['+aElement+'] is not an element!');
+
 	if (!aOptions) aOptions = { type : 'click' };
 	switch (aOptions.type)
 	{
@@ -95,6 +106,10 @@ this.fireMouseEventOnElement = function(aElement, aOptions) {
 };
 
 this.createMouseEventOnElement = function(aElement, aOptions) {
+	if (!aElement ||
+		!(aElement instanceof Components.interfaces.nsIDOMElement))
+		throw new Error('action.createMouseEventOnElement::['+aElement+'] is not an element!');
+
 	if (!aOptions) aOptions = {};
 	var node = aElement;
 	if (!node) return null;
@@ -131,6 +146,10 @@ this.createMouseEventOnElement = function(aElement, aOptions) {
 };
 
 this.fireKeyEventOnElement = function(aElement, aOptions) {
+	if (!aElement ||
+		!(aElement instanceof Components.interfaces.nsIDOMElement))
+		throw new Error('action.fireKeyEventOnElement::['+aElement+'] is not an element!');
+
 	var doc = this.getDocumentFromEventTarget(aElement);
 	var utils = this.getWindowUtils(doc.defaultView);
 	if ('sendKeyEvent' in utils &&
@@ -170,6 +189,10 @@ this.fireKeyEventOnElement = function(aElement, aOptions) {
 };
 
 this.createKeyEventOnElement = function(aElement, aOptions) {
+	if (!aElement ||
+		!(aElement instanceof Components.interfaces.nsIDOMElement))
+		throw new Error('action.createKeyEventOnElement::['+aElement+'] is not an element!');
+
 	if (!aOptions) aOptions = {};
 	var node = aElement;
 	if (!node) return null;
@@ -228,6 +251,18 @@ this.createXULCommandEvent = function(aSourceEvent) {
 
 
 this.inputTextToField = function(aElement, aValue, aKeyEventsEmulation) {
+	if (!aElement) {
+		throw new Error('action.inputTextToField::no target!');
+	}
+	else if (aElement instanceof Components.interfaces.nsIDOMElement) {
+		if ( aElement.localName != 'textbox' &&
+			!(aElement instanceof Components.interfaces.nsIDOMNSEditableElement))
+			throw new Error('action.inputTextToField::['+aElement+'] is not an input field!');
+	}
+	else {
+		throw new Error('action.inputTextToField::['+aElement+'] is not an input field!');
+	}
+
 	if (!aKeyEventsEmulation) {
 		aElement.value = aValue || '';
 		var doc = this.getDocumentFromEventTarget(aElement);
@@ -251,7 +286,8 @@ this.inputTextToField = function(aElement, aValue, aKeyEventsEmulation) {
 
 
 this.getDocumentFromEventTarget = function(aNode) {
-	return aNode.document || aNode.ownerDocument || aNode;
+	return !aNode ? null :
+		(aNode.document || aNode.ownerDocument || aNode );
 };
 
 
@@ -259,10 +295,14 @@ this.getDocumentFromEventTarget = function(aNode) {
 // ç¿ïWÇ©ÇÁóvëfÉmÅ[ÉhÇéÊìæÇ∑ÇÈ
 this.getElementFromScreenPoint = function(aWindow, aScreenX, aScreenY)
 {
+	if (!aWindow ||
+		!(aWindow instanceof Components.interfaces.nsIDOMWindow))
+		throw new Error('action.getElementFromScreenPoint::['+aWindow+'] is not a frame!');
+
 	var clientPos = this.getClientPointFromScreenPoint(aWindow, aScreenX, aScreenY);
 	if ('elementFromPoint' in aWindow.document) {
 		var elem = aWindow.document.elementFromPoint(clientPos.x, clientPos.y);
-		if (/^(i?frame|browser|tabbrowser)$/.test(elem.localName)) {
+		if (elem && /^(i?frame|browser|tabbrowser)$/.test(elem.localName)) {
 			return this.getElementFromScreenPoint(
 					elem.contentWindow,
 					aScreenX + aWindow.scrollX,
@@ -351,6 +391,10 @@ this.getElementFromScreenPoint = function(aWindow, aScreenX, aScreenY)
 
 this.getClientPointFromScreenPoint = function(aWindow, aScreenX, aScreenY)
 {
+	if (!aWindow ||
+		!(aWindow instanceof Components.interfaces.nsIDOMWindow))
+		throw new Error('action.getClientPointFromScreenPoint::['+aWindow+'] is not a frame!');
+
 	var box = aWindow.document.getBoxObjectFor(aWindow.document.documentElement);
 	return {
 		x : aScreenX - box.screenX - aWindow.scrollX,
@@ -360,6 +404,10 @@ this.getClientPointFromScreenPoint = function(aWindow, aScreenX, aScreenY)
 
 this.getWindowFromScreenPoint = function(aWindow, aScreenX, aScreenY)
 {
+	if (!aWindow ||
+		!(aWindow instanceof Components.interfaces.nsIDOMWindow))
+		throw new Error('action.getWindowFromScreenPoint::['+aWindow+'] is not a frame!');
+
 	if ('elementFromPoint' in aWindow.document) {
 		var elem = this.getElementFromScreenPoint(aWindow, aScreenX, aScreenY);
 		return elem ? elem.ownerDocument.defaultView : null ;
@@ -398,6 +446,10 @@ this.getWindowFromScreenPoint = function(aWindow, aScreenX, aScreenY)
 
 this.flattenWindows = function(aWindow) 
 {
+	if (!aWindow ||
+		!(aWindow instanceof Components.interfaces.nsIDOMWindow))
+		throw new Error('action.flattenWindows::['+aWindow+'] is not a frame!');
+
 	var ret = [aWindow];
 	for (var i = 0; i < aWindow.frames.length; i++)
 		ret = ret.concat(this.flattenWindows(aWindow.frames[i]));

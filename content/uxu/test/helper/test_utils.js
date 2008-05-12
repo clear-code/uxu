@@ -138,6 +138,9 @@ this.tearDownTestWindow = this.closeTestWindow;
 
 // テスト用のFirefoxウィンドウの現在のタブにURIを読み込む
 this.loadURI = function(aURI, aOptions) {
+	if (!aURI) aURI = 'about:blank';
+	aURI = this.fixupIncompleteURI(aURI);
+
 	var loadedFlag = { value : false };
 
 	var win = this.getTestWindow(aOptions);
@@ -154,6 +157,9 @@ this.loadURI = function(aURI, aOptions) {
 
 // テスト用のFirefoxウィンドウで新しいタブを開く
 this.addTab = function(aURI, aOptions) {
+	if (!aURI) aURI = 'about:blank';
+	aURI = this.fixupIncompleteURI(aURI);
+
 	var loadedFlag = { value : false, tab : null };
 
 	var win = this.getTestWindow(aOptions);
@@ -213,6 +219,7 @@ this.makeTempFile = function(aOriginal) {
 
 	if (aOriginal) {
 		if (typeof aOriginal == 'string') {
+			aOriginal = this.fixupIncompleteURI(aOriginal);
 			if (aOriginal.match(/^\w+:\/\//))
 				aOriginal = this.makeURIFromSpec(aOriginal);
 			else
@@ -257,6 +264,7 @@ var loader = Components.classes['@mozilla.org/moz/jssubscript-loader;1']
 			.getService(Components.interfaces.mozIJSSubScriptLoader);
 
 this.include = function(aSource, aEnvironment, aEncoding) {
+	aSource = this.fixupIncompleteURI(aSource);
 	var encoding = aEncoding || this.getPref('extensions.uxu.defaultEncoding')
 	var script = this.readFrom(aSource, encoding) || '';
 	var env = aEnvironment || this.environment;
@@ -269,6 +277,32 @@ this.include = function(aSource, aEnvironment, aEncoding) {
 	);
 };
 
+
+this.fixupIncompleteURI = function(aURIOrPart) {
+	if (/^(about|data|javascript|view-source|jar):/.test(aURIOrPart))
+		return aURIOrPart;
+
+	var uri = aURIOrPart;
+
+	try {
+		if (/^file:\/\//.test(uri))
+			getFileFromURLSpec(uri);
+		if (/^\w+:\/\//.test(uri))
+			makeURIFromSpec(uri);
+		else
+			getURLSpecFromFilePath(uri);
+	}
+	catch(e) {
+		uri = this.baseURL + uri;
+		try {
+			getFileFromURLSpec(uri);
+		}
+		catch(e) {
+			throw new Error('utils.fixupIncompleteURI::['+aURIOrPart+'] is not a valid file path or URL!');
+		}
+	}
+	return uri;
+};
 
 
 

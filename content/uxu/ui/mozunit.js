@@ -414,6 +414,8 @@ function loadFile(aFile) {
 		suite.fileURL       = url;
 		suite.baseURL       = suite.fileURL.replace(/[^/]*$/, '');
 		suite.utils         = new TestUtils(suite);
+		suite.utils.fileURL = suite.fileURL;
+		suite.utils.baseURL = suite.baseURL;
 		suite.action        = action;
 		suite.utils.include(suite.fileURL);
 	} catch(e) {
