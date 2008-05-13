@@ -346,6 +346,7 @@ function setRunningState(aRunning) {
 		_('run').setAttribute('hidden', true);
 		_('stop').removeAttribute('disabled');
 		_('stop').removeAttribute('hidden');
+		_('testRunningProgressMeter').setAttribute('mode', 'determined');
 		_('testRunningProgressMeterPanel').removeAttribute('collapsed');
 	}
 	else {
@@ -384,7 +385,6 @@ function run() {
 				setRunningState(true);
 				_('testRunningProgressMeter').setAttribute('value',
 						parseInt(((aIndex + 1) / max) * 100));
-				_('testRunningProgressMeter').setAttribute('mode', 'determined');
 				aTest.run(stopper);
 			}
 			catch(e) {
