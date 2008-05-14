@@ -313,11 +313,14 @@ function fixupIncompleteURI(aURIOrPart) {
 
 
 function doIteration(aGenerator, aCallbacks) {
+	if (!aGenerator)
+		throw new Error('doIteration:: no generator!');
+
 	var iterator = aGenerator;
 	if (typeof aGenerator == 'function')
 		iterator = aGenerator();
 	if (iterator != '[object Generator]')
-		throw new Error('doIteration::['+aGenerator+'] is not a generator!');
+		throw new Error('doIteration:: ['+aGenerator+'] is not a generator!');
 
 	var retVal = { value : false };
 	var lastRun = (new Date()).getTime();
