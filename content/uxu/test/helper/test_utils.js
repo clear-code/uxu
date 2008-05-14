@@ -260,6 +260,19 @@ this.cleanUpTempFiles = function() {
 };
 
 
+this.backupPrefs = {};
+this.cleanUpModifiedPrefs = function() {
+	for (var i in this.backupPrefs)
+	{
+		if (this.backupPrefs[i] === null)
+			this.clearPref(i);
+		else
+			this.setPref(i, this.backupPrefs[i]);
+	}
+	this.backupPrefs = {};
+};
+
+
 
 var loader = Components.classes['@mozilla.org/moz/jssubscript-loader;1']
 			.getService(Components.interfaces.mozIJSSubScriptLoader);
@@ -293,6 +306,7 @@ readFrom
 writeTo
 getPref
 setPref
+clearPref
 UTF8ToUnicode
 UnicodeToUTF8
 XToUnicode

@@ -258,6 +258,7 @@ function TestReportHandler(aTestCase) {
 	this.mFinishHandlers = [
 		(function() {
 			this.testCase.environment.utils.cleanUpTempFiles();
+			this.testCase.environment.utils.cleanUpModifiedPrefs();
 		})
 	];
 }

@@ -220,6 +220,9 @@ function getPref(aKey) {
 	return null;
 }
 
+
+var backupPrefs = {};
+
 function setPref(aKey, aValue) {
 	var type;
 	try {
@@ -228,6 +231,9 @@ function setPref(aKey, aValue) {
 	catch(e) {
 		type = null;
 	}
+
+	if (!(aKey in this.backupPrefs))
+		this.backupPrefs[aKey] = this.getPref(aKey);
 
 	try {
 		switch (type)
@@ -248,6 +254,16 @@ function setPref(aKey, aValue) {
 	}
 	return aValue;
 }
+
+function clearPref(aKey) {
+	try {
+		Pref.clearUserPref(aKey);
+	}
+	catch(e) {
+	}
+}
+
+
 
 
 function UTF8ToUnicode(aInput) {
