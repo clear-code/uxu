@@ -312,14 +312,29 @@ function onError(aError)
 	}
 }
  
+var traceLineRegExp = /@(\w+:.*)?:(\d+)/;
+var includeRegExp = /^chrome:\/\/uxu\/content\/test\/helper\/subScriptRunner\.js\?includeSource=([^;,]+)/i;
 function displayStackTrace(trace, listbox) { 
-	for each(var line in trace.split('\n'))
-	{
+	var fullLines = trace.split('\n').map(function(aLine) {
+			if (!aLine.match(traceLineRegExp)) return aLine;
+			var sourceUrl = RegExp.$1;
+			var match = sourceUrl.match(includeRegExp);
+			var includeSource = match ? match[1] : null ;
+			if (includeSource) {
+				 aLine = aLine.replace(sourceUrl, decodeURIComponent(includeSource));
+			}
+			return aLine;
+		});
+	var lines = fullLines.filter(function(aLine) {
+			return /\w+:\/\//.test(aLine) && aLine.indexOf('@chrome://uxu/content/') < 0;
+		});
+	if (!lines.length) lines = fullLines;
+	lines.forEach(function(aLine) {
 		var item = document.createElement('listitem');
-		item.setAttribute('label', line);
+		item.setAttribute('label', aLine);
 		item.setAttribute('crop', 'center');
 		listbox.appendChild(item);
-	}
+	});
 }
  
 function toggleContent() { 
@@ -638,11 +653,10 @@ function showSource(traceLine) {
 	_('source-splitter').hidden = false;
 	_('source-viewer').collapsed = false;
 
-	match = sourceUrl.match(/^chrome:\/\/uxu\/content\/test\/helper\/subScriptRunner\.js\?includeSource=([^;,]+)/i);
-	var includeSource = match ? match[1] : null ;
-	if (includeSource) {
-		encoding = sourceUrl.match(/[;\?]encoding=([^;,]+)/i)[1];
-		sourceUrl = decodeURIComponent(includeSource);
+	match = sourceUrl.match(/[;\?]encoding=([^;,]+)/i);
+	if (match && match[1]) {
+		encoding = match[1];
+		sourceUrl = sourceUrl.replace(/\?.+$/, '');
 	}
 
 	function onLoad(event) {
