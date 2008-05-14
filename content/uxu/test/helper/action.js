@@ -10,6 +10,20 @@ var Prefs = Components.classes['@mozilla.org/preferences;1']
 		.getService(Components.interfaces.nsIPrefBranch)
 		.QueryInterface(Components.interfaces.nsIPrefBranch2);
 
+this.isFullZoom = function() {
+	return Prefs.getBoolPref('browser.zoom.full');
+};
+
+this.getZoom = function(aWindow) {
+	var markupDocumentViewer = aWindow.top
+			.QueryInterface(this.nsIInterfaceRequestor)
+			.getInterface(this.nsIWebNavigation)
+			.QueryInterface(this.nsIDocShell)
+			.contentViewer
+			.QueryInterface(Components.interfaces.nsIMarkupDocumentViewer);
+	return markupDocumentViewer.fullZoom;
+};
+
 
 this.fireMouseEvent = function(aWindow, aOptions) {
 	if (!aWindow ||
@@ -18,8 +32,10 @@ this.fireMouseEvent = function(aWindow, aOptions) {
 
 	if (!aOptions) aOptions = {};
 
-	var x = ('x' in aOptions ? aOptions.x : 0);
-	var y = ('y' in aOptions ? aOptions.y : 0);
+	var zoom = this.isFullZoom() ? this.getZoom : 1 ;
+
+	var x = ('x' in aOptions ? aOptions.x : 0) * zoom;
+	var y = ('y' in aOptions ? aOptions.y : 0) * zoom;
 
 	var box = aWindow.document.getBoxObjectFor(aWindow.document.documentElement);
 	var screenX = ('screenX' in aOptions) ?
@@ -254,7 +270,6 @@ this.createXULCommandEvent = function(aSourceEvent) {
 
 
 this.inputTextToField = function(aElement, aValue, aAppend, aDontFireKeyEvents) {
-dump('===================inputTextToField=================\n');
 	if (!aElement) {
 		throw new Error('action.inputTextToField::no target!');
 	}
@@ -285,7 +300,6 @@ dump('===================inputTextToField=================\n');
 	var array = String(aValue || '').match(this.kINPUT_ARRAY_PATTERN);
 	if (!array) array = String(aValue || '').split('');
 	array.forEach(function(aChar) {
-dump(aChar+'\n');
 		if (self.kDIRECT_INPUT_PATTERN.test(aChar)) {
 			self.fireKeyEventOnElement(input, {
 				type     : 'keypress',
