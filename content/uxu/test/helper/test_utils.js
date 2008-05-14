@@ -1,6 +1,7 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
 var lib = new ModuleManager(['chrome://uxu/content/lib']);
+var bundle = lib.require('package', 'bundle');
 var utils = lib.require('package', 'utils');
 
 
@@ -297,6 +298,7 @@ UnicodeToUTF8
 XToUnicode
 UnicodeToX
 fixupIncompleteURI
+doIteration
 ]]></>.toString()
 .replace(/^\s+|\s+$/g, '')
 .split('\n')

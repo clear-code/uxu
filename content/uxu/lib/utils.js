@@ -1,5 +1,8 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
+var mozlab_custom_module = new ModuleManager(['chrome://uxu/content/lib']);
+var bundle = mozlab_custom_module.require('package', 'bundle');
+
 var IOService = Components.classes['@mozilla.org/network/io-service;1'].getService(Components.interfaces.nsIIOService);
 
 // URI文字列からnsIURIのオブジェクトを生成
@@ -281,7 +284,7 @@ function UnicodeToX(aInput, aEncoding) {
 }
 
 
-this.fixupIncompleteURI = function(aURIOrPart) {
+function fixupIncompleteURI(aURIOrPart) {
 	if (!this.baseURL ||
 		/^(about|data|javascript|view-source|jar):/.test(aURIOrPart))
 		return aURIOrPart;
@@ -306,4 +309,73 @@ this.fixupIncompleteURI = function(aURIOrPart) {
 		}
 	}
 	return uri;
-};
+}
+
+
+function doIteration(aGenerator, aCallbacks) {
+	var iterator = aGenerator;
+	if (typeof aGenerator == 'function')
+		iterator = aGenerator();
+	if (iterator != '[object Generator]')
+		throw new Error('doIteration::['+aGenerator+'] is not a generator!');
+
+	var retVal = { value : false };
+	var lastRun = (new Date()).getTime();
+	var timeout = Math.max(0, getPref('extensions.uxu.run.timeout'));
+	(function(aObject) {
+		try {
+			if ((new Date()).getTime() - lastRun >= timeout)
+				throw new Error(bundle.getFormattedString('error_generator_timeout', [parseInt(timeout / 1000)]));
+
+			if (
+				!aObject ? false :
+				(typeof aObject == 'function') ? !aObject() :
+				(typeof aObject == 'object') ? !aObject.value :
+				false
+				)
+				return window.setTimeout(arguments.callee, 10, aObject);
+
+			var returnedValue = iterator.next();
+			lastRun = (new Date()).getTime();
+			if (!returnedValue ? false :
+				typeof returnedValue == 'object' ? 'value' in returnedValue :
+				typeof returnedValue == 'function'
+				) {
+				window.setTimeout(arguments.callee, 10, returnedValue);
+			}
+			else {
+				var wait = returnedValue;
+				if (isNaN(wait)) wait = 0;
+				window.setTimeout(arguments.callee, wait, null);
+			}
+		}
+		catch(e if e instanceof StopIteration) {
+			retVal.error = e;
+			retVal.value = true;
+			if (!aCallbacks) return;
+
+			if (aCallbacks.onEnd)
+				aCallbacks.onEnd(e);
+		}
+		catch(e if e.name == 'AssertionFailed') {
+			retVal.error = e;
+			retVal.value = true;
+			if (!aCallbacks) return;
+
+			if (aCallbacks.onFail)
+				aCallbacks.onFail(e);
+			else if (aCallbacks.onError)
+				aCallbacks.onError(e);
+		}
+		catch(e) {
+			retVal.error = e;
+			retVal.value = true;
+			if (!aCallbacks) return;
+
+			if (aCallbacks.onError)
+				aCallbacks.onError(e);
+		}
+	})(null);
+
+	return retVal;
+}

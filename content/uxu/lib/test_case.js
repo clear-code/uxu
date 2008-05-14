@@ -249,54 +249,6 @@ function _formatStackTrace1(exception) {
     return trace;
 }
 
-function processGenerator(aGenerator, aCallbacks) {
-	if (!aCallbacks) aCallbacks = {};
-	var lastRun = (new Date()).getTime();
-	var timeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout'));
-	(function(aObject) {
-		try {
-			if ((new Date()).getTime() - lastRun >= timeout)
-				throw new Error(bundle.getFormattedString('error_generator_timeout', [parseInt(timeout / 1000)]));
-
-			if (
-				!aObject ? false :
-				(typeof aObject == 'function') ? !aObject() :
-				(typeof aObject == 'object') ? !aObject.value :
-				false
-				)
-				return window.setTimeout(arguments.callee, 10, aObject);
-
-			var returnedValue = aGenerator.next();
-			lastRun = (new Date()).getTime();
-			if (!returnedValue ? false :
-				typeof returnedValue == 'object' ? 'value' in returnedValue :
-				typeof returnedValue == 'function'
-				) {
-				window.setTimeout(arguments.callee, 10, returnedValue);
-			}
-			else {
-				var wait = returnedValue;
-				if (isNaN(wait)) wait = 0;
-				window.setTimeout(arguments.callee, wait, null);
-			}
-		}
-		catch(e if e instanceof StopIteration) {
-			if (aCallbacks.onEnd)
-				aCallbacks.onEnd(e);
-		}
-		catch(e if e.name == 'AssertionFailed') {
-			if (aCallbacks.onFail)
-				aCallbacks.onFail(e);
-			else if (aCallbacks.onError)
-				aCallbacks.onError(e);
-		}
-		catch(e) {
-			if (aCallbacks.onError)
-				aCallbacks.onError(e);
-		}
-	})(null);
-}
-
 function _exec1(code, setUp, tearDown, context, continuation, aReport) {
     var report = {
         result:    undefined,
@@ -314,7 +266,7 @@ function _exec1(code, setUp, tearDown, context, continuation, aReport) {
         if (result == '[object Generator]' &&
             'next' in result) {
             aReport.report = report;
-            processGenerator(result, {
+            utils.doIteration(result, {
                 onEnd : function(e) {
                     aReport.report.result = 'success';
                     continuation('ok');
@@ -407,7 +359,7 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler) {
                 var result = setUp.call(context, continuation);
                 if (result == '[object Generator]' &&
                     'next' in result) {
-                    processGenerator(result, {
+                    utils.doIteration(result, {
                         onEnd : function(e) {
                             if (setUp.arity == 0) continuation('ok');
                         },
@@ -464,7 +416,7 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler) {
                 var result = tearDown.call(context); 
                 if (result == '[object Generator]' &&
                     'next' in result) {
-                    processGenerator(result, {
+                    utils.doIteration(result, {
                         onEnd : function(e) {
                             continuation('ok');
                         },
