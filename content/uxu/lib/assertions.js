@@ -20,57 +20,43 @@ var module = new ModuleManager(['chrome://uxu/content/lib']);
 var bundle = module.require('package', 'bundle');
 
 
-function equals(x, y) {
+function equals(x, y, aMessage) {
     if(y != x)
-        throw createAssertionFailedError(
-        	bundle.getFormattedString('assert_equals', [x, y]),
-            Components.stack.caller);
+        fail(bundle.getFormattedString('assert_equals', [x, y]), aMessage);
 }
 
-function notEquals(x, y) {
+function notEquals(x, y, aMessage) {
     if(y == x)
-        throw createAssertionFailedError(
-        	bundle.getFormattedString('assert_not_equals', [x, y]),
-            Components.stack.caller);
+        fail(bundle.getFormattedString('assert_not_equals', [x, y]), aMessage);
 }
 
-function isTrue(x) {
+function isTrue(x, aMessage) {
     if(!x)
-        throw createAssertionFailedError(
-        	bundle.getFormattedString('assert_is_true', [x]),
-            Components.stack.caller);
+        fail(bundle.getFormattedString('assert_is_true', [x]), aMessage);
 }
 
-function isDefined(x) {
+function isDefined(x, aMessage) {
     if(x == null ||
        x == undefined)
-        throw createAssertionFailedError(
-        	bundle.getFormattedString('assert_is_defined', [x]),
-            Components.stack.caller);
+        fail(bundle.getFormattedString('assert_is_defined', [x]), aMessage);
 }
 
-function isUndefined(x) {
+function isUndefined(x, aMessage) {
     if(x != undefined)
-        throw createAssertionFailedError(
-        	bundle.getFormattedString('assert_is_undefined', [x]),
-            Components.stack.caller);
+        fail(bundle.getFormattedString('assert_is_undefined', [x]), aMessage);
 }
 
-function isFalse(x) {
+function isFalse(x, aMessage) {
     if(x)
-        throw createAssertionFailedError(
-        	bundle.getFormattedString('assert_is_false', [x]),
-            Components.stack.caller);
+        fail(bundle.getFormattedString('assert_is_false', [x]), aMessage);
 }
 
-function isNull(x) {
+function isNull(x, aMessage) {
     if(x != null)
-        throw createAssertionFailedError(
-        	bundle.getFormattedString('assert_is_null', [x]),
-            Components.stack.caller);
+        fail(bundle.getFormattedString('assert_is_null', [x]), aMessage);
 }
 
-function raises(exception, code, context) {
+function raises(exception, code, context, aMessage) {
     var raised = false;
     try {
         code.call(context);
@@ -80,33 +66,22 @@ function raises(exception, code, context) {
         raised = true;
     }
     if(!raised)
-        throw createAssertionFailedError(
-        	bundle.getFormattedString('assert_rases', [exception]),
-            Components.stack.caller);
+        fail(bundle.getFormattedString('assert_rases', [exception]), aMessage);
 }
 
-function matches(pattern, string) {
+function matches(pattern, string, aMessage) {
     if(!(string.match(pattern)))
-        throw createAssertionFailedError(
-        	bundle.getFormattedString('assert_matches', [pattern, string]),
-            Components.stack.caller);
+        fail(bundle.getFormattedString('assert_matches', [pattern, string]), aMessage);
 }
 
-function pattern(string, pattern) {
+function pattern(string, pattern, aMessage) {
     if(!(string.match(pattern)))
-        throw createAssertionFailedError(
-        	bundle.getFormattedString('assert_pattern', [string, pattern]),
-            Components.stack.caller);
+        fail(bundle.getFormattedString('assert_pattern', [string, pattern]), aMessage);
 }
 
-function fail(message) {
-    throw createAssertionFailedError(message, Components.stack.caller);
-}
-
-function createAssertionFailedError(message, caller) {
+function fail() {
 	var error = new Error()
 	error.name = 'AssertionFailed';
-	error.message = message;
-//	error.stack += '()@' + caller.filename + ':' + caller.lineNumber + '\n';
-	return error;
+	error.message = Array.prototype.slice.call(arguments).reverse().join('\n');
+	throw error;
 }
