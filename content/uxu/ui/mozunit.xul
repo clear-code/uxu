@@ -198,7 +198,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
   </hbox>
 
   <statusbar>
-    <statusbarpanel flex="1"/>
+    <statusbarpanel id="testResultStatus" flex="1" crop="end"/>
     <statusbarpanel id="testRunningProgressMeterPanel"
                      collapsed="true">
       <progressmeter id="testRunningProgressMeter"

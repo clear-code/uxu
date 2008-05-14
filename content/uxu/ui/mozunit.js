@@ -87,10 +87,16 @@ function scrollReportsTo(aTarget)
 		.ensureElementIsVisible(aTarget);
 };
  
-function getProblemReports() 
+function getFailureReports() 
 {
 	var reports = _('testcase-reports');
-	return Array.prototype.slice.call(reports.getElementsByAttribute('class', 'testcase-report-problems'));
+	return Array.prototype.slice.call(reports.getElementsByAttribute('report-type', 'failure'));
+}
+ 
+function getErrorReports() 
+{
+	var reports = _('testcase-reports');
+	return Array.prototype.slice.call(reports.getElementsByAttribute('report-type', 'error'));
 }
   
 /* file picker */ 
@@ -155,8 +161,10 @@ const fileDNDObserver = {
 	onDrop : function(aEvent, aTransferData, aSession) 
 	{
 		var file = aTransferData.data;
-		if (this.isTestCase(file))
+		if (this.isTestCase(file)) {
 			_('file').value = file.path;
+			reset();
+		}
 	},
  
 	canDrop : function(aEvent, aSession) 
@@ -201,6 +209,7 @@ function finish() {
 function newTestCase() { 
 	var file = pickFile('save', makeTestCaseFileOptions());
 	if(file) {
+		reset();
 		if (file.exists()) file.remove(true);
 		_('file').value = file.path;
 		writeTemplate(file.path);
@@ -217,14 +226,18 @@ function writeTemplate(filePath) {
   
 function openTestCase(aIsFolder) { 
 	var file = pickFile((aIsFolder ? 'getFolder' : '' ), makeTestCaseFileOptions(aIsFolder));
-	if(file)
+	if(file) {
 		_('file').value = file.path;
+		reset();
+	}
 }
  
 function pickTestFile(aOptions) { 
 	var url = pickFileUrl(null, aOptions);
-	if(url)
+	if(url) {
 		_('file').value = url;
+		reset();
+	}
 }
  
 function makeTestCaseFileOptions(aIsFolder) { 
@@ -278,7 +291,6 @@ TestReportHandler.prototype = {
 		}
 
 		_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-problems');
-		_(wTestCaseReport).setAttribute('class', 'testcase-report-problems');
 
 		var id = 'test-report-'+encodeURIComponent(title)+'-'+_(wTestCaseReport, 'test-reports').childNodes.length;
 		var wTestReport = clone('test-report');
@@ -287,6 +299,7 @@ TestReportHandler.prototype = {
 		_(wTestReport, 'icon').setAttribute('class', 'test-' + report.result);
 		_(wTestReport, 'description').textContent = report.testDescription;
 		_(wTestReport, 'description').setAttribute('tooltiptext', report.testDescription);
+		_(wTestReport).setAttribute('report-type', report.result);
 		if(report.exception) {
 			_(wTestReport, 'additionalInfo').textContent = report.exception.message;
 			if(report.exception.stack) {
@@ -320,11 +333,22 @@ TestReportHandler.prototype = {
  
 function onAllTestsFinish() 
 {
-	var errors = getProblemReports();
-	if (errors.length)
-		scrollReportsTo(errors[0]);
-	else
+	var failures = getFailureReports();
+	var errors = getErrorReports();
+	if (shouldAbortTest) {
+		_('testResultStatus').setAttribute('label', bundle.getString('all_abort'));
+	}
+	else if (failures.length || errors.length) {
+		scrollReportsTo(failures.length ? failures[0] : errors[0]);
+		var status = [];
+		if (failures.length) status.push(bundle.getFormattedString('all_result_failure', [failures.length]));
+		if (errors.length) status.push(bundle.getFormattedString('all_result_error', [errors.length]));
+		_('testResultStatus').setAttribute('label', status.join(' / '));
+	}
+	else {
 		scrollReportsTo(_('testcase-reports').firstChild);
+		_('testResultStatus').setAttribute('label', bundle.getString('all_result_success'));
+	}
 };
  	
 function onError(aError) 
@@ -377,6 +401,7 @@ function hideSource() {
 function reset() { 
 	_('prerun-report', 'error').hidden = true;
 	_('prerun-report', 'stack-trace').hidden = true;
+	_('testResultStatus').setAttribute('label', '');
 	removeChildrenOf(_('prerun-report', 'stack-trace'));
 	removeChildrenOf(_('testcase-reports'))
 	hideSource();
@@ -390,6 +415,7 @@ function setRunningState(aRunning) {
 		_('stop').removeAttribute('hidden');
 		_('testRunningProgressMeter').setAttribute('mode', 'determined');
 		_('testRunningProgressMeterPanel').removeAttribute('collapsed');
+		_('testResultStatus').setAttribute('label', bundle.getString('all_wait'));
 	}
 	else {
 		_('run').removeAttribute('disabled');
@@ -404,7 +430,7 @@ function setRunningState(aRunning) {
 function run() { 
 	reset();
 
-	shouldStopTest = false;
+	shouldAbortTest = false;
 
 	var path = _('file').value;
 	var file = utils.makeFileWithPath(path);
@@ -419,7 +445,7 @@ function run() {
 
 	var max = tests.length + 1;
 	var runTest = function(aTest, aIndex) {
-			if (shouldStopTest) {
+			if (shouldAbortTest) {
 				setRunningState(false);
 				onAllTestsFinish();
 				throw 'stop';
@@ -436,7 +462,7 @@ function run() {
 		};
 
 	var stopper = function() {
-			return shouldStopTest;
+			return shouldAbortTest;
 		};
 
 	if (utils.getPref('extensions.uxu.run.async')) {
@@ -455,10 +481,10 @@ function run() {
 		}, 100);
 	}
 }
-var shouldStopTest = false;
+var shouldAbortTest = false;
  
 function stop() { 
-	shouldStopTest = true;
+	shouldAbortTest = true;
 	_('stop').setAttribute('disabled', true);
 }
 	
