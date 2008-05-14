@@ -140,7 +140,7 @@ this.createMouseEventOnElement = function(aElement, aOptions) {
 	if (!('x' in aOptions)) aOptions.x = aOptions.screenX - box.screenX - doc.defaultView.scrollX;
 	if (!('y' in aOptions)) aOptions.y = aOptions.screenY - box.screenY - doc.defaultView.scrollY;
 
-	var event = this.getDocumentFromEventTarget(node).createEvent('MouseEvents');
+	var event = doc.createEvent('MouseEvents');
 	event.initMouseEvent(
 		(aOptions.type || 'click'),
 		('canBubble' in aOptions ? aOptions.canBubble : true ),
