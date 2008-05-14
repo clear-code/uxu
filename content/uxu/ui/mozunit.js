@@ -10,7 +10,7 @@ var TestUtils     = helper_module.require('class', 'test_utils');
 var action        = helper_module.require('package', 'action');
  
 /* UTILITIES */ 
-	
+	 
 function x() { 
 	var contextNode, path;
 	if(arguments[0] instanceof XULElement) {
@@ -77,9 +77,24 @@ function padLeft(thing, width, padder) {
 		})() :
 		string;
 }
+ 
+function scrollReportsTo(aTarget) 
+{
+	if (!aTarget) return;
+	_('testcase-reports')
+		.boxObject
+		.QueryInterface(Components.interfaces.nsIScrollBoxObject)
+		.ensureElementIsVisible(aTarget);
+};
+ 
+function getProblemReports() 
+{
+	var reports = _('testcase-reports');
+	return Array.prototype.slice.call(reports.getElementsByAttribute('class', 'testcase-report-problems'));
+}
   
 /* file picker */ 
-	 
+	
 function pickFile(aMode, aOptions) { 
 	if (!aOptions) aOptions = {};
 	var mode = 'mode' + (aMode ?
@@ -131,7 +146,7 @@ function pickFileUrl(mode, aOptions) {
 }
  
 const fileDNDObserver = { 
-	 
+	
 	isTestCase : function(aFile) 
 	{
 		return aFile && (aFile.isDirectory() || /\.js$/.test(aFile.leafName));
@@ -155,7 +170,7 @@ const fileDNDObserver = {
 		var file = XferData.data;
 		return this.isTestCase(file);
 	},
- 	
+ 
 	onDragOver : function(aEvent, aFlavour, aSession) 
 	{
 	},
@@ -182,7 +197,7 @@ function finish() {
 }
   
 /* test cases */ 
-	 
+	
 function newTestCase() { 
 	var file = pickFile('save', makeTestCaseFileOptions());
 	if(file) {
@@ -224,7 +239,7 @@ function makeTestCaseFileOptions(aIsFolder) {
 }
   
 /* runner */ 
-	
+	 
 function TestReportHandler(aTestCase) { 
 	this.testCase = aTestCase;
 	this.mFinishHandlers = [
@@ -281,19 +296,13 @@ TestReportHandler.prototype = {
 		}
 
 		_(wTestCaseReport, 'test-reports').appendChild(wTestReport);
-		scrollReportsTo(wTestCaseReport);
+		scrollReportsTo(wTestReport);
 	},
 	set onFinish(aValue) {
 		this.mFinishHandlers.push(aValue);
 		return aValue;
 	},
 	get onFinish() {
-		var reports = _('testcase-reports');
-		var error = reports.getElementsByAttribute('class', 'testcase-report-problems');
-		if (error && error.length)
-			scrollReportsTo(error[0]);
-		else
-			scrollReportsTo(reports.firstChild);
 		var handlers = this.mFinishHandlers;
 		var self = this;
 		return (function() {
@@ -308,15 +317,16 @@ TestReportHandler.prototype = {
 			});
 	}
 };
-function scrollReportsTo(aTarget)
-{
-	if (!aTarget) return;
-	_('testcase-reports')
-		.boxObject
-		.QueryInterface(Components.interfaces.nsIScrollBoxObject)
-		.ensureElementIsVisible(aTarget);
-};
  
+function onAllTestsFinish() 
+{
+	var errors = getProblemReports();
+	if (errors.length)
+		scrollReportsTo(errors[0]);
+	else
+		scrollReportsTo(_('testcase-reports').firstChild);
+};
+ 	
 function onError(aError) 
 {
 	_('prerun-report', 'error').value = bundle.getFormattedString('error_failed', [aError.toString()]);
@@ -411,6 +421,7 @@ function run() {
 	var runTest = function(aTest, aIndex) {
 			if (shouldStopTest) {
 				setRunningState(false);
+				onAllTestsFinish();
 				throw 'stop';
 			}
 			try {
@@ -450,7 +461,7 @@ function stop() {
 	shouldStopTest = true;
 	_('stop').setAttribute('disabled', true);
 }
-	 
+	
 function loadFolder(aFolder) { 
 	var files = aFolder.directoryEntries;
 	var file;
@@ -510,11 +521,13 @@ function initializeTests(aSuites) {
 			syncTestCount--;
 			if (!syncTestCount && !asyncTestCount)
 				setRunningState(false);
+			if (!syncTestCount) onAllTestsFinish();
 		};
 	var onAsyncTestEnd = function() {
 			asyncTestCount--;
 			if (!syncTestCount && !asyncTestCount)
 				setRunningState(false);
+			if (!asyncTestCount) onAllTestsFinish();
 		};
 
 	var tests = [];
