@@ -165,7 +165,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
                      onselect="showSource(this.selectedItem.label);"/>
           </vbox>
           
-          <vbox id="testcase-reports" flex="1" style="overflow: auto;"/>
+          <scrollbox id="testcase-reports" flex="1" orient="vertical" style="overflow: auto;"/>
           
           <splitter id="content-splitter" hidden="true"
                     collapse="after" resizeafter="closest"/>

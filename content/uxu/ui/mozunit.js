@@ -245,6 +245,7 @@ TestReportHandler.prototype = {
 				_(wTestCaseReport, 'title').textContent = title;
 				_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-fine');
 				_('testcase-reports').appendChild(wTestCaseReport);
+				scrollReportsTo(wTestCaseReport);
 				return wTestCaseReport;
 			})();
 	},
@@ -262,6 +263,7 @@ TestReportHandler.prototype = {
 		}
 
 		_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-problems');
+		_(wTestCaseReport).setAttribute('class', 'testcase-report-problems');
 
 		var id = 'test-report-'+encodeURIComponent(title)+'-'+_(wTestCaseReport, 'test-reports').childNodes.length;
 		var wTestReport = clone('test-report');
@@ -279,12 +281,19 @@ TestReportHandler.prototype = {
 		}
 
 		_(wTestCaseReport, 'test-reports').appendChild(wTestReport);
+		scrollReportsTo(wTestCaseReport);
 	},
 	set onFinish(aValue) {
 		this.mFinishHandlers.push(aValue);
 		return aValue;
 	},
 	get onFinish() {
+		var reports = _('testcase-reports');
+		var error = reports.getElementsByAttribute('class', 'testcase-report-problems');
+		if (error && error.length)
+			scrollReportsTo(error[0]);
+		else
+			scrollReportsTo(reports.firstChild);
 		var handlers = this.mFinishHandlers;
 		var self = this;
 		return (function() {
@@ -298,6 +307,14 @@ TestReportHandler.prototype = {
 				});
 			});
 	}
+};
+function scrollReportsTo(aTarget)
+{
+	if (!aTarget) return;
+	_('testcase-reports')
+		.boxObject
+		.QueryInterface(Components.interfaces.nsIScrollBoxObject)
+		.ensureElementIsVisible(aTarget);
 };
  
 function onError(aError) 
