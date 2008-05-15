@@ -205,7 +205,6 @@ this.fireKeyEventOnElement = function(aElement, aOptions) {
 			break;
 	}
 	var event = this.createKeyEventOnElement(aElement, aOptions);
-dump(event+'\n');
 	if (event && aElement)
 		aElement.dispatchEvent(event);
 };

@@ -338,6 +338,9 @@ function doIteration(aGenerator, aCallbacks) {
 	if (iterator != '[object Generator]')
 		throw new Error('doIteration:: ['+aGenerator+'] is not a generator!');
 
+	var caller = Components.stack.caller;
+	var callerStack = '()@' + caller.filename + ':' + caller.lineNumber + '\n';
+
 	var retVal = { value : false };
 	var lastRun = (new Date()).getTime();
 	var timeout = Math.max(0, getPref('extensions.uxu.run.timeout'));
@@ -346,16 +349,31 @@ function doIteration(aGenerator, aCallbacks) {
 			if ((new Date()).getTime() - lastRun >= timeout)
 				throw new Error(bundle.getFormattedString('error_generator_timeout', [parseInt(timeout / 1000)]));
 
-			if (
-				!aObject ? false :
-				(typeof aObject == 'function') ? !aObject() :
-				(typeof aObject == 'object') ? !aObject.value :
-				false
-				)
-				return window.setTimeout(arguments.callee, 10, aObject);
+			if (aObject) {
+				var continueAfterDelay = false;
+				if (aObject instanceof Error) {
+					throw returnedValue;
+				}
+				else if (typeof aObject == 'object') {
+					if ('error' in aObject && aObject.error instanceof Error)
+						throw aObject.error;
+					if (!aObject.value)
+						continueAfterDelay = true;
+				}
+				else if (typeof aObject == 'function') {
+					var val = aObject();
+					if (!val)
+						continueAfterDelay = true;
+					else if (val instanceof Error)
+						throw val;
+				}
+				if (continueAfterDelay)
+					return window.setTimeout(arguments.callee, 10, aObject);
+			}
 
 			var returnedValue = iterator.next();
 			lastRun = (new Date()).getTime();
+
 			if (!returnedValue ? false :
 				typeof returnedValue == 'object' ? 'value' in returnedValue :
 				typeof returnedValue == 'function'
@@ -369,17 +387,19 @@ function doIteration(aGenerator, aCallbacks) {
 			}
 		}
 		catch(e if e instanceof StopIteration) {
+			e.stack += callerStack;
 			retVal.error = e;
 			retVal.value = true;
-			if (!aCallbacks) throw e;
+			if (!aCallbacks) return;
 
 			if (aCallbacks.onEnd)
 				aCallbacks.onEnd(e);
 		}
 		catch(e if e.name == 'AssertionFailed') {
+			e.stack += callerStack;
 			retVal.error = e;
 			retVal.value = true;
-			if (!aCallbacks) throw e;
+			if (!aCallbacks) return;
 
 			if (aCallbacks.onFail)
 				aCallbacks.onFail(e);
@@ -387,9 +407,10 @@ function doIteration(aGenerator, aCallbacks) {
 				aCallbacks.onError(e);
 		}
 		catch(e) {
+			e.stack += callerStack;
 			retVal.error = e;
 			retVal.value = true;
-			if (!aCallbacks) throw e;
+			if (!aCallbacks) return;
 
 			if (aCallbacks.onError)
 				aCallbacks.onError(e);
