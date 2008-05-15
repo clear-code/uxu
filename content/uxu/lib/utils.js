@@ -371,7 +371,7 @@ function doIteration(aGenerator, aCallbacks) {
 		catch(e if e instanceof StopIteration) {
 			retVal.error = e;
 			retVal.value = true;
-			if (!aCallbacks) return;
+			if (!aCallbacks) throw e;
 
 			if (aCallbacks.onEnd)
 				aCallbacks.onEnd(e);
@@ -379,7 +379,7 @@ function doIteration(aGenerator, aCallbacks) {
 		catch(e if e.name == 'AssertionFailed') {
 			retVal.error = e;
 			retVal.value = true;
-			if (!aCallbacks) return;
+			if (!aCallbacks) throw e;
 
 			if (aCallbacks.onFail)
 				aCallbacks.onFail(e);
@@ -389,7 +389,7 @@ function doIteration(aGenerator, aCallbacks) {
 		catch(e) {
 			retVal.error = e;
 			retVal.value = true;
-			if (!aCallbacks) return;
+			if (!aCallbacks) throw e;
 
 			if (aCallbacks.onError)
 				aCallbacks.onError(e);
