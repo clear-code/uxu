@@ -169,6 +169,8 @@ const fileDNDObserver = {
  
 	canDrop : function(aEvent, aSession) 
 	{
+		if (_('run').getAttribute('disabled') == 'true')
+			return false;
 		var XferDataSet = nsTransferable.get(
 				this.getSupportedFlavours(),
 				nsDragAndDrop.getDragData,
