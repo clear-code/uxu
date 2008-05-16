@@ -319,4 +319,3 @@ doIteration
 .forEach(function(aFunc) {
 	_this[aFunc] = utils[aFunc];
 });
-

@@ -263,8 +263,7 @@ function _exec1(code, setUp, tearDown, context, continuation, aReport) {
 
         var result = code.call(context);
 
-        if (result == '[object Generator]' &&
-            'next' in result) {
+        if (utils.isGeneratedIterator(result)) {
             aReport.report = report;
             utils.doIteration(result, {
                 onEnd : function(e) {
@@ -357,8 +356,7 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler) {
             report.report = {};
             try {
                 var result = setUp.call(context, continuation);
-                if (result == '[object Generator]' &&
-                    'next' in result) {
+                if (utils.isGeneratedIterator(result)) {
                     utils.doIteration(result, {
                         onEnd : function(e) {
                             if (setUp.arity == 0) continuation('ok');
@@ -414,8 +412,7 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler) {
             try {
                 // perhaps should pass continuation to tearDown as well
                 var result = tearDown.call(context); 
-                if (result == '[object Generator]' &&
-                    'next' in result) {
+                if (utils.isGeneratedIterator(result)) {
                     utils.doIteration(result, {
                         onEnd : function(e) {
                             continuation('ok');

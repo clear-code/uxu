@@ -328,6 +328,22 @@ function fixupIncompleteURI(aURIOrPart) {
 }
 
 
+function isGeneratedIterator(aObject) {
+	return (
+		aObject &&
+		'next' in aObject &&
+		'send' in aObject &&
+		'throw' in aObject &&
+		'close' in aObject &&
+		aObject == '[object Generator]'
+	);
+}
+
+function makeStackLine(aStack) {
+	if (typeof aStack == 'string') return aStack;
+	return '()@' + aStack.filename + ':' + aStack.lineNumber + '\n';;
+}
+
 function doIteration(aGenerator, aCallbacks) {
 	if (!aGenerator)
 		throw new Error('doIteration:: no generator!');
@@ -335,11 +351,16 @@ function doIteration(aGenerator, aCallbacks) {
 	var iterator = aGenerator;
 	if (typeof aGenerator == 'function')
 		iterator = aGenerator();
-	if (iterator != '[object Generator]')
+	if (!isGeneratedIterator(iterator))
 		throw new Error('doIteration:: ['+aGenerator+'] is not a generator!');
 
 	var caller = Components.stack.caller;
-	var callerStack = '()@' + caller.filename + ':' + caller.lineNumber + '\n';
+	var callerStack = '';
+	while (caller)
+	{
+		callerStack += makeStackLine(caller);
+		caller = caller.caller;
+	}
 
 	var retVal = { value : false };
 	var lastRun = (new Date()).getTime();
@@ -355,17 +376,28 @@ function doIteration(aGenerator, aCallbacks) {
 					throw returnedValue;
 				}
 				else if (typeof aObject == 'object') {
-					if ('error' in aObject && aObject.error instanceof Error)
+					if (isGeneratedIterator(aObject))
+						return window.setTimeout(arguments.callee, 0, doIteration(aObject));
+					else if ('error' in aObject && aObject.error instanceof Error)
 						throw aObject.error;
-					if (!aObject.value)
+					else if (!aObject.value)
 						continueAfterDelay = true;
 				}
 				else if (typeof aObject == 'function') {
-					var val = aObject();
+					var val;
+					try {
+						val = aObject();
+					}
+					catch(e) {
+						e.stack += callerStack;
+						throw e;
+					}
 					if (!val)
 						continueAfterDelay = true;
 					else if (val instanceof Error)
 						throw val;
+					else if (isGeneratedIterator(val))
+						return window.setTimeout(arguments.callee, 0, doIteration(val));
 				}
 				if (continueAfterDelay)
 					return window.setTimeout(arguments.callee, 10, aObject);
@@ -375,7 +407,8 @@ function doIteration(aGenerator, aCallbacks) {
 			lastRun = (new Date()).getTime();
 
 			if (!returnedValue ? false :
-				typeof returnedValue == 'object' ? 'value' in returnedValue :
+				typeof returnedValue == 'object' ?
+					('value' in returnedValue || isGeneratedIterator(returnedValue)) :
 				typeof returnedValue == 'function'
 				) {
 				window.setTimeout(arguments.callee, 10, returnedValue);

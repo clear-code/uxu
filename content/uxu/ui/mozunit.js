@@ -382,7 +382,8 @@ function displayStackTrace(trace, listbox) {
 	var lines = fullLines.filter(function(aLine) {
 			return /\w+:\/\//.test(aLine) && aLine.indexOf('@chrome://uxu/content/') < 0;
 		});
-	if (!lines.length) lines = fullLines;
+	if (!lines.length || utils.getPref('extensions.uxu.mozunit.showInternalStacks'))
+		lines = fullLines;
 	lines.forEach(function(aLine) {
 		var item = document.createElement('listitem');
 		item.setAttribute('label', aLine);
@@ -531,6 +532,7 @@ function loadFile(aFile) {
 		suite.utils         = new TestUtils(suite);
 		suite.utils.fileURL = suite.fileURL;
 		suite.utils.baseURL = suite.baseURL;
+		suite.Do            = function(aGenerator) { return this.utils.doIteration(aGenerator); };
 		suite.action        = action;
 		suite.utils.include(suite.fileURL);
 	} catch(e) {
