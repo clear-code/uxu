@@ -1,13 +1,7 @@
 var module = new ModuleManager(['chrome://uxu/content/lib']); 
-var mozlab = {
-	mozunit: module.require('package', 'package')
-};
 var utils  = module.require('package', 'utils');
 var bundle  = module.require('package', 'bundle');
-
-var helper_module = new ModuleManager(['chrome://uxu/content/test/helper']);
-var TestUtils     = helper_module.require('class', 'test_utils');
-var action        = helper_module.require('package', 'action');
+var runner_utils = module.require('package', 'runner_utils');
  
 /* UTILITIES */ 
 	 
@@ -259,8 +253,7 @@ function TestReportHandler(aTestCase) {
 	this.testCase = aTestCase;
 	this.mFinishHandlers = [
 		(function() {
-			this.testCase.environment.utils.cleanUpTempFiles();
-			this.testCase.environment.utils.cleanUpModifiedPrefs();
+			runner_utils.onFinish(this.testCase);
 		})
 	];
 }
@@ -523,19 +516,9 @@ function loadFile(aFile) {
 	var url = utils.getURLSpecFromFilePath(aFile.path);
 
 	try {
-		var suite = {};
-		suite.TestCase      = mozlab.mozunit.TestCase;
-		suite.Specification = mozlab.mozunit.TestCase;
-		suite.assert        = mozlab.mozunit.assertions;
-		suite.fileURL       = url;
-		suite.baseURL       = suite.fileURL.replace(/[^/]*$/, '');
-		suite.utils         = new TestUtils(suite);
-		suite.utils.fileURL = suite.fileURL;
-		suite.utils.baseURL = suite.baseURL;
-		suite.Do            = function(aObject) { return this.utils.Do(aObject); };
-		suite.action        = action;
-		suite.utils.include(suite.fileURL);
-	} catch(e) {
+		var suite = runner_utils.createTestSuite(url);
+	}
+	catch(e) {
 		if (/\.(js|jsm)$/i.test(aFile.leafName))
 			onError(e);
 		suite = null;
@@ -550,51 +533,47 @@ function initializeTests(aSuites) {
 
 	var onSyncTestEnd = function() {
 			syncTestCount--;
-			if (!syncTestCount && !asyncTestCount)
+			if (!syncTestCount && !asyncTestCount) {
 				setRunningState(false);
-			if (!syncTestCount) onAllTestsFinish();
+				onAllTestsFinish();
+			}
 		};
 	var onAsyncTestEnd = function() {
 			asyncTestCount--;
-			if (!syncTestCount && !asyncTestCount)
+			if (!syncTestCount && !asyncTestCount) {
 				setRunningState(false);
-			if (!asyncTestCount) onAllTestsFinish();
+				onAllTestsFinish();
+			}
 		};
 
-	var tests = [];
+	var tests,
+		allTests = [];
 	aSuites.forEach(function(suite, aIndex) {
 		if (!suite) return;
 		try {
-			var testsFound  = false;
-			for (var thing in suite) {
-				if (!suite[thing]) continue;
-				if (suite[thing].__proto__ == mozlab.mozunit.TestCase.prototype) {
-					testsFound = true;
-
-					var testCase = suite[thing];
-					testCase.reportHandler = new TestReportHandler(testCase);
-					testCase.environment = suite;
-					if (testCase.runStrategy == 'async') {
-						testCase.reportHandler.onFinish = onAsyncTestEnd;
-						asyncTestCount++;
-					}
-					else {
-						testCase.reportHandler.onFinish = onSyncTestEnd;
-						syncTestCount++;
-					}
-					tests.push(testCase);
-				}
-			}
-
-			if(!testsFound)
+			tests = runner_utils.getTests(suite);
+			if (!tests.length)
 				throw new Error(bundle.getFormattedString('error_test_not_found', [suite.fileURL]));
 
-		} catch(e) {
+			tests.forEach(function(aTestCase) {
+				aTestCase.reportHandler = new TestReportHandler(aTestCase);
+				if (aTestCase.runStrategy == 'async') {
+					aTestCase.reportHandler.onFinish = onAsyncTestEnd;
+					asyncTestCount++;
+				}
+				else {
+					aTestCase.reportHandler.onFinish = onSyncTestEnd;
+					syncTestCount++;
+				}
+			}, this);
+			allTests = allTests.concat(tests);
+		}
+		catch(e) {
 			onError(e);
 		}
-	});
+	}, this);
 
-	return tests;
+	return allTests;
 }
   
 function stylizeSource(sourceDocument, lineCallback) { 

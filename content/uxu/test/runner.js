@@ -5,10 +5,7 @@ var assertions = lib_module.require('package', 'assertions');
 var fsm        = lib_module.require('package', 'fsm');
 var TestCase   = lib_module.require('class', 'test_case');
 var utils      = lib_module.require('package', 'utils');
-
-var helper_module = new ModuleManager(['chrome://uxu/content/test/helper']);
-var TestUtils     = helper_module.require('class', 'test_utils');
-var action        = helper_module.require('package', 'action');
+var runner_utils = lib_module.require('package', 'runner_utils');
 
 
 function constructor(files)
@@ -48,8 +45,7 @@ function run(reporter)
 					},
 					onFinish	 : function() {
 						runner.finish_test(reporter)
-						test.environment.utils.cleanUpTempFiles();
-						test.environment.utils.cleanUpModifiedPrefs();
+						runner_utils.onFinish(test);
 					}
 				};
 				test.run();
@@ -130,29 +126,8 @@ function loadFile(aFile, aReporter) {
 	var tests = [];
 
 	try {
-		var suite = {};
-
-		suite.TestCase      = TestCase;
-		suite.Specification = TestCase;
-		suite.assert        = assertions;
-		suite.fileURL       = utils.getURLSpecFromFilePath(aFile.path);
-		suite.baseURL       = suite.fileURL.replace(/[^/]*$/, '');
-		suite.utils         = new TestUtils(suite);
-		suite.utils.fileURL = suite.fileURL;
-		suite.utils.baseURL = suite.baseURL;
-		suite.Do            = function(aObject) { return this.utils.Do(aObject); };
-		suite.action        = action;
-		var script = utils.readFrom(suite.fileURL);
-		script = utils.convertFromDefaultEncoding(script);
-		suite.eval(script);
-
-		for (var thing in suite) {
-			if (!suite[thing]) continue;
-			if (suite[thing].__proto__ == TestCase.prototype) {
-				tests.push(suite[thing]);
-			}
-		}
-
+		var suite = runner_utils.createTestSuite(utils.getURLSpecFromFilePath(aFile.path), TestCase);
+		tests = runner_utils.getTests(suite, TestCase);
 		if (tests.length == 0)
 			aReporter.warn('No tests found in ' + aFile.path);
 	} catch (e) {
