@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>Reports of "%TEST_FILE%" : %ALL_TESTS_RESULT%</title>
+</head>
+<body>
+
+<div id="templates" style="display:none">
+
+	<div class="testcase">
+		<h2>%TEST_DESCRIPTION% : %RESULT%</p>
+		<!-- div.reports -->
+	</div>
+
+	<div class="reports">
+		<p>Details:</p>
+		<!-- div.report -->
+	</div>
+
+	<div class="report failure">
+		<h3>%TEST_NAME% : Failure</h3>
+		<p>%REPORT_DESCRIPTION%</p>
+		<ul>
+			<!-- li.stack -->
+		</ul>
+	</div>
+
+	<div class="report error">
+		<h3>%TEST_NAME% : Error</h3>
+		<p>%REPORT_DESCRIPTION%</p>
+		<ul>
+			<!-- li.stack -->
+		</ul>
+	</div>
+
+	<li class="stack">%REPORT_STACKTRACE%</li>
+
+</div>
+
+<div id="reports">
+<h1>Reports of "%TEST_FILE%"</h1>
+<dl>
+	<dt>Testcase</dt><dd>%TEST_FILE_FULL%</dd>
+	<dt>Date</dt><dd>%DATE%</dd>
+	<dt>Result</dt><dd>%ALL_TESTS_RESULT%</dd>
+</dl>
+<!-- div.testcase -->
+</div>
+
+</body>
+</html>
