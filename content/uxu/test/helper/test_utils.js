@@ -313,6 +313,7 @@ XToUnicode
 UnicodeToX
 fixupIncompleteURI
 doIteration
+Do
 ]]></>.toString()
 .replace(/^\s+|\s+$/g, '')
 .split('\n')

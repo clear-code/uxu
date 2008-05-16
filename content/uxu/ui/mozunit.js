@@ -532,7 +532,7 @@ function loadFile(aFile) {
 		suite.utils         = new TestUtils(suite);
 		suite.utils.fileURL = suite.fileURL;
 		suite.utils.baseURL = suite.baseURL;
-		suite.Do            = function(aGenerator) { return this.utils.doIteration(aGenerator); };
+		suite.Do            = function(aObject) { return this.utils.Do(aObject); };
 		suite.action        = action;
 		suite.utils.include(suite.fileURL);
 	} catch(e) {

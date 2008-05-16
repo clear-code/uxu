@@ -13,51 +13,57 @@ var action        = helper_module.require('package', 'action');
 
 function constructor(files)
 {
-    var i;
+	var i;
 
-    this.n_running_tests = 0;
-    this.files = files;
+	this.n_running_tests = 0;
+	this.files = files;
 }
 
 function run(reporter)
 {
-    var i, j;
-    var all_tests = [];
+	var i, j;
+	var all_tests = [];
 
-    this.n_running_tests = 0;
-    for (i = 0; i < this.files.length; i++) {
-        var file = this.files[i];
-        var tests = load(file, reporter);
+	this.n_running_tests = 0;
+	for (i = 0; i < this.files.length; i++) {
+		var file = this.files[i];
+		var tests = load(file, reporter);
 
-        all_tests.push(tests);
-    }
+		all_tests.push(tests);
+	}
 
 	this.start_test(reporter);
-    for (i = 0; i < all_tests.length; i++) {
-        var tests = all_tests[i];
+	for (i = 0; i < all_tests.length; i++) {
+		var tests = all_tests[i];
 
-        for (j = 0; j < tests.length; j++) {
-            var runner = this;
-            var test = tests[j];
+		for (j = 0; j < tests.length; j++) {
+			var runner = this;
+			var test = tests[j];
 
-            try {
-                this.start_test(reporter);
-                test.reportHandler = {
-                	handleReport : function(report) {reporter.report(report) },
-                	onFinish     : function() { runner.finish_test(reporter) }
-                };
-                test.run();
-            } catch (e) {
+			try {
+				this.start_test(reporter);
+				test.reportHandler = {
+					handleReport : function(report) {
+						reporter.report(report)
+					},
+					onFinish	 : function() {
+						runner.finish_test(reporter)
+						test.environment.utils.cleanUpTempFiles();
+						test.environment.utils.cleanUpModifiedPrefs();
+					}
+				};
+				test.run();
+			} catch (e) {
 				var report = {
 				  result: "error",
 				  exception: e,
 				  testDescription: "failed to run test: " + test.title
 				};
-                reporter.report(report)
+				reporter.report(report)
 				this.finish_test(reporter);
-            }
-        }
-    }
+			}
+		}
+	}
 	this.finish_test(reporter);
 }
 
@@ -78,7 +84,7 @@ function finish_test(reporter)
 
 function isRunning()
 {
-    return this.n_running_tests > 0;
+	return this.n_running_tests > 0;
 }
 
 function load(aFilePath, aReporter)
@@ -121,45 +127,48 @@ function loadFolder(aFolder, aReporter) {
 }
 
 function loadFile(aFile, aReporter) {
-    var tests = [];
+	var tests = [];
 
-    try {
-        var suite = {};
+	try {
+		var suite = {};
 
-        suite.TestCase      = TestCase;
-        suite.Specification = TestCase;
-        suite.assert        = assertions;
-        suite.fileURL       = utils.getURLSpecFromFilePath(aFile.path);
-        suite.baseURL       = suite.fileURL.replace(/[^/]*$/, '');
+		suite.TestCase      = TestCase;
+		suite.Specification = TestCase;
+		suite.assert        = assertions;
+		suite.fileURL       = utils.getURLSpecFromFilePath(aFile.path);
+		suite.baseURL       = suite.fileURL.replace(/[^/]*$/, '');
 		suite.utils         = new TestUtils(suite);
+		suite.utils.fileURL = suite.fileURL;
+		suite.utils.baseURL = suite.baseURL;
+		suite.Do            = function(aObject) { return this.utils.Do(aObject); };
 		suite.action        = action;
-        var script = utils.readFrom(suite.fileURL);
-        script = utils.convertFromDefaultEncoding(script);
-        suite.eval(script);
+		var script = utils.readFrom(suite.fileURL);
+		script = utils.convertFromDefaultEncoding(script);
+		suite.eval(script);
 
-        for (var thing in suite) {
-            if (!suite[thing]) continue;
-            if (suite[thing].__proto__ == TestCase.prototype) {
-                tests.push(suite[thing]);
-            }
-        }
+		for (var thing in suite) {
+			if (!suite[thing]) continue;
+			if (suite[thing].__proto__ == TestCase.prototype) {
+				tests.push(suite[thing]);
+			}
+		}
 
-        if (tests.length == 0)
-            aReporter.warn('No tests found in ' + aFile.path);
-    } catch (e) {
-        aReporter.error("failed to load " + aFile.path);
-        aReporter.error(e);
-    }
+		if (tests.length == 0)
+			aReporter.warn('No tests found in ' + aFile.path);
+	} catch (e) {
+		aReporter.error("failed to load " + aFile.path);
+		aReporter.error(e);
+	}
 
-    return tests;
+	return tests;
 }
 
 
 TestCase.prototype._original_run = TestCase.prototype.run;
 
 TestCase.prototype.run = function() {
-    runner = this[this._runStrategy == 'async' ? '_asyncRun1' : '_syncRun1'];
-    runner.call(this, this._tests, this._setUp, this._tearDown,
-				this._reportHandler, this.onTestRunFinished);
+	runner = this[this._runStrategy == 'async' ? '_asyncRun1' : '_syncRun1'];
+	runner.call(this, this._tests, this._setUp, this._tearDown,
+	            this._reportHandler, this.onTestRunFinished);
 };
 

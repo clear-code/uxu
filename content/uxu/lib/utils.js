@@ -452,3 +452,18 @@ function doIteration(aGenerator, aCallbacks) {
 
 	return retVal;
 }
+
+
+function Do(aObject) {
+	if (!aObject)
+		return aObject;
+	if (isGeneratedIterator(aObject))
+		return doIteration(aObject);
+	if (typeof aObject != 'function')
+		return aObject;
+
+	var retVal = aObject();
+	return (isGeneratedIterator(retVal)) ?
+				doIteration(retVal) :
+				retVal;
+}
