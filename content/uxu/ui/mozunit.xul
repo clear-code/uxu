@@ -12,199 +12,199 @@ the Free Software Foundation; either version 2 of the License, or
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA	02110-1301 USA
 
 Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 -->
 
 <!DOCTYPE window SYSTEM "chrome://uxu/locale/uxu.dtd">
 <window id="mozunit" title="&mozunit.title;"
-        windowtype="uxu:mozunit"
-        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-        xmlns:hy="http://hyperstruct.net/"
-        xmlns:html="http://www.w3.org/1999/xhtml"
-        onload="init();" onunload="finish();"
-        orient="vertical"
-        width="800" height="600"
-        persist="width,height,screenX,screenY"
-        ondragover="nsDragAndDrop.dragOver(event, fileDNDObserver);"
-        ondragexit="nsDragAndDrop.dragExit(event, fileDNDObserver);"
-        ondragdrop="nsDragAndDrop.drop(event, fileDNDObserver);">
+	windowtype="uxu:mozunit"
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:hy="http://hyperstruct.net/"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	onload="init();" onunload="finish();"
+	orient="vertical"
+	width="800" height="600"
+	persist="width,height,screenX,screenY"
+	ondragover="nsDragAndDrop.dragOver(event, fileDNDObserver);"
+	ondragexit="nsDragAndDrop.dragExit(event, fileDNDObserver);"
+	ondragdrop="nsDragAndDrop.drop(event, fileDNDObserver);">
 
-  <script type="application/x-javascript" src="chrome://global/content/nsDragAndDrop.js"/>
-  <script type="application/x-javascript" src="chrome://global/content/nsTransferable.js"/>
-  <script type="application/x-javascript;version=1.7" src="chrome://uxu/content/lib/module_manager.js"/>
-  <script type="application/x-javascript;version=1.7" src="chrome://uxu/content/ui/mozunit.js"/>
+	<script type="application/x-javascript" src="chrome://global/content/nsDragAndDrop.js"/>
+	<script type="application/x-javascript" src="chrome://global/content/nsTransferable.js"/>
+	<script type="application/x-javascript;version=1.7" src="chrome://uxu/content/lib/module_manager.js"/>
+	<script type="application/x-javascript;version=1.7" src="chrome://uxu/content/ui/mozunit.js"/>
 
-  <!-- COMMANDS -->
+	<!-- COMMANDS -->
 
-  <commandset>
-    <command id="run" label="&mozunit.run.label;" accesskey="&mozunit.run.accesskey;"
-             oncommand="run();"/>
-    <command id="stop" label="&mozunit.stop.label;" accesskey="&mozunit.stop.accesskey;"
-             oncommand="stop();"
-             disabled="true"
-             hidden="true"/>
-    <command id="toggle-content" oncommand="toggleContent();"
-             label="&mozunit.toggleContent.label;" accesskey="&mozunit.toggleContent.accesskey;"/>
-    <command id="open" label="&mozunit.open.label;" accesskey="&mozunit.open.accesskey;"
-             oncommand="openTestCase();"/>
-    <command id="openFolder" label="&mozunit.openFolder.label;" accesskey="&mozunit.openFolder.accesskey;"
-             oncommand="openTestCase(true);"/>
-    <command id="new" label="&mozunit.new.label;" accesskey="&mozunit.new.accesskey;"
-             oncommand="newTestCase();"/>
-    <command id="edit" label="&mozunit.edit.label;" accesskey="&mozunit.edit.accesskey;"
-             oncommand="openInEditor(_('file').value);"/>
-    <command id="quit" label="&mozunit.quit.label;" accesskey="&mozunit.quit.accesskey;"
-             oncommand="window.close();"/>
-  </commandset>
+	<commandset>
+		<command id="run" label="&mozunit.run.label;" accesskey="&mozunit.run.accesskey;"
+			oncommand="run();"/>
+		<command id="stop" label="&mozunit.stop.label;" accesskey="&mozunit.stop.accesskey;"
+			oncommand="stop();"
+			disabled="true"
+			hidden="true"/>
+		<command id="toggle-content" oncommand="toggleContent();"
+			label="&mozunit.toggleContent.label;" accesskey="&mozunit.toggleContent.accesskey;"/>
+		<command id="open" label="&mozunit.open.label;" accesskey="&mozunit.open.accesskey;"
+			oncommand="openTestCase();"/>
+		<command id="openFolder" label="&mozunit.openFolder.label;" accesskey="&mozunit.openFolder.accesskey;"
+			oncommand="openTestCase(true);"/>
+		<command id="new" label="&mozunit.new.label;" accesskey="&mozunit.new.accesskey;"
+			oncommand="newTestCase();"/>
+		<command id="edit" label="&mozunit.edit.label;" accesskey="&mozunit.edit.accesskey;"
+			oncommand="openInEditor(_('file').value);"/>
+		<command id="quit" label="&mozunit.quit.label;" accesskey="&mozunit.quit.accesskey;"
+			oncommand="window.close();"/>
+	</commandset>
 
-  <!-- KEYBINDINGS -->
+	<!-- KEYBINDINGS -->
 
-  <keyset>
-    <key id="key-new" command="new" key="n" modifiers="control"/>
-    <key id="key-open" command="open" key="o" modifiers="control"/>
-    <key id="key-openFolder" command="openFolder" key="f" modifiers="control"/>
-    <key id="key-run" command="run" key="r" modifiers="control"/>
-    <key id="key-stop" command="stop" key="s" modifiers="control"/>
-  </keyset>
+	<keyset>
+		<key id="key-new" command="new" key="n" modifiers="control"/>
+		<key id="key-open" command="open" key="o" modifiers="control"/>
+		<key id="key-openFolder" command="openFolder" key="f" modifiers="control"/>
+		<key id="key-run" command="run" key="r" modifiers="control"/>
+		<key id="key-stop" command="stop" key="s" modifiers="control"/>
+	</keyset>
 
-  <!-- BLUEPRINTS -->
-  
-  <box id="blueprints" hidden="true">
-    <vbox role="testcase-report" class="inset" style="margin-bottom: 1em;">
-      <vbox class="outset"
-            onclick="this.nextSibling.hidden = !this.nextSibling.hidden">
-        <hbox><label role="title" class="testcase-title" flex="1"/></hbox>
-        <hbox>
-          <progressmeter role="bar" mode="undetermined" value="0" flex="1"/> 
-          <label value="&mozunit.successes;"/>
-          <label role="success-counter" value="0"/>
-          <label value="/"/>
-          <label role="total-counter" value="0"/>
-        </hbox>
-      </vbox>
-      <vbox role="test-reports" style="padding-left: 5px; padding-right: 5px;"/>
-    </vbox>
+	<!-- BLUEPRINTS -->
+	
+	<box id="blueprints" hidden="true">
+		<vbox role="testcase-report" class="inset" style="margin-bottom: 1em;">
+			<vbox class="outset"
+				onclick="this.nextSibling.hidden = !this.nextSibling.hidden">
+				<hbox><label role="title" class="testcase-title" flex="1"/></hbox>
+				<hbox>
+					<progressmeter role="bar" mode="undetermined" value="0" flex="1"/> 
+					<label value="&mozunit.successes;"/>
+					<label role="success-counter" value="0"/>
+					<label value="/"/>
+					<label role="total-counter" value="0"/>
+				</hbox>
+			</vbox>
+			<vbox role="test-reports" style="padding-left: 5px; padding-right: 5px;"/>
+		</vbox>
 
-    <hbox role="test-report" class="inset" style="margin-top: 10px; margin-bottom: 10px; ">
-      <vbox role="result-box" pack="start" align="center">
-        <hbox style="margin-top: 10px;">
-          <image role="icon"/> 
-        </hbox>
-        <label role="result"/> 
-      </vbox>
-      <vbox flex="1">
-        <hbox><label role="description" flex="1"/></hbox>
-        <hbox><description role="additionalInfo" flex="1"/></hbox>
+		<hbox role="test-report" class="inset" style="margin-top: 10px; margin-bottom: 10px; ">
+			<vbox role="result-box" pack="start" align="center">
+				<hbox style="margin-top: 10px;">
+					<image role="icon"/> 
+				</hbox>
+				<label role="result"/> 
+			</vbox>
+			<vbox flex="1">
+				<hbox><label role="description" flex="1"/></hbox>
+				<hbox><description role="additionalInfo" flex="1"/></hbox>
 
-        <listbox hidden="true" role="stack-trace"
-                 flex="1" rows="5" class="inset"
-                 style="font-size: 0.8em;"
-                 onselect="showSource(this.selectedItem.label);"/>
-      </vbox>
-    </hbox>
-  </box>
+				<listbox hidden="true" role="stack-trace"
+					flex="1" rows="5" class="inset"
+					style="font-size: 0.8em;"
+					onselect="showSource(this.selectedItem.label);"/>
+			</vbox>
+		</hbox>
+	</box>
 
-  <!-- MENUS -->
+	<!-- MENUS -->
 
-  <toolbox>
-    <menubar>
-      <menu id="file-menu" label="&mozunit.file.label;" accesskey="&mozunit.file.accesskey;">
-        <menupopup>
-          <menuitem command="new" key="key-new"/>
-          <menuitem command="open" key="key-open"/>
-          <menuitem command="openFolder" key="key-openFolder"/>
-          <menuitem command="edit"/>
-          <menuseparator/>
-          <menuitem command="run" key="key-run"/>
-          <menuitem command="stop" key="key-stop"/>
-          <menuseparator/>
-          <menuitem command="quit"/>
-        </menupopup>
-      </menu>
-      <menu id="view-menu" label="&mozunit.view.label;" accesskey="&mozunit.view.accesskey;">
-        <menupopup>
-          <menuitem command="toggle-content"/>
-        </menupopup>
-      </menu>
-    </menubar>
-  </toolbox>
+	<toolbox>
+		<menubar>
+			<menu id="file-menu" label="&mozunit.file.label;" accesskey="&mozunit.file.accesskey;">
+				<menupopup>
+					<menuitem command="new" key="key-new"/>
+					<menuitem command="open" key="key-open"/>
+					<menuitem command="openFolder" key="key-openFolder"/>
+					<menuitem command="edit"/>
+					<menuseparator/>
+					<menuitem command="run" key="key-run"/>
+					<menuitem command="stop" key="key-stop"/>
+					<menuseparator/>
+					<menuitem command="quit"/>
+				</menupopup>
+			</menu>
+			<menu id="view-menu" label="&mozunit.view.label;" accesskey="&mozunit.view.accesskey;">
+				<menupopup>
+					<menuitem command="toggle-content"/>
+				</menupopup>
+			</menu>
+		</menubar>
+	</toolbox>
 
-  <!-- MAIN -->
+	<!-- MAIN -->
 
-  <hbox flex="1">
-    <vbox flex="1">
-      <toolbar>
-        <toolbaritem flex="1" align="center">
-          <label value="&mozunit.filePath;"/>
-          <label id="file"
-                 flex="1" value="" style="font-weight: bold;"
-                 crop="center"
-                 persist="value"/>
-        </toolbaritem>
-        <toolbarbutton command="edit"/>
-      </toolbar>
-      <hbox>
-        <button command="run" flex="1" style="font-weight: bold;"/>
-        <button command="stop" flex="1" style="font-weight: bold;"/>
-      </hbox>
+	<hbox flex="1">
+		<vbox flex="1">
+			<toolbar>
+				<toolbaritem flex="1" align="center">
+					<label value="&mozunit.filePath;"/>
+					<label id="file"
+						flex="1" value="" style="font-weight: bold;"
+						crop="center"
+						persist="value"/>
+				</toolbaritem>
+				<toolbarbutton command="edit"/>
+			</toolbar>
+			<hbox>
+				<button command="run" flex="1" style="font-weight: bold;"/>
+				<button command="stop" flex="1" style="font-weight: bold;"/>
+			</hbox>
 
-      <hbox flex="1">
-        <vbox flex="1" style="padding-top: 1em;">
-          <vbox id="prerun-report">
-            <label role="error" hidden="true" class="header" crop="right"/>
-            <listbox hidden="true" role="stack-trace"
-                     flex="1" rows="5" class="inset"
-                     style="font-size: 0.8em;"
-                     onselect="showSource(this.selectedItem.label);"/>
-          </vbox>
-          
-          <scrollbox id="testcase-reports" flex="1" orient="vertical" style="overflow: auto;"/>
-          
-          <splitter id="content-splitter" hidden="true"
-                    collapse="after" resizeafter="closest"/>
+			<hbox flex="1">
+				<vbox flex="1" style="padding-top: 1em;">
+					<vbox id="prerun-report">
+						<label role="error" hidden="true" class="header" crop="right"/>
+						<listbox hidden="true" role="stack-trace"
+							flex="1" rows="5" class="inset"
+							style="font-size: 0.8em;"
+							onselect="showSource(this.selectedItem.label);"/>
+					</vbox>
 
-          <browser id="content"
-                   type="content-primary"
-                   flex="1"
-                   src="about:blank" class="inset"
-                   style="background-color: white;"
-                   collapsed="true"/>          
-        </vbox>
+					<scrollbox id="testcase-reports" flex="1" orient="vertical" style="overflow: auto;"/>
 
-        <splitter id="source-splitter" hidden="true"/>
+					<splitter id="content-splitter" hidden="true"
+						collapse="after" resizeafter="closest"/>
 
-        <vbox id="source-viewer" width="300" collapsed="true">
-          <toolbar align="center">
-            <toolbaritem flex="1">
-              <label value="&mozunit.source;" class="header" flex="1"/>
-            </toolbaritem>
+					<browser id="content"
+						type="content-primary"
+						flex="1"
+						src="about:blank" class="inset"
+						style="background-color: white;"
+						collapsed="true"/>
+				</vbox>
 
-            <toolbarbutton label="&mozunit.close;" accesskey="l"
-                           oncommand="hideSource();"/>
-          </toolbar>
+				<splitter id="source-splitter" hidden="true"/>
 
-          <iframe role="source" flex="1" persist="width"
-                  src="about:blank" class="box-inset"/>
-        </vbox>
-      </hbox>
-    </vbox>
-  </hbox>
+				<vbox id="source-viewer" width="300" collapsed="true">
+					<toolbar align="center">
+						<toolbaritem flex="1">
+							<label value="&mozunit.source;" class="header" flex="1"/>
+						</toolbaritem>
 
-  <statusbar>
-    <statusbarpanel id="testResultStatus" flex="1" crop="end"/>
-    <statusbarpanel id="testRunningProgressMeterPanel"
-                     collapsed="true">
-      <progressmeter id="testRunningProgressMeter"
-                     mode="undetermined"
-                     value="0"/>
-    </statusbarpanel>
-  </statusbar>
+						<toolbarbutton label="&mozunit.close;" accesskey="l"
+							oncommand="hideSource();"/>
+					</toolbar>
+
+					<iframe role="source" flex="1" persist="width"
+						src="about:blank" class="box-inset"/>
+				</vbox>
+			</hbox>
+		</vbox>
+	</hbox>
+
+	<statusbar>
+		<statusbarpanel id="testResultStatus" flex="1" crop="end"/>
+		<statusbarpanel id="testRunningProgressMeterPanel"
+			collapsed="true">
+			<progressmeter id="testRunningProgressMeter"
+				mode="undetermined"
+				value="0"/>
+		</statusbarpanel>
+	</statusbar>
 </window>
 
