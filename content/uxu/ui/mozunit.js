@@ -496,7 +496,7 @@ function loadFolder(aFolder) {
 		});
 	return filesMayBeTest.map(function(aFile) {
 			return loadFile(aFile);
-		}));
+		});
 }
 var testFileNamePattern = /\.test\.js$/im;
 function collectTestFiles(aFolder) { 
