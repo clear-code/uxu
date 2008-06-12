@@ -216,7 +216,7 @@ function newTestCase() {
 }
 	
 function writeTemplate(filePath) { 
-	var data = utils.readFrom('chrome://uxu/locale/sample.js');
+	var data = utils.readFrom('chrome://uxu/locale/sample.test.js');
 	utils.writeTo(data, filePath);
 }
   
@@ -239,9 +239,9 @@ function pickTestFile(aOptions) {
 function makeTestCaseFileOptions(aIsFolder) { 
 	return {
 		defaultFile : _('file').value,
-		defaultExtension : 'js',
+		defaultExtension : 'test.js',
 		filters : {
-			'Javascript Files' : '*.js'
+			'Javascript Files' : '*.test.js'
 		},
 		title : bundle.getString(aIsFolder ? 'picker_title_open_testcase_folder' : 'picker_title_open_testcase' )
 	};
@@ -486,9 +486,23 @@ function stop() {
 }
 	
 function loadFolder(aFolder) { 
+	var filesMayBeTest = collectTestFiles(aFolder);
+	var nameList = filesMayBeTest.map(function(aFile) {
+			return aFile.leafName;
+		}).join('\n');
+	if (testFileNamePattern.test(nameList))
+		filesMayBeTest = filesMayBeTest.filter(function(aFile) {
+			return testFileNamePattern.test(aFile.leafName);
+		});
+	return filesMayBeTest.map(function(aFile) {
+			return loadFile(aFile);
+		}));
+}
+var testFileNamePattern = /\.test\.js$/im;
+function collectTestFiles(aFolder) { 
 	var files = aFolder.directoryEntries;
 	var file;
-	var suites = [];
+	var filesMayBeTest = [];
 	var ignoreHiddenFiles = utils.getPref('extensions.uxu.run.ignoreHiddenFiles');
 	while (files.hasMoreElements())
 	{
@@ -504,12 +518,14 @@ function loadFolder(aFolder) {
 			)
 			continue;
 
-		if (file.isDirectory())
-			suites = suites.concat(loadFolder(file));
-		else if (/\.js$/i.test(file.leafName))
-			suites.push(loadFile(file));
+		if (file.isDirectory()) {
+			filesMayBeTest = filesMayBeTest.concat(collectTestFiles(file));
+		}
+		else if (/\.js$/i.test(file.leafName)) {
+			filesMayBeTest.push(file);
+		}
 	}
-	return suites;
+	return filesMayBeTest;
 }
  
 function loadFile(aFile) { 

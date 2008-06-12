@@ -24,6 +24,11 @@ unitTest.tests = {
     }
 };
 
+// Custom assertions can be defined as:
+assert.isOK = function(aActualValue) {
+	this.equals(aActualValue == 'OK');
+}
+
 /*
 var functionalTest = new TestCase('functional test', {runStrategy: 'async'});
 

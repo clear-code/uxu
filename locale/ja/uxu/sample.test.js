@@ -27,6 +27,11 @@ unitTest.tests = {
     }
 };
 
+// カスタムアサーションも定義できます
+assert.isOK = function(aActualValue) {
+	this.equals(aActualValue == 'OK');
+}
+
 /*
 var functionalTest = new TestCase('機能テストの例', {runStrategy: 'async'});
 
