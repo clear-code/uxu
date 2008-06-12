@@ -96,30 +96,10 @@ function load(aFilePath, aReporter)
 }
 
 function loadFolder(aFolder, aReporter) {
-	var files = aFolder.directoryEntries;
-	var file;
-	var tests = [];
-	var ignoreHiddenFiles = utils.getPref('extensions.uxu.run.ignoreHiddenFiles');
-	while (files.hasMoreElements())
-	{
-		file = files.getNext()
-				.QueryInterface(Components.interfaces.nsILocalFile);
-
-		if (
-			ignoreHiddenFiles &&
-			(
-				file.isHidden() ||
-				file.leafName.indexOf('.') == 0
-			)
-			)
-			continue;
-
-		if (file.isDirectory())
-			tests = tests.concat(loadFolder(file, aReporter));
-		else
-			tests = tests.concat(loadFile(file, aReporter));
-	}
-	return tests;
+	var filesMayBeTest = runner_utils.getTestFiles(aFolder);
+	return filesMayBeTest.map(function(aFile) {
+			return loadFile(aFile, aReporter);
+		});
 }
 
 function loadFile(aFile, aReporter) {

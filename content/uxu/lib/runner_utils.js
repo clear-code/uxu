@@ -44,6 +44,47 @@ function getTests(aSuite, aTestCaseClass)
 	return tests;
 }
 
+function getTestFiles(aFolder) {
+	var filesMayBeTest = getTestFilesInternal(aFolder);
+	var nameList = filesMayBeTest.map(function(aFile) {
+			return aFile.leafName;
+		}).join('\n');
+	if (testFileNamePattern.test(nameList))
+		filesMayBeTest = filesMayBeTest.filter(function(aFile) {
+			return testFileNamePattern.test(aFile.leafName);
+		});
+	return filesMayBeTest;
+}
+var testFileNamePattern = /\.test\.js$/im;
+function getTestFilesInternal(aFolder) { 
+	var files = aFolder.directoryEntries;
+	var file;
+	var filesMayBeTest = [];
+	var ignoreHiddenFiles = utils.getPref('extensions.uxu.run.ignoreHiddenFiles');
+	while (files.hasMoreElements())
+	{
+		file = files.getNext()
+				.QueryInterface(Components.interfaces.nsILocalFile);
+
+		if (
+			ignoreHiddenFiles &&
+			(
+				file.isHidden() ||
+				file.leafName.indexOf('.') == 0
+			)
+			)
+			continue;
+
+		if (file.isDirectory()) {
+			filesMayBeTest = filesMayBeTest.concat(getTestFilesInternal(file));
+		}
+		else if (/\.js$/i.test(file.leafName)) {
+			filesMayBeTest.push(file);
+		}
+	}
+	return filesMayBeTest;
+}
+
 function onFinish(aTestCase)
 {
 	aTestCase.environment.utils.cleanUpTempFiles();

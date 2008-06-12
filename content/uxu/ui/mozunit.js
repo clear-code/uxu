@@ -486,46 +486,10 @@ function stop() {
 }
 	
 function loadFolder(aFolder) { 
-	var filesMayBeTest = collectTestFiles(aFolder);
-	var nameList = filesMayBeTest.map(function(aFile) {
-			return aFile.leafName;
-		}).join('\n');
-	if (testFileNamePattern.test(nameList))
-		filesMayBeTest = filesMayBeTest.filter(function(aFile) {
-			return testFileNamePattern.test(aFile.leafName);
-		});
+	var filesMayBeTest = runner_utils.getTestFiles(aFolder);
 	return filesMayBeTest.map(function(aFile) {
 			return loadFile(aFile);
 		});
-}
-var testFileNamePattern = /\.test\.js$/im;
-function collectTestFiles(aFolder) { 
-	var files = aFolder.directoryEntries;
-	var file;
-	var filesMayBeTest = [];
-	var ignoreHiddenFiles = utils.getPref('extensions.uxu.run.ignoreHiddenFiles');
-	while (files.hasMoreElements())
-	{
-		file = files.getNext()
-				.QueryInterface(Components.interfaces.nsILocalFile);
-
-		if (
-			ignoreHiddenFiles &&
-			(
-				file.isHidden() ||
-				file.leafName.indexOf('.') == 0
-			)
-			)
-			continue;
-
-		if (file.isDirectory()) {
-			filesMayBeTest = filesMayBeTest.concat(collectTestFiles(file));
-		}
-		else if (/\.js$/i.test(file.leafName)) {
-			filesMayBeTest.push(file);
-		}
-	}
-	return filesMayBeTest;
 }
  
 function loadFile(aFile) { 
