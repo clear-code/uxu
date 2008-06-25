@@ -101,7 +101,7 @@ function readFrom(aTarget, aEncoding) {
 			converterStream.init(stream, aEncoding, buffer,
 				converterStream.DEFAULT_REPLACEMENT_CHARACTER);
 			var out = { value : null };
-			converterStream.read(fileStream.available(), out);
+			converterStream.read(stream.available(), out);
 			converterStream.close();
 			fileContents = out.value;
 		}
