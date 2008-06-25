@@ -24,15 +24,13 @@ function equals(x, y, aMessage) {
     if(y != x)
         fail(bundle.getFormattedString('assert_equals', [x, y]), aMessage);
 }
-
-function equal(x, y, aMessage) {
-    this.equals(x, y, aMessage);
-}
+function equal(x, y, aMessage) { this.equals(x, y, aMessage); }
 
 function notEquals(x, y, aMessage) {
     if(y == x)
         fail(bundle.getFormattedString('assert_not_equals', [x, y]), aMessage);
 }
+function notEqual(x, y, aMessage) { this.notEquals(x, y, aMessage); }
 
 function isTrue(x, aMessage) {
     if(!x)
@@ -72,11 +70,13 @@ function raises(exception, code, context, aMessage) {
     if(!raised)
         fail(bundle.getFormattedString('assert_rases', [exception]), aMessage);
 }
+function raise(exception, code, context, aMessage) { this.raises(exception, code, context, aMessage); }
 
 function matches(pattern, string, aMessage) {
     if(!(string.match(pattern)))
         fail(bundle.getFormattedString('assert_matches', [pattern, string]), aMessage);
 }
+function matche(pattern, string, aMessage) { this.matches(pattern, string, aMessage); }
 
 function pattern(string, pattern, aMessage) {
     if(!(string.match(pattern)))
