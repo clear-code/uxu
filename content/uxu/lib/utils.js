@@ -97,7 +97,7 @@ function readFrom(aTarget, aEncoding) {
 		if (aEncoding) {
 			var converterStream = Components.classes['@mozilla.org/intl/converter-input-stream;1']
 					.createInstance(Components.interfaces.nsIConverterInputStream);
-			var buffer  = 1024;
+			var buffer = stream.available();
 			converterStream.init(stream, aEncoding, buffer,
 				converterStream.DEFAULT_REPLACEMENT_CHARACTER);
 			var out = { value : null };
@@ -164,7 +164,7 @@ function writeTo(aContent, aTarget, aEncoding) {
 	if (aEncoding) {
 		var converterStream = Components.classes['@mozilla.org/intl/converter-output-stream;1']
 				.createInstance(Components.interfaces.nsIConverterOutputStream);
-		var buffer = 1024;
+		var buffer = aContent.length;
 		converterStream.init(stream, aEncoding, buffer, Components.interfaces.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER);
 		converterStream.writeString(aContent);
 		converterStream.close();
