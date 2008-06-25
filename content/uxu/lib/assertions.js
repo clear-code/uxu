@@ -25,6 +25,10 @@ function equals(x, y, aMessage) {
         fail(bundle.getFormattedString('assert_equals', [x, y]), aMessage);
 }
 
+function equal(x, y, aMessage) {
+    this.equals(x, y, aMessage);
+}
+
 function notEquals(x, y, aMessage) {
     if(y == x)
         fail(bundle.getFormattedString('assert_not_equals', [x, y]), aMessage);
