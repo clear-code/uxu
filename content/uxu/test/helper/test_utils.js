@@ -309,8 +309,12 @@ setPref
 clearPref
 UTF8ToUnicode
 UnicodeToUTF8
+UTF8ToUCS2
+UCS2ToUTF8
 XToUnicode
 UnicodeToX
+XToUCS2
+UCS2ToX
 fixupIncompleteURI
 doIteration
 Do

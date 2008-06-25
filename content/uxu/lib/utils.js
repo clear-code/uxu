@@ -92,22 +92,32 @@ function readFrom(aTarget, aEncoding) {
 		}
 	}
 
+	var fileContents = null;
 	try {
-		var scriptableStream = Components.classes['@mozilla.org/scriptableinputstream;1']
-				.createInstance(Components.interfaces.nsIScriptableInputStream);
-		scriptableStream.init(stream);
-
-		var fileContents = scriptableStream.read(scriptableStream.available());
-
-		scriptableStream.close();
+		if (aEncoding) {
+			var converterStream = Components.classes['@mozilla.org/intl/converter-input-stream;1']
+					.createInstance(Components.interfaces.nsIConverterInputStream);
+			var buffer  = 1024;
+			converterStream.init(stream, aEncoding, buffer,
+				converterStream.DEFAULT_REPLACEMENT_CHARACTER);
+			var out = { value : null };
+			converterStream.read(converterStream.available(), out);
+			converterStream.close();
+			fileContents = out.value;
+		}
+		else {
+			var scriptableStream = Components.classes['@mozilla.org/scriptableinputstream;1']
+					.createInstance(Components.interfaces.nsIScriptableInputStream);
+			scriptableStream.init(stream);
+			fileContents = scriptableStream.read(scriptableStream.available());
+			scriptableStream.close();
+		}
+	}
+	finally {
 		stream.close();
-
-		return aEncoding ? XToUnicode(fileContents, aEncoding) : fileContents ;
-	}
-	catch(e) {
 	}
 
-	return null;
+	return fileContents;
 }
 
 // ファイルパスまたはURLで示された先のテキストファイルに文字列を書き出す
@@ -151,9 +161,17 @@ function writeTo(aContent, aTarget, aEncoding) {
 			.createInstance(Components.interfaces.nsIFileOutputStream);
 	stream.init(aTarget, 2, 0x200, false); // open as "write only"
 
-	if (aEncoding) aContent = UnicodeToX(aContent, aEncoding);
-
-	stream.write(aContent, aContent.length);
+	if (aEncoding) {
+		var converterStream = Components.classes['@mozilla.org/intl/converter-output-stream;1']
+				.createInstance(Components.interfaces.nsIConverterOutputStream);
+		var buffer = 1024;
+		converterStream.init(stream, aEncoding, buffer, Components.interfaces.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER);
+		converterStream.writeString(aContent);
+		converterStream.close();
+	}
+	else {
+		stream.write(aContent, aContent.length);
+	}
 
 	stream.close();
 
@@ -267,9 +285,16 @@ function clearPref(aKey) {
 
 
 function UTF8ToUnicode(aInput) {
-	return decodeURIComponent(escape(aInput));
+	return this.UTF8ToUCS2(aInput);
 }
 function UnicodeToUTF8(aInput) {
+	return this.UCS2ToUTF8(aInput);
+}
+
+function UTF8ToUCS2(aInput) {
+	return decodeURIComponent(escape(aInput));
+}
+function UCS2ToUTF8(aInput) {
 	return unescape(encodeURIComponent(aInput));
 }
 
@@ -277,6 +302,14 @@ var UCONV = Components.classes['@mozilla.org/intl/scriptableunicodeconverter']
 			.getService(Components.interfaces.nsIScriptableUnicodeConverter);
 
 function XToUnicode(aInput, aEncoding) {
+	return this.XToUCS2(aInput, aEncoding);
+}
+
+function UnicodeToX(aInput, aEncoding) {
+	return this.UCS2ToX(aInput, aEncoding);
+}
+
+function XToUCS2(aInput, aEncoding) {
 	if (aEncoding == 'UTF-8') return UTF8ToUnicode(aInput);
 	try {
 		UCONV.charset = aEncoding;
@@ -287,7 +320,7 @@ function XToUnicode(aInput, aEncoding) {
 	return aInput;
 }
 
-function UnicodeToX(aInput, aEncoding) {
+function UCS2ToX(aInput, aEncoding) {
 	if (aEncoding == 'UTF-8') return UnicodeToUTF8(aInput);
 
 	try {
