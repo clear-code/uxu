@@ -59,6 +59,7 @@ function constructor(title, opts) {
         return this._runStrategy;
     });
     this._tests = [];
+    this._context = {};
     this._reportHandler = _defaultReportHandler;
 
     this.__defineSetter__(
@@ -76,13 +77,22 @@ function constructor(title, opts) {
             this._reportHandler = callback;
         });
     this.__defineGetter__(
-        'reportHandler', function(callback) {
+        'reportHandler', function() {
             return this._reportHandler;
         });
 
     this.__defineGetter__(
         'title', function() {
             return this._title;
+        });
+
+    this.__defineSetter__(
+        'context', function(aContext) {
+            this._context = aContext;
+        });
+    this.__defineGetter__(
+        'context', function() {
+            return this._context;
         });
 
 	this._done = false;
@@ -134,17 +144,51 @@ function constructor(title, opts) {
  */
 
 function setTests(hash) {
-    for(var desc in hash) 
-        if(desc == 'setUp' || desc == 'given')
-            this._setUp = hash[desc];
-        else if(desc == 'tearDown')
-            this._tearDown = hash[desc];
-        else if(desc == 'inspect') {}
-        else
-            this._tests.push({
-                desc: desc,
-                code: hash[desc]});
+	this.context = hash;
+	for(var desc in hash)
+	{
+		if(desc == 'setUp' || desc == 'given') {
+			this._setUp = hash[desc];
+		}
+		else if(desc == 'tearDown') {
+			this._tearDown = hash[desc];
+		}
+		else if(desc == 'inspect') {
+		}
+		else if (!isTestDisabled(hash[desc])) {
+			this._tests.push({
+				desc: desc,
+				code: hash[desc]
+			});
+		}
+	}
 }
+
+// for UxU declaration style syntax
+function registerSetUp(aFunction) {
+	this._setUp = aFunction;
+}
+function registerTearDown(aFunction) {
+	this._tearDown = aFunction;
+}
+function registerTest(aFunction) {
+	if (isTestDisabled(aFunction)) return;
+	this._tests.push({
+		desc     : aFunction.description,
+		code     : aFunction
+	});
+}
+
+function isTestDisabled(aFunction) {
+	return 'enabled' in aFunction ? !aFunction.enbaled :
+		'disabled' in aFunction ? aFunction.disabled :
+		'available' in aFunction ? !aFunction.available :
+		'inavailable' in aFunction ? aFunction.inavailable :
+		'active' in aFunction ? !aFunction.active :
+		'inactive' in aFunction ? aFunction.inactive :
+			false
+}
+
 
 /**
  * Runs tests with strategy defined at construction time.
@@ -307,7 +351,7 @@ function _syncRun1(tests, setUp, tearDown, reportHandler) {
     var test, context, report;
     for(var i=0, l=tests.length; i<l; i++) {
         test = tests[i];
-        context = {};
+        context = test.context || {};
         report = _exec1(test.code, setUp, tearDown, context);
         report.testOwner = this;
         report.testDescription = test.desc;
@@ -352,7 +396,7 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler) {
               continuation('ok');
               return;
             }
-            context = {};
+            context = _this.context || {};
             report.report = {};
             try {
                 var result = setUp.call(context, continuation);

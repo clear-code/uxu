@@ -11,6 +11,7 @@ var helper_module = new ModuleManager(['chrome://uxu/content/test/helper']);
 var TestUtils     = helper_module.require('class', 'test_utils');
 var action        = helper_module.require('package', 'action');
 
+var TestCase = mozlab.mozunit.TestCase;
 
 function createTestSuite(aURL, aTestCaseClass)
 {
@@ -34,13 +35,46 @@ function createTestSuite(aURL, aTestCaseClass)
 function getTests(aSuite, aTestCaseClass)
 {
 	var tests = [];
-	for (var i in aSuite) {
-		if (!aSuite[i]) continue;
-		if (aSuite[i].__proto__ == (aTestCaseClass || mozlab.mozunit.TestCase).prototype) {
-			aSuite[i].environment = aSuite;
-			tests.push(aSuite[i]);
+
+	var newTestCase = null;
+	if (aSuite.description) {
+		var options = { runStrategy : aSuite.runStrategy };
+		if (aSuite.isAsync) options.runStrategy = 'async';
+		newTestCase = new TestCase(aSuite.description, options);
+	}
+
+	var obj;
+	for (var i in aSuite)
+	{
+		obj = aSuite[i];
+		if (!obj) continue;
+		if (obj.__proto__ == (aTestCaseClass || mozlab.mozunit.TestCase).prototype) {
+			obj.environment = aSuite;
+			tests.push(obj);
+			continue;
+		}
+
+		if (!newTestCase || typeof obj != 'function')
+			continue;
+
+		if (i.indexOf('setUp') == 0 ||
+			obj.isSetUp)
+			newTestCase.registerSetUp(obj);
+		else if (i.indexOf('tearDown') == 0 ||
+			obj.isTearDown)
+			newTestCase.registerTearDown(obj);
+		else if (i.indexOf('test') == 0 ||
+			obj.isTest || obj.description) {
+			newTestCase.registerTest(obj);
+			newTestCase.isValid = true;
 		}
 	}
+
+	if (newTestCase && newTestCase.isValid) {
+		newTestCase.context = aSuite;
+		tests.push(newTestCase);
+	}
+
 	return tests;
 }
 
