@@ -40,7 +40,7 @@ function testSomething2() {
 }
 
 testSomething3.description = '実行しないテスト';
-testSomething3.disabled = true;
+testSomething3.priority = 'never';
 // disabled, enabled, available, active, inactive のどれでも同様に動作
 function testSomething3() {
 	assert.notEqual(3, value);

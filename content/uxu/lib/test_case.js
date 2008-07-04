@@ -155,10 +155,11 @@ function setTests(hash) {
 		}
 		else if(desc == 'inspect') {
 		}
-		else if (!isTestDisabled(hash[desc])) {
+		else if (String(aFunction.priority).toLowerCase() != 'never') {
 			this._tests.push({
-				desc: desc,
-				code: hash[desc]
+				desc     : desc,
+				code     : hash[desc],
+				priority : has[desc].priority || 'normal'
 			});
 		}
 	}
@@ -172,21 +173,12 @@ function registerTearDown(aFunction) {
 	this._tearDown = aFunction;
 }
 function registerTest(aFunction) {
-	if (isTestDisabled(aFunction)) return;
+	if (String(aFunction.priority).toLowerCase() == 'never') return;
 	this._tests.push({
 		desc     : aFunction.description,
-		code     : aFunction
+		code     : aFunction,
+		priority : aFunction.priority || 'normal'
 	});
-}
-
-function isTestDisabled(aFunction) {
-	return 'enabled' in aFunction ? !aFunction.enbaled :
-		'disabled' in aFunction ? aFunction.disabled :
-		'available' in aFunction ? !aFunction.available :
-		'inavailable' in aFunction ? aFunction.inavailable :
-		'active' in aFunction ? !aFunction.active :
-		'inactive' in aFunction ? aFunction.inactive :
-			false
 }
 
 
