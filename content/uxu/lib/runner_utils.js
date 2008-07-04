@@ -35,14 +35,7 @@ function createTestSuite(aURL, aTestCaseClass)
 function getTests(aSuite, aTestCaseClass)
 {
 	var tests = [];
-
-	var newTestCase = null;
-	if (aSuite.description) {
-		var options = { runStrategy : aSuite.runStrategy };
-		if (aSuite.isAsync) options.runStrategy = 'async';
-		newTestCase = new TestCase(aSuite.description, options);
-	}
-
+	var testObjects = { tests : [] };
 	var obj;
 	for (var i in aSuite)
 	{
@@ -54,23 +47,35 @@ function getTests(aSuite, aTestCaseClass)
 			continue;
 		}
 
-		if (!newTestCase || typeof obj != 'function')
+		if (typeof obj != 'function')
 			continue;
 
+		// declaration style
 		if (i.indexOf('setUp') == 0 ||
 			obj.isSetUp)
-			newTestCase.registerSetUp(obj);
+			testObjects.setUp = obj;
 		else if (i.indexOf('tearDown') == 0 ||
 			obj.isTearDown)
-			newTestCase.registerTearDown(obj);
+			testObjects.tearDown = obj;
 		else if (i.indexOf('test') == 0 ||
-			obj.isTest || obj.description) {
-			newTestCase.registerTest(obj);
-			newTestCase.isValid = true;
-		}
+			obj.isTest || obj.description)
+			testObjects.tests.push(obj);
 	}
 
-	if (newTestCase && newTestCase.isValid) {
+	if (testObjects.tests.length) {
+		var options = { runStrategy : aSuite.runStrategy };
+		if (aSuite.isAsync) options.runStrategy = 'async';
+		var newTestCase = new TestCase(aSuite.description || aSuite.fileURL.match(/[^\/]+$/), options);
+
+		if (testObjects.setUp)
+			newTestCase.registerSetUp(testObjects.setUp);
+		if (testObjects.tearDown)
+			newTestCase.registerTearDown(testObjects.tearDown);
+
+		testObjects.tests.forEach(function(aTest) {
+			newTestCase.registerTest(aTest);
+		});
+
 		newTestCase.context = aSuite;
 		tests.push(newTestCase);
 	}
