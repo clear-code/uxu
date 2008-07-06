@@ -439,7 +439,7 @@ function run() {
 	var tests = initializeTests(suites);
 	this.runTests(tests);
 }
-	 
+	
 function loadSuites() 
 {
 	var path = _('file').value;
@@ -516,12 +516,12 @@ function runAgain() {
 		);
 	this.runTests(tests);
 }
- 	
+ 
 function stop() { 
 	shouldAbortTest = true;
 	_('stop').setAttribute('disabled', true);
 }
-	 
+	
 function loadFolder(aFolder) { 
 	var filesMayBeTest = runner_utils.getTestFiles(aFolder);
 	return filesMayBeTest.map(function(aFile) {
@@ -597,6 +597,9 @@ function initializeTests(aSuites, aFilter) {
 	return allTests;
 }
   
+function saveReport() { 
+}
+ 	
 function stylizeSource(sourceDocument, lineCallback) { 
 	var originalSource = sourceDocument.getElementsByTagName('pre')[0];
 	var processedSource = sourceDocument.createElementNS('http://www.w3.org/1999/xhtml', 'pre');

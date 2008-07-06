@@ -26,6 +26,8 @@
 <!ENTITY mozunit.new.accesskey "N">
 <!ENTITY mozunit.edit.label     "Edit...">
 <!ENTITY mozunit.edit.accesskey "E">
+<!ENTITY mozunit.saveReport.label     "Save Report">
+<!ENTITY mozunit.saveReport.accesskey "V">
 <!ENTITY mozunit.quit.label     "Quit">
 <!ENTITY mozunit.quit.accesskey "Q">
 

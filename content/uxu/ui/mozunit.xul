@@ -64,6 +64,9 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 			oncommand="newTestCase();"/>
 		<command id="edit" label="&mozunit.edit.label;" accesskey="&mozunit.edit.accesskey;"
 			oncommand="openInEditor(_('file').value);"/>
+		<command id="saveReport" label="&mozunit.saveReport.label;" accesskey="&mozunit.saveReport.accesskey;"
+			oncommand="saveReport();"
+			disabled="true"/>
 		<command id="quit" label="&mozunit.quit.label;" accesskey="&mozunit.quit.accesskey;"
 			oncommand="window.close();"/>
 	</commandset>
@@ -76,6 +79,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 		<key id="key-openFolder" command="openFolder" key="f" modifiers="control"/>
 		<key id="key-run" command="run" key="r" modifiers="control"/>
 		<key id="key-runAgain" command="runAgain" key="a" modifiers="control"/>
+		<key id="key-saveReport" command="saveReport" key="v" modifiers="control"/>
 		<key id="key-stop" command="stop" key="s" modifiers="control"/>
 	</keyset>
 
@@ -130,6 +134,10 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 					<menuitem command="run" key="key-run"/>
 					<menuitem command="stop" key="key-stop"/>
 					<menuseparator/>
+					<menuitem command="saveReport" key="key-saveReport"
+						hidden="true"/>
+					<menuseparator
+						hidden="true"/>
 					<menuitem command="quit"/>
 				</menupopup>
 			</menu>
