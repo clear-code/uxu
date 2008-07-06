@@ -46,6 +46,10 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 	<commandset>
 		<command id="run" label="&mozunit.run.label;" accesskey="&mozunit.run.accesskey;"
 			oncommand="run();"/>
+		<command id="runAgain" label="&mozunit.runAgain.label;" accesskey="&mozunit.runAgain.accesskey;"
+			oncommand="runAgain();"
+			disabled="true"
+			hidden="true"/>
 		<command id="stop" label="&mozunit.stop.label;" accesskey="&mozunit.stop.accesskey;"
 			oncommand="stop();"
 			disabled="true"
@@ -71,6 +75,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 		<key id="key-open" command="open" key="o" modifiers="control"/>
 		<key id="key-openFolder" command="openFolder" key="f" modifiers="control"/>
 		<key id="key-run" command="run" key="r" modifiers="control"/>
+		<key id="key-runAgain" command="runAgain" key="a" modifiers="control"/>
 		<key id="key-stop" command="stop" key="s" modifiers="control"/>
 	</keyset>
 
@@ -153,6 +158,9 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 			<hbox>
 				<button command="run" flex="1" style="font-weight: bold;"/>
 				<button command="stop" flex="1" style="font-weight: bold;"/>
+			</hbox>
+			<hbox>
+				<button command="runAgain" flex="1" style="font-weight: bold;"/>
 			</hbox>
 
 			<hbox flex="1">

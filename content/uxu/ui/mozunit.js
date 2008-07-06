@@ -275,12 +275,13 @@ TestReportHandler.prototype = {
 	},
 	handleReport : function(report) {
 		var wTestCaseReport = this.getTestCaseReport(this.testCase.title);
+		_(wTestCaseReport).setAttribute('test-id', report.testID);
 		_(wTestCaseReport, 'bar').setAttribute('mode', 'determined');
 		_(wTestCaseReport, 'bar').setAttribute(
 			'value', parseInt(report.testIndex / report.testCount * 100));
 		_(wTestCaseReport, 'total-counter').value = report.testCount;
 
-		if(report.result == 'success') {
+		if (report.result == 'success') {
 			var successes = parseInt(_(wTestCaseReport, 'success-counter').value);
 			_(wTestCaseReport, 'success-counter').value = successes + 1;
 			return;
@@ -296,7 +297,7 @@ TestReportHandler.prototype = {
 		_(wTestReport, 'description').textContent = report.testDescription;
 		_(wTestReport, 'description').setAttribute('tooltiptext', report.testDescription);
 		_(wTestReport).setAttribute('report-type', report.result);
-		if(report.exception) {
+		if (report.exception) {
 			_(wTestReport, 'additionalInfo').textContent = report.exception.message;
 			if(report.exception.stack) {
 				displayStackTrace(report.exception.stack, _(wTestReport, 'stack-trace'));
@@ -332,9 +333,13 @@ function onAllTestsFinish()
 	var failures = getFailureReports();
 	var errors = getErrorReports();
 	if (shouldAbortTest) {
+		_('runAgain').removeAttribute('disabled');
+		_('runAgain').removeAttribute('hidden');
 		_('testResultStatus').setAttribute('label', bundle.getString('all_abort'));
 	}
 	else if (failures.length || errors.length) {
+		_('runAgain').removeAttribute('disabled');
+		_('runAgain').removeAttribute('hidden');
 		scrollReportsTo(failures.length ? failures[0] : errors[0]);
 		var status = [];
 		if (failures.length) status.push(bundle.getFormattedString('all_result_failure', [failures.length]));
@@ -346,7 +351,7 @@ function onAllTestsFinish()
 		_('testResultStatus').setAttribute('label', bundle.getString('all_result_success'));
 	}
 };
- 	
+ 
 function onError(aError) 
 {
 	_('prerun-report', 'error').value = bundle.getFormattedString('error_failed', [aError.toString()]);
@@ -408,6 +413,8 @@ function setRunningState(aRunning) {
 	if (aRunning) {
 		_('run').setAttribute('disabled', true);
 		_('run').setAttribute('hidden', true);
+		_('runAgain').setAttribute('disabled', true);
+		_('runAgain').setAttribute('hidden', true);
 		_('stop').removeAttribute('disabled');
 		_('stop').removeAttribute('hidden');
 		_('testRunningProgressMeter').setAttribute('mode', 'determined');
@@ -417,6 +424,8 @@ function setRunningState(aRunning) {
 	else {
 		_('run').removeAttribute('disabled');
 		_('run').removeAttribute('hidden');
+		_('runAgain').setAttribute('disabled', true);
+		_('runAgain').setAttribute('hidden', true);
 		_('stop').setAttribute('disabled', true);
 		_('stop').setAttribute('hidden', true);
 		_('testRunningProgressMeter').setAttribute('mode', 'undetermined');
@@ -426,9 +435,13 @@ function setRunningState(aRunning) {
  
 function run() { 
 	reset();
-
-	shouldAbortTest = false;
-
+	var suites = loadSuites();
+	var tests = initializeTests(suites);
+	this.runTests(tests);
+}
+	 
+function loadSuites() 
+{
 	var path = _('file').value;
 	var file = utils.makeFileWithPath(path);
 
@@ -438,9 +451,12 @@ function run() {
 	else
 		suites = [loadFile(file)];
 
-	var tests = initializeTests(suites);
-
-	var max = tests.length + 1;
+	return suites;
+}
+ 
+function runTests(aTests) { 
+	shouldAbortTest = false;
+	var max = aTests.length + 1;
 	var runTest = function(aTest, aIndex) {
 			if (shouldAbortTest) {
 				setRunningState(false);
@@ -463,28 +479,49 @@ function run() {
 		};
 
 	if (utils.getPref('extensions.uxu.run.async')) {
-		tests.forEach(runTest);
+		aTests.forEach(runTest);
 	}
 	else {
 		var count = 0;
 		var test;
 		window.setTimeout(function() {
-			if ((!test || test.done) && tests.length) {
-				test = tests.shift();
+			if ((!test || test.done) && aTests.length) {
+				test = aTests.shift();
 				runTest(test, count++);
 			}
-			if (tests.length)
+			if (aTests.length)
 				window.setTimeout(arguments.callee, 100);
 		}, 100);
 	}
 }
 var shouldAbortTest = false;
- 
+  
+function runAgain() { 
+	var failedTests = {};
+	[].concat(getFailureReports()).concat(getErrorReports())
+		.forEach(function(aTestReport) {
+			var title = aTestReport.parentNode.parentNode.getAttribute('title');
+			if (title in failedTests) return;
+			failedTests[title] = true;
+		});
+
+	reset();
+
+	var suites = loadSuites();
+	var tests = initializeTests(
+			suites,
+			function(aTest) {
+				return aTest.title in failedTests;
+			}
+		);
+	this.runTests(tests);
+}
+ 	
 function stop() { 
 	shouldAbortTest = true;
 	_('stop').setAttribute('disabled', true);
 }
-	
+	 
 function loadFolder(aFolder) { 
 	var filesMayBeTest = runner_utils.getTestFiles(aFolder);
 	return filesMayBeTest.map(function(aFile) {
@@ -507,7 +544,10 @@ function loadFile(aFile) {
 	return suite;
 }
  
-function initializeTests(aSuites) { 
+function initializeTests(aSuites, aFilter) { 
+	if (!aFilter)
+		aFilter = function(aTest) { return true; };
+
 	var syncTestCount = 0;
 	var asyncTestCount = 0;
 
@@ -535,6 +575,7 @@ function initializeTests(aSuites) {
 			if (!tests.length)
 				throw new Error(bundle.getFormattedString('error_test_not_found', [suite.fileURL]));
 
+			tests = tests.filter(aFilter);
 			tests.forEach(function(aTestCase) {
 				aTestCase.reportHandler = new TestReportHandler(aTestCase);
 				if (aTestCase.runStrategy == 'async') {

@@ -159,7 +159,8 @@ function setTests(hash) {
 			this._tests.push({
 				desc     : desc,
 				code     : hash[desc],
-				priority : hash[desc].priority || 'normal'
+				priority : (hash[desc].priority || 'normal'),
+				id       : 'test-'+parseInt(Math.random() * 65000)
 			});
 		}
 	}
@@ -177,7 +178,8 @@ function registerTest(aFunction) {
 	this._tests.push({
 		desc     : aFunction.description,
 		code     : aFunction,
-		priority : aFunction.priority || 'normal'
+		priority : (aFunction.priority || 'normal'),
+		id       : 'test-'+parseInt(Math.random() * 65000)
 	});
 }
 
@@ -347,6 +349,7 @@ function _syncRun1(tests, setUp, tearDown, reportHandler) {
         report = _exec1(test.code, setUp, tearDown, context);
         report.testOwner = this;
         report.testDescription = test.desc;
+        report.testID = test.id;
         report.testCode = test.code;
         report.testIndex = i+1;
         report.testCount = l;
