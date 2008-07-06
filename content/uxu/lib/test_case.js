@@ -155,11 +155,11 @@ function setTests(hash) {
 		}
 		else if(desc == 'inspect') {
 		}
-		else if (String(has[desc].priority).toLowerCase() != 'never') {
+		else if (String(hash[desc].priority).toLowerCase() != 'never') {
 			this._tests.push({
 				desc     : desc,
 				code     : hash[desc],
-				priority : has[desc].priority || 'normal'
+				priority : hash[desc].priority || 'normal'
 			});
 		}
 	}
