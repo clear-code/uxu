@@ -401,6 +401,8 @@ function hideSource() {
 }
  
 function reset() { 
+	_('runAgain').setAttribute('disabled', true);
+	_('runAgain').setAttribute('hidden', true);
 	_('prerun-report', 'error').hidden = true;
 	_('prerun-report', 'stack-trace').hidden = true;
 	_('testResultStatus').setAttribute('label', '');
