@@ -155,7 +155,7 @@ function setTests(hash) {
 		}
 		else if(desc == 'inspect') {
 		}
-		else if (String(aFunction.priority).toLowerCase() != 'never') {
+		else if (String(has[desc].priority).toLowerCase() != 'never') {
 			this._tests.push({
 				desc     : desc,
 				code     : hash[desc],
