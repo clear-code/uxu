@@ -21,40 +21,40 @@ var bundle = module.require('package', 'bundle');
 
 
 function equals(x, y, aMessage) {
-    if(y != x)
+    if (y != x)
         fail(bundle.getFormattedString('assert_equals', [x, y]), aMessage);
 }
 function equal(x, y, aMessage) { this.equals(x, y, aMessage); }
 
 function notEquals(x, y, aMessage) {
-    if(y == x)
+    if (y == x)
         fail(bundle.getFormattedString('assert_not_equals', [x, y]), aMessage);
 }
 function notEqual(x, y, aMessage) { this.notEquals(x, y, aMessage); }
 
 function isTrue(x, aMessage) {
-    if(!x)
+    if (!x)
         fail(bundle.getFormattedString('assert_is_true', [x]), aMessage);
 }
 
 function isDefined(x, aMessage) {
-    if(x == null ||
+    if (x == null ||
        x == undefined)
         fail(bundle.getFormattedString('assert_is_defined', [x]), aMessage);
 }
 
 function isUndefined(x, aMessage) {
-    if(x != undefined)
+    if (x != undefined)
         fail(bundle.getFormattedString('assert_is_undefined', [x]), aMessage);
 }
 
 function isFalse(x, aMessage) {
-    if(x)
+    if (x)
         fail(bundle.getFormattedString('assert_is_false', [x]), aMessage);
 }
 
 function isNull(x, aMessage) {
-    if(x != null)
+    if (x != null)
         fail(bundle.getFormattedString('assert_is_null', [x]), aMessage);
 }
 
@@ -67,21 +67,29 @@ function raises(exception, code, context, aMessage) {
     } catch(e if e.name == exception) {
         raised = true;
     }
-    if(!raised)
+    if (!raised)
         fail(bundle.getFormattedString('assert_rases', [exception]), aMessage);
 }
 function raise(exception, code, context, aMessage) { this.raises(exception, code, context, aMessage); }
 
 function matches(pattern, string, aMessage) {
-    if(!(string.match(pattern)))
+    if (!(string.match(pattern)))
         fail(bundle.getFormattedString('assert_matches', [pattern, string]), aMessage);
 }
 function matche(pattern, string, aMessage) { this.matches(pattern, string, aMessage); }
 
 function pattern(string, pattern, aMessage) {
-    if(!(string.match(pattern)))
+    if (!(string.match(pattern)))
         fail(bundle.getFormattedString('assert_pattern', [string, pattern]), aMessage);
 }
+
+function arrayEquals(arrayExpected, arrayActual, aMessage) {
+    equals(arrayExpected.length, arrayActual.length, aMessage);
+    arrayExpected.forEach(function(aExpected, aIndex) {
+        equals(aExpected.valueOf(), arrayActual[aIndex].valueOf(), aMessage);
+    });
+}
+function arrayEqual(arrayExpected, arrayActual, aMessage) { this.arrayEquals(arrayExpected, arrayActual, aMessage); }
 
 function fail() {
 	var error = new Error()
