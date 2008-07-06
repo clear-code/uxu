@@ -83,13 +83,26 @@ function pattern(string, pattern, aMessage) {
         fail(bundle.getFormattedString('assert_pattern', [string, pattern]), aMessage);
 }
 
-function arrayEquals(arrayExpected, arrayActual, aMessage) {
-    equals(arrayExpected.length, arrayActual.length, aMessage);
-    arrayExpected.forEach(function(aExpected, aIndex) {
-        equals(aExpected.valueOf(), arrayActual[aIndex].valueOf(), aMessage);
+function notPattern(string, pattern, aMessage) {
+    if ((string.match(pattern)))
+        fail(bundle.getFormattedString('assert_not_pattern', [string, pattern]), aMessage);
+}
+
+function arrayEquals(expected, actual, aMessage) {
+    equals(
+        expected.length,
+        actual.length,
+        (aMessage || '') + bundle.getFormattedString('assert_array_equals', [expected, actual])
+    );
+    expected.forEach(function(aExpected, aIndex) {
+        equals(
+            aExpected.valueOf(),
+            actual[aIndex].valueOf(),
+            (aMessage || '') + bundle.getFormattedString('assert_array_equals', [expected, actual])
+        );
     });
 }
-function arrayEqual(arrayExpected, arrayActual, aMessage) { this.arrayEquals(arrayExpected, arrayActual, aMessage); }
+function arrayEqual(expected, actual, aMessage) { this.arrayEquals(expected, actual, aMessage); }
 
 function fail() {
 	var error = new Error()
