@@ -10,7 +10,7 @@
 		<em:version>0.4.0</em:version>
 		<em:description>Provides features for unit tests and functional tests.</em:description>
 		<em:creator>ClearCode inc.</em:creator>
-		<!--em:optionsURL>chrome://uxu/content/config/config.xul</em:optionsURL-->
+		<em:optionsURL>chrome://uxu/content/ui/config.xul</em:optionsURL>
 		<em:homepageURL>http://www.clear-code.com/oss/uxu/</em:homepageURL>
 
 		<em:updateURL>http://www.clear-code.com/update.rdf</em:updateURL>
