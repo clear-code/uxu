@@ -77,6 +77,8 @@ function constructor(title, opts, namespace) {
 	}
 	this._namespace = namespace;
 
+	this.masterPriority = null;
+
 	this.__defineSetter__(
 		'tests', function(hash) {
 			this.setTests(hash);
@@ -196,26 +198,27 @@ function registerTest(aFunction) {
 
 function shoudDoTest(aTest) {
 	var shouldDo = true;
-	switch (aTest.priority)
+	var random = Math.random();
+	switch (this.masterPriority || aTest.priority)
 	{
 		case 'must':
 			break;
 
 		case 'important':
-			if (Math.random() > 0.9) shouldDo = false;
+			if (random > 0.9) shouldDo = false;
 			break;
 
 		case 'high':
-			if (Math.random() > 0.7) shouldDo = false;
+			if (random > 0.7) shouldDo = false;
 			break;
 
 		case 'normal':
 		default:
-			if (Math.random() > 0.5) shouldDo = false;
+			if (random > 0.5) shouldDo = false;
 			break;
 
 		case 'low':
-			if (Math.random() > 0.25) shouldDo = false;
+			if (random > 0.25) shouldDo = false;
 			break;
 
 		case 'never':

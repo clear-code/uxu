@@ -94,7 +94,7 @@ function getErrorReports()
 }
   
 /* file picker */ 
-	
+	 
 function pickFile(aMode, aOptions) { 
 	if (!aOptions) aOptions = {};
 	var mode = 'mode' + (aMode ?
@@ -146,7 +146,7 @@ function pickFileUrl(mode, aOptions) {
 }
  
 const fileDNDObserver = { 
-	
+	 
 	isTestCase : function(aFile) 
 	{
 		return aFile && (aFile.isDirectory() || /\.js$/.test(aFile.leafName));
@@ -201,7 +201,7 @@ function finish() {
 }
   
 /* test cases */ 
-	
+	 
 function newTestCase() { 
 	var file = pickFile('save', makeTestCaseFileOptions());
 	if(file) {
@@ -281,16 +281,25 @@ TestReportHandler.prototype = {
 			'value', parseInt(report.testIndex / report.testCount * 100));
 		_(wTestCaseReport, 'total-counter').value = report.testCount;
 
+		gTotalCount++;
 		switch (report.result)
 		{
 			case 'success':
+				gSuccessCount++;
 				var successes = parseInt(_(wTestCaseReport, 'success-counter').value);
 				_(wTestCaseReport, 'success-counter').value = successes + 1;
 				return;
 			case 'passover':
+				gPassOverCount++;
 				var passover = parseInt(_(wTestCaseReport, 'passover-counter').value);
 				_(wTestCaseReport, 'passover-counter').value = passover + 1;
 				return;
+			case 'failure':
+				gFailureCount++;
+				break;
+			case 'error':
+				gErrorCount++;
+				break;
 			default:
 				break;
 		}
@@ -338,26 +347,30 @@ TestReportHandler.prototype = {
  
 function onAllTestsFinish() 
 {
-	var failures = getFailureReports();
-	var errors = getErrorReports();
 	if (shouldAbortTest) {
-		_('runAgain').removeAttribute('disabled');
-		_('runAgain').removeAttribute('hidden');
 		_('testResultStatus').setAttribute('label', bundle.getString('all_abort'));
+		return;
 	}
-	else if (failures.length || errors.length) {
-		_('runAgain').removeAttribute('disabled');
-		_('runAgain').removeAttribute('hidden');
+	else if (gFailureCount || gErrorCount) {
+		var failures = getFailureReports();
+		var errors = getErrorReports();
 		scrollReportsTo(failures.length ? failures[0] : errors[0]);
 		var status = [];
-		if (failures.length) status.push(bundle.getFormattedString('all_result_failure', [failures.length]));
-		if (errors.length) status.push(bundle.getFormattedString('all_result_error', [errors.length]));
+		if (failures.length) status.push(bundle.getFormattedString('all_result_failure', [gFailureCount]));
+		if (errors.length) status.push(bundle.getFormattedString('all_result_error', [gErrorCount]));
 		_('testResultStatus').setAttribute('label', status.join(' / '));
 	}
 	else {
 		scrollReportsTo(_('testcase-reports').firstChild);
 		_('testResultStatus').setAttribute('label', bundle.getString('all_result_success'));
 	}
+	_('testResultStatistical').hidden = false;
+	_('testResultStatistical').setAttribute('label',
+		bundle.getFormattedString(
+			'all_result_statistical',
+			[gTotalCount, gSuccessCount, gFailureCount, gErrorCount, gPassOverCount]
+		)
+	);
 };
  
 function onError(aError) 
@@ -409,22 +422,32 @@ function hideSource() {
 }
  
 function reset() { 
-	_('runAgain').setAttribute('disabled', true);
-	_('runAgain').setAttribute('hidden', true);
+	gTotalCount    = 0;
+	gSuccessCount  = 0;
+	gPassOverCount = 0;
+	gErrorCount    = 0;
+	gFailureCount  = 0;
 	_('prerun-report', 'error').hidden = true;
 	_('prerun-report', 'stack-trace').hidden = true;
 	_('testResultStatus').setAttribute('label', '');
+	_('testResultStatistical').setAttribute('label', '');
+	_('testResultStatistical').hidden = true;
 	removeChildrenOf(_('prerun-report', 'stack-trace'));
 	removeChildrenOf(_('testcase-reports'))
 	hideSource();
 }
+var gTotalCount    = 0;
+var gSuccessCount  = 0;
+var gPassOverCount = 0;
+var gErrorCount    = 0;
+var gFailureCount  = 0;
  
 function setRunningState(aRunning) { 
 	if (aRunning) {
 		_('run').setAttribute('disabled', true);
 		_('run').setAttribute('hidden', true);
-		_('runAgain').setAttribute('disabled', true);
-		_('runAgain').setAttribute('hidden', true);
+		_('runAll').setAttribute('disabled', true);
+		_('runAll').setAttribute('hidden', true);
 		_('stop').removeAttribute('disabled');
 		_('stop').removeAttribute('hidden');
 		_('testRunningProgressMeter').setAttribute('mode', 'determined');
@@ -434,22 +457,22 @@ function setRunningState(aRunning) {
 	else {
 		_('run').removeAttribute('disabled');
 		_('run').removeAttribute('hidden');
-		_('runAgain').setAttribute('disabled', true);
-		_('runAgain').setAttribute('hidden', true);
+		_('runAll').removeAttribute('disabled');
+		_('runAll').removeAttribute('hidden');
 		_('stop').setAttribute('disabled', true);
 		_('stop').setAttribute('hidden', true);
 		_('testRunningProgressMeter').setAttribute('mode', 'undetermined');
 		_('testRunningProgressMeterPanel').setAttribute('collapsed', true);
 	}
 }
- 
+ 	
 function run() { 
 	reset();
 	var suites = loadSuites();
 	var tests = initializeTests(suites);
 	this.runTests(tests);
 }
-	
+	 
 function loadSuites() 
 {
 	var path = _('file').value;
@@ -506,24 +529,13 @@ function runTests(aTests) {
 }
 var shouldAbortTest = false;
   
-function runAgain() { 
-	var failedTests = {};
-	[].concat(getFailureReports()).concat(getErrorReports())
-		.forEach(function(aTestReport) {
-			var title = aTestReport.parentNode.parentNode.getAttribute('title');
-			if (title in failedTests) return;
-			failedTests[title] = true;
-		});
-
+function runAll() { 
 	reset();
-
 	var suites = loadSuites();
-	var tests = initializeTests(
-			suites,
-			function(aTest) {
-				return aTest.title in failedTests;
-			}
-		);
+	var tests = initializeTests(suites);
+	tests.forEach(function(aTestCase) {
+		aTestCase.masterPriority = 'must';
+	});
 	this.runTests(tests);
 }
  
@@ -531,7 +543,7 @@ function stop() {
 	shouldAbortTest = true;
 	_('stop').setAttribute('disabled', true);
 }
-	
+	 
 function loadFolder(aFolder) { 
 	var filesMayBeTest = runner_utils.getTestFiles(aFolder);
 	return filesMayBeTest.map(function(aFile) {
@@ -609,7 +621,7 @@ function initializeTests(aSuites, aFilter) {
   
 function saveReport() { 
 }
- 	
+ 
 function stylizeSource(sourceDocument, lineCallback) { 
 	var originalSource = sourceDocument.getElementsByTagName('pre')[0];
 	var processedSource = sourceDocument.createElementNS('http://www.w3.org/1999/xhtml', 'pre');

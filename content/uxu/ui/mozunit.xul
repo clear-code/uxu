@@ -46,10 +46,8 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 	<commandset>
 		<command id="run" label="&mozunit.run.label;" accesskey="&mozunit.run.accesskey;"
 			oncommand="run();"/>
-		<command id="runAgain" label="&mozunit.runAgain.label;" accesskey="&mozunit.runAgain.accesskey;"
-			oncommand="runAgain();"
-			disabled="true"
-			hidden="true"/>
+		<command id="runAll" label="&mozunit.runAll.label;" accesskey="&mozunit.runAll.accesskey;"
+			oncommand="runAll();"/>
 		<command id="stop" label="&mozunit.stop.label;" accesskey="&mozunit.stop.accesskey;"
 			oncommand="stop();"
 			disabled="true"
@@ -78,7 +76,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 		<key id="key-open" command="open" key="o" modifiers="control"/>
 		<key id="key-openFolder" command="openFolder" key="f" modifiers="control"/>
 		<key id="key-run" command="run" key="r" modifiers="control"/>
-		<key id="key-runAgain" command="runAgain" key="a" modifiers="control"/>
+		<key id="key-runAll" command="runAll" key="a" modifiers="control"/>
 		<key id="key-saveReport" command="saveReport" key="v" modifiers="control"/>
 		<key id="key-stop" command="stop" key="s" modifiers="control"/>
 	</keyset>
@@ -166,11 +164,11 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 				<toolbarbutton command="edit"/>
 			</toolbar>
 			<hbox>
-				<button command="run" flex="1" style="font-weight: bold;"/>
-				<button command="stop" flex="1" style="font-weight: bold;"/>
+				<button command="run" flex="4" style="font-weight: bold;"/>
+				<button command="runAll" flex="1" style="font-weight: bold;"/>
 			</hbox>
 			<hbox>
-				<button command="runAgain" flex="1" style="font-weight: bold;"/>
+				<button command="stop" flex="1" style="font-weight: bold;"/>
 			</hbox>
 
 			<hbox flex="1">
@@ -217,6 +215,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 
 	<statusbar>
 		<statusbarpanel id="testResultStatus" flex="1" crop="end"/>
+		<statusbarpanel id="testResultStatistical" flex="1" crop="end"/>
 		<statusbarpanel id="testRunningProgressMeterPanel"
 			collapsed="true">
 			<progressmeter id="testRunningProgressMeter"

@@ -12,8 +12,8 @@
 
 <!ENTITY mozunit.run.label     "Run">
 <!ENTITY mozunit.run.accesskey "R">
-<!ENTITY mozunit.runAgain.label     "Run again only failed tests">
-<!ENTITY mozunit.runAgain.accesskey "a">
+<!ENTITY mozunit.runAll.label     "Run All">
+<!ENTITY mozunit.runAll.accesskey "a">
 <!ENTITY mozunit.stop.label     "Stop">
 <!ENTITY mozunit.stop.accesskey "S">
 <!ENTITY mozunit.toggleContent.label     "Toggle Content">
