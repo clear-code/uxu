@@ -12,9 +12,10 @@
 
 <!ENTITY mozunit.run.label     "Run">
 <!ENTITY mozunit.run.accesskey "R">
-<!ENTITY mozunit.run.options   "Options">
-<!ENTITY mozunit.runAll.label     "Run All">
-<!ENTITY mozunit.runAll.accesskey "a">
+<!ENTITY mozunit.run.options   "Run with Options">
+<!ENTITY mozunit.runPriority.label "Run tests by priorities (default)">
+<!ENTITY mozunit.runAll.label      "Run all tests ignoring priority">
+<!ENTITY mozunit.runFailed.label   "Run again only failed tests">
 <!ENTITY mozunit.stop.label     "Stop">
 <!ENTITY mozunit.stop.accesskey "S">
 <!ENTITY mozunit.toggleContent.label     "Toggle Content">

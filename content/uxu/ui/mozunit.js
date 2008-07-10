@@ -352,6 +352,7 @@ function onAllTestsFinish()
 		return;
 	}
 	else if (gFailureCount || gErrorCount) {
+		_('runFailed').removeAttribute('disabled');
 		var failures = getFailureReports();
 		var errors = getErrorReports();
 		scrollReportsTo(failures.length ? failures[0] : errors[0]);
@@ -372,7 +373,7 @@ function onAllTestsFinish()
 		)
 	);
 };
- 
+ 	
 function onError(aError) 
 {
 	_('prerun-report', 'error').value = bundle.getFormattedString('error_failed', [aError.toString()]);
@@ -427,6 +428,7 @@ function reset() {
 	gPassOverCount = 0;
 	gErrorCount    = 0;
 	gFailureCount  = 0;
+	_('runFailed').setAttribute('disabled', true);
 	_('prerun-report', 'error').hidden = true;
 	_('prerun-report', 'stack-trace').hidden = true;
 	_('testResultStatus').setAttribute('label', '');
@@ -446,7 +448,9 @@ function setRunningState(aRunning) {
 	if (aRunning) {
 		_('run-box').setAttribute('hidden', true);
 		_('run').setAttribute('disabled', true);
+		_('runPriority').setAttribute('disabled', true);
 		_('runAll').setAttribute('disabled', true);
+-		_('runFailed').setAttribute('disabled', true);
 		_('stop-box').removeAttribute('hidden');
 		_('stop').removeAttribute('disabled');
 		_('testRunningProgressMeter').setAttribute('mode', 'determined');
@@ -456,21 +460,23 @@ function setRunningState(aRunning) {
 	else {
 		_('run-box').removeAttribute('hidden');
 		_('run').removeAttribute('disabled');
+		_('runPriority').removeAttribute('disabled');
 		_('runAll').removeAttribute('disabled');
+-		_('runFailed').setAttribute('disabled', true);
 		_('stop-box').setAttribute('hidden', true);
 		_('stop').setAttribute('disabled', true);
 		_('testRunningProgressMeter').setAttribute('mode', 'undetermined');
 		_('testRunningProgressMeterPanel').setAttribute('collapsed', true);
 	}
 }
- 	
+ 
 function run() { 
 	reset();
 	var suites = loadSuites();
 	var tests = initializeTests(suites);
 	this.runTests(tests);
 }
-	 
+	
 function loadSuites() 
 {
 	var path = _('file').value;
@@ -534,6 +540,26 @@ function runAll() {
 	tests.forEach(function(aTestCase) {
 		aTestCase.masterPriority = 'must';
 	});
+	this.runTests(tests);
+}
+ 
+function runFailed() { 
+	var failedTests = {};
+	[].concat(getFailureReports()).concat(getErrorReports())
+		.forEach(function(aTestReport) {
+			var title = aTestReport.parentNode.parentNode.getAttribute('title');
+			if (title in failedTests) return;
+			failedTests[title] = true;
+		});
+	reset();
+ 	var suites = loadSuites();
+	var tests = initializeTests(
+			suites,
+			function(aTest) {
+				aTest.masterPriority = 'must';
+				return aTest.title in failedTests;
+			}
+		);
 	this.runTests(tests);
 }
  

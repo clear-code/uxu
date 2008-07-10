@@ -46,8 +46,10 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 	<commandset>
 		<command id="run" label="&mozunit.run.label;" accesskey="&mozunit.run.accesskey;"
 			oncommand="run();"/>
-		<command id="runAll" label="&mozunit.runAll.label;" accesskey="&mozunit.runAll.accesskey;"
-			oncommand="runAll();"/>
+		<command id="runPriority" label="&mozunit.runPriority.label;" oncommand="run();"/>
+		<command id="runAll" label="&mozunit.runAll.label;" oncommand="runAll();"/>
+		<command id="runFailed" label="&mozunit.runFailed.label;" oncommand="runFailed();"
+			disabled="true"/>
 		<command id="stop" label="&mozunit.stop.label;" accesskey="&mozunit.stop.accesskey;"
 			oncommand="stop();"
 			disabled="true"/>
@@ -75,7 +77,6 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 		<key id="key-open" command="open" key="o" modifiers="control"/>
 		<key id="key-openFolder" command="openFolder" key="f" modifiers="control"/>
 		<key id="key-run" command="run" key="r" modifiers="control"/>
-		<key id="key-runAll" command="runAll" key="a" modifiers="control"/>
 		<key id="key-saveReport" command="saveReport" key="v" modifiers="control"/>
 		<key id="key-stop" command="stop" key="s" modifiers="control"/>
 	</keyset>
@@ -131,6 +132,9 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 					<menuitem command="edit"/>
 					<menuseparator/>
 					<menuitem command="run" key="key-run"/>
+					<menuitem command="runAll" key="key-runAll"/>
+					<menuitem command="runFailed" key="key-runFailed"/>
+					<menuseparator/>
 					<menuitem command="stop" key="key-stop"/>
 					<menuseparator/>
 					<menuitem command="saveReport" key="key-saveReport"
@@ -166,7 +170,10 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 				<button command="run" flex="1" style="font-weight: bold;"/>
 				<toolbarbutton label="&mozunit.run.options;" type="menu">
 					<menupopup>
+						<menuitem command="runPriority"/>
 						<menuitem command="runAll"/>
+						<menuseparator/>
+						<menuitem command="runFailed"/>
 					</menupopup>
 				</toolbarbutton>
 			</hbox>

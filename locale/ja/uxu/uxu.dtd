@@ -12,9 +12,10 @@
 
 <!ENTITY mozunit.run.label     "実行">
 <!ENTITY mozunit.run.accesskey "R">
-<!ENTITY mozunit.run.options   "オプション">
-<!ENTITY mozunit.runAll.label     "すべて実行">
-<!ENTITY mozunit.runAll.accesskey "A">
+<!ENTITY mozunit.run.options   "方法を指定して実行">
+<!ENTITY mozunit.runPriority.label "優先度に従って実行（通常の実行）">
+<!ENTITY mozunit.runAll.label      "優先度を無視してすべて実行">
+<!ENTITY mozunit.runFailed.label   "失敗したテストだけ再実行">
 <!ENTITY mozunit.stop.label     "中止">
 <!ENTITY mozunit.stop.accesskey "S">
 <!ENTITY mozunit.toggleContent.label     "内容の表示/非表示切り替え">
