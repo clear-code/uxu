@@ -500,3 +500,23 @@ function Do(aObject) {
 				doIteration(retVal) :
 				retVal;
 }
+
+
+var _db = null;
+function getDB() {
+	if (_db) return _db;
+
+	const DirectoryService = Components
+		.classes['@mozilla.org/file/directory_service;1']
+		.getService(Components.interfaces.nsIProperties);
+	var file = DirectoryService.get('ProfD', Components.interfaces.nsIFile);
+	file.append('uxu.sqlite');
+
+	const StorageService = Components
+		.classes['@mozilla.org/storage/service;1']
+		.getService(Components.interfaces.mozIStorageService);
+	_db = StorageService.openDatabase(file);
+
+	return _db;
+}
+

@@ -288,17 +288,19 @@ function _exec1(test, setUp, tearDown, context, continuation, aReport) {
 			utils.doIteration(result, {
 				onEnd : function(e) {
 					aReport.report.result = 'success';
-					_onSuccess(test);
+					_onFinish(test, aReport.report.result);
 					continuation('ok');
 				},
 				onFail : function(e) {
 					aReport.report.result = 'failure';
 					aReport.report.exception = e;
+					_onFinish(test, aReport.report.result);
 					continuation('ok');
 				},
 				onError : function(e) {
 					aReport.report.result = 'error';
 					aReport.report.exception = e;
+					_onFinish(test, aReport.report.result);
 					continuation('ok');
 				}
 			});
@@ -313,13 +315,15 @@ function _exec1(test, setUp, tearDown, context, continuation, aReport) {
 			tearDown.call(context);
 
 		report.result = 'success';
-		_onSuccess(test);
+		_onFinish(test, report.result);
 	} catch(exception if exception.name == 'AssertionFailed') {
 		report.result = 'failure';
 		report.exception = exception;
+		_onFinish(test, report.result);
 	} catch(exception) {
 		report.result = 'error';
 		report.exception = exception;
+		_onFinish(test, report.result);
 	}
 
 	return report;
@@ -434,9 +438,7 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler) {
 			}
 		},
 		doReport: function(continuation) {
-			if (report.report.result == 'success')
-				_onSuccess(tests[testIndex]);
-
+			_onFinish(tests[testIndex], report.report.result);
 			report.report.testOwner = _this;
 			report.report.testIndex = testIndex + 1;
 			report.report.testCount = tests.length;
@@ -462,6 +464,7 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler) {
 							continuation('ok');
 						},
 						onError : function(e) {
+							_onFinish(tests[testIndex], 'error');
 							continuation('ko');
 						}
 					});
@@ -492,6 +495,26 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler) {
 }
  
 function _checkPriorityToExec(aTest) { 
+	var db = utils.getDB();
+	var statement = db.createStatement(
+		  'SELECT result FROM result_history WHERE name = ?1'
+		);
+	var lastResult;
+	try {
+		statement.bindStringParameter(0, aTest.name);
+		while (statement.executeStep()) {
+			lastResult = statement.getString(0);
+		}
+	}
+	finally {
+		statement.reset();
+	}
+	if (lastResult == 'failure' || lastResult == 'error') {
+dump('DO BECAUSE LAST RESULT IS '+lastResult+'\n');
+		return true;
+	}
+
+dump('DO BY PRIORITY\n');
 	var shouldDo = true;
 	var priority = (aTest.priority == 'never') ? 'never' : (this.masterPriority || aTest.priority);
 	switch (priority)
@@ -523,7 +546,41 @@ function _checkPriorityToExec(aTest) {
 	return shouldDo;
 }
  
-function _onSuccess(aTest) { 
+function _onFinish(aTest, aResult) { 
+	var db = utils.getDB();
+	db.executeSimpleSQL(<![CDATA[
+	  CREATE TABLE IF NOT EXISTS result_history
+	    (name        TEXT PRIMARY KEY,
+	     description TEXT,
+	     result      TEXT,
+	     date        DATETIME)
+	]]>.toString());
+
+	var statement = db.createStatement(
+		  'INSERT OR REPLACE INTO result_history VALUES(?1, ?2, ?3, ?4)'
+		);
+	try {
+		statement.bindStringParameter(0, aTest.name);
+		statement.bindStringParameter(1, aTest.desc);
+		statement.bindStringParameter(2, aResult);
+		statement.bindDoubleParameter(3, Date.now());
+		while (statement.executeStep()) {}
+	}
+	finally {
+		statement.reset();
+	}
+
+	var days = utils.getPref('extensions.uxu.run.history.expire.days');
+	if (days < 0) return;
+
+	var cleanUpStatement = db.createStatement('DELETE FROM result_history WHERE date < ?1');
+	try {
+		cleanUpStatement.bindDoubleParameter(0, Date.now() - (1000 * 60 * 60 * 24 * days));
+		while (cleanUpStatement.executeStep()) {}
+	}
+	finally {
+		cleanUpStatement.reset();
+	}
 }
   
 function _defaultReportHandler(report) { 
