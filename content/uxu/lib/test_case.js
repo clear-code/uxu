@@ -510,11 +510,9 @@ function _checkPriorityToExec(aTest) {
 		statement.reset();
 	}
 	if (lastResult == 'failure' || lastResult == 'error') {
-dump('DO BECAUSE LAST RESULT IS '+lastResult+'\n');
 		return true;
 	}
 
-dump('DO BY PRIORITY\n');
 	var shouldDo = true;
 	var priority = (aTest.priority == 'never') ? 'never' : (this.masterPriority || aTest.priority);
 	switch (priority)
