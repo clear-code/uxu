@@ -148,20 +148,16 @@ function setTests(hash) {
 	for(var desc in hash)
 	{
 		if(desc == 'setUp' || desc == 'given') {
-			this._setUp = hash[desc];
+			registerSetUp(hash[desc]);
 		}
 		else if(desc == 'tearDown') {
-			this._tearDown = hash[desc];
+			registerTearDown(hash[desc]);
 		}
 		else if(desc == 'inspect') {
 		}
-		else if (String(hash[desc].priority).toLowerCase() != 'never') {
-			this._tests.push({
-				desc     : desc,
-				code     : hash[desc],
-				priority : (hash[desc].priority || 'normal'),
-				id       : 'test-'+parseInt(Math.random() * 65000)
-			});
+		else {
+			hash[desc].description = desc;
+			registerTest(hash[desc]);
 		}
 	}
 }
@@ -174,11 +170,16 @@ function registerTearDown(aFunction) {
 	this._tearDown = aFunction;
 }
 function registerTest(aFunction) {
-	if (String(aFunction.priority).toLowerCase() == 'never') return;
+	var priority = String(aFunction.priority).toLowerCase() || 'normal';
+	switch (priority)
+	{
+		case 'never':
+			return;
+	}
 	this._tests.push({
 		desc     : aFunction.description,
 		code     : aFunction,
-		priority : (aFunction.priority || 'normal'),
+		priority : priority,
 		id       : 'test-'+parseInt(Math.random() * 65000)
 	});
 }
