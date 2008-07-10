@@ -50,56 +50,71 @@ var utils = mozlab_custom_module.require('package', 'utils');
  *
  */
 
-function constructor(title, opts) {
-    opts = opts || {};
+function constructor(title, opts, namespace) {
+	opts = opts || {};
 
-    this._title = title;
-    this._runStrategy = opts.runStrategy;
-    this.__defineGetter__('runStrategy', function() {
-        return this._runStrategy;
-    });
-    this._tests = [];
-    this._context = {};
-    this._reportHandler = _defaultReportHandler;
+	this._title = title;
+	this._runStrategy = opts.runStrategy;
+	this.__defineGetter__('runStrategy', function() {
+		return this._runStrategy;
+	});
+	this._tests = [];
+	this._context = {};
+	this._reportHandler = _defaultReportHandler;
 
-    this.__defineSetter__(
-        'tests', function(hash) {
-            this.setTests(hash);
-        });
+	if (!namespace) {
+		var path;
+		var stack = Components.stack;
+		do {
+			path = stack.filename;
+			if (path.indexOf('chrome://uxu/content/test/helper/subScriptRunner.js?') != 0)
+				continue;
+			/.+includeSource=([^;]+)/.test(path);
+			namespace = RegExp.$1;
+			break;
+		}
+		while (stack = stack.caller);
+	}
+	this._namespace = namespace;
 
-    this.__defineSetter__(
-        'stateThat', function(hash) {
-            this.setTests(hash);
-        });
+	this.__defineSetter__(
+		'tests', function(hash) {
+			this.setTests(hash);
+		});
 
-    this.__defineSetter__(
-        'reportHandler', function(callback) {
-            this._reportHandler = callback;
-        });
-    this.__defineGetter__(
-        'reportHandler', function() {
-            return this._reportHandler;
-        });
+	this.__defineSetter__(
+		'stateThat', function(hash) {
+			this.setTests(hash);
+		});
 
-    this.__defineGetter__(
-        'title', function() {
-            return this._title;
-        });
+	this.__defineSetter__(
+		'reportHandler', function(callback) {
+			this._reportHandler = callback;
+		});
+	this.__defineGetter__(
+		'reportHandler', function() {
+			return this._reportHandler;
+		});
 
-    this.__defineSetter__(
-        'context', function(aContext) {
-            this._context = aContext;
-        });
-    this.__defineGetter__(
-        'context', function() {
-            return this._context;
-        });
+	this.__defineGetter__(
+		'title', function() {
+			return this._title;
+		});
+
+	this.__defineSetter__(
+		'context', function(aContext) {
+			this._context = aContext;
+		});
+	this.__defineGetter__(
+		'context', function() {
+			return this._context;
+		});
 
 	this._done = false;
-    this.__defineGetter__(
-        'done', function() {
-            return this._done;
-        });
+	this.__defineGetter__(
+		'done', function() {
+			return this._done;
+		});
 }
 
 /**
@@ -148,16 +163,16 @@ function setTests(hash) {
 	for(var desc in hash)
 	{
 		if(desc == 'setUp' || desc == 'given') {
-			registerSetUp(hash[desc]);
+			this.registerSetUp(hash[desc]);
 		}
 		else if(desc == 'tearDown') {
-			registerTearDown(hash[desc]);
+			this.registerTearDown(hash[desc]);
 		}
 		else if(desc == 'inspect') {
 		}
 		else {
 			hash[desc].description = desc;
-			registerTest(hash[desc]);
+			this.registerTest(hash[desc]);
 		}
 	}
 }
@@ -170,39 +185,44 @@ function registerTearDown(aFunction) {
 	this._tearDown = aFunction;
 }
 function registerTest(aFunction) {
-	var priority = String(aFunction.priority).toLowerCase() || 'normal';
-	switch (priority)
+	this._tests.push({
+		name     : (this._namespace + '::' + this.title + '::' + aFunction.description),
+		desc     : aFunction.description,
+		code     : aFunction,
+		priority : (String(aFunction.priority).toLowerCase() || 'normal'),
+		id       : 'test-'+parseInt(Math.random() * 65000)
+	});
+}
+
+function shoudDoTest(aTest) {
+	var shouldDo = true;
+	switch (aTest.priority)
 	{
 		case 'must':
 			break;
 
 		case 'important':
-			if (Math.random() > 0.9) return;
+			if (Math.random() > 0.9) shouldDo = false;
 			break;
 
 		case 'high':
-			if (Math.random() > 0.7) return;
+			if (Math.random() > 0.7) shouldDo = false;
 			break;
 
 		case 'normal':
 		default:
-			if (Math.random() > 0.5) return;
+			if (Math.random() > 0.5) shouldDo = false;
 			break;
 
 		case 'low':
-			if (Math.random() > 0.25) return;
+			if (Math.random() > 0.25) shouldDo = false;
 			break;
 
 		case 'never':
-			return;
+			shouldDo = false;
+			break;
 	}
-
-	this._tests.push({
-		desc     : aFunction.description,
-		code     : aFunction,
-		priority : priority,
-		id       : 'test-'+parseInt(Math.random() * 65000)
-	});
+	return shouldDo;
 }
 
 
@@ -216,9 +236,9 @@ function registerTest(aFunction) {
  */
 
 function run(aStopper) {
-    this._stopper = aStopper;
-    this[this._runStrategy == 'async' ? '_asyncRun1' : '_syncRun1'](
-        this._tests, this._setUp, this._tearDown, this._reportHandler);
+	this._stopper = aStopper;
+	this[this._runStrategy == 'async' ? '_asyncRun1' : '_syncRun1'](
+		this._tests, this._setUp, this._tearDown, this._reportHandler);
 }
 
 /**
@@ -227,7 +247,7 @@ function run(aStopper) {
  */
 
 function setUp(fn) {
-    this._setUp = fn;
+	this.registerSetUp(fn);
 }
 
 /**
@@ -237,7 +257,8 @@ function setUp(fn) {
  */
 
 function test(desc, code) {
-    this._tests.push([desc, code]);
+	code.description = desc;
+	this.registerTest(code);
 }
 
 /**
@@ -246,7 +267,7 @@ function test(desc, code) {
  */
 
 function tearDown(fn) {
-    this._tearDown = fn;
+	this.registerTearDown(fn);
 }
 
 /**
@@ -259,7 +280,7 @@ function tearDown(fn) {
  */
 
 function verify(aStopper) {
-    this.run(aStopper);
+	this.run(aStopper);
 }
 
 /**
@@ -268,7 +289,7 @@ function verify(aStopper) {
  */
 
 function given(fn) {
-    this.setUp(fn);
+	this.setUp(fn);
 }
 
 /**
@@ -277,258 +298,276 @@ function given(fn) {
  */
 
 function states(desc, fn) {
-    this.test(desc, fn);
+	this.test(desc, fn);
 }
 
 /*  Side effect-free functions. They're the ones who do the real job. :-) */  
 
 function _formatStackTrace1(exception) {
-    function comesFromFramework(call) {
-        return (call.match(/@chrome:\/\/mozlab\/content\/lib\/fsm\.js:/) ||
-                call.match(/@chrome:\/\/mozlab\/content\/mozunit\/test_case\.js:/) ||
-                // Following is VERY kludgy
-                call.match(/\(function \(exitResult\) \{if \(eventHandlers/))
-    }
-    
-    var trace = '';
-    if(exception.stack) {
-        var calls = exception.stack.split('\n');
-        for each(var call in calls) {
-            if(call.length > 0 && !comesFromFramework(call)) {
-                call = call.replace(/\\n/g, '\n');
+	function comesFromFramework(call) {
+		return (call.match(/@chrome:\/\/mozlab\/content\/lib\/fsm\.js:/) ||
+				call.match(/@chrome:\/\/mozlab\/content\/mozunit\/test_case\.js:/) ||
+				// Following is VERY kludgy
+				call.match(/\(function \(exitResult\) \{if \(eventHandlers/))
+	}
 
-                if(call.length > 200)
-                    call =
-                        call.substr(0, 100) + ' [...] ' +
-                        call.substr(call.length - 100) + '\n';
+	var trace = '';
+	if(exception.stack) {
+		var calls = exception.stack.split('\n');
+		for each(var call in calls) {
+			if(call.length > 0 && !comesFromFramework(call)) {
+				call = call.replace(/\\n/g, '\n');
 
-                trace += call + '\n';
-            }
-        }
-    }
-    return trace;
+				if(call.length > 200)
+					call =
+						call.substr(0, 100) + ' [...] ' +
+						call.substr(call.length - 100) + '\n';
+
+				trace += call + '\n';
+			}
+		}
+	}
+	return trace;
 }
 
-function _exec1(code, setUp, tearDown, context, continuation, aReport) {
-    var report = {
-        result:    undefined,
-        exception: undefined
-    };
+function _exec1(test, setUp, tearDown, context, continuation, aReport) {
+	var report = {
+		result:    undefined,
+		exception: undefined
+	};
 
-    if (this._stopper && this._stopper()) return report;
+	if (this._stopper && this._stopper()) return report;
 
-    try {
-        if(setUp)
-            setUp.call(context);
+	if (!shoudDoTest(test)) {
+		report.result = 'passover'; // 'success';
+		return report;
+	}
 
-        var result = code.call(context);
+	try {
+		if (setUp)
+			setUp.call(context);
 
-        if (utils.isGeneratedIterator(result)) {
-            aReport.report = report;
-            utils.doIteration(result, {
-                onEnd : function(e) {
-                    aReport.report.result = 'success';
-                    continuation('ok');
-                },
-                onFail : function(e) {
-                    aReport.report.result = 'failure';
-                    aReport.report.exception = e;
-                    continuation('ok');
-                },
-                onError : function(e) {
-                    aReport.report.result = 'error';
-                    aReport.report.exception = e;
-                    continuation('ok');
-                }
-            });
+		var result = test.code.call(context);
 
-            if(tearDown)
-                tearDown.call(context);
+		if (utils.isGeneratedIterator(result)) {
+			aReport.report = report;
+			utils.doIteration(result, {
+				onEnd : function(e) {
+					aReport.report.result = 'success';
+					continuation('ok');
+				},
+				onFail : function(e) {
+					aReport.report.result = 'failure';
+					aReport.report.exception = e;
+					continuation('ok');
+				},
+				onError : function(e) {
+					aReport.report.result = 'error';
+					aReport.report.exception = e;
+					continuation('ok');
+				}
+			});
 
-            return report;
-        }
+			if(tearDown)
+				tearDown.call(context);
 
-        if(tearDown)
-            tearDown.call(context);
+			return report;
+		}
 
-        report.result = 'success';
-    } catch(exception if exception.name == 'AssertionFailed') {
-        report.result = 'failure';
-        report.exception = exception;
-    } catch(exception) {
-        report.result = 'error';
-        report.exception = exception;
-    }
+		if(tearDown)
+			tearDown.call(context);
 
-    return report;
+		report.result = 'success';
+	} catch(exception if exception.name == 'AssertionFailed') {
+		report.result = 'failure';
+		report.exception = exception;
+	} catch(exception) {
+		report.result = 'error';
+		report.exception = exception;
+	}
+
+	return report;
 }
 
 function _syncRun1(tests, setUp, tearDown, reportHandler) {
-    var test, context, report;
-    for(var i=0, l=tests.length; i<l; i++) {
-        test = tests[i];
-        context = test.context || {};
-        report = _exec1(test.code, setUp, tearDown, context);
-        report.testOwner = this;
-        report.testDescription = test.desc;
-        report.testID = test.id;
-        report.testCode = test.code;
-        report.testIndex = i+1;
-        report.testCount = l;
-        if (typeof reportHandler == 'function')
-            reportHandler(report);
-        else if (reportHandler && 'handleReport' in reportHandler)
-            reportHandler.handleReport(report);
-        else
-            throw new Error('invalid report handler');
-    }
-    if (reportHandler && 'onFinish' in reportHandler)
-        reportHandler.onFinish();
+	var test, context, report;
+	for(var i=0, l=tests.length; i<l; i++) {
+		test = tests[i];
+		context = test.context || {};
+		report = _exec1(test, setUp, tearDown, context);
+		report.testOwner = this;
+		report.testDescription = test.desc;
+		report.testID = test.id;
+		report.testCode = test.code;
+		report.testIndex = i+1;
+		report.testCount = l;
+		if (typeof reportHandler == 'function')
+			reportHandler(report);
+		else if (reportHandler && 'handleReport' in reportHandler)
+			reportHandler.handleReport(report);
+		else
+			throw new Error('invalid report handler');
+	}
+	if (reportHandler && 'onFinish' in reportHandler)
+		reportHandler.onFinish();
 
-    this._done = true;
+	this._done = true;
 }
 
 function _asyncRun1(tests, setUp, tearDown, reportHandler) {
-    var testIndex = 0;
-    var context;
-    var report = { report : null };
+	var testIndex = 0;
+	var context;
+	var report = { report : null };
 
-    var stateTransitions = {
-        start:      { ok: 'doSetUp' },
-        doSetUp:    { ok: 'doTest', ko: 'doReport' },
-        doTest:     { ok: 'doReport' },
-        doReport:   { ok: 'doTearDown' },
-        doTearDown: { ok: 'nextTest', ko: 'nextTest' },
-        nextTest:   { ok: 'doSetUp', ko: 'finished' },
-        finished:   { }
-    }
+	var stateTransitions = {
+		start:         { ok: 'checkPriority' },
+		checkPriority: { ok: 'doSetUp', ko: 'nextTest' },
+		doSetUp:       { ok: 'doTest', ko: 'doReport' },
+		doTest:        { ok: 'doReport' },
+		doReport:      { ok: 'doTearDown' },
+		doTearDown:    { ok: 'nextTest', ko: 'nextTest' },
+		nextTest:      { ok: 'checkPriority', ko: 'finished' },
+		finished:      { }
+	}
 
-    _this = this;
-    var stateHandlers = {
-        start: function(continuation) {
-            continuation('ok')
-        },
-        doSetUp: function(continuation) {
-            if (!setUp) {
-              continuation('ok');
-              return;
-            }
-            context = _this.context || {};
-            report.report = {};
-            try {
-                var result = setUp.call(context, continuation);
-                if (utils.isGeneratedIterator(result)) {
-                    utils.doIteration(result, {
-                        onEnd : function(e) {
-                            if (setUp.arity == 0) continuation('ok');
-                        },
-                        onError : function(e) {
-                            report.report.result = 'error';
-                            report.report.exception = e;
-                            report.report.testDescription = bundle.getString('report_description_setup');
-                            continuation('ko');
-                        }
-                    });
-                }
-                else {
-                    if (setUp.arity == 0) continuation('ok');
-                }
-            } catch(e) {
-                report.report.result = 'error';
-                report.report.exception = e;
-                report.report.testDescription = bundle.getString('report_description_setup');
-                continuation('ko');
-            }
-        },
-        doTest: function(continuation) {
-            var test;
-            test = tests[testIndex];
-            var newReport = _exec1(test.code, null, null, context, continuation, report);
-            if (newReport.result) {
-            	report.report = newReport;
-            	report.report.testDescription = test.desc;
-            	continuation('ok');
-            }
-            else {
-            	report.report.testDescription = test.desc;
-            }
-        },
-        doReport: function(continuation) {
-            report.report.testOwner = _this;
-            report.report.testIndex = testIndex + 1;
-            report.report.testCount = tests.length;
-            if (typeof reportHandler == 'function')
-                reportHandler(report.report);
-            else if (reportHandler && 'handleReport' in reportHandler)
-                reportHandler.handleReport(report.report);
-            else
-                throw new Error('invalid report handler');
-            continuation('ok');
-        },
-        doTearDown: function(continuation) { // exceptions in setup/teardown are not reported correctly
-            if (!tearDown) {
-              continuation('ok');
-              return;
-            }
-            try {
-                // perhaps should pass continuation to tearDown as well
-                var result = tearDown.call(context); 
-                if (utils.isGeneratedIterator(result)) {
-                    utils.doIteration(result, {
-                        onEnd : function(e) {
-                            continuation('ok');
-                        },
-                        onError : function(e) {
-                            continuation('ko');
-                        }
-                    });
-                }
-                else {
-                    continuation('ok');
-                }
-            } catch(e) {
-                continuation('ko');
-            }
-        },
-        nextTest: function(continuation) {
-            if (_this._stopper && _this._stopper()) {
-            	continuation('ko');
-            	return;
-            }
-            testIndex += 1;
-            tests[testIndex] ? continuation('ok') : continuation('ko');
-        },
-        finished: function(continuation) {
-            if (reportHandler && 'onFinish' in reportHandler)
-                reportHandler.onFinish();
-            _this._done = true;
-        }
-    }
+	var nullContinuation = function() {};
 
-    fsm.go('start', {}, stateHandlers, stateTransitions, []);
+	_this = this;
+	var stateHandlers = {
+		start: function(continuation) {
+			continuation('ok')
+		},
+		checkPriority: function(continuation) {
+			if (shoudDoTest(tests[testIndex])) {
+				continuation('ok');
+				return;
+			}
+			report.report = {};
+			report.report.result = 'passover'; // 'success';
+			stateHandlers.doReport(nullContinuation);
+			continuation('ko');
+		},
+		doSetUp: function(continuation) {
+			if (!setUp) {
+				continuation('ok');
+				return;
+			}
+			context = _this.context || {};
+			report.report = {};
+			try {
+				var result = setUp.call(context, continuation);
+				if (utils.isGeneratedIterator(result)) {
+					utils.doIteration(result, {
+						onEnd : function(e) {
+							if (setUp.arity == 0) continuation('ok');
+						},
+						onError : function(e) {
+							report.report.result = 'error';
+							report.report.exception = e;
+							report.report.testDescription = bundle.getString('report_description_setup');
+							continuation('ko');
+						}
+					});
+				}
+				else {
+					if (setUp.arity == 0) continuation('ok');
+				}
+			} catch(e) {
+				report.report.result = 'error';
+				report.report.exception = e;
+				report.report.testDescription = bundle.getString('report_description_setup');
+				continuation('ko');
+			}
+		},
+		doTest: function(continuation) {
+			var test;
+			test = tests[testIndex];
+			var newReport = _exec1(test, null, null, context, continuation, report);
+			if (newReport.result) {
+				report.report = newReport;
+				report.report.testDescription = test.desc;
+				continuation('ok');
+			}
+			else {
+				report.report.testDescription = test.desc;
+			}
+		},
+		doReport: function(continuation) {
+			report.report.testOwner = _this;
+			report.report.testIndex = testIndex + 1;
+			report.report.testCount = tests.length;
+			if (typeof reportHandler == 'function')
+				reportHandler(report.report);
+			else if (reportHandler && 'handleReport' in reportHandler)
+				reportHandler.handleReport(report.report);
+			else
+				throw new Error('invalid report handler');
+			continuation('ok');
+		},
+		doTearDown: function(continuation) { // exceptions in setup/teardown are not reported correctly
+			if (!tearDown) {
+				continuation('ok');
+				return;
+			}
+			try {
+				// perhaps should pass continuation to tearDown as well
+				var result = tearDown.call(context); 
+				if (utils.isGeneratedIterator(result)) {
+					utils.doIteration(result, {
+						onEnd : function(e) {
+							continuation('ok');
+						},
+						onError : function(e) {
+							continuation('ko');
+						}
+					});
+				}
+				else {
+					continuation('ok');
+				}
+			} catch(e) {
+				continuation('ko');
+			}
+		},
+		nextTest: function(continuation) {
+			if (_this._stopper && _this._stopper()) {
+				continuation('ko');
+				return;
+			}
+			testIndex += 1;
+			tests[testIndex] ? continuation('ok') : continuation('ko');
+		},
+		finished: function(continuation) {
+			if (reportHandler && 'onFinish' in reportHandler)
+				reportHandler.onFinish();
+			_this._done = true;
+		}
+	}
+
+	fsm.go('start', {}, stateHandlers, stateTransitions, []);
 }
 
 function _defaultReportHandler(report) {
-    if(report.result == 'success')
-        return;
-        
+	if(report.result == 'success')
+		return;
 
-    var printout = bundle.getFormattedString('report_default', [
-    		report.testIndex,
-    		report.testCount,
-    		report.testDescription,
-    		bundle.getString('report_result_'+report.result)
-    	])
 
-    if (report.exception) {
-        printout += ': ' + report.exception + '\n';
-        printout += _formatStackTrace1(report.exception);
-    }
-    printout += '\n';
-        
+	var printout = bundle.getFormattedString('report_default', [
+			report.testIndex,
+			report.testCount,
+			report.testDescription,
+			bundle.getString('report_result_'+report.result)
+		])
 
-    if(typeof(repl) == 'object')
-        repl.print(printout);
-    else
-        dump(printout);
+	if (report.exception) {
+		printout += ': ' + report.exception + '\n';
+		printout += _formatStackTrace1(report.exception);
+	}
+	printout += '\n';
+
+
+	if(typeof(repl) == 'object')
+		repl.print(printout);
+	else
+		dump(printout);
 }

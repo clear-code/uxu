@@ -37,6 +37,7 @@
 <!ENTITY mozunit.view.accesskey "V">
 
 <!ENTITY mozunit.successes "成功したテスト:">
+<!ENTITY mozunit.passover "除外したテスト:">
 
 <!ENTITY mozunit.filePath "作業中のファイル:">
 <!ENTITY mozunit.source "ソース">

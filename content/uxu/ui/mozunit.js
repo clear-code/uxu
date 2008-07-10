@@ -281,10 +281,18 @@ TestReportHandler.prototype = {
 			'value', parseInt(report.testIndex / report.testCount * 100));
 		_(wTestCaseReport, 'total-counter').value = report.testCount;
 
-		if (report.result == 'success') {
-			var successes = parseInt(_(wTestCaseReport, 'success-counter').value);
-			_(wTestCaseReport, 'success-counter').value = successes + 1;
-			return;
+		switch (report.result)
+		{
+			case 'success':
+				var successes = parseInt(_(wTestCaseReport, 'success-counter').value);
+				_(wTestCaseReport, 'success-counter').value = successes + 1;
+				return;
+			case 'passover':
+				var passover = parseInt(_(wTestCaseReport, 'passover-counter').value);
+				_(wTestCaseReport, 'passover-counter').value = passover + 1;
+				return;
+			default:
+				break;
 		}
 
 		_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-problems');

@@ -65,7 +65,11 @@ function getTests(aSuite, aTestCaseClass)
 	if (testObjects.tests.length) {
 		var options = { runStrategy : aSuite.runStrategy };
 		if (aSuite.isAsync) options.runStrategy = 'async';
-		var newTestCase = new TestCase(aSuite.description || aSuite.fileURL.match(/[^\/]+$/), options);
+		var newTestCase = new TestCase(
+				aSuite.description || aSuite.fileURL.match(/[^\/]+$/),
+				options,
+				aSuite.fileURL
+			);
 
 		if (testObjects.setUp)
 			newTestCase.registerSetUp(testObjects.setUp);
