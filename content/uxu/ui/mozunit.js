@@ -444,23 +444,21 @@ var gFailureCount  = 0;
  
 function setRunningState(aRunning) { 
 	if (aRunning) {
+		_('run-box').setAttribute('hidden', true);
 		_('run').setAttribute('disabled', true);
-		_('run').setAttribute('hidden', true);
 		_('runAll').setAttribute('disabled', true);
-		_('runAll').setAttribute('hidden', true);
+		_('stop-box').removeAttribute('hidden');
 		_('stop').removeAttribute('disabled');
-		_('stop').removeAttribute('hidden');
 		_('testRunningProgressMeter').setAttribute('mode', 'determined');
 		_('testRunningProgressMeterPanel').removeAttribute('collapsed');
 		_('testResultStatus').setAttribute('label', bundle.getString('all_wait'));
 	}
 	else {
+		_('run-box').removeAttribute('hidden');
 		_('run').removeAttribute('disabled');
-		_('run').removeAttribute('hidden');
 		_('runAll').removeAttribute('disabled');
-		_('runAll').removeAttribute('hidden');
+		_('stop-box').setAttribute('hidden', true);
 		_('stop').setAttribute('disabled', true);
-		_('stop').setAttribute('hidden', true);
 		_('testRunningProgressMeter').setAttribute('mode', 'undetermined');
 		_('testRunningProgressMeterPanel').setAttribute('collapsed', true);
 	}

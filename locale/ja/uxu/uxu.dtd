@@ -12,6 +12,7 @@
 
 <!ENTITY mozunit.run.label     "実行">
 <!ENTITY mozunit.run.accesskey "R">
+<!ENTITY mozunit.run.options   "オプション">
 <!ENTITY mozunit.runAll.label     "すべて実行">
 <!ENTITY mozunit.runAll.accesskey "A">
 <!ENTITY mozunit.stop.label     "中止">

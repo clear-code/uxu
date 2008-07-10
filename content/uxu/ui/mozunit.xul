@@ -50,8 +50,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 			oncommand="runAll();"/>
 		<command id="stop" label="&mozunit.stop.label;" accesskey="&mozunit.stop.accesskey;"
 			oncommand="stop();"
-			disabled="true"
-			hidden="true"/>
+			disabled="true"/>
 		<command id="toggle-content" oncommand="toggleContent();"
 			label="&mozunit.toggleContent.label;" accesskey="&mozunit.toggleContent.accesskey;"/>
 		<command id="open" label="&mozunit.open.label;" accesskey="&mozunit.open.accesskey;"
@@ -163,11 +162,15 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 				</toolbaritem>
 				<toolbarbutton command="edit"/>
 			</toolbar>
-			<hbox>
-				<button command="run" flex="4" style="font-weight: bold;"/>
-				<button command="runAll" flex="1" style="font-weight: bold;"/>
+			<hbox id="run-box">
+				<button command="run" flex="1" style="font-weight: bold;"/>
+				<toolbarbutton label="&mozunit.run.options;" type="menu">
+					<menupopup>
+						<menuitem command="runAll"/>
+					</menupopup>
+				</toolbarbutton>
 			</hbox>
-			<hbox>
+			<hbox id="stop-box" hidden="true">
 				<button command="stop" flex="1" style="font-weight: bold;"/>
 			</hbox>
 
