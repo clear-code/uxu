@@ -173,9 +173,30 @@ function registerTest(aFunction) {
 	var priority = String(aFunction.priority).toLowerCase() || 'normal';
 	switch (priority)
 	{
+		case 'must':
+			break;
+
+		case 'important':
+			if (Math.random() > 0.9) return;
+			break;
+
+		case 'high':
+			if (Math.random() > 0.7) return;
+			break;
+
+		case 'normal':
+		default:
+			if (Math.random() > 0.5) return;
+			break;
+
+		case 'low':
+			if (Math.random() > 0.25) return;
+			break;
+
 		case 'never':
 			return;
 	}
+
 	this._tests.push({
 		desc     : aFunction.description,
 		code     : aFunction,
