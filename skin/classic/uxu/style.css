@@ -13,6 +13,12 @@
 {
   }
 
+.testcase-unknown > .progress-bar
+{
+  background-color: gray;
+  -moz-appearance: none;
+  }
+
 .testcase-fine > .progress-bar
 {
   background-color: green;

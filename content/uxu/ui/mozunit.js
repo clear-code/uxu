@@ -267,7 +267,7 @@ TestReportHandler.prototype = {
 				wTestCaseReport.setAttribute('id', id);
 				wTestCaseReport.setAttribute('title', title);
 				_(wTestCaseReport, 'title').textContent = title;
-				_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-fine');
+				_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-unknown');
 				_('testcase-reports').appendChild(wTestCaseReport);
 				scrollReportsTo(wTestCaseReport);
 				return wTestCaseReport;
@@ -288,6 +288,8 @@ TestReportHandler.prototype = {
 				gSuccessCount++;
 				var successes = parseInt(_(wTestCaseReport, 'success-counter').value);
 				_(wTestCaseReport, 'success-counter').value = successes + 1;
+				if (_(wTestCaseReport, 'bar').getAttribute('class') == 'testcase-unknown')
+					_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-fine');
 				return;
 			case 'passover':
 				gPassOverCount++;
@@ -363,7 +365,9 @@ function onAllTestsFinish()
 	}
 	else {
 		scrollReportsTo(_('testcase-reports').firstChild);
-		_('testResultStatus').setAttribute('label', bundle.getString('all_result_success'));
+		_('testResultStatus').setAttribute('label',
+			bundle.getString(gPassOverCount ? 'all_result_done' : 'all_result_success' )
+		);
 	}
 	_('testResultStatistical').hidden = false;
 	_('testResultStatistical').setAttribute('label',
