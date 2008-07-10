@@ -487,7 +487,7 @@ function run(aAll) {
 }
 	 
 function runByPref() { 
-	run(utils.getPref('extensions.uxu.run.mode') == 1 ? true : false );
+	run(utils.getPref('extensions.uxu.mozunit.runMode') == 1 ? true : false );
 }
  
 function loadSuites() 
@@ -528,7 +528,7 @@ function runTests(aTests) {
 			return shouldAbortTest;
 		};
 
-	if (utils.getPref('extensions.uxu.run.async')) {
+	if (utils.getPref('extensions.uxu.mozunit.runParallel')) {
 		aTests.forEach(runTest);
 	}
 	else {
@@ -828,7 +828,7 @@ function updateRunMode() {
 	var runPriority = _('runPriority');
 	var runAll = _('runAll');
 	var label;
-	switch (utils.getPref('extensions.uxu.run.mode'))
+	switch (utils.getPref('extensions.uxu.mozunit.runMode'))
 	{
 		default:
 		case 0:
