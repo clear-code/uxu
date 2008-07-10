@@ -16,7 +16,7 @@ function constructor(files)
 	this.files = files;
 }
 
-function run(reporter)
+function run(reporter, all)
 {
 	var i, j;
 	var all_tests = [];
@@ -36,6 +36,7 @@ function run(reporter)
 		for (j = 0; j < tests.length; j++) {
 			var runner = this;
 			var test = tests[j];
+			if (all) test.priority = 'must';
 
 			try {
 				this.start_test(reporter);

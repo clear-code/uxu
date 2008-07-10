@@ -4,7 +4,7 @@ var bundle  = module.require('package', 'bundle');
 var runner_utils = module.require('package', 'runner_utils');
  
 /* UTILITIES */ 
-	 
+	
 function x() { 
 	var contextNode, path;
 	if(arguments[0] instanceof XULElement) {
@@ -94,7 +94,7 @@ function getErrorReports()
 }
   
 /* file picker */ 
-	 
+	
 function pickFile(aMode, aOptions) { 
 	if (!aOptions) aOptions = {};
 	var mode = 'mode' + (aMode ?
@@ -201,7 +201,7 @@ function finish() {
 }
   
 /* test cases */ 
-	 
+	
 function newTestCase() { 
 	var file = pickFile('save', makeTestCaseFileOptions());
 	if(file) {
@@ -373,7 +373,7 @@ function onAllTestsFinish()
 		)
 	);
 };
- 	
+ 
 function onError(aError) 
 {
 	_('prerun-report', 'error').value = bundle.getFormattedString('error_failed', [aError.toString()]);
@@ -470,13 +470,22 @@ function setRunningState(aRunning) {
 	}
 }
  
-function run() { 
+function run(aAll) { 
 	reset();
 	var suites = loadSuites();
 	var tests = initializeTests(suites);
+	if (aAll) {
+		tests.forEach(function(aTestCase) {
+			aTestCase.masterPriority = 'must';
+		});
+	}
 	this.runTests(tests);
 }
-	
+	 
+function runByPref() { 
+	run(utils.getPref('extensions.uxu.run.mode') == 1 ? true : false );
+}
+ 
 function loadSuites() 
 {
 	var path = _('file').value;
@@ -533,16 +542,6 @@ function runTests(aTests) {
 }
 var shouldAbortTest = false;
   
-function runAll() { 
-	reset();
-	var suites = loadSuites();
-	var tests = initializeTests(suites);
-	tests.forEach(function(aTestCase) {
-		aTestCase.masterPriority = 'must';
-	});
-	this.runTests(tests);
-}
- 
 function runFailed() { 
 	var failedTests = {};
 	[].concat(getFailureReports()).concat(getErrorReports())
@@ -567,7 +566,7 @@ function stop() {
 	shouldAbortTest = true;
 	_('stop').setAttribute('disabled', true);
 }
-	 
+	
 function loadFolder(aFolder) { 
 	var filesMayBeTest = runner_utils.getTestFiles(aFolder);
 	return filesMayBeTest.map(function(aFile) {
@@ -820,4 +819,27 @@ function showSource(traceLine) {
 		null, null, null
 	);
 }
-  
+ 
+function updateRunMode() { 
+	var runPriority = _('runPriority');
+	var runAll = _('runAll');
+	var label;
+	switch (utils.getPref('extensions.uxu.run.mode'))
+	{
+		default:
+		case 0:
+			label = runPriority.getAttribute('label-default');
+			runPriority.setAttribute('label', label);
+			label = runAll.getAttribute('label-normal');
+			runAll.setAttribute('label', label);
+			break;
+
+		case 1:
+			label = runPriority.getAttribute('label-normal');
+			runPriority.setAttribute('label', label);
+			label = runAll.getAttribute('label-default');
+			runAll.setAttribute('label', label);
+			break;
+	}
+}
+ 	 

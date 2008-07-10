@@ -45,9 +45,15 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 
 	<commandset>
 		<command id="run" label="&mozunit.run.label;" accesskey="&mozunit.run.accesskey;"
-			oncommand="run();"/>
-		<command id="runPriority" label="&mozunit.runPriority.label;" oncommand="run();"/>
-		<command id="runAll" label="&mozunit.runAll.label;" oncommand="runAll();"/>
+			oncommand="runByPref();"/>
+		<command id="runPriority"
+			label-normal="&mozunit.runPriority.label;"
+			label-default="&mozunit.runPriority.default;"
+			oncommand="run(0);"/>
+		<command id="runAll"
+			label-normal="&mozunit.runAll.label;"
+			label-default="&mozunit.runAll.default;"
+			oncommand="run(1);"/>
 		<command id="runFailed" label="&mozunit.runFailed.label;" oncommand="runFailed();"
 			disabled="true"/>
 		<command id="stop" label="&mozunit.stop.label;" accesskey="&mozunit.stop.accesskey;"
@@ -132,8 +138,14 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 					<menuitem command="edit"/>
 					<menuseparator/>
 					<menuitem command="run" key="key-run"/>
-					<menuitem command="runAll" key="key-runAll"/>
-					<menuitem command="runFailed" key="key-runFailed"/>
+					<menu label="&mozunit.run.options;">
+						<menupopup onpopupshowing="updateRunMode();">
+							<menuitem command="runPriority" observes="runPriority"/>
+							<menuitem command="runAll" observes="runAll"/>
+							<menuseparator/>
+							<menuitem command="runFailed"/>
+						</menupopup>
+					</menu>
 					<menuseparator/>
 					<menuitem command="stop" key="key-stop"/>
 					<menuseparator/>
@@ -169,9 +181,9 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 			<hbox id="run-box">
 				<button command="run" flex="1" style="font-weight: bold;"/>
 				<toolbarbutton label="&mozunit.run.options;" type="menu">
-					<menupopup>
-						<menuitem command="runPriority"/>
-						<menuitem command="runAll"/>
+					<menupopup onpopupshowing="updateRunMode();">
+						<menuitem command="runPriority" observes="runPriority"/>
+						<menuitem command="runAll" observes="runAll"/>
 						<menuseparator/>
 						<menuitem command="runFailed"/>
 					</menupopup>

@@ -1,4 +1,4 @@
-/*
+/* 
  * Copyright (C) 2006 by Massimiliano Mirra
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,17 +20,16 @@
  */
 
 // Modified by SHIMODA Hiroshi <shimoda@clear-code.com>
-
-//var module = new ModuleManager(['chrome://mozlab/content']);
+ 
+//var module = new ModuleManager(['chrome://mozlab/content']); 
 //const fsm = module.require('package', 'lib/fsm');
 var mozlab_custom_module = new ModuleManager(['chrome://uxu/content/lib']);
 const fsm = mozlab_custom_module.require('package', 'fsm');
 var bundle = mozlab_custom_module.require('package', 'bundle');
 var utils = mozlab_custom_module.require('package', 'utils');
-
-
+ 
 /**
- * Invocation:
+ * Invocation: 
  *     var case = new TestCase('Widget tests');
  *     var case = new TestCase('Widget tests', {runStrategy: 'async'});
  *
@@ -49,8 +48,8 @@ var utils = mozlab_custom_module.require('package', 'utils');
  *     var spec = new Specification();
  *
  */
-
-function constructor(title, opts, namespace) {
+ 
+function constructor(title, opts, namespace) { 
 	opts = opts || {};
 
 	this._title = title;
@@ -118,20 +117,20 @@ function constructor(title, opts, namespace) {
 			return this._done;
 		});
 }
-
+ 
 /**
- * Define test cases, optionally with setup and teardown.
+ * Define test cases, optionally with setup and teardown. 
  *
  *     var case = new TestCase();
  *     case.tests = {
  *         setUp: function() {
  *             this.plusFactor = 4;
  *         },
- *     
+ *
  *         testOperation: function() {
  *             assert.equals(8, 2+2+this.plusFactor);
  *         },
- *     
+ *
  *         tearDown: function() {
  *             // release resources if necessary
  *         }
@@ -159,8 +158,8 @@ function constructor(title, opts, namespace) {
  *         }
  *     }
  */
-
-function setTests(hash) {
+	 
+function setTests(hash) { 
 	this.context = hash;
 	for(var desc in hash)
 	{
@@ -178,15 +177,18 @@ function setTests(hash) {
 		}
 	}
 }
-
-// for UxU declaration style syntax
-function registerSetUp(aFunction) {
+ 
+// for UxU declaration style syntax 
+	
+function registerSetUp(aFunction) { 
 	this._setUp = aFunction;
 }
-function registerTearDown(aFunction) {
+ 
+function registerTearDown(aFunction) { 
 	this._tearDown = aFunction;
 }
-function registerTest(aFunction) {
+ 
+function registerTest(aFunction) { 
 	var source = aFunction.toSource();
 	if (
 		this._tests.some(function(aTest) {
@@ -204,145 +206,70 @@ function registerTest(aFunction) {
 		id       : 'test-'+parseInt(Math.random() * 65000)
 	});
 }
-
-function shoudDoTest(aTest) {
-	var shouldDo = true;
-	var priority = (aTest.priority == 'never') ? 'never' : (this.masterPriority || aTest.priority);
-	switch (priority)
-	{
-		case 'must':
-			break;
-
-		case 'important':
-			if (Math.random() > 0.9) shouldDo = false;
-			break;
-
-		case 'high':
-			if (Math.random() > 0.7) shouldDo = false;
-			break;
-
-		case 'normal':
-		default:
-			if (Math.random() > 0.5) shouldDo = false;
-			break;
-
-		case 'low':
-			if (Math.random() > 0.25) shouldDo = false;
-			break;
-
-		case 'never':
-			shouldDo = false;
-			break;
-	}
-	return shouldDo;
-}
-
-
+  
 /**
- * Runs tests with strategy defined at construction time.
- *
- *    var case = new TestCase();
- *    case.tests = { ... };
- *    case.run();
+ * Alternative style for defining setup. 
  *
  */
-
-function run(aStopper) {
-	this._stopper = aStopper;
-	this[this._runStrategy == 'async' ? '_asyncRun1' : '_syncRun1'](
-		this._tests, this._setUp, this._tearDown, this._reportHandler);
-}
-
-/**
- * Alternative style for defining setup.
- *
- */
-
-function setUp(fn) {
+	
+function setUp(fn) { 
 	this.registerSetUp(fn);
 }
-
-/**
- * Alternative style for defining tests.  Can be called multiple
- * times.
- *
- */
-
-function test(desc, code) {
+ 
+function tearDown(fn) { 
+	this.registerTearDown(fn);
+}
+ 
+function test(desc, code) { 
 	code.description = desc;
 	this.registerTest(code);
 }
-
+  
+// BDD-style alias 
+	
 /**
- * Alternative style for defining teardown.
+ * BDD-alias for setUp(). 
  *
  */
-
-function tearDown(fn) {
-	this.registerTearDown(fn);
+function given(fn) {
+	this.setUp(fn);
 }
-
+ 
 /**
- * BDD-style alias for run().
+ * BDD-style alias for test(). 
+ *
+ */
+function states(desc, fn) {
+	this.test(desc, fn);
+}
+ 
+/**
+ * BDD-style alias for run(). 
  *
  *    var spec = new Specification();
  *    spec.stateThat = { ... };
  *    spec.verify();
  *
  */
-
 function verify(aStopper) {
 	this.run(aStopper);
 }
-
+   
 /**
- * BDD-alias for setUp().
+ * Runs tests with strategy defined at construction time. 
+ *
+ *    var case = new TestCase();
+ *    case.tests = { ... };
+ *    case.run();
  *
  */
-
-function given(fn) {
-	this.setUp(fn);
+function run(aStopper) {
+	this._stopper = aStopper;
+	this[this._runStrategy == 'async' ? '_asyncRun1' : '_syncRun1'](
+		this._tests, this._setUp, this._tearDown, this._reportHandler);
 }
-
-/**
- * BDD-style alias for test().
- *
- */
-
-function states(desc, fn) {
-	this.test(desc, fn);
-}
-
-/*  Side effect-free functions. They're the ones who do the real job. :-) */  
-
-function _formatStackTrace1(exception) {
-	function comesFromFramework(call) {
-		return (call.match(/@chrome:\/\/mozlab\/content\/lib\/fsm\.js:/) ||
-				call.match(/@chrome:\/\/mozlab\/content\/mozunit\/test_case\.js:/) ||
-				// Following is VERY kludgy
-				call.match(/\(function \(exitResult\) \{if \(eventHandlers/))
-	}
-
-	var trace = '';
-	if(exception.stack) {
-		var calls = exception.stack.split('\n');
-		for each(var call in calls) {
-			if(call.length > 0 && !comesFromFramework(call)) {
-				call = call.replace(/\\n/g, '\n');
-
-				if(call.length > 200)
-					call =
-						call.substr(0, 100) + ' [...] ' +
-						call.substr(call.length - 100) + '\n';
-
-				trace += call + '\n';
-			}
-		}
-	}
-	return trace;
-}
-
-function _exec1(code, setUp, tearDown, context, continuation, aReport) {
+	 
+function _exec1(test, setUp, tearDown, context, continuation, aReport) { 
 	var report = {
 		result:    undefined,
 		exception: undefined
@@ -354,13 +281,14 @@ function _exec1(code, setUp, tearDown, context, continuation, aReport) {
 		if (setUp)
 			setUp.call(context);
 
-		var result = code.call(context);
+		var result = test.code.call(context);
 
 		if (utils.isGeneratedIterator(result)) {
 			aReport.report = report;
 			utils.doIteration(result, {
 				onEnd : function(e) {
 					aReport.report.result = 'success';
+					_onSuccess(test);
 					continuation('ok');
 				},
 				onFail : function(e) {
@@ -385,6 +313,7 @@ function _exec1(code, setUp, tearDown, context, continuation, aReport) {
 			tearDown.call(context);
 
 		report.result = 'success';
+		_onSuccess(test);
 	} catch(exception if exception.name == 'AssertionFailed') {
 		report.result = 'failure';
 		report.exception = exception;
@@ -395,17 +324,17 @@ function _exec1(code, setUp, tearDown, context, continuation, aReport) {
 
 	return report;
 }
-
-function _syncRun1(tests, setUp, tearDown, reportHandler) {
+ 	
+function _syncRun1(tests, setUp, tearDown, reportHandler) { 
 	var test, context, report;
 	for(var i=0, l=tests.length; i<l; i++) {
 		test = tests[i];
 		context = test.context || {};
-		if (!this.shoudDoTest(test)) {
+		if (!this._checkPriorityToExec(test)) {
 			report = { result : 'passover' }
 		}
 		else {
-			report = _exec1(test.code, setUp, tearDown, context);
+			report = _exec1(test, setUp, tearDown, context);
 		}
 		report.testOwner = this;
 		report.testDescription = test.desc;
@@ -425,8 +354,8 @@ function _syncRun1(tests, setUp, tearDown, reportHandler) {
 
 	this._done = true;
 }
-
-function _asyncRun1(tests, setUp, tearDown, reportHandler) {
+ 
+function _asyncRun1(tests, setUp, tearDown, reportHandler) { 
 	var testIndex = 0;
 	var context;
 	var report = { report : null };
@@ -450,7 +379,7 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler) {
 			continuation('ok')
 		},
 		checkPriority: function(continuation) {
-			if (_this.shoudDoTest(tests[testIndex])) {
+			if (_this._checkPriorityToExec(tests[testIndex])) {
 				continuation('ok');
 				return;
 			}
@@ -494,7 +423,7 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler) {
 		doTest: function(continuation) {
 			var test;
 			test = tests[testIndex];
-			var newReport = _exec1(test.code, null, null, context, continuation, report);
+			var newReport = _exec1(test, null, null, context, continuation, report);
 			if (newReport.result) {
 				report.report = newReport;
 				report.report.testDescription = test.desc;
@@ -505,6 +434,9 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler) {
 			}
 		},
 		doReport: function(continuation) {
+			if (report.report.result == 'success')
+				_onSuccess(tests[testIndex]);
+
 			report.report.testOwner = _this;
 			report.report.testIndex = testIndex + 1;
 			report.report.testCount = tests.length;
@@ -523,7 +455,7 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler) {
 			}
 			try {
 				// perhaps should pass continuation to tearDown as well
-				var result = tearDown.call(context); 
+				var result = tearDown.call(context);
 				if (utils.isGeneratedIterator(result)) {
 					utils.doIteration(result, {
 						onEnd : function(e) {
@@ -558,8 +490,43 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler) {
 
 	fsm.go('start', {}, stateHandlers, stateTransitions, []);
 }
+ 
+function _checkPriorityToExec(aTest) { 
+	var shouldDo = true;
+	var priority = (aTest.priority == 'never') ? 'never' : (this.masterPriority || aTest.priority);
+	switch (priority)
+	{
+		case 'must':
+			break;
 
-function _defaultReportHandler(report) {
+		case 'important':
+			if (Math.random() > 0.9) shouldDo = false;
+			break;
+
+		case 'high':
+			if (Math.random() > 0.7) shouldDo = false;
+			break;
+
+		case 'normal':
+		default:
+			if (Math.random() > 0.5) shouldDo = false;
+			break;
+
+		case 'low':
+			if (Math.random() > 0.25) shouldDo = false;
+			break;
+
+		case 'never':
+			shouldDo = false;
+			break;
+	}
+	return shouldDo;
+}
+ 
+function _onSuccess(aTest) { 
+}
+  
+function _defaultReportHandler(report) { 
 	if(report.result == 'success')
 		return;
 
@@ -583,3 +550,33 @@ function _defaultReportHandler(report) {
 	else
 		dump(printout);
 }
+	
+/*  Side effect-free functions. They're the ones who do the real job. :-) */ 
+
+function _formatStackTrace1(exception) {
+	function comesFromFramework(call) {
+		return (call.match(/@chrome:\/\/mozlab\/content\/lib\/fsm\.js:/) ||
+				call.match(/@chrome:\/\/mozlab\/content\/mozunit\/test_case\.js:/) ||
+				// Following is VERY kludgy
+				call.match(/\(function \(exitResult\) \{if \(eventHandlers/))
+	}
+
+	var trace = '';
+	if(exception.stack) {
+		var calls = exception.stack.split('\n');
+		for each(var call in calls) {
+			if(call.length > 0 && !comesFromFramework(call)) {
+				call = call.replace(/\\n/g, '\n');
+
+				if(call.length > 200)
+					call =
+						call.substr(0, 100) + ' [...] ' +
+						call.substr(call.length - 100) + '\n';
+
+				trace += call + '\n';
+			}
+		}
+	}
+	return trace;
+}
+  
