@@ -81,6 +81,7 @@ function getTests(aSuite, aTestCaseClass)
 		});
 
 		newTestCase.context = aSuite;
+		newTestCase.environment = aSuite;
 		tests.push(newTestCase);
 	}
 

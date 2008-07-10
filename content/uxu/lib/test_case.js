@@ -187,46 +187,58 @@ function registerTearDown(aFunction) {
 	this._tearDown = aFunction;
 }
 function registerTest(aFunction) {
+	var source = aFunction.toSource();
+	if (
+		this._tests.some(function(aTest) {
+			return (aTest.source == source);
+		})
+		)
+		return;
+
 	this._tests.push({
 		name     : (this._namespace + '::' + this.title + '::' + aFunction.description),
 		desc     : aFunction.description,
 		code     : aFunction,
-		priority : (String(aFunction.priority).toLowerCase() || 'normal'),
+		source   : aFunction.toSource(),
+		priority : (String(aFunction.priority || '').toLowerCase() || 'normal'),
 		id       : 'test-'+parseInt(Math.random() * 65000)
 	});
 }
 
 function shoudDoTest(aTest) {
+	if (aTest.id in checkResultHash) return checkResultHash[aTest.id];
 	var shouldDo = true;
-	var random = Math.random();
-	switch (this.masterPriority || aTest.priority)
+	var priority = this.masterPriority || aTest.priority;
+	switch (priority)
 	{
 		case 'must':
 			break;
 
 		case 'important':
-			if (random > 0.9) shouldDo = false;
+			if (Math.random() > 0.9) shouldDo = false;
 			break;
 
 		case 'high':
-			if (random > 0.7) shouldDo = false;
+			if (Math.random() > 0.7) shouldDo = false;
 			break;
 
 		case 'normal':
 		default:
-			if (random > 0.5) shouldDo = false;
+			if (Math.random() > 0.5) shouldDo = false;
 			break;
 
 		case 'low':
-			if (random > 0.25) shouldDo = false;
+			if (Math.random() > 0.25) shouldDo = false;
 			break;
 
 		case 'never':
 			shouldDo = false;
 			break;
 	}
+	checkResultHash[aTest.id] = shouldDo;
 	return shouldDo;
 }
+var checkResultHash = {};
 
 
 /**
@@ -341,7 +353,7 @@ function _exec1(test, setUp, tearDown, context, continuation, aReport) {
 
 	if (this._stopper && this._stopper()) return report;
 
-	if (!shoudDoTest(test)) {
+	if (!this.shoudDoTest(test)) {
 		report.result = 'passover'; // 'success';
 		return report;
 	}
@@ -441,7 +453,7 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler) {
 			continuation('ok')
 		},
 		checkPriority: function(continuation) {
-			if (shoudDoTest(tests[testIndex])) {
+			if (_this.shoudDoTest(tests[testIndex])) {
 				continuation('ok');
 				return;
 			}
