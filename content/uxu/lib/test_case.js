@@ -206,9 +206,8 @@ function registerTest(aFunction) {
 }
 
 function shoudDoTest(aTest) {
-	if (aTest.id in checkResultHash) return checkResultHash[aTest.id];
 	var shouldDo = true;
-	var priority = this.masterPriority || aTest.priority;
+	var priority = (aTest.priority == 'never') ? 'never' : (this.masterPriority || aTest.priority);
 	switch (priority)
 	{
 		case 'must':
@@ -235,10 +234,8 @@ function shoudDoTest(aTest) {
 			shouldDo = false;
 			break;
 	}
-	checkResultHash[aTest.id] = shouldDo;
 	return shouldDo;
 }
-var checkResultHash = {};
 
 
 /**
@@ -345,7 +342,7 @@ function _formatStackTrace1(exception) {
 	return trace;
 }
 
-function _exec1(test, setUp, tearDown, context, continuation, aReport) {
+function _exec1(code, setUp, tearDown, context, continuation, aReport) {
 	var report = {
 		result:    undefined,
 		exception: undefined
@@ -353,16 +350,11 @@ function _exec1(test, setUp, tearDown, context, continuation, aReport) {
 
 	if (this._stopper && this._stopper()) return report;
 
-	if (!this.shoudDoTest(test)) {
-		report.result = 'passover'; // 'success';
-		return report;
-	}
-
 	try {
 		if (setUp)
 			setUp.call(context);
 
-		var result = test.code.call(context);
+		var result = code.call(context);
 
 		if (utils.isGeneratedIterator(result)) {
 			aReport.report = report;
@@ -409,7 +401,12 @@ function _syncRun1(tests, setUp, tearDown, reportHandler) {
 	for(var i=0, l=tests.length; i<l; i++) {
 		test = tests[i];
 		context = test.context || {};
-		report = _exec1(test, setUp, tearDown, context);
+		if (!this.shoudDoTest(test)) {
+			report = { result : 'passover' }
+		}
+		else {
+			report = _exec1(test.code, setUp, tearDown, context);
+		}
 		report.testOwner = this;
 		report.testDescription = test.desc;
 		report.testID = test.id;
@@ -497,7 +494,7 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler) {
 		doTest: function(continuation) {
 			var test;
 			test = tests[testIndex];
-			var newReport = _exec1(test, null, null, context, continuation, report);
+			var newReport = _exec1(test.code, null, null, context, continuation, report);
 			if (newReport.result) {
 				report.report = newReport;
 				report.report.testDescription = test.desc;
