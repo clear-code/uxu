@@ -94,6 +94,7 @@ function loadScript(aURI, aEncoding)
 {
 	var sandbox = this.getSandboxFor(aURI);
 	this.environment.utils.include(aURI, sandbox, aEncoding);
+	return sandbox;
 }
 
 

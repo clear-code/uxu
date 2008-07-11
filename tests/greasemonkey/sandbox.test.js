@@ -9,8 +9,7 @@ var sandbox;
 
 function setUp() {
 	yield Do(greasemonkey.load(page));
-	greasemonkey.loadScript(script);
-	sandbox = greasemonkey.getSandboxFor(script);
+	sandbox = greasemonkey.loadScript(script);
 }
 
 function tearDown() {
