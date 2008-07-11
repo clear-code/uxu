@@ -7,10 +7,13 @@ var utils = lib.require('package', 'utils');
 
 var key = 'uxu-test-window-id';
 
-this.constructor = function(aEnvironment)
+function constructor(aEnvironment)
 {
 	this.environment = aEnvironment || {};
     this.uniqueID = parseInt(Math.random() * 10000000000);
+
+	this.tempFiles = [];
+	this.backupPrefs = {};
 }
 
 
@@ -38,11 +41,12 @@ switch (XULAppInfo.ID)
 }
 
 
-var WindowManager = Components.
-	classes['@mozilla.org/appshell/window-mediator;1'].
-	getService(Components.interfaces.nsIWindowMediator);
+var WindowManager = Components
+		.classes['@mozilla.org/appshell/window-mediator;1']
+		.getService(Components.interfaces.nsIWindowMediator);
 
-this.normalizeTestWindowOption = function(aOptions) {
+function normalizeTestWindowOption(aOptions)
+{
 	if (!aOptions) aOptions = {};
 	if (!aOptions.uri && !aOptions.type) {
 		aOptions.uri   = defaultURI;
@@ -61,7 +65,8 @@ this.normalizeTestWindowOption = function(aOptions) {
 };
 
 // テスト用のFirefoxウィンドウを取得する
-this.getTestWindow = function(aOptions) {
+function getTestWindow(aOptions)
+{
 	var info = this.normalizeTestWindowOption(aOptions);
 	var targets = WindowManager.getEnumerator(info.type),
 		target;
@@ -78,14 +83,16 @@ this.getTestWindow = function(aOptions) {
 };
 
 // テスト用のFirefoxウィンドウを開き直す
-this.reopenTestWindow = function(aOptions, callback) {
+function reopenTestWindow(aOptions, callback)
+{
 	var win = this.getTestWindow(aOptions);
 	if (win) win.close();
 	return this.openTestWindow(aOptions, callback);
 };
 
 // テスト用のFirefoxウィンドウを開く
-this.openTestWindow = function(aOptions, callback) {
+function openTestWindow(aOptions, callback)
+{
 	var win = this.getTestWindow(aOptions);
 	if (win) {
 		if (callback) callback(win);
@@ -107,13 +114,15 @@ this.openTestWindow = function(aOptions, callback) {
 };
 
 // テスト用のFirefoxウィンドウを閉じる
-this.closeTestWindow = function(aOptions) {
+function closeTestWindow(aOptions)
+{
 	var win = this.getTestWindow(aOptions);
 	if (win) win.close();
 };
 
 
-this.setUpTestWindow = function(aContinuation, aOptions) {
+function setUpTestWindow(aContinuation, aOptions)
+{
 	var loadedFlag = { value : false };
 	if (this.getTestWindow(aOptions)) {
 		if (aContinuation) aContinuation("ok");
@@ -133,12 +142,13 @@ this.setUpTestWindow = function(aContinuation, aOptions) {
 	return loadedFlag;
 };
 
-this.tearDownTestWindow = this.closeTestWindow;
+var tearDownTestWindow = closeTestWindow;
 
 
 
 // テスト用のFirefoxウィンドウの現在のタブにURIを読み込む
-this.loadURI = function(aURI, aOptions) {
+function loadURI(aURI, aOptions)
+{
 	if (!aURI) aURI = 'about:blank';
 	aURI = this.fixupIncompleteURI(aURI);
 
@@ -157,7 +167,8 @@ this.loadURI = function(aURI, aOptions) {
 };
 
 // テスト用のFirefoxウィンドウで新しいタブを開く
-this.addTab = function(aURI, aOptions) {
+function addTab(aURI, aOptions)
+{
 	if (!aURI) aURI = 'about:blank';
 	aURI = this.fixupIncompleteURI(aURI);
 
@@ -177,13 +188,15 @@ this.addTab = function(aURI, aOptions) {
 	return loadedFlag;
 };
 
-this.getBrowser = function(aOptions) {
+function getBrowser(aOptions)
+{
 	var win = this.getTestWindow(aOptions);
 	if (!win) return null;
 	return win.gBrowser;
 };
 
-this.getTabs = function(aOptions) {
+function getTabs(aOptions)
+{
 	var win = this.getTestWindow(aOptions);
 	if (!win) return null;
 	return win.gBrowser.mTabContainer.childNodes;
@@ -191,7 +204,8 @@ this.getTabs = function(aOptions) {
 
 
 
-this.getChromeWindows = function(aOptions) {
+function getChromeWindows(aOptions)
+{
 	var info = this.normalizeTestWindowOption(aOptions);
 	var targets = WindowManager.getEnumerator(info.type),
 		target;
@@ -211,10 +225,11 @@ this.getChromeWindows = function(aOptions) {
 
 
 
-this.tempFiles = [];
-this.makeTempFile = function(aOriginal) {
-	var DirectoryService = Components.classes['@mozilla.org/file/directory_service;1']
-				.getService(Components.interfaces.nsIProperties);
+function makeTempFile(aOriginal)
+{
+	var DirectoryService = Components
+			.classes['@mozilla.org/file/directory_service;1']
+			.getService(Components.interfaces.nsIProperties);
 	var temp = DirectoryService.get('TmpD', Components.interfaces.nsIFile);
 	var random = parseInt(Math.random() * 10000);
 
@@ -247,7 +262,8 @@ this.makeTempFile = function(aOriginal) {
 	}
 };
 
-this.cleanUpTempFiles = function() {
+function cleanUpTempFiles()
+{
 	this.tempFiles.forEach(function(aFile) {
 		try {
 			aFile.remove(true);
@@ -260,8 +276,8 @@ this.cleanUpTempFiles = function() {
 };
 
 
-this.backupPrefs = {};
-this.cleanUpModifiedPrefs = function() {
+function cleanUpModifiedPrefs()
+{
 	for (var i in this.backupPrefs)
 	{
 		if (this.backupPrefs[i] === null)
@@ -274,10 +290,12 @@ this.cleanUpModifiedPrefs = function() {
 
 
 
-var loader = Components.classes['@mozilla.org/moz/jssubscript-loader;1']
-			.getService(Components.interfaces.mozIJSSubScriptLoader);
+var loader = Components
+		.classes['@mozilla.org/moz/jssubscript-loader;1']
+		.getService(Components.interfaces.mozIJSSubScriptLoader);
 
-this.include = function(aSource, aEnvironment, aEncoding) {
+function include(aSource, aEnvironment, aEncoding)
+{
 	aSource = this.fixupIncompleteURI(aSource);
 	var encoding = aEncoding || this.getPref('extensions.uxu.defaultEncoding')
 	var script = this.readFrom(aSource, encoding) || '';
