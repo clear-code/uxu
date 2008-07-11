@@ -61,6 +61,7 @@ function createSandbox()
 			return loadedFlag;
 		},
 		unload : function() {
+			this.__proto__ = null;
 			var loadedFlag = { value : false };
 			browser.addEventListener('load', function() {
 				browser.removeEventListener('load', arguments.callee, true);
