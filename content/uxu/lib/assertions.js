@@ -76,7 +76,7 @@ function matches(pattern, string, aMessage) {
     if (!(string.match(pattern)))
         fail(bundle.getFormattedString('assert_matches', [pattern, string]), aMessage);
 }
-function matche(pattern, string, aMessage) { this.matches(pattern, string, aMessage); }
+function match(pattern, string, aMessage) { this.matches(pattern, string, aMessage); }
 
 function pattern(string, pattern, aMessage) {
     if (!(string.match(pattern)))
