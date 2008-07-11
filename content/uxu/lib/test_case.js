@@ -495,35 +495,18 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler) {
 }
  
 function _checkPriorityToExec(aTest) { 
-	var shouldDo = true;
 	var priority = (aTest.priority == 'never') ? 'never' : (this.masterPriority || aTest.priority);
+	priority = priority.toLowerCase();
 	switch (priority)
 	{
 		case 'must':
 			return true;
-
-		case 'important':
-			if (Math.random() > 0.9) shouldDo = false;
-			break;
-
-		case 'high':
-			if (Math.random() > 0.7) shouldDo = false;
-			break;
-
-		case 'normal':
-		default:
-			if (Math.random() > 0.5) shouldDo = false;
-			break;
-
-		case 'low':
-			if (Math.random() > 0.25) shouldDo = false;
-			break;
-
 		case 'never':
 			return false;
+		default:
 			break;
 	}
-
+	var shouldDo = (Math.random() <= Number(utils.getPref('extensions.uxu.priority.'+priority)));
 	if (!shouldDo) {
 		var db = utils.getDB();
 		var statement = db.createStatement(

@@ -2,6 +2,10 @@ pref("extensions.uxu.run.ignoreHiddenFiles", true);
 pref("extensions.uxu.run.timeout", 30000);
 pref("extensions.uxu.run.history.expire.days", 30); // days
 pref("extensions.uxu.defaultEncoding", "UTF-8");
+pref("extensions.uxu.priority.important", "0.9");
+pref("extensions.uxu.priority.high",      "0.7");
+pref("extensions.uxu.priority.normal",    "0.5");
+pref("extensions.uxu.priority.low",       "0.25");
 pref("extensions.uxu.action.fireMouseEvent.useOldMethod", false);
 pref("extensions.uxu.action.fireKeyEvent.useOldMethod", true);
 
