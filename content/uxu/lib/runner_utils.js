@@ -6,12 +6,13 @@ var bundle = module.require('package', 'bundle');
 
 var action     = module.require('package', 'action');
 var assertions = module.require('package', 'assertions');
+var GMUtils    = module.require('class', 'greasemonkey');
 var TestCase   = module.require('class', 'test_case');
 
 var helper_module = new ModuleManager(['chrome://uxu/content/test']);
 var TestUtils     = helper_module.require('class', 'test_utils');
 
-function createTestSuite(aURL, aTestCaseClass)
+function createTestSuite(aURL, aBrowser, aTestCaseClass)
 {
 	var suite = {};
 	suite.fileURL = aURL;
@@ -20,6 +21,7 @@ function createTestSuite(aURL, aTestCaseClass)
 	addTestUtils(suite);
 	addAssertions(suite);
 	addActions(suite);
+	addGMUtils(suite, aBrowser);
 
 	suite.TestCase = aTestCaseClass || TestCase;
 	suite.Specification = suite.TestCase;
@@ -75,6 +77,20 @@ function addActions(aSuite)
 				return aActions[aMethod].apply(aActions, arguments);
 			};
 		})(aMethod, aSuite.action);
+	}
+}
+
+function addGMUtils(aSuite, aBrowser)
+{
+	aSuite.greasemonkey = new GMUtils(aBrowser);
+	for (var aMethod in aSuite.greasemonkey)
+	{
+		if (typeof aSuite.action[aMethod] != 'function') continue;
+		(function(aMethod, aGMUtils) {
+			aSuite['GM_'+(aMethod.replace(/^GM_/, ''))] = function() {
+				return aGMUtils[aMethod].apply(aGMUtils, arguments);
+			};
+		})(aMethod, aSuite.greasemonkey);
 	}
 }
 
@@ -135,7 +151,8 @@ function getTests(aSuite, aTestCaseClass)
 	return tests;
 }
 
-function getTestFiles(aFolder) {
+function getTestFiles(aFolder)
+{
 	var filesMayBeTest = getTestFilesInternal(aFolder);
 	var nameList = filesMayBeTest.map(function(aFile) {
 			return aFile.leafName;
@@ -147,7 +164,8 @@ function getTestFiles(aFolder) {
 	return filesMayBeTest;
 }
 var testFileNamePattern = /\.test\.js$/im;
-function getTestFilesInternal(aFolder) { 
+function getTestFilesInternal(aFolder)
+{ 
 	var files = aFolder.directoryEntries;
 	var file;
 	var filesMayBeTest = [];

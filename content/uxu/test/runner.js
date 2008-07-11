@@ -107,7 +107,7 @@ function loadFile(aFile, aReporter) {
 	var tests = [];
 
 	try {
-		var suite = runner_utils.createTestSuite(utils.getURLSpecFromFilePath(aFile.path), TestCase);
+		var suite = runner_utils.createTestSuite(utils.getURLSpecFromFilePath(aFile.path), null, TestCase);
 		tests = runner_utils.getTests(suite, TestCase);
 		if (tests.length == 0)
 			aReporter.warn('No tests found in ' + aFile.path);

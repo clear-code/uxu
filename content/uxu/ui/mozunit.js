@@ -1,13 +1,14 @@
 var module = new ModuleManager(['chrome://uxu/content/lib']); 
 var utils  = module.require('package', 'utils');
-var bundle  = module.require('package', 'bundle');
+var bundle = module.require('package', 'bundle');
 var runner_utils = module.require('package', 'runner_utils');
  
 /* UTILITIES */ 
-	
-function x() { 
+	 
+function x() 
+{
 	var contextNode, path;
-	if(arguments[0] instanceof XULElement) {
+	if (arguments[0] instanceof XULElement) {
 		contextNode = arguments[0];
 		path = arguments[1];
 	}
@@ -16,16 +17,18 @@ function x() {
 		contextNode = document;
 	}
 
-	function resolver(prefix) {
-		switch(prefix) {
-		case 'xul':
-			return 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
-			break;
-		case 'hy':
-			return 'http://hyperstruct.net/';
-			break;
-		default:
-			return null;
+	function resolver(prefix)
+	{
+		switch (prefix)
+		{
+			case 'xul':
+				return 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
+				break;
+			case 'hy':
+				return 'http://hyperstruct.net/';
+				break;
+			default:
+				return null;
 		}
 	}
 
@@ -35,12 +38,13 @@ function x() {
 		singleNodeValue;
 }
  
-function _(idOrElement, subCriteria) { 
+function _(idOrElement, subCriteria) 
+{
 	var element = (idOrElement instanceof XULElement) ?
 		idOrElement : document.getElementById(idOrElement);
 
-	if(subCriteria)
-		if(typeof(subCriteria) == 'object') {
+	if (subCriteria)
+		if (typeof(subCriteria) == 'object') {
 			for(var attributeName in subCriteria)
 				return x(element, './/*[@' + attributeName + '=' +
 						 '"' + subCriteria[attributeName] + '"]');
@@ -50,23 +54,28 @@ function _(idOrElement, subCriteria) {
 		return element;
 }
  
-function clone(blueprintName) { 
-	return _('blueprints', blueprintName)
+function clone(aBlueprintName) 
+{
+	return _('blueprints', aBlueprintName)
 		.cloneNode(true);
 }
  
-function removeChildrenOf(element) { 
-	while(element.lastChild)
-		element.removeChild(element.lastChild);
+function removeChildrenOf(aElement) 
+{
+	var range = document.createRange();
+	range.selectNodeContents(aElement);
+	range.deleteContents();
+	range.detach();
 }
  
-function padLeft(thing, width, padder) { 
+function padLeft(aThing, aWidth, aPadder) 
+{
 	var paddedString = '';
-	var string = thing.toString();
-	return (string.length < width) ?
+	var string = aThing.toString();
+	return (string.length < aWidth) ?
 		(function() {
-			for(var i=0, l=width-string.length; i<l; i++)
-				paddedString += padder;
+			for (var i = 0, l = aWidth - string.length; i < l; i++)
+				paddedString += aPadder;
 			return paddedString + string;
 		})() :
 		string;
@@ -94,8 +103,9 @@ function getErrorReports()
 }
   
 /* file picker */ 
-	
-function pickFile(aMode, aOptions) { 
+	 
+function pickFile(aMode, aOptions) 
+{
 	if (!aOptions) aOptions = {};
 	var mode = 'mode' + (aMode ?
 						 aMode[0].toUpperCase() + aMode.substr(1) :
@@ -134,19 +144,21 @@ function pickFile(aMode, aOptions) {
 	}
 	picker.appendFilters((aOptions.filter || 0) | nsIFilePicker.filterAll);
 	var result = picker.show();
-	if(result == nsIFilePicker.returnOK ||
+	if (result == nsIFilePicker.returnOK ||
 	   result == nsIFilePicker.returnReplace)
 		return picker.file;
 }
  
-function pickFileUrl(mode, aOptions) { 
-	var file = pickFile(mode, aOptions);
-	if(file)
+function pickFileUrl(aMode, aOptions) 
+{
+	var file = pickFile(aMode, aOptions);
+	if (file)
 		return utils.getURLSpecFromFilePath(file.path);
 }
  
-const fileDNDObserver = { 
-	 
+const fileDNDObserver = 
+{
+	
 	isTestCase : function(aFile) 
 	{
 		return aFile && (aFile.isDirectory() || /\.js$/.test(aFile.leafName));
@@ -193,18 +205,21 @@ const fileDNDObserver = {
 }; 
    
 /* DOMAIN */ 
-	
-function init() { 
+	 
+function init() 
+{
 }
  
-function finish() { 
+function finish() 
+{
 }
   
 /* test cases */ 
-	
-function newTestCase() { 
+	 
+function newTestCase() 
+{
 	var file = pickFile('save', makeTestCaseFileOptions());
-	if(file) {
+	if (file) {
 		reset();
 		if (file.exists()) file.remove(true);
 		_('file').value = file.path;
@@ -215,28 +230,32 @@ function newTestCase() {
 	}
 }
 	
-function writeTemplate(filePath) { 
+function writeTemplate(aFilePath) 
+{
 	var data = utils.readFrom('chrome://uxu/locale/sample.test.js');
-	utils.writeTo(data, filePath);
+	utils.writeTo(data, aFilePath);
 }
   
-function openTestCase(aIsFolder) { 
+function openTestCase(aIsFolder) 
+{
 	var file = pickFile((aIsFolder ? 'getFolder' : '' ), makeTestCaseFileOptions(aIsFolder));
-	if(file) {
+	if (file) {
 		_('file').value = file.path;
 		reset();
 	}
 }
  
-function pickTestFile(aOptions) { 
+function pickTestFile(aOptions) 
+{
 	var url = pickFileUrl(null, aOptions);
-	if(url) {
+	if (url) {
 		_('file').value = url;
 		reset();
 	}
 }
  
-function makeTestCaseFileOptions(aIsFolder) { 
+function makeTestCaseFileOptions(aIsFolder) 
+{
 	return {
 		defaultFile : _('file').value,
 		defaultExtension : 'test.js',
@@ -249,7 +268,8 @@ function makeTestCaseFileOptions(aIsFolder) {
   
 /* runner */ 
 	 
-function TestReportHandler(aTestCase) { 
+function TestReportHandler(aTestCase) 
+{
 	this.testCase = aTestCase;
 	this.mFinishHandlers = [
 		(function() {
@@ -258,36 +278,36 @@ function TestReportHandler(aTestCase) {
 	];
 }
 TestReportHandler.prototype = {
-	getTestCaseReport : function(title)
+	getTestCaseReport : function(aTitle)
 	{
-		var id = 'testcase-report-'+encodeURIComponent(title);
+		var id = 'testcase-report-'+encodeURIComponent(aTitle);
 		return _(id) ||
 			(function() {
 				var wTestCaseReport = clone('testcase-report');
 				wTestCaseReport.setAttribute('id', id);
-				wTestCaseReport.setAttribute('title', title);
-				_(wTestCaseReport, 'title').textContent = title;
+				wTestCaseReport.setAttribute('title', aTitle);
+				_(wTestCaseReport, 'title').textContent = aTitle;
 				_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-fine');
 				_('testcase-reports').appendChild(wTestCaseReport);
 				scrollReportsTo(wTestCaseReport);
 				return wTestCaseReport;
 			})();
 	},
-	handleReport : function(report) {
+	handleReport : function(aReport) {
 		var wTestCaseReport = this.getTestCaseReport(this.testCase.title);
-		_(wTestCaseReport).setAttribute('test-id', report.testID);
+		_(wTestCaseReport).setAttribute('test-id', aReport.testID);
 		_(wTestCaseReport, 'bar').setAttribute('mode', 'determined');
 		_(wTestCaseReport, 'bar').setAttribute(
-			'value', parseInt(report.testIndex / report.testCount * 100));
-		_(wTestCaseReport, 'total-counter').value = report.testCount;
+			'value', parseInt(aReport.testIndex / aReport.testCount * 100));
+		_(wTestCaseReport, 'total-counter').value = aReport.testCount;
 
 		_(wTestCaseReport, 'bar').setAttribute('testcase-results',
 			_(wTestCaseReport, 'bar').getAttribute('testcase-results')+
-			' '+report.result
+			' '+aReport.result
 		);
 
 		gTotalCount++;
-		switch (report.result)
+		switch (aReport.result)
 		{
 			case 'success':
 				gSuccessCount++;
@@ -314,15 +334,15 @@ TestReportHandler.prototype = {
 		var id = 'test-report-'+encodeURIComponent(title)+'-'+_(wTestCaseReport, 'test-reports').childNodes.length;
 		var wTestReport = clone('test-report');
 		wTestReport.setAttribute('id', id);
-		_(wTestReport, 'result').value = bundle.getString('report_result_'+report.result);
-		_(wTestReport, 'icon').setAttribute('class', 'test-' + report.result);
-		_(wTestReport, 'description').textContent = report.testDescription;
-		_(wTestReport, 'description').setAttribute('tooltiptext', report.testDescription);
-		_(wTestReport).setAttribute('report-type', report.result);
-		if (report.exception) {
-			_(wTestReport, 'additionalInfo').textContent = report.exception.message;
-			if(report.exception.stack) {
-				displayStackTrace(report.exception.stack, _(wTestReport, 'stack-trace'));
+		_(wTestReport, 'result').value = bundle.getString('report_result_'+aReport.result);
+		_(wTestReport, 'icon').setAttribute('class', 'test-' + aReport.result);
+		_(wTestReport, 'description').textContent = aReport.testDescription;
+		_(wTestReport, 'description').setAttribute('tooltiptext', aReport.testDescription);
+		_(wTestReport).setAttribute('report-type', aReport.result);
+		if (aReport.exception) {
+			_(wTestReport, 'additionalInfo').textContent = aReport.exception.message;
+			if (aReport.exception.stack) {
+				displayStackTrace(aReport.exception.stack, _(wTestReport, 'stack-trace'));
 				_(wTestReport, 'stack-trace').hidden = false;
 			}
 		}
@@ -386,7 +406,7 @@ function onError(aError)
 	_('prerun-report', 'error').value = bundle.getFormattedString('error_failed', [aError.toString()]);
 	_('prerun-report', 'error').hidden = false;
 
-	if(aError.stack) {
+	if (aError.stack) {
 		displayStackTrace(aError.stack, _('prerun-report', 'stack-trace'));
 		_('prerun-report', 'stack-trace').hidden = false;
 		_('prerun-report').hidden = false;
@@ -395,8 +415,9 @@ function onError(aError)
  
 var traceLineRegExp = /@(\w+:.*)?:(\d+)/;
 var includeRegExp = /^chrome:\/\/uxu\/content\/test\/helper\/subScriptRunner\.js\?includeSource=([^;,]+)/i;
-function displayStackTrace(trace, listbox) { 
-	var fullLines = trace.split('\n').map(function(aLine) {
+function displayStackTrace(aTrace, aListbox) 
+{
+	var fullLines = aTrace.split('\n').map(function(aLine) {
 			if (!aLine.match(traceLineRegExp)) return aLine;
 			var sourceUrl = RegExp.$1;
 			var match = sourceUrl.match(includeRegExp);
@@ -415,21 +436,18 @@ function displayStackTrace(trace, listbox) {
 		var item = document.createElement('listitem');
 		item.setAttribute('label', aLine);
 		item.setAttribute('crop', 'center');
-		listbox.appendChild(item);
+		aListbox.appendChild(item);
 	});
 }
  
-function toggleContent() { 
-	_('content').collapsed = !_('content').collapsed;
-	_('content-splitter').hidden = !_('content-splitter').hidden;
-}
- 
-function hideSource() { 
+function hideSource() 
+{
 	_('source-viewer').collapsed = true;
 	_('source-splitter').hidden = true;
 }
  
-function reset() { 
+function reset() 
+{
 	gTotalCount    = 0;
 	gSuccessCount  = 0;
 	gPassOverCount = 0;
@@ -451,7 +469,8 @@ var gPassOverCount = 0;
 var gErrorCount    = 0;
 var gFailureCount  = 0;
  
-function setRunningState(aRunning) { 
+function setRunningState(aRunning) 
+{
 	if (aRunning) {
 		_('run-box').setAttribute('hidden', true);
 		_('run').setAttribute('disabled', true);
@@ -477,7 +496,8 @@ function setRunningState(aRunning) {
 	}
 }
  
-function run(aAll) { 
+function run(aAll) 
+{
 	reset();
 	var suites = loadSuites();
 	var tests = initializeTests(suites);
@@ -488,8 +508,9 @@ function run(aAll) {
 	}
 	this.runTests(tests);
 }
-	 
-function runByPref() { 
+	
+function runByPref() 
+{
 	run(utils.getPref('extensions.uxu.mozunit.runMode') == 1 ? true : false );
 }
  
@@ -507,7 +528,8 @@ function loadSuites()
 	return suites;
 }
  
-function runTests(aTests) { 
+function runTests(aTests) 
+{
 	shouldAbortTest = false;
 	var max = aTests.length + 1;
 	var runTest = function(aTest, aIndex) {
@@ -549,7 +571,8 @@ function runTests(aTests) {
 }
 var shouldAbortTest = false;
   
-function runFailed() { 
+function runFailed() 
+{
 	var failedTests = {};
 	[].concat(getFailureReports()).concat(getErrorReports())
 		.forEach(function(aTestReport) {
@@ -569,23 +592,26 @@ function runFailed() {
 	this.runTests(tests);
 }
  
-function stop() { 
+function stop() 
+{
 	shouldAbortTest = true;
 	_('stop').setAttribute('disabled', true);
 }
 	
-function loadFolder(aFolder) { 
+function loadFolder(aFolder) 
+{
 	var filesMayBeTest = runner_utils.getTestFiles(aFolder);
 	return filesMayBeTest.map(function(aFile) {
 			return loadFile(aFile);
 		});
 }
  
-function loadFile(aFile) { 
+function loadFile(aFile) 
+{
 	var url = utils.getURLSpecFromFilePath(aFile.path);
 
 	try {
-		var suite = runner_utils.createTestSuite(url);
+		var suite = runner_utils.createTestSuite(url, _('content'));
 	}
 	catch(e) {
 		if (/\.(js|jsm)$/i.test(aFile.leafName))
@@ -596,7 +622,8 @@ function loadFile(aFile) {
 	return suite;
 }
  
-function initializeTests(aSuites, aFilter) { 
+function initializeTests(aSuites, aFilter) 
+{
 	if (!aFilter)
 		aFilter = function(aTest) { return true; };
 
@@ -649,42 +676,45 @@ function initializeTests(aSuites, aFilter) {
 	return allTests;
 }
   
-function saveReport() { 
+function saveReport() 
+{
 }
  
-function stylizeSource(sourceDocument, lineCallback) { 
-	var originalSource = sourceDocument.getElementsByTagName('pre')[0];
-	var processedSource = sourceDocument.createElementNS('http://www.w3.org/1999/xhtml', 'pre');
+function stylizeSource(aSourceDocument, aLineCallback) 
+{
+	var originalSource = aSourceDocument.getElementsByTagName('pre')[0];
+	var processedSource = aSourceDocument.createElementNS('http://www.w3.org/1999/xhtml', 'pre');
 	var sourceLines = originalSource.textContent.split('\n');
 	var sourceLine, htmlLine, lineContent;
 	for(var i=0, l=sourceLines.length; i<l; i++) {
-		if(lineCallback)
-			htmlLine = lineCallback(sourceDocument, i+1, sourceLines[i]) ||
-				sourceDocument.createTextNode(sourceLines[i]);
+		if (aLineCallback)
+			htmlLine = aLineCallback(aSourceDocument, i+1, sourceLines[i]) ||
+				aSourceDocument.createTextNode(sourceLines[i]);
 
 		processedSource.appendChild(htmlLine)
 	}
 	processedSource.normalize();
 	originalSource.parentNode.replaceChild(processedSource, originalSource);
 
-	var cssElem = sourceDocument.createElementNS('http://www.w3.org/1999/xhtml', 'style');
+	var cssElem = aSourceDocument.createElementNS('http://www.w3.org/1999/xhtml', 'style');
 	cssElem.type = 'text/css';
 	cssElem.textContent =
 		'body { margin: 0; }' +
 		'#current { font-weight: bold; background-color: #e5e5e5; }' +
 		'.link { color: blue; border-bottom: thin solid blue; cursor: pointer; }';
 
-	sourceDocument.getElementsByTagName('head')[0].appendChild(cssElem);
+	aSourceDocument.getElementsByTagName('head')[0].appendChild(cssElem);
 }
  
-function openInEditor(filePath, lineNumber, columnNumber, commandLine) { 
-	if (utils.makeFileWithPath(filePath).isDirectory()) {
+function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine) 
+{
+	if (utils.makeFileWithPath(aFilePath).isDirectory()) {
 		return;
 	}
 
-	lineNumber = lineNumber || 1;
-	columnNumber = columnNumber || 1;
-	commandLine = commandLine ||
+	aLineNumber = aLineNumber || 1;
+	aColumnNumber = aColumnNumber || 1;
+	aCommandLine = aCommandLine ||
 		utils.getPref('extensions.uxu.mozunit.editor') ||
 		utils.getPref('extensions.mozlab.mozunit.editor') ||
 		(utils.getPref('view_source.editor.path') ?
@@ -694,9 +724,9 @@ function openInEditor(filePath, lineNumber, columnNumber, commandLine) {
 	var tokens = [''];
 	var quot   = '';
 	var char;
-	for (var i = 0, maxi = commandLine.length; i < maxi; i++)
+	for (var i = 0, maxi = aCommandLine.length; i < maxi; i++)
 	{
-		char = commandLine.charAt(i);
+		char = aCommandLine.charAt(i);
 		if (char == '"' || char == "'") {
 			if (quot) {
 				quot = '';
@@ -720,10 +750,10 @@ function openInEditor(filePath, lineNumber, columnNumber, commandLine) {
 	var argv = tokens.map(
 		function(word) {
 			return word.
-				replace('%l', lineNumber).
-				replace('%c', columnNumber).
-				replace('%u', utils.getURLSpecFromFilePath(filePath)).
-				replace('%f', filePath);
+				replace('%l', aLineNumber).
+				replace('%c', aColumnNumber).
+				replace('%u', utils.getURLSpecFromFilePath(aFilePath)).
+				replace('%f', aFilePath);
 		});
 
 	var editorPath;
@@ -751,12 +781,13 @@ function openInEditor(filePath, lineNumber, columnNumber, commandLine) {
 			});
 		if (!editor || !editor.path) return;
 		utils.setPref('extensions.uxu.mozunit.editor', '"'+editor.path+'" "%f"');
-		arguments.callee(filePath, lineNumber, columnNumber);
+		arguments.callee(aFilePath, aLineNumber, aColumnNumber);
 	}
 }
  
-function showSource(traceLine) { 
-	var match = traceLine.match(/@(\w+:.*)?:(\d+)/);
+function showSource(aTraceLine) 
+{
+	var match = aTraceLine.match(/@(\w+:.*)?:(\d+)/);
 	if (!match) return;
 
 	var sourceUrl = match[1];
@@ -775,32 +806,32 @@ function showSource(traceLine) {
 		sourceUrl = sourceUrl.replace(/\?.+$/, '');
 	}
 
-	function onLoad(event) {
+	function onLoad(aEvent)
+	{
 		_('source-viewer', 'source').removeEventListener('load', onLoad, true);
 
 		stylizeSource(
 			_('source-viewer', 'source').contentDocument,
-			function(sourceDoc, number, content)
+			function(aSourceDoc, aNumber, aContent)
 			{
-				content = padLeft(number, 3, 0) + ' ' + content + '\n';
+				aContent = padLeft(aNumber, 3, 0) + ' ' + aContent + '\n';
 
-				if (number == lineNumber) {
-					var currentLine = sourceDoc.createElementNS('http://www.w3.org/1999/xhtml', 'div');
+				if (aNumber == lineNumber) {
+					var currentLine = aSourceDoc.createElementNS('http://www.w3.org/1999/xhtml', 'div');
 					currentLine.setAttribute('id', 'current');
-					currentLine.textContent = content;
+					currentLine.textContent = aContent;
 
-					if(sourceUrl.match(/^file:\/\//)) {
+					if (sourceUrl.match(/^file:\/\//)) {
 						currentLine.setAttribute('class', 'link');
-						currentLine.addEventListener(
-							'click', function(event) {
-								openInEditor(utils.getFilePathFromURLSpec(sourceUrl), lineNumber);
-							}, false);
+						currentLine.addEventListener('click', function(aEvent) {
+							openInEditor(utils.getFilePathFromURLSpec(sourceUrl), lineNumber);
+						}, false);
 					}
 
 					return currentLine;
 				}
 				else {
-					return sourceDoc.createTextNode(content);
+					return aSourceDoc.createTextNode(aContent);
 				}
 			}
 		);
@@ -827,7 +858,8 @@ function showSource(traceLine) {
 	);
 }
  
-function updateRunMode() { 
+function updateRunMode() 
+{
 	var runPriority = _('runPriority');
 	var runAll = _('runAll');
 	var label;
@@ -848,5 +880,13 @@ function updateRunMode() {
 			runAll.setAttribute('label', label);
 			break;
 	}
+}
+  
+/* UI */ 
+	 
+function toggleContent() 
+{
+	_('content').collapsed = !_('content').collapsed;
+	_('content-splitter').hidden = !_('content-splitter').hidden;
 }
  	 

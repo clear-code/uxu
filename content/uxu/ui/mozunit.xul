@@ -59,7 +59,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 		<command id="stop" label="&mozunit.stop.label;" accesskey="&mozunit.stop.accesskey;"
 			oncommand="stop();"
 			disabled="true"/>
-		<command id="toggle-content" oncommand="toggleContent();"
+		<command id="toggleContent" oncommand="toggleContent();"
 			label="&mozunit.toggleContent.label;" accesskey="&mozunit.toggleContent.accesskey;"/>
 		<command id="open" label="&mozunit.open.label;" accesskey="&mozunit.open.accesskey;"
 			oncommand="openTestCase();"/>
@@ -158,7 +158,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 			</menu>
 			<menu id="view-menu" label="&mozunit.view.label;" accesskey="&mozunit.view.accesskey;">
 				<menupopup>
-					<menuitem command="toggle-content"/>
+					<menuitem command="toggleContent"/>
 				</menupopup>
 			</menu>
 		</menubar>
