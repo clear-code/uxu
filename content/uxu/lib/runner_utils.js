@@ -1,37 +1,37 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
 var module = new ModuleManager(['chrome://uxu/content/lib']);
-var mozlab = {
-	mozunit: module.require('package', 'package')
-};
 var utils  = module.require('package', 'utils');
 var bundle = module.require('package', 'bundle');
 
+var action     = module.require('package', 'action');
+var assertions = module.require('package', 'assertions');
+var TestCase   = module.require('class', 'test_case');
+
 var helper_module = new ModuleManager(['chrome://uxu/content/test/helper']);
 var TestUtils     = helper_module.require('class', 'test_utils');
-var action        = helper_module.require('package', 'action');
-
-var TestCase = mozlab.mozunit.TestCase;
 
 function createTestSuite(aURL, aTestCaseClass)
 {
 	var suite = {};
+	suite.fileURL       = aURL;
+	suite.baseURL       = suite.fileURL.replace(/[^/]*$/, '');
 	suite.utils         = new TestUtils(suite);
-	suite.utils.fileURL = aURL;
-	suite.utils.baseURL = aURL.replace(/[^/]*$/, '');
-	suite.__proto__     = suite.utils;
+	suite.utils.fileURL = suite.fileURL;
+	suite.utils.baseURL = suite.baseURL;
 	suite.assert        = {};
-	suite.assert.__proto__ = mozlab.mozunit.assertions;
+	suite.assert.__proto__ = assertions;
 	suite.action        = {};
 	suite.action.__proto__ = action;
-	suite.TestCase      = aTestCaseClass || mozlab.mozunit.TestCase;
-	suite.Specification = aTestCaseClass || mozlab.mozunit.TestCase;
-	suite.include(suite.fileURL);
+	suite.TestCase      = aTestCaseClass || TestCase;
+	suite.Specification = aTestCaseClass || TestCase;
+	suite.utils.include(suite.fileURL);
 	return suite;
 }
 
 function getTests(aSuite, aTestCaseClass)
 {
+	var TC = aTestCaseClass || TestCase;
 	var tests = [];
 	var testObjects = { tests : [] };
 	var obj;
@@ -39,7 +39,7 @@ function getTests(aSuite, aTestCaseClass)
 	{
 		obj = aSuite[i];
 		if (!obj) continue;
-		if (obj.__proto__ == (aTestCaseClass || mozlab.mozunit.TestCase).prototype) {
+		if (obj.__proto__ == (aTestCaseClass || TestCase).prototype) {
 			obj.environment = aSuite;
 			tests.push(obj);
 			continue;
@@ -63,7 +63,7 @@ function getTests(aSuite, aTestCaseClass)
 	if (testObjects.tests.length) {
 		var options = { runStrategy : aSuite.runStrategy };
 		if (aSuite.isAsync) options.runStrategy = 'async';
-		var newTestCase = new TestCase(
+		var newTestCase = new TC(
 				aSuite.description || aSuite.fileURL.match(/[^\/]+$/),
 				options,
 				aSuite.fileURL
