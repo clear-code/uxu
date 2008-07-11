@@ -8,7 +8,7 @@ function constructor(aBrowser)
 }
 
 
-function ready()
+function ready(aURI)
 {
 	var browser = this.target;
 	this.__defineGetter__('window', function() {
@@ -20,7 +20,16 @@ function ready()
 	this.__defineGetter__('document', function() {
 		return browser.contentDocument;
 	});
-	this.__proto__ = browser.contentWindow;
+
+	var scope = this;
+	var retVal = { value : false };
+	browser.addEventListener('load', function() {
+		browser.removeEventListener('load', arguments.callee, false);
+		scope.__proto__ = browser.contentWindow;
+		retVal.value = true;
+	}, false);
+
+	return retVal;
 }
 
 
