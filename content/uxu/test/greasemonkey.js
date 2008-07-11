@@ -4,106 +4,93 @@
 function constructor(aSuite, aBrowser)
 {
 	this.environment = aSuite;
-	this.target = aBrowser;
-	this.storage = {};
-	this.listeners = [];
-	this.uri = aSuite.fileURL;
+	this.target      = aBrowser;
+	this.storage     = {};
+	this.listeners   = [];
+	this.uri         = aSuite.fileURL;
 }
 
 
 function createSandbox()
 {
-	var _this = this;
-	var env = this.environment;
-	var browser = this.target;
 	var gmEnv = {
-			storage   : {},
-			target    : browser,
-			listeners : [],
-			fireEvent : function() {
+			environment : this.environment,
+			target      : this.target,
+			storage     : {},
+			listeners   : [],
+			fireEvent   : function() {
 				fireEvent.apply(this, arguments);
 			},
-			callGMFunction : function(aName, aArguments) {
-				var retVal = _this[aName].apply(this, aArguments);
-				return retVal;
+			callGMFunction : function(aFunc, aArguments) {
+				this.uri = this.target.currentURI.spec;
+				return aFunc.apply(this, aArguments);
 			}
 		};
 	var sandbox = {
 		get window() {
-			return browser.contentWindow;
+			return gmEnv.target.contentWindow;
 		},
 		get unsafeWindow() {
-			return browser.contentWindow.wrappedJSObject;
+			return gmEnv.target.contentWindow.wrappedJSObject;
 		},
 		get document() {
-			return browser.contentDocument;
+			return gmEnv.target.contentDocument;
 		},
 		GM_log : function() {
-			gmEnv.uri = browser.currentURI.spec;
-			return gmEnv.callGMFunction('GM_log', arguments);
+			return gmEnv.callGMFunction(GM_log, arguments);
 		},
 		GM_getValue : function() {
-			gmEnv.uri = browser.currentURI.spec;
-			return gmEnv.callGMFunction('GM_getValue', arguments);
+			return gmEnv.callGMFunction(GM_getValue, arguments);
 		},
 		GM_setValue : function() {
-			gmEnv.uri = browser.currentURI.spec;
-			return gmEnv.callGMFunction('GM_setValue', arguments);
+			return gmEnv.callGMFunction(GM_setValue, arguments);
 		},
 		GM_registerMenuCommand : function() {
-			gmEnv.uri = browser.currentURI.spec;
-			return gmEnv.callGMFunction('GM_registerMenuCommand', arguments);
+			return gmEnv.callGMFunction(GM_registerMenuCommand, arguments);
 		},
 		GM_xmlhttpRequest : function(aDetails) {
-			gmEnv.uri = browser.currentURI.spec;
-			return gmEnv.callGMFunction('GM_xmlhttpRequest', arguments);
+			return gmEnv.callGMFunction(GM_xmlhttpRequest, arguments);
 		},
 		GM_addStyle : function() {
-			gmEnv.uri = browser.currentURI.spec;
-			return gmEnv.callGMFunction('GM_addStyle', arguments);
+			return gmEnv.callGMFunction(GM_addStyle, arguments);
 		},
 		GM_getResourceURL : function() {
-			gmEnv.uri = browser.currentURI.spec;
-			return gmEnv.callGMFunction('GM_getResourceURL', arguments);
+			return gmEnv.callGMFunction(GM_getResourceURL, arguments);
 		},
 		GM_getResourceText : function() {
-			gmEnv.uri = browser.currentURI.spec;
-			return gmEnv.callGMFunction('GM_getResourceText', arguments);
+			return gmEnv.callGMFunction(GM_getResourceText, arguments);
 		},
 		GM_openInTab : function() {
-			gmEnv.uri = browser.currentURI.spec;
-			return gmEnv.callGMFunction('GM_openInTab', arguments);
+			return gmEnv.callGMFunction(GM_openInTab, arguments);
 		},
 		addListener : function() {
-			gmEnv.uri = browser.currentURI.spec;
-			return gmEnv.callGMFunction('addListener', arguments);
+			return gmEnv.callGMFunction(addListener, arguments);
 		},
 		removeListener : function() {
-			gmEnv.uri = browser.currentURI.spec;
-			return gmEnv.callGMFunction('removeListener', arguments);
+			return gmEnv.callGMFunction(removeListener, arguments);
 		},
 		load : function(aURI) {
 			var loadedFlag = { value : false };
-			browser.addEventListener('load', function() {
-				browser.removeEventListener('load', arguments.callee, true);
-				sandbox.__proto__ = browser.contentWindow;
+			gmEnv.target.addEventListener('load', function() {
+				gmEnv.target.removeEventListener('load', arguments.callee, true);
+				sandbox.__proto__ = gmEnv.target.contentWindow;
 				loadedFlag.value = true;
 			}, true);
-			browser.loadURI(aURI);
+			gmEnv.target.loadURI(gmEnv.environment.utils.fixupIncompleteURI(aURI));
 			return loadedFlag;
 		},
 		unload : function() {
 			this.__proto__ = null;
 			var loadedFlag = { value : false };
-			browser.addEventListener('load', function() {
-				browser.removeEventListener('load', arguments.callee, true);
+			gmEnv.target.addEventListener('load', function() {
+				gmEnv.target.removeEventListener('load', arguments.callee, true);
 				loadedFlag.value = true;
 			}, true);
-			browser.loadURI('about:blank');
+			gmEnv.target.loadURI('about:blank');
 			return loadedFlag;
 		},
 		loadScript : function(aURI, aEncoding) {
-			env.utils.include(aURI, this, aEncoding);
+			gmEnv.environment.utils.include(aURI, this, aEncoding);
 		}
 	};
 	return sandbox;
