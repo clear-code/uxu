@@ -23,7 +23,9 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 -->
 
 <!DOCTYPE window SYSTEM "chrome://uxu/locale/uxu.dtd">
-<window id="mozunit" title="&mozunit.title;"
+<window id="mozunit"
+	title="&mozunit.title;"
+	contenttitlesetting="false"
 	windowtype="uxu:mozunit"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 	xmlns:hy="http://hyperstruct.net/"

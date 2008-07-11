@@ -85,7 +85,7 @@ function addGMUtils(aSuite, aBrowser)
 	aSuite.greasemonkey = new GMUtils(aSuite, aBrowser);
 	for (var aMethod in aSuite.greasemonkey)
 	{
-		if (typeof aSuite.action[aMethod] != 'function') continue;
+		if (typeof aSuite.greasemonkey[aMethod] != 'function') continue;
 		(function(aMethod, aGMUtils) {
 			aSuite['GM_'+(aMethod.replace(/^GM_/, ''))] = function() {
 				return aGMUtils[aMethod].apply(aGMUtils, arguments);
