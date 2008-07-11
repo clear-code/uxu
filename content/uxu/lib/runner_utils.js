@@ -16,19 +16,17 @@ var TestCase = mozlab.mozunit.TestCase;
 function createTestSuite(aURL, aTestCaseClass)
 {
 	var suite = {};
-	suite.TestCase      = aTestCaseClass || mozlab.mozunit.TestCase;
-	suite.Specification = aTestCaseClass || mozlab.mozunit.TestCase;
+	suite.utils         = new TestUtils(suite);
+	suite.utils.fileURL = aURL;
+	suite.utils.baseURL = aURL.replace(/[^/]*$/, '');
+	suite.__proto__     = suite.utils;
 	suite.assert        = {};
 	suite.assert.__proto__ = mozlab.mozunit.assertions;
-	suite.fileURL       = aURL;
-	suite.baseURL       = suite.fileURL.replace(/[^/]*$/, '');
-	suite.utils         = new TestUtils(suite);
-	suite.utils.fileURL = suite.fileURL;
-	suite.utils.baseURL = suite.baseURL;
-	suite.Do            = function(aObject) { return this.utils.Do(aObject); };
 	suite.action        = {};
 	suite.action.__proto__ = action;
-	suite.utils.include(suite.fileURL);
+	suite.TestCase      = aTestCaseClass || mozlab.mozunit.TestCase;
+	suite.Specification = aTestCaseClass || mozlab.mozunit.TestCase;
+	suite.include(suite.fileURL);
 	return suite;
 }
 
