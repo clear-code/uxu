@@ -54,8 +54,13 @@ function isFalse(x, aMessage) {
 }
 
 function isNull(x, aMessage) {
-    if (x != null)
+    if (x !== null)
         fail(bundle.getFormattedString('assert_is_null', [x]), aMessage);
+}
+
+function isNotNull(x, aMessage) {
+    if (x === null)
+        fail(bundle.getFormattedString('assert_is_not_null', [x]), aMessage);
 }
 
 function raises(exception, code, context, aMessage) {
