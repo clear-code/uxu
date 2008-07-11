@@ -21,11 +21,8 @@ function createTestSuite(aURL, aTestCaseClass)
 	suite.utils.fileURL = suite.fileURL;
 	suite.utils.baseURL = suite.baseURL;
 
-	suite.assert = {};
-	suite.assert.__proto__ = assertions;
-
-	suite.action = {};
-	suite.action.__proto__ = action;
+	addAssertions(suite);
+	addActions(suite);
 
 	suite.TestCase = aTestCaseClass || TestCase;
 	suite.Specification = suite.TestCase;
@@ -33,6 +30,39 @@ function createTestSuite(aURL, aTestCaseClass)
 	suite.utils.include(suite.fileURL);
 
 	return suite;
+}
+
+function addAssertions(aSuite)
+{
+	aSuite.assert = {};
+	aSuite.assert.__proto__ = assertions;
+	for (var aMethod in aSuite.assert)
+	{
+		if (typeof aSuite.assert[aMethod] != 'function') continue;
+		(function(aMethod, aAssertions) {
+			var func = function() {
+					return aAssertions[aMethod].apply(aAssertions, arguments);
+				};
+			aSuite['assert'+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)] = func;
+			if (aMethod.indexOf('is') == 0)
+				aSuite['assert'+aMethod.substring(2)] = func;
+		})(aMethod, aSuite.assert);
+	}
+}
+
+function addActions(aSuite)
+{
+	aSuite.action = {};
+	aSuite.action.__proto__ = action;
+	for (var aMethod in aSuite.action)
+	{
+		if (typeof aSuite.action[aMethod] != 'function') continue;
+		(function(aMethod, aActions) {
+			aSuite['assert'+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)] = function() {
+				return aActions[aMethod].apply(aActions, arguments);
+			};
+		})(aMethod, aSuite.action);
+	}
 }
 
 function getTests(aSuite, aTestCaseClass)
