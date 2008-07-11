@@ -18,7 +18,7 @@ function createSandbox()
 			return browser.contentWindow;
 		},
 		get unsafeWindow() {
-			return browser.contentWindow;
+			return browser.contentWindow.wrappedJSObject;
 		},
 		get document() {
 			return browser.contentDocument;
