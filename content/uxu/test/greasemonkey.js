@@ -1,35 +1,79 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
 
-function constructor(aBrowser)
+function constructor(aSuite, aBrowser)
 {
+	this.environment = aSuite;
 	this.target = aBrowser;
 	this.storage = {};
 }
 
 
-function ready(aURI)
+function createSandbox()
 {
+	var env = this.environment;
 	var browser = this.target;
-	this.__defineGetter__('window', function() {
-		return browser.contentWindow;
-	});
-	this.__defineGetter__('unsafeWindow', function() {
-		return browser.contentWindow;
-	});
-	this.__defineGetter__('document', function() {
-		return browser.contentDocument;
-	});
-
-	var scope = this;
-	var retVal = { value : false };
-	browser.addEventListener('load', function() {
-		browser.removeEventListener('load', arguments.callee, false);
-		scope.__proto__ = browser.contentWindow;
-		retVal.value = true;
-	}, false);
-
-	return retVal;
+	var sandbox = {
+		get window() {
+			return browser.contentWindow;
+		},
+		get unsafeWindow() {
+			return browser.contentWindow;
+		},
+		get document() {
+			return browser.contentDocument;
+		},
+		GM_log : function() {
+			return GM_log.apply(this, arguments);
+		},
+		GM_getValue : function() {
+			return GM_getValue.apply(this, arguments);
+		},
+		GM_setValue : function() {
+			return GM_setValue.apply(this, arguments);
+		},
+		GM_registerMenuCommand : function() {
+			return GM_registerMenuCommand.apply(this, arguments);
+		},
+		GM_xmlhttpRequest : function() {
+			return GM_xmlhttpRequest.apply(this, arguments);
+		},
+		GM_addStyle : function() {
+			return GM_addStyle.apply(this, arguments);
+		},
+		GM_getResourceURL : function() {
+			return GM_getResourceURL.apply(this, arguments);
+		},
+		GM_getResourceText : function() {
+			return GM_getResourceText.apply(this, arguments);
+		},
+		GM_openInTab : function() {
+			return GM_openInTab.apply(this, arguments);
+		},
+		load : function(aURI) {
+			var loadedFlag = { value : false };
+			browser.addEventListener('load', function() {
+				browser.removeEventListener('load', arguments.callee, true);
+				sandbox.__proto__ = browser.contentWindow;
+				loadedFlag.value = true;
+			}, true);
+			browser.loadURI(aURI);
+			return loadedFlag;
+		},
+		unload : function() {
+			var loadedFlag = { value : false };
+			browser.addEventListener('load', function() {
+				browser.removeEventListener('load', arguments.callee, true);
+				loadedFlag.value = true;
+			}, true);
+			browser.loadURI('about:blank');
+			return loadedFlag;
+		},
+		loadScript : function(aURI, aEncoding) {
+			env.utils.include(aURI, this, aEncoding);
+		}
+	};
+	return sandbox;
 }
 
 

@@ -148,8 +148,8 @@ this.loadURI = function(aURI, aOptions) {
 	if (!win) return null;
 
 	win.gBrowser.addEventListener('load', function() {
-		loadedFlag.value = true;
 		win.gBrowser.removeEventListener('load', arguments.callee, true);
+		loadedFlag.value = true;
 	}, true);
 	win.gBrowser.loadURI(aURI);
 
@@ -168,9 +168,9 @@ this.addTab = function(aURI, aOptions) {
 
 	var tab = win.gBrowser.addTab();
 	tab.linkedBrowser.addEventListener('load', function() {
+		tab.linkedBrowser.removeEventListener('load', arguments.callee, true);
 		loadedFlag.value = true;
 		loadedFlag.tab = tab;
-		tab.linkedBrowser.removeEventListener('load', arguments.callee, true);
 	}, true);
 	tab.linkedBrowser.loadURI(aURI);
 

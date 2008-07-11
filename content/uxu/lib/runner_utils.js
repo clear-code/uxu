@@ -6,11 +6,11 @@ var bundle = module.require('package', 'bundle');
 
 var action     = module.require('package', 'action');
 var assertions = module.require('package', 'assertions');
-var GMUtils    = module.require('class', 'greasemonkey');
 var TestCase   = module.require('class', 'test_case');
 
 var helper_module = new ModuleManager(['chrome://uxu/content/test']);
 var TestUtils     = helper_module.require('class', 'test_utils');
+var GMUtils       = helper_module.require('class', 'greasemonkey');
 
 function createTestSuite(aURL, aBrowser, aTestCaseClass)
 {
@@ -82,7 +82,7 @@ function addActions(aSuite)
 
 function addGMUtils(aSuite, aBrowser)
 {
-	aSuite.greasemonkey = new GMUtils(aBrowser);
+	aSuite.greasemonkey = new GMUtils(aSuite, aBrowser);
 	for (var aMethod in aSuite.greasemonkey)
 	{
 		if (typeof aSuite.action[aMethod] != 'function') continue;
