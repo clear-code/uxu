@@ -2,25 +2,25 @@ var description = 'Sandboxを使用したGreasemonkeyスクリプトのテスト
 var isAsync = true;
 
 
-var page   = 'http://www.clear-code.com/';
+var page   = 'index.html';
 var script = 'greasemonkey.user.js';
 
 var sandbox;
 
 function setUp() {
-	sandbox = greasemonkey.createSandbox();
-	yield Do(sandbox.load(page));
-	sandbox.loadScript(script);
+	yield Do(greasemonkey.load(page));
+	greasemonkey.loadScript(script);
+	sandbox = greasemonkey.getSandboxFor(script);
 }
 
 function tearDown() {
-	yield Do(sandbox.unload());
+	yield Do(greasemonkey.unload());
 }
 
 testNormalFunction.description = 'GM関数にアクセスしない例';
 function testNormalFunction() {
 	assert.equals(
-		'ClearCode Inc.\nhttp://www.clear-code.com/',
+		'ClearCode Inc.\n'+baseURL+'index.html',
 		sandbox.getDocumentTitleAndURI()
 	);
 }
@@ -35,7 +35,7 @@ function testGMFunctionAccess() {
 				this.value = aEvent.value;
 			}
 		};
-	sandbox.addListener(listener);
+	greasemonkey.addListener(listener);
 
 	sandbox.setAndGetValue();
 	assert.equals('testKey', listener.key);
@@ -65,7 +65,7 @@ function testGMXMLHttpRequest() {
 				value : false
 			}
 		};
-	sandbox.addListener(listener);
+	greasemonkey.addListener(listener);
 
 	assert.isNull(sandbox.servicePageTitle);
 	sandbox.getServicesPageTitle();

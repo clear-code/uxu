@@ -8,98 +8,96 @@ function constructor(aSuite, aBrowser)
 	this.storage     = {};
 	this.listeners   = [];
 	this.uri         = aSuite.fileURL;
+	this.sandboxes   = {};
 }
 
-
-function createSandbox()
+function load(aURI)
 {
-	var gmEnv = {
-			environment : this.environment,
-			target      : this.target,
-			storage     : {},
-			listeners   : [],
-			fireEvent   : function() {
-				fireEvent.apply(this, arguments);
-			},
-			callGMFunction : function(aFunc, aArguments) {
-				this.uri = this.target.currentURI.spec;
-				return aFunc.apply(this, aArguments);
-			}
-		};
+	var loadedFlag = { value : false };
+	var b = this.target;
+	b.addEventListener('load', function() {
+		b.removeEventListener('load', arguments.callee, true);
+		loadedFlag.value = true;
+	}, true);
+	b.loadURI(this.environment.utils.fixupIncompleteURI(aURI));
+	return loadedFlag;
+}
+
+function unload()
+{
+	this.sandboxes = {};
+	var loadedFlag = { value : false };
+	var b = this.target;
+	b.addEventListener('load', function() {
+		b.removeEventListener('load', arguments.callee, true);
+		loadedFlag.value = true;
+	}, true);
+	b.loadURI('about:blank');
+	return loadedFlag;
+}
+
+function getSandboxFor(aURI)
+{
+	aURI = this.environment.utils.fixupIncompleteURI(aURI);
+	if (aURI in this.sandboxes) return this.sandboxes[aURI];
+
+	var env = this;
 	var sandbox = {
 		get window() {
-			return gmEnv.target.contentWindow;
+			return env.target.contentWindow;
 		},
 		get unsafeWindow() {
-			return gmEnv.target.contentWindow.wrappedJSObject;
+			return env.target.contentWindow.wrappedJSObject;
 		},
 		get document() {
-			return gmEnv.target.contentDocument;
+			return env.target.contentDocument;
 		},
 		GM_log : function() {
-			return gmEnv.callGMFunction(GM_log, arguments);
+			return GM_log.apply(env, arguments);
 		},
 		GM_getValue : function() {
-			return gmEnv.callGMFunction(GM_getValue, arguments);
+			return GM_getValue.apply(env, arguments);
 		},
 		GM_setValue : function() {
-			return gmEnv.callGMFunction(GM_setValue, arguments);
+			return GM_setValue.apply(env, arguments);
 		},
 		GM_registerMenuCommand : function() {
-			return gmEnv.callGMFunction(GM_registerMenuCommand, arguments);
+			return GM_registerMenuCommand.apply(env, arguments);
 		},
 		GM_xmlhttpRequest : function(aDetails) {
-			return gmEnv.callGMFunction(GM_xmlhttpRequest, arguments);
+			return GM_xmlhttpRequest.apply(env, arguments);
 		},
 		GM_addStyle : function() {
-			return gmEnv.callGMFunction(GM_addStyle, arguments);
+			return GM_addStyle.apply(env, arguments);
 		},
 		GM_getResourceURL : function() {
-			return gmEnv.callGMFunction(GM_getResourceURL, arguments);
+			return GM_getResourceURL.apply(env, arguments);
 		},
 		GM_getResourceText : function() {
-			return gmEnv.callGMFunction(GM_getResourceText, arguments);
+			return GM_getResourceText.apply(env, arguments);
 		},
 		GM_openInTab : function() {
-			return gmEnv.callGMFunction(GM_openInTab, arguments);
-		},
-		addListener : function() {
-			return gmEnv.callGMFunction(addListener, arguments);
-		},
-		removeListener : function() {
-			return gmEnv.callGMFunction(removeListener, arguments);
-		},
-		load : function(aURI) {
-			var loadedFlag = { value : false };
-			gmEnv.target.addEventListener('load', function() {
-				gmEnv.target.removeEventListener('load', arguments.callee, true);
-				sandbox.__proto__ = gmEnv.target.contentWindow;
-				loadedFlag.value = true;
-			}, true);
-			gmEnv.target.loadURI(gmEnv.environment.utils.fixupIncompleteURI(aURI));
-			return loadedFlag;
-		},
-		unload : function() {
-			this.__proto__ = null;
-			var loadedFlag = { value : false };
-			gmEnv.target.addEventListener('load', function() {
-				gmEnv.target.removeEventListener('load', arguments.callee, true);
-				loadedFlag.value = true;
-			}, true);
-			gmEnv.target.loadURI('about:blank');
-			return loadedFlag;
-		},
-		loadScript : function(aURI, aEncoding) {
-			gmEnv.environment.utils.include(aURI, this, aEncoding);
+			return GM_openInTab.apply(env, arguments);
 		}
 	};
+	this.sandboxes[aURI] = sandbox;
 	return sandbox;
 }
+function getSandBoxFor(aURI)
+{
+	return this.getSandboxFor(aURI);
+}
+
+function loadScript(aURI, aEncoding)
+{
+	var sandbox = this.getSandboxFor(aURI);
+	this.environment.utils.include(aURI, sandbox, aEncoding);
+}
+
 
 
 function fireEvent(aEvent)
 {
-	aEvent.target = this.uri;
 	this.listeners.forEach(function(aListener) {
 		if (aListener && 'handleEvent' in aListener)
 			aListener.handleEvent(aEvent);

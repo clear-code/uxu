@@ -73,7 +73,7 @@ function addActions(aSuite)
 	{
 		if (typeof aSuite.action[aMethod] != 'function') continue;
 		(function(aMethod, aActions) {
-			aSuite['assert'+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)] = function() {
+			aSuite['action'+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)] = function() {
 				return aActions[aMethod].apply(aActions, arguments);
 			};
 		})(aMethod, aSuite.action);
@@ -85,9 +85,12 @@ function addGMUtils(aSuite, aBrowser)
 	aSuite.greasemonkey = new GMUtils(aSuite, aBrowser);
 	for (var aMethod in aSuite.greasemonkey)
 	{
-		if (typeof aSuite.greasemonkey[aMethod] != 'function') continue;
+		if (
+			typeof aSuite.greasemonkey[aMethod] != 'function' ||
+			aMethod.indexOf('GM_') == 0)
+			continue;
 		(function(aMethod, aGMUtils) {
-			aSuite['GM_'+(aMethod.replace(/^GM_/, ''))] = function() {
+			aSuite['greasemonkey'+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)] = function() {
 				return aGMUtils[aMethod].apply(aGMUtils, arguments);
 			};
 		})(aMethod, aSuite.greasemonkey);
