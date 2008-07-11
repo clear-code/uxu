@@ -203,7 +203,7 @@ function GM_xmlhttpRequest(aDetails)
 
 				var eventType = aEvent.type.charAt(0).toUpperCase()+aEvent.type.substring(1);
 				var event = {
-						type    : 'beforeGM_xmlhttpRequest'+eventType,
+						type    : 'GM_xmlhttpRequestBefore'+eventType,
 						state   : state,
 						handled : false
 					};
