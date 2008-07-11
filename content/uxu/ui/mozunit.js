@@ -267,7 +267,7 @@ TestReportHandler.prototype = {
 				wTestCaseReport.setAttribute('id', id);
 				wTestCaseReport.setAttribute('title', title);
 				_(wTestCaseReport, 'title').textContent = title;
-				_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-unknown');
+				_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-fine');
 				_('testcase-reports').appendChild(wTestCaseReport);
 				scrollReportsTo(wTestCaseReport);
 				return wTestCaseReport;
@@ -281,6 +281,11 @@ TestReportHandler.prototype = {
 			'value', parseInt(report.testIndex / report.testCount * 100));
 		_(wTestCaseReport, 'total-counter').value = report.testCount;
 
+		_(wTestCaseReport, 'bar').setAttribute('testcase-results',
+			_(wTestCaseReport, 'bar').getAttribute('testcase-results')+
+			' '+report.result
+		);
+
 		gTotalCount++;
 		switch (report.result)
 		{
@@ -288,8 +293,6 @@ TestReportHandler.prototype = {
 				gSuccessCount++;
 				var successes = parseInt(_(wTestCaseReport, 'success-counter').value);
 				_(wTestCaseReport, 'success-counter').value = successes + 1;
-				if (_(wTestCaseReport, 'bar').getAttribute('class') == 'testcase-unknown')
-					_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-fine');
 				return;
 			case 'passover':
 				gPassOverCount++;

@@ -17,10 +17,7 @@ function createTestSuite(aURL, aTestCaseClass)
 	suite.fileURL = aURL;
 	suite.baseURL = suite.fileURL.replace(/[^/]*$/, '');
 
-	suite.utils = new TestUtils(suite);
-	suite.utils.fileURL = suite.fileURL;
-	suite.utils.baseURL = suite.baseURL;
-
+	addTestUtils(suite);
 	addAssertions(suite);
 	addActions(suite);
 
@@ -30,6 +27,22 @@ function createTestSuite(aURL, aTestCaseClass)
 	suite.utils.include(suite.fileURL);
 
 	return suite;
+}
+
+function addTestUtils(aSuite)
+{
+	aSuite.utils = new TestUtils(aSuite);
+	aSuite.utils.fileURL = aSuite.fileURL;
+	aSuite.utils.baseURL = aSuite.baseURL;
+	for (var aMethod in aSuite.utils)
+	{
+		if (typeof aSuite.utils[aMethod] != 'function') continue;
+		(function(aMethod, aUtils) {
+			aSuite[aMethod] = function() {
+				return aUtils[aMethod].apply(aUtils, arguments);
+			};
+		})(aMethod, aSuite.utils);
+	}
 }
 
 function addAssertions(aSuite)

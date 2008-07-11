@@ -1,73 +1,66 @@
-.test-failure
-{
-  list-style-image: url("bug.png");
-  -moz-image-region: rect(0px 35px 45px 0px);
-  }
+.test-failure {
+	list-style-image: url("bug.png");
+	-moz-image-region: rect(0px 35px 45px 0px);
+}
 
-.test-error
-{
-  list-style-image: url("bomb.png");
-  }
+.test-error {
+	list-style-image: url("bomb.png");
+}
 
-.test-success
-{
-  }
+.test-success {
+}
 
-.testcase-unknown > .progress-bar
-{
-  background-color: gray;
-  -moz-appearance: none;
-  }
+progressmeter[testcase-results] > .progress-bar {
+	-moz-appearance: none;
+}
 
-.testcase-fine > .progress-bar
-{
-  background-color: green;
-  -moz-appearance: none;
-  }
+progressmeter[testcase-results~="success"] > .progress-bar {
+	background-color: green;
+}
 
-.testcase-problems > .progress-bar
-{
-  background-color: red;
-  -moz-appearance: none;
-  }
+progressmeter[testcase-results~="passover"] > .progress-bar {
+	background-color: gray;
+}
 
-.testcase-summary
-{
-  border: threedshadow;
-  }
+progressmeter[testcase-results~="success"][testcase-results~="passover"] > .progress-bar {
+	background-color: #408040;
+}
 
-.testcase-title
-{
-  font-size: 1.4em;
+progressmeter[testcase-results~="failure"] > .progress-bar,
+progressmeter[testcase-results~="error"] > .progress-bar {
+	background-color: red !important;
+}
+
+.testcase-summary {
+	border: threedshadow;
+}
+
+.testcase-title {
+	font-size: 1.4em;
 /*  font-family: serif; */
-  text-align: center;
-  }
+	text-align: center;
+}
 
-.testcase-title:hover
-{
-  background-color: white;
-  }
+.testcase-title:hover {
+	background-color: white;
+}
 
-*[role=result]
-{
-  font-weight: bold;
-  }
+*[role=result] {
+	font-weight: bold;
+}
 
-*[role=description]
-{
-  font-style: italic;
-  font-size: 1.2em;
-  }
+*[role=description] {
+	font-style: italic;
+	font-size: 1.2em;
+}
 
 
 /*
-*[role=additionalInfo]
-{
-  font-size: 1.5em;
-  }
+*[role=additionalInfo] {
+	font-size: 1.5em;
+}
 */
 
-*[role=result-box]
-{
-  width: 72px;
-  }
+*[role=result-box] {
+	width: 72px;
+}
