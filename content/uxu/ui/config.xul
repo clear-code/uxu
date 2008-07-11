@@ -49,25 +49,23 @@
 			control="extensions.uxu.run.history.expire.days-textbox"/>
 	</hbox>
 	<hbox align="center">
-		<label value="&config.defaultEncoding-before;"
+		<label value="&config.defaultEncoding;"
 			control="extensions.uxu.defaultEncoding-textbox"/>
 		<textbox id="extensions.uxu.defaultEncoding-textbox"
 			preference="extensions.uxu.defaultEncoding"
 			style="width:5em;"/>
-		<label value="&config.defaultEncoding-after;"
-			control="extensions.uxu.defaultEncoding-textbox"/>
 	</hbox>
 
 </prefpane>
 
 <prefpane id="prefpane-mozunit" label="&config.tabs.mozunit;">
 	<preferences>
-		<preference id="extensions.uxu.mozunit.editor"
-			name="extensions.uxu.mozunit.editor"
-			type="string"/>
 		<preference id="extensions.uxu.mozunit.showInternalStacks"
 			name="extensions.uxu.mozunit.showInternalStacks"
 			type="bool"/>
+		<preference id="extensions.uxu.mozunit.editor"
+			name="extensions.uxu.mozunit.editor"
+			type="string"/>
 		<preference id="extensions.uxu.mozunit.runParallel"
 			name="extensions.uxu.mozunit.runParallel"
 			type="false"/>
@@ -76,17 +74,20 @@
 			type="bool"/>
 	</preferences>
 
-	<hbox align="center">
-		<label value="&config.mozunit.editor;"
-			control="extensions.uxu.mozunit.editor-textbox"/>
-		<textbox id="extensions.uxu.mozunit.editor-textbox"
-			preference="extensions.uxu.mozunit.editor"
-			flex="1"/>
-	</hbox>
-	<description value="&config.mozunit.editor.desctiption;"/>
 	<checkbox id="extensions.uxu.mozunit.showInternalStacks-check"
 		preference="extensions.uxu.mozunit.showInternalStacks"
 		label="&config.mozunit.showInternalStacks;"/>
+	<groupbox orient="vertical">
+		<caption label="&config.mozunit.editor.caption;"/>
+		<hbox align="center">
+			<label value="&config.mozunit.editor.label;"
+				control="extensions.uxu.mozunit.editor-textbox"/>
+			<textbox id="extensions.uxu.mozunit.editor-textbox"
+				preference="extensions.uxu.mozunit.editor"
+				flex="1"/>
+		</hbox>
+		<description value="&config.mozunit.editor.desctiption;"/>
+	</groupbox>
 	<groupbox orient="vertical">
 		<caption label="&config.mozunit.runParallel;"/>
 		<radiogroup id="extensions.uxu.mozunit.runParallel-radio"
@@ -128,14 +129,12 @@
 		preference="extensions.uxu.auto.exit"
 		label="&config.auto.exit;"/>
 	<hbox align="center">
-		<label value="&config.port.before;"
+		<label value="&config.port;"
 			control="extensions.uxu.port-textbox"/>
 		<textbox id="extensions.uxu.port-textbox"
 			preference="extensions.uxu.port"
 			type="number"
 			min="0" increment="1" style="width:5em;"/>
-		<label value="&config.port.after;"
-			control="extensions.uxu.port-textbox"/>
 	</hbox>
 
 </prefpane>

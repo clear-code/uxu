@@ -60,12 +60,12 @@
 <!ENTITY config.run.timeout.after      "ミリ秒以上応答がない場合は失敗とみなす">
 <!ENTITY config.run.history.expire.days.before "テストの実行結果の履歴を">
 <!ENTITY config.run.history.expire.days.after  "日前の分まで保存する">
-<!ENTITY config.defaultEncoding.before "読み込むファイルの文字エンコーディングの初期値：">
-<!ENTITY config.defaultEncoding.after  "">
+<!ENTITY config.defaultEncoding        "読み込むファイルの文字エンコーディングの初期値：">
 
 <!ENTITY config.tabs.mozunit "MozUnitテストランナー">
 
-<!ENTITY config.mozunit.editor "テストの編集に使用するエディタの起動コマンド：">
+<!ENTITY config.mozunit.editor.caption "テストの編集に使用するエディタ">
+<!ENTITY config.mozunit.editor.label   "起動コマンド：">
 <!ENTITY config.mozunit.editor.desctiption "※空欄にすると次回編集時にファイル選択ダイアログを表示します">
 <!ENTITY config.mozunit.showInternalStacks "スタックトレースにUxUの内部エラーも表示する">
 <!ENTITY config.mozunit.runParallel "複数テストの実行時">
@@ -80,4 +80,3 @@
 <!ENTITY config.auto.start "Firefoxの起動と同時にサーバとしての動作を開始する">
 <!ENTITY config.auto.exit  "Firefoxの終了と同時にサーバとしての動作を終了する">
 <!ENTITY config.port  "リモート接続を受け付けるポート番号：">
-<!ENTITY config.port  "">

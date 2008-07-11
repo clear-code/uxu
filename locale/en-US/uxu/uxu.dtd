@@ -60,24 +60,23 @@
 <!ENTITY config.run.timeout.after      "msec.">
 <!ENTITY config.run.history.expire.days.before "Store result histories while">
 <!ENTITY config.run.history.expire.days.after  "days.">
-<!ENTITY config.defaultEncoding.before "Default character encoding of files read from utility methods:">
-<!ENTITY config.defaultEncoding.after  "">
+<!ENTITY config.defaultEncoding        "Default character encoding of files read from utility methods:">
 
 <!ENTITY config.tabs.mozunit "MozUnit Test Runner">
 
-<!ENTITY config.mozunit.editor "Command Line for text editor:">
+<!ENTITY config.mozunit.editor.caption "Text editor for testcases">
+<!ENTITY config.mozunit.editor.label   "Command line:">
 <!ENTITY config.mozunit.editor.desctiption "*If you set it blank, you can choose an editor when you edit a testcase.">
 <!ENTITY config.mozunit.showInternalStacks "Show internal errors in stack traces">
 <!ENTITY config.mozunit.runParallel "Running multiple tests">
 <!ENTITY config.mozunit.runParallel.true  "Parallelly">
 <!ENTITY config.mozunit.runParallel.false "Sequentially">
-<!ENTITY config.mozunit.runMode   "テストの実行ポリシー">
-<!ENTITY config.mozunit.runMode.0 "前回失敗したテストや未実行のテストは必ず実行し、それ以外は優先度を落とす（推奨）">
-<!ENTITY config.mozunit.runMode.1 "すべてのテストを必ず実行する">
+<!ENTITY config.mozunit.runMode   "Policy to run tests">
+<!ENTITY config.mozunit.runMode.0 "Run tests by their priority, but regard failed or uncompleted tests as MUST to run (recommended)">
+<!ENTITY config.mozunit.runMode.1 "Run any test always">
 
 <!ENTITY config.tabs.server "UxU Server">
 
-<!ENTITY config.auto.start "Firefoxの起動と同時にサーバとしての動作を開始する">
-<!ENTITY config.auto.exit  "Firefoxの終了と同時にサーバとしての動作を終了する">
-<!ENTITY config.port  "リモート接続を受け付けるポート番号：">
-<!ENTITY config.port  "">
+<!ENTITY config.auto.start "Start server automatically on Firefox's startup">
+<!ENTITY config.auto.exit  "Stop server automatically on Firefox's shutdown">
+<!ENTITY config.port  "Port:">
