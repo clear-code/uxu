@@ -4,15 +4,16 @@
 function constructor(aSuite, aBrowser)
 {
 	this.environment = aSuite;
-	this.target      = aBrowser;
-	this.storage     = {};
-	this.listeners   = [];
-	this.uri         = aSuite.fileURL;
-	this.sandboxes   = {};
+	this.target = aBrowser;
+	this.storage = {};
+	this.listeners = [];
+	this.sandboxes = {};
 }
 
 function load(aURI)
 {
+	this.listeners = [];
+	this.sandboxes = {};
 	var loadedFlag = { value : false };
 	var b = this.target;
 	b.addEventListener('load', function() {
@@ -25,6 +26,7 @@ function load(aURI)
 
 function unload()
 {
+	this.listeners = [];
 	this.sandboxes = {};
 	var loadedFlag = { value : false };
 	var b = this.target;
@@ -261,5 +263,5 @@ function GM_getResourceText()
 
 function GM_openInTab(aURI)
 {
-	this.fireEvent({ type : 'GM_openInTabCall', uri : GM_openInTab });
+	this.fireEvent({ type : 'GM_openInTabCall', uri : aURI });
 }
