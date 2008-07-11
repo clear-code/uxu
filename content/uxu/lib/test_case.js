@@ -495,30 +495,12 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler) {
 }
  
 function _checkPriorityToExec(aTest) { 
-	var db = utils.getDB();
-	var statement = db.createStatement(
-		  'SELECT result FROM result_history WHERE name = ?1'
-		);
-	var lastResult;
-	try {
-		statement.bindStringParameter(0, aTest.name);
-		while (statement.executeStep()) {
-			lastResult = statement.getString(0);
-		}
-	}
-	finally {
-		statement.reset();
-	}
-	if (lastResult == 'failure' || lastResult == 'error') {
-		return true;
-	}
-
 	var shouldDo = true;
 	var priority = (aTest.priority == 'never') ? 'never' : (this.masterPriority || aTest.priority);
 	switch (priority)
 	{
 		case 'must':
-			break;
+			return true;
 
 		case 'important':
 			if (Math.random() > 0.9) shouldDo = false;
@@ -538,8 +520,28 @@ function _checkPriorityToExec(aTest) {
 			break;
 
 		case 'never':
-			shouldDo = false;
+			return false;
 			break;
+	}
+
+	if (!shouldDo) {
+		var db = utils.getDB();
+		var statement = db.createStatement(
+			  'SELECT result FROM result_history WHERE name = ?1'
+			);
+		var lastResult;
+		try {
+			statement.bindStringParameter(0, aTest.name);
+			while (statement.executeStep()) {
+				lastResult = statement.getString(0);
+			}
+		}
+		finally {
+			statement.reset();
+		}
+		if (lastResult == 'failure' || lastResult == 'error') {
+			shouldDo = true;
+		}
 	}
 	return shouldDo;
 }
