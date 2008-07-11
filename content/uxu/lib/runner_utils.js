@@ -8,8 +8,8 @@ var action     = module.require('package', 'action');
 var assertions = module.require('package', 'assertions');
 var TestCase   = module.require('class', 'test_case');
 
-var helper_module = new ModuleManager(['chrome://uxu/content/test/helper']);
-var TestUtils     = helper_module.require('class', 'test_utils');
+var helper_module = new ModuleManager(['chrome://uxu/content/test']);
+var TestUtils     = helper_module.require('class', 'utils');
 
 function createTestSuite(aURL, aTestCaseClass)
 {
