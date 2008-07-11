@@ -9,23 +9,29 @@ var assertions = module.require('package', 'assertions');
 var TestCase   = module.require('class', 'test_case');
 
 var helper_module = new ModuleManager(['chrome://uxu/content/test']);
-var TestUtils     = helper_module.require('class', 'utils');
+var TestUtils     = helper_module.require('class', 'test_utils');
 
 function createTestSuite(aURL, aTestCaseClass)
 {
 	var suite = {};
-	suite.fileURL       = aURL;
-	suite.baseURL       = suite.fileURL.replace(/[^/]*$/, '');
-	suite.utils         = new TestUtils(suite);
+	suite.fileURL = aURL;
+	suite.baseURL = suite.fileURL.replace(/[^/]*$/, '');
+
+	suite.utils = new TestUtils(suite);
 	suite.utils.fileURL = suite.fileURL;
 	suite.utils.baseURL = suite.baseURL;
-	suite.assert        = {};
+
+	suite.assert = {};
 	suite.assert.__proto__ = assertions;
-	suite.action        = {};
+
+	suite.action = {};
 	suite.action.__proto__ = action;
-	suite.TestCase      = aTestCaseClass || TestCase;
-	suite.Specification = aTestCaseClass || TestCase;
+
+	suite.TestCase = aTestCaseClass || TestCase;
+	suite.Specification = suite.TestCase;
+
 	suite.utils.include(suite.fileURL);
+
 	return suite;
 }
 
