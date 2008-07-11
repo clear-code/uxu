@@ -85,12 +85,14 @@ function addGMUtils(aSuite, aBrowser)
 	aSuite.greasemonkey = new GMUtils(aSuite, aBrowser);
 	for (var aMethod in aSuite.greasemonkey)
 	{
-		if (
-			typeof aSuite.greasemonkey[aMethod] != 'function' ||
-			aMethod.indexOf('GM_') == 0)
+		if (typeof aSuite.greasemonkey[aMethod] != 'function')
 			continue;
 		(function(aMethod, aGMUtils) {
-			aSuite['greasemonkey'+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)] = function() {
+			aSuite[
+				aMethod.indexOf('GM_') == 0 ?
+					aMethod :
+					'greasemonkey'+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)
+			] = function() {
 				return aGMUtils[aMethod].apply(aGMUtils, arguments);
 			};
 		})(aMethod, aSuite.greasemonkey);
