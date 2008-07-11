@@ -1,8 +1,9 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
 
-this.getWindowUtils = function(aWindow) {
-	return aWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+function getWindowUtils(aWindow) {
+	return aWindow
+			.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
 			.getInterface(Components.interfaces.nsIDOMWindowUtils);
 };
 
@@ -10,11 +11,13 @@ var Prefs = Components.classes['@mozilla.org/preferences;1']
 		.getService(Components.interfaces.nsIPrefBranch)
 		.QueryInterface(Components.interfaces.nsIPrefBranch2);
 
-this.isFullZoom = function() {
+function isFullZoom()
+{
 	return Prefs.getBoolPref('browser.zoom.full');
 };
 
-this.getZoom = function(aWindow) {
+function getZoom(aWindow)
+{
 	var markupDocumentViewer = aWindow.top
 			.QueryInterface(this.nsIInterfaceRequestor)
 			.getInterface(this.nsIWebNavigation)
@@ -25,7 +28,8 @@ this.getZoom = function(aWindow) {
 };
 
 
-this.fireMouseEvent = function(aWindow, aOptions) {
+function fireMouseEvent(aWindow, aOptions)
+{
 	if (!aWindow ||
 		!(aWindow instanceof Components.interfaces.nsIDOMWindow))
 		throw new Error('action.fireMouseEventOnElement::['+aWindow+'] is not a frame!');
@@ -90,7 +94,8 @@ this.fireMouseEvent = function(aWindow, aOptions) {
 		throw new Error('action.fireMouseEvent::there is no element at [')+x+','+y+']!';
 };
 
-this.fireMouseEventOnElement = function(aElement, aOptions) {
+function fireMouseEventOnElement(aElement, aOptions)
+{
 	if (!aElement ||
 		!(aElement instanceof Components.interfaces.nsIDOMElement))
 		throw new Error('action.fireMouseEventOnElement::['+aElement+'] is not an element!');
@@ -121,7 +126,8 @@ this.fireMouseEventOnElement = function(aElement, aOptions) {
 		aElement.dispatchEvent(event);
 };
 
-this.createMouseEventOnElement = function(aElement, aOptions) {
+function createMouseEventOnElement(aElement, aOptions)
+{
 	if (!aElement ||
 		!(aElement instanceof Components.interfaces.nsIDOMElement))
 		throw new Error('action.createMouseEventOnElement::['+aElement+'] is not an element!');
@@ -161,7 +167,8 @@ this.createMouseEventOnElement = function(aElement, aOptions) {
 	return event;
 };
 
-this.fireKeyEventOnElement = function(aElement, aOptions) {
+function fireKeyEventOnElement(aElement, aOptions)
+{
 	if (!aElement ||
 		!(aElement instanceof Components.interfaces.nsIDOMElement))
 		throw new Error('action.fireKeyEventOnElement::['+aElement+'] is not an element!');
@@ -209,7 +216,8 @@ this.fireKeyEventOnElement = function(aElement, aOptions) {
 		aElement.dispatchEvent(event);
 };
 
-this.createKeyEventOnElement = function(aElement, aOptions) {
+function createKeyEventOnElement(aElement, aOptions)
+{
 	if (!aElement ||
 		!(aElement instanceof Components.interfaces.nsIDOMElement))
 		throw new Error('action.createKeyEventOnElement::['+aElement+'] is not an element!');
@@ -234,7 +242,8 @@ this.createKeyEventOnElement = function(aElement, aOptions) {
 };
 
 
-this.fireXULCommandEvent = function(aWindow, aOptions) {
+function fireXULCommandEvent(aWindow, aOptions)
+{
 	if (!aOptions) aOptions = {};
 	var node = this.getElementFromScreenPoint(
 				aWindow,
@@ -245,13 +254,15 @@ this.fireXULCommandEvent = function(aWindow, aOptions) {
 		this.fireXULCommandEventOnElement(node, aOptions);
 };
 
-this.fireXULCommandEventOnElement = function(aElement, aOptions) {
+function fireXULCommandEventOnElement(aElement, aOptions)
+{
 	var event = this.createMouseEventOnElement(aElement, aOptions);
 	if (event && aElement)
 		aElement.dispatchEvent(this.createXULCommandEvent(event));
 };
 
-this.createXULCommandEvent = function(aSourceEvent) {
+function createXULCommandEvent(aSourceEvent)
+{
 	var event = aSourceEvent.view.document.createEvent('XULCommandEvents');
 	event.initCommandEvent('command',
 		true,
@@ -268,12 +279,13 @@ this.createXULCommandEvent = function(aSourceEvent) {
 };
 
 
-this.inputTextToField = function(aElement, aValue, aAppend, aDontFireKeyEvents) {
+function inputTextToField(aElement, aValue, aAppend, aDontFireKeyEvents)
+{
 	if (!aElement) {
 		throw new Error('action.inputTextToField::no target!');
 	}
 	else if (aElement instanceof Components.interfaces.nsIDOMElement) {
-		if ( aElement.localName != 'textbox' &&
+		if (aElement.localName != 'textbox' &&
 			!(aElement instanceof Components.interfaces.nsIDOMNSEditableElement))
 			throw new Error('action.inputTextToField::['+aElement+'] is not an input field!');
 	}
@@ -296,10 +308,10 @@ this.inputTextToField = function(aElement, aValue, aAppend, aDontFireKeyEvents) 
 	if (input.localName == 'textbox') input = input.inputField;
 
 	var self = this;
-	var array = String(aValue || '').match(this.kINPUT_ARRAY_PATTERN);
+	var array = String(aValue || '').match(kINPUT_ARRAY_PATTERN);
 	if (!array) array = String(aValue || '').split('');
 	array.forEach(function(aChar) {
-		if (self.kDIRECT_INPUT_PATTERN.test(aChar)) {
+		if (kDIRECT_INPUT_PATTERN.test(aChar)) {
 			self.fireKeyEventOnElement(input, {
 				type     : 'keypress',
 				charCode : aChar.charCodeAt(0)
@@ -316,11 +328,12 @@ this.inputTextToField = function(aElement, aValue, aAppend, aDontFireKeyEvents) 
 };
 
 var withIMECharacters = '\u3040-\uA4CF\uF900-\uFAFF';
-this.kINPUT_ARRAY_PATTERN  = new RegExp('[^'+withIMECharacters+']|['+withIMECharacters+']+', 'g');
-this.kDIRECT_INPUT_PATTERN = new RegExp('[^'+withIMECharacters+']');
+var kINPUT_ARRAY_PATTERN  = new RegExp('[^'+withIMECharacters+']|['+withIMECharacters+']+', 'g');
+var kDIRECT_INPUT_PATTERN = new RegExp('[^'+withIMECharacters+']');
 
 
-this.getDocumentFromEventTarget = function(aNode) {
+function getDocumentFromEventTarget(aNode)
+{
 	return !aNode ? null :
 		(aNode.document || aNode.ownerDocument || aNode );
 };
@@ -328,7 +341,7 @@ this.getDocumentFromEventTarget = function(aNode) {
 
 
 // ç¿ïWÇ©ÇÁóvëfÉmÅ[ÉhÇéÊìæÇ∑ÇÈ
-this.getElementFromScreenPoint = function(aWindow, aScreenX, aScreenY)
+function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 {
 	if (!aWindow ||
 		!(aWindow instanceof Components.interfaces.nsIDOMWindow))
@@ -424,7 +437,7 @@ this.getElementFromScreenPoint = function(aWindow, aScreenX, aScreenY)
 	return deepest[deepest.length-1];
 };
 
-this.getClientPointFromScreenPoint = function(aWindow, aScreenX, aScreenY)
+function getClientPointFromScreenPoint(aWindow, aScreenX, aScreenY)
 {
 	if (!aWindow ||
 		!(aWindow instanceof Components.interfaces.nsIDOMWindow))
@@ -437,7 +450,7 @@ this.getClientPointFromScreenPoint = function(aWindow, aScreenX, aScreenY)
 	};
 }
 
-this.getWindowFromScreenPoint = function(aWindow, aScreenX, aScreenY)
+function getWindowFromScreenPoint(aWindow, aScreenX, aScreenY)
 {
 	if (!aWindow ||
 		!(aWindow instanceof Components.interfaces.nsIDOMWindow))
@@ -479,7 +492,7 @@ this.getWindowFromScreenPoint = function(aWindow, aScreenX, aScreenY)
 	return null;
 };
 
-this.flattenWindows = function(aWindow) 
+function flattenWindows(aWindow) 
 {
 	if (!aWindow ||
 		!(aWindow instanceof Components.interfaces.nsIDOMWindow))

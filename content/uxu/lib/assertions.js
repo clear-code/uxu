@@ -16,8 +16,8 @@
 //
 // Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 
-var module = new ModuleManager(['chrome://uxu/content/lib']);
-var bundle = module.require('package', 'bundle');
+var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
+var bundle = lib_module.require('package', 'bundle');
 
 
 function equals(x, y, aMessage) {

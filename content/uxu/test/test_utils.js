@@ -1,8 +1,8 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
-var lib = new ModuleManager(['chrome://uxu/content/lib']);
-var bundle = lib.require('package', 'bundle');
-var utils = lib.require('package', 'utils');
+var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
+var bundle = lib_module.require('package', 'bundle');
+var utils  = lib_module.require('package', 'utils');
 
 
 var key = 'uxu-test-window-id';

@@ -5,7 +5,9 @@ var assertions = lib_module.require('package', 'assertions');
 var fsm        = lib_module.require('package', 'fsm');
 var TestCase   = lib_module.require('class', 'test_case');
 var utils      = lib_module.require('package', 'utils');
-var runner_utils = lib_module.require('package', 'runner_utils');
+
+var help_module  = new ModuleManager(['chrome://uxu/content/test']);
+var runner_utils = help_module.require('package', 'runner_utils');
 
 
 function constructor(files)

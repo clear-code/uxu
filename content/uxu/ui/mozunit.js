@@ -1,7 +1,9 @@
-var module = new ModuleManager(['chrome://uxu/content/lib']); 
-var utils  = module.require('package', 'utils');
-var bundle = module.require('package', 'bundle');
-var runner_utils = module.require('package', 'runner_utils');
+var lib_module = new ModuleManager(['chrome://uxu/content/lib']); 
+var utils  = lib_module.require('package', 'utils');
+var bundle = lib_module.require('package', 'bundle');
+
+var test_module = new ModuleManager(['chrome://uxu/content/test']);
+var runner_utils = test_module.require('package', 'runner_utils');
  
 /* UTILITIES */ 
 	 

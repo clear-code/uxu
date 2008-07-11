@@ -23,10 +23,10 @@
  
 //var module = new ModuleManager(['chrome://mozlab/content']); 
 //const fsm = module.require('package', 'lib/fsm');
-var mozlab_custom_module = new ModuleManager(['chrome://uxu/content/lib']);
-const fsm = mozlab_custom_module.require('package', 'fsm');
-var bundle = mozlab_custom_module.require('package', 'bundle');
-var utils = mozlab_custom_module.require('package', 'utils');
+var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
+var fsm    = lib_module.require('package', 'fsm');
+var bundle = lib_module.require('package', 'bundle');
+var utils  = lib_module.require('package', 'utils');
  
 /**
  * Invocation: 

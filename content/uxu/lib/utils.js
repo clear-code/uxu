@@ -1,12 +1,15 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
-var mozlab_custom_module = new ModuleManager(['chrome://uxu/content/lib']);
-var bundle = mozlab_custom_module.require('package', 'bundle');
+var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
+var bundle = lib_module.require('package', 'bundle');
 
-var IOService = Components.classes['@mozilla.org/network/io-service;1'].getService(Components.interfaces.nsIIOService);
+var IOService = Components
+		.classes['@mozilla.org/network/io-service;1']
+		.getService(Components.interfaces.nsIIOService);
 
 // URI文字列からnsIURIのオブジェクトを生成
-function makeURIFromSpec(aURI) {
+function makeURIFromSpec(aURI)
+{
 	try {
 		var newURI;
 		aURI = aURI || '';
@@ -29,7 +32,8 @@ function makeURIFromSpec(aURI) {
 };
 
 // ファイルのパスからnsIFileのオブジェクトを生成
-function makeFileWithPath(aPath) {
+function makeFileWithPath(aPath)
+{
 	var newFile = Components.classes['@mozilla.org/file/local;1']
 					.createInstance(Components.interfaces.nsILocalFile);
 	newFile.initWithPath(aPath);
@@ -38,7 +42,8 @@ function makeFileWithPath(aPath) {
 
 
 // URL文字列→nsIFile
-function getFileFromURLSpec(aURI) {
+function getFileFromURLSpec(aURI)
+{
 	if ((aURI || '').indexOf('file://') != 0) return '';
 
 	var fileHandler = IOService.getProtocolHandler('file')
@@ -47,25 +52,29 @@ function getFileFromURLSpec(aURI) {
 };
 
 // URL文字列→ファイルのパス
-function getFilePathFromURLSpec(aURI) {
+function getFilePathFromURLSpec(aURI)
+{
 	return getFileFromURLSpec(aURI).path;
 };
  
 // ファイルのパス→nsIURI
-function getURLFromFilePath(aPath) {
+function getURLFromFilePath(aPath)
+{
 	var tempLocalFile = makeFileWithPath(aPath);
 	return IOService.newFileURI(tempLocalFile);
 };
 
 // ファイルのパス→URL文字列
-function getURLSpecFromFilePath(aPath) {
+function getURLSpecFromFilePath(aPath)
+{
 	return getURLFromFilePath(aPath).spec;
 };
 
 
 
 // ファイルまたはURIで示された先のリソースを読み込み、文字列として返す
-function readFrom(aTarget, aEncoding) {
+function readFrom(aTarget, aEncoding)
+{
 	if (typeof aTarget == 'string') {
 		aTarget = this.fixupIncompleteURI(aTarget);
 		if (aTarget.match(/^\w+:\/\//))
@@ -121,7 +130,8 @@ function readFrom(aTarget, aEncoding) {
 }
 
 // ファイルパスまたはURLで示された先のテキストファイルに文字列を書き出す
-function writeTo(aContent, aTarget, aEncoding) {
+function writeTo(aContent, aTarget, aEncoding)
+{
 	if (typeof aTarget == 'string') {
 		aTarget = this.fixupIncompleteURI(aTarget);
 		if (aTarget.match(/^\w+:\/\//))
@@ -181,7 +191,8 @@ function writeTo(aContent, aTarget, aEncoding) {
 
 
 
-function formatError(e) {
+function formatError(e)
+{
 	return formatStackTrace(e) + e.toString() + '\n';
 }
 
@@ -218,7 +229,8 @@ var Pref = Components.classes['@mozilla.org/preferences;1']
 		.getService(Components.interfaces.nsIPrefBranch)
 		.QueryInterface(Components.interfaces.nsIPrefBranch2);
 
-function getPref(aKey) {
+function getPref(aKey)
+{
 	try {
 		switch (Pref.getPrefType(aKey))
 		{
@@ -241,7 +253,8 @@ function getPref(aKey) {
 
 var backupPrefs = {};
 
-function setPref(aKey, aValue) {
+function setPref(aKey, aValue)
+{
 	var type;
 	try {
 		type = typeof aValue;
@@ -273,7 +286,8 @@ function setPref(aKey, aValue) {
 	return aValue;
 }
 
-function clearPref(aKey) {
+function clearPref(aKey)
+{
 	try {
 		Pref.clearUserPref(aKey);
 	}
@@ -284,32 +298,40 @@ function clearPref(aKey) {
 
 
 
-function UTF8ToUnicode(aInput) {
+function UTF8ToUnicode(aInput)
+{
 	return this.UTF8ToUCS2(aInput);
 }
-function UnicodeToUTF8(aInput) {
+function UnicodeToUTF8(aInput)
+{
 	return this.UCS2ToUTF8(aInput);
 }
 
-function UTF8ToUCS2(aInput) {
+function UTF8ToUCS2(aInput)
+{
 	return decodeURIComponent(escape(aInput));
 }
-function UCS2ToUTF8(aInput) {
+function UCS2ToUTF8(aInput)
+{
 	return unescape(encodeURIComponent(aInput));
 }
 
-var UCONV = Components.classes['@mozilla.org/intl/scriptableunicodeconverter']
-			.getService(Components.interfaces.nsIScriptableUnicodeConverter);
+var UCONV = Components
+		.classes['@mozilla.org/intl/scriptableunicodeconverter']
+		.getService(Components.interfaces.nsIScriptableUnicodeConverter);
 
-function XToUnicode(aInput, aEncoding) {
+function XToUnicode(aInput, aEncoding)
+{
 	return this.XToUCS2(aInput, aEncoding);
 }
 
-function UnicodeToX(aInput, aEncoding) {
+function UnicodeToX(aInput, aEncoding)
+{
 	return this.UCS2ToX(aInput, aEncoding);
 }
 
-function XToUCS2(aInput, aEncoding) {
+function XToUCS2(aInput, aEncoding)
+{
 	if (aEncoding == 'UTF-8') return UTF8ToUnicode(aInput);
 	try {
 		UCONV.charset = aEncoding;
@@ -320,7 +342,8 @@ function XToUCS2(aInput, aEncoding) {
 	return aInput;
 }
 
-function UCS2ToX(aInput, aEncoding) {
+function UCS2ToX(aInput, aEncoding)
+{
 	if (aEncoding == 'UTF-8') return UnicodeToUTF8(aInput);
 
 	try {
@@ -333,7 +356,8 @@ function UCS2ToX(aInput, aEncoding) {
 }
 
 
-function fixupIncompleteURI(aURIOrPart) {
+function fixupIncompleteURI(aURIOrPart)
+{
 	if (!this.baseURL ||
 		/^(about|data|javascript|view-source|jar):/.test(aURIOrPart))
 		return aURIOrPart;
@@ -361,7 +385,8 @@ function fixupIncompleteURI(aURIOrPart) {
 }
 
 
-function isGeneratedIterator(aObject) {
+function isGeneratedIterator(aObject)
+{
 	return (
 		aObject &&
 		'next' in aObject &&
@@ -372,12 +397,14 @@ function isGeneratedIterator(aObject) {
 	);
 }
 
-function makeStackLine(aStack) {
+function makeStackLine(aStack)
+{
 	if (typeof aStack == 'string') return aStack;
 	return '()@' + aStack.filename + ':' + aStack.lineNumber + '\n';;
 }
 
-function doIteration(aGenerator, aCallbacks) {
+function doIteration(aGenerator, aCallbacks)
+{
 	if (!aGenerator)
 		throw new Error('doIteration:: no generator!');
 
@@ -487,7 +514,8 @@ function doIteration(aGenerator, aCallbacks) {
 }
 
 
-function Do(aObject) {
+function Do(aObject)
+{
 	if (!aObject)
 		return aObject;
 	if (isGeneratedIterator(aObject))
@@ -503,7 +531,8 @@ function Do(aObject) {
 
 
 var _db = null;
-function getDB() {
+function getDB()
+{
 	if (_db) return _db;
 
 	const DirectoryService = Components

@@ -8,8 +8,8 @@ var gLog;
 var gAutoStart;
 
 function Startup() {
-	var module = new ModuleManager(['chrome://uxu/content']);
-	var Server = module.require('class', 'server');
+	var server_module = new ModuleManager(['chrome://uxu/content']);
+	var Server = server_module.require('class', 'server');
 	gServer = new Server(nsPreferences.getIntPref('extensions.uxu.port'));
 	gServer.start();
 
