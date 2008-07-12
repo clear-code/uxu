@@ -334,4 +334,7 @@ function GM_getResourceText()
 function GM_openInTab(aURI)
 {
 	this.fireEvent({ type : 'GM_openInTabCall', uri : aURI });
+	if (this.testWindow &&
+		this.testWindow.gBrowser)
+		this.testWindow.gBrowser.addTab(aURI);
 }
