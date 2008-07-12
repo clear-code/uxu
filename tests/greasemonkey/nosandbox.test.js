@@ -46,24 +46,10 @@ function testGMFunctionResult() {
 
 testGMXMLHttpRequest.description = 'GM_xmlhttpRequestを使った関数のテストの例';
 function testGMXMLHttpRequest() {
-	var listener = {
-			details : null,
-			onGM_xmlhttpRequestCall : function(aEvent) {
-				this.details = aEvent.details;
-			},
-			onGM_xmlhttpRequestLoad : function(aEvent) {
-				this.loaded.value = true;
-			},
-			loaded : {
-				value : false
-			}
-		};
-	greasemonkey.addListener(listener);
-
 	assert.isNull(servicePageTitle);
-	getServicesPageTitle();
-	assert.isNotNull(listener.details);
-	yield listener.loaded;
+	yield Do(greasemonkey.doAndWaitLoad(function() {
+			getServicesPageTitle();
+		}));
 	assert.equals('サービス -ClearCode Inc.', servicePageTitle);
 }
 

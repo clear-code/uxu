@@ -109,15 +109,41 @@ function fireEvent(aEvent)
 	});
 }
 
-function addListener(aListener) {
+function addListener(aListener)
+{
 	if (this.listeners.indexOf(aListener) > -1) return;
 	this.listeners.push(aListener);
 }
-function removeListener(aListener) {
+function removeListener(aListener)
+{
 	var index = this.listeners.indexOf(aListener);
 	if (index > -1) return;
 	this.listeners.splice(index, 1);
 }
+
+
+function doAndWaitLoad(aFunction, aScope)
+{
+	var _this = this;
+	var loadedFlag = { value : false };
+	var listener = {
+			handleEvent : function(aEvent)
+			{
+				switch (aEvent.type)
+				{
+					case 'GM_xmlhttpRequestLoad':
+					case 'GM_xmlhttpRequestError':
+						loadedFlag.value = true;
+						_this.removeListener(this);
+						break;
+				}
+			}
+		};
+	this.addListener(listener);
+	aFunction.call(aScope);
+	return loadedFlag;
+}
+
 
 
 
