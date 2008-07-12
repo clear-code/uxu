@@ -45,12 +45,13 @@ function open(aURI, aOptions)
 	aURI = this.environment.utils.fixupIncompleteURI(aURI)
 	this.listeners = [];
 	this.sandboxes = {};
-	var loadedFlag = { value : false };
+	var loadedFlag = { value : false, window : null };
 	var _this = this;
 	this.environment.utils.openTestWindow(
 		aOptions,
 		function(win) {
 			_this.testWindow = win;
+			loadedFlag.window = win;
 			window.setTimeout(function() {
 				var b = win.gBrowser;
 				if (!b) {
