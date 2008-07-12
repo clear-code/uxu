@@ -4,7 +4,9 @@
 function constructor(aSuite, aBrowser)
 {
 	this.environment = aSuite;
-	this.target = aBrowser;
+	this.frame = aBrowser;
+	this.frameInTestRunner = aBrowser;
+	this.testWindow = null;
 	this.storage = {};
 	this.listeners = [];
 	this.sandboxes = {};
@@ -15,7 +17,7 @@ function load(aURI)
 	this.listeners = [];
 	this.sandboxes = {};
 	var loadedFlag = { value : false };
-	var b = this.target;
+	var b = this.frame;
 	b.addEventListener('load', function() {
 		b.removeEventListener('load', arguments.callee, true);
 		loadedFlag.value = true;
@@ -29,7 +31,7 @@ function unload()
 	this.listeners = [];
 	this.sandboxes = {};
 	var loadedFlag = { value : false };
-	var b = this.target;
+	var b = this.frame;
 	b.addEventListener('load', function() {
 		b.removeEventListener('load', arguments.callee, true);
 		loadedFlag.value = true;
@@ -37,6 +39,46 @@ function unload()
 	b.loadURI('about:blank');
 	return loadedFlag;
 }
+
+function open(aURI, aOptions)
+{
+	aURI = this.environment.utils.fixupIncompleteURI(aURI)
+	this.listeners = [];
+	this.sandboxes = {};
+	var loadedFlag = { value : false };
+	var _this = this;
+	this.environment.utils.openTestWindow(
+		aOptions,
+		function(win) {
+			_this.testWindow = win;
+			window.setTimeout(function() {
+				var b = win.gBrowser;
+				if (!b) {
+					loadedFlag.value = true;
+					return;
+				}
+				b.addEventListener('load', function() {
+					b.removeEventListener('load', arguments.callee, true);
+					_this.frame = b;
+					loadedFlag.value = true;
+				}, true);
+				b.loadURI(aURI);
+			}, 0);
+		}
+	);
+	return loadedFlag;
+}
+
+function close()
+{
+	this.listeners = [];
+	this.sandboxes = {};
+	if (!this.testWindow) return;
+	this.frame = this.frameInTestRunner;
+	this.testWindow.close();
+	this.testWindow = null;
+}
+
 
 function getSandboxFor(aURI)
 {
@@ -46,13 +88,13 @@ function getSandboxFor(aURI)
 	var env = this;
 	var sandbox = {
 		get window() {
-			return env.target.contentWindow;
+			return env.frame.contentWindow;
 		},
 		get unsafeWindow() {
-			return env.target.contentWindow.wrappedJSObject;
+			return env.frame.contentWindow.wrappedJSObject;
 		},
 		get document() {
-			return env.target.contentDocument;
+			return env.frame.contentDocument;
 		},
 		GM_log : function() {
 			return GM_log.apply(env, arguments);
@@ -239,7 +281,7 @@ function GM_xmlhttpRequest(aDetails)
 				if ('on'+aEvent.type in this) {
 					state.handled = event.handled = true;
 					var func = this['on'+aEvent.type];
-					this.target.contentWindow.setTimeout(function(aState) {
+					this.frame.contentWindow.setTimeout(function(aState) {
 						func(aState);
 						_this.fireEvent(event);
 					}, 0, state);
@@ -247,7 +289,7 @@ function GM_xmlhttpRequest(aDetails)
 				}
 				_this.fireEvent(event);
 			},
-			target : this.target
+			frame : this.frame
 		};
 
 	if (aDetails.onload) listener.onload = aDetails.onload;
