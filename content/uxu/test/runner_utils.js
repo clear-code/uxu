@@ -33,7 +33,7 @@ function createTestSuite(aURL, aBrowser, aTestCaseClass)
 
 function addTestUtils(aSuite, aBrowser)
 {
-	var urils = new TestUtils(aSuite, aBrowser);
+	var utils = new TestUtils(aSuite, aBrowser);
 	utils.fileURL = aSuite.fileURL;
 	utils.baseURL = aSuite.baseURL;
 	aSuite.__defineGetter__('gBrowser', function() {
@@ -48,7 +48,7 @@ function addTestUtils(aSuite, aBrowser)
 	aSuite.__defineGetter__('contentDocument', function() {
 		return utils.gBrowser.contentDocument;
 	});
-	aSuite.utils = urils;
+	aSuite.utils = utils;
 	for (var aMethod in aSuite.utils)
 	{
 		if (typeof aSuite.utils[aMethod] != 'function') continue;
