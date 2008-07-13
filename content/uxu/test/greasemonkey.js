@@ -60,9 +60,9 @@ function open(aURI, aOptions)
 
 function close()
 {
+	if (!this.testWindow) return;
 	this.listeners = [];
 	this.sandboxes = {};
-	if (!this.testWindow) return;
 	this.frame = this.frameInTestRunner;
 	this.testWindow.close();
 	this.testWindow = null;
@@ -171,7 +171,7 @@ function doAndWaitLoad(aFunction, aScope)
 			}
 		};
 	this.addListener(listener);
-	aFunction.call(aScope);
+	if (aFunction) aFunction.call(aScope);
 	return loadedFlag;
 }
 
