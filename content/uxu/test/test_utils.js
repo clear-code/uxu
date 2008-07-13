@@ -18,7 +18,16 @@ function constructor(aEnvironment, aBrowser)
 	this.__defineGetter__('testContent', function() {
 		return aBrowser.contentWindow;
 	});
+	this.__defineGetter__('contentWindow', function() {
+		return aBrowser.contentWindow;
+	});
+	this.__defineGetter__('content', function() {
+		return aBrowser.contentWindow;
+	});
 	this.__defineGetter__('testDocument', function() {
+		return aBrowser.contentDocument;
+	});
+	this.__defineGetter__('contentDocument', function() {
 		return aBrowser.contentDocument;
 	});
 	this.tempFiles = [];

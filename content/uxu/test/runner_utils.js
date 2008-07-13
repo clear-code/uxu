@@ -39,6 +39,21 @@ function addTestUtils(aSuite, aBrowser)
 	aSuite.__defineGetter__('testFrame', function() {
 		return aBrowser;
 	});
+	aSuite.__defineGetter__('testContent', function() {
+		return aBrowser.contentWindow;
+	});
+	aSuite.__defineGetter__('contentWindow', function() {
+		return aBrowser.contentWindow;
+	});
+	aSuite.__defineGetter__('content', function() {
+		return aBrowser.contentWindow;
+	});
+	aSuite.__defineGetter__('testDocument', function() {
+		return aBrowser.contentDocument;
+	});
+	aSuite.__defineGetter__('contentDocument', function() {
+		return aBrowser.contentDocument;
+	});
 	for (var aMethod in aSuite.utils)
 	{
 		if (typeof aSuite.utils[aMethod] != 'function') continue;
