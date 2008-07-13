@@ -5,7 +5,9 @@ function constructor(aSuite, aBrowser)
 {
 	this.environment = aSuite;
 	this.frame = aBrowser;
-	this.frameInTestRunner = aBrowser;
+	this.__defineGetter__('frameInTestRunner', function() {
+		return aBrowser;
+	});
 	this.testWindow = null;
 	this.storage = {};
 	this.listeners = [];
@@ -14,30 +16,12 @@ function constructor(aSuite, aBrowser)
 
 function load(aURI)
 {
-	this.listeners = [];
-	this.sandboxes = {};
-	var loadedFlag = { value : false };
-	var b = this.frame;
-	b.addEventListener('load', function() {
-		b.removeEventListener('load', arguments.callee, true);
-		loadedFlag.value = true;
-	}, true);
-	b.loadURI(this.environment.utils.fixupIncompleteURI(aURI));
-	return loadedFlag;
+	return this.environment.utils.setUpTestFrame(aURI);
 }
 
 function unload()
 {
-	this.listeners = [];
-	this.sandboxes = {};
-	var loadedFlag = { value : false };
-	var b = this.frame;
-	b.addEventListener('load', function() {
-		b.removeEventListener('load', arguments.callee, true);
-		loadedFlag.value = true;
-	}, true);
-	b.loadURI('about:blank');
-	return loadedFlag;
+	return this.environment.utils.tearDownTestFrame();
 }
 
 function open(aURI, aOptions)

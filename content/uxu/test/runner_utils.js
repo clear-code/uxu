@@ -18,7 +18,7 @@ function createTestSuite(aURL, aBrowser, aTestCaseClass)
 	suite.fileURL = aURL;
 	suite.baseURL = suite.fileURL.replace(/[^/]*$/, '');
 
-	addTestUtils(suite);
+	addTestUtils(suite, aBrowser);
 	addAssertions(suite);
 	addActions(suite);
 	addGMUtils(suite, aBrowser);
@@ -31,11 +31,14 @@ function createTestSuite(aURL, aBrowser, aTestCaseClass)
 	return suite;
 }
 
-function addTestUtils(aSuite)
+function addTestUtils(aSuite, aBrowser)
 {
-	aSuite.utils = new TestUtils(aSuite);
+	aSuite.utils = new TestUtils(aSuite, aBrowser);
 	aSuite.utils.fileURL = aSuite.fileURL;
 	aSuite.utils.baseURL = aSuite.baseURL;
+	aSuite.__defineGetter__('testFrame', function() {
+		return aBrowser;
+	});
 	for (var aMethod in aSuite.utils)
 	{
 		if (typeof aSuite.utils[aMethod] != 'function') continue;

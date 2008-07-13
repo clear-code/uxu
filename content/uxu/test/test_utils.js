@@ -7,14 +7,43 @@ var utils  = lib_module.require('package', 'utils');
 
 var key = 'uxu-test-window-id';
 
-function constructor(aEnvironment)
+function constructor(aEnvironment, aBrowser)
 {
 	this.environment = aEnvironment || {};
     this.uniqueID = parseInt(Math.random() * 10000000000);
 
+	this.__defineGetter__('testFrame', function() {
+		return aBrowser;
+	});
 	this.tempFiles = [];
 	this.backupPrefs = {};
 }
+
+
+function setUpTestFrame(aURI)
+{
+	var loadedFlag = { value : false };
+	var b = this.testFrame;
+	b.addEventListener('load', function() {
+		b.removeEventListener('load', arguments.callee, true);
+		loadedFlag.value = true;
+	}, true);
+	b.loadURI(this.fixupIncompleteURI(aURI));
+	return loadedFlag;
+};
+
+function tearDownTestFrame()
+{
+	var loadedFlag = { value : false };
+	var b = this.testFrame;
+	b.addEventListener('load', function() {
+		b.removeEventListener('load', arguments.callee, true);
+		loadedFlag.value = true;
+	}, true);
+	b.loadURI('about:blank');
+	return loadedFlag;
+}
+
 
 
 
