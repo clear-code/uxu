@@ -202,7 +202,11 @@ function registerTest(aFunction) {
 		desc     : aFunction.description,
 		code     : aFunction,
 		source   : aFunction.toSource(),
-		priority : (String(aFunction.priority || '').toLowerCase() || 'normal'),
+		priority : (
+			typeof aFunction.priority == 'number' ?
+				aFunction.priority :
+				(String(aFunction.priority || '').toLowerCase() || 'normal')
+		),
 		id       : 'test-'+parseInt(Math.random() * 65000)
 	});
 }
@@ -496,17 +500,32 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler) {
  
 function _checkPriorityToExec(aTest) { 
 	var priority = (aTest.priority == 'never') ? 'never' : (this.masterPriority || aTest.priority);
-	priority = priority.toLowerCase();
-	switch (priority)
-	{
-		case 'must':
-			return true;
-		case 'never':
-			return false;
-		default:
-			break;
+	if (typeof priority == 'number') {
+		priority = Math.min(1, Math.max(0, priority));
+		switch (priority)
+		{
+			case 1:
+				return true;
+			case 0:
+				return false;
+			default:
+				break;
+		}
 	}
-	var shouldDo = (Math.random() <= Number(utils.getPref('extensions.uxu.priority.'+priority)));
+	else {
+		priority = priority.toLowerCase();
+		switch (priority)
+		{
+			case 'must':
+				return true;
+			case 'never':
+				return false;
+			default:
+				break;
+		}
+		priority = Number(utils.getPref('extensions.uxu.priority.'+priority));
+	}
+	var shouldDo = (Math.random() <= priority);
 	if (!shouldDo) {
 		var db = utils.getDB();
 		var statement = db.createStatement(
