@@ -524,6 +524,7 @@ function _checkPriorityToExec(aTest) {
 				break;
 		}
 		priority = Number(utils.getPref('extensions.uxu.priority.'+priority));
+		priority = Math.min(1, Math.max(0, priority));
 	}
 	var shouldDo = (Math.random() <= priority);
 	if (!shouldDo) {

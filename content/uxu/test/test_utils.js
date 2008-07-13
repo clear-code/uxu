@@ -15,6 +15,12 @@ function constructor(aEnvironment, aBrowser)
 	this.__defineGetter__('testFrame', function() {
 		return aBrowser;
 	});
+	this.__defineGetter__('testContent', function() {
+		return aBrowser.contentWindow;
+	});
+	this.__defineGetter__('testDocument', function() {
+		return aBrowser.contentDocument;
+	});
 	this.tempFiles = [];
 	this.backupPrefs = {};
 }
