@@ -16,12 +16,16 @@ function constructor(aSuite, aBrowser)
 
 function load(aURI)
 {
-	return this.environment.utils.setUpTestFrame(aURI);
+	this.listeners = [];
+	this.sandboxes = {};
+	return this.environment.utils.loadURIInTestFrame(aURI);
 }
 
 function unload()
 {
-	return this.environment.utils.tearDownTestFrame();
+	this.listeners = [];
+	this.sandboxes = {};
+	return this.environment.utils.loadURIInTestFrame('about:blank');
 }
 
 function open(aURI, aOptions)

@@ -12,54 +12,24 @@ function constructor(aEnvironment, aBrowser)
 	this.environment = aEnvironment || {};
     this.uniqueID = parseInt(Math.random() * 10000000000);
 
-	this.__defineGetter__('testFrame', function() {
+	this.__defineGetter__('frame', function() {
 		return aBrowser;
 	});
-	this.__defineGetter__('testContent', function() {
-		return aBrowser.contentWindow;
+	this.__defineGetter__('gBrowser', function() {
+		return this.getBrowser();
 	});
 	this.__defineGetter__('contentWindow', function() {
-		return aBrowser.contentWindow;
+		return this.gBrowser.contentWindow;
 	});
 	this.__defineGetter__('content', function() {
-		return aBrowser.contentWindow;
-	});
-	this.__defineGetter__('testDocument', function() {
-		return aBrowser.contentDocument;
+		return this.gBrowser.contentWindow;
 	});
 	this.__defineGetter__('contentDocument', function() {
-		return aBrowser.contentDocument;
+		return this.gBrowser.contentDocument;
 	});
 	this.tempFiles = [];
 	this.backupPrefs = {};
 }
-
-
-function setUpTestFrame(aURI)
-{
-	var loadedFlag = { value : false };
-	var b = this.testFrame;
-	b.addEventListener('load', function() {
-		b.removeEventListener('load', arguments.callee, true);
-		loadedFlag.value = true;
-	}, true);
-	b.loadURI(this.fixupIncompleteURI(aURI));
-	return loadedFlag;
-};
-
-function tearDownTestFrame()
-{
-	var loadedFlag = { value : false };
-	var b = this.testFrame;
-	b.addEventListener('load', function() {
-		b.removeEventListener('load', arguments.callee, true);
-		loadedFlag.value = true;
-	}, true);
-	b.loadURI('about:blank');
-	return loadedFlag;
-}
-
-
 
 
 var XULAppInfo = Components.
@@ -198,17 +168,25 @@ function loadURI(aURI, aOptions)
 
 	var loadedFlag = { value : false };
 
-	var win = this.getTestWindow(aOptions);
-	if (!win) return null;
-
-	win.gBrowser.addEventListener('load', function() {
-		win.gBrowser.removeEventListener('load', arguments.callee, true);
+	var b = this.frame;
+	if (!aOptions || !aOptions.inFrame) {
+		var win = this.getTestWindow(aOptions);
+		if (win) b = win.gBrowser;
+	}
+	b.addEventListener('load', function() {
+		b.removeEventListener('load', arguments.callee, true);
 		loadedFlag.value = true;
 	}, true);
-	win.gBrowser.loadURI(aURI);
+	b.loadURI(aURI);
 
 	return loadedFlag;
 };
+
+function loadURIInTestFrame(aURI)
+{
+	return this.loadURI(aURI, { inFrame : true });
+}
+
 
 // テスト用のFirefoxウィンドウで新しいタブを開く
 function addTab(aURI, aOptions)
@@ -235,7 +213,7 @@ function addTab(aURI, aOptions)
 function getBrowser(aOptions)
 {
 	var win = this.getTestWindow(aOptions);
-	if (!win) return null;
+	if (!win) return this.frame;
 	return win.gBrowser;
 };
 

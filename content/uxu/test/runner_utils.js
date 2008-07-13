@@ -33,27 +33,22 @@ function createTestSuite(aURL, aBrowser, aTestCaseClass)
 
 function addTestUtils(aSuite, aBrowser)
 {
-	aSuite.utils = new TestUtils(aSuite, aBrowser);
-	aSuite.utils.fileURL = aSuite.fileURL;
-	aSuite.utils.baseURL = aSuite.baseURL;
-	aSuite.__defineGetter__('testFrame', function() {
-		return aBrowser;
-	});
-	aSuite.__defineGetter__('testContent', function() {
-		return aBrowser.contentWindow;
+	var urils = new TestUtils(aSuite, aBrowser);
+	utils.fileURL = aSuite.fileURL;
+	utils.baseURL = aSuite.baseURL;
+	aSuite.__defineGetter__('gBrowser', function() {
+		return utils.getBrowser();
 	});
 	aSuite.__defineGetter__('contentWindow', function() {
-		return aBrowser.contentWindow;
+		return utils.gBrowser.contentWindow;
 	});
 	aSuite.__defineGetter__('content', function() {
-		return aBrowser.contentWindow;
-	});
-	aSuite.__defineGetter__('testDocument', function() {
-		return aBrowser.contentDocument;
+		return utils.gBrowser.contentWindow;
 	});
 	aSuite.__defineGetter__('contentDocument', function() {
-		return aBrowser.contentDocument;
+		return utils.gBrowser.contentDocument;
 	});
+	aSuite.utils = urils;
 	for (var aMethod in aSuite.utils)
 	{
 		if (typeof aSuite.utils[aMethod] != 'function') continue;
