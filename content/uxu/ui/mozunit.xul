@@ -176,7 +176,8 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 			</menu>
 			<menu id="view-menu" label="&mozunit.viewMenu.label;" accesskey="&mozunit.viewMenu.accesskey;">
 				<menupopup onpopupshowing="updateViewItems();">
-					<menuitem type="checkbox" command="alwaysRaised"/>
+					<menuitem id="alwaysRaised-menuitem"
+						type="checkbox" command="alwaysRaised"/>
 					<menuitem type="checkbox" command="toggleContent"/>
 				</menupopup>
 			</menu>

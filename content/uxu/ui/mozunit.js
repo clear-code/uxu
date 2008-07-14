@@ -216,9 +216,11 @@ const fileDNDObserver =
 	 
 function init() 
 {
-	ObserverService.addObserver(alwaysRaisedObserver, 'xul-window-registered', false);
-	if (utils.getPref('extensions.uxu.mozunit.alwaysRaised'))
-		toggleAlwaysRaised();
+	if (!isLinux()) {
+		ObserverService.addObserver(alwaysRaisedObserver, 'xul-window-registered', false);
+		if (utils.getPref('extensions.uxu.mozunit.alwaysRaised'))
+			toggleAlwaysRaised();
+	}
 }
 	 
 var alwaysRaisedObserver = { 
@@ -237,9 +239,11 @@ var alwaysRaisedObserver = {
   
 function finish() 
 {
-	ObserverService.removeObserver(alwaysRaisedObserver, 'xul-window-registered');
+	if (!isLinux()) {
+		ObserverService.removeObserver(alwaysRaisedObserver, 'xul-window-registered');
+	}
 }
- 	 
+  
 /* test cases */ 
 	
 function newTestCase() 
@@ -890,6 +894,11 @@ function showSource(aTraceLine)
   
 /* UI */ 
 	 
+function isLinux() 
+{
+	return /linux/i.test(navigator.platform);
+}
+ 	
 function updateRunMode() 
 {
 	var runPriority = _('runPriority');
@@ -975,12 +984,17 @@ function updateEditItems()
  
 function updateViewItems() 
 {
-	var win = getXULWindow();
-	var alwaysRaised = _('alwaysRaised');
-	if (win.zLevel == win.normalZ)
-		alwaysRaised.removeAttribute('checked');
-	else
-		alwaysRaised.setAttribute('checked', true);
+	if (isLinux()) {
+		_('alwaysRaised-menuitem').setAttribute('hidden', true);
+	}
+	else {
+		var alwaysRaised = _('alwaysRaised');
+		var win = getXULWindow();
+		if (win.zLevel == win.normalZ)
+			alwaysRaised.removeAttribute('checked');
+		else
+			alwaysRaised.setAttribute('checked', true);
+	}
 
 	var toggleContent = _('toggleContent');
 	if (_('content').collapsed)
