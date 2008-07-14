@@ -6,12 +6,12 @@ var bundle     = lib_module.require('package', 'bundle');
 var TestCase   = lib_module.require('class', 'test_case');
 
 var helper_module   = new ModuleManager(['chrome://uxu/content/test']);
-var TestEnvironment = helper_module.require('class', 'test_environment');
+var Environment = helper_module.require('class', 'environment');
 
 function createTestSuite(aURL, aBrowser, aTestCaseClass)
 {
 	var suite = {};
-	suite.__proto__ = new TestEnvironment(suite, aURL, aBrowser);
+	suite.__proto__ = new Environment(suite, aURL, aBrowser);
 
 	suite.TestCase = aTestCaseClass || TestCase;
 	suite.Specification = suite.TestCase;
