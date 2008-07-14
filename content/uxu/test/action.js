@@ -1,22 +1,17 @@
-// -*- indent-tabs-mode: t; tab-width: 4 -*-
-
-
-function getWindowUtils(aWindow) {
-	return aWindow
-			.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-			.getInterface(Components.interfaces.nsIDOMWindowUtils);
-};
-
+// -*- indent-tabs-mode: t; tab-width: 4 -*- 
+ 
 var Prefs = Components.classes['@mozilla.org/preferences;1'] 
 		.getService(Components.interfaces.nsIPrefBranch)
 		.QueryInterface(Components.interfaces.nsIPrefBranch2);
-
-function isFullZoom()
+ 
+/* zoom */ 
+	 
+function isFullZoom() 
 {
 	return Prefs.getBoolPref('browser.zoom.full');
 };
-
-function getZoom(aWindow)
+ 
+function getZoom(aWindow) 
 {
 	var markupDocumentViewer = aWindow.top
 			.QueryInterface(this.nsIInterfaceRequestor)
@@ -26,9 +21,10 @@ function getZoom(aWindow)
 			.QueryInterface(Components.interfaces.nsIMarkupDocumentViewer);
 	return markupDocumentViewer.fullZoom;
 };
-
-
-function fireMouseEvent(aWindow, aOptions)
+  
+/* mouse event */ 
+	 
+function fireMouseEvent(aWindow, aOptions) 
 {
 	if (!aWindow ||
 		!(aWindow instanceof Components.interfaces.nsIDOMWindow))
@@ -54,19 +50,13 @@ function fireMouseEvent(aWindow, aOptions)
 		!(win instanceof Components.interfaces.nsIDOMWindow))
 		throw new Error('action.fireMouseEvent::there is no frame at ['+screenX+', '+screenY+']!');
 
-	var utils = this.getWindowUtils(win);
+	var utils = this._getWindowUtils(win);
 	var node = this.getElementFromScreenPoint(aWindow, screenX, screenY);
 
 	if (
 		'sendMouseEvent' in utils &&
 		!Prefs.getBoolPref('extensions.uxu.action.fireMouseEvent.useOldMethod') &&
-		!node.ownerDocument.evaluate(
-			'ancestor-or-self::*[contains(" menupopup popup tooltip panel", concat(" ", local-name(), " "))]',
-			node,
-			null,
-			XPathResult.FIRST_ORDERED_NODE_TYPE,
-			null
-		).singleNodeValue
+		!this._isNodeInPopup(node)
 		) {
 		const nsIDOMNSEvent = Components.interfaces.nsIDOMNSEvent;
 		var flags = 0;
@@ -93,22 +83,21 @@ function fireMouseEvent(aWindow, aOptions)
 			default:
 				utils.sendMouseEvent('mousedown', x, y, button, 1, flags);
 				utils.sendMouseEvent('mouseup', x, y, button, 1, flags);
-				this.emulateClickEventOnPopups(node, aOptions.button);
+				this._emulateClickEventOnPopups(node, aOptions);
 				break;
 		}
 		return;
 	}
 
 	if (node) {
-		aOptions.useOldMethod = true;
 		this.fireMouseEventOnElement(node, aOptions);
-		this.emulateClickEventOnPopups(node, aOptions.button);
+		this._emulateClickEventOnPopups(node, aOptions);
 	}
 	else
 		throw new Error('action.fireMouseEvent::there is no element at [')+x+','+y+']!';
 };
-
-function emulateClickEventOnPopups(aElement, aButton)
+	 
+function _emulateClickEventOnPopups(aElement, aOptions) 
 {
 	if (!aElement) return;
 
@@ -120,7 +109,7 @@ function emulateClickEventOnPopups(aElement, aButton)
 			var popupId;
 			var expression = '';
 			var isContext = false;
-			switch (aButton)
+			switch (aOptions.button)
 			{
 				case 0:
 					popupId = aElement.getAttribute('popup');
@@ -152,21 +141,53 @@ function emulateClickEventOnPopups(aElement, aButton)
 
 		case 'menuitem':
 			// TBD: メニュー項目のクリック操作のエミュレート
+			try {
+				this.fireXULCommandEventOnElement(aElement, aOptions);
+				aElement.ownerDocument.defaultView.setTimeout(function(aSelf) {
+					var popup = aElement;
+					while (popup = aSelf._getOwnerPopup(popup))
+					{
+						popup.hidePopup();
+						popup = popup.parentNode;
+					}
+				}, 0, this);
+			}
+			catch(e) {
+				dump(e+'\n');
+			}
 			break;
 	}
 }
-
-function fireMouseEventOnElement(aElement, aOptions)
+ 	
+function _isNodeInPopup(aElement) 
+{
+	return this._getOwnerPopup(aElement) ? true : false ;
+}
+ 
+function _getOwnerPopup(aElement) 
+{
+	return aElement.ownerDocument.evaluate(
+			'ancestor-or-self::*[contains(" menupopup popup tooltip panel ", concat(" ", local-name(), " "))]',
+			aElement,
+			null,
+			XPathResult.FIRST_ORDERED_NODE_TYPE,
+			null
+		).singleNodeValue;
+}
+  
+function fireMouseEventOnElement(aElement, aOptions) 
 {
 	if (!aElement ||
 		!(aElement instanceof Components.interfaces.nsIDOMElement))
 		throw new Error('action.fireMouseEventOnElement::['+aElement+'] is not an element!');
 
-	var utils = this.getWindowUtils(aElement.ownerDocument.defaultView);
-	if ('sendMouseEvent' in utils &&
+	var utils = this._getWindowUtils(aElement.ownerDocument.defaultView);
+	if (
+		'sendMouseEvent' in utils &&
 		!Prefs.getBoolPref('extensions.uxu.action.fireMouseEvent.useOldMethod') &&
-		!aOptions.useOldMethod) {
-		this.updateMouseEventOptionsOnElement(aOptions, aElement);
+		!this._isNodeInPopup(aElement)
+		) {
+		this._updateMouseEventOptionsOnElement(aOptions, aElement);
 		this.fireMouseEvent(aElement.ownerDocument.defaultView, aOptions)
 		return;
 	}
@@ -192,24 +213,24 @@ function fireMouseEventOnElement(aElement, aOptions)
 			this.fireMouseEventOnElement(aElement, options);
 			break;
 	}
-	var event = this.createMouseEventOnElement(aElement, aOptions);
+	var event = this._createMouseEventOnElement(aElement, aOptions);
 	if (event && aElement)
 		aElement.dispatchEvent(event);
 	if (aOptions.type != 'mousedown' &&
 		aOptions.type != 'mouseup' &&
 		aOptions.type != 'dblclick')
-		this.emulateClickEventOnPopups(aElement, aOptions.button);
+		this._emulateClickEventOnPopups(aElement, aOptions);
 };
-
-function createMouseEventOnElement(aElement, aOptions)
+	 
+function _createMouseEventOnElement(aElement, aOptions) 
 {
 	if (!aElement ||
 		!(aElement instanceof Components.interfaces.nsIDOMElement))
-		throw new Error('action.createMouseEventOnElement::['+aElement+'] is not an element!');
+		throw new Error('action._createMouseEventOnElement::['+aElement+'] is not an element!');
 
 	if (!aOptions) aOptions = {};
 	if (!aElement) return null;
-	this.updateMouseEventOptionsOnElement(aOptions, aElement);
+	this._updateMouseEventOptionsOnElement(aOptions, aElement);
 
 	var event = aElement.ownerDocument.createEvent('MouseEvents');
 	event.initMouseEvent(
@@ -231,10 +252,10 @@ function createMouseEventOnElement(aElement, aOptions)
 	);
 	return event;
 };
-
-function updateMouseEventOptionsOnElement(aOptions, aElement)
+ 
+function _updateMouseEventOptionsOnElement(aOptions, aElement) 
 {
-	var doc = this.getDocumentFromEventTarget(aElement);
+	var doc = this._getDocumentFromEventTarget(aElement);
 	var box = doc.getBoxObjectFor(aElement);
 	if (!('screenX' in aOptions)) aOptions.screenX = box.screenX + parseInt(box.width / 2);
 	if (!('screenY' in aOptions)) aOptions.screenY = box.screenY + parseInt(box.height / 2);
@@ -244,8 +265,10 @@ function updateMouseEventOptionsOnElement(aOptions, aElement)
 	if (!('x' in aOptions)) aOptions.x = aOptions.screenX - box.screenX - doc.defaultView.scrollX;
 	if (!('y' in aOptions)) aOptions.y = aOptions.screenY - box.screenY - doc.defaultView.scrollY;
 }
-
-function fireKeyEventOnElement(aElement, aOptions)
+   
+/* key event */ 
+	
+function fireKeyEventOnElement(aElement, aOptions) 
 {
 	if (!aElement ||
 		!(aElement instanceof Components.interfaces.nsIDOMElement))
@@ -256,8 +279,8 @@ function fireKeyEventOnElement(aElement, aOptions)
 		aElement.inputField instanceof Components.interfaces.nsIDOMElement)
 		aElement = aElement.inputField;
 
-	var doc = this.getDocumentFromEventTarget(aElement);
-	var utils = this.getWindowUtils(doc.defaultView);
+	var doc = this._getDocumentFromEventTarget(aElement);
+	var utils = this._getWindowUtils(doc.defaultView);
 	if ('sendKeyEvent' in utils &&
 		!Prefs.getBoolPref('extensions.uxu.action.fireKeyEvent.useOldMethod')) {
 		const nsIDOMNSEvent = Components.interfaces.nsIDOMNSEvent;
@@ -289,20 +312,20 @@ function fireKeyEventOnElement(aElement, aOptions)
 			this.fireKeyEventOnElement(aElement, options);
 			break;
 	}
-	var event = this.createKeyEventOnElement(aElement, aOptions);
+	var event = this._createKeyEventOnElement(aElement, aOptions);
 	if (event && aElement)
 		aElement.dispatchEvent(event);
 };
-
-function createKeyEventOnElement(aElement, aOptions)
+	 
+function _createKeyEventOnElement(aElement, aOptions) 
 {
 	if (!aElement ||
 		!(aElement instanceof Components.interfaces.nsIDOMElement))
-		throw new Error('action.createKeyEventOnElement::['+aElement+'] is not an element!');
+		throw new Error('action._createKeyEventOnElement::['+aElement+'] is not an element!');
 
 	if (!aOptions) aOptions = {};
 	var node = aElement;
-	var doc = this.getDocumentFromEventTarget(node);
+	var doc = this._getDocumentFromEventTarget(node);
 	var event = doc.createEvent('KeyEvents');
 	event.initKeyEvent(
 		(aOptions.type || 'keypress'),
@@ -318,9 +341,10 @@ function createKeyEventOnElement(aElement, aOptions)
 	);
 	return event;
 };
-
-
-function fireXULCommandEvent(aWindow, aOptions)
+   
+/* XULCommand event */ 
+	 
+function fireXULCommandEvent(aWindow, aOptions) 
 {
 	if (!aOptions) aOptions = {};
 	var node = this.getElementFromScreenPoint(
@@ -331,15 +355,15 @@ function fireXULCommandEvent(aWindow, aOptions)
 	if (node)
 		this.fireXULCommandEventOnElement(node, aOptions);
 };
-
-function fireXULCommandEventOnElement(aElement, aOptions)
+ 
+function fireXULCommandEventOnElement(aElement, aOptions) 
 {
-	var event = this.createMouseEventOnElement(aElement, aOptions);
+	var event = this._createMouseEventOnElement(aElement, aOptions);
 	if (event && aElement)
-		aElement.dispatchEvent(this.createXULCommandEvent(event));
+		aElement.dispatchEvent(this._createXULCommandEvent(event));
 };
-
-function createXULCommandEvent(aSourceEvent)
+	 
+function _createXULCommandEvent(aSourceEvent) 
 {
 	var event = aSourceEvent.view.document.createEvent('XULCommandEvents');
 	event.initCommandEvent('command',
@@ -355,9 +379,14 @@ function createXULCommandEvent(aSourceEvent)
 	);
 	return event;
 };
-
-
-function inputTextToField(aElement, aValue, aAppend, aDontFireKeyEvents)
+   
+/* text input */ 
+	 
+var withIMECharacters = '\u3040-\uA4CF\uF900-\uFAFF'; 
+var kINPUT_ARRAY_PATTERN  = new RegExp('[^'+withIMECharacters+']|['+withIMECharacters+']+', 'g');
+var kDIRECT_INPUT_PATTERN = new RegExp('[^'+withIMECharacters+']');
+ 
+function inputTextToField(aElement, aValue, aAppend, aDontFireKeyEvents) 
 {
 	if (!aElement) {
 		throw new Error('action.inputTextToField::no target!');
@@ -375,7 +404,7 @@ function inputTextToField(aElement, aValue, aAppend, aDontFireKeyEvents)
 
 	if (aDontFireKeyEvents || aValue == '') {
 		aElement.value += (aValue || '');
-		var doc = this.getDocumentFromEventTarget(aElement);
+		var doc = this._getDocumentFromEventTarget(aElement);
 		var event = doc.createEvent('UIEvents');
 		event.initUIEvent('input', true, true, doc.defaultView, 0);
 		aElement.dispatchEvent(event);
@@ -404,57 +433,19 @@ function inputTextToField(aElement, aValue, aAppend, aDontFireKeyEvents)
 		}
 	});
 };
-
-var withIMECharacters = '\u3040-\uA4CF\uF900-\uFAFF';
-var kINPUT_ARRAY_PATTERN  = new RegExp('[^'+withIMECharacters+']|['+withIMECharacters+']+', 'g');
-var kDIRECT_INPUT_PATTERN = new RegExp('[^'+withIMECharacters+']');
-
-
-function getDocumentFromEventTarget(aNode)
-{
-	return !aNode ? null :
-		(aNode.document || aNode.ownerDocument || aNode );
-};
-
-
-
-// 座標から要素ノードを取得する
-function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
+  
+/* 座標操作 */ 
+	 
+function getElementFromScreenPoint(aWindow, aScreenX, aScreenY) 
 {
 	if (!aWindow ||
 		!(aWindow instanceof Components.interfaces.nsIDOMWindow))
 		throw new Error('action.getElementFromScreenPoint::['+aWindow+'] is not a frame!');
 
-	var filter = function(aNode) {
-		return NodeFilter.FILTER_ACCEPT;
-	};
-	var doc = aWindow.document;
+	var popup = this._getPopupElementFromScreenPoint(aWindow, aScreenX, aScreenY);
+	if (popup) return popup;
 
-	// 開かれているポップアップがある場合はそちらを優先して探す
-	var popups = doc.evaluate(
-			'/descendant::*[contains(" menupopup popup tooltip panel", concat(" ", local-name(), " "))]',
-			doc,
-			null,
-			XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
-			null
-		);
-	for (var i = 0, maxi = popups.snapshotLength; i < maxi; i++)
-	{
-		var popup = popups.snapshotItem(i);
-		if (popup.state != 'open') continue;
-		if (!this.isPointInside(popup.boxObject, aScreenX, aScreenY)) continue;
-
-		var nodes = [];
-		var walker = doc.createTreeWalker(popup, NodeFilter.SHOW_ELEMENT, filter, false);
-		for (var node = walker.firstChild(); node != null; node = walker.nextNode())
-		{
-			if (this.isPointInside(doc.getBoxObjectFor(node), aScreenX, aScreenY))
-				nodes.push(node);
-		}
-		return nodes[nodes.length-1];
-	}
-
-	var clientPos = this.getClientPointFromScreenPoint(aWindow, aScreenX, aScreenY);
+	var clientPos = this._getClientPointFromScreenPoint(aWindow, aScreenX, aScreenY);
 	if ('elementFromPoint' in aWindow.document) {
 		var elem = aWindow.document.elementFromPoint(clientPos.x, clientPos.y);
 		if (elem && /^(i?frame|browser|tabbrowser)$/.test(elem.localName)) {
@@ -468,7 +459,7 @@ function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 	}
 
 	aWindow = this.getWindowFromScreenPoint(aWindow, aScreenX, aScreenY);
-	doc = aWindow.document;
+	var doc = aWindow.document;
 
 	var accNode;
 	try {
@@ -483,10 +474,10 @@ function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 
 	var startNode = accNode || doc;
 	var nodes = [];
-	var walker = doc.createTreeWalker(startNode, NodeFilter.SHOW_ELEMENT, filter, false);
+	var walker = doc.createTreeWalker(startNode, NodeFilter.SHOW_ELEMENT, elementFilter, false);
 	for (var node = walker.firstChild(); node != null; node = walker.nextNode())
 	{
-		if (this.isPointInside(doc.getBoxObjectFor(node), aScreenX, aScreenY))
+		if (this._isPointInside(doc.getBoxObjectFor(node), aScreenX, aScreenY))
 			nodes.push(node);
 	}
 
@@ -535,21 +526,41 @@ function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 
 	return deepest[deepest.length-1];
 };
-
-function getClientPointFromScreenPoint(aWindow, aScreenX, aScreenY)
+	 
+function _getPopupElementFromScreenPoint(aWindow, aScreenX, aScreenY) 
 {
-	if (!aWindow ||
-		!(aWindow instanceof Components.interfaces.nsIDOMWindow))
-		throw new Error('action.getClientPointFromScreenPoint::['+aWindow+'] is not a frame!');
+	var doc = aWindow.document;
+	var popups = doc.evaluate(
+			'/descendant::*[contains(" menupopup popup tooltip panel", concat(" ", local-name(), " "))]',
+			doc,
+			null,
+			XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+			null
+		);
+	for (var i = 0, maxi = popups.snapshotLength; i < maxi; i++)
+	{
+		var popup = popups.snapshotItem(i);
+		if (popup.state != 'open') continue;
+		if (!this._isPointInside(popup.boxObject, aScreenX, aScreenY)) continue;
 
-	var box = aWindow.document.getBoxObjectFor(aWindow.document.documentElement);
-	return {
-		x : aScreenX - box.screenX - aWindow.scrollX,
-		y : aScreenY - box.screenY - aWindow.scrollY
-	};
+		var nodes = [];
+		var walker = doc.createTreeWalker(popup, NodeFilter.SHOW_ELEMENT, elementFilter, false);
+		for (var node = walker.firstChild(); node != null; node = walker.nextNode())
+		{
+			if (this._isPointInside(doc.getBoxObjectFor(node), aScreenX, aScreenY))
+				nodes.push(node);
+		}
+		if (!nodes.length) continue;
+		return nodes[nodes.length-1];
+	}
+	return null;
 }
-
-function getWindowFromScreenPoint(aWindow, aScreenX, aScreenY)
+ 
+var elementFilter = function(aNode) { 
+	return NodeFilter.FILTER_ACCEPT;
+};
+  
+function getWindowFromScreenPoint(aWindow, aScreenX, aScreenY) 
 {
 	if (!aWindow ||
 		!(aWindow instanceof Components.interfaces.nsIDOMWindow))
@@ -560,7 +571,7 @@ function getWindowFromScreenPoint(aWindow, aScreenX, aScreenY)
 		return elem ? elem.ownerDocument.defaultView : null ;
 	}
 
-	var wins = this.flattenWindows(aWindow);
+	var wins = this._flattenWindows(aWindow);
 	for (var i = wins.length - 1; i >= 0; i--) {
 		var win = wins[i];
 		var frameList = [];
@@ -578,16 +589,41 @@ function getWindowFromScreenPoint(aWindow, aScreenX, aScreenY)
 			frameList.push(arr[j]);
 		for (var j = frameList.length - 1; j >= 0; j--) {
 			var box = win.document.getBoxObjectFor(frameList[j]);
-			if (this.isPointInside(box, aScreenX, aScreenY))
+			if (this._isPointInside(box, aScreenX, aScreenY))
 				return frameList[j].contentWindow;
 		}
-		if (this.isPointInside(box, aScreenX, aScreenY))
+		if (this._isPointInside(box, aScreenX, aScreenY))
 			return frameList[j].contentWindow;
 	}
 	return null;
 };
+	 
+function _flattenWindows(aWindow) 
+{
+	if (!aWindow ||
+		!(aWindow instanceof Components.interfaces.nsIDOMWindow))
+		throw new Error('action._flattenWindows::['+aWindow+'] is not a frame!');
 
-function isPointInside(aBox, aScreenX, aScreenY)
+	var ret = [aWindow];
+	for (var i = 0; i < aWindow.frames.length; i++)
+		ret = ret.concat(this._flattenWindows(aWindow.frames[i]));
+	return ret;
+};
+  
+function _getClientPointFromScreenPoint(aWindow, aScreenX, aScreenY) 
+{
+	if (!aWindow ||
+		!(aWindow instanceof Components.interfaces.nsIDOMWindow))
+		throw new Error('action._getClientPointFromScreenPoint::['+aWindow+'] is not a frame!');
+
+	var box = aWindow.document.getBoxObjectFor(aWindow.document.documentElement);
+	return {
+		x : aScreenX - box.screenX - aWindow.scrollX,
+		y : aScreenY - box.screenY - aWindow.scrollY
+	};
+}
+ 
+function _isPointInside(aBox, aScreenX, aScreenY) 
 {
 	var l = aBox.screenX;
 	var t = aBox.screenY;
@@ -595,15 +631,19 @@ function isPointInside(aBox, aScreenX, aScreenY)
 	var b = t + aBox.height;
 	return !(l > aScreenX || aScreenX > r || t > aScreenY || aScreenY > b);
 }
-
-function flattenWindows(aWindow) 
+  
+/* utils */ 
+	 
+function _getWindowUtils(aWindow) 
 {
-	if (!aWindow ||
-		!(aWindow instanceof Components.interfaces.nsIDOMWindow))
-		throw new Error('action.flattenWindows::['+aWindow+'] is not a frame!');
-
-	var ret = [aWindow];
-	for (var i = 0; i < aWindow.frames.length; i++)
-		ret = ret.concat(this.flattenWindows(aWindow.frames[i]));
-	return ret;
+	return aWindow
+			.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+			.getInterface(Components.interfaces.nsIDOMWindowUtils);
 };
+ 
+function _getDocumentFromEventTarget(aNode) 
+{
+	return !aNode ? null :
+		(aNode.document || aNode.ownerDocument || aNode );
+};
+  
