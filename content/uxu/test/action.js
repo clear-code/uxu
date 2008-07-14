@@ -55,6 +55,8 @@ function fireMouseEvent(aWindow, aOptions)
 		throw new Error('action.fireMouseEvent::there is no frame at ['+screenX+', '+screenY+']!');
 
 	var utils = this.getWindowUtils(win);
+	var node = this.getElementFromScreenPoint(aWindow, screenX, screenY);
+
 	if ('sendMouseEvent' in utils &&
 		!Prefs.getBoolPref('extensions.uxu.action.fireMouseEvent.useOldMethod')) {
 		const nsIDOMNSEvent = Components.interfaces.nsIDOMNSEvent;
@@ -82,23 +84,77 @@ function fireMouseEvent(aWindow, aOptions)
 			default:
 				utils.sendMouseEvent('mousedown', x, y, button, 1, flags);
 				utils.sendMouseEvent('mouseup', x, y, button, 1, flags);
+				this.ensurePopupOpenByClick(node, aOptions.button);
 				break;
 		}
 		return;
 	}
 
-	var node = this.getElementFromScreenPoint(aWindow, screenX, screenY);
-	if (node)
+	if (node) {
 		this.fireMouseEventOnElement(node, aOptions);
+		this.ensurePopupOpenByClick(node, aOptions.button);
+	}
 	else
 		throw new Error('action.fireMouseEvent::there is no element at [')+x+','+y+']!';
 };
+
+function ensurePopupOpenByClick(aElement, aButton)
+{
+	if (
+		!aElement ||
+		(
+			aElement.localName != 'menu' &&
+			!(aElement.localName == 'toolbarbutton' && aElement.getAttribute('type') == 'menu')
+		)
+		)
+		return;
+
+	var popupId;
+	var expression = '';
+	var isContext = false;
+	switch (aButton)
+	{
+		case 0:
+			popupId = aElement.getAttribute('popup');
+			expression += 'child::*[local-name()="menupopup" or local-name()="popup"] |';
+			if (navigator.platform.toLowerCase().indexOf('mac') < 0 ||
+				!aButton.ctrlKey)
+				break;
+		case 2:
+			popupId = aElement.getAttribute('context');
+			isContext = true;
+			break;
+		case 1:
+			return;
+	}
+	var popup = aElement.ownerDocument.evaluate(
+			expression+'/descendant::menupopup[@id="'+popupId+'"]',
+			aElement,
+			null,
+			XPathResult.FIRST_ORDERED_NODE_TYPE,
+			null
+		).singleNodeValue;
+
+	if (!popup) return;
+	if ('openPopup' in popup && isContext)
+		popup.openPopup(aElement, 'after_pointer', -1, -1, true, true);
+	else
+		popup.showPopup();
+}
 
 function fireMouseEventOnElement(aElement, aOptions)
 {
 	if (!aElement ||
 		!(aElement instanceof Components.interfaces.nsIDOMElement))
 		throw new Error('action.fireMouseEventOnElement::['+aElement+'] is not an element!');
+
+	var utils = this.getWindowUtils(aElement.ownerDocument.defaultView);
+	if ('sendMouseEvent' in utils &&
+		!Prefs.getBoolPref('extensions.uxu.action.fireMouseEvent.useOldMethod')) {
+		this.updateMouseEventOptionsOnElement(aOptions, aElement);
+		this.fireMouseEvent(aElement.ownerDocument.defaultView, aOptions)
+		return;
+	}
 
 	if (!aOptions) aOptions = { type : 'click' };
 	switch (aOptions.type)
@@ -124,6 +180,10 @@ function fireMouseEventOnElement(aElement, aOptions)
 	var event = this.createMouseEventOnElement(aElement, aOptions);
 	if (event && aElement)
 		aElement.dispatchEvent(event);
+	if (aEvent.type != 'mousedown' &&
+		aEvent.type != 'mouseup' &&
+		aEvent.type != 'dblclick')
+		this.ensurePopupOpenByClick(aElement, aOptions.button);
 };
 
 function createMouseEventOnElement(aElement, aOptions)
@@ -133,18 +193,8 @@ function createMouseEventOnElement(aElement, aOptions)
 		throw new Error('action.createMouseEventOnElement::['+aElement+'] is not an element!');
 
 	if (!aOptions) aOptions = {};
-	var node = aElement;
-	if (!node) return null;
-
-	var doc = this.getDocumentFromEventTarget(node);
-	var box = doc.getBoxObjectFor(node);
-	if (!('screenX' in aOptions)) aOptions.screenX = box.screenX + parseInt(box.width / 2);
-	if (!('screenY' in aOptions)) aOptions.screenY = box.screenY + parseInt(box.height / 2);
-
-	var root = doc.documentElement;
-	box = doc.getBoxObjectFor(root);
-	if (!('x' in aOptions)) aOptions.x = aOptions.screenX - box.screenX - doc.defaultView.scrollX;
-	if (!('y' in aOptions)) aOptions.y = aOptions.screenY - box.screenY - doc.defaultView.scrollY;
+	if (!aElement) return null;
+	this.updateMouseEventOptionsOnElement(aOptions, aElement);
 
 	var event = doc.createEvent('MouseEvents');
 	event.initMouseEvent(
@@ -166,6 +216,19 @@ function createMouseEventOnElement(aElement, aOptions)
 	);
 	return event;
 };
+
+function updateMouseEventOptionsOnElement(aOptions, aElement)
+{
+	var doc = this.getDocumentFromEventTarget(aElement);
+	var box = doc.getBoxObjectFor(aElement);
+	if (!('screenX' in aOptions)) aOptions.screenX = box.screenX + parseInt(box.width / 2);
+	if (!('screenY' in aOptions)) aOptions.screenY = box.screenY + parseInt(box.height / 2);
+
+	var root = doc.documentElement;
+	box = doc.getBoxObjectFor(root);
+	if (!('x' in aOptions)) aOptions.x = aOptions.screenX - box.screenX - doc.defaultView.scrollX;
+	if (!('y' in aOptions)) aOptions.y = aOptions.screenY - box.screenY - doc.defaultView.scrollY;
+}
 
 function fireKeyEventOnElement(aElement, aOptions)
 {
