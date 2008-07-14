@@ -65,6 +65,9 @@ function initVariables()
 				return aValue;
 			});
 		});
+
+	this.environment.Cc = Components.classes;
+	this.environment.Ci = Components.interfaces;
 }
 
 function attachAssertions()
