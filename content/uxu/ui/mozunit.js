@@ -919,6 +919,7 @@ function toggleAlwaysRaised()
 	var win = getXULWindow();
 	win.zLevel = (win.zLevel == win.normalZ) ?
 			win.highestZ : win.normalZ;
+	utils.setPref('extensions.uxu.mozunit.alwaysRaised', win.zLevel != win.normalZ);
 }
 	 
 function getXULWindow() 
