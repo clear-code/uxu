@@ -4,6 +4,12 @@ var bundle = lib_module.require('package', 'bundle');
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var runner_utils = test_module.require('package', 'runner_utils');
+
+const Ci = Components.interfaces;
+
+const ObserverService = Components
+	.classes['@mozilla.org/observer-service;1']
+	.getService(Ci.nsIObserverService);
  
 /* UTILITIES */ 
 	 
@@ -88,7 +94,7 @@ function scrollReportsTo(aTarget)
 	if (!aTarget) return;
 	_('testcase-reports')
 		.boxObject
-		.QueryInterface(Components.interfaces.nsIScrollBoxObject)
+		.QueryInterface(Ci.nsIScrollBoxObject)
 		.ensureElementIsVisible(aTarget);
 };
  
@@ -105,14 +111,14 @@ function getErrorReports()
 }
   
 /* file picker */ 
-	
+	 
 function pickFile(aMode, aOptions) 
 {
 	if (!aOptions) aOptions = {};
 	var mode = 'mode' + (aMode ?
 						 aMode[0].toUpperCase() + aMode.substr(1) :
 						 'open');
-	const nsIFilePicker = Components.interfaces.nsIFilePicker;
+	const nsIFilePicker = Ci.nsIFilePicker;
 
 	var picker = Components
 		.classes["@mozilla.org/filepicker;1"]
@@ -123,7 +129,7 @@ function pickFile(aMode, aOptions)
 	if (aOptions.defaultFile) {
 		var defaultFile = aOptions.defaultFile;
 		try {
-			defaultFile = defaultFile.QueryInterface(Components.interfaces.nsILocalFile)
+			defaultFile = defaultFile.QueryInterface(Ci.nsILocalFile)
 		}
 		catch(e) {
 			defaultFile = utils.makeFileWithPath(defaultFile);
@@ -207,15 +213,33 @@ const fileDNDObserver =
 }; 
    
 /* DOMAIN */ 
-	
+	 
 function init() 
 {
+	ObserverService.addObserver(alwaysRaisedObserver, 'xul-window-registered', false);
+	if (utils.getPref('extensions.uxu.mozunit.alwaysRaised'))
+		toggleAlwaysRaised();
 }
- 
+	 
+var alwaysRaisedObserver = { 
+	observe : function(aSubect, aTopic, aData)
+	{
+		var win = getXULWindow();
+		if (aTopic == 'xul-window-registered' &&
+			win.zLevel != win.normalZ) {
+			win.zLevel = win.normalZ;
+			window.setTimeout(function() {
+				win.zLevel = win.highestZ;
+			}, 250);
+		}
+	}
+};
+  
 function finish() 
 {
+	ObserverService.removeObserver(alwaysRaisedObserver, 'xul-window-registered');
 }
-  
+ 	 
 /* test cases */ 
 	
 function newTestCase() 
@@ -765,10 +789,10 @@ function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine)
 	var editorPath;
 	var executable = Components
 		.classes["@mozilla.org/file/local;1"].
-		createInstance(Components.interfaces.nsILocalFile);
+		createInstance(Ci.nsILocalFile);
 	var process = Components
 		.classes["@mozilla.org/process/util;1"].
-		createInstance(Components.interfaces.nsIProcess);
+		createInstance(Ci.nsIProcess);
 	try {
 		editorPath = argv.shift();
 		executable.initWithPath(editorPath);
@@ -783,7 +807,7 @@ function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine)
 		var editor = pickFile('open', {
 				title : bundle.getString('picker_title_external_editor'),
 				defaultExtension : 'exe',
-				filter : Components.interfaces.nsIFilePicker.filterApps
+				filter : Ci.nsIFilePicker.filterApps
 			});
 		if (!editor || !editor.path) return;
 		utils.setPref('extensions.uxu.mozunit.editor', '"'+editor.path+'" "%f"');
@@ -852,14 +876,14 @@ function showSource(aTraceLine)
 
 	if (encoding) {
 		var docCharset = _('source-viewer', 'source').docShell
-				.QueryInterface(Components.interfaces.nsIDocCharset);
+				.QueryInterface(Ci.nsIDocCharset);
 		docCharset.charset = encoding;
 	}
 
 	_('source-viewer', 'source').addEventListener('load', onLoad, true);
 	_('source-viewer', 'source').webNavigation.loadURI(
 		sourceUrl,
-		Components.interfaces.nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE,
+		Ci.nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE,
 		null, null, null
 	);
 }
@@ -890,6 +914,24 @@ function updateRunMode()
 	}
 }
  
+function toggleAlwaysRaised() 
+{
+	var win = getXULWindow();
+	win.zLevel = (win.zLevel == win.normalZ) ?
+			win.highestZ : win.normalZ;
+}
+	 
+function getXULWindow() 
+{
+	return window
+		.QueryInterface(Ci.nsIInterfaceRequestor)
+		.getInterface(Ci.nsIWebNavigation)
+		.QueryInterface(Ci.nsIDocShellTreeItem)
+		.treeOwner
+		.QueryInterface(Ci.nsIInterfaceRequestor)
+		.getInterface(Ci.nsIXULWindow);
+}
+  
 function toggleContent() 
 {
 	_('content').collapsed = !_('content').collapsed;
@@ -929,7 +971,23 @@ function updateEditItems()
 {
 	goUpdateCommand('cmd_copy');
 }
- 	
+ 
+function updateViewItems() 
+{
+	var win = getXULWindow();
+	var alwaysRaised = _('alwaysRaised');
+	if (win.zLevel == win.normalZ)
+		alwaysRaised.removeAttribute('checked');
+	else
+		alwaysRaised.setAttribute('checked', true);
+
+	var toggleContent = _('toggleContent');
+	if (_('content').collapsed)
+		toggleContent.removeAttribute('checked');
+	else
+		toggleContent.setAttribute('checked', true);
+}
+ 
 function updateContextMenu() 
 {
 	updateEditItems();

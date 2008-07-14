@@ -10,6 +10,8 @@
 
 <!ENTITY mozunit.title "MozUnit">
 
+<!ENTITY mozunit.fileMenu.label     "ファイル">
+<!ENTITY mozunit.fileMenu.accesskey "F">
 <!ENTITY mozunit.run.label     "実行">
 <!ENTITY mozunit.run.accesskey "R">
 <!ENTITY mozunit.run.options   "方法を指定して実行">
@@ -20,8 +22,6 @@
 <!ENTITY mozunit.runFailed.label   "失敗したテストだけ再実行">
 <!ENTITY mozunit.stop.label     "中止">
 <!ENTITY mozunit.stop.accesskey "S">
-<!ENTITY mozunit.toggleContent.label     "内容の表示/非表示切り替え">
-<!ENTITY mozunit.toggleContent.accesskey "C">
 <!ENTITY mozunit.open.label     "開く...">
 <!ENTITY mozunit.open.accesskey "O">
 <!ENTITY mozunit.openFolder.label     "フォルダを開く...">
@@ -35,12 +35,15 @@
 <!ENTITY mozunit.quit.label     "終了">
 <!ENTITY mozunit.quit.accesskey "Q">
 
-<!ENTITY mozunit.file.label     "ファイル">
-<!ENTITY mozunit.file.accesskey "F">
-<!ENTITY mozunit.view.label     "表示">
-<!ENTITY mozunit.view.accesskey "V">
-<!ENTITY mozunit.edit.label     "編集">
-<!ENTITY mozunit.edit.accesskey "E">
+<!ENTITY mozunit.viewMenu.label     "表示">
+<!ENTITY mozunit.viewMenu.accesskey "V">
+<!ENTITY mozunit.alwaysRaised.label     "常に最前面に表示">
+<!ENTITY mozunit.alwaysRaised.accesskey "A">
+<!ENTITY mozunit.toggleContent.label     "テスト用フレームの内容を表示">
+<!ENTITY mozunit.toggleContent.accesskey "C">
+
+<!ENTITY mozunit.editMenu.label     "編集">
+<!ENTITY mozunit.editMenu.accesskey "E">
 <!ENTITY mozunit.copy.label     "コピー">
 <!ENTITY mozunit.copy.accesskey "C">
 

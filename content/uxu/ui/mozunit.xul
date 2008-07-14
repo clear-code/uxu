@@ -61,6 +61,8 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 		<command id="stop" label="&mozunit.stop.label;" accesskey="&mozunit.stop.accesskey;"
 			oncommand="stop();"
 			disabled="true"/>
+		<command id="alwaysRaised" oncommand="toggleAlwaysRaised();"
+			label="&mozunit.alwaysRaised.label;" accesskey="&mozunit.alwaysRaised.accesskey;"/>
 		<command id="toggleContent" oncommand="toggleContent();"
 			label="&mozunit.toggleContent.label;" accesskey="&mozunit.toggleContent.accesskey;"/>
 		<command id="open" label="&mozunit.open.label;" accesskey="&mozunit.open.accesskey;"
@@ -141,7 +143,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 
 	<toolbox>
 		<menubar>
-			<menu id="file-menu" label="&mozunit.file.label;" accesskey="&mozunit.file.accesskey;">
+			<menu id="file-menu" label="&mozunit.fileMenu.label;" accesskey="&mozunit.fileMenu.accesskey;">
 				<menupopup>
 					<menuitem command="new" key="key-new"/>
 					<menuitem command="open" key="key-open"/>
@@ -167,14 +169,15 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 					<menuitem command="quit"/>
 				</menupopup>
 			</menu>
-			<menu id="edit-menu" label="&mozunit.edit.label;" accesskey="&mozunit.edit.accesskey;">
+			<menu id="edit-menu" label="&mozunit.editMenu.label;" accesskey="&mozunit.editMenu.accesskey;">
 				<menupopup onpopupshowing="updateEditItems();">
 					<menuitem command="cmd_copy"/>
 				</menupopup>
 			</menu>
-			<menu id="view-menu" label="&mozunit.view.label;" accesskey="&mozunit.view.accesskey;">
-				<menupopup>
-					<menuitem command="toggleContent"/>
+			<menu id="view-menu" label="&mozunit.viewMenu.label;" accesskey="&mozunit.viewMenu.accesskey;">
+				<menupopup onpopupshowing="updateViewItems();">
+					<menuitem type="checkbox" command="alwaysRaised"/>
+					<menuitem type="checkbox" command="toggleContent"/>
 				</menupopup>
 			</menu>
 		</menubar>
