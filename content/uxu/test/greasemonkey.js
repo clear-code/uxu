@@ -1,12 +1,13 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
 
-function constructor(aSuite, aBrowser)
+function constructor(aUtils)
 {
-	this.environment = aSuite;
-	this.frame = aBrowser;
+	this.utils = aUtils;
+	var frame = this.utils._testFrame;
+	this.frame = frame;
 	this.__defineGetter__('frameInTestRunner', function() {
-		return aBrowser;
+		return frame;
 	});
 	this.testWindow = null;
 	this.storage = {};
@@ -18,24 +19,24 @@ function load(aURI)
 {
 	this.listeners = [];
 	this.sandboxes = {};
-	return this.environment.utils.loadURIInTestFrame(aURI);
+	return this.utils.loadURIInTestFrame(aURI);
 }
 
 function unload()
 {
 	this.listeners = [];
 	this.sandboxes = {};
-	return this.environment.utils.loadURIInTestFrame('about:blank');
+	return this.utils.loadURIInTestFrame('about:blank');
 }
 
 function open(aURI, aOptions)
 {
-	aURI = this.environment.utils.fixupIncompleteURI(aURI)
+	aURI = this.utils.fixupIncompleteURI(aURI)
 	this.listeners = [];
 	this.sandboxes = {};
 	var loadedFlag = { value : false, window : null };
 	var _this = this;
-	this.environment.utils.openTestWindow(
+	this.utils.openTestWindow(
 		aOptions,
 		function(win) {
 			_this.testWindow = win;
@@ -73,7 +74,7 @@ function close()
 
 function getSandboxFor(aURI)
 {
-	aURI = this.environment.utils.fixupIncompleteURI(aURI);
+	aURI = this.utils.fixupIncompleteURI(aURI);
 	if (aURI in this.sandboxes) return this.sandboxes[aURI];
 
 	var env = this;
@@ -87,7 +88,7 @@ function getSandboxFor(aURI)
 		get document() {
 			return env.frame.contentDocument;
 		},
-		XPathResult : Components.itnerfaces.nsIDOMXPathResult,
+		XPathResult : Components.interfaces.nsIDOMXPathResult,
 		GM_log : function() {
 			return GM_log.apply(env, arguments);
 		},
@@ -132,7 +133,7 @@ function getSandBoxFor(aURI)
 function loadScript(aURI, aEncoding)
 {
 	var sandbox = this.getSandboxFor(aURI);
-	this.environment.utils.include(aURI, sandbox, aEncoding);
+	this.utils.include(aURI, sandbox, aEncoding);
 	return sandbox;
 }
 

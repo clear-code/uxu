@@ -2,34 +2,138 @@
 
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var bundle = lib_module.require('package', 'bundle');
-var utils  = lib_module.require('package', 'utils');
+var utils = lib_module.require('package', 'utils');
+var action = lib_module.require('package', 'action');
+var assertions = lib_module.require('package', 'assertions');
+
+var helper_module = new ModuleManager(['chrome://uxu/content/test']);
+var GMUtils = helper_module.require('class', 'greasemonkey');
 
 
 var key = 'uxu-test-window-id';
 
-function constructor(aEnvironment, aBrowser)
+function constructor(aEnvironment, aURI, aBrowser)
 {
+	this.utils = this;
+
+	this.fileURL = aURI;
+	this.baseURL = this.fileURL.replace(/[^/]*$/, '');
+
 	this.environment = aEnvironment || {};
     this.uniqueID = parseInt(Math.random() * 10000000000);
 
-	this.__defineGetter__('frame', function() {
+	this.__defineGetter__('_testFrame', function() {
 		return aBrowser;
 	});
 	this.__defineGetter__('gBrowser', function() {
 		return this.getBrowser();
 	});
 	this.__defineGetter__('contentWindow', function() {
-		return this.gBrowser.contentWindow;
+		return this.getBrowser().contentWindow;
 	});
 	this.__defineGetter__('content', function() {
-		return this.gBrowser.contentWindow;
+		return this.getBrowser().contentWindow;
 	});
 	this.__defineGetter__('contentDocument', function() {
-		return this.gBrowser.contentDocument;
+		return this.getBrowser().contentDocument;
 	});
+
+	this.__defineSetter__('_testFrame', function(aValue) {
+		return aValue;
+	});
+	this.__defineSetter__('gBrowser', function(aValue) {
+		this.__defineGetter__('gBrowser', function() {
+			return aValue;
+		});
+		this.__defineSetter__('gBrowser', arguments.callee);
+		return aValue;
+	});
+	this.__defineSetter__('contentWindow', function(aValue) {
+		this.__defineGetter__('contentWindow', function() {
+			return aValue;
+		});
+		this.__defineSetter__('contentWindow', arguments.callee);
+		return aValue;
+	});
+	this.__defineSetter__('content', function(aValue) {
+		this.__defineGetter__('content', function() {
+			return aValue;
+		});
+		this.__defineSetter__('content', arguments.callee);
+		return aValue;
+	});
+	this.__defineSetter__('contentDocument', function(aValue) {
+		this.__defineGetter__('contentDocument', function() {
+			return aValue;
+		});
+		this.__defineSetter__('contentDocument', arguments.callee);
+		return aValue;
+	});
+
 	this.tempFiles = [];
 	this.backupPrefs = {};
+
+	this.attachAssertions();
+	this.attachActions();
+	this.attachGMUtils();
 }
+
+function attachAssertions()
+{
+	this.assert = {};
+	this.assert.__proto__ = assertions;
+	for (var aMethod in this.assert)
+	{
+		if (typeof this.assert[aMethod] != 'function') continue;
+		(function(aMethod, aSelf, aObj, aPrefix) {
+			var func = function() {
+					return aObj[aMethod].apply(aObj, arguments);
+				};
+			aSelf[aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)] = func;
+			if (aMethod.indexOf('is') == 0)
+				aSelf[aPrefix+aMethod.substring(2)] = func;
+		})(aMethod, this, this.assert, 'assert');
+	}
+}
+
+function attachActions()
+{
+	this.action = {};
+	this.action.__proto__ = action;
+	for (var aMethod in this.action)
+	{
+		if (typeof this.assert[aMethod] != 'function') continue;
+		(function(aMethod, aSelf, aObj, aPrefix) {
+			var func = function() {
+					return aObj[aMethod].apply(aObj, arguments);
+				};
+			aSelf[aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)] = func;
+		})(aMethod, this, this.action, 'action');
+	}
+}
+
+function attachGMUtils()
+{
+	this.greasemonkey = {};
+	this.greasemonkey.__proto__ = new GMUtils(this);
+	for (var aMethod in this.greasemonkey)
+	{
+		if (typeof this.greasemonkey[aMethod] != 'function')
+			continue;
+		(function(aMethod, aSelf, aObj, aPrefix) {
+			var func = function() {
+					return aObj[aMethod].apply(aObj, arguments);
+				};
+			aSelf[
+				aMethod.indexOf('GM_') == 0 ?
+					aMethod :
+					aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)
+			] = func;
+		})(aMethod, this, this.greasemonkey, 'greasemonkey');
+	}
+}
+
+
 
 
 var XULAppInfo = Components.
@@ -168,7 +272,7 @@ function loadURI(aURI, aOptions)
 
 	var loadedFlag = { value : false };
 
-	var b = this.frame;
+	var b = this._testFrame;
 	if (!aOptions || !aOptions.inFrame) {
 		var win = this.getTestWindow(aOptions);
 		if (win) b = win.gBrowser;
@@ -213,7 +317,7 @@ function addTab(aURI, aOptions)
 function getBrowser(aOptions)
 {
 	var win = this.getTestWindow(aOptions);
-	if (!win) return this.frame;
+	if (!win) return this._testFrame;
 	return win.gBrowser;
 };
 
