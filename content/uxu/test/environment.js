@@ -38,44 +38,33 @@ function constructor(aEnvironment, aURI, aBrowser)
 		return this.getBrowser().contentDocument;
 	});
 
-	this.__defineSetter__('_testFrame', function(aValue) {
-		return aValue;
-	});
-	this.__defineSetter__('gBrowser', function(aValue) {
-		this.__defineGetter__('gBrowser', function() {
-			return aValue;
-		});
-		this.__defineSetter__('gBrowser', arguments.callee);
-		return aValue;
-	});
-	this.__defineSetter__('contentWindow', function(aValue) {
-		this.__defineGetter__('contentWindow', function() {
-			return aValue;
-		});
-		this.__defineSetter__('contentWindow', arguments.callee);
-		return aValue;
-	});
-	this.__defineSetter__('content', function(aValue) {
-		this.__defineGetter__('content', function() {
-			return aValue;
-		});
-		this.__defineSetter__('content', arguments.callee);
-		return aValue;
-	});
-	this.__defineSetter__('contentDocument', function(aValue) {
-		this.__defineGetter__('contentDocument', function() {
-			return aValue;
-		});
-		this.__defineSetter__('contentDocument', arguments.callee);
-		return aValue;
-	});
-
 	this.tempFiles = [];
 	this.backupPrefs = {};
 
+	this.initVariables();
 	this.attachAssertions();
 	this.attachActions();
 	this.attachGMUtils();
+}
+
+function initVariables()
+{
+	// __proto__で定義されたゲッタと同名の変数を定義できなくなってしまうため
+	// ゲッタとセッタを自動設定するようにして問題を回避
+	var _this = this;
+	'gBrowser,contentWindow,content,contentDocument'.split(',')
+		.forEach(function(aProperty) {
+			_this.environment.__defineGetter__(aProperty, function() {
+				return _this.gBrowser;
+			});
+			_this.environment.__defineSetter__(aProperty, function(aValue) {
+				this.__defineGetter__(aProperty, function() {
+					return aValue;
+				});
+				this.__defineSetter__(aProperty, arguments.callee);
+				return aValue;
+			});
+		});
 }
 
 function attachAssertions()
