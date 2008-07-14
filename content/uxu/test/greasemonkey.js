@@ -87,6 +87,7 @@ function getSandboxFor(aURI)
 		get document() {
 			return env.frame.contentDocument;
 		},
+		XPathResult : Components.itnerfaces.nsIDOMXPathResult,
 		GM_log : function() {
 			return GM_log.apply(env, arguments);
 		},
@@ -113,6 +114,11 @@ function getSandboxFor(aURI)
 		},
 		GM_openInTab : function() {
 			return GM_openInTab.apply(env, arguments);
+		},
+		console : {
+			log : function() {
+				return GM_log.apply(env, arguments);
+			}
 		}
 	};
 	this.sandboxes[aURI] = sandbox;
@@ -306,9 +312,15 @@ function GM_xmlhttpRequest(aDetails)
 }
 
 
-function GM_addStyle()
+function GM_addStyle(aDocument, aStyle)
 {
-	this.fireEvent({ type : 'GM_addStyleCall' });
+	this.fireEvent({ type : 'GM_addStyleCall', document : aDocument, sytle : aStyle });
+	var head = aDocument.getElementsByTagName('head')[0];
+	if (!head) return;
+	var style = aDocument.createElement('style');
+	style.setAttribute('type', 'text/css');
+	style.appendChild(aDocument.createTextNode(aStyle));
+	head.appendChild(style);
 }
 
 function GM_getResourceURL()
