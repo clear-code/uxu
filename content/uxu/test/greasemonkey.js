@@ -46,6 +46,8 @@ function open(aURI, aOptions)
 					loadedFlag.value = true;
 					return;
 				}
+				var tab = b.addTab('about:blank');
+				b.removeAllTabsBut(tab);
 				b.addEventListener('load', function() {
 					b.removeEventListener('load', arguments.callee, true);
 					_this.frame = b;
