@@ -84,7 +84,7 @@ function fireMouseEvent(aWindow, aOptions)
 			default:
 				utils.sendMouseEvent('mousedown', x, y, button, 1, flags);
 				utils.sendMouseEvent('mouseup', x, y, button, 1, flags);
-				this.ensurePopupOpenByClick(node, aOptions.button);
+				this.emulateClickEventOnPopups(node, aOptions.button);
 				break;
 		}
 		return;
@@ -92,54 +92,58 @@ function fireMouseEvent(aWindow, aOptions)
 
 	if (node) {
 		this.fireMouseEventOnElement(node, aOptions);
-		this.ensurePopupOpenByClick(node, aOptions.button);
+		this.emulateClickEventOnPopups(node, aOptions.button);
 	}
 	else
 		throw new Error('action.fireMouseEvent::there is no element at [')+x+','+y+']!';
 };
 
-function ensurePopupOpenByClick(aElement, aButton)
+function emulateClickEventOnPopups(aElement, aButton)
 {
-	if (
-		!aElement ||
-		(
-			aElement.localName != 'menu' &&
-			!(aElement.localName == 'toolbarbutton' && aElement.getAttribute('type') == 'menu')
-		)
-		)
-		return;
+	if (!aElement) return;
 
-	var popupId;
-	var expression = '';
-	var isContext = false;
-	switch (aButton)
+	switch (aElement.localName)
 	{
-		case 0:
-			popupId = aElement.getAttribute('popup');
-			expression += 'child::*[local-name()="menupopup" or local-name()="popup"] |';
-			if (navigator.platform.toLowerCase().indexOf('mac') < 0 ||
-				!aButton.ctrlKey)
-				break;
-		case 2:
-			popupId = aElement.getAttribute('context');
-			isContext = true;
-			break;
-		case 1:
-			return;
-	}
-	var popup = aElement.ownerDocument.evaluate(
-			expression+'/descendant::menupopup[@id="'+popupId+'"]',
-			aElement,
-			null,
-			XPathResult.FIRST_ORDERED_NODE_TYPE,
-			null
-		).singleNodeValue;
+		case 'toolbarbutton':
+			if (aElement.getAttribute('type') != 'menu') return;
+		case 'menu':
+			var popupId;
+			var expression = '';
+			var isContext = false;
+			switch (aButton)
+			{
+				case 0:
+					popupId = aElement.getAttribute('popup');
+					expression += 'child::*[local-name()="menupopup" or local-name()="popup"] |';
+					if (navigator.platform.toLowerCase().indexOf('mac') < 0 ||
+						!aButton.ctrlKey)
+						break;
+				case 2:
+					popupId = aElement.getAttribute('context');
+					isContext = true;
+					break;
+				case 1:
+					return;
+			}
+			var popup = aElement.ownerDocument.evaluate(
+					expression+'/descendant::menupopup[@id="'+popupId+'"]',
+					aElement,
+					null,
+					XPathResult.FIRST_ORDERED_NODE_TYPE,
+					null
+				).singleNodeValue;
 
-	if (!popup) return;
-	if ('openPopup' in popup && isContext)
-		popup.openPopup(aElement, 'after_pointer', -1, -1, true, true);
-	else
-		popup.showPopup();
+			if (!popup) return;
+			if ('openPopup' in popup && isContext)
+				popup.openPopup(aElement, 'after_pointer', -1, -1, true, true);
+			else
+				popup.showPopup();
+			break;
+
+		case 'menuitem':
+			// TBD: メニュー項目のクリック操作のエミュレート
+			break;
+	}
 }
 
 function fireMouseEventOnElement(aElement, aOptions)
@@ -183,7 +187,7 @@ function fireMouseEventOnElement(aElement, aOptions)
 	if (aEvent.type != 'mousedown' &&
 		aEvent.type != 'mouseup' &&
 		aEvent.type != 'dblclick')
-		this.ensurePopupOpenByClick(aElement, aOptions.button);
+		this.emulateClickEventOnPopups(aElement, aOptions.button);
 };
 
 function createMouseEventOnElement(aElement, aOptions)
