@@ -55,11 +55,14 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 }
 
 
-/*
+*[role=description],
+*[role=error],
 *[role=additionalInfo] {
-	font-size: 1.5em;
+	-moz-user-focus: normal;
+	-moz-user-select: text;
+	cursor : text;
+	white-space: pre-wrap;
 }
-*/
 
 *[role=result-box] {
 	width: 72px;
