@@ -66,7 +66,7 @@ function fireMouseEvent(aWindow, aOptions)
 
 		var button = (aOptions.button || 0);
 		var detail = (aOptions.detail || 1);
-		if (aOption.type == 'click' && detail == 2) aOption.type = 'dblclick';
+		if (aOptions.type == 'click' && detail == 2) aOptions.type = 'dblclick';
 		switch (aOptions.type)
 		{
 			case 'mousedown':

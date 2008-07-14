@@ -3,10 +3,10 @@
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var bundle = lib_module.require('package', 'bundle');
 var utils = lib_module.require('package', 'utils');
-var action = lib_module.require('package', 'action');
 var assertions = lib_module.require('package', 'assertions');
 
 var helper_module = new ModuleManager(['chrome://uxu/content/test']);
+var action = helper_module.require('package', 'action');
 var GMUtils = helper_module.require('class', 'greasemonkey');
 
 
