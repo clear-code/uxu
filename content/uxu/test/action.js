@@ -410,6 +410,35 @@ function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 		!(aWindow instanceof Components.interfaces.nsIDOMWindow))
 		throw new Error('action.getElementFromScreenPoint::['+aWindow+'] is not a frame!');
 
+	var filter = function(aNode) {
+		return NodeFilter.FILTER_ACCEPT;
+	};
+	var doc = aWindow.document;
+
+	// 開かれているポップアップがある場合はそちらを優先して探す
+	var popups = doc.evaluate(
+			'/descendant::*[contains(" menupopup popup tooltip panel", concat(" ", local-name(), " "))]',
+			doc,
+			null,
+			XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+			null
+		);
+	for (var i = 0, maxi = popups.snapshotLength; i < maxi; i++)
+	{
+		var popup = popups.snapshotItem(i);
+		if (popup.state != 'open') continue;
+		if (!this.isPointInside(popup.boxObject, aScreenX, aScreenY)) continue;
+
+		var nodes = [];
+		var walker = doc.createTreeWalker(popup, NodeFilter.SHOW_ELEMENT, filter, false);
+		for (var node = walker.firstChild(); node != null; node = walker.nextNode())
+		{
+			if (this.isPointInside(doc.getBoxObjectFor(node), aScreenX, aScreenY))
+				nodes.push(node);
+		}
+		return nodes[nodes.length-1];
+	}
+
 	var clientPos = this.getClientPointFromScreenPoint(aWindow, aScreenX, aScreenY);
 	if ('elementFromPoint' in aWindow.document) {
 		var elem = aWindow.document.elementFromPoint(clientPos.x, clientPos.y);
@@ -424,33 +453,25 @@ function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 	}
 
 	aWindow = this.getWindowFromScreenPoint(aWindow, aScreenX, aScreenY);
+	doc = aWindow.document;
 
 	var accNode;
 	try {
 		var accService = Components.classes['@mozilla.org/accessibilityService;1']
 							.getService(Components.interfaces.nsIAccessibilityService);
-		var acc = accService.getAccessibleFor(aWindow.document);
+		var acc = accService.getAccessibleFor(doc);
 		accNode = acc.getChildAtPoint(clientPos.x, clientPos.y);
 		accNode = accNode.QueryInterface(Components.interfaces.nsIAccessNode).DOMNode;
 	}
 	catch(e) {
 	}
 
-	var doc = aWindow.document;
 	var startNode = accNode || doc;
-	var filter = function(aNode) {
-		return NodeFilter.FILTER_ACCEPT;
-	};
 	var nodes = [];
-	var walker = aWindow.document.createTreeWalker(startNode, NodeFilter.SHOW_ELEMENT, filter, false);
+	var walker = doc.createTreeWalker(startNode, NodeFilter.SHOW_ELEMENT, filter, false);
 	for (var node = walker.firstChild(); node != null; node = walker.nextNode())
 	{
-		var box = doc.getBoxObjectFor(node);
-		var l = box.screenX;
-		var t = box.screenY;
-		var r = l + box.width;
-		var b = t + box.height;
-		if (l <= aScreenX && aScreenX <= r && t <= aScreenY && aScreenY <= b)
+		if (this.isPointInside(doc.getBoxObjectFor(node), aScreenX, aScreenY))
 			nodes.push(node);
 	}
 
@@ -542,18 +563,23 @@ function getWindowFromScreenPoint(aWindow, aScreenX, aScreenY)
 			frameList.push(arr[j]);
 		for (var j = frameList.length - 1; j >= 0; j--) {
 			var box = win.document.getBoxObjectFor(frameList[j]);
-			var l = box.screenX;
-			var t = box.screenY;
-			var r = l + box.width;
-			var b = t + box.height;
-			if (l <= aScreenX && aScreenX <= r && t <= aScreenY && aScreenY <= b)
+			if (this.isPointInside(box, aScreenX, aScreenY))
 				return frameList[j].contentWindow;
 		}
-		if (l <= aScreenX && aScreenX <= r && t <= aScreenY && aScreenY <= b)
+		if (this.isPointInside(box, aScreenX, aScreenY))
 			return frameList[j].contentWindow;
 	}
 	return null;
 };
+
+function isPointInside(aBox, aScreenX, aScreenY)
+{
+	var l = aBox.screenX;
+	var t = aBox.screenY;
+	var r = l + aBox.width;
+	var b = t + aBox.height;
+	return !(l > aScreenX || aScreenX > r || t > aScreenY || aScreenY > b);
+}
 
 function flattenWindows(aWindow) 
 {
