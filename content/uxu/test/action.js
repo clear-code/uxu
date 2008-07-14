@@ -57,8 +57,17 @@ function fireMouseEvent(aWindow, aOptions)
 	var utils = this.getWindowUtils(win);
 	var node = this.getElementFromScreenPoint(aWindow, screenX, screenY);
 
-	if ('sendMouseEvent' in utils &&
-		!Prefs.getBoolPref('extensions.uxu.action.fireMouseEvent.useOldMethod')) {
+	if (
+		'sendMouseEvent' in utils &&
+		!Prefs.getBoolPref('extensions.uxu.action.fireMouseEvent.useOldMethod') &&
+		!node.ownerDocument.evaluate(
+			'ancestor-or-self::*[contains(" menupopup popup tooltip panel", concat(" ", local-name(), " "))]',
+			node,
+			null,
+			XPathResult.FIRST_ORDERED_NODE_TYPE,
+			null
+		).singleNodeValue
+		) {
 		const nsIDOMNSEvent = Components.interfaces.nsIDOMNSEvent;
 		var flags = 0;
 		if (aOptions.ctrlKey) flags |= nsIDOMNSEvent.CONTROL_MASK;
@@ -91,6 +100,7 @@ function fireMouseEvent(aWindow, aOptions)
 	}
 
 	if (node) {
+		aOptions.useOldMethod = true;
 		this.fireMouseEventOnElement(node, aOptions);
 		this.emulateClickEventOnPopups(node, aOptions.button);
 	}
@@ -154,7 +164,8 @@ function fireMouseEventOnElement(aElement, aOptions)
 
 	var utils = this.getWindowUtils(aElement.ownerDocument.defaultView);
 	if ('sendMouseEvent' in utils &&
-		!Prefs.getBoolPref('extensions.uxu.action.fireMouseEvent.useOldMethod')) {
+		!Prefs.getBoolPref('extensions.uxu.action.fireMouseEvent.useOldMethod') &&
+		!aOptions.useOldMethod) {
 		this.updateMouseEventOptionsOnElement(aOptions, aElement);
 		this.fireMouseEvent(aElement.ownerDocument.defaultView, aOptions)
 		return;
@@ -184,9 +195,9 @@ function fireMouseEventOnElement(aElement, aOptions)
 	var event = this.createMouseEventOnElement(aElement, aOptions);
 	if (event && aElement)
 		aElement.dispatchEvent(event);
-	if (aEvent.type != 'mousedown' &&
-		aEvent.type != 'mouseup' &&
-		aEvent.type != 'dblclick')
+	if (aOptions.type != 'mousedown' &&
+		aOptions.type != 'mouseup' &&
+		aOptions.type != 'dblclick')
 		this.emulateClickEventOnPopups(aElement, aOptions.button);
 };
 
@@ -200,12 +211,12 @@ function createMouseEventOnElement(aElement, aOptions)
 	if (!aElement) return null;
 	this.updateMouseEventOptionsOnElement(aOptions, aElement);
 
-	var event = doc.createEvent('MouseEvents');
+	var event = aElement.ownerDocument.createEvent('MouseEvents');
 	event.initMouseEvent(
 		(aOptions.type || 'click'),
 		('canBubble' in aOptions ? aOptions.canBubble : true ),
 		('cancelable' in aOptions ? aOptions.cancelable : true ),
-		doc.defaultView,
+		aElement.ownerDocument.defaultView,
 		('detail' in aOptions ? aOptions.detail : 1),
 		aOptions.screenX,
 		aOptions.screenY,
