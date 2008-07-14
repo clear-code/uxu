@@ -405,7 +405,11 @@ function onAllTestsFinish()
  
 function onError(aError) 
 {
-	_('prerun-report', 'error').value = bundle.getFormattedString('error_failed', [aError.toString()]);
+	_('prerun-report', 'error').appendChild(
+		document.createTextNode(
+			bundle.getFormattedString('error_failed', [aError.toString()])
+		)
+	);
 	_('prerun-report', 'error').hidden = false;
 
 	if (aError.stack) {

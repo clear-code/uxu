@@ -198,7 +198,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 			<hbox flex="1">
 				<vbox flex="1" style="padding-top: 1em;">
 					<vbox id="prerun-report">
-						<label role="error" hidden="true" class="header" crop="right"/>
+						<description role="error" hidden="true" class="header"/>
 						<listbox hidden="true" role="stack-trace"
 							flex="1" rows="5" class="inset"
 							style="font-size: 0.8em;"
