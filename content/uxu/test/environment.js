@@ -55,7 +55,7 @@ function initVariables()
 	'gBrowser,contentWindow,content,contentDocument'.split(',')
 		.forEach(function(aProperty) {
 			_this.environment.__defineGetter__(aProperty, function() {
-				return _this.gBrowser;
+				return _this[aProperty];
 			});
 			_this.environment.__defineSetter__(aProperty, function(aValue) {
 				this.__defineGetter__(aProperty, function() {
