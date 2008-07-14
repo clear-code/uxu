@@ -83,7 +83,7 @@ function fireMouseEvent(aWindow, aOptions)
 			default:
 				utils.sendMouseEvent('mousedown', x, y, button, 1, flags);
 				utils.sendMouseEvent('mouseup', x, y, button, 1, flags);
-				this._emulateClickEventOnPopups(node, aOptions);
+				this._emulateClickOnXULElement(node, aOptions);
 				break;
 		}
 		return;
@@ -91,20 +91,28 @@ function fireMouseEvent(aWindow, aOptions)
 
 	if (node) {
 		this.fireMouseEventOnElement(node, aOptions);
-		this._emulateClickEventOnPopups(node, aOptions);
+		this._emulateClickOnXULElement(node, aOptions);
 	}
 	else
 		throw new Error('action.fireMouseEvent::there is no element at [')+x+','+y+']!';
 };
 	 
-function _emulateClickEventOnPopups(aElement, aOptions) 
+function _emulateClickOnXULElement(aElement, aOptions) 
 {
 	if (!aElement) return;
 
 	switch (aElement.localName)
 	{
 		case 'toolbarbutton':
-			if (aElement.getAttribute('type') != 'menu') return;
+			if (aElement.getAttribute('type') != 'menu') {
+				try {
+					this.fireXULCommandEventOnElement(aElement, aOptions);
+				}
+				catch(e) {
+					dump(e+'\n');
+				}
+				return;
+			}
 		case 'menu':
 			var popupId;
 			var expression = '';
@@ -140,7 +148,6 @@ function _emulateClickEventOnPopups(aElement, aOptions)
 			break;
 
 		case 'menuitem':
-			// TBD: メニュー項目のクリック操作のエミュレート
 			try {
 				this.fireXULCommandEventOnElement(aElement, aOptions);
 				aElement.ownerDocument.defaultView.setTimeout(function(aSelf) {
@@ -151,6 +158,15 @@ function _emulateClickEventOnPopups(aElement, aOptions)
 						popup = popup.parentNode;
 					}
 				}, 0, this);
+			}
+			catch(e) {
+				dump(e+'\n');
+			}
+			break;
+
+		case 'button':
+			try {
+				this.fireXULCommandEventOnElement(aElement, aOptions);
 			}
 			catch(e) {
 				dump(e+'\n');
@@ -219,7 +235,7 @@ function fireMouseEventOnElement(aElement, aOptions)
 	if (aOptions.type != 'mousedown' &&
 		aOptions.type != 'mouseup' &&
 		aOptions.type != 'dblclick')
-		this._emulateClickEventOnPopups(aElement, aOptions);
+		this._emulateClickOnXULElement(aElement, aOptions);
 };
 	 
 function _createMouseEventOnElement(aElement, aOptions) 
