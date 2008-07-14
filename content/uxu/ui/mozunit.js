@@ -105,7 +105,7 @@ function getErrorReports()
 }
   
 /* file picker */ 
-	 
+	
 function pickFile(aMode, aOptions) 
 {
 	if (!aOptions) aOptions = {};
@@ -207,7 +207,7 @@ const fileDNDObserver =
 }; 
    
 /* DOMAIN */ 
-	 
+	
 function init() 
 {
 }
@@ -217,7 +217,7 @@ function finish()
 }
   
 /* test cases */ 
-	 
+	
 function newTestCase() 
 {
 	var file = pickFile('save', makeTestCaseFileOptions());
@@ -269,7 +269,7 @@ function makeTestCaseFileOptions(aIsFolder)
 }
   
 /* runner */ 
-	 
+	
 function TestReportHandler(aTestCase) 
 {
 	this.testCase = aTestCase;
@@ -863,7 +863,9 @@ function showSource(aTraceLine)
 		null, null, null
 	);
 }
- 
+  
+/* UI */ 
+	 
 function updateRunMode() 
 {
 	var runPriority = _('runPriority');
@@ -887,12 +889,49 @@ function updateRunMode()
 			break;
 	}
 }
-  
-/* UI */ 
-	 
+ 
 function toggleContent() 
 {
 	_('content').collapsed = !_('content').collapsed;
 	_('content-splitter').hidden = !_('content-splitter').hidden;
 }
- 	 
+ 
+function goUpdateCommand(aCommand) 
+{
+	var node = document.getElementById(aCommand);
+	if (!node) return;
+	try {
+		var controller = document.commandDispatcher.getControllerForCommand(aCommand);
+		var enabled = false
+		if (controller)
+			enabled = controller.isCommandEnabled(aCommand);
+		if (enabled)
+			node.removeAttribute('disabled');
+		else
+			node.setAttribute('disabled', true);
+	}
+	catch(e) {
+	}
+}
+ 
+function goDoCommand(aCommand) 
+{
+	try {
+		var controller = document.commandDispatcher.getControllerForCommand(aCommand);
+		if (controller && controller.isCommandEnabled(aCommand))
+			controller.doCommand(aCommand);
+	}
+	catch(e) {
+	}
+}
+ 
+function updateEditItems() 
+{
+	goUpdateCommand('cmd_copy');
+}
+ 	
+function updateContextMenu() 
+{
+	updateEditItems();
+}
+  

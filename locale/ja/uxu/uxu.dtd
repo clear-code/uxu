@@ -39,6 +39,10 @@
 <!ENTITY mozunit.file.accesskey "F">
 <!ENTITY mozunit.view.label     "表示">
 <!ENTITY mozunit.view.accesskey "V">
+<!ENTITY mozunit.edit.label     "編集">
+<!ENTITY mozunit.edit.accesskey "E">
+<!ENTITY mozunit.copy.label     "コピー">
+<!ENTITY mozunit.copy.accesskey "C">
 
 <!ENTITY mozunit.successes "成功したテスト:">
 <!ENTITY mozunit.passover "除外したテスト:">

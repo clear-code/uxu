@@ -76,6 +76,8 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 			disabled="true"/>
 		<command id="quit" label="&mozunit.quit.label;" accesskey="&mozunit.quit.accesskey;"
 			oncommand="window.close();"/>
+		<command id="cmd_copy" label="&mozunit.copy.label;" accesskey="&mozunit.copy.accesskey;"
+			oncommand="goDoCommand('cmd_copy')"/>
 	</commandset>
 
 	<!-- KEYBINDINGS -->
@@ -87,7 +89,14 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 		<key id="key-run" command="run" key="r" modifiers="control"/>
 		<key id="key-saveReport" command="saveReport" key="v" modifiers="control"/>
 		<key id="key-stop" command="stop" key="s" modifiers="control"/>
+		<key id="key-cmd_copy" command="copy" key="c" modifiers="control"/>
 	</keyset>
+
+	<popupset>
+		<menupopup id="contextMenu" onpopupshowing="updateContextMenu();">
+			<menuitem command="cmd_copy"/>
+		</menupopup>
+	</popupset>
 
 	<!-- BLUEPRINTS -->
 	
@@ -158,6 +167,11 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 					<menuitem command="quit"/>
 				</menupopup>
 			</menu>
+			<menu id="edit-menu" label="&mozunit.edit.label;" accesskey="&mozunit.edit.accesskey;">
+				<menupopup onpopupshowing="updateEditItems();">
+					<menuitem command="cmd_copy"/>
+				</menupopup>
+			</menu>
 			<menu id="view-menu" label="&mozunit.view.label;" accesskey="&mozunit.view.accesskey;">
 				<menupopup>
 					<menuitem command="toggleContent"/>
@@ -198,14 +212,16 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 			<hbox flex="1">
 				<vbox flex="1" style="padding-top: 1em;">
 					<vbox id="prerun-report">
-						<description role="error" hidden="true" class="header"/>
+						<description role="error" hidden="true" class="header"
+							context="contextMenu"/>
 						<listbox hidden="true" role="stack-trace"
 							flex="1" rows="5" class="inset"
 							style="font-size: 0.8em;"
 							onselect="showSource(this.selectedItem.label);"/>
 					</vbox>
 
-					<scrollbox id="testcase-reports" flex="1" orient="vertical" style="overflow: auto;"/>
+					<scrollbox id="testcase-reports" flex="1" orient="vertical" style="overflow: auto;"
+						context="contextMenu"/>
 
 					<splitter id="content-splitter" hidden="true"
 						collapse="after" resizeafter="closest"/>

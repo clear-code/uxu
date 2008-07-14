@@ -39,6 +39,10 @@
 <!ENTITY mozunit.file.accesskey "F">
 <!ENTITY mozunit.view.label     "View">
 <!ENTITY mozunit.view.accesskey "V">
+<!ENTITY mozunit.edit.label     "Edit">
+<!ENTITY mozunit.edit.accesskey "E">
+<!ENTITY mozunit.copy.label     "Copy">
+<!ENTITY mozunit.copy.accesskey "C">
 
 <!ENTITY mozunit.successes "Successes:">
 <!ENTITY mozunit.passover "Passed over:">
