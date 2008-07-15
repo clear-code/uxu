@@ -119,7 +119,9 @@ function _emulateClickOnXULElement(aElement, aOptions)
 			aOptions.button != 0 ||
 			!isSimpleAction
 		);
+	var shouldSendXULCommandEvent = false;
 
+	switchByElementType:
 	switch (aElement.localName)
 	{
 		case 'toolbarbutton':
@@ -134,13 +136,12 @@ function _emulateClickOnXULElement(aElement, aOptions)
 					}
 				default:
 					if (!isSimpleClick) return;
-					try {
-						this.fireXULCommandEventOnElement(aElement, aOptions);
-					}
-					catch(e) {
-						dump(e+'\n');
-					}
-					return;
+					shouldSendXULCommandEvent = true;
+					break switchByElementType;
+			}
+		case 'colorpicker':
+			if (type != 'button') {
+				break;
 			}
 		case 'menu':
 			var popupId;
@@ -186,31 +187,29 @@ function _emulateClickOnXULElement(aElement, aOptions)
 
 		case 'menuitem':
 			if (!isSimpleClick) return;
-			try {
-				this.fireXULCommandEventOnElement(aElement, aOptions);
-				aElement.ownerDocument.defaultView.setTimeout(function(aSelf) {
-					var popup = aElement;
-					while (popup = aSelf._getOwnerPopup(popup))
-					{
-						popup.hidePopup();
-						popup = popup.parentNode;
-					}
-				}, 0, this);
-			}
-			catch(e) {
-				dump(e+'\n');
-			}
+			shouldSendXULCommandEvent = true;
+			aElement.ownerDocument.defaultView.setTimeout(function(aSelf) {
+				var popup = aElement;
+				while (popup = aSelf._getOwnerPopup(popup))
+				{
+					popup.hidePopup();
+					popup = popup.parentNode;
+				}
+			}, 1, this);
 			break;
 
 		case 'button':
 			if (!isSimpleClick) return;
-			try {
-				this.fireXULCommandEventOnElement(aElement, aOptions);
-			}
-			catch(e) {
-				dump(e+'\n');
-			}
+			shouldSendXULCommandEvent = true;
 			break;
+	}
+
+	if (!shouldSendXULCommandEvent) return;
+	try {
+		this.fireXULCommandEventOnElement(aElement, aOptions);
+	}
+	catch(e) {
+		dump(e+'\n');
 	}
 }
  	
