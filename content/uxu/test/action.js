@@ -153,6 +153,7 @@ function _emulateClickOnXULElement(aElement, aOptions)
 		case 'button':
 		case 'checkbox':
 		case 'radio':
+		case 'tab':
 			if (!isSimpleClick) return;
 			shouldSendXULCommandEvent = true;
 			break;
@@ -579,7 +580,7 @@ function _createXULCommandEvent(aSourceEvent)
 function _getXULCommandEventDispatcher(aElement) 
 {
 	return aElement.ownerDocument.evaluate(
-			'ancestor-or-self::*[contains(" button toolbarbutton menuitem checkbox radio ", concat(" ", local-name(), " "))]',
+			'ancestor-or-self::*[contains(" button toolbarbutton menuitem checkbox radio tab ", concat(" ", local-name(), " "))]',
 			aElement,
 			null,
 			XPathResult.FIRST_ORDERED_NODE_TYPE,
