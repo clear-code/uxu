@@ -176,6 +176,7 @@ const fileDNDObserver =
 		var file = aTransferData.data;
 		if (this.isTestCase(file)) {
 			_('file').value = file.path;
+			updateTestCommands();
 			reset();
 		}
 	},
@@ -220,6 +221,7 @@ function init()
 		if (utils.getPref('extensions.uxu.mozunit.alwaysRaised'))
 			toggleAlwaysRaised();
 	}
+	updateTestCommands();
 }
 	 
 var alwaysRaisedObserver = { 
@@ -270,6 +272,7 @@ function openTestCase(aIsFolder)
 	var file = pickFile((aIsFolder ? 'getFolder' : '' ), makeTestCaseFileOptions(aIsFolder));
 	if (file) {
 		_('file').value = file.path;
+		updateTestCommands();
 		reset();
 	}
 }
@@ -279,6 +282,7 @@ function pickTestFile(aOptions)
 	var url = pickFileUrl(null, aOptions);
 	if (url) {
 		_('file').value = url;
+		updateTestCommands();
 		reset();
 	}
 }
@@ -998,6 +1002,26 @@ function updateViewItems()
 		toggleContent.removeAttribute('checked');
 	else
 		toggleContent.setAttribute('checked', true);
+}
+ 
+function updateTestCommands() 
+{
+	var file = _('file').value;
+	if (file &&
+		(file = utils.makeFileWithPath(file)) &&
+		file.exists()) {
+		_('run').removeAttribute('disabled');
+		_('runAll').removeAttribute('disabled');
+		if (!file.isDirectory())
+			_('edit').removeAttribute('disabled');
+		else
+			_('edit').setAttribute('disabled', true);
+	}
+	else {
+		_('run').setAttribute('disabled', true);
+		_('runAll').setAttribute('disabled', true);
+		_('edit').setAttribute('disabled', true);
+	}
 }
  
 function updateContextMenu() 

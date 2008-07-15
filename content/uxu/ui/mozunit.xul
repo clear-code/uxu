@@ -51,11 +51,13 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 		<command id="runPriority"
 			label-normal="&mozunit.runPriority.label;"
 			label-default="&mozunit.runPriority.default;"
-			oncommand="run(0);"/>
+			oncommand="run(0);"
+			disabled="true"/>
 		<command id="runAll"
 			label-normal="&mozunit.runAll.label;"
 			label-default="&mozunit.runAll.default;"
-			oncommand="run(1);"/>
+			oncommand="run(1);"
+			disabled="true"/>
 		<command id="runFailed" label="&mozunit.runFailed.label;" oncommand="runFailed();"
 			disabled="true"/>
 		<command id="stop" label="&mozunit.stop.label;" accesskey="&mozunit.stop.accesskey;"
@@ -72,7 +74,8 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 		<command id="new" label="&mozunit.new.label;" accesskey="&mozunit.new.accesskey;"
 			oncommand="newTestCase();"/>
 		<command id="edit" label="&mozunit.edit.label;" accesskey="&mozunit.edit.accesskey;"
-			oncommand="openInEditor(_('file').value);"/>
+			oncommand="openInEditor(_('file').value);"
+			disabled="true"/>
 		<command id="saveReport" label="&mozunit.saveReport.label;" accesskey="&mozunit.saveReport.accesskey;"
 			oncommand="saveReport();"
 			disabled="true"/>

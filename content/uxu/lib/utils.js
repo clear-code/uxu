@@ -36,7 +36,7 @@ function makeURIFromSpec(aURI)
 // ファイルのパスからnsIFileのオブジェクトを生成
 function makeFileWithPath(aPath)
 {
-	var newFile = Components.classes['@mozilla.org/file/local;1']
+	var newFile = Cc['@mozilla.org/file/local;1']
 					.createInstance(Ci.nsILocalFile);
 	newFile.initWithPath(aPath);
 	return newFile;
@@ -93,7 +93,7 @@ function readFrom(aTarget, aEncoding)
 	}
 	catch(e) {
 		aTarget = aTarget.QueryInterface(Ci.nsILocalFile)
-		stream = Components.classes['@mozilla.org/network/file-input-stream;1']
+		stream = Cc['@mozilla.org/network/file-input-stream;1']
 					.createInstance(Ci.nsIFileInputStream);
 		try {
 			stream.init(aTarget, 1, 0, false); // open as "read only"
@@ -106,7 +106,7 @@ function readFrom(aTarget, aEncoding)
 	var fileContents = null;
 	try {
 		if (aEncoding) {
-			var converterStream = Components.classes['@mozilla.org/intl/converter-input-stream;1']
+			var converterStream = Cc['@mozilla.org/intl/converter-input-stream;1']
 					.createInstance(Ci.nsIConverterInputStream);
 			var buffer = stream.available();
 			converterStream.init(stream, aEncoding, buffer,
@@ -117,7 +117,7 @@ function readFrom(aTarget, aEncoding)
 			fileContents = out.value;
 		}
 		else {
-			var scriptableStream = Components.classes['@mozilla.org/scriptableinputstream;1']
+			var scriptableStream = Cc['@mozilla.org/scriptableinputstream;1']
 					.createInstance(Ci.nsIScriptableInputStream);
 			scriptableStream.init(stream);
 			fileContents = scriptableStream.read(scriptableStream.available());
@@ -169,12 +169,12 @@ function writeTo(aContent, aTarget, aEncoding)
 	if (aTarget.exists()) aTarget.remove(true);
 	aTarget.create(aTarget.NORMAL_FILE_TYPE, 0666);
 
-	var stream = Components.classes['@mozilla.org/network/file-output-stream;1']
+	var stream = Cc['@mozilla.org/network/file-output-stream;1']
 			.createInstance(Ci.nsIFileOutputStream);
 	stream.init(aTarget, 2, 0x200, false); // open as "write only"
 
 	if (aEncoding) {
-		var converterStream = Components.classes['@mozilla.org/intl/converter-output-stream;1']
+		var converterStream = Cc['@mozilla.org/intl/converter-output-stream;1']
 				.createInstance(Ci.nsIConverterOutputStream);
 		var buffer = aContent.length;
 		converterStream.init(stream, aEncoding, buffer, Ci.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER);
@@ -227,7 +227,7 @@ function formatStackTrace(exception)
 
 
 
-var Pref = Components.classes['@mozilla.org/preferences;1'] 
+var Pref = Cc['@mozilla.org/preferences;1'] 
 		.getService(Ci.nsIPrefBranch)
 		.QueryInterface(Ci.nsIPrefBranch2);
 
