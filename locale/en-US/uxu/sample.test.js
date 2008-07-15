@@ -3,9 +3,6 @@
 
 var description = 'testcase description here'; // can be omitted.
 
-// // If you want to write functional tests, activate the next line.
-// var isAsync = true;
-
 // utils.include('../../myClass.js');
 // utils.include('./common.js');
 
@@ -31,10 +28,7 @@ function testWillSuccess() {
     assert.matches(/patterns?/, 'pattern');
 }
 
-// This test works correctly only when "isAsync = true".
 testAsync.description = 'Async test';
-// You can disable each test by "priority = never" temporary.
-testAsync.priority = this.isAsync ? 'normal' : 'never' ;
 function testAsync() {
     // Wait for the loading.
     yield Do(utils.loadURI('http://www.mozilla.org/'));

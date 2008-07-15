@@ -3,9 +3,6 @@
 
 var description = 'テストケースの説明をここに入力してください'; // 省略可
 
-// // 機能テストの場合は次の行のコメントを外してください。
-// var isAsync = true;
-
 // utils.include('../../myClass.js');
 // utils.include('./common.js');
 
@@ -31,10 +28,7 @@ function testWillSuccess() {
     assert.matches(/patterns?/, 'pattern');
 }
 
-// このテストは isAsync = true の時だけ実行できます。
 testAsync.description = '非同期処理のテスト';
-// priority = never で一時的に実行を無効化できます。
-testAsync.priority = this.isAsync ? 'normal' : 'never' ;
 function testAsync() {
     // 読み込みの完了を待って次へ進む。
     yield Do(utils.loadURI('http://www.mozilla.org/'));

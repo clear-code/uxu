@@ -54,11 +54,8 @@ function getTests(aSuite, aTestCaseClass)
 	}
 
 	if (testObjects.tests.length) {
-		var options = { runStrategy : aSuite.runStrategy };
-		if (aSuite.isAsync) options.runStrategy = 'async';
 		var newTestCase = new TC(
 				aSuite.description || aSuite.fileURL.match(/[^\/]+$/),
-				options,
 				aSuite.fileURL
 			);
 

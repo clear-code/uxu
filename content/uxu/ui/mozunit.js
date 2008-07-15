@@ -509,7 +509,7 @@ function setRunningState(aRunning)
 		_('run').setAttribute('disabled', true);
 		_('runPriority').setAttribute('disabled', true);
 		_('runAll').setAttribute('disabled', true);
--		_('runFailed').setAttribute('disabled', true);
+		_('runFailed').setAttribute('disabled', true);
 		_('stop-box').removeAttribute('hidden');
 		_('stop').removeAttribute('disabled');
 		_('testRunningProgressMeter').setAttribute('mode', 'determined');
@@ -521,7 +521,7 @@ function setRunningState(aRunning)
 		_('run').removeAttribute('disabled');
 		_('runPriority').removeAttribute('disabled');
 		_('runAll').removeAttribute('disabled');
--		_('runFailed').setAttribute('disabled', true);
+		_('runFailed').setAttribute('disabled', true);
 		_('stop-box').setAttribute('hidden', true);
 		_('stop').setAttribute('disabled', true);
 		_('testRunningProgressMeter').setAttribute('mode', 'undetermined');
