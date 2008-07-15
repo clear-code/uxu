@@ -481,7 +481,11 @@ function doIteration(aGenerator, aCallbacks)
 			}
 		}
 		catch(e if e instanceof StopIteration) {
-			e.stack += callerStack;
+			try {
+				e.stack += callerStack;
+			}
+			catch(e) {
+			}
 			retVal.error = e;
 			retVal.value = true;
 			if (!aCallbacks) return;
@@ -490,7 +494,11 @@ function doIteration(aGenerator, aCallbacks)
 				aCallbacks.onEnd(e);
 		}
 		catch(e if e.name == 'AssertionFailed') {
-			e.stack += callerStack;
+			try {
+				e.stack += callerStack;
+			}
+			catch(e) {
+			}
 			retVal.error = e;
 			retVal.value = true;
 			if (!aCallbacks) return;
@@ -501,7 +509,11 @@ function doIteration(aGenerator, aCallbacks)
 				aCallbacks.onError(e);
 		}
 		catch(e) {
-			e.stack += callerStack;
+			try {
+				e.stack += callerStack;
+			}
+			catch(e) {
+			}
 			retVal.error = e;
 			retVal.value = true;
 			if (!aCallbacks) return;

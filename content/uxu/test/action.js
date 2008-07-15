@@ -778,14 +778,13 @@ function _getPopupElementFromScreenPoint(aWindow, aScreenX, aScreenY)
  
 function _getOriginalTargetFromScreenPoint(aElement, aScreenX, aScreenY) 
 {
-	var node = this._getOriginalTargetFromScreenPointInternal(nodes[i], aScreenX, aScreenY);
-	return node || aElement;
+	return this._getOriginalTargetFromScreenPointInternal(aElement, aScreenX, aScreenY) || aElement;
 }
 	 
 function _getOriginalTargetFromScreenPointInternal(aElement, aScreenX, aScreenY) 
 {
 	var doc = aElement.ownerDocument;
-	var nodes = doc.getAnonymousNodes(aElement);
+	var nodes = 'getAnonymousNodes' in doc ? doc.getAnonymousNodes(aElement) : null ;
 	if (!nodes || !nodes.length) nodes = aElement.childNodes;
 	if (!nodes || !nodes.length) return null;
 	for (var i = 0, maxi = nodes.length; i < maxi; i++)
