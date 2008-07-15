@@ -102,7 +102,7 @@ function fireMouseEvent(aWindow, aOptions)
 	else
 		throw new Error('action.fireMouseEvent::there is no element at [')+x+','+y+']!';
 };
-	 
+	
 function _emulateClickOnXULElement(aElement, aOptions) 
 {
 	if (!aElement) return;
@@ -225,7 +225,7 @@ function _emulateClickOnXULElement(aElement, aOptions)
 		dump(e+'\n');
 	}
 }
- 	
+ 
 function _isInPopup(aElement) 
 {
 	return this._getOwnerPopup(aElement) ? true : false ;
@@ -288,7 +288,7 @@ function fireMouseEventOnElement(aElement, aOptions)
 		aOptions.type != 'dblclick')
 		this._emulateClickOnXULElement(aElement, aOptions);
 };
-	 
+	
 function _createMouseEventOnElement(aElement, aOptions) 
 {
 	if (!aElement ||
@@ -333,7 +333,139 @@ function _updateMouseEventOptionsOnElement(aOptions, aElement)
 	if (!('x' in aOptions)) aOptions.x = aOptions.screenX - box.screenX - doc.defaultView.scrollX;
 	if (!('y' in aOptions)) aOptions.y = aOptions.screenY - box.screenY - doc.defaultView.scrollY;
 }
-   
+  
+function dragStart(aWindow, aOptions) 
+{
+	if (!aOptions) aOptions = {};
+	aOptions.type = 'mousedown';
+	this.fireMouseEvent(aWindow, aOptions);
+};
+	 
+function dragStartOnElement(aElement, aOptions) 
+{
+	if (!aOptions) aOptions = {};
+	aOptions.type = 'mousedown';
+	this.fireMouseEventOnElement(aElement, aOptions);
+};
+  
+function dragEnd(aWindow, aOptions) 
+{
+	if (!aOptions) aOptions = {};
+	aOptions.type = 'mouseup';
+	this.fireMouseEvent(aWindow, aOptions);
+};
+	 
+function dragEndOnElement(aElement, aOptions) 
+{
+	if (!aOptions) aOptions = {};
+	aOptions.type = 'mouseup';
+	this.fireMouseEventOnElement(aElement, aOptions);
+};
+  
+function dragMove(aWindow, aFromX, aFromY, aToX, aToY, aOptions) 
+{
+	if (!aOptions) aOptions = {};
+	aOptions.type = 'mousemove';
+	var dragEndFlag = { value : false };
+
+	var deltaX = aFromX == aToX ? 0 :
+			aFromX > aToX ? -3 :
+			3;
+	var deltaY = aFromY == aToY ? 0 :
+			aFromY > aToY ? -3 :
+			3;
+	if (deltaX == deltaY && deltaX == 0) {
+		dragEndFlag.value = true;
+		return dragEndFlag;
+	}
+
+	var _this = this;
+	function Dragger()
+	{
+		var x = aFromX;
+		var y = aFromY;
+		while (true)
+		{
+			if (deltaX > 0)
+				x = Math.min(aToX, x + deltaX);
+			else
+				x = Math.max(aToX, x + deltaX);
+			if (deltaY > 0)
+				y = Math.min(aToY, y + deltaY);
+			else
+				y = Math.max(aToY, y + deltaY);
+			aOptions.screenX = x;
+			aOptions.screenY = y;
+			_this.fireMouseEvent(aWindow, aOptions);
+			yield;
+		}
+	}
+	var dragger = Dragger();
+	aWindow.setTimeout(function() {
+		try {
+			dragger.next();
+			aWindow.setTimeout(arguments.callee, 10);
+		}
+		catch(e) {
+			dragEndFlag.value = true;
+		}
+	}, 0);
+	return dragEndFlag;
+};
+	 
+function dragMove(aFromElement, aToElement, aOptions) 
+{
+	var doc = aFromElement.ownerDocument;
+	var win = doc.defaultView;
+	var fromBox = doc.getBoxObjectFor(aFromElement);
+	var toBox = doc.getBoxObjectFor(aToElement);
+	return this.dragMove(
+			win,
+			fromBox.screenX + parseInt(fromBox.width / 2),
+			fromBox.screenY + parseInt(fromBox.height / 2),
+			toBox.screenX + parseInt(toBox.width / 2),
+			toBox.screenY + parseInt(toBox.height / 2),
+			aOptions
+		);
+};
+  
+function dragAndDrop(aWindow, aFromX, aFromY, aToX, aToY, aOptions) 
+{
+	if (!aOptions) aOptions = {};
+	aOptions.screenX = aFromX;
+	aOptions.screenY = aFromY;
+	this.dragStart(aWidnow, aOptions);
+	var dragEndFlag = { value : false };
+	var _this = this;
+	aWindow.setTimeout(function() {
+		var flag = _this.dragMove(aWindow, aFromX, aFromY, aToX, aToY, aOptions);
+		var timer = aWindow.setInterval(function() {
+			if (!flag.value) return;
+			aWindow.clearInterval(timer);
+			aOptions.screenX = aToX;
+			aOptions.screenY = aToY;
+			_this.dragEnd(aWindow, aOptions);
+		}, 10);
+	}, 0);
+	return dragEndFlag;
+};
+	 
+function dragAndDropOnElement(aFromElement, aToElement, aOptions) 
+{
+	var doc = aFromElement.ownerDocument;
+	var win = doc.defaultView;
+	var fromBox = doc.getBoxObjectFor(aFromElement);
+	var toBox = doc.getBoxObjectFor(aToElement);
+	return this.dragAndDrop(
+			win,
+			fromBox.screenX + parseInt(fromBox.width / 2),
+			fromBox.screenY + parseInt(fromBox.height / 2),
+			toBox.screenX + parseInt(toBox.width / 2),
+			toBox.screenY + parseInt(toBox.height / 2),
+			aOptions
+		);
+};
+  	 
 /* key event */ 
 	
 function fireKeyEventOnElement(aElement, aOptions) 
@@ -411,7 +543,7 @@ function _createKeyEventOnElement(aElement, aOptions)
 };
    
 /* XULCommand event */ 
-	 
+	
 function fireXULCommandEvent(aWindow, aOptions) 
 {
 	if (!aOptions) aOptions = {};
@@ -449,7 +581,7 @@ function _createXULCommandEvent(aSourceEvent)
 };
    
 /* text input */ 
-	 
+	
 var withIMECharacters = '\u3040-\uA4CF\uF900-\uFAFF'; 
 var kINPUT_ARRAY_PATTERN  = new RegExp('[^'+withIMECharacters+']|['+withIMECharacters+']+', 'g');
 var kDIRECT_INPUT_PATTERN = new RegExp('[^'+withIMECharacters+']');
@@ -503,7 +635,7 @@ function inputTextToField(aElement, aValue, aAppend, aDontFireKeyEvents)
 };
   
 /* ç¿ïWëÄçÏ */ 
-	 
+	
 function getElementFromScreenPoint(aWindow, aScreenX, aScreenY) 
 {
 	if (!aWindow ||
@@ -706,7 +838,7 @@ function _isInside(aBox, aScreenX, aScreenY)
 }
   
 /* utils */ 
-	 
+	
 function _getWindowUtils(aWindow) 
 {
 	return aWindow
