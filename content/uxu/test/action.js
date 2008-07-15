@@ -39,11 +39,19 @@ function fireMouseEvent(aWindow, aOptions)
 	if (!aOptions) aOptions = {};
 
 	var zoom = this.isFullZoom() ? this.getZoom(aWindow) : 1 ;
-
-	var x = ('x' in aOptions ? aOptions.x : 0) * zoom;
-	var y = ('y' in aOptions ? aOptions.y : 0) * zoom;
-
 	var box = aWindow.document.getBoxObjectFor(aWindow.document.documentElement);
+	var x = ('x' in aOptions ?
+			aOptions.x :
+		'screenX' in aOptions ?
+			aOptions.screenX - box.screenX - aWindow.scrollX :
+			0
+		) * zoom;
+	var y = ('y' in aOptions ?
+			aOptions.y :
+		'screenY' in aOptions ?
+			aOptions.screenY - box.screenY - aWindow.scrollY :
+			0
+		) * zoom;
 	var screenX = ('screenX' in aOptions) ?
 			aOptions.screenX :
 			box.screenX + x + aWindow.scrollX;
@@ -76,6 +84,10 @@ function fireMouseEvent(aWindow, aOptions)
 		if (aOptions.type == 'click' && detail == 2) aOptions.type = 'dblclick';
 		switch (aOptions.type)
 		{
+			case 'mousemove':
+			case 'mouseover':
+				utils.sendMouseEvent(aOptions.type, x, y, button, 1, flags);
+				break;
 			case 'mousedown':
 				utils.sendMouseEvent('mousedown', x, y, button, 1, flags);
 				break;
@@ -365,19 +377,21 @@ function dragEndOnElement(aElement, aOptions)
 function dragMove(aWindow, aFromX, aFromY, aToX, aToY, aOptions) 
 {
 	if (!aOptions) aOptions = {};
-	aOptions.type = 'mousemove';
 	var dragEndFlag = { value : false };
 
 	var deltaX = aFromX == aToX ? 0 :
-			aFromX > aToX ? -3 :
-			3;
+			aFromX > aToX ? -1 :
+			1;
 	var deltaY = aFromY == aToY ? 0 :
-			aFromY > aToY ? -3 :
-			3;
-	if (deltaX == deltaY && deltaX == 0) {
+			aFromY > aToY ? -1 :
+			1;
+	if (!deltaX && !deltaY) {
 		dragEndFlag.value = true;
 		return dragEndFlag;
 	}
+
+	if (deltaX) deltaX = deltaX * parseInt(Math.abs(aFromX - aToX) / 20);
+	if (deltaY) deltaY = deltaY * parseInt(Math.abs(aFromY - aToY) / 20);
 
 	var _this = this;
 	function Dragger()
@@ -394,10 +408,12 @@ function dragMove(aWindow, aFromX, aFromY, aToX, aToY, aOptions)
 				y = Math.min(aToY, y + deltaY);
 			else
 				y = Math.max(aToY, y + deltaY);
+			aOptions.type = 'mousemove';
 			aOptions.screenX = x;
 			aOptions.screenY = y;
 			_this.fireMouseEvent(aWindow, aOptions);
 			yield;
+			if (x == aToX && y == aToY) break;
 		}
 	}
 	var dragger = Dragger();
@@ -434,7 +450,7 @@ function dragAndDrop(aWindow, aFromX, aFromY, aToX, aToY, aOptions)
 	if (!aOptions) aOptions = {};
 	aOptions.screenX = aFromX;
 	aOptions.screenY = aFromY;
-	this.dragStart(aWidnow, aOptions);
+	this.dragStart(aWindow, aOptions);
 	var dragEndFlag = { value : false };
 	var _this = this;
 	aWindow.setTimeout(function() {
@@ -445,6 +461,7 @@ function dragAndDrop(aWindow, aFromX, aFromY, aToX, aToY, aOptions)
 			aOptions.screenX = aToX;
 			aOptions.screenY = aToY;
 			_this.dragEnd(aWindow, aOptions);
+			dragEndFlag.value = true;
 		}, 10);
 	}, 0);
 	return dragEndFlag;
@@ -648,7 +665,14 @@ function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 	var clientPos = this._getClientPointFromScreenPoint(aWindow, aScreenX, aScreenY);
 	if ('elementFromPoint' in aWindow.document) {
 		var elem = aWindow.document.elementFromPoint(clientPos.x, clientPos.y);
-		if (elem && /^(i?frame|browser|tabbrowser)$/.test(elem.localName)) {
+		if (
+			elem &&
+			(
+				/^(i?frame|browser)$/.test(elem.localName) ||
+				(elem.localName == 'tabbrowser' &&
+				this._isInside(elem.mPanelContainer.boxObject, aScreenX, aScreenY))
+			)
+			) {
 			return this.getElementFromScreenPoint(
 					elem.contentWindow,
 					aScreenX + aWindow.scrollX,
