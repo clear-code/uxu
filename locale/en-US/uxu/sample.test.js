@@ -1,90 +1,51 @@
-// utils.include(baseURL+'another.in.same.folder.js');
-// utils.include('chrome://myaddon/content/myaddon.file.js');
+// If you want to use non-ASCII characters in this testcase,
+// encode this file in UTF-8.
 
-var unitTest = new TestCase('testcase description here');
+var description = 'testcase description here'; // can be omitted.
 
-unitTest.tests = {
-    setUp : function() {
-      // put setup scripts here.
-    },
+// // If you want to write functional tests, activate the next line.
+// var isAsync = true;
 
-    tearDown : function() {
-      // put teardown scripts here.
-    },
+// utils.include('../../myClass.js');
+// utils.include('./common.js');
 
-    'First test is successful': function() {
-        assert.equals(0, [].length);
-        assert.notEquals(10, ''.length);
-        assert.isTrue(true);
-        assert.isFalse(false);
-        assert.isDefined(assert);
-        assert.isUndefined(void(0));
-        assert.isNull(null);
-        assert.matches(/patterns?/, 'pattern');
-    }
-};
 
-// Custom assertions can be defined as:
-assert.isOK = function(aActualValue) {
-	this.equals(aActualValue == 'OK');
+function setUp() {
+    // put setup scripts here.
 }
 
-/*
-var functionalTest = new TestCase('functional test', {runStrategy: 'async'});
-
-functionalTest.tests = {
-    setUp : function() {
-        var loadedFlag = utils.setUpTestWindow();
-
-        // After the testing window completely loaded, go to the next line.
-        // (*see following testcase)
-        yield loadedFlag;
-
-        var browser = utils.getBrowser();
-        browser.removeAllTabsBut(browser.addTab('about:blank'));
-    },
-
-//    // If you receive "continuation" function as the argument of "setUp",
-//    // test runner doesn't start test until you execute "continuation('ok')".
-//    setUp : function(continuation) {
-//        utils.setUpTestWindow();
-//        utils.getTestWindow().addEventListener('load', function() {
-//            var browser = utils.getBrowser();
-//            browser.removeAllTabsBut(browser.addTab('about:blank'));
-//            // In other words, you can start tests when you feel like it.
-//            continuation("ok");
-//        }, false);
-//    },
-
-    tearDown : function() {
-        utils.tearDownTestWindow();
-    },
-
-    'page loading test': function() {
-        var win = utils.getTestWindow();
-
-        var loadedFlag = { value : false };
-        var browser = utils.getBrowser();
-        browser.stop();
-        browser.addEventListener('load', function() {
-            loadedFlag.value = true;
-        }, true);
-        browser.loadURI('http://www.mozilla.org/');
-
-        // Wait for the loading. If you return an object which has
-        // "value" property, test runner waits the time that the "value"
-        // property become to "true".
-        yield loadedFlag;
-
-        assert.equals(win.content.location.href, 'http://www.mozilla.org/');
+function tearDown() {
+    // put teardown scripts here.
+}
 
 
-        // another style: you can wait for a second.
-        var beforeTime = (new Date()).getTime();
-        yield 1000;
+testWillSuccess.description = 'First test is successful'; // can be omitted.
+function testWillSuccess() {
+    assert.equals(0, [].length);
+    assert.notEquals(10, ''.length);
+    assert.isTrue(true);
+    assert.isFalse(false);
+    assert.isDefined(assert);
+    assert.isUndefined(void(0));
+    assert.isNull(null);
+    assert.matches(/patterns?/, 'pattern');
+}
 
-        var afterTime = (new Date()).getTime();
-        assert.isTrue((afterTime - beforeTime) > 10);
-    }
-};
-*/
+// This test works correctly only when "isAsync = true".
+testAsync.description = 'Async test';
+// You can disable each test by "priority = never" temporary.
+testAsync.priority = isAsync ? 'normal' : 'never' ;
+function testAsync() {
+    // Wait for the loading.
+    yield Do(utils.loadURI('http://www.mozilla.org/'));
+
+    var link = content.document.getElementsByTagName('a')[2];
+    assert.equals('http://www.mozilla.org/about/', link.href);
+
+    content.location.href = link.href;
+    // Wait for three seconds.
+    yield 3000;
+
+    assert.equals('http://www.mozilla.org/about/', content.location.href);
+}
+

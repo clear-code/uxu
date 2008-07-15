@@ -34,7 +34,7 @@ function fireMouseEvent(aWindow, aOptions)
 {
 	if (!aWindow ||
 		!(aWindow instanceof Ci.nsIDOMWindow))
-		throw new Error('action.fireMouseEventOnElement::['+aWindow+'] is not a frame!');
+		throw new Error('action.fireMouseEvent::['+aWindow+'] is not a frame!');
 
 	if (!aOptions) aOptions = {};
 
