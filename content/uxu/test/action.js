@@ -125,7 +125,7 @@ function _emulateClickOnXULElement(aElement, aOptions)
 	switch (aElement.localName)
 	{
 		case 'toolbarbutton':
-			switch (aElement.getAttribute('type')
+			switch (aElement.getAttribute('type'))
 			{
 				case 'menu':
 					break;
@@ -183,6 +183,19 @@ function _emulateClickOnXULElement(aElement, aOptions)
 				popup.openPopup(aElement, 'after_pointer', -1, -1, true, true);
 			else
 				popup.showPopup();
+			break;
+
+		case 'textbox':
+			if (aElement.getAttribute('type') != 'number') return;
+			aElement = aElement.ownerDocument.getAnonymousElementByAttribute(aElement, 'anonid', 'buttons');
+		case 'spinbuttons':
+			var button = aElement.ownerDocument.getAnonymousElementByAttribute(aElement, 'anonid', 'decreaseButton');
+			if (!button || !this._isInside(button, aOptions.screenX, aOptions.screenY))
+				button = aElement.ownerDocument.getAnonymousElementByAttribute(aElement, 'anonid', 'increaseButton');
+			if (button && this._isInside(button, aOptions.screenX, aOptions.screenY)) {
+				if (!isSimpleClick) return;
+				shouldSendXULCommandEvent = true;
+			}
 			break;
 
 		case 'menuitem':
