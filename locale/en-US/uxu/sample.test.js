@@ -34,7 +34,7 @@ function testWillSuccess() {
 // This test works correctly only when "isAsync = true".
 testAsync.description = 'Async test';
 // You can disable each test by "priority = never" temporary.
-testAsync.priority = isAsync ? 'normal' : 'never' ;
+testAsync.priority = this.isAsync ? 'normal' : 'never' ;
 function testAsync() {
     // Wait for the loading.
     yield Do(utils.loadURI('http://www.mozilla.org/'));

@@ -34,7 +34,7 @@ function testWillSuccess() {
 // このテストは isAsync = true の時だけ実行できます。
 testAsync.description = '非同期処理のテスト';
 // priority = never で一時的に実行を無効化できます。
-testAsync.priority = isAsync ? 'normal' : 'never' ;
+testAsync.priority = this.isAsync ? 'normal' : 'never' ;
 function testAsync() {
     // 読み込みの完了を待って次へ進む。
     yield Do(utils.loadURI('http://www.mozilla.org/'));
