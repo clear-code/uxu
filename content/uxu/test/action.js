@@ -62,7 +62,7 @@ function fireMouseEvent(aWindow, aOptions)
 	if (
 		'sendMouseEvent' in utils &&
 		!shouldEmulateMouseEvent &&
-		!this._isNodeInPopup(node)
+		!this._isInPopup(node)
 		) {
 		const nsIDOMNSEvent = Ci.nsIDOMNSEvent;
 		var flags = 0;
@@ -120,15 +120,24 @@ function _emulateClickOnXULElement(aElement, aOptions)
 	switch (aElement.localName)
 	{
 		case 'toolbarbutton':
-			if (aElement.getAttribute('type') != 'menu') {
-				if (!isSimpleClick) return;
-				try {
-					this.fireXULCommandEventOnElement(aElement, aOptions);
-				}
-				catch(e) {
-					dump(e+'\n');
-				}
-				return;
+			switch (aElement.getAttribute('type')
+			{
+				case 'menu':
+					break;
+				case 'menu-button':
+					var dropMarker = aElement.ownerDocument.getAnonymousElementByAttribute(aElement, 'class', 'toolbarbutton-menubutton-dropmarker');
+					if (dropMarker && this._isInside(aElement, aOptions.screenX, aOptions.screenY)) {
+						break;
+					}
+				default:
+					if (!isSimpleClick) return;
+					try {
+						this.fireXULCommandEventOnElement(aElement, aOptions);
+					}
+					catch(e) {
+						dump(e+'\n');
+					}
+					return;
 			}
 		case 'menu':
 			var popupId;
@@ -194,7 +203,7 @@ function _emulateClickOnXULElement(aElement, aOptions)
 	}
 }
  	
-function _isNodeInPopup(aElement) 
+function _isInPopup(aElement) 
 {
 	return this._getOwnerPopup(aElement) ? true : false ;
 }
@@ -221,7 +230,7 @@ function fireMouseEventOnElement(aElement, aOptions)
 	if (
 		'sendMouseEvent' in utils &&
 		!shouldEmulateMouseEvent &&
-		!this._isNodeInPopup(aElement)
+		!this._isInPopup(aElement)
 		) {
 		this._updateMouseEventOptionsOnElement(aOptions, aElement);
 		this.fireMouseEvent(aElement.ownerDocument.defaultView, aOptions);
@@ -513,7 +522,7 @@ function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 	var walker = doc.createTreeWalker(startNode, NodeFilter.SHOW_ELEMENT, elementFilter, false);
 	for (var node = walker.firstChild(); node != null; node = walker.nextNode())
 	{
-		if (this._isPointInside(doc.getBoxObjectFor(node), aScreenX, aScreenY))
+		if (this._isInside(doc.getBoxObjectFor(node), aScreenX, aScreenY))
 			nodes.push(node);
 	}
 
@@ -577,13 +586,13 @@ function _getPopupElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 	{
 		var popup = popups.snapshotItem(i);
 		if (popup.state != 'open') continue;
-		if (!this._isPointInside(popup.boxObject, aScreenX, aScreenY)) continue;
+		if (!this._isInside(popup.boxObject, aScreenX, aScreenY)) continue;
 
 		var nodes = [];
 		var walker = doc.createTreeWalker(popup, NodeFilter.SHOW_ELEMENT, elementFilter, false);
 		for (var node = walker.firstChild(); node != null; node = walker.nextNode())
 		{
-			if (this._isPointInside(doc.getBoxObjectFor(node), aScreenX, aScreenY))
+			if (this._isInside(doc.getBoxObjectFor(node), aScreenX, aScreenY))
 				nodes.push(node);
 		}
 		if (!nodes.length) continue;
@@ -625,10 +634,10 @@ function getWindowFromScreenPoint(aWindow, aScreenX, aScreenY)
 			frameList.push(arr[j]);
 		for (var j = frameList.length - 1; j >= 0; j--) {
 			var box = win.document.getBoxObjectFor(frameList[j]);
-			if (this._isPointInside(box, aScreenX, aScreenY))
+			if (this._isInside(box, aScreenX, aScreenY))
 				return frameList[j].contentWindow;
 		}
-		if (this._isPointInside(box, aScreenX, aScreenY))
+		if (this._isInside(box, aScreenX, aScreenY))
 			return frameList[j].contentWindow;
 	}
 	return null;
@@ -659,13 +668,18 @@ function _getClientPointFromScreenPoint(aWindow, aScreenX, aScreenY)
 	};
 }
  
-function _isPointInside(aBox, aScreenX, aScreenY) 
+function _isInside(aBox, aScreenX, aScreenY) 
 {
-	var l = aBox.screenX;
-	var t = aBox.screenY;
-	var r = l + aBox.width;
-	var b = t + aBox.height;
-	return !(l > aScreenX || aScreenX > r || t > aScreenY || aScreenY > b);
+	var left   = aBox.screenX;
+	var top    = aBox.screenY;
+	var right  = left + aBox.width;
+	var bottom = top + aBox.height;
+	return !(
+			left   > aScreenX ||
+			right  < aScreenX ||
+			top    > aScreenY ||
+			bottom < aScreenY
+		);
 }
   
 /* utils */ 
