@@ -108,13 +108,16 @@ function _emulateClickOnXULElement(aElement, aOptions)
 	if (!aElement) return;
 
 	if (!aOptions) aOptions = {};
-	var isSimpleClick = !(
-			aOptions.type != 'click' ||
-			aOptions.button != 0 ||
+	var isSimpleAction = !(
 			aOptions.altKey ||
 			aOptions.ctrlKey ||
 			aOptions.shiftKey ||
 			aOptions.metaKey
+		);
+	var isSimpleClick = !(
+			aOptions.type != 'click' ||
+			aOptions.button != 0 ||
+			!isSimpleAction
 		);
 
 	switch (aElement.localName)
@@ -148,14 +151,22 @@ function _emulateClickOnXULElement(aElement, aOptions)
 				case 0:
 					popupId = aElement.getAttribute('popup');
 					expression += 'child::*[local-name()="menupopup" or local-name()="popup"] |';
-					if (navigator.platform.toLowerCase().indexOf('mac') < 0 ||
-						!aButton.ctrlKey)
+					if (navigator.platform.toLowerCase().indexOf('mac') > -1 &&
+						!aOptions.altKey &&
+						aOptions.ctrlKey &&
+						!aOptions.shiftKey &&
+						!aOptions.metaKey) {
+					}
+					else {
+						if (!isSimpleAction) return;
 						break;
+					}
 				case 2:
+					if (!isSimpleAction) return;
 					popupId = aElement.getAttribute('context');
 					isContext = true;
 					break;
-				case 1:
+				default:
 					return;
 			}
 			var popup = aElement.ownerDocument.evaluate(
