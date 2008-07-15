@@ -5,6 +5,9 @@ var Ci = Components.interfaces;
 var Prefs = Components.classes['@mozilla.org/preferences;1']
 		.getService(Ci.nsIPrefBranch)
 		.QueryInterface(Ci.nsIPrefBranch2);
+
+var shouldEmulateMouseEvent = Prefs.getBoolPref('extensions.uxu.action.fireMouseEvent.useOldMethod');
+var shouldEmulateKeyEvent = Prefs.getBoolPref('extensions.uxu.action.fireKeyEvent.useOldMethod');
  
 /* zoom */ 
 	 
@@ -57,7 +60,7 @@ function fireMouseEvent(aWindow, aOptions)
 
 	if (
 		'sendMouseEvent' in utils &&
-		!Prefs.getBoolPref('extensions.uxu.action.fireMouseEvent.useOldMethod') &&
+		!shouldEmulateMouseEvent &&
 		!this._isNodeInPopup(node)
 		) {
 		const nsIDOMNSEvent = Ci.nsIDOMNSEvent;
@@ -103,10 +106,20 @@ function _emulateClickOnXULElement(aElement, aOptions)
 {
 	if (!aElement) return;
 
+	var isSimpleClick = !(
+			aOptions.type != 'click' ||
+			aOptions.button != 0 ||
+			aOptions.altKey ||
+			aOptions.ctrlKey ||
+			aOptions.shiftKey ||
+			aOptions.metaKey
+		);
+
 	switch (aElement.localName)
 	{
 		case 'toolbarbutton':
 			if (aElement.getAttribute('type') != 'menu') {
+				if (!isSimpleClick) return;
 				try {
 					this.fireXULCommandEventOnElement(aElement, aOptions);
 				}
@@ -150,6 +163,7 @@ function _emulateClickOnXULElement(aElement, aOptions)
 			break;
 
 		case 'menuitem':
+			if (!isSimpleClick) return;
 			try {
 				this.fireXULCommandEventOnElement(aElement, aOptions);
 				aElement.ownerDocument.defaultView.setTimeout(function(aSelf) {
@@ -167,6 +181,7 @@ function _emulateClickOnXULElement(aElement, aOptions)
 			break;
 
 		case 'button':
+			if (!isSimpleClick) return;
 			try {
 				this.fireXULCommandEventOnElement(aElement, aOptions);
 			}
@@ -202,7 +217,7 @@ function fireMouseEventOnElement(aElement, aOptions)
 	var utils = this._getWindowUtils(aElement.ownerDocument.defaultView);
 	if (
 		'sendMouseEvent' in utils &&
-		!Prefs.getBoolPref('extensions.uxu.action.fireMouseEvent.useOldMethod') &&
+		!shouldEmulateMouseEvent &&
 		!this._isNodeInPopup(aElement)
 		) {
 		this._updateMouseEventOptionsOnElement(aOptions, aElement);
@@ -300,7 +315,7 @@ function fireKeyEventOnElement(aElement, aOptions)
 	var doc = this._getDocumentFromEventTarget(aElement);
 	var utils = this._getWindowUtils(doc.defaultView);
 	if ('sendKeyEvent' in utils &&
-		!Prefs.getBoolPref('extensions.uxu.action.fireKeyEvent.useOldMethod')) {
+		!shouldEmulateKeyEvent) {
 		const nsIDOMNSEvent = Ci.nsIDOMNSEvent;
 		var flags = 0;
 		if (aOptions.ctrlKey) flags |= nsIDOMNSEvent.CONTROL_MASK;
