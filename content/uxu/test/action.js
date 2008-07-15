@@ -106,6 +106,7 @@ function _emulateClickOnXULElement(aElement, aOptions)
 {
 	if (!aElement) return;
 
+	if (!aOptions) aOptions = {};
 	var isSimpleClick = !(
 			aOptions.type != 'click' ||
 			aOptions.button != 0 ||
@@ -288,6 +289,7 @@ function _createMouseEventOnElement(aElement, aOptions)
  
 function _updateMouseEventOptionsOnElement(aOptions, aElement) 
 {
+	if (!aOptions) aOptions = {};
 	var doc = this._getDocumentFromEventTarget(aElement);
 	var box = doc.getBoxObjectFor(aElement);
 	if (!('screenX' in aOptions)) aOptions.screenX = box.screenX + parseInt(box.width / 2);
