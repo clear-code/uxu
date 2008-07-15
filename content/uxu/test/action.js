@@ -70,7 +70,7 @@ function fireMouseEvent(aWindow, aOptions)
 	if (
 		'sendMouseEvent' in utils &&
 		!shouldEmulateMouseEvent &&
-		!this._isInPopup(node)
+		!this._getOwnerPopup(node)
 		) {
 		const nsIDOMNSEvent = Ci.nsIDOMNSEvent;
 		var flags = 0;
@@ -114,10 +114,12 @@ function fireMouseEvent(aWindow, aOptions)
 	else
 		throw new Error('action.fireMouseEvent::there is no element at [')+x+','+y+']!';
 };
-	
+	 
 function _emulateClickOnXULElement(aElement, aOptions) 
 {
 	if (!aElement) return;
+
+	var target = this._getXULCommandEventDispatcher(aElement) || aElement ;
 
 	if (!aOptions) aOptions = {};
 	var isSimpleAction = !(
@@ -133,26 +135,38 @@ function _emulateClickOnXULElement(aElement, aOptions)
 		);
 	var shouldSendXULCommandEvent = false;
 
-	switchByElementType:
-	switch (aElement.localName)
+	switch (target.localName)
 	{
+		case 'menuitem':
+			if (!isSimpleClick) return;
+			shouldSendXULCommandEvent = true;
+			target.ownerDocument.defaultView.setTimeout(function(aSelf) {
+				var popup = target;
+				while (popup = aSelf._getOwnerPopup(popup))
+				{
+					popup.hidePopup();
+					popup = popup.parentNode;
+				}
+			}, 1, this);
+			break;
+
+		case 'button':
+		case 'checkbox':
+		case 'radio':
+			if (!isSimpleClick) return;
+			shouldSendXULCommandEvent = true;
+			break;
+
 		case 'toolbarbutton':
-			switch (aElement.getAttribute('type'))
-			{
-				case 'menu':
-					break;
-				case 'menu-button':
-					var dropMarker = aElement.ownerDocument.getAnonymousElementByAttribute(aElement, 'class', 'toolbarbutton-menubutton-dropmarker');
-					if (dropMarker && this._isInside(aElement, aOptions.screenX, aOptions.screenY)) {
-						break;
-					}
-				default:
-					if (!isSimpleClick) return;
-					shouldSendXULCommandEvent = true;
-					break switchByElementType;
+			if (target.localName == 'toolbarbutton' &&
+				target.getAttribute('type') != 'menu') {
+				if (!isSimpleClick) return;
+				shouldSendXULCommandEvent = true;
+				break;
 			}
 		case 'colorpicker':
-			if (type != 'button') {
+			if (target.localName == 'colorpicker' &&
+				target.getAttribute('type') != 'button') {
 				break;
 			}
 		case 'menu':
@@ -162,7 +176,7 @@ function _emulateClickOnXULElement(aElement, aOptions)
 			switch (aOptions.button)
 			{
 				case 0:
-					popupId = aElement.getAttribute('popup');
+					popupId = target.getAttribute('popup');
 					expression += 'child::*[local-name()="menupopup" or local-name()="popup"] |';
 					if (navigator.platform.toLowerCase().indexOf('mac') > -1 &&
 						!aOptions.altKey &&
@@ -176,15 +190,15 @@ function _emulateClickOnXULElement(aElement, aOptions)
 					}
 				case 2:
 					if (!isSimpleAction) return;
-					popupId = aElement.getAttribute('context');
+					popupId = target.getAttribute('context');
 					isContext = true;
 					break;
 				default:
 					return;
 			}
-			var popup = aElement.ownerDocument.evaluate(
+			var popup = target.ownerDocument.evaluate(
 					expression+'/descendant::menupopup[@id="'+popupId+'"]',
-					aElement,
+					target,
 					null,
 					XPathResult.FIRST_ORDERED_NODE_TYPE,
 					null
@@ -192,57 +206,21 @@ function _emulateClickOnXULElement(aElement, aOptions)
 
 			if (!popup) return;
 			if ('openPopup' in popup && isContext)
-				popup.openPopup(aElement, 'after_pointer', -1, -1, true, true);
+				popup.openPopup(target, 'after_pointer', -1, -1, true, true);
 			else
 				popup.showPopup();
-			break;
-
-		case 'textbox':
-			if (aElement.getAttribute('type') != 'number') return;
-			aElement = aElement.ownerDocument.getAnonymousElementByAttribute(aElement, 'anonid', 'buttons');
-		case 'spinbuttons':
-			var button = aElement.ownerDocument.getAnonymousElementByAttribute(aElement, 'anonid', 'decreaseButton');
-			if (!button || !this._isInside(button, aOptions.screenX, aOptions.screenY))
-				button = aElement.ownerDocument.getAnonymousElementByAttribute(aElement, 'anonid', 'increaseButton');
-			if (button && this._isInside(button, aOptions.screenX, aOptions.screenY)) {
-				if (!isSimpleClick) return;
-				shouldSendXULCommandEvent = true;
-			}
-			break;
-
-		case 'menuitem':
-			if (!isSimpleClick) return;
-			shouldSendXULCommandEvent = true;
-			aElement.ownerDocument.defaultView.setTimeout(function(aSelf) {
-				var popup = aElement;
-				while (popup = aSelf._getOwnerPopup(popup))
-				{
-					popup.hidePopup();
-					popup = popup.parentNode;
-				}
-			}, 1, this);
-			break;
-
-		case 'button':
-			if (!isSimpleClick) return;
-			shouldSendXULCommandEvent = true;
 			break;
 	}
 
 	if (!shouldSendXULCommandEvent) return;
 	try {
-		this.fireXULCommandEventOnElement(aElement, aOptions);
+		this.fireXULCommandEventOnElement(target, aOptions);
 	}
 	catch(e) {
 		dump(e+'\n');
 	}
 }
- 
-function _isInPopup(aElement) 
-{
-	return this._getOwnerPopup(aElement) ? true : false ;
-}
- 
+ 	
 function _getOwnerPopup(aElement) 
 {
 	return aElement.ownerDocument.evaluate(
@@ -265,7 +243,7 @@ function fireMouseEventOnElement(aElement, aOptions)
 	if (
 		'sendMouseEvent' in utils &&
 		!shouldEmulateMouseEvent &&
-		!this._isInPopup(aElement)
+		!this._getOwnerPopup(aElement)
 		) {
 		this._updateMouseEventOptionsOnElement(aOptions, aElement);
 		this.fireMouseEvent(aElement.ownerDocument.defaultView, aOptions);
@@ -300,7 +278,7 @@ function fireMouseEventOnElement(aElement, aOptions)
 		aOptions.type != 'dblclick')
 		this._emulateClickOnXULElement(aElement, aOptions);
 };
-	
+	 
 function _createMouseEventOnElement(aElement, aOptions) 
 {
 	if (!aElement ||
@@ -482,7 +460,7 @@ function dragAndDropOnElement(aFromElement, aToElement, aOptions)
 			aOptions
 		);
 };
-  	 
+   
 /* key event */ 
 	
 function fireKeyEventOnElement(aElement, aOptions) 
@@ -560,7 +538,7 @@ function _createKeyEventOnElement(aElement, aOptions)
 };
    
 /* XULCommand event */ 
-	
+	 
 function fireXULCommandEvent(aWindow, aOptions) 
 {
 	if (!aOptions) aOptions = {};
@@ -569,6 +547,7 @@ function fireXULCommandEvent(aWindow, aOptions)
 				('x' in aOptions ? aOptions.x : 0),
 				('y' in aOptions ? aOptions.y : 0)
 			);
+	node = this._getXULCommandEventDispatcher(node);
 	if (node)
 		this.fireXULCommandEventOnElement(node, aOptions);
 };
@@ -596,7 +575,18 @@ function _createXULCommandEvent(aSourceEvent)
 	);
 	return event;
 };
-   
+  
+function _getXULCommandEventDispatcher(aElement) 
+{
+	return aElement.ownerDocument.evaluate(
+			'ancestor-or-self::*[contains(" button toolbarbutton menuitem checkbox radio ", concat(" ", local-name(), " "))]',
+			aElement,
+			null,
+			XPathResult.FIRST_ORDERED_NODE_TYPE,
+			null
+		).singleNodeValue;
+}
+  
 /* text input */ 
 	
 var withIMECharacters = '\u3040-\uA4CF\uF900-\uFAFF'; 
@@ -652,7 +642,7 @@ function inputTextToField(aElement, aValue, aAppend, aDontFireKeyEvents)
 };
   
 /* À•W‘€ì */ 
-	
+	 
 function getElementFromScreenPoint(aWindow, aScreenX, aScreenY) 
 {
 	if (!aWindow ||
@@ -673,13 +663,14 @@ function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 				this._isInside(elem.mPanelContainer.boxObject, aScreenX, aScreenY))
 			)
 			) {
-			return this.getElementFromScreenPoint(
+			var node = this.getElementFromScreenPoint(
 					elem.contentWindow,
 					aScreenX + aWindow.scrollX,
 					aScreenY + aWindow.scrollY
 				);
+			return this._getOriginalTargetFromScreenPoint(node, aScreenX, aScreenY);
 		}
-		return elem;
+		return this._getOriginalTargetFromScreenPoint(elem, aScreenX, aScreenY);
 	}
 
 	aWindow = this.getWindowFromScreenPoint(aWindow, aScreenX, aScreenY);
@@ -706,13 +697,14 @@ function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 	}
 
 	if (!nodes.length) return null;
-	if (nodes.length == 1) return nodes[0];
+	if (nodes.length == 1)
+		return this._getOriginalTargetFromScreenPoint(nodes[0], aScreenX, aScreenY);
 
 	var smallest = [];
 	nodes.forEach(function(aNode) {
 		if (!smallest.length) {
 			smallest.push(aNode);
-			return
+			return;
 		}
 		var box = doc.getBoxObjectFor(aNode);
 		var size = box.width * box.height;
@@ -725,30 +717,34 @@ function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 			smallest = [aNode];
 		}
 	});
-	if (smallest.length == 1) return smallest[0];
 
-	var deepest = [];
-	var deepestNest = 0;
-	nodes.forEach(function(aNode) {
-		var nest = 0;
-		var node = aNode;
-		for (; node.parentNode; nest++) { node = node.parentNode; }
-		if (!deepest.length) {
-			deepest.push(aNode);
-			deepestNest = nest;
-			return
-		}
-		if (nest == deepestNest) {
-			deepest.push(aNode);
-		}
-		else if (nest > deepestNest) {
-			deepest = [aNode];
-			deepestNest = nest;
-		}
-	});
-	if (deepest.length == 1) return deepest[0];
-
-	return deepest[deepest.length-1];
+	var node;
+	if (smallest.length == 1) {
+		node = 	smallest[0];
+	}
+	else {
+		var deepest = [];
+		var deepestNest = 0;
+		nodes.forEach(function(aNode) {
+			var nest = 0;
+			var node = aNode;
+			for (; node.parentNode; nest++) { node = node.parentNode; }
+			if (!deepest.length) {
+				deepest.push(aNode);
+				deepestNest = nest;
+				return
+			}
+			if (nest == deepestNest) {
+				deepest.push(aNode);
+			}
+			else if (nest > deepestNest) {
+				deepest = [aNode];
+				deepestNest = nest;
+			}
+		});
+		node = (deepest.length == 1) ? deepest[0] : deepest[deepest.length-1] ;
+	}
+	return this._getOriginalTargetFromScreenPoint(node, aScreenX, aScreenY);
 };
 	 
 function _getPopupElementFromScreenPoint(aWindow, aScreenX, aScreenY) 
@@ -775,11 +771,32 @@ function _getPopupElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 				nodes.push(node);
 		}
 		if (!nodes.length) continue;
-		return nodes[nodes.length-1];
+		return this._getOriginalTargetFromScreenPoint(nodes[nodes.length-1], aScreenX, aScreenY);
 	}
 	return null;
 }
  
+function _getOriginalTargetFromScreenPoint(aElement, aScreenX, aScreenY) 
+{
+	var node = this._getOriginalTargetFromScreenPointInternal(nodes[i], aScreenX, aScreenY);
+	return node || aElement;
+}
+	 
+function _getOriginalTargetFromScreenPointInternal(aElement, aScreenX, aScreenY) 
+{
+	var doc = aElement.ownerDocument;
+	var nodes = doc.getAnonymousNodes(aElement);
+	if (!nodes || !nodes.length) nodes = aElement.childNodes;
+	if (!nodes || !nodes.length) return null;
+	for (var i = 0, maxi = nodes.length; i < maxi; i++)
+	{
+		if (!this._isInside(doc.getBoxObjectFor(nodes[i]), aScreenX, aScreenY)) continue;
+		var node = this._getOriginalTargetFromScreenPointInternal(nodes[i], aScreenX, aScreenY);
+		if (node) return node;
+	}
+	return null;
+}
+  
 var elementFilter = function(aNode) { 
 	return NodeFilter.FILTER_ACCEPT;
 };
@@ -862,7 +879,7 @@ function _isInside(aBox, aScreenX, aScreenY)
 }
   
 /* utils */ 
-	
+	 
 function _getWindowUtils(aWindow) 
 {
 	return aWindow
