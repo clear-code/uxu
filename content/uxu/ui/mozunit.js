@@ -5,10 +5,10 @@ var bundle = lib_module.require('package', 'bundle');
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var runner_utils = test_module.require('package', 'runner_utils');
 
+const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-const ObserverService = Components
-	.classes['@mozilla.org/observer-service;1']
+const ObserverService = Cc['@mozilla.org/observer-service;1']
 	.getService(Ci.nsIObserverService);
  
 /* UTILITIES */ 
@@ -120,8 +120,7 @@ function pickFile(aMode, aOptions)
 						 'open');
 	const nsIFilePicker = Ci.nsIFilePicker;
 
-	var picker = Components
-		.classes["@mozilla.org/filepicker;1"]
+	var picker = Cc["@mozilla.org/filepicker;1"]
 		.createInstance(nsIFilePicker);
 	if (aOptions.defaultExtension)
 		picker.defaultExtension = aOptions.defaultExtension;
@@ -791,11 +790,9 @@ function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine)
 		});
 
 	var editorPath;
-	var executable = Components
-		.classes["@mozilla.org/file/local;1"].
+	var executable = Cc["@mozilla.org/file/local;1"].
 		createInstance(Ci.nsILocalFile);
-	var process = Components
-		.classes["@mozilla.org/process/util;1"].
+	var process = Cc["@mozilla.org/process/util;1"].
 		createInstance(Ci.nsIProcess);
 	try {
 		editorPath = argv.shift();

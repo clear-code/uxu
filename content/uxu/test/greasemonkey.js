@@ -1,5 +1,8 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
+const Cc = Components.classes;
+const Ci = Components.interfaces;
+
 
 function constructor(aUtils)
 {
@@ -88,7 +91,7 @@ function getSandboxFor(aURI)
 		get document() {
 			return env.frame.contentDocument;
 		},
-		XPathResult : Components.interfaces.nsIDOMXPathResult,
+		XPathResult : Ci.nsIDOMXPathResult,
 		GM_log : function() {
 			return GM_log.apply(env, arguments);
 		},
@@ -187,9 +190,8 @@ function doAndWaitLoad(aFunction, aScope)
 
 
 
-var ConsoleService = Components
-		.classes['@mozilla.org/consoleservice;1']
-		.getService(Components.interfaces.nsIConsoleService);
+var ConsoleService = Cc['@mozilla.org/consoleservice;1']
+		.getService(Ci.nsIConsoleService);
 
 function GM_log(aMessage)
 {
@@ -232,10 +234,9 @@ function GM_xmlhttpRequest(aDetails)
 	if (!/^(http|https|ftp):\/\//.test(uri))
 		throw new Error('Invalid url: '+uri);
 
-	var request = Components
-			.classes['@mozilla.org/xmlextras/xmlhttprequest;1']
-			.createInstance(Components.interfaces.nsIXMLHttpRequest)
-			.QueryInterface(Components.interfaces.nsIDOMEventTarget);
+	var request = Cc['@mozilla.org/xmlextras/xmlhttprequest;1']
+			.createInstance(Ci.nsIXMLHttpRequest)
+			.QueryInterface(Ci.nsIDOMEventTarget);
 	var _this = this;
 	var listener = {
 			request : request,

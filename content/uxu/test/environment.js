@@ -1,5 +1,8 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
+const Cc = Components.classes;
+const Ci = Components.interfaces;
+
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var bundle = lib_module.require('package', 'bundle');
 var utils = lib_module.require('package', 'utils');
@@ -66,8 +69,8 @@ function initVariables()
 			});
 		});
 
-	this.environment.Cc = Components.classes;
-	this.environment.Ci = Components.interfaces;
+	this.environment.Cc = Cc;
+	this.environment.Ci = Ci;
 }
 
 function attachAssertions()
@@ -128,9 +131,8 @@ function attachGMUtils()
 
 
 
-var XULAppInfo = Components.
-	classes['@mozilla.org/xre/app-info;1']
-	.getService(Components.interfaces.nsIXULAppInfo);
+var XULAppInfo = Cc['@mozilla.org/xre/app-info;1']
+	.getService(Ci.nsIXULAppInfo);
 var defaultURI, defaultType, defaultFlags, defaultName;
 switch (XULAppInfo.ID)
 {
@@ -151,9 +153,8 @@ switch (XULAppInfo.ID)
 }
 
 
-var WindowManager = Components
-		.classes['@mozilla.org/appshell/window-mediator;1']
-		.getService(Components.interfaces.nsIWindowMediator);
+var WindowManager = Cc['@mozilla.org/appshell/window-mediator;1']
+		.getService(Ci.nsIWindowMediator);
 
 function normalizeTestWindowOption(aOptions)
 {
@@ -183,7 +184,7 @@ function getTestWindow(aOptions)
 	while (targets.hasMoreElements())
 	{
 		target = targets.getNext().
-			QueryInterface(Components.interfaces.nsIDOMWindowInternal);
+			QueryInterface(Ci.nsIDOMWindowInternal);
 		if (target[key] == target.location.href+'?'+this.uniqueID ||
 			target.document.documentElement.getAttribute(key) == target.location.href+'?'+this.uniqueID)
 			return target;
@@ -331,7 +332,7 @@ function getChromeWindows(aOptions)
 	while (targets.hasMoreElements())
 	{
 		target = targets.getNext().
-			QueryInterface(Components.interfaces.nsIDOMWindowInternal);
+			QueryInterface(Ci.nsIDOMWindowInternal);
 		if (info.type)
 			result.push(target);
 		else if (info.uri == target.location.href)
@@ -345,10 +346,9 @@ function getChromeWindows(aOptions)
 
 function makeTempFile(aOriginal)
 {
-	var DirectoryService = Components
-			.classes['@mozilla.org/file/directory_service;1']
-			.getService(Components.interfaces.nsIProperties);
-	var temp = DirectoryService.get('TmpD', Components.interfaces.nsIFile);
+	var DirectoryService = Cc['@mozilla.org/file/directory_service;1']
+			.getService(Ci.nsIProperties);
+	var temp = DirectoryService.get('TmpD', Ci.nsIFile);
 	var random = parseInt(Math.random() * 10000);
 
 	if (aOriginal) {
@@ -360,7 +360,7 @@ function makeTempFile(aOriginal)
 				aOriginal = this.makeFileWithPath(aOriginal);
 		}
 		try {
-			aOriginal = aOriginal.QueryInterface(Components.interfaces.nsILocalFile)
+			aOriginal = aOriginal.QueryInterface(Ci.nsILocalFile)
 		}
 		catch(e) {
 			aOriginal = this.getFileFromURLSpec(aOriginal.spec);
@@ -408,9 +408,8 @@ function cleanUpModifiedPrefs()
 
 
 
-var loader = Components
-		.classes['@mozilla.org/moz/jssubscript-loader;1']
-		.getService(Components.interfaces.mozIJSSubScriptLoader);
+var loader = Cc['@mozilla.org/moz/jssubscript-loader;1']
+		.getService(Ci.mozIJSSubScriptLoader);
 
 function include(aSource, aEnvironment, aEncoding)
 {

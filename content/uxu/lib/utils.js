@@ -1,11 +1,13 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
+const Cc = Components.classes;
+const Ci = Components.interfaces;
+
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var bundle = lib_module.require('package', 'bundle');
 
-var IOService = Components
-		.classes['@mozilla.org/network/io-service;1']
-		.getService(Components.interfaces.nsIIOService);
+var IOService = Cc['@mozilla.org/network/io-service;1']
+		.getService(Ci.nsIIOService);
 
 // URI文字列からnsIURIのオブジェクトを生成
 function makeURIFromSpec(aURI)
@@ -15,7 +17,7 @@ function makeURIFromSpec(aURI)
 		aURI = aURI || '';
 		if (aURI && aURI.match(/^file:/)) {
 			var fileHandler = IOService.getProtocolHandler('file')
-								.QueryInterface(Components.interfaces.nsIFileProtocolHandler);
+								.QueryInterface(Ci.nsIFileProtocolHandler);
 			var tempLocalFile = fileHandler.getFileFromURLSpec(aURI);
 
 			newURI = IOService.newFileURI(tempLocalFile);
@@ -35,7 +37,7 @@ function makeURIFromSpec(aURI)
 function makeFileWithPath(aPath)
 {
 	var newFile = Components.classes['@mozilla.org/file/local;1']
-					.createInstance(Components.interfaces.nsILocalFile);
+					.createInstance(Ci.nsILocalFile);
 	newFile.initWithPath(aPath);
 	return newFile;
 };
@@ -47,7 +49,7 @@ function getFileFromURLSpec(aURI)
 	if ((aURI || '').indexOf('file://') != 0) return '';
 
 	var fileHandler = IOService.getProtocolHandler('file')
-						.QueryInterface(Components.interfaces.nsIFileProtocolHandler);
+						.QueryInterface(Ci.nsIFileProtocolHandler);
 	return fileHandler.getFileFromURLSpec(aURI);
 };
 
@@ -85,14 +87,14 @@ function readFrom(aTarget, aEncoding)
 
 	var stream;
 	try {
-		aTarget = aTarget.QueryInterface(Components.interfaces.nsIURI);
+		aTarget = aTarget.QueryInterface(Ci.nsIURI);
 		var channel = IOService.newChannelFromURI(aTarget);
 		stream = channel.open();
 	}
 	catch(e) {
-		aTarget = aTarget.QueryInterface(Components.interfaces.nsILocalFile)
+		aTarget = aTarget.QueryInterface(Ci.nsILocalFile)
 		stream = Components.classes['@mozilla.org/network/file-input-stream;1']
-					.createInstance(Components.interfaces.nsIFileInputStream);
+					.createInstance(Ci.nsIFileInputStream);
 		try {
 			stream.init(aTarget, 1, 0, false); // open as "read only"
 		}
@@ -105,7 +107,7 @@ function readFrom(aTarget, aEncoding)
 	try {
 		if (aEncoding) {
 			var converterStream = Components.classes['@mozilla.org/intl/converter-input-stream;1']
-					.createInstance(Components.interfaces.nsIConverterInputStream);
+					.createInstance(Ci.nsIConverterInputStream);
 			var buffer = stream.available();
 			converterStream.init(stream, aEncoding, buffer,
 				converterStream.DEFAULT_REPLACEMENT_CHARACTER);
@@ -116,7 +118,7 @@ function readFrom(aTarget, aEncoding)
 		}
 		else {
 			var scriptableStream = Components.classes['@mozilla.org/scriptableinputstream;1']
-					.createInstance(Components.interfaces.nsIScriptableInputStream);
+					.createInstance(Ci.nsIScriptableInputStream);
 			scriptableStream.init(stream);
 			fileContents = scriptableStream.read(scriptableStream.available());
 			scriptableStream.close();
@@ -141,10 +143,10 @@ function writeTo(aContent, aTarget, aEncoding)
 	}
 
 	try {
-		aTarget = aTarget.QueryInterface(Components.interfaces.nsILocalFile)
+		aTarget = aTarget.QueryInterface(Ci.nsILocalFile)
 	}
 	catch(e) {
-		aTarget = aTarget.QueryInterface(Components.interfaces.nsIURI);
+		aTarget = aTarget.QueryInterface(Ci.nsIURI);
 		aTarget = getFileFromURLSpec(aTarget.spec);
 	}
 
@@ -168,14 +170,14 @@ function writeTo(aContent, aTarget, aEncoding)
 	aTarget.create(aTarget.NORMAL_FILE_TYPE, 0666);
 
 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1']
-			.createInstance(Components.interfaces.nsIFileOutputStream);
+			.createInstance(Ci.nsIFileOutputStream);
 	stream.init(aTarget, 2, 0x200, false); // open as "write only"
 
 	if (aEncoding) {
 		var converterStream = Components.classes['@mozilla.org/intl/converter-output-stream;1']
-				.createInstance(Components.interfaces.nsIConverterOutputStream);
+				.createInstance(Ci.nsIConverterOutputStream);
 		var buffer = aContent.length;
-		converterStream.init(stream, aEncoding, buffer, Components.interfaces.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER);
+		converterStream.init(stream, aEncoding, buffer, Ci.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER);
 		converterStream.writeString(aContent);
 		converterStream.close();
 	}
@@ -226,8 +228,8 @@ function formatStackTrace(exception)
 
 
 var Pref = Components.classes['@mozilla.org/preferences;1'] 
-		.getService(Components.interfaces.nsIPrefBranch)
-		.QueryInterface(Components.interfaces.nsIPrefBranch2);
+		.getService(Ci.nsIPrefBranch)
+		.QueryInterface(Ci.nsIPrefBranch2);
 
 function getPref(aKey)
 {
@@ -316,9 +318,8 @@ function UCS2ToUTF8(aInput)
 	return unescape(encodeURIComponent(aInput));
 }
 
-var UCONV = Components
-		.classes['@mozilla.org/intl/scriptableunicodeconverter']
-		.getService(Components.interfaces.nsIScriptableUnicodeConverter);
+var UCONV = Cc['@mozilla.org/intl/scriptableunicodeconverter']
+		.getService(Ci.nsIScriptableUnicodeConverter);
 
 function XToUnicode(aInput, aEncoding)
 {
@@ -535,15 +536,13 @@ function getDB()
 {
 	if (_db) return _db;
 
-	const DirectoryService = Components
-		.classes['@mozilla.org/file/directory_service;1']
-		.getService(Components.interfaces.nsIProperties);
-	var file = DirectoryService.get('ProfD', Components.interfaces.nsIFile);
+	const DirectoryService = Cc['@mozilla.org/file/directory_service;1']
+		.getService(Ci.nsIProperties);
+	var file = DirectoryService.get('ProfD', Ci.nsIFile);
 	file.append('uxu.sqlite');
 
-	const StorageService = Components
-		.classes['@mozilla.org/storage/service;1']
-		.getService(Components.interfaces.mozIStorageService);
+	const StorageService = Cc['@mozilla.org/storage/service;1']
+		.getService(Ci.mozIStorageService);
 	_db = StorageService.openDatabase(file);
 
 	return _db;

@@ -1,6 +1,7 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*- 
  
-var Ci = Components.interfaces; 
+const Cc = Components.classes; 
+const Ci = Components.interfaces;
 
 var Prefs = Components.classes['@mozilla.org/preferences;1']
 		.getService(Ci.nsIPrefBranch)
