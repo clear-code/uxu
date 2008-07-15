@@ -217,6 +217,7 @@ function fireMouseEventOnElement(aElement, aOptions)
 		throw new Error('action.fireMouseEventOnElement::['+aElement+'] is not an element!');
 
 	var utils = this._getWindowUtils(aElement.ownerDocument.defaultView);
+	if (!aOptions) aOptions = { type : 'click' };
 	if (
 		'sendMouseEvent' in utils &&
 		!shouldEmulateMouseEvent &&
@@ -227,7 +228,6 @@ function fireMouseEventOnElement(aElement, aOptions)
 		return;
 	}
 
-	if (!aOptions) aOptions = { type : 'click' };
 	switch (aOptions.type)
 	{
 		case 'mousedown':
