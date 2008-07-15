@@ -313,7 +313,9 @@ function _createMouseEventOnElement(aElement, aOptions)
  
 function _updateMouseEventOptionsOnElement(aOptions, aElement) 
 {
+	if (aElement.nodeType != aElement.ELEMENT_NODE) aElement = aElement.parentNode;
 	if (!aOptions) aOptions = {};
+
 	var doc = this._getDocumentFromEventTarget(aElement);
 	var box = doc.getBoxObjectFor(aElement);
 	if (!('screenX' in aOptions)) aOptions.screenX = box.screenX + parseInt(box.width / 2);
@@ -410,6 +412,11 @@ function dragMove(aWindow, aFromX, aFromY, aToX, aToY, aOptions)
 	 
 function dragMove(aFromElement, aToElement, aOptions) 
 {
+	if (aFromElement.nodeType != aFromElement.ELEMENT_NODE)
+		aFromElement = aFromElement.parentNode;
+	if (aToElement.nodeType != aToElement.ELEMENT_NODE)
+		aToElement = aToElement.parentNode;
+
 	var doc = aFromElement.ownerDocument;
 	var win = doc.defaultView;
 	var fromBox = doc.getBoxObjectFor(aFromElement);
@@ -448,6 +455,11 @@ function dragAndDrop(aWindow, aFromX, aFromY, aToX, aToY, aOptions)
 	 
 function dragAndDropOnElement(aFromElement, aToElement, aOptions) 
 {
+	if (aFromElement.nodeType != aFromElement.ELEMENT_NODE)
+		aFromElement = aFromElement.parentNode;
+	if (aToElement.nodeType != aToElement.ELEMENT_NODE)
+		aToElement = aToElement.parentNode;
+
 	var doc = aFromElement.ownerDocument;
 	var win = doc.defaultView;
 	var fromBox = doc.getBoxObjectFor(aFromElement);
@@ -790,7 +802,9 @@ function _getOriginalTargetFromScreenPointInternal(aElement, aScreenX, aScreenY)
 	if (!nodes || !nodes.length) return null;
 	for (var i = 0, maxi = nodes.length; i < maxi; i++)
 	{
-		if (!this._isInside(doc.getBoxObjectFor(nodes[i]), aScreenX, aScreenY)) continue;
+		if (nodes[i].nodeType != nodes[i].ELEMENT_NODE ||
+			!this._isInside(doc.getBoxObjectFor(nodes[i]), aScreenX, aScreenY))
+			continue;
 		var node = this._getOriginalTargetFromScreenPointInternal(nodes[i], aScreenX, aScreenY);
 		if (node) return node;
 	}
