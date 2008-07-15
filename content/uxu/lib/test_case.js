@@ -529,20 +529,22 @@ function _checkPriorityToExec(aTest) {
 	var shouldDo = (Math.random() <= priority);
 	if (!shouldDo) {
 		var db = utils.getDB();
-		var statement = db.createStatement(
-			  'SELECT result FROM result_history WHERE name = ?1'
-			);
 		var lastResult;
-		try {
-			statement.bindStringParameter(0, aTest.name);
-			while (statement.executeStep()) {
-				lastResult = statement.getString(0);
+		if (db.tableExists('result_history')) {
+			var statement = db.createStatement(
+				  'SELECT result FROM result_history WHERE name = ?1'
+				);
+			try {
+				statement.bindStringParameter(0, aTest.name);
+				while (statement.executeStep()) {
+					lastResult = statement.getString(0);
+				}
+			}
+			finally {
+				statement.reset();
 			}
 		}
-		finally {
-			statement.reset();
-		}
-		if (lastResult == 'failure' || lastResult == 'error') {
+		if (lastResult != 'success' && lastResult != 'passover') {
 			shouldDo = true;
 		}
 	}
