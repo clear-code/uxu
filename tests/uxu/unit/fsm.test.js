@@ -149,3 +149,32 @@ function testDelayedTransitions()
 		eventHandlers.log
 	);
 }
+
+testFailedTransitions.description = '失敗例';
+function testFailedTransitions()
+{
+	var stateTransitions = {
+		state1 : { ok : 'state2' },
+		state2 : { ok : 'state3' },
+		state3 : {}
+	}
+	var string = '';
+	var stateHandlers = {
+		state1 : function(aContinuation) {
+			string += 'a';
+		},
+		state2 : function(aContinuation) {
+			string += 'b';
+		},
+		state3 : function(aContinuation) {
+			string += 'c';
+		}
+	};
+	eventHandlers.log = [];
+	fsm.go('state1', {}, stateHandlers, stateTransitions, eventHandlers);
+	assert.equals('a', string);
+	assert.arrayEquals(
+		['state1 enter'],
+		eventHandlers.log
+	);
+}
