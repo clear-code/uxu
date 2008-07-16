@@ -335,11 +335,11 @@ function _asyncRun(aTests, aSetUp, aTearDown, aReportHandler)
 		doTearDown :    { ok : 'nextTest', ko: 'nextTest' },
 		nextTest :      { ok : 'checkPriority', ko: 'finished' },
 		finished :      { }
-	}
+	};
 
 	var nullContinuation = function() {};
 
-	_this = this;
+	var _this = this;
 	var stateHandlers = {
 		start : function(aContinuation)
 		{
