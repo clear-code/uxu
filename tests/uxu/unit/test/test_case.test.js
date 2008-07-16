@@ -1,13 +1,13 @@
 utils.include('../../../../content/uxu/lib/module_manager.js');
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
-var TestCase    = test_module.require('class', 'test_case');
+var TestCaseClass = test_module.require('class', 'test_case');
 
 var testcase;
 
 function setUp()
 {
-	testcase = new TestCase('description', 'http://www.clear-code.com/');
+	testcase = new TestCaseClass('description', 'http://www.clear-code.com/');
 	yield 0; // to run tests progressively
 }
 

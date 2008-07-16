@@ -352,7 +352,7 @@ function _asyncRun(aTests, aSetUp, aTearDown, aReportHandler)
 				return;
 			}
 			report.report = {};
-			report.report.result = 'passover'; // 'success';
+			report.report.result = 'passover';
 			stateHandlers.doReport(nullContinuation);
 			aContinuation('ko');
 		},
@@ -393,7 +393,7 @@ function _asyncRun(aTests, aSetUp, aTearDown, aReportHandler)
 		{
 			var test;
 			test = aTests[testIndex];
-			var newReport = _exec(test, context, aContinuation, report);
+			var newReport = _this._exec(test, context, aContinuation, report);
 			if (newReport.result) {
 				report.report = newReport;
 				report.report.testDescription = test.desc;
@@ -405,7 +405,7 @@ function _asyncRun(aTests, aSetUp, aTearDown, aReportHandler)
 		},
 		doReport : function(aContinuation)
 		{
-			_onFinish(aTests[testIndex], report.report.result);
+			_this._onFinish(aTests[testIndex], report.report.result);
 			report.report.testOwner = _this;
 			report.report.testIndex = testIndex + 1;
 			report.report.testCount = aTests.length;
@@ -434,7 +434,7 @@ function _asyncRun(aTests, aSetUp, aTearDown, aReportHandler)
 							aContinuation('ok');
 						},
 						onError : function(e) {
-							_onFinish(aTests[testIndex], 'error');
+							_this._onFinish(aTests[testIndex], 'error');
 							aContinuation('ko');
 						}
 					});
@@ -481,22 +481,23 @@ function _exec(aTest, aContext, aContinuation, aReport)
 
 		if (utils.isGeneratedIterator(result)) {
 			aReport.report = report;
+			var _this = this;
 			utils.doIteration(result, {
 				onEnd : function(e) {
 					aReport.report.result = 'success';
-					_onFinish(aTest, aReport.report.result);
+					_this._onFinish(aTest, aReport.report.result);
 					aContinuation('ok');
 				},
 				onFail : function(e) {
 					aReport.report.result = 'failure';
 					aReport.report.exception = e;
-					_onFinish(aTest, aReport.report.result);
+					_this._onFinish(aTest, aReport.report.result);
 					aContinuation('ok');
 				},
 				onError : function(e) {
 					aReport.report.result = 'error';
 					aReport.report.exception = e;
-					_onFinish(aTest, aReport.report.result);
+					_this._onFinish(aTest, aReport.report.result);
 					aContinuation('ok');
 				}
 			});
@@ -504,17 +505,17 @@ function _exec(aTest, aContext, aContinuation, aReport)
 		}
 
 		report.result = 'success';
-		_onFinish(aTest, report.result);
+		this._onFinish(aTest, report.result);
 	}
 	catch(exception if exception.name == 'AssertionFailed') {
 		report.result = 'failure';
 		report.exception = exception;
-		_onFinish(aTest, report.result);
+		this._onFinish(aTest, report.result);
 	}
 	catch(exception) {
 		report.result = 'error';
 		report.exception = exception;
-		_onFinish(aTest, report.result);
+		this._onFinish(aTest, report.result);
 	}
 
 	return report;
@@ -530,6 +531,7 @@ function _checkPriorityToExec(aTest)
 			(this._masterPriority !== null && this._masterPriority !== void(0)) ?
 				(this._masterPriority || aTest.priority) :
 				aTest.priority;
+
 	if (typeof priority == 'number') {
 		priority = Math.min(1, Math.max(0, priority));
 		switch (priority)
