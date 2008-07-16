@@ -174,3 +174,28 @@ function test_fail()
 	assert.equals('AssertionFailed', exception.name);
 	assert.equals('2\n1\n0', exception.message);
 }
+
+function test_appendTypeString()
+{
+	var array = [
+			true,
+			0,
+			'a',
+			{},
+			null,
+			void(0),
+			(function() {})
+		];
+	assert.arrayEquals(
+		[
+			'true (boolean)',
+			'0 (number)',
+			'a (string)',
+			'[object Object] (object)',
+			'(null) (object)',
+			'(null) (undefined)',
+			'function () {\n} (function)'
+		],
+		assertionsModule.appendTypeString(array)
+	);
+}
