@@ -120,6 +120,7 @@ function _emulateClickOnXULElement(aElement, aOptions)
 	if (!aElement) return;
 
 	var target = this._getXULCommandEventDispatcher(aElement) || aElement ;
+	if (target.getAttribute('disabled') == 'true') return;
 
 	if (!aOptions) aOptions = {};
 	var isSimpleAction = !(
