@@ -165,6 +165,7 @@ function setTests(aHash)
 	this.context = aHash;
 	for (var desc in aHash)
 	{
+		if (typeof aHash[desc] != 'function') continue;
 		switch (desc)
 		{
 			case 'setUp':
@@ -188,17 +189,20 @@ function setTests(aHash)
 	 
 function registerSetUp(aFunction) 
 {
+	if (typeof aFunction != 'function') return;
 	this._setUp = aFunction;
 }
  
 function registerTearDown(aFunction) 
 {
+	if (typeof aFunction != 'function') return;
 	this._tearDown = aFunction;
 }
  
 function registerTest(aFunction) 
 {
-	if (this._tests.some(function(aTest) {
+	if (typeof aFunction != 'function' ||
+		this._tests.some(function(aTest) {
 			return (aTest.code == aFunction);
 		}))
 		return;
@@ -264,6 +268,7 @@ function tearDown(aFunction)
  
 function test(aDescription, aCode) 
 {
+	if (typeof aCode != 'function') return;
 	aCode.description = aDescription;
 	this.registerTest(aCode);
 }
