@@ -198,9 +198,17 @@ function registerTest(aFunction)
 		}))
 		return;
 
+	var desc = aFunction.description;
+	if (!desc) {
+		if (aFunction.toSource().match(/\(?function ([^\(]+)\s*\(/))
+			desc = RegExp.$1;
+		else
+			desc = aFunction.toString().substring(0, 30);
+	}
+
 	this._tests.push({
 		name     : (this._namespace + '::' + this.title + '::' + aFunction.description),
-		desc     : aFunction.description,
+		desc     : desc,
 		code     : aFunction,
 		source   : aFunction.toSource(),
 		priority : (
