@@ -124,6 +124,8 @@ function fail() {
 function appendTypeString(aArray)
 {
 	return aArray.map(function(aValue) {
+			if (aValue === null) return 'null'
+			if (aValue === void(0)) return 'undefined'
 			return bundle.getFormattedString('typed_value', [aValue, (typeof aValue)]);
 		});
 }

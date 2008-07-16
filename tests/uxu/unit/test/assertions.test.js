@@ -192,8 +192,8 @@ function test_appendTypeString()
 			'0 (number)',
 			'a (string)',
 			'[object Object] (object)',
-			'(null) (object)',
-			'(null) (undefined)',
+			'null',
+			'undefined',
 			'function () {\n} (function)'
 		],
 		assertionsModule.appendTypeString(array)
