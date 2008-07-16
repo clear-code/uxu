@@ -287,24 +287,26 @@ function _asyncRun(aTests, aSetUp, aTearDown, aReportHandler)
 	var report = { report : null };
 
 	var stateTransitions = {
-		start:         { ok: 'checkPriority' },
-		checkPriority: { ok: 'doSetUp', ko: 'nextTest' },
-		doSetUp:       { ok: 'doTest', ko: 'doReport' },
-		doTest:        { ok: 'doReport' },
-		doReport:      { ok: 'doTearDown' },
-		doTearDown:    { ok: 'nextTest', ko: 'nextTest' },
-		nextTest:      { ok: 'checkPriority', ko: 'finished' },
-		finished:      { }
+		start :         { ok : 'checkPriority' },
+		checkPriority : { ok : 'doSetUp', ko: 'nextTest' },
+		doSetUp :       { ok : 'doTest', ko: 'doReport' },
+		doTest :        { ok : 'doReport' },
+		doReport :      { ok : 'doTearDown' },
+		doTearDown :    { ok : 'nextTest', ko: 'nextTest' },
+		nextTest :      { ok : 'checkPriority', ko: 'finished' },
+		finished :      { }
 	}
 
 	var nullContinuation = function() {};
 
 	_this = this;
 	var stateHandlers = {
-		start: function(aContinuation) {
+		start : function(aContinuation)
+		{
 			aContinuation('ok')
 		},
-		checkPriority: function(aContinuation) {
+		checkPriority : function(aContinuation)
+		{
 			if (_this._checkPriorityToExec(aTests[testIndex])) {
 				aContinuation('ok');
 				return;
@@ -314,7 +316,8 @@ function _asyncRun(aTests, aSetUp, aTearDown, aReportHandler)
 			stateHandlers.doReport(nullContinuation);
 			aContinuation('ko');
 		},
-		doSetUp: function(aContinuation) {
+		doSetUp : function(aContinuation)
+		{
 			if (!aSetUp) {
 				aContinuation('ok');
 				return;
@@ -346,7 +349,8 @@ function _asyncRun(aTests, aSetUp, aTearDown, aReportHandler)
 				aContinuation('ko');
 			}
 		},
-		doTest: function(aContinuation) {
+		doTest : function(aContinuation)
+		{
 			var test;
 			test = aTests[testIndex];
 			var newReport = _exec(test, context, aContinuation, report);
@@ -359,7 +363,8 @@ function _asyncRun(aTests, aSetUp, aTearDown, aReportHandler)
 				report.report.testDescription = test.desc;
 			}
 		},
-		doReport: function(aContinuation) {
+		doReport : function(aContinuation)
+		{
 			_onFinish(aTests[testIndex], report.report.result);
 			report.report.testOwner = _this;
 			report.report.testIndex = testIndex + 1;
@@ -374,7 +379,8 @@ function _asyncRun(aTests, aSetUp, aTearDown, aReportHandler)
 				throw new Error('invalid report handler');
 			aContinuation('ok');
 		},
-		doTearDown: function(aContinuation) { // exceptions in setup/teardown are not reported correctly
+		doTearDown : function(aContinuation)
+		{ // exceptions in setup/teardown are not reported correctly
 			if (!aTearDown) {
 				aContinuation('ok');
 				return;
@@ -400,7 +406,8 @@ function _asyncRun(aTests, aSetUp, aTearDown, aReportHandler)
 				aContinuation('ko');
 			}
 		},
-		nextTest: function(aContinuation) {
+		nextTest : function(aContinuation)
+		{
 			if (_this._stopper && _this._stopper()) {
 				aContinuation('ko');
 				return;
@@ -408,12 +415,13 @@ function _asyncRun(aTests, aSetUp, aTearDown, aReportHandler)
 			testIndex += 1;
 			aTests[testIndex] ? aContinuation('ok') : aContinuation('ko');
 		},
-		finished: function(aContinuation) {
+		finished : function(aContinuation)
+		{
 			if (aReportHandler && 'onFinish' in aReportHandler)
 				aReportHandler.onFinish();
 			_this._done = true;
 		}
-	}
+	};
 
 	fsm.go('start', {}, stateHandlers, stateTransitions, []);
 }

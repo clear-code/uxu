@@ -1,7 +1,8 @@
 // from MozLab
 function go(aStateName, aContext, aStateHandlers, aStateTransitions, aEventHandlers)
 {
-	if (aEventHandlers['state/enter'])
+	if (!aEventHandlers) aEventHandlers = {};
+	if ('state/enter' in aEventHandlers)
 		aEventHandlers['state/enter'].forEach(function(aEventHandler) {
 			aEventHandler.call(aContext, aStateName);
 		});
@@ -10,7 +11,7 @@ function go(aStateName, aContext, aStateHandlers, aStateTransitions, aEventHandl
 		aContext,
 		function(aExitResult)
 		{
-			if (aEventHandlers['state/exit'])
+			if ('state/exit' in aEventHandlers)
 				aEventHandlers['state/exit'].forEach(function(aEventHandler) {
 					aEventHandler.call(aContext, aStateName);
 				});
