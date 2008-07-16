@@ -21,8 +21,6 @@
 
 // Modified by SHIMODA Hiroshi <shimoda@clear-code.com>
  
-//var module = new ModuleManager(['chrome://mozlab/content']); 
-//const fsm = module.require('package', 'lib/fsm');
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var fsm    = lib_module.require('package', 'fsm');
 var bundle = lib_module.require('package', 'bundle');

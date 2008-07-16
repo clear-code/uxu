@@ -3,10 +3,10 @@
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var utils      = lib_module.require('package', 'utils');
 var bundle     = lib_module.require('package', 'bundle');
-var TestCase   = lib_module.require('class', 'test_case');
 
-var helper_module   = new ModuleManager(['chrome://uxu/content/test']);
-var Environment = helper_module.require('class', 'environment');
+var test_module = new ModuleManager(['chrome://uxu/content/test']);
+var TestCase    = test_module.require('class', 'test_case');
+var Environment = test_module.require('class', 'environment');
 
 function createTestSuite(aURL, aBrowser, aTestCaseClass)
 {

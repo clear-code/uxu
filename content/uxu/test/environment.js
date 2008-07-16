@@ -4,13 +4,13 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
-var bundle = lib_module.require('package', 'bundle');
-var utils = lib_module.require('package', 'utils');
-var assertions = lib_module.require('package', 'assertions');
+var bundle     = lib_module.require('package', 'bundle');
+var utils      = lib_module.require('package', 'utils');
 
-var helper_module = new ModuleManager(['chrome://uxu/content/test']);
-var action = helper_module.require('package', 'action');
-var GMUtils = helper_module.require('class', 'greasemonkey');
+var test_module = new ModuleManager(['chrome://uxu/content/test']);
+var assertions  = test_module.require('package', 'assertions');
+var action      = test_module.require('package', 'action');
+var GMUtils     = test_module.require('class', 'greasemonkey');
 
 
 var key = 'uxu-test-window-id';

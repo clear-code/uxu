@@ -1,13 +1,12 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
-var assertions = lib_module.require('package', 'assertions');
 var fsm        = lib_module.require('package', 'fsm');
-var TestCase   = lib_module.require('class', 'test_case');
 var utils      = lib_module.require('package', 'utils');
 
-var help_module  = new ModuleManager(['chrome://uxu/content/test']);
-var runner_utils = help_module.require('package', 'runner_utils');
+var test_module  = new ModuleManager(['chrome://uxu/content/test']);
+var TestCase     = test_module.require('class', 'test_case');
+var runner_utils = test_module.require('package', 'runner_utils');
 
 
 function constructor(files)
