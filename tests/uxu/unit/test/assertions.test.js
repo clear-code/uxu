@@ -120,6 +120,19 @@ function test_assertions()
 		[/te[sx]t/, 'tent', message]
 	);
 
+	assert.assertSucceed(assertionsModule.notMatches,
+		[/te[sx]t/, 'tent']
+	);
+	assert.assertFailed(assertionsModule.notMatches,
+		[/te[sx]t/, 'test', message]
+	);
+	assert.assertSucceed(assertionsModule.notMatch,
+		[/te[sx]t/, 'tent']
+	);
+	assert.assertFailed(assertionsModule.notMatch,
+		[/te[sx]t/, 'test', message]
+	);
+
 	assert.assertSucceed(assertionsModule.pattern,
 		['test', /te[sx]t/]
 	);

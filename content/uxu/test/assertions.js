@@ -77,10 +77,16 @@ function raises(exception, code, context, aMessage) {
 function raise(exception, code, context, aMessage) { this.raises(exception, code, context, aMessage); }
 
 function matches(pattern, string, aMessage) {
-    if (!(string.match(pattern)))
+    if (!pattern.test(string))
         fail(bundle.getFormattedString('assert_matches', [pattern, string]), aMessage);
 }
 function match(pattern, string, aMessage) { this.matches(pattern, string, aMessage); }
+
+function notMatches(pattern, string, aMessage) {
+    if (pattern.test(string))
+        fail(bundle.getFormattedString('assert_not_matches', [pattern, string]), aMessage);
+}
+function notMatch(pattern, string, aMessage) { this.notMatches(pattern, string, aMessage); }
 
 function pattern(string, pattern, aMessage) {
     if (!(string.match(pattern)))
