@@ -48,6 +48,25 @@ assert.testInitialized = function(aTest, aDescription)
 	assert.matches(/^test-\d+$/, aTest.id);
 };
 
+function testRegisterTestFunctions()
+{
+	testcase.tests = {
+		'1' : function() {},
+		'2' : (new Function('arg', 'return true')),
+		'3' : 10,
+		'4' : 'str',
+		'5' : true,
+	};
+	assert.equals(2, testcase.tests.length);
+
+	testcase.registerTest(function() {});
+	testcase.registerTest(new Function('arg', 'return true'));
+	testcase.registerTest(10);
+	testcase.registerTest('str');
+	testcase.registerTest('true');
+	assert.equals(4, testcase.tests.length);
+}
+
 function testNormalStyle1()
 {
 	clearCount();
