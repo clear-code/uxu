@@ -83,6 +83,7 @@
 <!ENTITY config.mozunit.runMode   "テストの実行ポリシー">
 <!ENTITY config.mozunit.runMode.0 "前回失敗したテストや未実行のテストは必ず実行し、それ以外は優先度を落とす（推奨）">
 <!ENTITY config.mozunit.runMode.1 "すべてのテストを必ず実行する">
+<!ENTITY config.mozunit.autoShowContent "テストの実行時にテスト用フレームを自動的に表示する">
 
 <!ENTITY config.tabs.server "UxUサーバ">
 

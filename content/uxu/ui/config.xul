@@ -63,6 +63,9 @@
 		<preference id="extensions.uxu.mozunit.showInternalStacks"
 			name="extensions.uxu.mozunit.showInternalStacks"
 			type="bool"/>
+		<preference id="extensions.uxu.mozunit.autoShowContent"
+			name="extensions.uxu.mozunit.autoShowContent"
+			type="bool"/>
 		<preference id="extensions.uxu.mozunit.editor"
 			name="extensions.uxu.mozunit.editor"
 			type="string"/>
@@ -77,6 +80,9 @@
 	<checkbox id="extensions.uxu.mozunit.showInternalStacks-check"
 		preference="extensions.uxu.mozunit.showInternalStacks"
 		label="&config.mozunit.showInternalStacks;"/>
+	<checkbox id="extensions.uxu.mozunit.autoShowContent-check"
+		preference="extensions.uxu.mozunit.autoShowContent"
+		label="&config.mozunit.autoShowContent;"/>
 	<groupbox orient="vertical">
 		<caption label="&config.mozunit.editor.caption;"/>
 		<hbox align="center">

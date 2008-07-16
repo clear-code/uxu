@@ -83,6 +83,7 @@
 <!ENTITY config.mozunit.runMode   "Policy to run tests">
 <!ENTITY config.mozunit.runMode.0 "Run tests by their priority, but regard failed or uncompleted tests as MUST to run (recommended)">
 <!ENTITY config.mozunit.runMode.1 "Run any test always">
+<!ENTITY config.mozunit.autoShowContent "Show internal frame while testing automatically">
 
 <!ENTITY config.tabs.server "UxU Server">
 

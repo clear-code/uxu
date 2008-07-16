@@ -222,6 +222,7 @@ function init()
 			toggleAlwaysRaised();
 	}
 	updateTestCommands();
+	_('content').addEventListener('load', onContentLoad, true);
 }
 	 
 var alwaysRaisedObserver = { 
@@ -243,8 +244,9 @@ function finish()
 	if (!isLinux()) {
 		ObserverService.removeObserver(alwaysRaisedObserver, 'xul-window-registered');
 	}
+	_('content').removeEventListener('load', onContentLoad, true);
 }
-  
+ 	 
 /* test cases */ 
 	 
 function newTestCase() 
@@ -317,7 +319,7 @@ function getFocusedPath()
 }
   
 /* runner */ 
-	
+	 
 function TestReportHandler(aTestCase) 
 {
 	this.testCase = aTestCase;
@@ -423,6 +425,10 @@ TestReportHandler.prototype = {
  
 function onAllTestsFinish() 
 {
+	if (!_('content').collapsed && contentAutoExpanded) {
+		toggleContent();
+	}
+
 	if (shouldAbortTest) {
 		_('testResultStatus').setAttribute('label', bundle.getString('all_abort'));
 		return;
@@ -964,7 +970,22 @@ function toggleContent()
 	_('content').collapsed = !_('content').collapsed;
 	_('content-splitter').hidden = !_('content-splitter').hidden;
 }
+	 
+var contentAutoExpanded = false; 
  
+function onContentLoad() 
+{
+	if (!utils.getPref('extensions.uxu.mozunit.autoShowContent')) return;
+	if (_('content').collapsed) {
+		contentAutoExpanded = true;
+		toggleContent();
+	}
+	else if (content.location.href == 'about:blank' && contentAutoExpanded) {
+		contentAutoExpanded = false;
+		toggleContent();
+	}
+}
+  
 function goUpdateCommand(aCommand) 
 {
 	var node = document.getElementById(aCommand);
@@ -1057,4 +1078,4 @@ function updateContextMenu()
 		_('editThis-separator').setAttribute('hidden', true);
 	}
 }
- 	 
+  
