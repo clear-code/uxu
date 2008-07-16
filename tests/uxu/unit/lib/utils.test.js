@@ -214,6 +214,128 @@ function test_isGeneratedIterator()
 	assert.isTrue(utilsModule.isGeneratedIterator(iterator));
 
 	assert.isFalse(utilsModule.isGeneratedIterator({}));
+	assert.isFalse(utilsModule.isGeneratedIterator(null));
 	assert.isFalse(utilsModule.isGeneratedIterator('foobar'));
+	assert.isFalse(utilsModule.isGeneratedIterator());
 }
 
+test_makeStackLine.priority = 'never';
+function test_makeStackLine()
+{
+}
+
+function test_doIteration()
+{
+	var flagFirst = false;
+	var flagWait = false;
+	var flagValue = false;
+	var flagFunction = false;
+
+	function TestGenerator()
+	{
+		flagFirst = true;
+
+		yield 100;
+		flagWait = true;
+
+		var  flag = { value : false };
+		window.setTimeout(function() {
+			flag.value = true;
+		}, 100);
+		yield flag;
+		flagValue = true;
+
+		var startAt = Date.now();
+		yield (function() {
+				return (Date.now() - startAt) > 100;
+			});
+		flagFunction = true;
+	}
+
+	var iterator = TestGenerator();
+	yield Do(utilsModule.doIteration(iterator));
+	assert.isTrue(flagFirst);
+	assert.isTrue(flagWait);
+	assert.isTrue(flagValue);
+	assert.isTrue(flagFunction);
+
+	flagFirst = false;
+	flagWait = false;
+	flagValue = false;
+	flagFunction = false;
+	yield Do(utilsModule.doIteration(TestGenerator));
+	assert.isTrue(flagFirst);
+	assert.isTrue(flagWait);
+	assert.isTrue(flagValue);
+	assert.isTrue(flagFunction);
+}
+
+function test_doIterationCallbacks()
+{
+	var onEnd = false;
+	var onFail = false;
+	var onError = false;
+	var callbacks = {
+		onEnd : function(e)
+		{
+			onEnd = true;
+		},
+		onFail : function(e)
+		{
+			onFail = true;
+		},
+		onError : function(e)
+		{
+			onError = true;
+		}
+	};
+
+	yield Do(utilsModule.doIteration(function() {
+			yield 100;
+		}, callbacks));
+	assert.isTrue(onEnd);
+
+//	yield Do(utilsModule.doIteration(function() {
+//			yield 100;
+//			assert.isTrue(false);
+//		}, callbacks));
+//	assert.isTrue(onFail);
+
+//	yield Do(utilsModule.doIteration(function() {
+//			yield 100;
+//			var val = null;
+//			null.foobar();
+//		}, callbacks));
+//	assert.isTrue(onError);
+}
+
+function test_Do()
+{
+	var obj = {};
+	assert.equals(obj, utilsModule.Do(obj));
+	assert.isTrue(utilsModule.Do(true));
+	assert.equals(100, utilsModule.Do(100));
+	assert.equals('string', utilsModule.Do('string'));
+
+	var func = function() {
+		return 'foobar';
+	};
+	assert.equals('foobar', utilsModule.Do(func));
+
+	function Generator()
+	{
+		yield 100;
+	};
+	var result = utilsModule.Do(Generator);
+	assert.equals('object', typeof result);
+	assert.isTrue('value' in result);
+	result = utilsModule.Do(Generator());
+	assert.equals('object', typeof result);
+	assert.isTrue('value' in result);
+}
+
+function test_getDB()
+{
+	var db = utilsModule.getDB();
+	assert.isTrue(db instanceof Ci.mozIStorageConnection);
+}
