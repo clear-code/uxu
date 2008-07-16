@@ -183,7 +183,7 @@ const fileDNDObserver =
  
 	canDrop : function(aEvent, aSession) 
 	{
-		if (_('run').getAttribute('disabled') == 'true')
+		if (_('stop').getAttribute('disabled') != 'true')
 			return false;
 		var XferDataSet = nsTransferable.get(
 				this.getSupportedFlavours(),
@@ -1028,6 +1028,8 @@ function updateTestCommands()
 		file.exists()) {
 		_('run').removeAttribute('disabled');
 		_('runAll').removeAttribute('disabled');
+		_('runOptions-menu').removeAttribute('disabled');
+		_('runOptions-button').removeAttribute('disabled');
 		if (!file.isDirectory())
 			_('edit').removeAttribute('disabled');
 		else
@@ -1036,6 +1038,8 @@ function updateTestCommands()
 	else {
 		_('run').setAttribute('disabled', true);
 		_('runAll').setAttribute('disabled', true);
+		_('runOptions-menu').setAttribute('disabled', true);
+		_('runOptions-button').setAttribute('disabled', true);
 		_('edit').setAttribute('disabled', true);
 	}
 }

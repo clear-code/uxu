@@ -158,7 +158,8 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 					<menuitem command="edit"/>
 					<menuseparator/>
 					<menuitem command="run" key="key-run"/>
-					<menu label="&mozunit.run.options;">
+					<menu label="&mozunit.run.options;"
+						id="runOptions-menu">
 						<menupopup onpopupshowing="updateRunMode();">
 							<menuitem command="runPriority" observes="runPriority"/>
 							<menuitem command="runAll" observes="runAll"/>
@@ -207,7 +208,8 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 			</toolbar>
 			<hbox id="run-box">
 				<button command="run" flex="1" style="font-weight: bold;"/>
-				<toolbarbutton label="&mozunit.run.options;" type="menu">
+				<toolbarbutton label="&mozunit.run.options;" type="menu"
+					id="runOptions-button">
 					<menupopup onpopupshowing="updateRunMode();">
 						<menuitem command="runPriority" observes="runPriority"/>
 						<menuitem command="runAll" observes="runAll"/>
