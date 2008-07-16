@@ -28,3 +28,4 @@ function testGetString()
 	assert.equals(expected['all_result_failure'], bundle.getFormattedString('all_result_failure', [1]));
 	assert.equals(expected['assert_equals'], bundle.getFormattedString('assert_equals', [1, 2]));
 }
+s
