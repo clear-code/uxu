@@ -45,8 +45,13 @@ function constructor(aTitle, aNamespace)
 
 	this._tests = [];
 	this.__defineSetter__(
-		'tests', function(hash) {
-			this.setTests(hash);
+		'tests', function(aHash) {
+			this.setTests(aHash);
+			return aHash;
+		});
+	this.__defineGetter__(
+		'tests', function() {
+			return this._tests;
 		});
 
 	if (!aNamespace || typeof aNamespace != 'string') {
@@ -80,8 +85,9 @@ function constructor(aTitle, aNamespace)
 		});
 
 	this.__defineSetter__(
-		'stateThat', function(hash) {
-			this.setTests(hash);
+		'stateThat', function(aHash) {
+			this.setTests(aHash);
+			return aHash;
 		});
 
 	this._reportHandler = _defaultReportHandler;
@@ -192,9 +198,8 @@ function registerTearDown(aFunction)
  
 function registerTest(aFunction) 
 {
-	var source = aFunction.toSource();
 	if (this._tests.some(function(aTest) {
-			return (aTest.source == source);
+			return (aTest.code == aFunction);
 		}))
 		return;
 
@@ -210,7 +215,6 @@ function registerTest(aFunction)
 		name     : (this._namespace + '::' + this.title + '::' + aFunction.description),
 		desc     : desc,
 		code     : aFunction,
-		source   : aFunction.toSource(),
 		priority : (
 			typeof aFunction.priority == 'number' ?
 				aFunction.priority :
@@ -431,6 +435,7 @@ function _asyncRun(aTests, aSetUp, aTearDown, aReportHandler)
 		}
 	};
 
+	this._done = false;
 	fsm.go('start', {}, stateHandlers, stateTransitions, []);
 }
 	 
@@ -489,16 +494,26 @@ function _exec(aTest, aContext, aContinuation, aReport)
   
 function _checkPriorityToExec(aTest) 
 {
-	var priority = (aTest.priority == 'never') ? 'never' : (this._masterPriority || aTest.priority);
+	var forceNever = (
+			(aTest.priority == 'never') ||
+			(typeof aTest.priority == 'number' && aTest.priority == 0)
+		);
+	var priority = forceNever ? 'never' :
+			(this._masterPriority !== null && this._masterPriority !== void(0)) ?
+				(this._masterPriority || aTest.priority) :
+				aTest.priority;
 	if (typeof priority == 'number') {
 		priority = Math.min(1, Math.max(0, priority));
 		switch (priority)
 		{
 			case 1:
-				return true;
+				shouldDo = true;
+				break;
 			case 0:
-				return false;
+				shouldDo = false;
+				break;
 			default:
+				shouldDo = (Math.random() <= priority);
 				break;
 		}
 	}
@@ -507,17 +522,19 @@ function _checkPriorityToExec(aTest)
 		switch (priority)
 		{
 			case 'must':
-				return true;
+				shouldDo = true;
+				break;
 			case 'never':
-				return false;
+				shouldDo = false;
+				break;
 			default:
+				priority = Number(utils.getPref('extensions.uxu.priority.'+priority));
+				priority = Math.min(1, Math.max(0, priority));
+				shouldDo = (Math.random() <= priority);
 				break;
 		}
-		priority = Number(utils.getPref('extensions.uxu.priority.'+priority));
-		priority = Math.min(1, Math.max(0, priority));
 	}
-	var shouldDo = (Math.random() <= priority);
-	if (!shouldDo) {
+	if (!shouldDo && !forceNever) {
 		var db = utils.getDB();
 		var lastResult;
 		if (db.tableExists('result_history')) {
