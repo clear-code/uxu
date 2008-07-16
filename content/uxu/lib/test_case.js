@@ -40,9 +40,16 @@ var utils  = lib_module.require('package', 'utils');
 function constructor(aTitle, aNamespace) 
 {
 	this._title = aTitle;
+	this.__defineGetter__(
+		'title', function() {
+			return this._title;
+		});
+
 	this._tests = [];
-	this._context = {};
-	this._reportHandler = _defaultReportHandler;
+	this.__defineSetter__(
+		'tests', function(hash) {
+			this.setTests(hash);
+		});
 
 	if (!aNamespace || typeof aNamespace != 'string') {
 		var path;
@@ -52,12 +59,16 @@ function constructor(aTitle, aNamespace)
 			if (path.indexOf('chrome://uxu/content/test/helper/subScriptRunner.js?') != 0)
 				continue;
 			/.+includeSource=([^;]+)/.test(path);
-			aNamespace = RegExp.$1;
+			aNamespace = decodeURIComponent(RegExp.$1);
 			break;
 		}
 		while (stack = stack.caller);
 	}
 	this._namespace = aNamespace;
+	this.__defineGetter__(
+		'namespace', function() {
+			return this._namespace;
+		});
 
 	this._masterPriority = null;
 	this.__defineSetter__(
@@ -71,15 +82,11 @@ function constructor(aTitle, aNamespace)
 		});
 
 	this.__defineSetter__(
-		'tests', function(hash) {
-			this.setTests(hash);
-		});
-
-	this.__defineSetter__(
 		'stateThat', function(hash) {
 			this.setTests(hash);
 		});
 
+	this._reportHandler = _defaultReportHandler;
 	this.__defineSetter__(
 		'reportHandler', function(aHandler) {
 			this._reportHandler = aHandler;
@@ -90,11 +97,7 @@ function constructor(aTitle, aNamespace)
 			return this._reportHandler;
 		});
 
-	this.__defineGetter__(
-		'title', function() {
-			return this._title;
-		});
-
+	this._context = {};
 	this.__defineSetter__(
 		'context', function(aContext) {
 			this._context = aContext;
@@ -363,6 +366,8 @@ function _asyncRun(aTests, aSetUp, aTearDown, aReportHandler)
 			report.report.testOwner = _this;
 			report.report.testIndex = testIndex + 1;
 			report.report.testCount = aTests.length;
+			report.report.testID    = aTests[testIndex].name;
+			report.report.namespaceURL = _this._namespace;
 			if (typeof aReportHandler == 'function')
 				aReportHandler(report.report);
 			else if (aReportHandler && 'handleReport' in aReportHandler)

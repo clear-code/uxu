@@ -81,6 +81,8 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 			disabled="true"/>
 		<command id="quit" label="&mozunit.quit.label;" accesskey="&mozunit.quit.accesskey;"
 			oncommand="window.close();"/>
+		<command id="editThis" label="&mozunit.editThis.label;" accesskey="&mozunit.editThis.accesskey;"
+			oncommand="openInEditor(getFocusedPath());"/>
 		<command id="cmd_copy" label="&mozunit.copy.label;" accesskey="&mozunit.copy.accesskey;"
 			oncommand="goDoCommand('cmd_copy')"/>
 	</commandset>
@@ -99,6 +101,8 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 
 	<popupset>
 		<menupopup id="contextMenu" onpopupshowing="updateContextMenu();">
+			<menuitem id="editThis-menuitem" command="editThis"/>
+			<menuseparator id="editThis-separator"/>
 			<menuitem command="cmd_copy"/>
 		</menupopup>
 	</popupset>

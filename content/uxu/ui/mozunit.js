@@ -246,7 +246,7 @@ function finish()
 }
   
 /* test cases */ 
-	
+	 
 function newTestCase() 
 {
 	var file = pickFile('save', makeTestCaseFileOptions());
@@ -298,6 +298,23 @@ function makeTestCaseFileOptions(aIsFolder)
 		title : bundle.getString(aIsFolder ? 'picker_title_open_testcase_folder' : 'picker_title_open_testcase' )
 	};
 }
+ 
+function getFocusedPath() 
+{
+	var node = document.popupNode;
+	if (node) {
+		var file = document.evaluate(
+				'ancestor-or-self::*[@role="testcase-report" or local-name()="listitem"]/@file',
+				node,
+				null,
+				XPathResult.STRING_TYPE,
+				null
+			).stringValue;
+		if (file && file.indexOf('file:') > -1)
+			return utils.getFilePathFromURLSpec(file);
+	}
+	return null;
+}
   
 /* runner */ 
 	
@@ -329,6 +346,7 @@ TestReportHandler.prototype = {
 	handleReport : function(aReport) {
 		var wTestCaseReport = this.getTestCaseReport(this.testCase.title);
 		_(wTestCaseReport).setAttribute('test-id', aReport.testID);
+		_(wTestCaseReport).setAttribute('file', aReport.namespaceURL);
 		_(wTestCaseReport, 'bar').setAttribute('mode', 'determined');
 		_(wTestCaseReport, 'bar').setAttribute(
 			'value', parseInt(aReport.testIndex / aReport.testCount * 100));
@@ -436,11 +454,7 @@ function onAllTestsFinish()
  
 function onError(aError) 
 {
-	_('prerun-report', 'error').appendChild(
-		document.createTextNode(
-			bundle.getFormattedString('error_failed', [aError.toString()])
-		)
-	);
+	_('prerun-report', 'error').textContent = bundle.getFormattedString('error_failed', [aError.toString()]);
 	_('prerun-report', 'error').hidden = false;
 
 	if (aError.stack) {
@@ -473,6 +487,8 @@ function displayStackTrace(aTrace, aListbox)
 		var item = document.createElement('listitem');
 		item.setAttribute('label', aLine);
 		item.setAttribute('crop', 'center');
+		var match = aLine.match(/@(\w+:.*)?:(\d+)/);
+		item.setAttribute('file', match[1]);
 		aListbox.appendChild(item);
 	});
 }
@@ -899,7 +915,7 @@ function isLinux()
 {
 	return /linux/i.test(navigator.platform);
 }
- 	
+ 
 function updateRunMode() 
 {
 	var runPriority = _('runPriority');
@@ -1027,5 +1043,14 @@ function updateTestCommands()
 function updateContextMenu() 
 {
 	updateEditItems();
+
+	if (getFocusedPath()) {
+		_('editThis-menuitem').removeAttribute('hidden');
+		_('editThis-separator').removeAttribute('hidden');
+	}
+	else {
+		_('editThis-menuitem').setAttribute('hidden', true);
+		_('editThis-separator').setAttribute('hidden', true);
+	}
 }
-  
+ 	 

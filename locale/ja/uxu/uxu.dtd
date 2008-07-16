@@ -30,6 +30,8 @@
 <!ENTITY mozunit.new.accesskey "N">
 <!ENTITY mozunit.edit.label     "編集...">
 <!ENTITY mozunit.edit.accesskey "E">
+<!ENTITY mozunit.editThis.label     "このファイルを編集...">
+<!ENTITY mozunit.editThis.accesskey "E">
 <!ENTITY mozunit.saveReport.label     "結果を保存">
 <!ENTITY mozunit.saveReport.accesskey "V">
 <!ENTITY mozunit.quit.label     "終了">
