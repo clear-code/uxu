@@ -38,13 +38,12 @@ function isTrue(x, aMessage) {
 }
 
 function isDefined(x, aMessage) {
-    if (x == null ||
-       x == undefined)
+    if (x === undefined)
         fail(bundle.getFormattedString('assert_is_defined', [x]), aMessage);
 }
 
 function isUndefined(x, aMessage) {
-    if (x != undefined)
+    if (x !== undefined)
         fail(bundle.getFormattedString('assert_is_undefined', [x]), aMessage);
 }
 
