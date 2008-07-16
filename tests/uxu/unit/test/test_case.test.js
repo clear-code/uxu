@@ -26,11 +26,63 @@ var setUpCount = 0;
 var tearDownCount = 0;
 var testCount = 0;
 
-function testNormalStyle()
+function clearCount()
 {
 	setUpCount    = 0;
 	tearDownCount = 0;
 	testCount     = 0;
+}
+
+assert.testDone = function(aSetUp, aTearDown, aTestCount)
+{
+	assert.isTrue(testcase.done);
+	assert.equals(aSetUp, setUpCount);
+	assert.equals(aTearDown, tearDownCount);
+	assert.equals(aTestCount, testCount);
+};
+
+assert.testInitialized = function(aTest, aDescription)
+{
+	assert.equals(aDescription, aTest.desc);
+	assert.equals('normal', aTest.priority);
+	assert.matches(/^test-\d+$/, aTest.id);
+};
+
+function testNormalStyle1()
+{
+	clearCount();
+	testcase.setUp(function() { setUpCount++; });
+	testcase.tearDown(function() { tearDownCount++; });
+	testcase.test(1, function() { testCount++; });
+	testcase.test(2, function() { testCount++; });
+	testcase.test(3, function() { testCount++; });
+	assert.equals(3, testcase.tests.length);
+	assert.testInitialized(testcase.tests[0], '1');
+	testcase.masterPriority = 'must';
+	assert.isFalse(testcase.done);
+	testcase.run();
+	assert.testDone(3, 3, 3);
+}
+
+function testNormalStyle2()
+{
+	clearCount();
+	testcase.registerSetUp(function() { setUpCount++; });
+	testcase.registerTearDown(function() { tearDownCount++; });
+	testcase.registerTest(function test1() { testCount++; });
+	testcase.registerTest(function test2() { testCount++; });
+	testcase.registerTest(function test3() { testCount++; });
+	assert.equals(3, testcase.tests.length);
+	assert.testInitialized(testcase.tests[0], 'test1');
+	testcase.masterPriority = 'must';
+	assert.isFalse(testcase.done);
+	testcase.run();
+	assert.testDone(3, 3, 3);
+}
+
+function testNormalStyle3()
+{
+	clearCount();
 	testcase.tests = {
 		setUp : function() { setUpCount++; },
 		tearDown : function() { tearDownCount++; },
@@ -39,20 +91,48 @@ function testNormalStyle()
 		'3' : function() { testCount++; }
 	};
 	assert.equals(3, testcase.tests.length);
+	assert.testInitialized(testcase.tests[0], '1');
 	testcase.masterPriority = 'must';
 	assert.isFalse(testcase.done);
 	testcase.run();
-	assert.isTrue(testcase.done);
-	assert.equals(3, setUpCount);
-	assert.equals(3, tearDownCount);
-	assert.equals(3, testCount);
+	assert.testDone(3, 3, 3);
+}
+
+function testBDDStyle1()
+{
+	clearCount();
+	testcase.given(function() { setUpCount++; });
+	testcase.states(1, function() { testCount++; });
+	testcase.states(2, function() { testCount++; });
+	testcase.states(3, function() { testCount++; });
+	assert.equals(3, testcase.tests.length);
+	assert.testInitialized(testcase.tests[0], '1');
+	testcase.masterPriority = 'must';
+	assert.isFalse(testcase.done);
+	testcase.verify();
+	assert.testDone(3, 0, 3);
+}
+
+function testBDDStyle2()
+{
+	clearCount();
+	testcase.stateThat = {
+		given : function() { setUpCount++; },
+		'1' : function() { testCount++; },
+		'2' : function() { testCount++; },
+		'3' : function() { testCount++; }
+	};
+	assert.equals(3, testcase.tests.length);
+	assert.testInitialized(testcase.tests[0], '1');
+	testcase.masterPriority = 'must';
+	assert.isFalse(testcase.done);
+	testcase.verify();
+	assert.testDone(3, 0, 3);
 }
 
 function testAsync()
 {
-	var setUpCount = 0;
-	var tearDownCount = 0;
-	var testCount = 0;
+	clearCount();
 	testcase.tests = {
 		setUp : function()
 		{
@@ -87,17 +167,12 @@ function testAsync()
 	testcase.run();
 	yield (function() { return testcase.done; });
 	assert.isTrue(Date.now() - start >= (100 * 3) * 3);
-	assert.isTrue(testcase.done);
-	assert.equals(3, setUpCount);
-	assert.equals(3, tearDownCount);
-	assert.equals(3, testCount);
+	assert.testDone(3, 3, 3);
 }
 
 function testPriority()
 {
-	setUpCount    = 0;
-	tearDownCount = 0;
-	testCount     = 0;
+	clearCount();
 	testcase.tests = {
 		setUp : function() { setUpCount++; },
 		tearDown : function() { tearDownCount++; },
@@ -115,15 +190,16 @@ function testPriority()
 	assert.equals(10, testcase.tests.length);
 
 	testcase.masterPriority = 0.5;
-	for (var i = 0, maxi = 5; i < maxi; i++)
+	for (var i = 0, maxi = 10; i < maxi; i++)
 	{
 		testcase.run();
 		assert.isTrue(testcase.done);
+		yield 0;
 	}
 	assert.equals(testCount, setUpCount);
 	assert.equals(testCount, tearDownCount);
-	assert.isTrue(testCount > 20, testCount);
-	assert.isTrue(testCount < 30, testCount);
+	assert.isTrue(testCount > 40, testCount);
+	assert.isTrue(testCount < 60, testCount);
 }
 
 function testMasterPriority()
@@ -137,29 +213,17 @@ function testMasterPriority()
 	eval('testcase.tests = '+syncTests.toSource());
 	assert.equals(2, testcase.tests.length);
 
-	setUpCount    = 0;
-	tearDownCount = 0;
-	testCount     = 0;
+	clearCount();
 	testcase.masterPriority = 'must';
 	testcase.run();
-	assert.isTrue(testcase.done);
-	assert.equals(2, setUpCount);
-	assert.equals(2, tearDownCount);
-	assert.equals(2, testCount);
+	assert.testDone(2, 2, 2);
 
-	setUpCount    = 0;
-	tearDownCount = 0;
-	testCount     = 0;
+	clearCount();
 	testcase.masterPriority = 'never';
 	testcase.run();
-	assert.isTrue(testcase.done);
-	assert.equals(0, setUpCount);
-	assert.equals(0, tearDownCount);
-	assert.equals(0, testCount);
+	assert.testDone(0, 0, 0);
 
-	setUpCount    = 0;
-	tearDownCount = 0;
-	testCount     = 0;
+	clearCount();
 	testcase.masterPriority = 'must';
 	var tests;
 	eval('tests = '+syncTests.toSource());
@@ -167,10 +231,7 @@ function testMasterPriority()
 	testcase.tests = tests;
 	assert.equals(4, testcase.tests.length);
 	testcase.run();
-	assert.isTrue(testcase.done);
-	assert.equals(3, setUpCount);
-	assert.equals(3, tearDownCount);
-	assert.equals(3, testCount);
+	assert.testDone(3, 3, 3);
 }
 
 function testForceRetry()
@@ -183,25 +244,15 @@ function testForceRetry()
 	};
 	assert.equals(2, testcase.tests.length);
 
-	setUpCount    = 0;
-	tearDownCount = 0;
-	testCount     = 0;
+	clearCount();
 	testcase.masterPriority = 'must';
 	testcase.run();
-	assert.isTrue(testcase.done);
-	assert.equals(2, setUpCount);
-	assert.equals(2, tearDownCount);
-	assert.equals(1, testCount);
+	assert.testDone(2, 2, 1);
 
-	setUpCount    = 0;
-	tearDownCount = 0;
-	testCount     = 0;
+	clearCount();
 	testcase.masterPriority = 'never';
 	testcase.run();
-	assert.isTrue(testcase.done);
-	assert.equals(1, setUpCount);
-	assert.equals(1, tearDownCount);
-	assert.equals(0, testCount);
+	assert.testDone(1, 1, 0);
 }
 
 function testContext()
@@ -216,25 +267,19 @@ function testContext()
 	testcase.tests = tests;
 	assert.equals(2, testcase.tests.length);
 
-	setUpCount    = 0;
-	tearDownCount = 0;
+	clearCount();
 	testcase.masterPriority = 'must';
 	assert.equals(0, tests.count);
 	testcase.run();
-	assert.isTrue(testcase.done);
-	assert.equals(2, setUpCount);
-	assert.equals(2, tearDownCount);
+	assert.testDone(2, 2, 0);
 	assert.equals(2, tests.count);
 
-	setUpCount    = 0;
-	tearDownCount = 0;
+	clearCount();
 	var context = { count : 0 };
 	testcase.context = context;
 	assert.equals(0, context.count);
 	testcase.run();
-	assert.isTrue(testcase.done);
-	assert.equals(2, setUpCount);
-	assert.equals(2, tearDownCount);
+	assert.testDone(2, 2, 0);
 	assert.equals(2, context.count);
 }
 
@@ -263,33 +308,54 @@ function testReportHandler()
 	testcase.reportHandler = handler;
 	assert.equals(3, testcase.tests.length);
 
-	setUpCount    = 0;
-	tearDownCount = 0;
-	testCount     = 0;
+	clearCount();
 	testcase.masterPriority = 'must';
 	testcase.run();
-	assert.isTrue(testcase.done);
-	assert.equals(3, setUpCount);
-	assert.equals(3, tearDownCount);
-	assert.equals(1, testCount);
+	assert.testDone(3, 3, 1);
 	assert.equals(1, failCount);
 	assert.equals(1, errorCount);
 
 	testcase.reportHandler = {
 		handleReport : handler
 	};
-	setUpCount    = 0;
-	tearDownCount = 0;
-	testCount     = 0;
+	clearCount();
 	errorCount    = 0;
 	failCount     = 0;
 	testcase.masterPriority = 'must';
 	testcase.run();
 	assert.isTrue(testcase.done);
-	assert.equals(3, setUpCount);
-	assert.equals(3, tearDownCount);
-	assert.equals(1, testCount);
+	assert.testDone(3, 3, 1);
 	assert.equals(1, failCount);
 	assert.equals(1, errorCount);
+}
+
+function testStopper()
+{
+	testcase.tests = {
+		setUp : function() { setUpCount++; },
+		tearDown : function() { tearDownCount++; },
+		'1' : function() { testCount++; yield 300; },
+		'2' : function() { testCount++; yield 100; },
+		'3' : function() { testCount++; yield 100; }
+	};
+	assert.equals(3, testcase.tests.length);
+
+	var shouldStop = false;
+	var stopper = function() {
+			return shouldStop;
+		};
+
+	clearCount();
+	testcase.masterPriority = 'must';
+	testcase.run(stopper);
+	yield 1000;
+	assert.testDone(3, 3, 3);
+
+	clearCount();
+	testcase.run(stopper);
+	yield 100;
+	shouldStop = true;
+	yield 500;
+	assert.testDone(1, 1, 1);
 }
 

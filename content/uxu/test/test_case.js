@@ -204,15 +204,19 @@ function registerTest(aFunction)
 		return;
 
 	var desc = aFunction.description;
+	var namePart = desc;
 	if (!desc) {
-		if (aFunction.toSource().match(/\(?function ([^\(]+)\s*\(/))
-			desc = RegExp.$1;
-		else
+		if (aFunction.toSource().match(/\(?function ([^\(]+)\s*\(/)) {
+			namePart = desc = RegExp.$1;
+		}
+		else {
 			desc = aFunction.toString().substring(0, 30);
+			namePart = aFunction.toSource().replace(/\s+/g, '');
+		}
 	}
 
 	this._tests.push({
-		name     : (this._namespace + '::' + this.title + '::' + aFunction.description),
+		name     : (this._namespace + '::' + this.title + '::' + namePart),
 		desc     : desc,
 		code     : aFunction,
 		priority : (
@@ -496,7 +500,7 @@ function _checkPriorityToExec(aTest)
 {
 	var forceNever = (
 			(aTest.priority == 'never') ||
-			(typeof aTest.priority == 'number' && aTest.priority == 0)
+			(typeof aTest.priority == 'number' && Math.max(0, aTest.priority) == 0)
 		);
 	var priority = forceNever ? 'never' :
 			(this._masterPriority !== null && this._masterPriority !== void(0)) ?
@@ -598,7 +602,7 @@ function _onFinish(aTest, aResult)
   
 function _defaultReportHandler(aReport) 
 {
-	if(aReport.result == 'success')
+	if (aReport.result == 'success')
 		return;
 
 	var printout = bundle.getFormattedString('report_default', [
