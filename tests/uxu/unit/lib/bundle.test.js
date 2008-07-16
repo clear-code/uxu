@@ -4,7 +4,7 @@ var locale = utils.getPref('general.useragent.locale');
 function setUp()
 {
 	bundle = {};
-	utils.include('../../../content/uxu/lib/bundle.js', bundle);
+	utils.include('../../../../content/uxu/lib/bundle.js', bundle);
 }
 
 function tearDown()

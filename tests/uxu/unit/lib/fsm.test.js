@@ -19,7 +19,7 @@ var eventHandlers = {
 function setUp()
 {
 	fsm = {};
-	utils.include('../../../content/uxu/lib/fsm.js', fsm);
+	utils.include('../../../../content/uxu/lib/fsm.js', fsm);
 }
 
 function tearDown()
