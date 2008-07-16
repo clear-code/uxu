@@ -97,6 +97,8 @@ function test_readFrom()
 	assert.equals('ASCII', utilsModule.readFrom('../../res/ascii.txt'));
 	assert.equals('日本語', utilsModule.readFrom(baseURL+'../../res/utf8.txt', 'UTF-8'));
 	assert.equals('日本語', utilsModule.readFrom('../../res/utf8.txt', 'UTF-8'));
+	assert.equals('日本語', utilsModule.readFrom(baseURL+'../../res/shift_jis.txt', 'Shift_JIS'));
+	assert.equals('日本語', utilsModule.readFrom('../../res/shift_jis.txt', 'Shift_JIS'));
 }
 
 function test_writeTo()
@@ -168,5 +170,50 @@ function test_setAndClearPref()
 	assert.equals('string', value);
 	utilsModule.clearPref(key);
 	assert.isNull(utils.getPref(key));
+}
+
+function test_convertEncoding()
+{
+	var utf8String = utilsModule.readFrom('../../res/utf8.txt');
+	var ucs2String = utilsModule.readFrom('../../res/utf8.txt', 'UTF-8');
+
+	assert.equals(ucs2String, UTF8ToUnicode(utf8String));
+	assert.equals(ucs2String, UTF8ToUCS2(utf8String));
+	assert.equals(utf8String, UnicodeToUTF8(ucs2String));
+	assert.equals(utf8String, UCS2ToUTF8(ucs2String));
+
+	var sjisString = utilsModule.readFrom('../../res/shift_jis.txt');
+
+	assert.equals('日本語', XToUnicode(sjisString, 'Shift_JIS'));
+	assert.equals('日本語', XToUCS2(sjisString, 'Shift_JIS'));
+	assert.equals(sjisString, UnicodeToX('日本語', 'Shift_JIS'));
+	assert.equals(sjisString, UCS2ToX('日本語', 'Shift_JIS'));
+}
+
+function test_fixupIncompleteURI()
+{
+	assert.equals(baseURL+'foobar', utilsModule.fixupIncompleteURI('foobar'));
+	assert.equals('foobar://foobar', utilsModule.fixupIncompleteURI('foobar://foobar'));
+	assert.equals('C:\\Windows', utilsModule.fixupIncompleteURI('C:\\Windows'));
+}
+
+function test_isGeneratedIterator()
+{
+	function TestGenerator()
+	{
+		var count = 0;
+		while (true)
+		{
+			yield count++;
+		}
+	}
+	var iterator = TestGenerator();
+	assert.equals(0, iterator.next());
+	assert.equals(1, iterator.next());
+	assert.equals(2, iterator.next());
+	assert.isTrue(utilsModule.isGeneratedIterator(iterator));
+
+	assert.isFalse(utilsModule.isGeneratedIterator({}));
+	assert.isFalse(utilsModule.isGeneratedIterator('foobar'));
 }
 

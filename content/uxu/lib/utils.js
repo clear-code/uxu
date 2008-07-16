@@ -388,14 +388,19 @@ function fixupIncompleteURI(aURIOrPart)
 
 function isGeneratedIterator(aObject)
 {
-	return (
-		aObject &&
-		'next' in aObject &&
-		'send' in aObject &&
-		'throw' in aObject &&
-		'close' in aObject &&
-		aObject == '[object Generator]'
-	);
+	try {
+		return (
+			aObject &&
+			'next' in aObject &&
+			'send' in aObject &&
+			'throw' in aObject &&
+			'close' in aObject &&
+			aObject == '[object Generator]'
+		);
+	}
+	catch(e) {
+	}
+	return false;
 }
 
 function makeStackLine(aStack)
