@@ -54,10 +54,21 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 	font-size: 1.2em;
 }
 
+*[role=vs] label {
+	margin: 0;
+	padding: 0;
+	min-width: 0;
+}
+*[role=vs] description {
+	margin-top: 0;
+	padding-top: 0;
+}
 
 *[role=description],
 *[role=error],
-*[role=additionalInfo] {
+*[role=additionalInfo],
+*[role=vs] label,
+*[role=vs] description {
 	-moz-user-focus: normal;
 	-moz-user-select: text;
 	cursor : text;

@@ -137,6 +137,25 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 			<vbox flex="1">
 				<hbox><label role="description" flex="1"/></hbox>
 				<hbox><description role="additionalInfo" flex="1"/></hbox>
+				<grid role="vs" hidden="true">
+					<columns>
+						<column pack="start"/>
+						<column pack="start"/>
+						<column pack="start" flex="1"/>
+					</columns>
+					<rows>
+						<row>
+							<vbox><label>&mozunit.expected.label;</label></vbox>
+							<vbox><label>&mozunit.expected.separator;</label></vbox>
+							<vbox><description role="expected-value" flex="1"/></vbox>
+						</row>
+						<row>
+							<vbox><label>&mozunit.actual.label;</label></vbox>
+							<vbox><label>&mozunit.actual.separator;</label></vbox>
+							<vbox><description role="actual-value" flex="1"/></vbox>
+						</row>
+					</rows>
+				</grid>
 
 				<listbox hidden="true" role="stack-trace"
 					flex="1" rows="5" class="inset"

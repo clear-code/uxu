@@ -56,6 +56,11 @@
 <!ENTITY mozunit.source "ソース">
 <!ENTITY mozunit.close "閉じる">
 
+<!ENTITY mozunit.expected.label     "期待値">
+<!ENTITY mozunit.expected.separator ":">
+<!ENTITY mozunit.actual.label       "実際の値">
+<!ENTITY mozunit.actual.separator   ":">
+
 
 
 
