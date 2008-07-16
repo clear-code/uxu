@@ -208,18 +208,21 @@ function registerTest(aFunction)
 		return;
 
 	var desc = aFunction.description;
-	var namePart = desc;
+	var key = desc;
 	var source = aFunction.toSource();
 	if (!desc) {
-		if (source.match(/\(?function ([^\(]+)\s*\(/))
+		if (source.match(/\(?function ([^\(]+)\s*\(/)) {
 			desc = RegExp.$1;
-		else
+			key = desc;
+		}
+		else {
 			desc = source.substring(0, 30);
+			key = this._getHashFromString(source);
+		}
 	}
-	var hash = this._getHashFromString(source);
 
 	this._tests.push({
-		name     : (this._namespace + '::' + this.title + '::' + desc + '::' + hash),
+		name     : (this._namespace + '::' + this.title + '::' + key),
 		desc     : desc,
 		code     : aFunction,
 		priority : (
