@@ -205,18 +205,17 @@ function registerTest(aFunction)
 
 	var desc = aFunction.description;
 	var namePart = desc;
+	var source = aFunction.toSource();
 	if (!desc) {
-		if (aFunction.toSource().match(/\(?function ([^\(]+)\s*\(/)) {
-			namePart = desc = RegExp.$1;
-		}
-		else {
-			desc = aFunction.toString().substring(0, 30);
-			namePart = aFunction.toSource().replace(/\s+/g, '');
-		}
+		if (source.match(/\(?function ([^\(]+)\s*\(/))
+			desc = RegExp.$1;
+		else
+			desc = source.substring(0, 30);
 	}
+	var hash = this._getHashFromString(source);
 
 	this._tests.push({
-		name     : (this._namespace + '::' + this.title + '::' + namePart),
+		name     : (this._namespace + '::' + this.title + '::' + desc + '::' + hash),
 		desc     : desc,
 		code     : aFunction,
 		priority : (
@@ -226,6 +225,26 @@ function registerTest(aFunction)
 		),
 		id       : 'test-'+parseInt(Math.random() * 65000)
 	});
+}
+function _getHashFromString(aString) 
+{
+	var hasher = Components
+			.classes['@mozilla.org/security/hash;1']
+			.createInstance(Components.interfaces.nsICryptoHash);
+	hasher.init(hasher.MD5)
+	var array = aString.split('').map(function(aChar) {
+					return aChar.charCodeAt(0);
+				});
+	hasher.update(array, array.length);
+	var hash = hasher.finish(false);
+
+	var hexchars = '0123456789ABCDEF';
+	var hexrep = new Array(hash.length * 2);
+	hash.split('').forEach(function(aChar, aIndex) {
+		hexrep[aIndex * 2] = hexchars.charAt((aChar.charCodeAt(0) >> 4) & 15);
+		hexrep[aIndex * 2 + 1] = hexchars.charAt(aChar.charCodeAt(0) & 15);
+	});
+	return hexrep.join('');
 }
   
 /**
