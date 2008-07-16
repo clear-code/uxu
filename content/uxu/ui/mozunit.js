@@ -323,7 +323,7 @@ function TestReportHandler(aTestCase)
 	this.testCase = aTestCase;
 	this.mFinishHandlers = [
 		(function() {
-			runner_utils.onFinish(this.testCase);
+			runner_utils.cleanUpModifications(this.testCase);
 		})
 	];
 }

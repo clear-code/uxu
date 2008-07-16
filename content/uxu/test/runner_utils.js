@@ -76,9 +76,9 @@ function getTests(aSuite, aTestCaseClass)
 	return tests;
 }
 
-function getTestFiles(aFolder)
+function getTestFiles(aFolder, aIgnoreHiddenFiles)
 {
-	var filesMayBeTest = getTestFilesInternal(aFolder);
+	var filesMayBeTest = _getTestFilesInternal(aFolder, aIgnoreHiddenFiles);
 	var nameList = filesMayBeTest.map(function(aFile) {
 			return aFile.leafName;
 		}).join('\n');
@@ -89,19 +89,20 @@ function getTestFiles(aFolder)
 	return filesMayBeTest;
 }
 var testFileNamePattern = /\.test\.js$/im;
-function getTestFilesInternal(aFolder)
+function _getTestFilesInternal(aFolder, aIgnoreHiddenFiles)
 { 
 	var files = aFolder.directoryEntries;
 	var file;
 	var filesMayBeTest = [];
-	var ignoreHiddenFiles = utils.getPref('extensions.uxu.run.ignoreHiddenFiles');
+	if (aIgnoreHiddenFiles === void(0))
+		aIgnoreHiddenFiles = utils.getPref('extensions.uxu.run.ignoreHiddenFiles');
 	while (files.hasMoreElements())
 	{
 		file = files.getNext()
 				.QueryInterface(Components.interfaces.nsILocalFile);
 
 		if (
-			ignoreHiddenFiles &&
+			aIgnoreHiddenFiles &&
 			(
 				file.isHidden() ||
 				file.leafName.indexOf('.') == 0
@@ -110,7 +111,7 @@ function getTestFilesInternal(aFolder)
 			continue;
 
 		if (file.isDirectory()) {
-			filesMayBeTest = filesMayBeTest.concat(getTestFilesInternal(file));
+			filesMayBeTest = filesMayBeTest.concat(_getTestFilesInternal(file));
 		}
 		else if (/\.js$/i.test(file.leafName)) {
 			filesMayBeTest.push(file);
@@ -119,7 +120,7 @@ function getTestFilesInternal(aFolder)
 	return filesMayBeTest;
 }
 
-function onFinish(aTestCase)
+function cleanUpModifications(aTestCase)
 {
 	aTestCase.environment.utils.cleanUpTempFiles();
 	aTestCase.environment.utils.cleanUpModifiedPrefs();

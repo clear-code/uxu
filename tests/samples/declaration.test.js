@@ -2,11 +2,6 @@
 
 var description = 'このテストの説明';
 
-// 非同期型のテスト
-var isAsync = true;
-// var runStrategy = 'async' でも同じ
-
-
 var value;
 
 

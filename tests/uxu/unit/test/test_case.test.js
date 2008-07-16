@@ -338,8 +338,8 @@ function testReportHandler()
 		handleReport : handler
 	};
 	clearCount();
-	errorCount    = 0;
-	failCount     = 0;
+	errorCount = 0;
+	failCount  = 0;
 	testcase.masterPriority = 'must';
 	testcase.run();
 	assert.isTrue(testcase.done);

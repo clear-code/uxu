@@ -47,7 +47,7 @@ function run(reporter, all)
 					},
 					onFinish	 : function() {
 						runner.finish_test(reporter)
-						runner_utils.onFinish(test);
+						runner_utils.cleanUpModifications(test);
 					}
 				};
 				test.run();
