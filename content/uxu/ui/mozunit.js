@@ -394,12 +394,13 @@ TestReportHandler.prototype = {
 		_(wTestReport).setAttribute('report-type', aReport.result);
 		if (aReport.exception) {
 			var message = aReport.exception.message.replace(/^\s+/, '');
-			if (aReport.result == 'failure' &&
-				/.+[\n\r]+.*[\n\r]+.*$/.test(message)) {
-				message = message.split(/[\n\r]+/);
-				_(wTestReport, 'actual-value').textContent = message.pop();
-				_(wTestReport, 'expected-value').textContent = message.pop();
-				_(wTestReport, 'vs').removeAttribute('hidden');
+			if (aReport.result == 'failure') {
+				message = message.split(/[\n\r]+<(?:EXPECTED|ACTUAL)>:/);
+				if (message.length > 1) {
+					_(wTestReport, 'actual-value').textContent = message.pop();
+					_(wTestReport, 'expected-value').textContent = message.pop();
+					_(wTestReport, 'vs').removeAttribute('hidden');
+				}
 				message = message.join('\n');
 			}
 			_(wTestReport, 'additionalInfo').textContent = message;
