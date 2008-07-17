@@ -66,6 +66,34 @@ function test_assertions()
 	assert.assertFailed(assertionsModule.isFalse, [true, message]);
 	assert.assertFailed(assertionsModule.isFalse, [{}, message]);
 
+	assert.assertSucceed(assertionsModule.isString, ['1']);
+	assert.assertFailed(assertionsModule.isString, [1, message]);
+
+	assert.assertSucceed(assertionsModule.isNotString, [1]);
+	assert.assertFailed(assertionsModule.isNotString, ['1', message]);
+
+	assert.assertSucceed(assertionsModule.isNumber, [0]);
+	assert.assertFailed(assertionsModule.isNumber, ['0', message]);
+
+	assert.assertSucceed(assertionsModule.isNotNumber, ['0']);
+	assert.assertFailed(assertionsModule.isNotNumber, [0, message]);
+
+	assert.assertSucceed(assertionsModule.isFunction, [(function() {})]);
+	assert.assertSucceed(assertionsModule.isFunction, [(new Function('foo', 'return foo'))]);
+	assert.assertFailed(assertionsModule.isFunction, [true, message]);
+	assert.assertFailed(assertionsModule.isFunction, [false, message]);
+	assert.assertFailed(assertionsModule.isFunction, [0, message]);
+	assert.assertFailed(assertionsModule.isFunction, ['func', message]);
+	assert.assertFailed(assertionsModule.isFunction, [null, message]);
+
+	assert.assertSucceed(assertionsModule.isNotFunction, [true]);
+	assert.assertSucceed(assertionsModule.isNotFunction, [false]);
+	assert.assertSucceed(assertionsModule.isNotFunction, [0]);
+	assert.assertSucceed(assertionsModule.isNotFunction, ['func']);
+	assert.assertSucceed(assertionsModule.isNotFunction, [null]);
+	assert.assertFailed(assertionsModule.isNotFunction, [(function() {}), message]);
+	assert.assertFailed(assertionsModule.isNotFunction, [(new Function('foo', 'return foo')), message]);
+
 	assert.assertSucceed(assertionsModule.isDefined, [true]);
 	assert.assertSucceed(assertionsModule.isDefined, [false]);
 	assert.assertSucceed(assertionsModule.isDefined, [0]);

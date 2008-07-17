@@ -46,6 +46,42 @@ function isFalse(aActual, aMessage)
 		fail(bundle.getFormattedString('assert_is_false', appendTypeString([aActual])), aMessage);
 }
 
+function isString(aActual, aMessage)
+{
+	if (typeof aActual != 'string')
+		fail(bundle.getFormattedString('assert_is_string', appendTypeString([aActual])), aMessage);
+}
+
+function isNotString(aActual, aMessage)
+{
+	if (typeof aActual == 'string')
+		fail(bundle.getFormattedString('assert_is_not_string', appendTypeString([aActual])), aMessage);
+}
+
+function isNumber(aActual, aMessage)
+{
+	if (typeof aActual != 'number')
+		fail(bundle.getFormattedString('assert_is_number', appendTypeString([aActual])), aMessage);
+}
+
+function isNotNumber(aActual, aMessage)
+{
+	if (typeof aActual == 'number')
+		fail(bundle.getFormattedString('assert_is_not_number', appendTypeString([aActual])), aMessage);
+}
+
+function isFunction(aActual, aMessage)
+{
+	if (typeof aActual != 'function')
+		fail(bundle.getFormattedString('assert_is_function', appendTypeString([aActual])), aMessage);
+}
+
+function isNotFunction(aActual, aMessage)
+{
+	if (typeof aActual == 'function')
+		fail(bundle.getFormattedString('assert_is_not_function', appendTypeString([aActual])), aMessage);
+}
+
 function isDefined(aActual, aMessage)
 {
 	if (aActual === undefined)
