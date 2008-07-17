@@ -19,7 +19,7 @@ function testLoad()
 	var loader = Cc['@mozilla.org/moz/jssubscript-loader;1']
 			.getService(Ci.mozIJSSubScriptLoader);
 	loader.loadSubScript(
-		baseURL + '../../../../content/uxu/test/helper/subScriptRunner.js',
+		baseURL + '../../../../content/uxu/lib/subScriptRunner.js',
 		env
 	);
 	assert.isTrue(env.a);

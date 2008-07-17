@@ -501,11 +501,12 @@ function displayStackTrace(aTrace, aListbox)
 	if (!lines.length || utils.getPref('extensions.uxu.mozunit.showInternalStacks'))
 		lines = fullLines;
 	lines.forEach(function(aLine) {
+		if (!aLine) return;
 		var item = document.createElement('listitem');
 		item.setAttribute('label', aLine);
 		item.setAttribute('crop', 'center');
-		var match = aLine.match(/@(\w+:.*)?:(\d+)/);
-		item.setAttribute('file', match[1]);
+		if (/@(\w+:.*)?:(\d+)/.test(aLine))
+			item.setAttribute('file', RegExp.$1);
 		aListbox.appendChild(item);
 	});
 }
