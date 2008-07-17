@@ -46,16 +46,6 @@ function test_createTestSuite()
 	assert.isFunction(suite.utils.readFrom);
 	assert.isFunction(suite.utils.include);
 	assert.equals(suite.__proto__, suite.utils);
-
-
-	function MyClass() {
-	}
-	MyClass.prototype = {
-		dummy : null
-	};
-	var suite = runnerUtils.createTestSuite(declarationStyleTest, gBrowser, MyClass);
-	assert.equals(MyClass, suite.TestCase);
-	assert.equals(MyClass, suite.Specification);
 }
 
 function test_getTests()
