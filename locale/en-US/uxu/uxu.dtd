@@ -64,7 +64,7 @@
 
 <!ENTITY mozunit.expected.label     "Expected">
 <!ENTITY mozunit.expected.separator ":">
-<!ENTITY mozunit.actual.label       "Got">
+<!ENTITY mozunit.actual.label       "But was">
 <!ENTITY mozunit.actual.separator   ":">
 
 
