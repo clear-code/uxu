@@ -112,7 +112,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 	<box id="blueprints" hidden="true">
 		<vbox role="testcase-report" class="inset" style="margin-bottom: 1em;">
 			<vbox class="outset"
-				onclick="this.nextSibling.hidden = !this.nextSibling.hidden">
+				onclick="if (event.button != 2) this.nextSibling.hidden = !this.nextSibling.hidden">
 				<hbox><label role="title" class="testcase-title" flex="1"/></hbox>
 				<hbox>
 					<progressmeter role="bar" mode="undetermined" value="0" flex="1"/> 
