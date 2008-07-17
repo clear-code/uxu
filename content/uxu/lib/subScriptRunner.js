@@ -1,1 +1,1 @@
-if (_subScript) eval(_subScript);
+if (_lastEvaluatedScript) eval(_lastEvaluatedScript);

@@ -132,8 +132,8 @@ function load(url, context) {
 function evaluate(code)
 {
     try {
-		return this.load('data:application/x-javascript,' +
-						 encodeURIComponent(code));
+		this.context._lastEvaluatedScript = code;
+		return this.load('chrome://uxu/content/lib/subScriptLoader.js', context);
     } catch (e) {
         return utils.formatError(e);
     }

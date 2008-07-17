@@ -417,7 +417,7 @@ function include(aSource, aEnvironment, aEncoding)
 	var encoding = aEncoding || this.getPref('extensions.uxu.defaultEncoding')
 	var script = this.readFrom(aSource, encoding) || '';
 	var env = aEnvironment || this.environment;
-	env._subScript = script;
+	env._lastEvaluatedScript = script;
 	loader.loadSubScript(
 		'chrome://uxu/content/lib/subScriptRunner.js?includeSource='+
 			encodeURIComponent(aSource)+

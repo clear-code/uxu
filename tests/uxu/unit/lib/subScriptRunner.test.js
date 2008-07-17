@@ -10,7 +10,7 @@ testLoad.description = 'スクリプトの中で定義された変数や関数�
 function testLoad()
 {
 	var env = {
-			_subScript : [
+			_lastEvaluatedScript : [
 				'var a = true;',
 				'this.b = true;',
 				'function c() { return true; }'
