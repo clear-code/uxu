@@ -41,7 +41,7 @@ function test_makeURIFromSpec()
 	uri = utilsModule.makeURIFromSpec('file:///c:/windows/');
 	assert.isTrue(uri instanceof Ci.nsIURI);
 	assert.isTrue(uri instanceof Ci.nsIFileURL);
-	assert.equals('file:///c:/windows/', uri.spec);
+	assert.matches(/file:\/\/\/C:\/Windows\/?/i, uri.spec);
 	assert.equals('file', uri.scheme);
 }
 
@@ -75,7 +75,7 @@ function test_getFileFromURLSpec()
 
 function test_getFilePathFromURLSpec()
 {
-	assert.equals('C:\\Windows', utilsModule.getFilePathFromURLSpec('file:///C:/Windows'));
+	assert.matches(/C:\\Windows\\?/i, utilsModule.getFilePathFromURLSpec('file:///C:/Windows'));
 }
 
 function test_getURLFromFilePath()
@@ -84,13 +84,13 @@ function test_getURLFromFilePath()
 	assert.isTrue(url);
 	assert.isTrue(url instanceof Ci.nsIURI);
 	assert.isTrue(url instanceof Ci.nsIFileURL);
-	assert.equals('file:///C:/Windows/', url.spec);
+	assert.matches(/file:\/\/\/C:\/Windows\/?/i, url.spec);
 	assert.equals('file', url.scheme);
 }
 
 function test_getURLSpecFromFilePath()
 {
-	assert.equals('file:///C:/Windows/', utilsModule.getURLSpecFromFilePath('C:\\Windows'));
+	assert.matches(/file:\/\/\/C:\/Windows\/?/i, utilsModule.getURLSpecFromFilePath('C:\\Windows'));
 }
 
 function test_readFrom()
