@@ -161,7 +161,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 					flex="1" rows="5" class="inset"
 					style="font-size: 0.8em;"
 					onselect="showSource(this.selectedItem.label);"
-					onclick="if (event.button == 0 &amp;&amp; event.target == this.selectedItem &amp;&amp; _('source-splitter').hidden) showSource(this.selectedItem.label);"/>
+					onclick="if (event.button == 0 &amp;&amp; event.target == this.selectedItem) showSource(this.selectedItem.label);"/>
 			</vbox>
 		</hbox>
 	</box>
@@ -210,6 +210,14 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 					<menuitem id="alwaysRaised-menuitem"
 						type="checkbox" command="alwaysRaised"/>
 					<menuitem type="checkbox" command="toggleContent"/>
+				</menupopup>
+			</menu>
+			<menu id="help-menu" label="&mozunit.helpMenu.label;" accesskey="&mozunit.helpMenu.accesskey;">
+				<menupopup>
+					<menuitem label="&mozunit.help.label;"
+						accesskey="&mozunit.help.accesskey;"
+						oncommand="showPage(this.getAttribute('help'));"
+						help="&mozunit.help.uri;"/>
 				</menupopup>
 			</menu>
 		</menubar>

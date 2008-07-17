@@ -12,7 +12,7 @@ const ObserverService = Cc['@mozilla.org/observer-service;1']
 	.getService(Ci.nsIObserverService);
  
 /* UTILITIES */ 
-	 
+	
 function x() 
 {
 	var contextNode, path;
@@ -111,7 +111,7 @@ function getErrorReports()
 }
   
 /* file picker */ 
-	 
+	
 function pickFile(aMode, aOptions) 
 {
 	if (!aOptions) aOptions = {};
@@ -213,7 +213,7 @@ const fileDNDObserver =
 }; 
    
 /* DOMAIN */ 
-	 
+	
 function startup() 
 {
 	if (!isLinux()) {
@@ -249,7 +249,7 @@ function shutdown()
 }
   
 /* test cases */ 
-	 
+	
 function newTestCase() 
 {
 	var file = pickFile('save', makeTestCaseFileOptions());
@@ -320,7 +320,7 @@ function getFocusedPath()
 }
   
 /* runner */ 
-	 
+	
 function TestReportHandler(aTestCase) 
 {
 	this.testCase = aTestCase;
@@ -885,7 +885,7 @@ function toggleAlwaysRaised()
 			win.highestZ : win.normalZ;
 	utils.setPref('extensions.uxu.mozunit.alwaysRaised', win.zLevel != win.normalZ);
 }
-	 
+	
 function getXULWindow() 
 {
 	return window
@@ -902,7 +902,7 @@ function toggleContent()
 	_('content').collapsed = !_('content').collapsed;
 	_('content-splitter').hidden = !_('content-splitter').hidden;
 }
-	 
+	
 var contentAutoExpanded = false; 
  
 function onContentLoad() 
@@ -998,7 +998,7 @@ function showSource(aTraceLine)
 		null, null, null
 	);
 }
-	 
+	
 function hideSource() 
 {
 	if (_('source-splitter').hidden) return;
@@ -1012,7 +1012,7 @@ function hideSource()
 	_('source-viewer').collapsed = true;
 	_('source-splitter').hidden = true;
 }
- 	 
+  
 function goUpdateCommand(aCommand) 
 {
 	var node = document.getElementById(aCommand);
@@ -1107,4 +1107,31 @@ function updateContextMenu()
 		_('editThis-separator').setAttribute('hidden', true);
 	}
 }
-  
+ 
+function showPage(aURI) 
+{
+	var recentWindow = Cc['@mozilla.org/appshell/window-mediator;1']
+		.getService(Ci.nsIWindowMediator)
+		.getMostRecentWindow('navigator:browser');
+	if (recentWindow) {
+		if (recentWindow.content.location.href == 'about:blank')
+			recentWindow.loadURI(aURI);
+		else
+			recentWindow.gBrowser.selectedTab = recentWindow.gBrowser.addTab(aURI);
+	}
+	else {
+		try {
+			window.open(aURI);
+		}
+		catch(e) {
+			// Thunderbird
+			var uri = Cc['@mozilla.org/network/io-service;1']
+					.getService(Ci.nsIIOService)
+					.newURI(aURI, null, null);
+			var service = Cc['@mozilla.org/uriloader/external-protocol-service;1']
+					.getService(Ci.nsIExternalProtocolService);
+					service.loadUrl(uri);
+		}
+	}
+}
+ 	 

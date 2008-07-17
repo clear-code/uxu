@@ -49,6 +49,12 @@
 <!ENTITY mozunit.copy.label     "コピー">
 <!ENTITY mozunit.copy.accesskey "C">
 
+<!ENTITY mozunit.helpMenu.label     "ヘルプ">
+<!ENTITY mozunit.helpMenu.accesskey "H">
+<!ENTITY mozunit.help.label     "説明ページを表示">
+<!ENTITY mozunit.help.accesskey "M">
+<!ENTITY mozunit.help.uri       "http://www.clear-code.com/software/uxu/">
+
 <!ENTITY mozunit.successes "成功したテスト:">
 <!ENTITY mozunit.passover "除外したテスト:">
 

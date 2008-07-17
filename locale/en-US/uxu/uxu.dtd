@@ -49,6 +49,12 @@
 <!ENTITY mozunit.copy.label     "Copy">
 <!ENTITY mozunit.copy.accesskey "C">
 
+<!ENTITY mozunit.helpMenu.label     "Help">
+<!ENTITY mozunit.helpMenu.accesskey "H">
+<!ENTITY mozunit.help.label     "Show manual">
+<!ENTITY mozunit.help.accesskey "m">
+<!ENTITY mozunit.help.uri       "http://www.clear-code.com/software/uxu/">
+
 <!ENTITY mozunit.successes "Successes:">
 <!ENTITY mozunit.passover "Passed over:">
 
