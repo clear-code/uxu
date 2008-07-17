@@ -1058,6 +1058,7 @@ function updateTestCommands()
 		(file = utils.makeFileWithPath(file)) &&
 		file.exists()) {
 		_('run').removeAttribute('disabled');
+		_('runPriority').removeAttribute('disabled');
 		_('runAll').removeAttribute('disabled');
 		_('runOptions-menu').removeAttribute('disabled');
 		_('runOptions-button').removeAttribute('disabled');
@@ -1068,6 +1069,7 @@ function updateTestCommands()
 	}
 	else {
 		_('run').setAttribute('disabled', true);
+		_('runPriority').setAttribute('disabled', true);
 		_('runAll').setAttribute('disabled', true);
 		_('runOptions-menu').setAttribute('disabled', true);
 		_('runOptions-button').setAttribute('disabled', true);
