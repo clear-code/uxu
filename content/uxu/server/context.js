@@ -15,6 +15,7 @@ function constructor(handler)
     this.print = function() {handler.print.apply(handler, arguments)};
     this.error = function() {handler.error.apply(handler, arguments)};
     this.quit = function() {handler.quit.apply(handler, arguments)};
+    this.exit = this.quit;
 }
 
 
