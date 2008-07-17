@@ -107,6 +107,25 @@ function test_assertions()
 		['test', function() { return true; }, {}, message]
 	);
 
+	assert.assertSucceed(assertionsModule.notRaises,
+		['test', function() { return true; }, {}]
+	);
+	assert.assertSucceed(assertionsModule.notRaises,
+		['test', function() { throw 'text'; }, {}]
+	);
+	assert.assertFailed(assertionsModule.notRaises,
+		['test', function() { throw 'test'; }, {}, message]
+	);
+	assert.assertSucceed(assertionsModule.notRaise,
+		['test', function() { return true; }, {}]
+	);
+	assert.assertSucceed(assertionsModule.notRaise,
+		['test', function() { throw 'text'; }, {}]
+	);
+	assert.assertFailed(assertionsModule.notRaise,
+		['test', function() { throw 'test'; }, {}, message]
+	);
+
 	assert.assertSucceed(assertionsModule.matches,
 		[/te[sx]t/, 'test']
 	);
@@ -177,15 +196,6 @@ function test_fail()
 
 function test_appendTypeString()
 {
-	var array = [
-			true,
-			0,
-			'a',
-			{},
-			null,
-			void(0),
-			(function() {})
-		];
 	assert.arrayEquals(
 		[
 			'true (boolean)',
@@ -196,6 +206,14 @@ function test_appendTypeString()
 			'undefined',
 			'function () {\n} (function)'
 		],
-		assertionsModule.appendTypeString(array)
+		assertionsModule.appendTypeString([
+			true,
+			0,
+			'a',
+			{},
+			null,
+			void(0),
+			(function() {})
+		])
 	);
 }

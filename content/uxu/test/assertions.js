@@ -20,101 +20,141 @@ var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var bundle = lib_module.require('package', 'bundle');
 
 
-function equals(x, y, aMessage) {
-	if (y != x)
-		fail(bundle.getFormattedString('assert_equals', appendTypeString([x, y])), aMessage);
+function equals(aExpected, aActual, aMessage)
+{
+	if (aActual != aExpected)
+		fail(bundle.getFormattedString('assert_equals', appendTypeString([aExpected, aActual])), aMessage);
 }
-function equal(x, y, aMessage) { this.equals(x, y, aMessage); }
+function equal(aExpected, aActual, aMessage) { this.equals(aExpected, aActual, aMessage); }
 
-function notEquals(x, y, aMessage) {
-	if (y == x)
-		fail(bundle.getFormattedString('assert_not_equals', appendTypeString([x, y])), aMessage);
+function notEquals(aExpected, aActual, aMessage)
+{
+	if (aActual == aExpected)
+		fail(bundle.getFormattedString('assert_not_equals', appendTypeString([aExpected, aActual])), aMessage);
 }
-function notEqual(x, y, aMessage) { this.notEquals(x, y, aMessage); }
+function notEqual(aExpected, aActual, aMessage) { this.notEquals(aExpected, aActual, aMessage); }
 
-function isTrue(x, aMessage) {
-	if (!x)
-		fail(bundle.getFormattedString('assert_is_true', appendTypeString([x])), aMessage);
-}
-
-function isDefined(x, aMessage) {
-	if (x === undefined)
-		fail(bundle.getFormattedString('assert_is_defined', appendTypeString([x])), aMessage);
+function isTrue(aActual, aMessage)
+{
+	if (!aActual)
+		fail(bundle.getFormattedString('assert_is_true', appendTypeString([aActual])), aMessage);
 }
 
-function isUndefined(x, aMessage) {
-	if (x !== undefined)
-		fail(bundle.getFormattedString('assert_is_undefined', appendTypeString([x])), aMessage);
+function isFalse(aActual, aMessage)
+{
+	if (aActual)
+		fail(bundle.getFormattedString('assert_is_false', appendTypeString([aActual])), aMessage);
 }
 
-function isFalse(x, aMessage) {
-	if (x)
-		fail(bundle.getFormattedString('assert_is_false', appendTypeString([x])), aMessage);
+function isDefined(aActual, aMessage)
+{
+	if (aActual === undefined)
+		fail(bundle.getFormattedString('assert_is_defined', appendTypeString([aActual])), aMessage);
 }
 
-function isNull(x, aMessage) {
-	if (x !== null)
-		fail(bundle.getFormattedString('assert_is_null', appendTypeString([x])), aMessage);
+function isUndefined(aActual, aMessage)
+{
+	if (aActual !== undefined)
+		fail(bundle.getFormattedString('assert_is_undefined', appendTypeString([aActual])), aMessage);
 }
 
-function isNotNull(x, aMessage) {
-	if (x === null)
-		fail(bundle.getFormattedString('assert_is_not_null', appendTypeString([x])), aMessage);
+function isNull(aActual, aMessage)
+{
+	if (aActual !== null)
+		fail(bundle.getFormattedString('assert_is_null', appendTypeString([aActual])), aMessage);
 }
 
-function raises(exception, code, context, aMessage) {
+function isNotNull(aActual, aMessage)
+{
+	if (aActual === null)
+		fail(bundle.getFormattedString('assert_is_not_null', appendTypeString([aActual])), aMessage);
+}
+
+function raises(aExpectedException, aFunction, aContext, aMessage)
+{
 	var raised = false;
 	try {
-		code.call(context);
-	} catch(e if e == exception) {
+		aFunction.call(aContext);
+	}
+	catch(e if e == aExpectedException) {
 		raised = true;
-	} catch(e if e.name == exception) {
+	}
+	catch(e if e.name == aExpectedException) {
 		raised = true;
 	}
 	if (!raised)
-		fail(bundle.getFormattedString('assert_rases', [exception]), aMessage);
+		fail(bundle.getFormattedString('assert_raises', [aExpectedException]), aMessage);
 }
-function raise(exception, code, context, aMessage) { this.raises(exception, code, context, aMessage); }
+function raise(aExpectedException, aFunction, aContext, aMessage) { this.raises(aExpectedException, aFunction, aContext, aMessage); }
 
-function matches(pattern, string, aMessage) {
-	if (!string.match(pattern))
-		fail(bundle.getFormattedString('assert_matches', [pattern, string]), aMessage);
-}
-function match(pattern, string, aMessage) { this.matches(pattern, string, aMessage); }
-
-function notMatches(pattern, string, aMessage) {
-	if (string.match(pattern))
-		fail(bundle.getFormattedString('assert_not_matches', [pattern, string]), aMessage);
-}
-function notMatch(pattern, string, aMessage) { this.notMatches(pattern, string, aMessage); }
-
-function pattern(string, pattern, aMessage) {
-	if (!string.match(pattern))
-		fail(bundle.getFormattedString('assert_pattern', [string, pattern]), aMessage);
-}
-
-function notPattern(string, pattern, aMessage) {
-	if ((string.match(pattern)))
-		fail(bundle.getFormattedString('assert_not_pattern', [string, pattern]), aMessage);
-}
-
-function arrayEquals(expected, actual, aMessage) {
+function notRaises(aExpectedException, aFunction, aContext, aMessage)
+{
+	var raised = false;
+	var exception;
 	try {
-		equals(expected.length, actual.length);
-		expected.forEach(function(aExpected, aIndex) {
-			equals(aExpected.valueOf(), actual[aIndex].valueOf());
+		aFunction.call(aContext);
+	}
+	catch(e if e == aExpectedException) {
+		exception = e;
+		raised = true;
+	}
+	catch(e if e.name == aExpectedException) {
+		exception = e;
+		raised = true;
+	}
+	catch(e) {
+		exception = e;
+	}
+	if (raised)
+		fail(bundle.getFormattedString('assert_not_raises', [aExpectedException, exception]), aMessage);
+}
+function notRaise(aExpectedException, aFunction, aContext, aMessage) { this.notRaises(aExpectedException, aFunction, aContext, aMessage); }
+
+function matches(aExpectedPattern, aActualString, aMessage)
+{
+	if (!aActualString.match(aExpectedPattern))
+		fail(bundle.getFormattedString('assert_matches', [aExpectedPattern, aActualString]), aMessage);
+}
+function match(aExpectedPattern, aActualString, aMessage) { this.matches(aExpectedPattern, aActualString, aMessage); }
+
+function notMatches(aExpectedPattern, aActualString, aMessage)
+{
+	if (aActualString.match(aExpectedPattern))
+		fail(bundle.getFormattedString('assert_not_matches', [aExpectedPattern, aActualString]), aMessage);
+}
+function notMatch(aExpectedPattern, aActualString, aMessage) { this.notMatches(aExpectedPattern, aActualString, aMessage); }
+
+function pattern(aExpectedString, aActualPattern, aMessage)
+{
+	if (!aExpectedString.match(aActualPattern))
+		fail(bundle.getFormattedString('assert_pattern', [aExpectedString, aActualPattern]), aMessage);
+}
+
+function notPattern(aExpectedString, aActualPattern, aMessage)
+{
+	if (aExpectedString.match(aActualPattern))
+		fail(bundle.getFormattedString('assert_not_pattern', [aExpectedString, aActualPattern]), aMessage);
+}
+
+function arrayEquals(aExpected, aActual, aMessage)
+{
+	try {
+		equals(aExpected.length, aActual.length);
+		aExpected.forEach(function(aExpected, aIndex) {
+			equals(aExpected.valueOf(), aActual[aIndex].valueOf());
 		});
 	}
 	catch(e if e.name == 'AssertionFailed') {
-		fail(bundle.getFormattedString('assert_array_equals', [expected, actual]), aMessage);
+		fail(bundle.getFormattedString('assert_array_equals', [aExpected, aActual]), aMessage);
 	}
 	catch(e) {
 		throw e;
 	}
 }
-function arrayEqual(expected, actual, aMessage) { this.arrayEquals(expected, actual, aMessage); }
+function arrayEqual(aExpected, aActual, aMessage) { this.arrayEquals(aExpected, aActual, aMessage); }
 
-function fail() {
+function fail()
+{
 	var error = new Error()
 	error.name = 'AssertionFailed';
 	error.message = Array.prototype.slice.call(arguments).reverse().join('\n');
