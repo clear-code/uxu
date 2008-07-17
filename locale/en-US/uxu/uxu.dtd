@@ -89,7 +89,7 @@
 <!ENTITY config.mozunit.runMode.0 "Run tests by their priority, but regard failed or uncompleted tests as MUST to run (recommended)">
 <!ENTITY config.mozunit.runMode.1 "Run any test always">
 <!ENTITY config.mozunit.autoShowContent "Show internal frame while testing automatically">
-
+<!ENTITY config.mozunit.autoExpandWindow.sourceViewer "Expand window automatically when source viewer is open">
 <!ENTITY config.tabs.server "UxU Server">
 
 <!ENTITY config.auto.start "Start server automatically on Firefox's startup">

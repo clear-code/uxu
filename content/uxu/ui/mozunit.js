@@ -214,7 +214,7 @@ const fileDNDObserver =
    
 /* DOMAIN */ 
 	 
-function init() 
+function startup() 
 {
 	if (!isLinux()) {
 		ObserverService.addObserver(alwaysRaisedObserver, 'xul-window-registered', false);
@@ -239,14 +239,15 @@ var alwaysRaisedObserver = {
 	}
 };
   
-function finish() 
+function shutdown() 
 {
 	if (!isLinux()) {
 		ObserverService.removeObserver(alwaysRaisedObserver, 'xul-window-registered');
 	}
 	_('content').removeEventListener('load', onContentLoad, true);
+	hideSource();
 }
- 	 
+  
 /* test cases */ 
 	 
 function newTestCase() 
@@ -262,7 +263,7 @@ function newTestCase()
 		}, 100);
 	}
 }
-	
+	 
 function writeTemplate(aFilePath) 
 {
 	var data = utils.readFrom('chrome://uxu/locale/sample.test.js');
@@ -507,12 +508,6 @@ function displayStackTrace(aTrace, aListbox)
 		item.setAttribute('file', match[1]);
 		aListbox.appendChild(item);
 	});
-}
- 
-function hideSource() 
-{
-	_('source-viewer').collapsed = true;
-	_('source-splitter').hidden = true;
 }
  
 function reset() 
@@ -851,79 +846,6 @@ function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine)
 		arguments.callee(aFilePath, aLineNumber, aColumnNumber);
 	}
 }
- 
-function showSource(aTraceLine) 
-{
-	var match = aTraceLine.match(/@(\w+:.*)?:(\d+)/);
-	if (!match) return;
-
-	var sourceUrl = match[1];
-	var lineNumber = match[2];
-	var encoding;
-
-	if (!sourceUrl) return;
-
-	var frame = _('source-viewer', 'source');
-	_('source-splitter').hidden = false;
-	_('source-viewer').collapsed = false;
-
-	match = sourceUrl.match(/[;\?]encoding=([^;,]+)/i);
-	if (match && match[1]) {
-		encoding = match[1];
-		sourceUrl = sourceUrl.replace(/\?.+$/, '');
-	}
-
-	function onLoad(aEvent)
-	{
-		_('source-viewer', 'source').removeEventListener('load', onLoad, true);
-
-		stylizeSource(
-			_('source-viewer', 'source').contentDocument,
-			function(aSourceDoc, aNumber, aContent)
-			{
-				aContent = padLeft(aNumber, 3, 0) + ' ' + aContent + '\n';
-
-				if (aNumber == lineNumber) {
-					var currentLine = aSourceDoc.createElementNS('http://www.w3.org/1999/xhtml', 'div');
-					currentLine.setAttribute('id', 'current');
-					currentLine.textContent = aContent;
-
-					if (sourceUrl.match(/^file:\/\//)) {
-						currentLine.setAttribute('class', 'link');
-						currentLine.addEventListener('click', function(aEvent) {
-							openInEditor(utils.getFilePathFromURLSpec(sourceUrl), lineNumber);
-						}, false);
-					}
-
-					return currentLine;
-				}
-				else {
-					return aSourceDoc.createTextNode(aContent);
-				}
-			}
-		);
-
-		_('source-viewer', 'source').contentWindow.scrollTo(
-			0,
-			(frame.contentDocument.getElementById('current').offsetTop -
-				frame.contentWindow.innerHeight/2)
-		);
-
-	}
-
-	if (encoding) {
-		var docCharset = _('source-viewer', 'source').docShell
-				.QueryInterface(Ci.nsIDocCharset);
-		docCharset.charset = encoding;
-	}
-
-	_('source-viewer', 'source').addEventListener('load', onLoad, true);
-	_('source-viewer', 'source').webNavigation.loadURI(
-		sourceUrl,
-		Ci.nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE,
-		null, null, null
-	);
-}
   
 /* UI */ 
 	 
@@ -996,6 +918,101 @@ function onContentLoad()
 	}
 }
   
+function showSource(aTraceLine) 
+{
+	var match = aTraceLine.match(/@(\w+:.*)?:(\d+)/);
+	if (!match) return;
+
+	var sourceUrl = match[1];
+	var lineNumber = match[2];
+	var encoding;
+
+	if (!sourceUrl) return;
+
+	var frame = _('source-viewer', 'source');
+	var opened = !_('source-splitter').hidden;
+	_('source-splitter').hidden = false;
+	_('source-viewer').collapsed = false;
+	if (!opened && utils.getPref('extensions.uxu.mozunit.autoExpandWindow.sourceViewer')) {
+		window.resizeBy(
+			_('source-splitter').boxObject.width +
+			_('source-viewer').boxObject.width,
+			0
+		);
+	}
+
+	match = sourceUrl.match(/[;\?]encoding=([^;,]+)/i);
+	if (match && match[1]) {
+		encoding = match[1];
+		sourceUrl = sourceUrl.replace(/\?.+$/, '');
+	}
+
+	function onLoad(aEvent)
+	{
+		_('source-viewer', 'source').removeEventListener('load', onLoad, true);
+
+		stylizeSource(
+			_('source-viewer', 'source').contentDocument,
+			function(aSourceDoc, aNumber, aContent)
+			{
+				aContent = padLeft(aNumber, 3, 0) + ' ' + aContent + '\n';
+
+				if (aNumber == lineNumber) {
+					var currentLine = aSourceDoc.createElementNS('http://www.w3.org/1999/xhtml', 'div');
+					currentLine.setAttribute('id', 'current');
+					currentLine.textContent = aContent;
+
+					if (sourceUrl.match(/^file:\/\//)) {
+						currentLine.setAttribute('class', 'link');
+						currentLine.addEventListener('click', function(aEvent) {
+							openInEditor(utils.getFilePathFromURLSpec(sourceUrl), lineNumber);
+						}, false);
+					}
+
+					return currentLine;
+				}
+				else {
+					return aSourceDoc.createTextNode(aContent);
+				}
+			}
+		);
+
+		_('source-viewer', 'source').contentWindow.scrollTo(
+			0,
+			(frame.contentDocument.getElementById('current').offsetTop -
+				frame.contentWindow.innerHeight/2)
+		);
+
+	}
+
+	if (encoding) {
+		var docCharset = _('source-viewer', 'source').docShell
+				.QueryInterface(Ci.nsIDocCharset);
+		docCharset.charset = encoding;
+	}
+
+	_('source-viewer', 'source').addEventListener('load', onLoad, true);
+	_('source-viewer', 'source').webNavigation.loadURI(
+		sourceUrl,
+		Ci.nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE,
+		null, null, null
+	);
+}
+	 
+function hideSource() 
+{
+	if (_('source-splitter').hidden) return;
+	if (utils.getPref('extensions.uxu.mozunit.autoExpandWindow.sourceViewer')) {
+		window.resizeBy(
+			-_('source-splitter').boxObject.width
+			-_('source-viewer').boxObject.width,
+			0
+		);
+	}
+	_('source-viewer').collapsed = true;
+	_('source-splitter').hidden = true;
+}
+ 	 
 function goUpdateCommand(aCommand) 
 {
 	var node = document.getElementById(aCommand);

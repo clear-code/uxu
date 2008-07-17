@@ -30,7 +30,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 	xmlns:hy="http://hyperstruct.net/"
 	xmlns:html="http://www.w3.org/1999/xhtml"
-	onload="init();" onunload="finish();"
+	onload="startup();" onunload="shutdown();"
 	orient="vertical"
 	width="800" height="600"
 	persist="width,height,screenX,screenY"
@@ -160,13 +160,17 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 				<listbox hidden="true" role="stack-trace"
 					flex="1" rows="5" class="inset"
 					style="font-size: 0.8em;"
-					onselect="showSource(this.selectedItem.label);"/>
+					onselect="showSource(this.selectedItem.label);"
+					onclick="if (event.button == 0 &amp;&amp; event.target == this.selectedItem &amp;&amp; _('source-splitter').hidden) showSource(this.selectedItem.label);"/>
 			</vbox>
 		</hbox>
 	</box>
 
 	<!-- MENUS -->
 
+
+<hbox id="wholeBox" flex="1">
+<vbox id="mainBox" flex="1">
 	<toolbox>
 		<menubar>
 			<menu id="file-menu" label="&mozunit.fileMenu.label;" accesskey="&mozunit.fileMenu.accesskey;">
@@ -265,22 +269,6 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 						style="background-color: white;"
 						collapsed="true"/>
 				</vbox>
-
-				<splitter id="source-splitter" hidden="true"/>
-
-				<vbox id="source-viewer" width="300" collapsed="true">
-					<toolbar align="center">
-						<toolbaritem flex="1">
-							<label value="&mozunit.source;" class="header" flex="1"/>
-						</toolbaritem>
-
-						<toolbarbutton label="&mozunit.close;" accesskey="l"
-							oncommand="hideSource();"/>
-					</toolbar>
-
-					<iframe role="source" flex="1" persist="width"
-						src="about:blank" class="box-inset"/>
-				</vbox>
 			</hbox>
 		</vbox>
 	</hbox>
@@ -295,5 +283,22 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 				value="0"/>
 		</statusbarpanel>
 	</statusbar>
+</vbox>
+
+	<splitter id="source-splitter" hidden="true"/>
+	<vbox id="source-viewer" width="300" collapsed="true"
+		persist="width">
+		<toolbar align="center">
+			<toolbaritem flex="1">
+				<label value="&mozunit.source;" class="header" flex="1"/>
+			</toolbaritem>
+			<toolbarbutton label="&mozunit.close;" accesskey="l"
+				oncommand="hideSource();"/>
+		</toolbar>
+		<iframe role="source" flex="1" persist="width"
+			src="about:blank" class="box-inset"/>
+	</vbox>
+</hbox>
+
 </window>
 
