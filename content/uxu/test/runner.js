@@ -124,8 +124,7 @@ function loadFile(aFile, aReporter) {
 TestCase.prototype._original_run = TestCase.prototype.run;
 
 TestCase.prototype.run = function() {
-	runner = this[this._runStrategy == 'async' ? '_asyncRun1' : '_syncRun1'];
-	runner.call(this, this._tests, this._setUp, this._tearDown,
+	this._asyncRun.call(this, this._tests, this._setUp, this._tearDown,
 	            this._reportHandler, this.onTestRunFinished);
 };
 

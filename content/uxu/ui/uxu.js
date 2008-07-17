@@ -1,22 +1,29 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
+const Cc = Components.classes;
+const Ci = Components.interfaces;
 
-const ObserverService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+const ObserverService = Cc['@mozilla.org/observer-service;1']
+	.getService(Ci.nsIObserverService);
+
+var lib_module = new ModuleManager(['chrome://uxu/content/lib']); 
+var utils = lib_module.require('package', 'utils');
+
+var server_module = new ModuleManager(['chrome://uxu/content/server']);
+var Server = server_module.require('class', 'server');
 
 var gServer;
 var gLog;
 var gAutoStart;
 
 function Startup() {
-	var server_module = new ModuleManager(['chrome://uxu/content']);
-	var Server = server_module.require('class', 'server/server');
-	gServer = new Server(nsPreferences.getIntPref('extensions.uxu.port'));
+	gServer = new Server(utils.getPref('extensions.uxu.port'));
 	gServer.start();
 
 	gLog = document.getElementById('log');
 	gAutoStart = document.getElementById('autostart');
 
-	gAutoStart.checked = nsPreferences.getBoolPref('extensions.uxu.auto.start');
+	gAutoStart.checked = utils.getPref('extensions.uxu.auto.start');
 
 	ObserverService.addObserver(testEventObserver, 'UxU:TestStart', false);
 	ObserverService.addObserver(testEventObserver, 'UxU:TestFinish', false);
@@ -30,33 +37,6 @@ function Shutdown() {
 	ObserverService.removeObserver(testEventObserver, 'UxU:TestFinish');
 	ObserverService.removeObserver(testEventObserver, 'UxU:TestProgress');
 }
-
-
-
-
-var WindowManager = Components.
-	classes['@mozilla.org/appshell/window-mediator;1'].
-	getService(Components.interfaces.nsIWindowMediator);
-
-
-window.__proto__.__defineGetter__('browser', function() {
-	return WindowManager.getMostRecentWindow('navigator:browser');
-});
-
-window.__proto__.__defineGetter__('browsers', function() {
-	var browserWindows = [];
-
-	var targets = WindowManager.getEnumerator('navigator:browser'),
-		target;
-	while (targets.hasMoreElements())
-	{
-		target = targets.getNext().QueryInterface(Components.interfaces.nsIDOMWindowInternal);
-		browserWindows.push(target);
-	}
-
-	return browserWindows;
-});
-
 
 var testEventObserver = {
 	observe : function(aSubject, aTopic, aData)

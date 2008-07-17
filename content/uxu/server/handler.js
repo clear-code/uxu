@@ -1,38 +1,42 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
-var loader = Components
-	.classes['@mozilla.org/moz/jssubscript-loader;1']
-	.getService(Components.interfaces.mozIJSSubScriptLoader);
+const Cc = Components.classes;
+const Ci = Components.interfaces;
+
+var loader = Cc['@mozilla.org/moz/jssubscript-loader;1']
+	.getService(Ci.mozIJSSubScriptLoader);
+
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
-var utils      = lib_module.require('package', 'utils');
+var utils = lib_module.require('package', 'utils');
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
-var Context       = server_module.require('class', 'context');
+var Context= server_module.require('class', 'context');
 
-function constructor(input, output, server)
+function constructor(aInput, aOutput)
 {
-	var handler = this;
-	var scriptableInput = Components
-		.classes['@mozilla.org/scriptableinputstream;1']
-		.createInstance(Components.interfaces.nsIScriptableInputStream);
-	var pump = Components
-		.classes['@mozilla.org/network/input-stream-pump;1']
-		.createInstance(Components.interfaces.nsIInputStreamPump);
+	var _this = this;
+	var scriptableInput = Cc['@mozilla.org/scriptableinputstream;1']
+			.createInstance(Ci.nsIScriptableInputStream);
+	var pump = Cc['@mozilla.org/network/input-stream-pump;1']
+			.createInstance(Ci.nsIInputStreamPump);
 
-	scriptableInput.init(input);
+	scriptableInput.init(aInput);
 	this.input = scriptableInput;
-	this.output = output;
+	this.output = aOutput;
 	this.context = new Context(this);
 
 	var buffer = '';
 	listener = {
-	  onStartRequest: function(request, context) {
+		onStartRequest : function(aRequest, aContext)
+		{
 		},
-	  onStopRequest: function(request, context, status) {
+		onStopRequest : function(aRequest, aContext, aStatus)
+		{
 		},
-	  onDataAvailable: function(request, context, inputStream, offset, count) {
-			if (!handler.input) return;
-			var code = handler.input.read(count);
+		onDataAvailable : function(aRequest, aContext, aInputStream, aOffset, aCount)
+		{
+			if (!_this.input) return;
+			var code = _this.input.read(aCount);
 			if (/[\r\n]+$/.test(code)) {
 				if (buffer) {
 					code = buffer + code;
@@ -43,13 +47,13 @@ function constructor(input, output, server)
 				buffer += code;
 				return;
 			}
-			var result = handler.evaluate(code);
+			var result = _this.evaluate(code);
 			if (result != undefined)
-				handler.puts(result);
+				_this.puts(result);
 		}
 	};
 
-	pump.init(input, -1, -1, 0, 0, false);
+	pump.init(aInput, -1, -1, 0, 0, false);
 	pump.asyncRead(listener, null);
 }
 
@@ -68,20 +72,11 @@ function quit()
 	if (this.context) {
 		this.context = null;
 	}
-
-	if (this.server)
-		this.server.removeSession(this);
 }
 
 function print()
 {
-	var message = "";
-	var i;
-
-	for (i = 0; i < arguments.length; i++) {
-		message += arguments[i];
-	}
-
+	var message = Array.prototype.slice.call(arguments).join('');
 	if (this.output)
 		this.output.write(message, message.length);
 	else
@@ -90,24 +85,15 @@ function print()
 
 function puts()
 {
-	var message;
-	var elements = new Array();
-	var i;
-
-	for (i = 0; i < arguments.length; i++) {
-		elements.push(arguments[i]);
-	}
-	message = elements.join("\n");
-	if (message[message.length - 1] != "\n")
-		message += "\n";
-
+	var message = Array.prototype.slice.call(arguments).join('\n');
+	if (!/\n$/.test(message)) message += '\n';
 	if (this.output)
 		this.output.write(message, message.length);
 	else
 		dump("QUITED: " + message);
 }
 
-Object.prototype.inspect = function() {return this.toString();};
+Object.prototype.inspect = function() { return this.toString();};
 String.prototype.inspect = function() {
 	return '"' + this.toString().replace(/\"/g, '\\"') + '"';
 };
@@ -130,22 +116,23 @@ function p()
 	}
 }
 
-function error(exception)
+function error(aException)
 {
-	this.print(this.formatError(exception));
+	this.print(this.formatError(aException));
 }
 
-function load(url, context) {
-	return loader.loadSubScript(url, context || this.context);
+function load(aURI, aContext)
+{
+	return loader.loadSubScript(aURI, aContext || this.context);
 }
 
-function evaluate(code)
+function evaluate(aCode)
 {
 	try {
-		this.context._lastEvaluatedScript = code;
+		this.context._lastEvaluatedScript = aCode;
 		return this.load('chrome://uxu/content/lib/subScriptRunner.js');
 	}
-	catch (e) {
+	catch(e) {
 		return utils.formatError(e)
 				.replace(/^@chrome:\/\/uxu\/content\/lib\/subScriptRunner\.js.*\n/mg, '');
 	}
