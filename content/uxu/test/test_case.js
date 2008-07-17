@@ -25,6 +25,28 @@ var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var fsm    = lib_module.require('package', 'fsm');
 var bundle = lib_module.require('package', 'bundle');
 var utils  = lib_module.require('package', 'utils');
+
+var SCHEME_VERSION_HASH = 1;
+var CURRENT_SCHEME = SCHEME_VERSION_HASH;
+var tableDefinitionSQL = <![CDATA[
+	  CREATE TABLE result_history
+	    (name        TEXT PRIMARY KEY,
+	     description TEXT,
+	     result      TEXT,
+	     date        DATETIME,
+	     hash        TEXT)
+	]]>.toString();
+var db = utils.getDB();
+if (!db.tableExists('result_history')) {
+	db.executeSimpleSQL(tableDefinitionSQL);
+	db.schemaVersion = CURRENT_SCHEME;
+}
+else { // possibly old version, so we have to migrate.
+	if (db.schemaVersion < SCHEME_VERSION_HASH) {
+		db.executeSimpleSQL('ALTER TABLE result_history ADD hash TEXT');
+		db.schemaVersion = SCHEME_VERSION_HASH;
+	}
+}
  
 /**
  * Invocation: 
@@ -59,7 +81,7 @@ function constructor(aTitle, aNamespace)
 		var stack = Components.stack;
 		do {
 			path = stack.filename;
-			if (path.indexOf('chrome://uxu/content/test/helper/subScriptRunner.js?') != 0)
+			if (path.indexOf('chrome://uxu/content/lib/subScriptRunner.js?') != 0)
 				continue;
 			/.+includeSource=([^;]+)/.test(path);
 			aNamespace = decodeURIComponent(RegExp.$1);
@@ -210,6 +232,7 @@ function registerTest(aFunction)
 	var desc = aFunction.description;
 	var key = desc;
 	var source = aFunction.toSource();
+	var hash = this._getHashFromString(source);
 	if (!desc) {
 		if (source.match(/\(?function ([^\(]+)\s*\(/)) {
 			desc = RegExp.$1;
@@ -217,7 +240,7 @@ function registerTest(aFunction)
 		}
 		else {
 			desc = source.substring(0, 30);
-			key = this._getHashFromString(source);
+			key = hash;
 		}
 	}
 
@@ -225,6 +248,7 @@ function registerTest(aFunction)
 		name     : (this._namespace + '::' + this.title + '::' + key),
 		desc     : desc,
 		code     : aFunction,
+		hash     : hash,
 		priority : (
 			typeof aFunction.priority == 'number' ?
 				aFunction.priority :
@@ -570,19 +594,20 @@ function _checkPriorityToExec(aTest)
 	if (!shouldDo && !forceNever) {
 		var db = utils.getDB();
 		var lastResult;
-		if (db.tableExists('result_history')) {
-			var statement = db.createStatement(
-				  'SELECT result FROM result_history WHERE name = ?1'
-				);
-			try {
-				statement.bindStringParameter(0, aTest.name);
-				while (statement.executeStep()) {
-					lastResult = statement.getString(0);
-				}
+		var lastHash;
+		var statement = db.createStatement(
+			  'SELECT result, hash FROM result_history WHERE name = ?1'
+			);
+		try {
+			statement.bindStringParameter(0, aTest.name);
+			while (statement.executeStep())
+			{
+				lastResult = statement.getString(0);
+				lastHash   = statement.getString(1);
 			}
-			finally {
-				statement.reset();
-			}
+		}
+		finally {
+			statement.reset();
 		}
 		if (lastResult != 'success' && lastResult != 'passover') {
 			shouldDo = true;
@@ -594,22 +619,17 @@ function _checkPriorityToExec(aTest)
 function _onFinish(aTest, aResult) 
 {
 	var db = utils.getDB();
-	db.executeSimpleSQL(<![CDATA[
-	  CREATE TABLE IF NOT EXISTS result_history
-	    (name        TEXT PRIMARY KEY,
-	     description TEXT,
-	     result      TEXT,
-	     date        DATETIME)
-	]]>.toString());
-
-	var statement = db.createStatement(
-		  'INSERT OR REPLACE INTO result_history VALUES(?1, ?2, ?3, ?4)'
-		);
+	var statement = db.createStatement(<![CDATA[
+		  INSERT OR REPLACE INTO result_history
+		          (name, description, result, date, hash)
+		    VALUES(?1, ?2, ?3, ?4, ?5)
+		]]>.toString());
 	try {
 		statement.bindStringParameter(0, aTest.name);
 		statement.bindStringParameter(1, aTest.desc);
 		statement.bindStringParameter(2, aResult);
 		statement.bindDoubleParameter(3, Date.now());
+		statement.bindStringParameter(4, aTest.hash);
 		while (statement.executeStep()) {}
 	}
 	finally {
