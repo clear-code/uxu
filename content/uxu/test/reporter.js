@@ -1,17 +1,21 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
+const Cc = Components.classes;
+const Ci = Components.interfaces;
+
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var utils = lib_module.require('package', 'utils');
 
-var ObserverService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+var ObserverService = Cc['@mozilla.org/observer-service;1']
+		.getService(Ci.nsIObserverService);
 
-function constructor(output)
+function constructor(aOutput)
 {
-    this.output = output;
-    this.n_tests = 0;
-	this.finished = false;
-	this.result = "";
-	this.bad_results = [];
+	this.output     = aOutput;
+	this.testCount  = 0;
+	this.finished   = false;
+	this.result     = '';
+	this.badResults = [];
 }
 
 function isFinished()
@@ -22,30 +26,27 @@ function isFinished()
 function onStart()
 {
 	this.finished = false;
-
 	ObserverService.notifyObservers(this, 'UxU:TestStart', null);
 }
 
 function onFinished()
 {
-	var i;
+	var _this = this;
 
 	this.finished = true;
 
 	var result;
 	var results = [];
 
-	for (i = 0; i < this.bad_results.length; i++) {
-		var bad_result = this.bad_results[i];
+	this.badResults.forEach(function(aResult) {
+		result = aResult.result + ': '+
+				aResult.testDescription + '\n'+
+				utils.formatError(aResult.exception);
 
-		result = bad_result.result + ": "+
-				bad_result.testDescription + "\n"+
-				utils.formatError(bad_result.exception);
+		this.result += '\n' + aResult;
 
-		this.result += "\n" + result;
-
-		results.push(result);
-	}
+		results.push(aResult);
+	});
 
 	if (!results.length)
 		results = 'All tests succeed.'
@@ -56,32 +57,38 @@ function onFinished()
 	ObserverService.notifyObservers(this, 'UxU:TestFinish', data.toSource());
 }
 
-function report(rep)
+function report(aReport)
 {
-	this.n_tests++;
-    if (rep.result == "success") {
-        this.result += ".";
-    } else if (rep.result == "failure") {
-        this.result += "F";
-    } else if (rep.result == "error") {
-        this.result += "E";
-    } else {
-        this.result += "?";
-    }
+	this.testCount++;
+	switch (aReport.result)
+	{
+		case 'success':
+			this.result += '.';
+			break;
+		case 'failure':
+			this.result += 'F';
+			break;
+		case 'error':
+			this.result += 'E';
+			reak;
+		default:
+			this.result += '?';
+			break;
+	}
 
 	var data = {
-			description : rep.testDescription,
-			result      : (rep.result || 'unknown'),
-			exception   : rep.exception
+			description : aReport.testDescription,
+			result      : (aReport.result || 'unknown'),
+			exception   : aReport.exception
 		};
 	ObserverService.notifyObservers(this, 'UxU:TestProgress', data.toSource());
 
-    if (rep.exception)
-        this.bad_results.push(rep);
+	if (aReport.exception)
+		this.badResults.push(aReport);
 }
 
 
-function error(e)
+function error(aError)
 {
-	alert(e);
+	window.alert(aError);
 }

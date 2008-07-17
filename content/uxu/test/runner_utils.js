@@ -8,22 +8,21 @@ var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var TestCase    = test_module.require('class', 'test_case');
 var Environment = test_module.require('class', 'environment');
 
-function createTestSuite(aURL, aBrowser, aTestCaseClass)
+function createTestSuite(aURL, aBrowser)
 {
 	var suite = {};
 	suite.__proto__ = new Environment(suite, aURL, aBrowser);
 
-	suite.TestCase = aTestCaseClass || TestCase;
-	suite.Specification = suite.TestCase;
+	suite.TestCase      = TestCase;
+	suite.Specification = TestCase;
 
 	suite.include(suite.fileURL);
 
 	return suite;
 }
 
-function getTests(aSuite, aTestCaseClass)
+function getTests(aSuite)
 {
-	var TC = aTestCaseClass || TestCase;
 	var tests = [];
 	var testObjects = { tests : [] };
 	var obj;
@@ -32,7 +31,7 @@ function getTests(aSuite, aTestCaseClass)
 	{
 		obj = aSuite[i];
 		if (!aSuite.hasOwnProperty(i) || !obj) continue;
-		if (obj.__proto__ == (aTestCaseClass || TestCase).prototype) {
+		if (obj.__proto__ == TestCase.prototype) {
 			obj.environment = aSuite;
 			tests.push(obj);
 			continue;
@@ -54,7 +53,7 @@ function getTests(aSuite, aTestCaseClass)
 	}
 
 	if (testObjects.tests.length) {
-		var newTestCase = new TC(
+		var newTestCase = new TestCase(
 				aSuite.description || aSuite.fileURL.match(/[^\/]+$/),
 				aSuite.fileURL
 			);

@@ -1,115 +1,100 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
-var fsm        = lib_module.require('package', 'fsm');
 var utils      = lib_module.require('package', 'utils');
 
 var test_module  = new ModuleManager(['chrome://uxu/content/test']);
-var TestCase     = test_module.require('class', 'test_case');
 var runner_utils = test_module.require('package', 'runner_utils');
 
 
-function constructor(files)
+function constructor(aFiles)
 {
-	var i;
-
-	this.n_running_tests = 0;
-	this.files = files;
+	this.runningCount = 0;
+	this.files = aFiles;
 }
 
-function run(reporter, all)
+function run(aReporter, aAll)
 {
-	var i, j;
-	var all_tests = [];
+	var _this = this;
+	var tests = [];
 
-	this.n_running_tests = 0;
-	for (i = 0; i < this.files.length; i++) {
-		var file = this.files[i];
-		var tests = load(file, reporter);
+	this.runningCount = 0;
+	this.files.forEach(function(aFile) {
+		tests = tests.concat(this.load(aFile, aReporter));
+	});
 
-		all_tests.push(tests);
-	}
-
-	this.start_test(reporter);
-	for (i = 0; i < all_tests.length; i++) {
-		var tests = all_tests[i];
-
-		for (j = 0; j < tests.length; j++) {
-			var runner = this;
-			var test = tests[j];
-			if (all) test.priority = 'must';
-
-			try {
-				this.start_test(reporter);
-				test.reportHandler = {
-					handleReport : function(report) {
-						reporter.report(report)
-					},
-					onFinish	 : function() {
-						runner.finish_test(reporter)
-						runner_utils.cleanUpModifications(test);
-					}
-				};
-				test.run();
-			} catch (e) {
-				var report = {
-				  result: "error",
-				  exception: e,
-				  testDescription: "failed to run test: " + test.title
-				};
-				reporter.report(report)
-				this.finish_test(reporter);
-			}
+	this.start(aReporter);
+	tests.forEach(function(aTest) {
+		if (aAll) aTest.priority = 'must';
+		try {
+			_this.start(aReporter);
+			aTest.reportHandler = {
+				handleReport : function(aReport)
+				{
+					aReporter.report(aReport)
+				},
+				onFinish : function()
+				{
+					_this.finish(aReporter)
+					runner_utils.cleanUpModifications(aTest);
+				}
+			};
+			aTest.run();
 		}
-	}
-	this.finish_test(reporter);
+		catch(e) {
+			var report = {
+				result          : 'error',
+				exception       : e,
+				testDescription : 'failed to run test: ' + aTest.title
+			};
+			aReporter.report(report)
+			this.finish(aReporter);
+		}
+	});
+	this.finish(aReporter);
 }
 
-function start_test(reporter)
+function start(aReporter)
 {
-	if (this.n_running_tests == 0 && reporter.onStart)
-		reporter.onStart();
-	this.n_running_tests++;
+	if (this.runningCount == 0 && aReporter.onStart)
+		aReporter.onStart();
+	this.runningCount++;
 }
 
-function finish_test(reporter)
+function finish(aReporter)
 {
-	this.n_running_tests--;
-	if (this.n_running_tests == 0 && reporter.onFinished)
-		reporter.onFinished();
+	this.runningCount--;
+	if (this.runningCount == 0 && aReporter.onFinished)
+		aReporter.onFinished();
 	//utils.cleanUpTempFiles();
 }
 
 function isRunning()
 {
-	return this.n_running_tests > 0;
+	return this.runningCount > 0;
 }
 
 function load(aFilePath, aReporter)
 {
 	var file = utils.makeFileWithPath(aFilePath);
-	var tests;
-	if (file.isDirectory())
-		tests = runFolder(file);
-	else
-		tests = runFile(file);
-
-	return tests;
+	return file.isDirectory() ? loadFolder(file) : loadFile(file) ;
 }
 
-function loadFolder(aFolder, aReporter) {
+function loadFolder(aFolder, aReporter)
+{
 	var filesMayBeTest = runner_utils.getTestFiles(aFolder);
 	return filesMayBeTest.map(function(aFile) {
 			return loadFile(aFile, aReporter);
 		});
 }
 
-function loadFile(aFile, aReporter) {
+function loadFile(aFile, aReporter)
+{
 	var tests = [];
 
 	try {
-		var suite = runner_utils.createTestSuite(utils.getURLSpecFromFilePath(aFile.path), null, TestCase);
-		tests = runner_utils.getTests(suite, TestCase);
+		var suite = runner_utils.createTestSuite(utils.getURLSpecFromFilePath(aFile.path), null);
+		tests = runner_utils.getTests(suite);
 		if (tests.length == 0)
 			aReporter.warn('No tests found in ' + aFile.path);
 	} catch (e) {
@@ -119,12 +104,3 @@ function loadFile(aFile, aReporter) {
 
 	return tests;
 }
-
-
-TestCase.prototype._original_run = TestCase.prototype.run;
-
-TestCase.prototype.run = function() {
-	this._asyncRun.call(this, this._tests, this._setUp, this._tearDown,
-	            this._reportHandler, this.onTestRunFinished);
-};
-
