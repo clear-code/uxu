@@ -12,6 +12,8 @@ function setUp()
 			.getService(Ci.nsIProperties);
 	tempFile = DirectoryService.get('TmpD', Ci.nsIFile);
 	tempFile.append('tmp' + parseInt(Math.random() * 650000) + '.tmp');
+
+	yield 0; // to run tests progressively
 }
 
 function tearDown()
@@ -108,6 +110,9 @@ function test_writeTo()
 
 	utilsModule.writeTo('日本語', tempFile.path, 'UTF-8');
 	assert.equals('日本語', utilsModule.readFrom(tempFile.path, 'UTF-8'));
+
+	utilsModule.writeTo('日本語', tempFile.path, 'Shift_JIS');
+	assert.equals('日本語', utilsModule.readFrom(tempFile.path, 'Shift_JIS'));
 }
 
 test_formatError.priority = 'never';
@@ -128,15 +133,15 @@ function test_getPref()
 	var value;
 
 	value = utilsModule.getPref('general.autoScroll');
-	assert.equals('boolean', typeof value);
+	assert.isBoolean(value);
 	assert.equals(Pref.getBoolPref('general.autoScroll'), value);
 
 	value = utilsModule.getPref('accessibility.tabfocus');
-	assert.equals('number', typeof value);
+	assert.isNumber(value);
 	assert.equals(Pref.getIntPref('accessibility.tabfocus'), value);
 
 	value = utilsModule.getPref('general.useragent.locale');
-	assert.equals('string', typeof value);
+	assert.isString(value);
 	assert.equals(Pref.getCharPref('general.useragent.locale'), value);
 
 	value = utilsModule.getPref('undefined.pref.'+parseInt(Math.random() * 65000));
@@ -152,21 +157,21 @@ function test_setAndClearPref()
 
 	utilsModule.setPref(key, true);
 	value = utils.getPref(key);
-	assert.equals('boolean', typeof value);
+	assert.isBoolean(value);
 	assert.isTrue(value);
 	utilsModule.clearPref(key);
 	assert.isNull(utils.getPref(key));
 
 	utilsModule.setPref(key, 30);
 	value = utils.getPref(key);
-	assert.equals('number', typeof value);
+	assert.isNumber(value);
 	assert.equals(30, value);
 	utilsModule.clearPref(key);
 	assert.isNull(utils.getPref(key));
 
 	utilsModule.setPref(key, 'string');
 	value = utils.getPref(key);
-	assert.equals('string', typeof value);
+	assert.isString(value);
 	assert.equals('string', value);
 	utilsModule.clearPref(key);
 	assert.isNull(utils.getPref(key));
@@ -295,18 +300,20 @@ function test_doIterationCallbacks()
 		}, callbacks));
 	assert.isTrue(onEnd);
 
-//	yield Do(utilsModule.doIteration(function() {
-//			yield 100;
-//			assert.isTrue(false);
-//		}, callbacks));
-//	assert.isTrue(onFail);
+	utilsModule.doIteration(function() {
+			yield 100;
+			assert.isTrue(false);
+		}, callbacks);
+	yield 200;
+	assert.isTrue(onFail);
 
-//	yield Do(utilsModule.doIteration(function() {
-//			yield 100;
-//			var val = null;
-//			null.foobar();
-//		}, callbacks));
-//	assert.isTrue(onError);
+	utilsModule.doIteration(function() {
+			yield 100;
+			var val = null;
+			null.foobar();
+		}, callbacks);
+	yield 200;
+	assert.isTrue(onError);
 }
 
 function test_Do()
@@ -328,10 +335,10 @@ function test_Do()
 	};
 	var result = utilsModule.Do(Generator);
 	assert.equals('object', typeof result);
-	assert.isTrue('value' in result);
+	assert.isDefined(result.value);
 	result = utilsModule.Do(Generator());
 	assert.equals('object', typeof result);
-	assert.isTrue('value' in result);
+	assert.isDefined(result.value);
 }
 
 function test_getDB()

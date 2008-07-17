@@ -46,6 +46,18 @@ function isFalse(aActual, aMessage)
 		fail(bundle.getFormattedString('assert_is_false', appendTypeString([aActual])), aMessage);
 }
 
+function isBoolean(aActual, aMessage)
+{
+	if (typeof aActual != 'boolean')
+		fail(bundle.getFormattedString('assert_is_boolean', appendTypeString([aActual])), aMessage);
+}
+
+function isNotBoolean(aActual, aMessage)
+{
+	if (typeof aActual == 'boolean')
+		fail(bundle.getFormattedString('assert_is_not_boolean', appendTypeString([aActual])), aMessage);
+}
+
 function isString(aActual, aMessage)
 {
 	if (typeof aActual != 'string')

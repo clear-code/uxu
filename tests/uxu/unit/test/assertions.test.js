@@ -12,29 +12,32 @@ function tearDown()
 
 assert.assertSucceed = function(aAssertion, aArgs)
 {
-	var done = false;
-	try {
-		aAssertion.apply(assertionsModule, aArgs);
-		done = true;
-	}
-	catch(e) {
-	}
-	assert.isTrue(done);
+	assert.notRaises(
+		'AssertionFailed',
+		function() {
+			aAssertion.apply(assertionsModule, aArgs);
+		},
+		null
+	);
 }
 
 assert.assertFailed = function(aAssertion, aArgs)
 {
+	assert.raises(
+		'AssertionFailed',
+		function() {
+			aAssertion.apply(assertionsModule, aArgs);
+		},
+		null
+	);
+
 	var exception;
-	var done = false;
 	try {
 		aAssertion.apply(assertionsModule, aArgs);
-		done = true;
 	}
 	catch(e) {
 		exception = e;
 	}
-	assert.isFalse(done);
-	assert.equals(exception.name, 'AssertionFailed');
 	assert.isTrue(exception.message.indexOf(aArgs[aArgs.length-1]) > -1);
 }
 
@@ -65,6 +68,12 @@ function test_assertions()
 	assert.assertSucceed(assertionsModule.isFalse, [null]);
 	assert.assertFailed(assertionsModule.isFalse, [true, message]);
 	assert.assertFailed(assertionsModule.isFalse, [{}, message]);
+
+	assert.assertSucceed(assertionsModule.isBoolean, [true]);
+	assert.assertFailed(assertionsModule.isBoolean, ['true', message]);
+
+	assert.assertSucceed(assertionsModule.isNotBoolean, ['true']);
+	assert.assertFailed(assertionsModule.isNotBoolean, [true, message]);
 
 	assert.assertSucceed(assertionsModule.isString, ['1']);
 	assert.assertFailed(assertionsModule.isString, [1, message]);

@@ -32,19 +32,19 @@ function tearDown()
 function test_createTestSuite()
 {
 	var suite = runnerUtils.createTestSuite(declarationStyleTest, gBrowser);
-	assert.isDefined(suite.TestCase.prototype.run);
-	assert.isDefined(suite.TestCase.prototype.registerTest);
-	assert.isDefined(suite.TestCase.prototype.verify);
-	assert.isDefined(suite.Specification.prototype.run);
-	assert.isDefined(suite.Specification.prototype.registerTest);
-	assert.isDefined(suite.Specification.prototype.verify);
+	assert.isFunction(suite.TestCase.prototype.run);
+	assert.isFunction(suite.TestCase.prototype.registerTest);
+	assert.isFunction(suite.TestCase.prototype.verify);
+	assert.isFunction(suite.Specification.prototype.run);
+	assert.isFunction(suite.Specification.prototype.registerTest);
+	assert.isFunction(suite.Specification.prototype.verify);
 	assert.equals(suite.TestCase, suite.Specification);
 
 	assert.equals('このテストの説明', suite.description);
-	assert.isDefined(suite.testSomething1);
+	assert.isFunction(suite.testSomething1);
 	assert.isDefined(suite.utils);
-	assert.isDefined(suite.utils.readFrom);
-	assert.isDefined(suite.utils.include);
+	assert.isFunction(suite.utils.readFrom);
+	assert.isFunction(suite.utils.include);
 	assert.equals(suite.__proto__, suite.utils);
 
 
