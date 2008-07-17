@@ -12,7 +12,7 @@ const ObserverService = Cc['@mozilla.org/observer-service;1']
 	.getService(Ci.nsIObserverService);
  
 /* UTILITIES */ 
-	 
+	
 function x() 
 {
 	var contextNode, path;
@@ -111,7 +111,7 @@ function getErrorReports()
 }
   
 /* file picker */ 
-	 
+	
 function pickFile(aMode, aOptions) 
 {
 	if (!aOptions) aOptions = {};
@@ -213,8 +213,8 @@ const fileDNDObserver =
 }; 
    
 /* DOMAIN */ 
-	 
-function init() 
+	
+function startup() 
 {
 	if (!isLinux()) {
 		ObserverService.addObserver(alwaysRaisedObserver, 'xul-window-registered', false);
@@ -239,16 +239,17 @@ var alwaysRaisedObserver = {
 	}
 };
   
-function finish() 
+function shutdown() 
 {
 	if (!isLinux()) {
 		ObserverService.removeObserver(alwaysRaisedObserver, 'xul-window-registered');
 	}
 	_('content').removeEventListener('load', onContentLoad, true);
+	hideSource();
 }
- 	 
+  
 /* test cases */ 
-	 
+	
 function newTestCase() 
 {
 	var file = pickFile('save', makeTestCaseFileOptions());
@@ -262,7 +263,7 @@ function newTestCase()
 		}, 100);
 	}
 }
-	
+	 
 function writeTemplate(aFilePath) 
 {
 	var data = utils.readFrom('chrome://uxu/locale/sample.test.js');
@@ -319,7 +320,7 @@ function getFocusedPath()
 }
   
 /* runner */ 
-	 
+	
 function TestReportHandler(aTestCase) 
 {
 	this.testCase = aTestCase;
@@ -507,12 +508,6 @@ function displayStackTrace(aTrace, aListbox)
 		item.setAttribute('file', match[1]);
 		aListbox.appendChild(item);
 	});
-}
- 
-function hideSource() 
-{
-	_('source-viewer').collapsed = true;
-	_('source-splitter').hidden = true;
 }
  
 function reset() 
@@ -851,7 +846,78 @@ function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine)
 		arguments.callee(aFilePath, aLineNumber, aColumnNumber);
 	}
 }
+  
+/* UI */ 
+	 
+function isLinux() 
+{
+	return /linux/i.test(navigator.platform);
+}
  
+function updateRunMode() 
+{
+	var runPriority = _('runPriority');
+	var runAll = _('runAll');
+	var label;
+	switch (utils.getPref('extensions.uxu.mozunit.runMode'))
+	{
+		default:
+		case 0:
+			label = runPriority.getAttribute('label-default');
+			runPriority.setAttribute('label', label);
+			label = runAll.getAttribute('label-normal');
+			runAll.setAttribute('label', label);
+			break;
+
+		case 1:
+			label = runPriority.getAttribute('label-normal');
+			runPriority.setAttribute('label', label);
+			label = runAll.getAttribute('label-default');
+			runAll.setAttribute('label', label);
+			break;
+	}
+}
+ 
+function toggleAlwaysRaised() 
+{
+	var win = getXULWindow();
+	win.zLevel = (win.zLevel == win.normalZ) ?
+			win.highestZ : win.normalZ;
+	utils.setPref('extensions.uxu.mozunit.alwaysRaised', win.zLevel != win.normalZ);
+}
+	
+function getXULWindow() 
+{
+	return window
+		.QueryInterface(Ci.nsIInterfaceRequestor)
+		.getInterface(Ci.nsIWebNavigation)
+		.QueryInterface(Ci.nsIDocShellTreeItem)
+		.treeOwner
+		.QueryInterface(Ci.nsIInterfaceRequestor)
+		.getInterface(Ci.nsIXULWindow);
+}
+  
+function toggleContent() 
+{
+	_('content').collapsed = !_('content').collapsed;
+	_('content-splitter').hidden = !_('content-splitter').hidden;
+}
+	
+var contentAutoExpanded = false; 
+ 
+function onContentLoad() 
+{
+	if (!utils.getPref('extensions.uxu.mozunit.autoShowContent')) return;
+	if (_('content').collapsed) {
+		contentAutoExpanded = true;
+		toggleContent();
+	}
+	else if (content.location.href == 'about:blank' && contentAutoExpanded) {
+		contentAutoExpanded = false;
+		toggleContent();
+	}
+}
+  
 function showSource(aTraceLine) 
 {
 	var match = aTraceLine.match(/@(\w+:.*)?:(\d+)/);
@@ -864,8 +930,16 @@ function showSource(aTraceLine)
 	if (!sourceUrl) return;
 
 	var frame = _('source-viewer', 'source');
+	var opened = !_('source-splitter').hidden;
 	_('source-splitter').hidden = false;
 	_('source-viewer').collapsed = false;
+	if (!opened && utils.getPref('extensions.uxu.mozunit.autoExpandWindow.sourceViewer')) {
+		window.resizeBy(
+			_('source-splitter').boxObject.width +
+			_('source-viewer').boxObject.width,
+			0
+		);
+	}
 
 	match = sourceUrl.match(/[;\?]encoding=([^;,]+)/i);
 	if (match && match[1]) {
@@ -924,76 +998,19 @@ function showSource(aTraceLine)
 		null, null, null
 	);
 }
-  
-/* UI */ 
-	 
-function isLinux() 
+	
+function hideSource() 
 {
-	return /linux/i.test(navigator.platform);
-}
- 
-function updateRunMode() 
-{
-	var runPriority = _('runPriority');
-	var runAll = _('runAll');
-	var label;
-	switch (utils.getPref('extensions.uxu.mozunit.runMode'))
-	{
-		default:
-		case 0:
-			label = runPriority.getAttribute('label-default');
-			runPriority.setAttribute('label', label);
-			label = runAll.getAttribute('label-normal');
-			runAll.setAttribute('label', label);
-			break;
-
-		case 1:
-			label = runPriority.getAttribute('label-normal');
-			runPriority.setAttribute('label', label);
-			label = runAll.getAttribute('label-default');
-			runAll.setAttribute('label', label);
-			break;
+	if (_('source-splitter').hidden) return;
+	if (utils.getPref('extensions.uxu.mozunit.autoExpandWindow.sourceViewer')) {
+		window.resizeBy(
+			-_('source-splitter').boxObject.width
+			-_('source-viewer').boxObject.width,
+			0
+		);
 	}
-}
- 
-function toggleAlwaysRaised() 
-{
-	var win = getXULWindow();
-	win.zLevel = (win.zLevel == win.normalZ) ?
-			win.highestZ : win.normalZ;
-	utils.setPref('extensions.uxu.mozunit.alwaysRaised', win.zLevel != win.normalZ);
-}
-	 
-function getXULWindow() 
-{
-	return window
-		.QueryInterface(Ci.nsIInterfaceRequestor)
-		.getInterface(Ci.nsIWebNavigation)
-		.QueryInterface(Ci.nsIDocShellTreeItem)
-		.treeOwner
-		.QueryInterface(Ci.nsIInterfaceRequestor)
-		.getInterface(Ci.nsIXULWindow);
-}
-  
-function toggleContent() 
-{
-	_('content').collapsed = !_('content').collapsed;
-	_('content-splitter').hidden = !_('content-splitter').hidden;
-}
-	 
-var contentAutoExpanded = false; 
- 
-function onContentLoad() 
-{
-	if (!utils.getPref('extensions.uxu.mozunit.autoShowContent')) return;
-	if (_('content').collapsed) {
-		contentAutoExpanded = true;
-		toggleContent();
-	}
-	else if (content.location.href == 'about:blank' && contentAutoExpanded) {
-		contentAutoExpanded = false;
-		toggleContent();
-	}
+	_('source-viewer').collapsed = true;
+	_('source-splitter').hidden = true;
 }
   
 function goUpdateCommand(aCommand) 
@@ -1058,6 +1075,7 @@ function updateTestCommands()
 		(file = utils.makeFileWithPath(file)) &&
 		file.exists()) {
 		_('run').removeAttribute('disabled');
+		_('runPriority').removeAttribute('disabled');
 		_('runAll').removeAttribute('disabled');
 		_('runOptions-menu').removeAttribute('disabled');
 		_('runOptions-button').removeAttribute('disabled');
@@ -1068,6 +1086,7 @@ function updateTestCommands()
 	}
 	else {
 		_('run').setAttribute('disabled', true);
+		_('runPriority').setAttribute('disabled', true);
 		_('runAll').setAttribute('disabled', true);
 		_('runOptions-menu').setAttribute('disabled', true);
 		_('runOptions-button').setAttribute('disabled', true);
@@ -1088,4 +1107,31 @@ function updateContextMenu()
 		_('editThis-separator').setAttribute('hidden', true);
 	}
 }
-  
+ 
+function showPage(aURI) 
+{
+	var recentWindow = Cc['@mozilla.org/appshell/window-mediator;1']
+		.getService(Ci.nsIWindowMediator)
+		.getMostRecentWindow('navigator:browser');
+	if (recentWindow) {
+		if (recentWindow.content.location.href == 'about:blank')
+			recentWindow.loadURI(aURI);
+		else
+			recentWindow.gBrowser.selectedTab = recentWindow.gBrowser.addTab(aURI);
+	}
+	else {
+		try {
+			window.open(aURI);
+		}
+		catch(e) {
+			// Thunderbird
+			var uri = Cc['@mozilla.org/network/io-service;1']
+					.getService(Ci.nsIIOService)
+					.newURI(aURI, null, null);
+			var service = Cc['@mozilla.org/uriloader/external-protocol-service;1']
+					.getService(Ci.nsIExternalProtocolService);
+					service.loadUrl(uri);
+		}
+	}
+}
+ 	 

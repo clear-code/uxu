@@ -49,6 +49,12 @@
 <!ENTITY mozunit.copy.label     "Copy">
 <!ENTITY mozunit.copy.accesskey "C">
 
+<!ENTITY mozunit.helpMenu.label     "Help">
+<!ENTITY mozunit.helpMenu.accesskey "H">
+<!ENTITY mozunit.help.label     "Show manual">
+<!ENTITY mozunit.help.accesskey "m">
+<!ENTITY mozunit.help.uri       "http://www.clear-code.com/software/uxu/">
+
 <!ENTITY mozunit.successes "Successes:">
 <!ENTITY mozunit.passover "Passed over:">
 
@@ -89,7 +95,7 @@
 <!ENTITY config.mozunit.runMode.0 "Run tests by their priority, but regard failed or uncompleted tests as MUST to run (recommended)">
 <!ENTITY config.mozunit.runMode.1 "Run any test always">
 <!ENTITY config.mozunit.autoShowContent "Show internal frame while testing automatically">
-
+<!ENTITY config.mozunit.autoExpandWindow.sourceViewer "Expand window automatically when source viewer is open">
 <!ENTITY config.tabs.server "UxU Server">
 
 <!ENTITY config.auto.start "Start server automatically on Firefox's startup">

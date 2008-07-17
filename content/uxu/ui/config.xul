@@ -66,6 +66,9 @@
 		<preference id="extensions.uxu.mozunit.autoShowContent"
 			name="extensions.uxu.mozunit.autoShowContent"
 			type="bool"/>
+		<preference id="extensions.uxu.mozunit.autoExpandWindow.sourceViewer"
+			name="extensions.uxu.mozunit.autoExpandWindow.sourceViewer"
+			type="bool"/>
 		<preference id="extensions.uxu.mozunit.editor"
 			name="extensions.uxu.mozunit.editor"
 			type="string"/>
@@ -83,6 +86,9 @@
 	<checkbox id="extensions.uxu.mozunit.autoShowContent-check"
 		preference="extensions.uxu.mozunit.autoShowContent"
 		label="&config.mozunit.autoShowContent;"/>
+	<checkbox id="extensions.uxu.mozunit.autoExpandWindow.sourceViewer-check"
+		preference="extensions.uxu.mozunit.autoExpandWindow.sourceViewer"
+		label="&config.mozunit.autoExpandWindow.sourceViewer;"/>
 	<groupbox orient="vertical">
 		<caption label="&config.mozunit.editor.caption;"/>
 		<hbox align="center">

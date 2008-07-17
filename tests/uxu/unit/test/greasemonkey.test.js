@@ -17,17 +17,10 @@ function tearDown()
 	yield Do(utils.loadURI('about:blank'));
 }
 
-assert.isFunction = function(aSomething)
-{
-	assert.isTrue(aSomething);
-	assert.equals('function', typeof aSomething);
-}
-
 function test_loadAndUnload()
 {
 	var retVal = GMUtils.load('about:');
-	assert.isTrue(retVal);
-	assert.isTrue('value' in retVal);
+	assert.isDefined(retVal.value);
 	assert.isFalse(retVal.value);
 	assert.notEquals('about:', content.location.href);
 
@@ -36,8 +29,7 @@ function test_loadAndUnload()
 	assert.equals('about:', content.location.href);
 
 	retVal = GMUtils.unload();
-	assert.isTrue(retVal);
-	assert.isTrue('value' in retVal);
+	assert.isDefined(retVal.value);
 	assert.isFalse(retVal.value);
 	assert.notEquals('about:blank', content.location.href);
 
@@ -50,10 +42,9 @@ function test_loadAndUnload()
 function test_openAndClose()
 {
 	var retVal = GMUtils.open('about:');
-	assert.isTrue(retVal);
-	assert.isTrue('value' in retVal);
+	assert.isDefined(retVal.value);
 	assert.isFalse(retVal.value);
-	assert.isTrue('window' in retVal);
+	assert.isDefined(retVal.window);
 	assert.isNull(retVal.window);
 
 	yield 1000;

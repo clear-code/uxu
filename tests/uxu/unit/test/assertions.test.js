@@ -12,29 +12,32 @@ function tearDown()
 
 assert.assertSucceed = function(aAssertion, aArgs)
 {
-	var done = false;
-	try {
-		aAssertion.apply(assertionsModule, aArgs);
-		done = true;
-	}
-	catch(e) {
-	}
-	assert.isTrue(done);
+	assert.notRaises(
+		'AssertionFailed',
+		function() {
+			aAssertion.apply(assertionsModule, aArgs);
+		},
+		null
+	);
 }
 
 assert.assertFailed = function(aAssertion, aArgs)
 {
+	assert.raises(
+		'AssertionFailed',
+		function() {
+			aAssertion.apply(assertionsModule, aArgs);
+		},
+		null
+	);
+
 	var exception;
-	var done = false;
 	try {
 		aAssertion.apply(assertionsModule, aArgs);
-		done = true;
 	}
 	catch(e) {
 		exception = e;
 	}
-	assert.isFalse(done);
-	assert.equals(exception.name, 'AssertionFailed');
 	assert.isTrue(exception.message.indexOf(aArgs[aArgs.length-1]) > -1);
 }
 
@@ -65,6 +68,40 @@ function test_assertions()
 	assert.assertSucceed(assertionsModule.isFalse, [null]);
 	assert.assertFailed(assertionsModule.isFalse, [true, message]);
 	assert.assertFailed(assertionsModule.isFalse, [{}, message]);
+
+	assert.assertSucceed(assertionsModule.isBoolean, [true]);
+	assert.assertFailed(assertionsModule.isBoolean, ['true', message]);
+
+	assert.assertSucceed(assertionsModule.isNotBoolean, ['true']);
+	assert.assertFailed(assertionsModule.isNotBoolean, [true, message]);
+
+	assert.assertSucceed(assertionsModule.isString, ['1']);
+	assert.assertFailed(assertionsModule.isString, [1, message]);
+
+	assert.assertSucceed(assertionsModule.isNotString, [1]);
+	assert.assertFailed(assertionsModule.isNotString, ['1', message]);
+
+	assert.assertSucceed(assertionsModule.isNumber, [0]);
+	assert.assertFailed(assertionsModule.isNumber, ['0', message]);
+
+	assert.assertSucceed(assertionsModule.isNotNumber, ['0']);
+	assert.assertFailed(assertionsModule.isNotNumber, [0, message]);
+
+	assert.assertSucceed(assertionsModule.isFunction, [(function() {})]);
+	assert.assertSucceed(assertionsModule.isFunction, [(new Function('foo', 'return foo'))]);
+	assert.assertFailed(assertionsModule.isFunction, [true, message]);
+	assert.assertFailed(assertionsModule.isFunction, [false, message]);
+	assert.assertFailed(assertionsModule.isFunction, [0, message]);
+	assert.assertFailed(assertionsModule.isFunction, ['func', message]);
+	assert.assertFailed(assertionsModule.isFunction, [null, message]);
+
+	assert.assertSucceed(assertionsModule.isNotFunction, [true]);
+	assert.assertSucceed(assertionsModule.isNotFunction, [false]);
+	assert.assertSucceed(assertionsModule.isNotFunction, [0]);
+	assert.assertSucceed(assertionsModule.isNotFunction, ['func']);
+	assert.assertSucceed(assertionsModule.isNotFunction, [null]);
+	assert.assertFailed(assertionsModule.isNotFunction, [(function() {}), message]);
+	assert.assertFailed(assertionsModule.isNotFunction, [(new Function('foo', 'return foo')), message]);
 
 	assert.assertSucceed(assertionsModule.isDefined, [true]);
 	assert.assertSucceed(assertionsModule.isDefined, [false]);
@@ -105,6 +142,25 @@ function test_assertions()
 	);
 	assert.assertFailed(assertionsModule.raise,
 		['test', function() { return true; }, {}, message]
+	);
+
+	assert.assertSucceed(assertionsModule.notRaises,
+		['test', function() { return true; }, {}]
+	);
+	assert.assertSucceed(assertionsModule.notRaises,
+		['test', function() { throw 'text'; }, {}]
+	);
+	assert.assertFailed(assertionsModule.notRaises,
+		['test', function() { throw 'test'; }, {}, message]
+	);
+	assert.assertSucceed(assertionsModule.notRaise,
+		['test', function() { return true; }, {}]
+	);
+	assert.assertSucceed(assertionsModule.notRaise,
+		['test', function() { throw 'text'; }, {}]
+	);
+	assert.assertFailed(assertionsModule.notRaise,
+		['test', function() { throw 'test'; }, {}, message]
 	);
 
 	assert.assertSucceed(assertionsModule.matches,
@@ -177,15 +233,6 @@ function test_fail()
 
 function test_appendTypeString()
 {
-	var array = [
-			true,
-			0,
-			'a',
-			{},
-			null,
-			void(0),
-			(function() {})
-		];
 	assert.arrayEquals(
 		[
 			'true (boolean)',
@@ -196,6 +243,14 @@ function test_appendTypeString()
 			'undefined',
 			'function () {\n} (function)'
 		],
-		assertionsModule.appendTypeString(array)
+		assertionsModule.appendTypeString([
+			true,
+			0,
+			'a',
+			{},
+			null,
+			void(0),
+			(function() {})
+		])
 	);
 }

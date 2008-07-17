@@ -15,6 +15,7 @@ pref("extensions.uxu.mozunit.showInternalStacks", false);
 pref("extensions.uxu.mozunit.editor", "/usr/bin/gedit +%l %f");
 pref("extensions.uxu.mozunit.alwaysRaised", true);
 pref("extensions.uxu.mozunit.autoShowContent", true);
+pref("extensions.uxu.mozunit.autoExpandWindow.sourceViewer", true);
 
 pref("extensions.uxu.auto.start", false);
 pref("extensions.uxu.auto.exit",  true);

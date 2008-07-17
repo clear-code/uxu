@@ -24,6 +24,6 @@ function testLoad()
 	);
 	assert.isTrue(env.a);
 	assert.isTrue(env.b);
-	assert.isTrue(env.c);
+	assert.isFunction(env.c);
 }
 
