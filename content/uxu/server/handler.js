@@ -133,7 +133,7 @@ function evaluate(code)
 {
     try {
 		this.context._lastEvaluatedScript = code;
-		return this.load('chrome://uxu/content/lib/subScriptLoader.js', context);
+		return this.load('chrome://uxu/content/lib/subScriptLoader.js');
     } catch (e) {
         return utils.formatError(e);
     }
