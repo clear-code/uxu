@@ -482,7 +482,7 @@ function onError(aError)
 }
  
 var traceLineRegExp = /@(\w+:.*)?:(\d+)/;
-var includeRegExp = /^chrome:\/\/uxu\/content\/test\/helper\/subScriptRunner\.js\?includeSource=([^;,]+)/i;
+var includeRegExp = /^chrome:\/\/uxu\/content\/lib\/subScriptRunner\.js\?includeSource=([^;,]+)/i;
 function displayStackTrace(aTrace, aListbox) 
 {
 	var fullLines = aTrace.split('\n').map(function(aLine) {
