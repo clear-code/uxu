@@ -419,7 +419,7 @@ function include(aSource, aEnvironment, aEncoding)
 	var env = aEnvironment || this.environment;
 	env._subScript = script;
 	loader.loadSubScript(
-		'chrome://uxu/content/test/helper/subScriptRunner.js?includeSource='+
+		'chrome://uxu/content/lib/subScriptRunner.js?includeSource='+
 			encodeURIComponent(aSource)+
 			';encoding='+encoding,
 		env
