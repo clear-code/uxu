@@ -31,7 +31,7 @@ function test_loadAndUnload()
 	assert.isFalse(retVal.value);
 	assert.notEquals('about:', content.location.href);
 
-	yield 500;
+	yield 1000;
 	assert.isTrue(retVal.value);
 	assert.equals('about:', content.location.href);
 
@@ -41,7 +41,7 @@ function test_loadAndUnload()
 	assert.isFalse(retVal.value);
 	assert.notEquals('about:blank', content.location.href);
 
-	yield 500;
+	yield 1000;
 	assert.isTrue(retVal.value);
 	assert.equals('about:blank', content.location.href);
 }
