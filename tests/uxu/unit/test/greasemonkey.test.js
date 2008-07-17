@@ -17,12 +17,6 @@ function tearDown()
 	yield Do(utils.loadURI('about:blank'));
 }
 
-assert.isFunction = function(aSomething)
-{
-	assert.isTrue(aSomething);
-	assert.equals('function', typeof aSomething);
-}
-
 function test_loadAndUnload()
 {
 	var retVal = GMUtils.load('about:');
