@@ -101,13 +101,13 @@ function scrollReportsTo(aTarget)
 function getFailureReports() 
 {
 	var reports = _('testcase-reports');
-	return Array.prototype.slice.call(reports.getElementsByAttribute('report-type', 'failure'));
+	return Array.slice(reports.getElementsByAttribute('report-type', 'failure'));
 }
  
 function getErrorReports() 
 {
 	var reports = _('testcase-reports');
-	return Array.prototype.slice.call(reports.getElementsByAttribute('report-type', 'error'));
+	return Array.slice(reports.getElementsByAttribute('report-type', 'error'));
 }
   
 /* file picker */ 

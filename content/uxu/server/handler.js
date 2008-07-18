@@ -76,7 +76,7 @@ function quit()
 
 function print()
 {
-	var message = Array.prototype.slice.call(arguments).join('');
+	var message = Array.slice(arguments).join('');
 	if (this.output)
 		this.output.write(message, message.length);
 	else
@@ -85,7 +85,7 @@ function print()
 
 function puts()
 {
-	var message = Array.prototype.slice.call(arguments).join('\n');
+	var message = Array.slice(arguments).join('\n');
 	if (!/\n$/.test(message)) message += '\n';
 	if (this.output)
 		this.output.write(message, message.length);

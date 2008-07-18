@@ -205,7 +205,7 @@ function fail()
 {
 	var error = new Error()
 	error.name = 'AssertionFailed';
-	error.message = Array.prototype.slice.call(arguments).reverse().join('\n');
+	error.message = Array.slice(arguments).reverse().join('\n');
 	throw error;
 }
 
