@@ -920,12 +920,16 @@ function showSource(aTraceLine)
 		);
 	}
 
+	var frame = _('source-viewer', 'source');
 	function onLoad(aEvent)
 	{
-		_('source-viewer', 'source').removeEventListener('load', onLoad, true);
+		frame.removeEventListener('load', arguments.callee, true);
+
+		if (frame.contentDocument.documentElement.getAttribute('formatted') == 'true') return;
+		frame.contentDocument.documentElement.setAttribute('formatted', true);
 
 		stylizeSource(
-			_('source-viewer', 'source').contentDocument,
+			frame.contentDocument,
 			function(aSourceDoc, aNumber, aContent)
 			{
 				aContent = padLeft(aNumber, 3, 0) + ' ' + aContent + '\n';
@@ -950,16 +954,15 @@ function showSource(aTraceLine)
 			}
 		);
 
-		_('source-viewer', 'source').contentWindow.scrollTo(
+		frame.contentWindow.scrollTo(
 			0,
 			(frame.contentDocument.getElementById('current').offsetTop -
 				frame.contentWindow.innerHeight/2)
 		);
-
 	}
 
-	_('source-viewer', 'source').addEventListener('load', onLoad, true);
-	_('source-viewer', 'source').webNavigation.loadURI(
+	frame.addEventListener('load', onLoad, true);
+	frame.webNavigation.loadURI(
 		unformatted.source,
 		Ci.nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE,
 		null, null, null
