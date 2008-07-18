@@ -137,3 +137,18 @@ function evaluate(aCode)
 				.replace(/^@chrome:\/\/uxu\/content\/lib\/subScriptRunner\.js.*\n/mg, '');
 	}
 }
+
+function quitApplication(aForceQuit)
+{
+	var appStartup, quitSeverity;
+
+	appStartup = Components.classes['@mozilla.org/toolkit/app-startup;1'].
+		getService(Components.interfaces.nsIAppStartup);
+
+	if (aForceQuit)
+		quitSeverity = Components.interfaces.nsIAppStartup.eForceQuit;
+	else
+		quitSeverity = Components.interfaces.nsIAppStartup.eAttemptQuit;
+
+	appStartup.quit(quitSeverity);
+}

@@ -10,6 +10,7 @@ options.host = "localhost"
 options.port = 4444
 options.firefox = "firefox &"
 options.wait = 1.5
+options.quit = true
 
 opts = OptionParser.new("Usage: #{$0} [options] test_or_directory...") do |opts|
   opts.on("--host=HOST",
@@ -20,6 +21,8 @@ opts = OptionParser.new("Usage: #{$0} [options] test_or_directory...") do |opts|
           "command to start Firefox (#{options.firefox})") {|options.firefox|}
   opts.on("--wait=SECONDS", Float,
           "how log wait to start Firefox (#{options.wait})") {|options.wait|}
+  opts.on("--[no-]quit",
+          "whether quit or not on finish (#{options.quit})") {|options.quit|}
 
   opts.separator ""
   opts.on_tail("--help", "Show this message") do
@@ -34,11 +37,11 @@ if tests.empty?
 end
 
 class Runner
-  def initialize(socket, target_path, output=$stdout)
+  def initialize(socket, target_paths, output=$stdout)
     @socket = socket
     @output = output
     @output.sync = true
-    @target_path = target_path
+    @target_paths = target_paths
     @reporter_var_name = "reporter"
     @shown_result_index = 0
   end
@@ -46,7 +49,7 @@ class Runner
   def run
     target_paths = collect_target_paths
     escaped_target_paths = target_paths.collect do |path|
-      normalized_path = normalize_separator(@target_path)
+      normalized_path = normalize_separator(path)
       escaped_path = escape_path(normalized_path.to_s)
       "'#{escaped_path}'"
     end.join(", ")
@@ -58,12 +61,19 @@ class Runner
     @output.puts
   end
 
+  def quit
+    @socket.puts("quitApplication()")
+  end
+
   private
   def collect_target_paths
-    if @target_path.directory?
-      Pathname.glob(@target_path + "**" + "*.test.js")
-    else
-      [@target_path]
+    @target_paths.inject([]) do |result, target_path|
+      if target_path.directory?
+        result.concat(Pathname.glob(target_path + "**" + "*.test.js"))
+      else
+        result << target_path
+      end
+      result
     end
   end
 
@@ -116,10 +126,10 @@ end
 
 def run(tests, options)
   TCPSocket.open(options.host, options.port) do |socket|
-    tests.each do |test|
-      runner = Runner.new(socket, Pathname(test).expand_path)
-      runner.run
-    end
+    runner = Runner.new(socket,
+                        tests.collect {|test| Pathname(test).expand_path})
+    runner.run
+    runner.quit if options.quit
   end
 end
 

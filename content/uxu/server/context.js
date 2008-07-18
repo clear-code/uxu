@@ -19,6 +19,9 @@ function constructor(aHandler)
 	this.error = function() { aHandler.error.apply(aHandler, arguments); };
 	this.quit  = function() { aHandler.quit.apply(aHandler, arguments); };
 	this.exit  = this.quit;
+	this.quitApplication = function() {
+		aHandler.quitApplication.apply(aHandler, arguments);
+	};
 	this.runTest = runTest;
 	this.__proto__ = new Environment(this, location.href, null);
 }
@@ -26,7 +29,7 @@ function constructor(aHandler)
 
 function runTest()
 {
-	var runner = new Runner(arguments);
+	var runner = new Runner(Array.slice(arguments));
 	var reporter = new Reporter(this);
 	runner.run(reporter);
 	return reporter;
