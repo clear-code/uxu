@@ -49,7 +49,7 @@ function run(aReporter, aAll)
 				testDescription : 'failed to run test: ' + aTest.title
 			};
 			aReporter.report(report)
-			this.finish(aReporter);
+			_this.finish(aReporter);
 		}
 	});
 	this.finish(aReporter);
@@ -87,10 +87,16 @@ function load(aFilePath, aReporter)
 
 function loadFolder(aFolder, aReporter, aBrowser)
 {
+	var _this = this;
+	var tests = [];
 	var filesMayBeTest = runner_utils.getTestFiles(aFolder);
-	return filesMayBeTest.map(function(aFile) {
-			return loadFile(aFile, aReporter);
+	filesMayBeTest.forEach(function(aFile) {
+			if (aFile.isDirectory())
+				tests = tests.concat(_this.loadFolder(aFile, aReporter));
+			else
+				tests = tests.concat(_this.loadFile(aFile, aReporter));
 		});
+	return tests;
 }
 
 function loadFile(aFile, aReporter)

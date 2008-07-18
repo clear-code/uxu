@@ -47,8 +47,7 @@ class Runner
   end
 
   def run
-    target_paths = collect_target_paths
-    escaped_target_paths = target_paths.collect do |path|
+    escaped_target_paths = @target_paths.collect do |path|
       normalized_path = normalize_separator(path)
       escaped_path = escape_path(normalized_path.to_s)
       "'#{escaped_path}'"
@@ -66,17 +65,6 @@ class Runner
   end
 
   private
-  def collect_target_paths
-    @target_paths.inject([]) do |result, target_path|
-      if target_path.directory?
-        result.concat(Pathname.glob(target_path + "**" + "*.test.js"))
-      else
-        result << target_path
-      end
-      result
-    end
-  end
-
   def normalize_separator(path)
     if File::ALT_SEPARATOR
       normalized_file_name = Pathname(path.to_s.gsub(/\//, File::ALT_SEPARATOR))
