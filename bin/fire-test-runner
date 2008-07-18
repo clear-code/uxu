@@ -3,6 +3,7 @@
 require 'socket'
 require 'optparse'
 require 'ostruct'
+require 'pathname'
 
 options = OpenStruct.new
 options.host = "localhost"
@@ -10,7 +11,7 @@ options.port = 4444
 options.firefox = "firefox &"
 options.wait = 1.5
 
-opts = OptionParser.new("Usage: #{$0} [options] test...") do |opts|
+opts = OptionParser.new("Usage: #{$0} [options] test_or_directory...") do |opts|
   opts.on("--host=HOST",
           "host name to connect Firefox (#{options.host})") {|options.host|}
   opts.on("-pPORT", "--port=PORT", Integer,
@@ -33,28 +34,49 @@ if tests.empty?
 end
 
 class Runner
-  def initialize(socket, file_name, output=$stdout)
+  def initialize(socket, target_path, output=$stdout)
     @socket = socket
     @output = output
     @output.sync = true
-    @file_name = file_name
+    @target_path = target_path
     @reporter_var_name = "reporter"
     @shown_result_index = 0
   end
 
   def run
-    if File::ALT_SEPARATOR
-      normalized_file_name = @file_name.gsub(/\//, File::ALT_SEPARATOR)
-    else
-      normalized_file_name = @file_name
-    end
-    escaped_file_name = normalized_file_name.gsub(/\\/, "\\\\\\")
-    escaped_file_name = escaped_file_name.gsub(/'/, "\\'")
-    @socket.puts("#{@reporter_var_name} = runTest('#{escaped_file_name}')")
+    target_paths = collect_target_paths
+    escaped_target_paths = target_paths.collect do |path|
+      normalized_path = normalize_separator(@target_path)
+      escaped_path = escape_path(normalized_path.to_s)
+      "'#{escaped_path}'"
+    end.join(", ")
+    @socket.puts("var #{@reporter_var_name};")
+    @socket.puts("#{@reporter_var_name} = runTest(#{escaped_target_paths});")
 
     show_result while running?
     show_result
     @output.puts
+  end
+
+  private
+  def collect_target_paths
+    if @target_path.directory?
+      Pathname.glob(@target_path + "**" + "*.test.js")
+    else
+      [@target_path]
+    end
+  end
+
+  def normalize_separator(path)
+    if File::ALT_SEPARATOR
+      normalized_file_name = Pathname(path.to_s.gsub(/\//, File::ALT_SEPARATOR))
+    else
+      normalized_file_name = path
+    end
+  end
+
+  def escape_path(path)
+    path.gsub(/\\/, "\\\\\\").gsub(/'/, "\\'")
   end
 
   def read
@@ -73,7 +95,11 @@ class Runner
       break unless result.empty?
     end
 
-    $stderr.puts(result.inspect) unless ["true", "false"].include?(result)
+    unless ["true", "false"].include?(result)
+      @output.puts("Failed:")
+      @output.puts(result)
+      return false
+    end
     result != "true"
   end
 
@@ -91,7 +117,7 @@ end
 def run(tests, options)
   TCPSocket.open(options.host, options.port) do |socket|
     tests.each do |test|
-      runner = Runner.new(socket, File.expand_path(test))
+      runner = Runner.new(socket, Pathname(test).expand_path)
       runner.run
     end
   end
