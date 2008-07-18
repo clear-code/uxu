@@ -12,7 +12,7 @@ var utils = lib_module.require('package', 'utils');
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var Context = server_module.require('class', 'context');
 
-function constructor(aInput, aOutput, aListener, aBrowser)
+function constructor(aInput, aOutput, aReportListener, aBrowser)
 {
 	var _this = this;
 	var scriptableInput = Cc['@mozilla.org/scriptableinputstream;1']
@@ -23,9 +23,7 @@ function constructor(aInput, aOutput, aListener, aBrowser)
 	scriptableInput.init(aInput);
 	this.input = scriptableInput;
 	this.output = aOutput;
-	this.listener = aListener;
-	this.browser = aBrowser;
-	this.context = new Context(this, aBrowser);
+	this.context = new Context(this, aReportListener, aBrowser);
 
 	var buffer = '';
 	var pumpListener = {

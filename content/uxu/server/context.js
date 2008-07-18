@@ -11,8 +11,9 @@ var Environment = test_module.require('class', 'environment');
 var WindowManager = Cc['@mozilla.org/appshell/window-mediator;1']
 		.getService(Ci.nsIWindowMediator);
 
-function constructor(aHandler, aBrowser)
+function constructor(aHandler, aReportListener, aBrowser)
 {
+	this.reportListener = aReportListener;
 	this.browser = aBrowser;
 	this.p     = function() { aHandler.p.apply(aHandler, arguments); };
 	this.puts  = function() { aHandler.puts.apply(aHandler, arguments); };
@@ -30,7 +31,7 @@ function constructor(aHandler, aBrowser)
 function runTest()
 {
 	var runner = new Runner(this.browser, Array.slice(arguments));
-	var reporter = new Reporter(this);
+	var reporter = new Reporter(this.reportListener);
 	runner.run(reporter);
 	return reporter;
 }

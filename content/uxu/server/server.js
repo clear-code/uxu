@@ -18,7 +18,7 @@ function constructor(aPort)
 	this.handlers = [];
 }
 
-function start(aListener, aBrowser)
+function start(aReportListener, aBrowser)
 {
 	var _this = this;
 	var socketListener;
@@ -32,7 +32,8 @@ function start(aListener, aBrowser)
 			try {
 				var input  = aTransport.openInputStream(0, 0, 0);
 				var output = aTransport.openOutputStream(0, 0, 0);
-				var handler = new Handler(input, output, aListener, aBrowser);
+				var handler = new Handler(input, output,
+										  aReportListener, aBrowser);
 				_this.handlers.push(handler);
 			}
 			catch (e) {

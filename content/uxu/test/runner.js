@@ -65,8 +65,8 @@ function start(aReporter)
 function finish(aReporter)
 {
 	this.runningCount--;
-	if (this.runningCount == 0 && aReporter.onFinished)
-		aReporter.onFinished();
+	if (this.runningCount == 0 && aReporter.onFinish)
+		aReporter.onFinish();
 	//utils.cleanUpTempFiles();
 }
 

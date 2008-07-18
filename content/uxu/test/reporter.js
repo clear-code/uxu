@@ -9,9 +9,9 @@ var utils = lib_module.require('package', 'utils');
 var ObserverService = Cc['@mozilla.org/observer-service;1']
 		.getService(Ci.nsIObserverService);
 
-function constructor(aOutput)
+function constructor(aListener)
 {
-	this.output     = aOutput;
+	this.listener   = aListener;
 	this.testCount  = 0;
 	this.finished   = false;
 	this.result     = '';
@@ -26,10 +26,10 @@ function isFinished()
 function onStart()
 {
 	this.finished = false;
-	ObserverService.notifyObservers(this, 'UxU:TestStart', null);
+	this.listener.onStart();
 }
 
-function onFinished()
+function onFinish()
 {
 	var _this = this;
 
@@ -54,7 +54,7 @@ function onFinished()
 		results = results.join('\n');
 
 	var data = { result : results };
-	ObserverService.notifyObservers(this, 'UxU:TestFinish', data.toSource());
+	this.listener.onFinish(data);
 }
 
 function report(aReport)
@@ -81,7 +81,7 @@ function report(aReport)
 			result      : (aReport.result || 'unknown'),
 			exception   : aReport.exception
 		};
-	ObserverService.notifyObservers(this, 'UxU:TestProgress', data.toSource());
+	this.listener.onTestFinish(data);
 
 	if (aReport.exception)
 		this.badResults.push(aReport);
@@ -90,5 +90,5 @@ function report(aReport)
 
 function error(aError)
 {
-	window.alert(aError);
+	dump(utils.formatError(aError));
 }
