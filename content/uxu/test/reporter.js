@@ -70,7 +70,7 @@ function report(aReport)
 			break;
 		case 'error':
 			this.result += 'E';
-			reak;
+			break;
 		default:
 			this.result += '?';
 			break;
