@@ -359,6 +359,7 @@ TestListener.prototype = {
 				this.onTestFinish(aEvent);
 				break;
 
+			case 'Abort':
 			case 'Finish':
 				this.onFinish(aEvent);
 				break;
@@ -467,7 +468,7 @@ var runnerListener = {
 				break;
 
 			case 'Abort':
-				aAborted = true;
+				gAborted = true;
 			case 'Finish':
 				setRunningState(false);
 				onAllTestsFinish();
@@ -483,7 +484,7 @@ function onAllTestsFinish()
 		toggleContent();
 	}
 
-	if (aAborted) {
+	if (gAborted) {
 		_('testResultStatus').setAttribute('label', bundle.getString('all_abort'));
 		return;
 	}
@@ -530,7 +531,7 @@ function displayStackTrace(aException, aListbox)
  
 function reset() 
 {
-	aAborted = false;
+	gAborted = false;
 	gTotalCount    = 0;
 	gSuccessCount  = 0;
 	gPassOverCount = 0;
@@ -546,7 +547,7 @@ function reset()
 	removeChildrenOf(_('testcase-reports'))
 	hideSource();
 }
-var aAborted = false;
+var gAborted = false;
 var gTotalCount    = 0;
 var gSuccessCount  = 0;
 var gPassOverCount = 0;

@@ -200,6 +200,8 @@ function handleEvent(aEvent)
 				this.fireEvent('Finish');
 			break;
 
+		case 'Abort':
+			aEvent.target.removeListener(this);
 		case 'Error':
 			this.fireEvent(aEvent.type, aEvent.data);
 			break;

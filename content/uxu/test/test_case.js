@@ -355,6 +355,7 @@ function run(aStopper)
 	var nullContinuation = function() {};
 
 	var _this = this;
+	var aborted = false;
 	var stateHandlers = {
 		start : function(aContinuation)
 		{
@@ -459,6 +460,8 @@ function run(aStopper)
 		nextTest : function(aContinuation)
 		{
 			if (_this._stopper && _this._stopper()) {
+				aborted = true;
+				_this.fireEvent('Abort');
 				aContinuation('ko');
 				return;
 			}
@@ -468,7 +471,8 @@ function run(aStopper)
 		finished : function(aContinuation)
 		{
 			_this._done = true;
-			_this.fireEvent('Finish');
+			if (!aborted)
+				_this.fireEvent('Finish');
 		}
 	};
 
@@ -483,7 +487,10 @@ function _exec(aTest, aContext, aContinuation, aReport)
 		exception: undefined
 	};
 
-	if (this._stopper && this._stopper()) return report;
+	if (this._stopper && this._stopper()) {
+		report.result = 'passover';
+		return report;
+	}
 
 	try {
 		var result = aTest.code.call(aContext);
