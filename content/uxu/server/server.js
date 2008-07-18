@@ -13,23 +13,24 @@ function constructor(aPort)
 	this.port   = aPort;
 	this.socket = null;
 
-	this.handler  = null;
+	this.handlers = [];
 	this.listener = {
-		onSocketAccepted : function(aSock, aTransport)
+		onSocketAccepted : function(aSocket, aTransport)
 		{
 			try {
 				var input  = aTransport.openInputStream(0, 0, 0);
 				var output = aTransport.openOutputStream(0, 0, 0);
-				_this.handler = new Handler(input, output);
+				_this.handlers.push(new Handler(input, output));
 			}
 			catch (e) {
 				dump('UxU: Error: ' + e + '\n');
 			}
 		},
 		onStopListening : function(aSocket, aStatus) {
-			if (!_this.handler) return;
-			_this.handler.quit();
-			_this.handler = null;
+			_this.handlers.forEach(function (aHandler) {
+					aHandler.quit();
+				});
+			_this.handlers = [];
 		}
 	};
 }
