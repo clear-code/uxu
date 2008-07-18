@@ -98,14 +98,16 @@ ModuleManager.prototype = {
 
             this._loader.loadSubScript(realUrl, proto);
 
-            for(var name in proto) 
-                if(name != 'inheritor' &&
-                   name != 'constructor')
-                    classConstructor.prototype[name] = proto[name];
-
             if(proto.inheritor)
                 classConstructor.prototype = proto.inheritor();
-            
+            else if(proto.inherits)
+                classConstructor.prototype = new proto.inherits();
+
+            for(var name in proto) 
+                if(name != 'inherits' &&
+                   name != 'inheritor' &&
+                   name != 'constructor')
+                    classConstructor.prototype[name] = proto[name];
         }
         return classConstructor;
     },

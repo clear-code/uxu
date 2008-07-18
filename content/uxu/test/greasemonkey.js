@@ -144,7 +144,7 @@ function loadScript(aURI, aEncoding)
 
 function fireEvent(aEvent)
 {
-	this.listeners.forEach(function(aListener) {
+	Array.slice(this.listeners).forEach(function(aListener) {
 		if (aListener && 'handleEvent' in aListener)
 			aListener.handleEvent(aEvent);
 		if (aListener && 'on'+aEvent.type in aListener)

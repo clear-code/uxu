@@ -59,13 +59,12 @@ function testClassTypeLogical()
 
 function testPackageType()
 {
-	var runnerUtilsModule1 = testManager.require('package', 'runner_utils');
-	assert.isTrue(runnerUtilsModule1);
-	assert.isTrue(runnerUtilsModule1.createTestSuite);
-	assert.equals('function', typeof runnerUtilsModule1.createTestSuite);
+	var package1 = testManager.require('package', 'assertions');
+	assert.isTrue(package1);
+	assert.isFunction(package1.equals);
 
-	var runnerUtilsModule2 = testManager.require('package', 'runner_utils');
-	assert.equals(runnerUtilsModule1, runnerUtilsModule2);
+	var package2 = testManager.require('package', 'assertions');
+	assert.equals(package1, package2);
 }
 
 function testUnknownType()
@@ -73,7 +72,7 @@ function testUnknownType()
 	var exception;
 	var done = false;
 	try {
-		var something = testManager.require('foobar', 'runner_utils');
+		var something = testManager.require('foobar', 'assertions');
 		done = true;
 	}
 	catch(e) {

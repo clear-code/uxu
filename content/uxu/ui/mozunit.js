@@ -3,7 +3,7 @@ var utils  = lib_module.require('package', 'utils');
 var bundle = lib_module.require('package', 'bundle');
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
-var runner_utils = test_module.require('package', 'runner_utils');
+var Runner = test_module.require('class', 'runner');
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -322,15 +322,15 @@ function getFocusedPath()
   
 /* runner */ 
 	 
+var gRunner; 
+ 
 function TestListener() 
 {
-	this.count = 0;
 }
 TestListener.prototype = {
 	registerTest : function(aTestCase)
 	{
 		aTestCase.addListener(this);
-		this.count++;
 	},
 	getTestCaseReport : function(aTitle)
 	{
@@ -440,24 +440,50 @@ TestListener.prototype = {
 	},
 	onFinish : function(aEvent)
 	{
-		runner_utils.cleanUpModifications(aEvent.target);
 		aEvent.target.removeListener(this);
-
-		this.count--;
-		if (this.count) return;
-
-		setRunningState(false);
-		onAllTestsFinish();
 	}
 };
- 	
+ 
+var runnerListener = { 
+	handleEvent : function(aEvent)
+	{
+		switch (aEvent.type)
+		{
+			case 'Error':
+				var e = aEvent.data;
+				_('prerun-report', 'error').textContent = bundle.getFormattedString('error_failed', [e.toString()]);
+				_('prerun-report', 'error').hidden = false;
+
+				if (e.stack) {
+					displayStackTrace(e, _('prerun-report', 'stack-trace'));
+					_('prerun-report', 'stack-trace').hidden = false;
+					_('prerun-report').hidden = false;
+				}
+				break;
+
+			case 'Progress':
+				setRunningState(true);
+				_('testRunningProgressMeter').setAttribute('value', aEvent.data);
+				break;
+
+			case 'Abort':
+				aAborted = true;
+			case 'Finish':
+				setRunningState(false);
+				onAllTestsFinish();
+				aEvent.target.removeListener(this);
+				break;
+		}
+	}
+};
+ 
 function onAllTestsFinish() 
 {
 	if (!_('content').collapsed && contentAutoExpanded) {
 		toggleContent();
 	}
 
-	if (shouldAbortTest) {
+	if (aAborted) {
 		_('testResultStatus').setAttribute('label', bundle.getString('all_abort'));
 		return;
 	}
@@ -486,18 +512,6 @@ function onAllTestsFinish()
 	);
 };
  
-function onError(aError) 
-{
-	_('prerun-report', 'error').textContent = bundle.getFormattedString('error_failed', [aError.toString()]);
-	_('prerun-report', 'error').hidden = false;
-
-	if (aError.stack) {
-		displayStackTrace(aError, _('prerun-report', 'stack-trace'));
-		_('prerun-report', 'stack-trace').hidden = false;
-		_('prerun-report').hidden = false;
-	}
-}
- 
 function displayStackTrace(aException, aListbox) 
 {
 	var lines = utils.formatStackTrace(aException, { onlyTraceLine : true, onlyExternal : true }).split('\n');
@@ -516,6 +530,7 @@ function displayStackTrace(aException, aListbox)
  
 function reset() 
 {
+	aAborted = false;
 	gTotalCount    = 0;
 	gSuccessCount  = 0;
 	gPassOverCount = 0;
@@ -531,6 +546,7 @@ function reset()
 	removeChildrenOf(_('testcase-reports'))
 	hideSource();
 }
+var aAborted = false;
 var gTotalCount    = 0;
 var gSuccessCount  = 0;
 var gPassOverCount = 0;
@@ -567,77 +583,24 @@ function setRunningState(aRunning)
 function run(aAll) 
 {
 	reset();
-	var suites = loadSuites();
-	var tests = initializeTests(suites);
-	if (aAll) {
-		tests.forEach(function(aTestCase) {
-			aTestCase.masterPriority = 'must';
-		});
-	}
-	this.runTests(tests);
+
+	gRunner = new Runner(_('content'), [_('file').value]);
+
+	gRunner.addListener(runnerListener);
+
+	var listener = new TestListener();
+	gRunner.addTestFilter(function(aTestCase) {
+		listener.registerTest(aTestCase);
+		return true;
+	});
+
+	gRunner.run(null, aAll);
 }
 	 
 function runByPref() 
 {
 	run(utils.getPref('extensions.uxu.mozunit.runMode') == 1 ? true : false );
 }
- 
-function loadSuites() 
-{
-	var path = _('file').value;
-	var file = utils.makeFileWithPath(path);
-
-	var suites;
-	if (file.isDirectory())
-		suites = loadFolder(file);
-	else
-		suites = [loadFile(file)];
-
-	return suites;
-}
- 
-function runTests(aTests) 
-{
-	shouldAbortTest = false;
-	var max = aTests.length + 1;
-	var runTest = function(aTest, aIndex) {
-			if (shouldAbortTest) {
-				setRunningState(false);
-				onAllTestsFinish();
-				throw 'stop';
-			}
-			try {
-				setRunningState(true);
-				_('testRunningProgressMeter').setAttribute('value',
-						parseInt(((aIndex + 1) / max) * 100));
-				aTest.run(stopper);
-			}
-			catch(e) {
-				onError(e);
-			}
-		};
-
-	var stopper = function() {
-			return shouldAbortTest;
-		};
-
-	if (utils.getPref('extensions.uxu.mozunit.runParallel')) {
-		aTests.forEach(runTest);
-	}
-	else {
-		var count = 0;
-		var test;
-		window.setTimeout(function() {
-			if ((!test || test.done) && aTests.length) {
-				test = aTests.shift();
-				runTest(test, count++);
-			}
-			if (aTests.length)
-				window.setTimeout(arguments.callee, 100);
-		}, 100);
-	}
-}
-var shouldAbortTest = false;
   
 function runFailed() 
 {
@@ -648,106 +611,37 @@ function runFailed()
 			if (title in failedTests) return;
 			failedTests[title] = true;
 		});
+
 	reset();
- 	var suites = loadSuites();
-	var tests = initializeTests(
-			suites,
-			function(aTest) {
-				aTest.masterPriority = 'must';
-				return aTest.title in failedTests;
-			}
-		);
-	this.runTests(tests);
+
+	gRunner = new Runner(_('content'), [_('file').value]);
+
+	gRunner.addListener(runnerListener);
+
+	gRunner.addTestFilter(function(aTestCase) {
+		aTestCase.masterPriority = 'must';
+		return aTestCase.title in failedTests;
+	});
+
+	var listener = new TestListener();
+	gRunner.addTestFilter(function(aTestCase) {
+		listener.registerTest(aTestCase);
+		return true;
+	});
+
+	gRunner.run();
 }
  
 function stop() 
 {
-	shouldAbortTest = true;
+	gRunner.abort();
 	_('stop').setAttribute('disabled', true);
 }
-	 
-function loadFolder(aFolder) 
-{
-	var filesMayBeTest = runner_utils.getTestFiles(aFolder);
-	return filesMayBeTest.map(function(aFile) {
-			return loadFile(aFile);
-		});
-}
- 
-function loadFile(aFile) 
-{
-	var url = utils.getURLSpecFromFilePath(aFile.path);
-
-	try {
-		var suite = runner_utils.createTestSuite(url, _('content'));
-	}
-	catch(e) {
-		if (/\.(js|jsm)$/i.test(aFile.leafName))
-			onError(e);
-		suite = null;
-	}
-
-	return suite;
-}
- 
-function initializeTests(aSuites, aFilter) 
-{
-	if (!aFilter)
-		aFilter = function(aTest) { return true; };
-
-	var listener = new TestListener();
-
-	var tests,
-		allTests = [];
-	aSuites.forEach(function(suite, aIndex) {
-		if (!suite) return;
-		try {
-			tests = runner_utils.getTests(suite);
-			if (!tests.length)
-				throw new Error(bundle.getFormattedString('error_test_not_found', [suite.fileURL]));
-
-			tests = tests.filter(aFilter);
-			tests.forEach(function(aTestCase) {
-				listener.registerTest(aTestCase);
-			}, this);
-			allTests = allTests.concat(tests);
-		}
-		catch(e) {
-			onError(e);
-		}
-	}, this);
-
-	return allTests;
-}
   
+/* UI */ 
+	 
 function saveReport() 
 {
-}
- 
-function stylizeSource(aSourceDocument, aLineCallback) 
-{
-	var originalSource = aSourceDocument.getElementsByTagName('pre')[0];
-	var processedSource = aSourceDocument.createElementNS('http://www.w3.org/1999/xhtml', 'pre');
-	var sourceLines = originalSource.textContent.split('\n');
-	var sourceLine, htmlLine, lineContent;
-	for(var i=0, l=sourceLines.length; i<l; i++) {
-		if (aLineCallback)
-			htmlLine = aLineCallback(aSourceDocument, i+1, sourceLines[i]) ||
-				aSourceDocument.createTextNode(sourceLines[i]);
-
-		processedSource.appendChild(htmlLine)
-	}
-	processedSource.normalize();
-	originalSource.parentNode.replaceChild(processedSource, originalSource);
-
-	var cssElem = aSourceDocument.createElementNS('http://www.w3.org/1999/xhtml', 'style');
-	cssElem.type = 'text/css';
-	cssElem.textContent =
-		'body { margin: 0; }' +
-		'#current { font-weight: bold; background-color: #e5e5e5; }' +
-		'.link { color: blue; border-bottom: thin solid blue; cursor: pointer; }';
-
-	aSourceDocument.getElementsByTagName('head')[0].appendChild(cssElem);
 }
  
 function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine) 
@@ -826,9 +720,7 @@ function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine)
 		arguments.callee(aFilePath, aLineNumber, aColumnNumber);
 	}
 }
-  
-/* UI */ 
-	 
+ 
 function isLinux() 
 {
 	return /linux/i.test(navigator.platform);
@@ -964,6 +856,32 @@ function showSource(aTraceLine)
 	);
 }
 	
+function stylizeSource(aSourceDocument, aLineCallback) 
+{
+	var originalSource = aSourceDocument.getElementsByTagName('pre')[0];
+	var processedSource = aSourceDocument.createElementNS('http://www.w3.org/1999/xhtml', 'pre');
+	var sourceLines = originalSource.textContent.split('\n');
+	var sourceLine, htmlLine, lineContent;
+	for(var i=0, l=sourceLines.length; i<l; i++) {
+		if (aLineCallback)
+			htmlLine = aLineCallback(aSourceDocument, i+1, sourceLines[i]) ||
+				aSourceDocument.createTextNode(sourceLines[i]);
+
+		processedSource.appendChild(htmlLine)
+	}
+	processedSource.normalize();
+	originalSource.parentNode.replaceChild(processedSource, originalSource);
+
+	var cssElem = aSourceDocument.createElementNS('http://www.w3.org/1999/xhtml', 'style');
+	cssElem.type = 'text/css';
+	cssElem.textContent =
+		'body { margin: 0; }' +
+		'#current { font-weight: bold; background-color: #e5e5e5; }' +
+		'.link { color: blue; border-bottom: thin solid blue; cursor: pointer; }';
+
+	aSourceDocument.getElementsByTagName('head')[0].appendChild(cssElem);
+}
+ 
 function hideSource() 
 {
 	if (_('source-splitter').hidden) return;

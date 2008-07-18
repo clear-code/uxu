@@ -26,6 +26,8 @@ var fsm    = lib_module.require('package', 'fsm');
 var bundle = lib_module.require('package', 'bundle');
 var utils  = lib_module.require('package', 'utils');
 
+var inherits = lib_module.require('class', 'event_target');
+
 var SCHEME_VERSION_HASH = 1;
 var CURRENT_SCHEME = SCHEME_VERSION_HASH;
 var tableDefinitionSQL = <![CDATA[
@@ -47,7 +49,7 @@ else { // possibly old version, so we have to migrate.
 		db.schemaVersion = SCHEME_VERSION_HASH;
 	}
 }
- 
+ 	
 /**
  * Invocation: 
  *     var case = new TestCase('Widget tests');
@@ -128,7 +130,7 @@ function constructor(aTitle, aNamespace)
 			return this._done;
 		});
 
-	this._listeners = [];
+	this.initListeners();
 }
  
 /**
@@ -171,7 +173,7 @@ function constructor(aTitle, aNamespace)
  *         }
  *     }
  */
-	
+	 
 function setTests(aHash) 
 {
 	this.context = aHash;
@@ -198,7 +200,7 @@ function setTests(aHash)
 }
  
 // for UxU declaration style syntax 
-	 
+	
 function registerSetUp(aFunction) 
 {
 	if (typeof aFunction != 'function') return;
@@ -272,7 +274,7 @@ function _getHashFromString(aString)
  * Alternative style for defining setup. 
  *
  */
-	 
+	
 function setUp(aFunction) 
 {
 	this.registerSetUp(aFunction);
@@ -291,7 +293,7 @@ function test(aDescription, aCode)
 }
   
 // BDD-style alias 
-	 
+	
 /**
  * BDD-alias for setUp(). 
  *
@@ -323,19 +325,6 @@ function verify(aStopper)
 	this.run(aStopper);
 }
    
-function addListener(aListener) 
-{
-	if (this._listeners.indexOf(aListener) < 0)
-		this._listeners.push(aListener);
-}
- 
-function removeListener(aListener) 
-{
-	var index = this._listeners.indexOf(aListener);
-	if (index > -1)
-		this._listeners.splice(index, 1);
-}
- 
 /**
  * Runs tests with strategy defined at construction time. 
  *
@@ -369,12 +358,12 @@ function run(aStopper)
 	var stateHandlers = {
 		start : function(aContinuation)
 		{
-			_this._fireEvent('Start', null);
+			_this.fireEvent('Start');
 			aContinuation('ok')
 		},
 		checkPriority : function(aContinuation)
 		{
-			_this._fireEvent('TestStart', testIndex);
+			_this.fireEvent('TestStart', testIndex);
 			if (_this._checkPriorityToExec(_this._tests[testIndex])) {
 				aContinuation('ok');
 				return;
@@ -437,7 +426,7 @@ function run(aStopper)
 			report.report.testOwner = _this;
 			report.report.testIndex = testIndex + 1;
 			report.report.testID    = _this._tests[testIndex].name;
-			_this._fireEvent('TestFinish', report.report);
+			_this.fireEvent('TestFinish', report.report);
 			aContinuation('ok');
 		},
 		doTearDown : function(aContinuation)
@@ -479,7 +468,7 @@ function run(aStopper)
 		finished : function(aContinuation)
 		{
 			_this._done = true;
-			_this._fireEvent('Finish', null);
+			_this.fireEvent('Finish');
 		}
 	};
 
@@ -539,22 +528,6 @@ function _exec(aTest, aContext, aContinuation, aReport)
 	}
 
 	return report;
-}
- 
-function _fireEvent(aType, aData) 
-{
-	var event = {
-			type   : aType,
-			target : this,
-			data   : aData
-		};
-	this._listeners.forEach(function(aListener) {
-		if (!aListener) return;
-		if (typeof aListener == 'function')
-			aListener(event);
-		else if ('handleEvent' in aListener && typeof aListener.handleEvent == 'function')
-			aListener.handleEvent(event);
-	});
 }
  
 function _checkPriorityToExec(aTest) 
@@ -657,4 +630,4 @@ function _onFinish(aTest, aResult)
 		cleanUpStatement.reset();
 	}
 }
-  	
+  
