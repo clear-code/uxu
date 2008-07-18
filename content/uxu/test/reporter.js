@@ -18,6 +18,28 @@ function constructor(aListener)
 	this.badResults = [];
 }
 
+function handleEvent(aEvent)
+{
+	switch (aEvent.type)
+	{
+		case 'Start':
+			this.onStart();
+			break;
+
+		case 'Report':
+			this.report(aEvent.data);
+			break;
+
+		case 'Finish':
+			this.onFinish();
+			break;
+
+		case 'Error':
+			this.error(aEvent.data);
+			break;
+	}
+}
+
 function isFinished()
 {
 	return this.finished;

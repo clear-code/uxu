@@ -28,6 +28,9 @@ function fireEvent(aType, aData)
 			target : this,
 			data   : aData
 		};
+	// We have to clone array before dispatch event, because
+	// it will be stopped unexpectedly if some listener is
+	// dynamically removed.
 	Array.slice(this._listeners).forEach(function(aListener) {
 		if (!aListener) return;
 		try {

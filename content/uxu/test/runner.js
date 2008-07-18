@@ -189,6 +189,7 @@ function handleEvent(aEvent)
 			break;
 
 		case 'TestFinish':
+			this.fireEvent('Report', aEvent.data);
 			break;
 
 		case 'Finish':
