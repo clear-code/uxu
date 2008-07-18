@@ -130,11 +130,10 @@ function evaluate(aCode)
 {
 	try {
 		this.context._lastEvaluatedScript = aCode;
-		return this.load('chrome://uxu/content/lib/subScriptRunner.js');
+		return this.load('chrome://uxu/content/lib/subScriptRunner.js?code='+encodeURIComponent(aCode));
 	}
 	catch(e) {
-		return utils.formatError(e)
-				.replace(/^@chrome:\/\/uxu\/content\/lib\/subScriptRunner\.js.*\n/mg, '');
+		return utils.formatError(e);
 	}
 }
 

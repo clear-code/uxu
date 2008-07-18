@@ -195,34 +195,70 @@ function writeTo(aContent, aTarget, aEncoding)
 
 function formatError(e)
 {
-	return formatStackTrace(e) + e.toString() + '\n';
+	return formatStackTrace(e, { onlyFile : true }) + e.toString() + '\n';
 }
 
-function formatStackTrace(exception)
+var lineRegExp = /@\w+:.+:\d+/;
+var subScriptRegExp = /@chrome:\/\/uxu\/content\/lib\/subScriptRunner\.js(?:\?includeSource=([^;,:]+)(?:;encoding=[^;,:]+)?|\?code=([^;,:]+))?:(\d+)$/i;
+function formatStackTrace(aException, aOptions)
 {
-    var trace = '';
+	if (!aOptions) aOptions = {};
+	function comesFromFramework(aLine)
+	{
+		return (/@chrome:\/\/uxu\/content\//.test(aLine) ||
+				// Following is VERY kludgy
+				/\(function \(aExitResult\) \{if \(aEventHandlers/.test(aLine))
+	}
 
-    if (exception.stack) {
-        var calls = exception.stack.split('\n');
-        for each (var call in calls) {
-            if (call.length > 0) {
-                call = String(call).replace(/\\n/g, '\n');
+	var trace = '';
+	if (aException.stack) {
+		aException.stack.split('\n').forEach(function(aLine) {
+			if (!aLine.length) return;
 
-                if (call.length > 200)
-                    call = call.substr(0, 200) + '[...]\n';
+			aLine = String(aLine).replace(/\\n/g, '\n');
 
-				if (call.match(/^@data:application\/x-javascript,/)) {
-					var info = RegExp.rightContext.split(":");
-					var source = decodeURIComponent(info[0]);
-					var line = info[1];
-					trace += "(eval):" + line + ":" + source + "\n";
-				} else {
-					trace += call + '\n';
+			if ('maxLength' in aOptions &&
+				aLine.length > aOptions.maxLength)
+				aLine = aLine.substr(0, aOptions.maxLength) + '[...]\n';
+
+			if (aLine.match(subScriptRegExp)) {
+				var lineNum = RegExp.$3;
+				if (RegExp.$1) {
+					var includeSource = decodeURIComponent(RegExp.$1);
+					aLine = aLine.replace(subScriptRegExp, '@'+includeSource+':'+lineNum);
 				}
-            }
-        }
-    }
-    return trace;
+				else if (RegExp.$2) {
+					if (aOptions.onlyFile) return;
+					var code = decodeURIComponent(RegExp.$2);
+					aLine = '(eval):' +
+					        aLine.replace(subScriptRegExp, '') +
+					        lineNum + ':' + code;
+				}
+			}
+			if (
+				(aOptions.onlyExternal && comesFromFramework(aLine)) ||
+				(aOptions.onlyTraceLine && !lineRegExp.test(aLine))
+				)
+				return;
+			trace += aLine + '\n';
+		});
+	}
+	return trace;
+}
+
+function makeStackLine(aStack)
+{
+	if (typeof aStack == 'string') return aStack;
+	return '()@' + aStack.filename + ':' + aStack.lineNumber + '\n';;
+}
+
+function unformatStackLine(aLine)
+{
+	/@(\w+:.*)?:(\d+)/.test(aLine);
+	return {
+		source : (RegExp.$1 || ''),
+		line   : (RegExp.$2 || '')
+	};
 }
 
 
@@ -401,12 +437,6 @@ function isGeneratedIterator(aObject)
 	catch(e) {
 	}
 	return false;
-}
-
-function makeStackLine(aStack)
-{
-	if (typeof aStack == 'string') return aStack;
-	return '()@' + aStack.filename + ':' + aStack.lineNumber + '\n';;
 }
 
 function doIteration(aGenerator, aCallbacks)

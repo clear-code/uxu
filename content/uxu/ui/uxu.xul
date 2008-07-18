@@ -25,7 +25,7 @@
 		<spacer flex="1"/>
 		<checkbox id="autostart"
 			label="&uxu.server.autostart.label;"
-			oncommand="nsPreferences.setBoolPref('extensions.uxu.auto.start', this.checked)"/>
+			oncommand="utils.setPref('extensions.uxu.auto.start', this.checked)"/>
 	</hbox>
 	<resizer dir="bottomright"/>
 </hbox>

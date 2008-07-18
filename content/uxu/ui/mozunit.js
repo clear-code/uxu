@@ -395,18 +395,16 @@ TestReportHandler.prototype = {
 		_(wTestReport).setAttribute('report-type', aReport.result);
 		if (aReport.exception) {
 			var message = aReport.exception.message.replace(/^\s+/, '');
-			if (aReport.result == 'failure') {
-				message = message.split(/[\n\r]+<(?:EXPECTED|ACTUAL)>:/);
-				if (message.length > 1) {
-					_(wTestReport, 'actual-value').textContent = message.pop();
-					_(wTestReport, 'expected-value').textContent = message.pop();
-					_(wTestReport, 'vs').removeAttribute('hidden');
-				}
-				message = message.join('\n');
+			message = message.split(/[\n\r]+<(?:EXPECTED|ACTUAL)>:/);
+			if (message.length > 1) {
+				_(wTestReport, 'actual-value').textContent = message.pop();
+				_(wTestReport, 'expected-value').textContent = message.pop();
+				_(wTestReport, 'vs').removeAttribute('hidden');
 			}
+			message = message.join('\n');
 			_(wTestReport, 'additionalInfo').textContent = message;
 			if (aReport.exception.stack) {
-				displayStackTrace(aReport.exception.stack, _(wTestReport, 'stack-trace'));
+				displayStackTrace(aReport.exception, _(wTestReport, 'stack-trace'));
 				_(wTestReport, 'stack-trace').hidden = false;
 			}
 		}
@@ -475,38 +473,24 @@ function onError(aError)
 	_('prerun-report', 'error').hidden = false;
 
 	if (aError.stack) {
-		displayStackTrace(aError.stack, _('prerun-report', 'stack-trace'));
+		displayStackTrace(aError, _('prerun-report', 'stack-trace'));
 		_('prerun-report', 'stack-trace').hidden = false;
 		_('prerun-report').hidden = false;
 	}
 }
  
-var traceLineRegExp = /@(\w+:.*)?:(\d+)/;
-var includeRegExp = /^chrome:\/\/uxu\/content\/lib\/subScriptRunner\.js\?includeSource=([^;,]+)/i;
-function displayStackTrace(aTrace, aListbox) 
+function displayStackTrace(aException, aListbox) 
 {
-	var fullLines = aTrace.split('\n').map(function(aLine) {
-			if (!aLine.match(traceLineRegExp)) return aLine;
-			var sourceUrl = RegExp.$1;
-			var match = sourceUrl.match(includeRegExp);
-			var includeSource = match ? match[1] : null ;
-			if (includeSource) {
-				 aLine = aLine.replace(sourceUrl, decodeURIComponent(includeSource));
-			}
-			return aLine;
-		});
-	var lines = fullLines.filter(function(aLine) {
-			return /\w+:\/\//.test(aLine) && aLine.indexOf('@chrome://uxu/content/') < 0;
-		});
+	var lines = utils.formatStackTrace(aException, { onlyTraceLine : true, onlyExternal : true }).split('\n');
 	if (!lines.length || utils.getPref('extensions.uxu.mozunit.showInternalStacks'))
-		lines = fullLines;
+		lines = utils.formatStackTrace(aException, { onlyTraceLine : true }).split('\n');
 	lines.forEach(function(aLine) {
 		if (!aLine) return;
 		var item = document.createElement('listitem');
 		item.setAttribute('label', aLine);
 		item.setAttribute('crop', 'center');
-		if (/@(\w+:.*)?:(\d+)/.test(aLine))
-			item.setAttribute('file', RegExp.$1);
+		var file = utils.unformatStackLine(aLine).source;
+		if (file) item.setAttribute('file', file);
 		aListbox.appendChild(item);
 	});
 }
@@ -921,14 +905,8 @@ function onContentLoad()
   
 function showSource(aTraceLine) 
 {
-	var match = aTraceLine.match(/@(\w+:.*)?:(\d+)/);
-	if (!match) return;
-
-	var sourceUrl = match[1];
-	var lineNumber = match[2];
-	var encoding;
-
-	if (!sourceUrl) return;
+	var unformatted = utils.unformatStackLine(aTraceLine);
+	if (!unformatted.source || !unformatted.line) return;
 
 	var frame = _('source-viewer', 'source');
 	var opened = !_('source-splitter').hidden;
@@ -942,12 +920,6 @@ function showSource(aTraceLine)
 		);
 	}
 
-	match = sourceUrl.match(/[;\?]encoding=([^;,]+)/i);
-	if (match && match[1]) {
-		encoding = match[1];
-		sourceUrl = sourceUrl.replace(/\?.+$/, '');
-	}
-
 	function onLoad(aEvent)
 	{
 		_('source-viewer', 'source').removeEventListener('load', onLoad, true);
@@ -958,15 +930,15 @@ function showSource(aTraceLine)
 			{
 				aContent = padLeft(aNumber, 3, 0) + ' ' + aContent + '\n';
 
-				if (aNumber == lineNumber) {
+				if (aNumber == unformatted.line) {
 					var currentLine = aSourceDoc.createElementNS('http://www.w3.org/1999/xhtml', 'div');
 					currentLine.setAttribute('id', 'current');
 					currentLine.textContent = aContent;
 
-					if (sourceUrl.match(/^file:\/\//)) {
+					if (unformatted.source.match(/^file:\/\//)) {
 						currentLine.setAttribute('class', 'link');
 						currentLine.addEventListener('click', function(aEvent) {
-							openInEditor(utils.getFilePathFromURLSpec(sourceUrl), lineNumber);
+							openInEditor(utils.getFilePathFromURLSpec(unformatted.source), unformatted.line);
 						}, false);
 					}
 
@@ -986,15 +958,9 @@ function showSource(aTraceLine)
 
 	}
 
-	if (encoding) {
-		var docCharset = _('source-viewer', 'source').docShell
-				.QueryInterface(Ci.nsIDocCharset);
-		docCharset.charset = encoding;
-	}
-
 	_('source-viewer', 'source').addEventListener('load', onLoad, true);
 	_('source-viewer', 'source').webNavigation.loadURI(
-		sourceUrl,
+		unformatted.source,
 		Ci.nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE,
 		null, null, null
 	);

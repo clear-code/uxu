@@ -663,7 +663,13 @@ function _defaultReportHandler(aReport)
 
 	if (aReport.exception) {
 		printout += ': ' + aReport.exception + '\n';
-		printout += _formatStackTrace(aReport.exception);
+		printout += utils.formatStackTrace(
+				aReport.exception,
+				{
+					onlyExternal : true,
+					maxLength : 200
+				}
+			);
 	}
 	printout += '\n';
 
@@ -673,33 +679,4 @@ function _defaultReportHandler(aReport)
 		dump(printout);
 }
 	 
-/*  Side effect-free functions. They're the ones who do the real job. :-) */ 
-
-function _formatStackTrace(aException)
-{
-	function comesFromFramework(aCall) {
-		return (aCall.match(/@chrome:\/\/mozlab\/content\/lib\/fsm\.js:/) ||
-				aCall.match(/@chrome:\/\/mozlab\/content\/mozunit\/test_case\.js:/) ||
-				// Following is VERY kludgy
-				aCall.match(/\(function \(exitResult\) \{if \(eventHandlers/))
-	}
-
-	var trace = '';
-	if (aException.stack) {
-		var calls = aException.stack.split('\n');
-		for each(var call in calls) {
-			if(call.length > 0 && !comesFromFramework(call)) {
-				call = call.replace(/\\n/g, '\n');
-
-				if(call.length > 200)
-					call =
-						call.substr(0, 100) + ' [...] ' +
-						call.substr(call.length - 100) + '\n';
-
-				trace += call + '\n';
-			}
-		}
-	}
-	return trace;
-}
   
