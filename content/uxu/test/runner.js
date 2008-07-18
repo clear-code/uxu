@@ -77,7 +77,11 @@ function isRunning()
 function load(aFilePath, aReporter)
 {
 	var file = utils.makeFileWithPath(aFilePath);
-	return file.isDirectory() ? loadFolder(file) : loadFile(file) ;
+
+	if (file.isDirectory())
+		return loadFolder(file, aReporter);
+	else
+		return loadFile(file, aReporter);
 }
 
 function loadFolder(aFolder, aReporter)
