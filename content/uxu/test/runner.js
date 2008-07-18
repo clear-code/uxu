@@ -24,22 +24,29 @@ function run(aReporter, aAll)
 		tests = tests.concat(_this.load(aFile, aReporter));
 	});
 
-	this.start(aReporter);
+	var listener = {
+			handleEvent : function(aEvent)
+			{
+				switch (aEvent.type)
+				{
+					case 'TestFinish':
+						aReporter.report(aEvent.data);
+						break;
+					case 'Finish':
+						_this._finish(aReporter)
+						runner_utils.cleanUpModifications(aEvent.target);
+						aEvent.target.removeListener(this);
+						break;
+				}
+			}
+		};
+
+	this._start(aReporter);
 	tests.forEach(function(aTest) {
 		if (aAll) aTest.priority = 'must';
 		try {
-			_this.start(aReporter);
-			aTest.reportHandler = {
-				handleReport : function(aReport)
-				{
-					aReporter.report(aReport)
-				},
-				onFinish : function()
-				{
-					_this.finish(aReporter)
-					runner_utils.cleanUpModifications(aTest);
-				}
-			};
+			_this._start(aReporter);
+			aTest.addListener(listener);
 			aTest.run();
 		}
 		catch(e) {
@@ -52,17 +59,17 @@ function run(aReporter, aAll)
 			_this.finish(aReporter);
 		}
 	});
-	this.finish(aReporter);
+	this._finish(aReporter);
 }
 
-function start(aReporter)
+function _start(aReporter)
 {
 	if (this.runningCount == 0 && aReporter.onStart)
 		aReporter.onStart();
 	this.runningCount++;
 }
 
-function finish(aReporter)
+function _finish(aReporter)
 {
 	this.runningCount--;
 	if (this.runningCount == 0 && aReporter.onFinish)

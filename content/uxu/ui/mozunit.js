@@ -214,7 +214,7 @@ const fileDNDObserver =
 }; 
    
 /* DOMAIN */ 
-	
+	 
 function startup() 
 {
 	if (!isLinux()) {
@@ -321,17 +321,17 @@ function getFocusedPath()
 }
   
 /* runner */ 
-	
-function TestReportHandler(aTestCase) 
+	 
+function TestListener() 
 {
-	this.testCase = aTestCase;
-	this.mFinishHandlers = [
-		(function() {
-			runner_utils.cleanUpModifications(this.testCase);
-		})
-	];
+	this.count = 0;
 }
-TestReportHandler.prototype = {
+TestListener.prototype = {
+	registerTest : function(aTestCase)
+	{
+		aTestCase.addListener(this);
+		this.count++;
+	},
 	getTestCaseReport : function(aTitle)
 	{
 		var id = 'testcase-report-'+encodeURIComponent(aTitle);
@@ -347,22 +347,47 @@ TestReportHandler.prototype = {
 				return wTestCaseReport;
 			})();
 	},
-	handleReport : function(aReport) {
-		var wTestCaseReport = this.getTestCaseReport(this.testCase.title);
-		_(wTestCaseReport).setAttribute('test-id', aReport.testID);
-		_(wTestCaseReport).setAttribute('file', aReport.namespaceURL);
+	handleEvent : function(aEvent)
+	{
+		switch (aEvent.type)
+		{
+			case 'Start':
+				this.onStart(aEvent);
+				break;
+
+			case 'TestFinish':
+				this.onTestFinish(aEvent);
+				break;
+
+			case 'Finish':
+				this.onFinish(aEvent);
+				break;
+		}
+	},
+	onStart : function(aEvent)
+	{
+		this.getTestCaseReport(aEvent.target.title);
+	},
+	onTestFinish : function(aEvent)
+	{
+		var testCase = aEvent.target;
+		var report = aEvent.data;
+
+		var wTestCaseReport = this.getTestCaseReport(testCase.title);
+		_(wTestCaseReport).setAttribute('test-id', report.testID);
+		_(wTestCaseReport).setAttribute('file', testCase.namespace);
 		_(wTestCaseReport, 'bar').setAttribute('mode', 'determined');
 		_(wTestCaseReport, 'bar').setAttribute(
-			'value', parseInt(aReport.testIndex / aReport.testCount * 100));
-		_(wTestCaseReport, 'total-counter').value = aReport.testCount;
+			'value', parseInt(report.testIndex / testCase.tests.length * 100));
+		_(wTestCaseReport, 'total-counter').value = testCase.tests.length;
 
 		_(wTestCaseReport, 'bar').setAttribute('testcase-results',
 			_(wTestCaseReport, 'bar').getAttribute('testcase-results')+
-			' '+aReport.result
+			' '+report.result
 		);
 
 		gTotalCount++;
-		switch (aReport.result)
+		switch (report.result)
 		{
 			case 'success':
 				gSuccessCount++;
@@ -389,13 +414,13 @@ TestReportHandler.prototype = {
 		var id = 'test-report-'+encodeURIComponent(title)+'-'+_(wTestCaseReport, 'test-reports').childNodes.length;
 		var wTestReport = clone('test-report');
 		wTestReport.setAttribute('id', id);
-		_(wTestReport, 'result').value = bundle.getString('report_result_'+aReport.result);
-		_(wTestReport, 'icon').setAttribute('class', 'test-' + aReport.result);
-		_(wTestReport, 'description').textContent = aReport.testDescription;
-		_(wTestReport, 'description').setAttribute('tooltiptext', aReport.testDescription);
-		_(wTestReport).setAttribute('report-type', aReport.result);
-		if (aReport.exception) {
-			var message = aReport.exception.message.replace(/^\s+/, '');
+		_(wTestReport, 'result').value = bundle.getString('report_result_'+report.result);
+		_(wTestReport, 'icon').setAttribute('class', 'test-' + report.result);
+		_(wTestReport, 'description').textContent = report.testDescription;
+		_(wTestReport, 'description').setAttribute('tooltiptext', report.testDescription);
+		_(wTestReport).setAttribute('report-type', report.result);
+		if (report.exception) {
+			var message = report.exception.message.replace(/^\s+/, '');
 			message = message.split(/[\n\r]+<(?:EXPECTED|ACTUAL)>:/);
 			if (message.length > 1) {
 				_(wTestReport, 'actual-value').textContent = message.pop();
@@ -404,8 +429,8 @@ TestReportHandler.prototype = {
 			}
 			message = message.join('\n');
 			_(wTestReport, 'additionalInfo').textContent = message;
-			if (aReport.exception.stack) {
-				displayStackTrace(aReport.exception, _(wTestReport, 'stack-trace'));
+			if (report.exception.stack) {
+				displayStackTrace(report.exception, _(wTestReport, 'stack-trace'));
 				_(wTestReport, 'stack-trace').hidden = false;
 			}
 		}
@@ -413,26 +438,19 @@ TestReportHandler.prototype = {
 		_(wTestCaseReport, 'test-reports').appendChild(wTestReport);
 		scrollReportsTo(wTestReport);
 	},
-	set onFinish(aValue) {
-		this.mFinishHandlers.push(aValue);
-		return aValue;
-	},
-	get onFinish() {
-		var handlers = this.mFinishHandlers;
-		var self = this;
-		return (function() {
-				handlers.forEach(function(aHandler) {
-					try {
-						aHandler.call(self);
-					}
-					catch(e) {
-						dump(e+'\n');
-					}
-				});
-			});
+	onFinish : function(aEvent)
+	{
+		runner_utils.cleanUpModifications(aEvent.target);
+		aEvent.target.removeListener(this);
+
+		this.count--;
+		if (this.count) return;
+
+		setRunningState(false);
+		onAllTestsFinish();
 	}
 };
- 
+ 	
 function onAllTestsFinish() 
 {
 	if (!_('content').collapsed && contentAutoExpanded) {
@@ -558,7 +576,7 @@ function run(aAll)
 	}
 	this.runTests(tests);
 }
-	
+	 
 function runByPref() 
 {
 	run(utils.getPref('extensions.uxu.mozunit.runMode') == 1 ? true : false );
@@ -647,7 +665,7 @@ function stop()
 	shouldAbortTest = true;
 	_('stop').setAttribute('disabled', true);
 }
-	
+	 
 function loadFolder(aFolder) 
 {
 	var filesMayBeTest = runner_utils.getTestFiles(aFolder);
@@ -677,23 +695,7 @@ function initializeTests(aSuites, aFilter)
 	if (!aFilter)
 		aFilter = function(aTest) { return true; };
 
-	var syncTestCount = 0;
-	var asyncTestCount = 0;
-
-	var onSyncTestEnd = function() {
-			syncTestCount--;
-			if (!syncTestCount && !asyncTestCount) {
-				setRunningState(false);
-				onAllTestsFinish();
-			}
-		};
-	var onAsyncTestEnd = function() {
-			asyncTestCount--;
-			if (!syncTestCount && !asyncTestCount) {
-				setRunningState(false);
-				onAllTestsFinish();
-			}
-		};
+	var listener = new TestListener();
 
 	var tests,
 		allTests = [];
@@ -706,15 +708,7 @@ function initializeTests(aSuites, aFilter)
 
 			tests = tests.filter(aFilter);
 			tests.forEach(function(aTestCase) {
-				aTestCase.reportHandler = new TestReportHandler(aTestCase);
-				if (aTestCase.runStrategy == 'async') {
-					aTestCase.reportHandler.onFinish = onAsyncTestEnd;
-					asyncTestCount++;
-				}
-				else {
-					aTestCase.reportHandler.onFinish = onSyncTestEnd;
-					syncTestCount++;
-				}
+				listener.registerTest(aTestCase);
 			}, this);
 			allTests = allTests.concat(tests);
 		}
@@ -1105,4 +1099,4 @@ function showPage(aURI)
 		}
 	}
 }
- 	 
+  

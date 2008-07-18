@@ -21,7 +21,7 @@
 
 // Modified by SHIMODA Hiroshi <shimoda@clear-code.com>
  
-var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
+var lib_module = new ModuleManager(['chrome://uxu/content/lib']); 
 var fsm    = lib_module.require('package', 'fsm');
 var bundle = lib_module.require('package', 'bundle');
 var utils  = lib_module.require('package', 'utils');
@@ -75,6 +75,11 @@ function constructor(aTitle, aNamespace)
 		'tests', function() {
 			return this._tests;
 		});
+	this.__defineSetter__(
+		'stateThat', function(aHash) {
+			this.setTests(aHash);
+			return aHash;
+		});
 
 	if (!aNamespace || typeof aNamespace != 'string') {
 		var path;
@@ -106,23 +111,6 @@ function constructor(aTitle, aNamespace)
 			return this._masterPriority;
 		});
 
-	this.__defineSetter__(
-		'stateThat', function(aHash) {
-			this.setTests(aHash);
-			return aHash;
-		});
-
-	this._reportHandler = _defaultReportHandler;
-	this.__defineSetter__(
-		'reportHandler', function(aHandler) {
-			this._reportHandler = aHandler;
-			return aHandler;
-		});
-	this.__defineGetter__(
-		'reportHandler', function() {
-			return this._reportHandler;
-		});
-
 	this._context = {};
 	this.__defineSetter__(
 		'context', function(aContext) {
@@ -139,6 +127,8 @@ function constructor(aTitle, aNamespace)
 		'done', function() {
 			return this._done;
 		});
+
+	this._listeners = [];
 }
  
 /**
@@ -181,7 +171,7 @@ function constructor(aTitle, aNamespace)
  *         }
  *     }
  */
-	 
+	
 function setTests(aHash) 
 {
 	this.context = aHash;
@@ -257,7 +247,7 @@ function registerTest(aFunction)
 		id       : 'test-'+parseInt(Math.random() * 65000)
 	});
 }
-function _getHashFromString(aString) 
+function _getHashFromString(aString)
 {
 	var hasher = Components
 			.classes['@mozilla.org/security/hash;1']
@@ -299,7 +289,7 @@ function test(aDescription, aCode)
 	aCode.description = aDescription;
 	this.registerTest(aCode);
 }
- 	 
+  
 // BDD-style alias 
 	 
 /**
@@ -333,6 +323,19 @@ function verify(aStopper)
 	this.run(aStopper);
 }
    
+function addListener(aListener) 
+{
+	if (this._listeners.indexOf(aListener) < 0)
+		this._listeners.push(aListener);
+}
+ 
+function removeListener(aListener) 
+{
+	var index = this._listeners.indexOf(aListener);
+	if (index > -1)
+		this._listeners.splice(index, 1);
+}
+ 
 /**
  * Runs tests with strategy defined at construction time. 
  *
@@ -344,11 +347,7 @@ function verify(aStopper)
 function run(aStopper)
 {
 	this._stopper = aStopper;
-	this._asyncRun(this._tests, this._setUp, this._tearDown, this._reportHandler);
-}
-	 
-function _asyncRun(aTests, aSetUp, aTearDown, aReportHandler) 
-{
+
 	var testIndex = 0;
 	var context;
 	var report = { report : null };
@@ -370,11 +369,13 @@ function _asyncRun(aTests, aSetUp, aTearDown, aReportHandler)
 	var stateHandlers = {
 		start : function(aContinuation)
 		{
+			_this._fireEvent('Start', null);
 			aContinuation('ok')
 		},
 		checkPriority : function(aContinuation)
 		{
-			if (_this._checkPriorityToExec(aTests[testIndex])) {
+			_this._fireEvent('TestStart', testIndex);
+			if (_this._checkPriorityToExec(_this._tests[testIndex])) {
 				aContinuation('ok');
 				return;
 			}
@@ -385,18 +386,18 @@ function _asyncRun(aTests, aSetUp, aTearDown, aReportHandler)
 		},
 		doSetUp : function(aContinuation)
 		{
-			if (!aSetUp) {
+			if (!_this._setUp) {
 				aContinuation('ok');
 				return;
 			}
 			context = _this.context || {};
 			report.report = {};
 			try {
-				var result = aSetUp.call(context, aContinuation);
+				var result = _this._setUp.call(context, aContinuation);
 				if (utils.isGeneratedIterator(result)) {
 					utils.doIteration(result, {
 						onEnd : function(e) {
-							if (aSetUp.arity == 0) aContinuation('ok');
+							if (_this._setUp.arity == 0) aContinuation('ok');
 						},
 						onError : function(e) {
 							report.report.result = 'error';
@@ -407,7 +408,7 @@ function _asyncRun(aTests, aSetUp, aTearDown, aReportHandler)
 					});
 				}
 				else {
-					if (aSetUp.arity == 0) aContinuation('ok');
+					if (_this._setUp.arity == 0) aContinuation('ok');
 				}
 			} catch(e) {
 				report.report.result = 'error';
@@ -419,7 +420,7 @@ function _asyncRun(aTests, aSetUp, aTearDown, aReportHandler)
 		doTest : function(aContinuation)
 		{
 			var test;
-			test = aTests[testIndex];
+			test = _this._tests[testIndex];
 			var newReport = _this._exec(test, context, aContinuation, report);
 			if (newReport.result) {
 				report.report = newReport;
@@ -432,36 +433,29 @@ function _asyncRun(aTests, aSetUp, aTearDown, aReportHandler)
 		},
 		doReport : function(aContinuation)
 		{
-			_this._onFinish(aTests[testIndex], report.report.result);
+			_this._onFinish(_this._tests[testIndex], report.report.result);
 			report.report.testOwner = _this;
 			report.report.testIndex = testIndex + 1;
-			report.report.testCount = aTests.length;
-			report.report.testID    = aTests[testIndex].name;
-			report.report.namespaceURL = _this._namespace;
-			if (typeof aReportHandler == 'function')
-				aReportHandler(report.report);
-			else if (aReportHandler && 'handleReport' in aReportHandler)
-				aReportHandler.handleReport(report.report);
-			else
-				throw new Error('invalid report handler');
+			report.report.testID    = _this._tests[testIndex].name;
+			_this._fireEvent('TestFinish', report.report);
 			aContinuation('ok');
 		},
 		doTearDown : function(aContinuation)
 		{ // exceptions in setup/teardown are not reported correctly
-			if (!aTearDown) {
+			if (!_this._tearDown) {
 				aContinuation('ok');
 				return;
 			}
 			try {
 				// perhaps should pass continuation to tearDown as well
-				var result = aTearDown.call(context);
+				var result = _this._tearDown.call(context);
 				if (utils.isGeneratedIterator(result)) {
 					utils.doIteration(result, {
 						onEnd : function(e) {
 							aContinuation('ok');
 						},
 						onError : function(e) {
-							_this._onFinish(aTests[testIndex], 'error');
+							_this._onFinish(_this._tests[testIndex], 'error');
 							aContinuation('ko');
 						}
 					});
@@ -480,13 +474,12 @@ function _asyncRun(aTests, aSetUp, aTearDown, aReportHandler)
 				return;
 			}
 			testIndex += 1;
-			aTests[testIndex] ? aContinuation('ok') : aContinuation('ko');
+			_this._tests[testIndex] ? aContinuation('ok') : aContinuation('ko');
 		},
 		finished : function(aContinuation)
 		{
-			if (aReportHandler && 'onFinish' in aReportHandler)
-				aReportHandler.onFinish();
 			_this._done = true;
+			_this._fireEvent('Finish', null);
 		}
 	};
 
@@ -547,7 +540,23 @@ function _exec(aTest, aContext, aContinuation, aReport)
 
 	return report;
 }
-  
+ 
+function _fireEvent(aType, aData) 
+{
+	var event = {
+			type   : aType,
+			target : this,
+			data   : aData
+		};
+	this._listeners.forEach(function(aListener) {
+		if (!aListener) return;
+		if (typeof aListener == 'function')
+			aListener(event);
+		else if ('handleEvent' in aListener && typeof aListener.handleEvent == 'function')
+			aListener.handleEvent(event);
+	});
+}
+ 
 function _checkPriorityToExec(aTest) 
 {
 	var forceNever = (
@@ -648,35 +657,4 @@ function _onFinish(aTest, aResult)
 		cleanUpStatement.reset();
 	}
 }
-  
-function _defaultReportHandler(aReport) 
-{
-	if (aReport.result == 'success')
-		return;
-
-	var printout = bundle.getFormattedString('report_default', [
-			aReport.testIndex,
-			aReport.testCount,
-			aReport.testDescription,
-			bundle.getString('report_result_'+aReport.result)
-		])
-
-	if (aReport.exception) {
-		printout += ': ' + aReport.exception + '\n';
-		printout += utils.formatStackTrace(
-				aReport.exception,
-				{
-					onlyExternal : true,
-					maxLength : 200
-				}
-			);
-	}
-	printout += '\n';
-
-	if (typeof(repl) == 'object')
-		repl.print(printout);
-	else
-		dump(printout);
-}
-	 
-  
+  	
