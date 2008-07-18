@@ -7,9 +7,10 @@ var test_module  = new ModuleManager(['chrome://uxu/content/test']);
 var runner_utils = test_module.require('package', 'runner_utils');
 
 
-function constructor(aFiles)
+function constructor(aBrowser, aFiles)
 {
 	this.runningCount = 0;
+	this.browser = aBrowser;
 	this.files = aFiles;
 }
 
@@ -79,12 +80,12 @@ function load(aFilePath, aReporter)
 	var file = utils.makeFileWithPath(aFilePath);
 
 	if (file.isDirectory())
-		return loadFolder(file, aReporter);
+		return this.loadFolder(file, aReporter);
 	else
-		return loadFile(file, aReporter);
+		return this.loadFile(file, aReporter);
 }
 
-function loadFolder(aFolder, aReporter)
+function loadFolder(aFolder, aReporter, aBrowser)
 {
 	var filesMayBeTest = runner_utils.getTestFiles(aFolder);
 	return filesMayBeTest.map(function(aFile) {
@@ -97,7 +98,7 @@ function loadFile(aFile, aReporter)
 	var tests = [];
 
 	try {
-		var suite = runner_utils.createTestSuite(utils.getURLSpecFromFilePath(aFile.path), null);
+		var suite = runner_utils.createTestSuite(utils.getURLSpecFromFilePath(aFile.path), this.browser);
 		tests = runner_utils.getTests(suite);
 		if (tests.length == 0)
 			aReporter.warn('No tests found in ' + aFile.path);

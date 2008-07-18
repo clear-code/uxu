@@ -5,6 +5,8 @@ const Ci = Components.interfaces;
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var Handler = server_module.require('class', 'handler');
+var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
+var utils = lib_module.require('package', 'utils');
 
 function constructor(aPort)
 {
@@ -14,16 +16,27 @@ function constructor(aPort)
 	this.socket = null;
 
 	this.handlers = [];
-	this.listener = {
-		onSocketAccepted : function(aSocket, aTransport)
+}
+
+function start(aListener, aBrowser)
+{
+	var _this = this;
+	var socketListener;
+
+	this.socket = Cc['@mozilla.org/network/server-socket;1']
+		.createInstance(Ci.nsIServerSocket);
+
+	socketListener = {
+	  onSocketAccepted : function(aSocket, aTransport)
 		{
 			try {
 				var input  = aTransport.openInputStream(0, 0, 0);
 				var output = aTransport.openOutputStream(0, 0, 0);
-				_this.handlers.push(new Handler(input, output));
+				var handler = new Handler(input, output, aListener, aBrowser);
+				_this.handlers.push(handler);
 			}
 			catch (e) {
-				dump('UxU: Error: ' + e + '\n');
+				dump('UxU: Error: ' + utils.formatError(e) + '\n');
 			}
 		},
 		onStopListening : function(aSocket, aStatus) {
@@ -33,15 +46,9 @@ function constructor(aPort)
 			_this.handlers = [];
 		}
 	};
-}
-
-function start()
-{
-	this.socket = Cc['@mozilla.org/network/server-socket;1']
-		.createInstance(Ci.nsIServerSocket);
 	try {
 		this.socket.init(this.port, true, -1);
-		this.socket.asyncListen(this.listener);
+		this.socket.asyncListen(socketListener);
 	}
 	catch (e) {
 		// already bound

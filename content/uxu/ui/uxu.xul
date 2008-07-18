@@ -28,6 +28,15 @@
 			oncommand="utils.setPref('extensions.uxu.auto.start', this.checked)"/>
 	</hbox>
 	<resizer dir="bottomright"/>
+
+	<splitter id="content-splitter" hidden="true"
+		collapse="after" resizeafter="closest"/>
+	<browser id="content"
+		type="content-primary"
+		flex="1"
+		src="about:blank" class="inset"
+		style="background-color: white;"
+		collapsed="true"/>
 </hbox>
 </window>
 

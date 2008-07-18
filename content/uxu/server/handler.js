@@ -10,9 +10,9 @@ var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var utils = lib_module.require('package', 'utils');
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
-var Context= server_module.require('class', 'context');
+var Context = server_module.require('class', 'context');
 
-function constructor(aInput, aOutput)
+function constructor(aInput, aOutput, aListener, aBrowser)
 {
 	var _this = this;
 	var scriptableInput = Cc['@mozilla.org/scriptableinputstream;1']
@@ -23,10 +23,12 @@ function constructor(aInput, aOutput)
 	scriptableInput.init(aInput);
 	this.input = scriptableInput;
 	this.output = aOutput;
-	this.context = new Context(this);
+	this.listener = aListener;
+	this.browser = aBrowser;
+	this.context = new Context(this, aBrowser);
 
 	var buffer = '';
-	listener = {
+	var pumpListener = {
 		onStartRequest : function(aRequest, aContext)
 		{
 		},
@@ -54,7 +56,7 @@ function constructor(aInput, aOutput)
 	};
 
 	pump.init(aInput, -1, -1, 0, 0, false);
-	pump.asyncRead(listener, null);
+	pump.asyncRead(pumpListener, null);
 }
 
 function quit()

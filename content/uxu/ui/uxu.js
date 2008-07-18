@@ -18,7 +18,7 @@ var gAutoStart;
 
 function Startup() {
 	gServer = new Server(utils.getPref('extensions.uxu.port'));
-	gServer.start();
+	gServer.start(null, window.document.getElementById("content"));
 
 	gLog = document.getElementById('log');
 	gAutoStart = document.getElementById('autostart');
