@@ -20,7 +20,7 @@ function run(aReporter, aAll)
 
 	this.runningCount = 0;
 	this.files.forEach(function(aFile) {
-		tests = tests.concat(this.load(aFile, aReporter));
+		tests = tests.concat(_this.load(aFile, aReporter));
 	});
 
 	this.start(aReporter);
