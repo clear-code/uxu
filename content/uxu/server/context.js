@@ -15,15 +15,14 @@ function constructor(aHandler, aReportListener, aBrowser)
 {
 	this.reportListener = aReportListener;
 	this.browser = aBrowser;
-	this.p     = function() { aHandler.p.apply(aHandler, arguments); };
-	this.puts  = function() { aHandler.puts.apply(aHandler, arguments); };
-	this.print = function() { aHandler.print.apply(aHandler, arguments); };
-	this.error = function() { aHandler.error.apply(aHandler, arguments); };
-	this.quit  = function() { aHandler.quit.apply(aHandler, arguments); };
+	this.p     = aHandler.p;
+	this.puts  = aHandler.puts;
+	this.print = aHandler.print;
+	this.error = aHandler.error;
+	this.quit  = aHandler.quit;
 	this.exit  = this.quit;
-	this.quitApplication = function() {
-		aHandler.quitApplication.apply(aHandler, arguments);
-	};
+	this.quitApplication = aHandler.quitApplication;
+	this.closeMainWindows = aHandler.closeMainWindows;
 	this.runTest = runTest;
 	this.__proto__ = new Environment(this, location.href, aBrowser);
 }
@@ -35,4 +34,3 @@ function runTest()
 	runner.run(reporter);
 	return reporter;
 }
-

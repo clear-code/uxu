@@ -11,6 +11,7 @@ options.port = 4444
 options.firefox = "firefox &"
 options.wait = 1.5
 options.quit = true
+options.close_main_windows = true
 
 opts = OptionParser.new("Usage: #{$0} [options] test_or_directory...") do |opts|
   opts.on("--host=HOST",
@@ -23,6 +24,9 @@ opts = OptionParser.new("Usage: #{$0} [options] test_or_directory...") do |opts|
           "how log wait to start Firefox (#{options.wait})") {|options.wait|}
   opts.on("--[no-]quit",
           "whether quit or not on finish (#{options.quit})") {|options.quit|}
+  opts.on("--[no-]close-main-windows",
+          "whether close main windows or not",
+          "(#{options.close_main_windows})") {|options.close_main_windows|}
 
   opts.separator ""
   opts.on_tail("--help", "Show this message") do
@@ -58,6 +62,10 @@ class Runner
     show_result while running?
     show_result
     @output.puts
+  end
+
+  def close_main_windows
+    @socket.puts("closeMainWindows()")
   end
 
   def quit
@@ -116,6 +124,7 @@ def run(tests, options)
   TCPSocket.open(options.host, options.port) do |socket|
     runner = Runner.new(socket,
                         tests.collect {|test| Pathname(test).expand_path})
+    runner.close_main_windows if options.close_main_windows
     runner.run
     runner.quit if options.quit
   end

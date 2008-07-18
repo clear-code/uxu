@@ -12,6 +12,9 @@ var utils = lib_module.require('package', 'utils');
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var Context = server_module.require('class', 'context');
 
+var WindowManager = Cc['@mozilla.org/appshell/window-mediator;1']
+	.getService(Ci.nsIWindowMediator);
+
 function constructor(aInput, aOutput, aReportListener, aBrowser)
 {
 	var _this = this;
@@ -150,4 +153,15 @@ function quitApplication(aForceQuit)
 		quitSeverity = Components.interfaces.nsIAppStartup.eAttemptQuit;
 
 	appStartup.quit(quitSeverity);
+}
+
+function closeMainWindows()
+{
+	var targets = WindowManager.getEnumerator('navigator:browser');
+	while (targets.hasMoreElements())
+	{
+		var target;
+		target = targets.getNext().QueryInterface(Ci.nsIDOMWindowInternal);
+		target.close();
+	}
 }
