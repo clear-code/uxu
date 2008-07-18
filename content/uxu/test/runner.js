@@ -31,9 +31,11 @@ function run(aReporter, aAll)
 	}, this);
 
 	var tests = this._collectTestCases(suites);
-	tests.forEach(function(aTest) {
-		if (aAll) aTest.priority = 'must';
-	});
+	if (aAll) {
+		tests.forEach(function(aTest) {
+			aTest.masterPriority = 'must';
+		});
+	}
 
 	this._isProcessing = true;
 	this.fireEvent('Start');
