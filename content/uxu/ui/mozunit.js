@@ -185,14 +185,15 @@ const fileDNDObserver =
 	{
 		if (_('stop').getAttribute('disabled') != 'true')
 			return false;
-		var XferDataSet = nsTransferable.get(
-				this.getSupportedFlavours(),
-				nsDragAndDrop.getDragData,
-				true
-			);
-		var XferData = XferDataSet.first.first;
-		var file = XferData.data;
-		return this.isTestCase(file);
+		try {
+			var data = nsDragAndDrop.getData(this.getSupportedFlavours());
+			if (!data.Count) return false;
+			data = data.GetElementAt(0);
+			return this.isTestCase(data);
+		}
+		catch(e) {
+			return true;
+		}
 	},
  
 	onDragOver : function(aEvent, aFlavour, aSession) 
