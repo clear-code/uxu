@@ -5,6 +5,26 @@ require 'socket'
 
 port = ARGV.shift || 4444
 
+history_file = "~/.ifx.history"
+max_history_size = 1000
+
+if defined?(Readline::HISTORY)
+  history_file = File.expand_path(history_file)
+  if File.exist?(history_file)
+    lines = IO.readlines(history_file).collect {|line| line.chomp}
+    Readline::HISTORY.push(*lines)
+  end
+
+  at_exit do
+    lines = Readline::HISTORY.to_a.reverse.uniq.reverse
+    lines = lines[-[max_history_size, lines.size].min, max_history_size]
+    File::open(history_file, File::WRONLY|File::CREAT|File::TRUNC) do |output|
+      output.puts(lines)
+    end
+  end
+end
+
+
 TCPSocket.open("localhost", port) do |socket|
   while line = Readline.readline("firefox> ", true)
     begin
@@ -12,11 +32,11 @@ TCPSocket.open("localhost", port) do |socket|
     rescue Errno::EPIPE
       break
     end
-    buf = ""
+    buffer = ""
     while IO.select([socket], [], [], 0.05)
       break if socket.eof?
-      socket.readpartial(4096, buf)
+      buffer << socket.readpartial(4096)
     end
-    puts buf unless buf.empty?
+    puts buffer unless buffer.empty?
   end
 end
