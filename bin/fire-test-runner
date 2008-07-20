@@ -61,10 +61,11 @@ class Runner
       "'#{escaped_path}'"
     end.join(", ")
     evaluate("var #{@reporter_var_name};")
-    evaluate("#{@reporter_var_name} = runTest(#{escaped_target_paths});")
+    evaluate("#{@reporter_var_name} = runTest(#{escaped_target_paths}); " +
+             "undefined;")
 
     show_result while running?
-    show_result(false)
+    show_result
     @output.puts
   end
 
@@ -109,7 +110,7 @@ class Runner
     buffer = ""
     while IO.select([@socket], [], [], 0.1)
       break if @socket.eof?
-      @socket.readpartial(4096, buffer)
+      buffer << @socket.readpartial(4096)
     end
     buffer
   end
@@ -131,13 +132,20 @@ class Runner
     result != "true"
   end
 
-  def show_result(need_wait=false)
+  def show_result
     evaluate("#{@reporter_var_name}.result", false)
-    sleep 0.5 if need_wait
-    result = (read[@shown_result_index..-1] || "").chomp
-    unless result.empty?
-      @output.print(result)
-      @shown_result_index += result.size
+    outputted = false
+    loop do
+      result = read.chomp
+      if result.empty? and !outputted and !@socket.eof?
+        sleep 0.5
+        next
+      end
+      break if result.size <= @shown_result_index
+      @output.print(result[@shown_result_index..-1])
+      @output.flush
+      @shown_result_index = result.size
+      outputted = true
     end
   end
 end

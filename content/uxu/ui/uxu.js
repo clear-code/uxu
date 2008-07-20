@@ -15,7 +15,7 @@ var gAutoStart;
 
 function Startup() {
 	gServer = new Server(utils.getPref('extensions.uxu.port'));
-	gServer.start(testReportListener, window.document.getElementById("content"));
+	gServer.start(testRunnerlistener, window.document.getElementById("content"));
 
 	gLog = document.getElementById('log');
 	gAutoStart = document.getElementById('autostart');
@@ -27,7 +27,7 @@ function Shutdown() {
 	gServer.stop();
 }
 
-var testReportListener = {
+var testRunnerlistener = {
     onStart: function() {
 		var node = document.createElement('label');
 		node.setAttribute('style', 'border: 1px solid; padding: 0.5em;');

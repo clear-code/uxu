@@ -9,13 +9,10 @@ var loader = Cc['@mozilla.org/moz/jssubscript-loader;1']
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var utils = lib_module.require('package', 'utils');
 
-var server_module = new ModuleManager(['chrome://uxu/content/server']);
-var Context = server_module.require('class', 'context');
-
 var WindowManager = Cc['@mozilla.org/appshell/window-mediator;1']
 	.getService(Ci.nsIWindowMediator);
 
-function constructor(aInput, aOutput, aReportListener, aBrowser)
+function constructor(aInput, aOutput)
 {
 	var _this = this;
 	var scriptableInput = Cc['@mozilla.org/scriptableinputstream;1']
@@ -26,7 +23,7 @@ function constructor(aInput, aOutput, aReportListener, aBrowser)
 	scriptableInput.init(aInput);
 	this.input = scriptableInput;
 	this.output = aOutput;
-	this.context = new Context(this, aReportListener, aBrowser);
+	this.context = {};
 
 	var buffer = '';
 	var pumpListener = {
@@ -58,6 +55,11 @@ function constructor(aInput, aOutput, aReportListener, aBrowser)
 
 	pump.init(aInput, -1, -1, 0, 0, false);
 	pump.asyncRead(pumpListener, null);
+}
+
+function setContext(aContext)
+{
+	this.context = aContext;
 }
 
 function quit()
@@ -126,7 +128,7 @@ function error(aException)
 
 function load(aURI, aContext)
 {
-	return loader.loadSubScript(aURI, aContext || this.context);
+	return loader.loadSubScript(aURI, aContext || this.context || {});
 }
 
 function evaluate(aCode)

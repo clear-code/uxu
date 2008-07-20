@@ -6,20 +6,22 @@ const Ci = Components.interfaces;
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var utils = lib_module.require('package', 'utils');
 
-var ObserverService = Cc['@mozilla.org/observer-service;1']
-		.getService(Ci.nsIObserverService);
-
-function constructor(aListener)
+function constructor()
 {
-	this.listener   = aListener;
-	this.testCount  = 0;
+	this.nTests     = 0;
 	this.finished   = false;
 	this.result     = '';
 	this.badResults = [];
 }
 
+function addListener(aListener)
+{
+	this.listeners.push(aListener);
+}
+
 function handleEvent(aEvent)
 {
+try {
 	switch (aEvent.type)
 	{
 		case 'Start':
@@ -27,7 +29,7 @@ function handleEvent(aEvent)
 			break;
 
 		case 'Report':
-			this.report(aEvent.data);
+			this.onTestFinish(aEvent.data);
 			break;
 
 		case 'Finish':
@@ -35,9 +37,12 @@ function handleEvent(aEvent)
 			break;
 
 		case 'Error':
-			this.error(aEvent.data);
+			this.onError(aEvent.data);
 			break;
 	}
+} catch (e) {
+	dump(utils.formatError(e));
+}
 }
 
 function isFinished()
@@ -48,42 +53,30 @@ function isFinished()
 function onStart()
 {
 	this.finished = false;
-	this.listener.onStart();
 }
 
 function onFinish()
 {
 	var _this = this;
 
-	this.finished = true;
-
-	var result;
-	var results = [];
-
+	_this.result += "\n";
 	this.badResults.forEach(function(aResult) {
-		result = aResult.result + ': '+
-				aResult.testDescription + '\n'+
-				utils.formatError(aResult.exception);
-
-		this.result += '\n' + aResult;
-
-		results.push(aResult);
+		_this.result += aResult.result + ': ';
+		_this.result += aResult.testDescription + '\n';
+		_this.result += utils.formatError(aResult.exception) + '\n\n';
 	});
 
-	if (!results.length)
-		results = 'All tests succeed.'
-	else
-		results = results.join('\n');
+	this.result += (this.badResults.length / this.nTests) + '% passed.\n';
 
-	var data = { result : results };
-	this.listener.onFinish(data);
+	this.finished = true;
 }
 
-function report(aReport)
+function onTestFinish(aReport)
 {
-	this.testCount++;
 	switch (aReport.result)
 	{
+	    case 'passover':
+		  return;
 		case 'success':
 			this.result += '.';
 			break;
@@ -98,19 +91,13 @@ function report(aReport)
 			break;
 	}
 
-	var data = {
-			description : aReport.testDescription,
-			result      : (aReport.result || 'unknown'),
-			exception   : aReport.exception
-		};
-	this.listener.onTestFinish(data);
-
+	this.nTests++;
 	if (aReport.exception)
 		this.badResults.push(aReport);
 }
 
 
-function error(aError)
+function onError(aError)
 {
 	dump(utils.formatError(aError));
 }
