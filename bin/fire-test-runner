@@ -8,10 +8,11 @@ require 'pathname'
 options = OpenStruct.new
 options.host = "localhost"
 options.port = 4444
-options.firefox = "firefox &"
-options.wait = 1.5
+options.firefox = "firefox"
+options.wait = 1
+options.n_retries = 3
 options.quit = true
-options.close_main_windows = true
+options.close_main_windows = false
 
 opts = OptionParser.new("Usage: #{$0} [options] test_or_directory...") do |opts|
   opts.on("--host=HOST",
@@ -22,6 +23,9 @@ opts = OptionParser.new("Usage: #{$0} [options] test_or_directory...") do |opts|
           "command to start Firefox (#{options.firefox})") {|options.firefox|}
   opts.on("--wait=SECONDS", Float,
           "how log wait to start Firefox (#{options.wait})") {|options.wait|}
+  opts.on("--retries=N", Integer,
+          "how many times to retry to connect",
+          "(#{options.n_retries})") {|options.n_retries|}
   opts.on("--[no-]quit",
           "whether quit or not on finish (#{options.quit})") {|options.quit|}
   opts.on("--[no-]close-main-windows",
@@ -56,20 +60,20 @@ class Runner
       escaped_path = escape_path(normalized_path.to_s)
       "'#{escaped_path}'"
     end.join(", ")
-    @socket.puts("var #{@reporter_var_name};")
-    @socket.puts("#{@reporter_var_name} = runTest(#{escaped_target_paths});")
+    evaluate("var #{@reporter_var_name};")
+    evaluate("#{@reporter_var_name} = runTest(#{escaped_target_paths});")
 
     show_result while running?
-    show_result
+    show_result(false)
     @output.puts
   end
 
   def close_main_windows
-    @socket.puts("closeMainWindows()")
+    evaluate("closeMainWindows();")
   end
 
   def quit
-    @socket.puts("quitApplication()")
+    evaluate("quitApplication();")
   end
 
   private
@@ -85,20 +89,38 @@ class Runner
     path.gsub(/\\/, "\\\\\\").gsub(/'/, "\\'")
   end
 
-  def read
-    buf = ""
-    while IO.select([@socket], [], [], 0.1)
-      @socket.readpartial(4096, buf)
+  def evaluate(command, need_to_read=true)
+    return nil if @socket.nil?
+    begin
+      @socket.puts(command)
+    rescue Errno::EPIPE
+      @output.puts("#{$!.inspect}: #{$!}: #{command}")
+      @output.puts($@)
+      return nil
     end
-    buf
+    return nil unless need_to_read
+
+    result = read.chomp
+    @output.puts(result) unless result.empty?
+    result
+  end
+
+  def read
+    buffer = ""
+    while IO.select([@socket], [], [], 0.1)
+      break if @socket.eof?
+      @socket.readpartial(4096, buffer)
+    end
+    buffer
   end
 
   def running?
-    @socket.puts("#{@reporter_var_name}.isFinished()")
+    evaluate("#{@reporter_var_name}.isFinished()", false)
     result = nil
     loop do
       result = read.chomp
       break unless result.empty?
+      return false if @socket.eof?
     end
 
     unless ["true", "false"].include?(result)
@@ -109,9 +131,9 @@ class Runner
     result != "true"
   end
 
-  def show_result
-    @socket.puts("#{@reporter_var_name}.result")
-    sleep 0.5
+  def show_result(need_wait=false)
+    evaluate("#{@reporter_var_name}.result", false)
+    sleep 0.5 if need_wait
     result = (read[@shown_result_index..-1] || "").chomp
     unless result.empty?
       @output.print(result)
@@ -130,10 +152,14 @@ def run(tests, options)
   end
 end
 
+n_retried = 0
 begin
   run(tests, options)
 rescue SystemCallError
-  system(options.firefox)
-  sleep options.wait
-  run(tests, options)
+  n_retried += 1
+  if n_retried <= options.n_retries
+    system("#{options.firefox} about:blank &")
+    sleep options.wait
+    retry
+  end
 end

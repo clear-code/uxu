@@ -1,5 +1,7 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*- 
 
+const Ci = Components.interfaces;
+
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var utils = lib_module.require('package', 'utils');
 var bundle = lib_module.require('package', 'bundle');
@@ -270,8 +272,7 @@ function _getTestFilesInternal(aFolder, aIgnoreHiddenFiles)
 		aIgnoreHiddenFiles = utils.getPref('extensions.uxu.run.ignoreHiddenFiles');
 	while (files.hasMoreElements())
 	{
-		file = files.getNext()
-				.QueryInterface(Components.interfaces.nsILocalFile);
+		file = files.getNext().QueryInterface(Ci.nsILocalFile);
 
 		if (
 			aIgnoreHiddenFiles &&
