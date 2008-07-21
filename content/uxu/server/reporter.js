@@ -61,9 +61,11 @@ function onFinish()
 
 	_this.result += "\n";
 	this.badResults.forEach(function(aResult) {
-		_this.result += aResult.result + ': ';
-		_this.result += aResult.testDescription + '\n';
-		_this.result += utils.formatError(aResult.exception) + '\n\n';
+		var detail;
+		detail = aResult.result + ': ';
+		detail += aResult.testDescription + '\n';
+		detail += utils.formatError(aResult.exception) + '\n\n';
+		_this.result += utils.UCS2ToUTF8(detail);
 	});
 
 	this.result += (this.badResults.length / this.nTests) + '% passed.\n';
