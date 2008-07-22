@@ -175,7 +175,7 @@ begin
 rescue SystemCallError
   n_retried += 1
   if n_retried <= options.n_retries
-    system("#{options.firefox} about:blank &")
+    system("#{options.firefox} -chrome chrome://uxu/content/ui/uxu.xul &")
     sleep options.wait
     retry
   end
