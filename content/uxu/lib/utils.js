@@ -195,7 +195,8 @@ function writeTo(aContent, aTarget, aEncoding)
 
 function formatError(e)
 {
-	return e.toString() + '\n' + formatStackTrace(e, { onlyFile : true });
+	var options = { onlyFile : true, onlyExternal : true, onlyTraceLine : true};
+	return e.toString() + '\n' + formatStackTrace(e, options);
 }
 
 var lineRegExp = /@\w+:.+:\d+/;
