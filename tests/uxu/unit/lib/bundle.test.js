@@ -1,5 +1,4 @@
 var bundle;
-var locale = utils.getPref('general.useragent.locale');
 
 function setUp()
 {
@@ -14,6 +13,10 @@ function tearDown()
 function testGetString()
 {
 	var expected = {};
+	var formatter = Cc["@mozilla.org/toolkit/URLFormatterService;1"]
+            .getService(Ci.nsIURLFormatter);
+	var locale = formatter.formatURL("%LOCALE%");
+
 	if (locale.indexOf('ja') == 0) {
 		expected['report_description_setup'] = 'セットアップ';
 		expected['all_result_failure']       = '1件のテストに失敗しました';
