@@ -1,8 +1,10 @@
 var utilsModule;
 var tempFile;
+var onWindows = false;
 
 function setUp()
 {
+	onWindows = navigator.userAgent.toUpperCase().indexOf("WIN") >= 0;
 	utilsModule = {};
 	utils.include('../../../../content/uxu/lib/utils.js', utilsModule);
 	utilsModule.fileURL = utils.fileURL;
@@ -48,9 +50,15 @@ function test_makeURIFromSpec()
 function test_makeFileWithPath()
 {
 	var fileExpected = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsILocalFile);
-	fileExpected.initWithPath('C:\\Windows');
+	var file;
 
-	var file = utilsModule.makeFileWithPath('C:\\Windows');
+	if (onWindows) {
+		fileExpected.initWithPath('C:\\Windows');
+		file = utilsModule.makeFileWithPath('C:\\Windows');
+	} else {
+		fileExpected.initWithPath('/tmp');
+		file = utilsModule.makeFileWithPath('/tmp');
+        }
 
 	assert.isTrue(file);
 	assert.isTrue(file instanceof Ci.nsIFile);
@@ -62,9 +70,15 @@ function test_makeFileWithPath()
 function test_getFileFromURLSpec()
 {
 	var fileExpected = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsILocalFile);
-	fileExpected.initWithPath('C:\\Windows');
+	var file;
 
-	var file = utilsModule.getFileFromURLSpec('file:///C:/Windows');
+	if (onWindows) {
+		fileExpected.initWithPath('C:\\Windows');
+		file = utilsModule.getFileFromURLSpec('file:///C:/Windows');
+	} else {
+		fileExpected.initWithPath('/tmp');
+		file = utilsModule.getFileFromURLSpec('file:///tmp');
+        }
 
 	assert.isTrue(file);
 	assert.isTrue(file instanceof Ci.nsIFile);
@@ -75,22 +89,38 @@ function test_getFileFromURLSpec()
 
 function test_getFilePathFromURLSpec()
 {
-	assert.matches(/C:\\Windows\\?/i, utilsModule.getFilePathFromURLSpec('file:///C:/Windows'));
+	if (onWindows) {
+		assert.matches(/C:\\Windows\\?/i, utilsModule.getFilePathFromURLSpec('file:///C:/Windows'));
+	} else {
+		assert.matches(/\/tmp\/?/i, utilsModule.getFilePathFromURLSpec('file:///tmp'));
+	}
 }
 
 function test_getURLFromFilePath()
 {
-	var url = utilsModule.getURLFromFilePath('C:\\Windows');
+	var expected, url;
+
+	if (onWindows) {
+		expected = /file:\/\/\/C:\/Windows\/?/i;
+		url = utilsModule.getURLFromFilePath('C:\\Windows');
+	} else {
+		expected = /file:\/\/\/tmp\/?/i;
+		url = utilsModule.getURLFromFilePath('/tmp');
+        }
 	assert.isTrue(url);
 	assert.isTrue(url instanceof Ci.nsIURI);
 	assert.isTrue(url instanceof Ci.nsIFileURL);
-	assert.matches(/file:\/\/\/C:\/Windows\/?/i, url.spec);
+	assert.matches(expected, url.spec);
 	assert.equals('file', url.scheme);
 }
 
 function test_getURLSpecFromFilePath()
 {
-	assert.matches(/file:\/\/\/C:\/Windows\/?/i, utilsModule.getURLSpecFromFilePath('C:\\Windows'));
+	if (onWindows) {
+		assert.matches(/file:\/\/\/C:\/Windows\/?/i, utilsModule.getURLSpecFromFilePath('C:\\Windows'));
+	} else {
+		assert.matches(/file:\/\/\/tmp\/?/i, utilsModule.getURLSpecFromFilePath('/tmp'));
+        }
 }
 
 function test_readFrom()
@@ -199,7 +229,11 @@ function test_fixupIncompleteURI()
 {
 	assert.equals(baseURL+'foobar', utilsModule.fixupIncompleteURI('foobar'));
 	assert.equals('foobar://foobar', utilsModule.fixupIncompleteURI('foobar://foobar'));
-	assert.equals('C:\\Windows', utilsModule.fixupIncompleteURI('C:\\Windows'));
+	if (onWindows) {
+		assert.equals('C:\\Windows', utilsModule.fixupIncompleteURI('C:\\Windows'));
+	} else {
+		assert.equals('/tmp', utilsModule.fixupIncompleteURI('/tmp'));
+        }
 }
 
 function test_isGeneratedIterator()
