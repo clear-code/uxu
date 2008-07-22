@@ -4,7 +4,7 @@ var onWindows = false;
 
 function setUp()
 {
-	onWindows = navigator.userAgent.toUpperCase().indexOf("WIN") >= 0;
+	onWindows = /win/i.test(navigator.platform);
 	utilsModule = {};
 	utils.include('../../../../content/uxu/lib/utils.js', utilsModule);
 	utilsModule.fileURL = utils.fileURL;
