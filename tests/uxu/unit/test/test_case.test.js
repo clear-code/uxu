@@ -302,7 +302,7 @@ function testContext()
 	assert.equals(2, context.count);
 }
 
-function testReportHandler()
+function testListener()
 {
 	testcase.tests = {
 		setUp : function() { setUpCount++; },
@@ -313,18 +313,23 @@ function testReportHandler()
 	};
 	var errorCount = 0;
 	var failCount  = 0;
-	var handler = function(aReport) {
-		switch (aReport.result)
+	var listener = function(aEvent) {
+		switch (aEvent.type)
 		{
-			case 'failure':
-				failCount++;
-				break;
-			case 'error':
-				errorCount++;
+			case 'TestFinish':
+				switch (aEvent.data.result)
+				{
+					case 'failure':
+						failCount++;
+						break;
+					case 'error':
+						errorCount++;
+						break;
+				}
 				break;
 		}
 	};
-	testcase.reportHandler = handler;
+	testcase.addListener(listener);
 	assert.equals(3, testcase.tests.length);
 
 	clearCount();
@@ -334,9 +339,8 @@ function testReportHandler()
 	assert.equals(1, failCount);
 	assert.equals(1, errorCount);
 
-	testcase.reportHandler = {
-		handleReport : handler
-	};
+        testcase.removeListener(listener);
+	testcase.addListener({handleEvent : listener});
 	clearCount();
 	errorCount = 0;
 	failCount  = 0;
