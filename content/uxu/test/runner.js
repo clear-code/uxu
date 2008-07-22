@@ -298,7 +298,7 @@ function loadFile(aFile)
 	var url = utils.getURLSpecFromFilePath(aFile.path);
 
 	try {
-		var suite = this._createTestSuite(url, this._browser);
+		var suite = this._createTestSuite(url);
 	}
 	catch(e) {
 		if (/\.(js|jsm)$/i.test(aFile.leafName))
@@ -308,10 +308,10 @@ function loadFile(aFile)
 	return suite;
 }
 	
-function _createTestSuite(aURL, aBrowser) 
+function _createTestSuite(aURL) 
 {
 	var suite = {};
-	suite.__proto__ = new Environment(suite, aURL, aBrowser);
+	suite.__proto__ = new Environment(suite, aURL, this._browser);
 
 	suite.TestCase      = TestCase;
 	suite.Specification = TestCase;

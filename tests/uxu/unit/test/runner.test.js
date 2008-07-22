@@ -1,16 +1,20 @@
+// -*- indent-tabs-mode: t -*-
+
 utils.include('../../../../content/uxu/lib/module_manager.js');
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
-var runnerUtils = test_module.require('package', 'runner_utils');
+var Runner = test_module.require('class', 'runner');
 
 var declarationStyleTest = baseURL+'../../../samples/declaration.test.js';
 var mozLabStyleTest = baseURL+'../../../samples/unit.test.js';
 
+var runenr;
 var tempFiles;
 var tempPrefs;
 
 function setUp()
 {
+	runner = new Runner(gBrowser);
 	tempFiles = [];
 	tempPrefs = [];
 }
@@ -31,7 +35,7 @@ function tearDown()
 
 function test_createTestSuite()
 {
-	var suite = runnerUtils.createTestSuite(declarationStyleTest, gBrowser);
+	var suite = runner._createTestSuite(declarationStyleTest);
 	assert.isFunction(suite.TestCase.prototype.run);
 	assert.isFunction(suite.TestCase.prototype.registerTest);
 	assert.isFunction(suite.TestCase.prototype.verify);
@@ -48,16 +52,16 @@ function test_createTestSuite()
 	assert.equals(suite.__proto__, suite.utils);
 }
 
-function test_getTests()
+function test_getTestsFromSuite()
 {
-	var suite = runnerUtils.createTestSuite(declarationStyleTest, gBrowser);
-	var tests = runnerUtils.getTests(suite);
+	var suite = runner._createTestSuite(declarationStyleTest);
+	var tests = runner._getTestsFromSuite(suite);
 	assert.equals(1, tests.length);
 	assert.equals('このテストの説明', tests[0].title);
 	assert.equals(3, tests[0].tests.length);
 
-	suite = runnerUtils.createTestSuite(mozLabStyleTest, gBrowser);
-	tests = runnerUtils.getTests(suite);
+	suite = runner._createTestSuite(mozLabStyleTest);
+	tests = runner._getTestsFromSuite(suite);
 	assert.equals(1, tests.length);
 	assert.equals('This is a unit test.', tests[0].title);
 	assert.equals(1, tests[0].tests.length);
@@ -66,14 +70,14 @@ function test_getTests()
 function test_getTestFiles()
 {
 	var folder = utils.getFileFromURLSpec(baseURL+'../../../samples/');
-	var files = runnerUtils.getTestFiles(folder, true);
+	var files = runner._getTestFiles(folder, true);
 	assert.equals(5, files.length);
 }
 
 function test_cleanUpModifications()
 {
-	var suite = runnerUtils.createTestSuite(declarationStyleTest, gBrowser);
-	var tests = runnerUtils.getTests(suite);
+	var suite = runner._createTestSuite(declarationStyleTest);
+	var tests = runner._getTestsFromSuite(suite);
 	assert.equals(1, tests.length);
 
 	var file = suite.utils.makeTempFile();
@@ -85,7 +89,7 @@ function test_cleanUpModifications()
 	suite.utils.setPref(key, true);
 	assert.isTrue(utils.getPref(key));
 
-	runnerUtils.cleanUpModifications(tests[0]);
+	runner._cleanUpModifications(tests[0]);
 	assert.isFalse(file.exists());
 	assert.isNull(utils.getPref(key));
 }
