@@ -11,7 +11,7 @@ options.port = 4444
 options.firefox = "firefox"
 options.wait = 1
 options.n_retries = 3
-options.quit = true
+options.quit = false
 options.close_main_windows = false
 
 opts = OptionParser.new("Usage: #{$0} [options] test_or_directory...") do |opts|
@@ -135,11 +135,15 @@ class Runner
   def show_result
     evaluate("#{@reporter_var_name}.result", false)
     outputted = false
+    n_tried = 4
     loop do
       result = read.chomp
-      if result.empty? and !outputted and !@socket.eof?
-        sleep 0.5
-        next
+      if result.empty? and !outputted
+        if n_tried > 0
+          sleep 0.5
+          n_tried -= 1
+          next
+        end
       end
       break if result.size <= @shown_result_index
       @output.print(result[@shown_result_index..-1])
@@ -152,11 +156,16 @@ end
 
 def run(tests, options)
   TCPSocket.open(options.host, options.port) do |socket|
-    runner = Runner.new(socket,
-                        tests.collect {|test| Pathname(test).expand_path})
-    runner.close_main_windows if options.close_main_windows
-    runner.run
-    runner.quit if options.quit
+    begin
+      runner = Runner.new(socket,
+                          tests.collect {|test| Pathname(test).expand_path})
+      runner.close_main_windows if options.close_main_windows
+      runner.run
+      runner.quit if options.quit
+    rescue SystemCallError
+      puts "#{$!.class}: #{$!}"
+      puts $@
+    end
   end
 end
 
