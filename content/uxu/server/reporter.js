@@ -68,7 +68,12 @@ function onFinish()
 		_this.result += utils.UCS2ToUTF8(detail);
 	});
 
-	this.result += (this.badResults.length / this.nTests) + '% passed.\n';
+	var successRate;
+	if (this.nTests > 0)
+		successRate = this.badResults.length / this.nTests;
+	else
+		successRate = 0;
+	this.result += successRate + '% passed.\n';
 
 	this.finished = true;
 }
