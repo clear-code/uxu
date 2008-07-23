@@ -46,7 +46,16 @@ function makeFileWithPath(aPath)
 // URL文字列→nsIFile
 function getFileFromURLSpec(aURI)
 {
-	if ((aURI || '').indexOf('file://') != 0) return '';
+	if (!aURI)
+		aURI = '';
+
+	if (aURI.indexOf('chrome://') == 0) {
+		var ChromeRegistry = Cc["@mozilla.org/chrome/chrome-registry;1"]
+			.getService(Ci.nsIChromeRegistry);
+		aURI = ChromeRegistry.convertChromeURL(makeURIFromSpec(aURI)).spec;
+	}
+
+	if (aURI.indexOf('file://') != 0) return '';
 
 	var fileHandler = IOService.getProtocolHandler('file')
 						.QueryInterface(Ci.nsIFileProtocolHandler);
@@ -71,7 +80,6 @@ function getURLSpecFromFilePath(aPath)
 {
 	return getURLFromFilePath(aPath).spec;
 };
-
 
 
 // ファイルまたはURIで示された先のリソースを読み込み、文字列として返す

@@ -64,7 +64,7 @@ function onFinish()
 		var detail;
 		detail = aResult.result + ': ';
 		detail += aResult.testDescription + '\n';
-		detail += utils.formatError(aResult.exception) + '\n\n';
+		detail += _this._formatError(aResult.exception) + '\n\n';
 		_this.result += utils.UCS2ToUTF8(detail);
 	});
 
@@ -106,5 +106,31 @@ function onTestFinish(aReport)
 
 function onError(aError)
 {
-	dump(utils.formatError(aError));
+	dump(this._formatError(aError));
+}
+
+function _formatError(aError)
+{
+	var result = aError.toString() + "\n";
+	var options = {
+	  onlyFile: true,
+	  onlyExternal: true,
+	  onlyTraceLine: true
+	};
+	var stackTrace = utils.formatStackTrace(aError, options);
+	stackTrace.split("\n").forEach(function (aLine) {
+		var matchData = /^(.*?)@(.+):(\d+)$/.exec(aLine);
+		if (matchData) {
+			var info = matchData[1];
+			var file = matchData[2];
+			var line = matchData[3];
+
+			file = utils.getFilePathFromURLSpec(file);
+			result += file + ":" + line + ": " + info + "\n";
+		} else {
+			result += aLine + "\n";
+		}
+	});
+
+	return result;
 }
