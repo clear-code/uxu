@@ -604,3 +604,39 @@ function getDB()
 	return _db;
 }
 
+function inspect(aObject)
+{
+	if (aObject == null)
+		return 'null';
+	if (aObject == undefined)
+		return 'undefined';
+
+	if (aObject.__proto__ == Object.prototype) {
+		var values = [];
+		for (var name in aObject) {
+			values.push(name + ": " + inspect(aObject[name]));
+		}
+		return "{" + values.join(", ") + "}";
+	} else if (aObject.__proto__ == Array.prototype) {
+		var values = aObject.map(function (aValue) {
+			return inspect(aValue);
+		});
+		return "[" + values.join(", ") + "]";
+	} else if (aObject.__proto__ == String.prototype) {
+		return '"' + aObject.replace(/\"/g, '\\"') + '"';
+	} else {
+		return aObject.toString();
+	}
+}
+
+function inspectType(aObject)
+{
+	var type = typeof aObject;
+
+	if (type != "object")
+		return type;
+
+	var objectType = Object.prototype.toString.apply(aObject);
+	return objectType.substring("[object ".length,
+								objectType.length - "]".length);
+}

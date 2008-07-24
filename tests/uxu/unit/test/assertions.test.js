@@ -237,8 +237,9 @@ function test_appendTypeString()
 		[
 			'true (boolean)',
 			'0 (number)',
-			'a (string)',
-			'[object Object] (object)',
+			'"a" (string)',
+			'{} (Object)',
+			'[] (Array)',
 			'null',
 			'undefined',
 			'function () {\n} (function)'
@@ -248,6 +249,7 @@ function test_appendTypeString()
 			0,
 			'a',
 			{},
+			[],
 			null,
 			void(0),
 			(function() {})

@@ -1,3 +1,4 @@
+// -*- indent-tabs-mode: t -*-
 // Copyright (C) 2006 by Massimiliano Mirra
 //
 // This program is free software; you can redistribute it and/or modify
@@ -18,6 +19,7 @@
 
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var bundle = lib_module.require('package', 'bundle');
+var utils = lib_module.require('package', 'utils');
 
 
 function equals(aExpected, aActual, aMessage)
@@ -214,6 +216,6 @@ function appendTypeString(aArray)
 	return aArray.map(function(aValue) {
 			if (aValue === null) return 'null'
 			if (aValue === void(0)) return 'undefined'
-			return bundle.getFormattedString('typed_value', [aValue, (typeof aValue)]);
+			return bundle.getFormattedString('typed_value', [utils.inspect(aValue), utils.inspectType(aValue)]);
 		});
 }
