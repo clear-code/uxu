@@ -70,7 +70,7 @@ function onFinish()
 
 	var successRate;
 	if (this.nTests > 0)
-		successRate = this.badResults.length / this.nTests;
+		successRate = (this.nTests - this.badResults.length) / this.nTests * 100;
 	else
 		successRate = 0;
 	this.result += successRate + '% passed.\n';
