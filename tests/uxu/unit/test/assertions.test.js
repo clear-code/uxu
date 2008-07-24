@@ -53,6 +53,14 @@ function testEquals()
 	assert.assertFailed(assertionsModule.equals, [[1, 2, false],
                                                       [1, "2", false],
                                                       message]);
+
+	assert.assertSucceed(assertionsModule.equals,
+                             [new Date(2007, 5, 27, 7, 23, 54),
+                              new Date(2007, 5, 27, 7, 23, 54)]);
+	assert.assertFailed(assertionsModule.equals,
+                            [new Date(2008, 5, 27, 7, 23, 54),
+                             new Date(2007, 5, 27, 7, 23, 54),
+                             message]);
 }
 
 function test_assertions()
