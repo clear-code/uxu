@@ -453,6 +453,8 @@ UCS2ToX
 fixupIncompleteURI
 doIteration
 Do
+inspect
+p
 ]]></>.toString()
 .replace(/^\s+|\s+$/g, '')
 .split('\n')

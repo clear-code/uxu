@@ -606,27 +606,43 @@ function getDB()
 
 function inspect(aObject)
 {
-	if (aObject == null)
-		return 'null';
-	if (aObject == undefined)
-		return 'undefined';
+	var inspected = {};
+	var _inspect = function (aTarget)
+	{
+		if (aTarget == null)
+			return 'null';
+		if (aTarget == undefined)
+			return 'undefined';
 
-	if (aObject.__proto__ == Object.prototype) {
-		var values = [];
-		for (var name in aObject) {
-			values.push(name + ": " + inspect(aObject[name]));
+		if (_inspect[aTarget])
+			return _inspect[aTarget];
+
+		if (!aTarget.__proto__)
+			return aTarget.toString();
+
+		if (aTarget.__proto__.toString == Object.prototype.toString) {
+			_inspect[aTarget] = aTarget.toString();
+			var values = [];
+			for (var name in aTarget) {
+				values.push(name + ": " + _inspect(aTarget[name]));
+			}
+			_inspect[aTarget] = "{" + values.join(", ") + "}";
+			return _inspect[aTarget];
+		} else if (aTarget.__proto__ == Array.prototype) {
+			_inspect[aTarget] = aTarget.toString();
+			var values = aTarget.map(function (aValue) {
+					return _inspect(aValue);
+				});
+			_inspect[aTarget] = "[" + values.join(", ") + "]";
+			return _inspect[aTarget];
+		} else if (aTarget.__proto__ == String.prototype) {
+			return '"' + aTarget.replace(/\"/g, '\\"') + '"';
+		} else {
+			return aTarget.toString();
 		}
-		return "{" + values.join(", ") + "}";
-	} else if (aObject.__proto__ == Array.prototype) {
-		var values = aObject.map(function (aValue) {
-			return inspect(aValue);
-		});
-		return "[" + values.join(", ") + "]";
-	} else if (aObject.__proto__ == String.prototype) {
-		return '"' + aObject.replace(/\"/g, '\\"') + '"';
-	} else {
-		return aObject.toString();
-	}
+	};
+
+	return _inspect(aObject);
 }
 
 function inspectType(aObject)
@@ -639,4 +655,15 @@ function inspectType(aObject)
 	var objectType = Object.prototype.toString.apply(aObject);
 	return objectType.substring("[object ".length,
 								objectType.length - "]".length);
+}
+
+function p()
+{
+	var i;
+	for (i = 0; i < arguments.length; i++) {
+		var inspected = inspect(arguments[i]);
+		if (!/\n$/.test(inspected))
+			inspected += "\n";
+		dump(inspected);
+	}
 }
