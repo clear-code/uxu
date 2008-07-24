@@ -16,6 +16,7 @@ function constructor(aUtils)
 	this.storage = {};
 	this.listeners = [];
 	this.sandboxes = {};
+	this.emulateXMLHTTPRequest = true;
 }
 
 function load(aURI)
@@ -227,6 +228,9 @@ function GM_registerMenuCommand(aName, aFunction, aAccelKey, aAccelModifiers, aA
 function GM_xmlhttpRequest(aDetails)
 {
 	this.fireEvent({ type : 'GM_xmlhttpRequestCall', detail : aDetails });
+
+	if (!this.emulateXMLHTTPRequest)
+		return;
 
 	var uri = aDetails.url;
 	if (typeof uri != 'string')
