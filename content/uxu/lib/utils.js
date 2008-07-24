@@ -667,3 +667,28 @@ function p()
 		dump(inspected);
 	}
 }
+
+function equals(aObject1, aObject2)
+{
+	if (aObject1 === aObject2)
+		return true;
+
+	var isArray = function (aObject) {
+	    return aObject && aObject.__proto__ == Array.prototype;
+	}
+
+	if (isArray(aObject1) && isArray(aObject2)) {
+		var i;
+		var length = aObject1.length;
+
+		if (length != aObject2.length)
+			return false;
+		for (i = 0; i < length; i++) {
+			if (!equals(aObject1[i], aObject2[i]))
+				return false;
+		}
+		return true;
+	}
+
+	return false;
+}

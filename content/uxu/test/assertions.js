@@ -24,15 +24,19 @@ var utils = lib_module.require('package', 'utils');
 
 function equals(aExpected, aActual, aMessage)
 {
-	if (aActual != aExpected)
-		fail(bundle.getFormattedString('assert_equals', appendTypeString([aExpected, aActual])), aMessage);
+	if (!utils.equals(aExpected, aActual))
+		fail(bundle.getFormattedString('assert_equals',
+					       appendTypeString([aExpected, aActual])),
+		     aMessage);
 }
 function equal(aExpected, aActual, aMessage) { this.equals(aExpected, aActual, aMessage); }
 
 function notEquals(aExpected, aActual, aMessage)
 {
-	if (aActual == aExpected)
-		fail(bundle.getFormattedString('assert_not_equals', appendTypeString([aExpected, aActual])), aMessage);
+	if (utils.equals(aExpected, aActual))
+		fail(bundle.getFormattedString('assert_not_equals',
+					       appendTypeString([aExpected, aActual])),
+		     aMessage);
 }
 function notEqual(aExpected, aActual, aMessage) { this.notEquals(aExpected, aActual, aMessage); }
 

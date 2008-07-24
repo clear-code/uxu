@@ -41,14 +41,23 @@ assert.assertFailed = function(aAssertion, aArgs)
 	assert.isTrue(exception.message.indexOf(aArgs[aArgs.length-1]) > -1);
 }
 
-function test_assertions()
+function testEquals()
 {
 	var message = Math.random() * 65000;
 
 	assert.assertSucceed(assertionsModule.equals, [1, 1]);
 	assert.assertFailed(assertionsModule.equals, [0, 1, message]);
-	assert.assertSucceed(assertionsModule.equal, [1, 1]);
-	assert.assertFailed(assertionsModule.equal, [0, 1, message]);
+
+	assert.assertSucceed(assertionsModule.equals, [[1, "2", true],
+                                                       [1, "2", true]]);
+	assert.assertFailed(assertionsModule.equals, [[1, 2, false],
+                                                      [1, "2", false],
+                                                      message]);
+}
+
+function test_assertions()
+{
+	var message = Math.random() * 65000;
 
 	assert.assertSucceed(assertionsModule.notEquals, [0, 1]);
 	assert.assertFailed(assertionsModule.notEquals, [1, 1, message]);
