@@ -52,8 +52,8 @@ function constructor(aEnvironment, aURI, aBrowser)
 
 function initVariables()
 {
-	// __proto__‚Å’è‹`‚³‚ê‚½ƒQƒbƒ^‚Æ“¯–¼‚Ì•Ï”‚ğ’è‹`‚Å‚«‚È‚­‚È‚Á‚Ä‚µ‚Ü‚¤‚½‚ß
-	// ƒQƒbƒ^‚ÆƒZƒbƒ^‚ğ©“®İ’è‚·‚é‚æ‚¤‚É‚µ‚Ä–â‘è‚ğ‰ñ”ğ
+	// __proto__ã§å®šç¾©ã•ã‚ŒãŸã‚²ãƒƒã‚¿ã¨åŒåã®å¤‰æ•°ã‚’å®šç¾©ã§ããªããªã£ã¦ã—ã¾ã†ãŸã‚
+	// ã‚²ãƒƒã‚¿ã¨ã‚»ãƒƒã‚¿ã‚’è‡ªå‹•è¨­å®šã™ã‚‹ã‚ˆã†ã«ã—ã¦å•é¡Œã‚’å›é¿
 	var _this = this;
 	'gBrowser,contentWindow,content,contentDocument'.split(',')
 		.forEach(function(aProperty) {
@@ -175,7 +175,7 @@ function normalizeTestWindowOption(aOptions)
 	return aOptions;
 };
 
-// ƒeƒXƒg—p‚ÌFirefoxƒEƒBƒ“ƒhƒE‚ğæ“¾‚·‚é
+// ãƒ†ã‚¹ãƒˆç”¨ã®Firefoxã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’å–å¾—ã™ã‚‹
 function getTestWindow(aOptions)
 {
 	var info = this.normalizeTestWindowOption(aOptions);
@@ -193,7 +193,7 @@ function getTestWindow(aOptions)
 	return null;
 };
 
-// ƒeƒXƒg—p‚ÌFirefoxƒEƒBƒ“ƒhƒE‚ğŠJ‚«’¼‚·
+// ãƒ†ã‚¹ãƒˆç”¨ã®Firefoxã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’é–‹ãç›´ã™
 function reopenTestWindow(aOptions, callback)
 {
 	var win = this.getTestWindow(aOptions);
@@ -201,7 +201,7 @@ function reopenTestWindow(aOptions, callback)
 	return this.openTestWindow(aOptions, callback);
 };
 
-// ƒeƒXƒg—p‚ÌFirefoxƒEƒBƒ“ƒhƒE‚ğŠJ‚­
+// ãƒ†ã‚¹ãƒˆç”¨ã®Firefoxã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’é–‹ã
 function openTestWindow(aOptions, callback)
 {
 	var win = this.getTestWindow(aOptions);
@@ -224,7 +224,7 @@ function openTestWindow(aOptions, callback)
 	return win;
 };
 
-// ƒeƒXƒg—p‚ÌFirefoxƒEƒBƒ“ƒhƒE‚ğ•Â‚¶‚é
+// ãƒ†ã‚¹ãƒˆç”¨ã®Firefoxã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’é–‰ã˜ã‚‹
 function closeTestWindow(aOptions)
 {
 	var win = this.getTestWindow(aOptions);
@@ -257,7 +257,7 @@ var tearDownTestWindow = closeTestWindow;
 
 
 
-// ƒeƒXƒg—p‚ÌFirefoxƒEƒBƒ“ƒhƒE‚ÌŒ»İ‚Ìƒ^ƒu‚ÉURI‚ğ“Ç‚İ‚Ş
+// ãƒ†ã‚¹ãƒˆç”¨ã®Firefoxã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ç¾åœ¨ã®ã‚¿ãƒ–ã«URIã‚’èª­ã¿è¾¼ã‚€
 function loadURI(aURI, aOptions)
 {
 	if (!aURI) aURI = 'about:blank';
@@ -285,7 +285,7 @@ function loadURIInTestFrame(aURI)
 }
 
 
-// ƒeƒXƒg—p‚ÌFirefoxƒEƒBƒ“ƒhƒE‚ÅV‚µ‚¢ƒ^ƒu‚ğŠJ‚­
+// ãƒ†ã‚¹ãƒˆç”¨ã®Firefoxã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã§æ–°ã—ã„ã‚¿ãƒ–ã‚’é–‹ã
 function addTab(aURI, aOptions)
 {
 	if (!aURI) aURI = 'about:blank';
