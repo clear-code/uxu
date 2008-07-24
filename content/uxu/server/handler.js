@@ -98,26 +98,11 @@ function puts()
 		dump("QUITED: " + message);
 }
 
-Object.prototype.inspect = function() { return this.toString();};
-String.prototype.inspect = function() {
-	return '"' + this.toString().replace(/\"/g, '\\"') + '"';
-};
-Array.prototype.inspect = function() {
-	var elements = new Array();
-	var i;
-
-	for (i = 0; i < this.length; i++) {
-		elements.push(this[i].inspect());
-	}
-
-	return "[" + elements.join(", ") + "]";
-};
-
 function p()
 {
 	var i;
 	for (i = 0; i < arguments.length; i++) {
-		this.puts(arguments[i].inspect());
+		this.puts(utils.inspect(arguments[i]));
 	}
 }
 

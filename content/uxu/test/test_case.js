@@ -189,8 +189,6 @@ function setTests(aHash)
 			case 'tearDown':
 				this.registerTearDown(aHash[desc]);
 				break;
-			case 'inspect':
-				break;
 			default:
 				aHash[desc].description = desc;
 				this.registerTest(aHash[desc]);
