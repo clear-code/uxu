@@ -701,7 +701,7 @@ function equals(aObject1, aObject2)
 			aObject1.getUTCHours() === aObject2.getUTCHours() &&
 			aObject1.getUTCMinutes() === aObject2.getUTCMinutes() &&
 			aObject1.getUTCSeconds() === aObject2.getUTCSeconds() &&
-			aObject1.getUTCMillseconds() === aObject2.getUTCMillseconds();
+			aObject1.getUTCMilliseconds() === aObject2.getUTCMilliseconds();
 	}
 
 	return false;
