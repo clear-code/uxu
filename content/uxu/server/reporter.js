@@ -64,7 +64,7 @@ function onFinish()
 		var detail;
 		detail = aResult.result + ': ';
 		detail += aResult.testDescription + '\n';
-		detail += _this._formatError(aResult.exception) + '\n\n';
+		detail += _this._formatError(aResult.exception) + '\n';
 		_this.result += utils.UCS2ToUTF8(detail);
 	});
 
