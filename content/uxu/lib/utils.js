@@ -614,27 +614,27 @@ function inspect(aObject)
 		if (aTarget == undefined)
 			return 'undefined';
 
-		if (_inspect[aTarget])
-			return _inspect[aTarget];
+		if (inspected[aTarget])
+			return inspected[aTarget];
 
 		if (!aTarget.__proto__)
 			return aTarget.toString();
 
 		if (aTarget.__proto__.toString == Object.prototype.toString) {
-			_inspect[aTarget] = aTarget.toString();
+			inspected[aTarget] = aTarget.toString();
 			var values = [];
 			for (var name in aTarget) {
 				values.push(name + ": " + _inspect(aTarget[name]));
 			}
-			_inspect[aTarget] = "{" + values.join(", ") + "}";
-			return _inspect[aTarget];
+			inspected[aTarget] = "{" + values.join(", ") + "}";
+			return inspected[aTarget];
 		} else if (aTarget.__proto__ == Array.prototype) {
-			_inspect[aTarget] = aTarget.toString();
+			inspected[aTarget] = aTarget.toString();
 			var values = aTarget.map(function (aValue) {
 					return _inspect(aValue);
 				});
-			_inspect[aTarget] = "[" + values.join(", ") + "]";
-			return _inspect[aTarget];
+			inspected[aTarget] = "[" + values.join(", ") + "]";
+			return inspected[aTarget];
 		} else if (aTarget.__proto__ == String.prototype) {
 			return '"' + aTarget.replace(/\"/g, '\\"') + '"';
 		} else {
