@@ -39,6 +39,9 @@ function fireEvent(aType, aData)
 			else if ('handleEvent' in aListener &&
 					typeof aListener.handleEvent == 'function')
 				aListener.handleEvent(event);
+			else if ('on'+aType in aListener &&
+					typeof aListener['on'+aType] == 'function')
+				aListener['on'+aType](event);
 		}
 		catch(e) {
 		}

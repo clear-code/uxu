@@ -347,24 +347,6 @@ TestListener.prototype = {
 				return wTestCaseReport;
 			})();
 	},
-	handleEvent : function(aEvent)
-	{
-		switch (aEvent.type)
-		{
-			case 'Start':
-				this.onStart(aEvent);
-				break;
-
-			case 'TestFinish':
-				this.onTestFinish(aEvent);
-				break;
-
-			case 'Abort':
-			case 'Finish':
-				this.onFinish(aEvent);
-				break;
-		}
-	},
 	onStart : function(aEvent)
 	{
 		this.getTestCaseReport(aEvent.target.title);
@@ -442,6 +424,10 @@ TestListener.prototype = {
 	onFinish : function(aEvent)
 	{
 		aEvent.target.removeListener(this);
+	},
+	onAbort : function(aEvent)
+	{
+		this.onFinish(aEvent);
 	}
 };
  
