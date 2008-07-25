@@ -609,9 +609,9 @@ function inspect(aObject)
 	var inspected = {};
 	var _inspect = function (aTarget)
 	{
-		if (aTarget == null)
+		if (aTarget === null)
 			return 'null';
-		if (aTarget == undefined)
+		if (aTarget === undefined)
 			return 'undefined';
 
 		if (inspected[aTarget])
