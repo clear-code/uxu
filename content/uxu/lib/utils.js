@@ -669,6 +669,27 @@ function p()
 	}
 }
 
+function _equalObject(aCompare, aObject1, aObject2)
+{
+	if (!aCompare(aObject1.__proto__, aObject2.__proto__))
+		return false;
+
+	var name;
+	var names1 = [], names2 = [];
+	for (name in aObject1) {
+		names1.push(name);
+		if (!(name in aObject2))
+			return false;
+		if (!_equals(aCompare, aObject1[name], aObject2[name]))
+			return false;
+	}
+	for (name in aObject2) {
+		names2.push(name);
+	}
+	names1.sort();
+	names2.sort();
+	return _equals(aCompare, names1, names2);
+}
 
 function _equals(aCompare, aObject1, aObject2)
 {
@@ -697,6 +718,11 @@ function _equals(aCompare, aObject1, aObject2)
 
 	if (isDate(aObject1) && isDate(aObject2)) {
 		return _equals(aCompare, aObject1.getTime(), aObject2.getTime());
+	}
+
+	if (aObject1 && typeof aObject1 == "object" &&
+		aObject2 && typeof aObject2 == "object") {
+		return _equalObject(aCompare, aObject1, aObject2);
 	}
 
 	return false;

@@ -60,6 +60,22 @@ function testEquals()
                             [new Date(2008, 5, 27, 7, 23, 54),
                              new Date(2007, 5, 27, 7, 23, 54),
                              message]);
+
+	assert.assertSucceed(assertionsModule.equals,
+                             [{my: 1, name: "is", Nakano: "NO!"},
+                              {my: "1", name: "is", Nakano: "NO!"}]);
+	assert.assertFailed(assertionsModule.equals,
+                            [{my: 1, name: "is", Nakano: "NO!"},
+                             {my: 9, name: "is", Nakano: "NO!"},
+                             message]);
+	assert.assertFailed(assertionsModule.equals,
+                            [{my: 1, name: "is", Nakano: "NO!"},
+                             {my: 1, name: "is", Nakano: "NO!", additional: 0},
+                             message]);
+	assert.assertFailed(assertionsModule.equals,
+                            [{my: 1, name: "is", Nakano: "NO!", additional: 0},
+                             {my: 1, name: "is", Nakano: "NO!"},
+                             message]);
 }
 
 function testStrictlyEquals()
@@ -81,6 +97,18 @@ function testStrictlyEquals()
 	assert.assertFailed(assertionsModule.strictlyEquals,
                             [new Date(2008, 5, 27, 7, 23, 54),
                              new Date(2007, 5, 27, 7, 23, 54),
+                             message]);
+
+	assert.assertSucceed(assertionsModule.strictlyEquals,
+                             [{my: 1, name: "is", Nakano: "NO!"},
+                              {my: 1, name: "is", Nakano: "NO!"}]);
+	assert.assertFailed(assertionsModule.strictlyEquals,
+                            [{my: 1, name: "is", Nakano: "NO!"},
+                             {my: "1", name: "is", Nakano: "NO!"},
+                             message]);
+	assert.assertFailed(assertionsModule.strictlyEquals,
+                            [{my: 1, name: "is", Nakano: "NO!", additional: 0},
+                             {my: 1, name: "is", Nakano: "NO!"},
                              message]);
 }
 
