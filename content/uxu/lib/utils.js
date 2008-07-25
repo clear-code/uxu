@@ -670,7 +670,7 @@ function p()
 
 function equals(aObject1, aObject2)
 {
-	if (aObject1 === aObject2)
+	if (aObject1 == aObject2)
 		return true;
 
 	var isArray = function (aObject) {
@@ -694,14 +694,7 @@ function equals(aObject1, aObject2)
 	}
 
 	if (isDate(aObject1) && isDate(aObject2)) {
-		return aObject1.getUTCFullYear() === aObject2.getUTCFullYear() &&
-			aObject1.getUTCMonth() === aObject2.getUTCMonth() &&
-			aObject1.getUTCDate() === aObject2.getUTCDate() &&
-			aObject1.getUTCDay() === aObject2.getUTCDay() &&
-			aObject1.getUTCHours() === aObject2.getUTCHours() &&
-			aObject1.getUTCMinutes() === aObject2.getUTCMinutes() &&
-			aObject1.getUTCSeconds() === aObject2.getUTCSeconds() &&
-			aObject1.getUTCMilliseconds() === aObject2.getUTCMilliseconds();
+		return aObject1.getTime() == aObject2.getTime();
 	}
 
 	return false;
