@@ -669,9 +669,9 @@ function p()
 }
 
 
-function _equals(compare, aObject1, aObject2)
+function _equals(aCompare, aObject1, aObject2)
 {
-	if (compare(aObject1, aObject2))
+	if (aCompare(aObject1, aObject2))
 		return true;
 
 	var isArray = function (aObject) {
@@ -688,14 +688,14 @@ function _equals(compare, aObject1, aObject2)
 		if (length != aObject2.length)
 			return false;
 		for (i = 0; i < length; i++) {
-			if (!_equals(compare, aObject1[i], aObject2[i]))
+			if (!_equals(aCompare, aObject1[i], aObject2[i]))
 				return false;
 		}
 		return true;
 	}
 
 	if (isDate(aObject1) && isDate(aObject2)) {
-		return _equals(compare, aObject1.getTime(), aObject2.getTime());
+		return _equals(aCompare, aObject1.getTime(), aObject2.getTime());
 	}
 
 	return false;
