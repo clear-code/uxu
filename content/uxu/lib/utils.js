@@ -620,7 +620,7 @@ function inspect(aObject)
 		if (!aTarget.__proto__)
 			return aTarget.toString();
 
-		if (aTarget.__proto__.toString == Object.prototype.toString) {
+		if (aTarget.__proto__.toString == eval('Object.prototype.toString's, aTarget)) {
 			inspected[aTarget] = aTarget.toString();
 			var values = [];
 			for (var name in aTarget) {
@@ -628,14 +628,14 @@ function inspect(aObject)
 			}
 			inspected[aTarget] = "{" + values.join(", ") + "}";
 			return inspected[aTarget];
-		} else if (aTarget.__proto__ == Array.prototype) {
+		} else if (aTarget.__proto__ == eval('Array.prototype', aTarget)) {
 			inspected[aTarget] = aTarget.toString();
 			var values = aTarget.map(function (aValue) {
 					return _inspect(aValue);
 				});
 			inspected[aTarget] = "[" + values.join(", ") + "]";
 			return inspected[aTarget];
-		} else if (aTarget.__proto__ == String.prototype) {
+		} else if (aTarget.__proto__ == eval('String.prototype', aTarget)) {
 			return '"' + aTarget.replace(/\"/g, '\\"') + '"';
 		} else {
 			return aTarget.toString();
@@ -674,10 +674,10 @@ function equals(aObject1, aObject2)
 		return true;
 
 	var isArray = function (aObject) {
-	    return aObject && aObject.__proto__ == Array.prototype;
+	    return aObject && aObject.__proto__ == eval('Array.prototype, aObject);
 	}
 	var isDate = function (aObject) {
-	    return aObject && aObject.__proto__ == Date.prototype;
+	    return aObject && aObject.__proto__ == eval('Date.prototype', aObject);
 	}
 
 	if (isArray(aObject1) && isArray(aObject2)) {
