@@ -38,7 +38,7 @@ assert.assertFailed = function(aAssertion, aArgs)
 	catch(e) {
 		exception = e;
 	}
-	assert.isTrue(exception.message.indexOf(aArgs[aArgs.length-1]) > -1);
+	assert.notEquals(-1, exception.message.indexOf(aArgs[aArgs.length-1]));
 }
 
 function testEquals()

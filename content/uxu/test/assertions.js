@@ -45,8 +45,9 @@ function notEqual(aExpected, aActual, aMessage) { this.notEquals(aExpected, aAct
 function strictlyEquals(aExpected, aActual, aMessage)
 {
 	if (!utils.strictlyEquals(aExpected, aActual))
-		fail(bundle.getFormattedString('assert_strictly_equals',
-					       appendTypeString([aExpected, aActual])),
+		fail(bundle.getFormattedString('assert_strictly_equals_expected', [appendTypeString(aExpected)]),
+		     bundle.getFormattedString('assert_strictly_equals_actual', [appendTypeString(aActual)]),
+		     bundle.getString('assert_strictly_equals'),
 		     aMessage);
 }
 function strictlyEqual(aExpected, aActual, aMessage) { this.strictlyEquals(aExpected, aActual, aMessage); }
@@ -54,8 +55,9 @@ function strictlyEqual(aExpected, aActual, aMessage) { this.strictlyEquals(aExpe
 function notStrictlyEquals(aExpected, aActual, aMessage)
 {
 	if (utils.strictlyEquals(aExpected, aActual))
-		fail(bundle.getFormattedString('assert_not_strictly_equals',
-					       appendTypeString([aExpected, aActual])),
+		fail(bundle.getFormattedString('assert_not_strictly_equals_expected', [appendTypeString(aExpected)]),
+		     bundle.getFormattedString('assert_not_strictly_equals_actual', [appendTypeString(aActual)]),
+		     bundle.getString('assert_not_strictly_equals'),
 		     aMessage);
 }
 function notStrictlyEqual(aExpected, aActual, aMessage) { this.notStrictlyEquals(aExpected, aActual, aMessage); }
