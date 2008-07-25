@@ -190,21 +190,7 @@ function notPattern(aExpectedString, aActualPattern, aMessage)
 		fail(bundle.getFormattedString('assert_not_pattern', [aExpectedString, aActualPattern]), aMessage);
 }
 
-function arrayEquals(aExpected, aActual, aMessage)
-{
-	try {
-		equals(aExpected.length, aActual.length);
-		aExpected.forEach(function(aExpected, aIndex) {
-			equals(aExpected.valueOf(), aActual[aIndex].valueOf());
-		});
-	}
-	catch(e if e.name == 'AssertionFailed') {
-		fail(bundle.getFormattedString('assert_array_equals', [aExpected, aActual]), aMessage);
-	}
-	catch(e) {
-		throw e;
-	}
-}
+function arrayEquals(aExpected, aActual, aMessage) { this.equals(aExpected, aActual, aMessage); }
 function arrayEqual(aExpected, aActual, aMessage) { this.arrayEquals(aExpected, aActual, aMessage); }
 
 function fail()
