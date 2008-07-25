@@ -403,15 +403,18 @@ TestListener.prototype = {
 		_(wTestReport, 'description').setAttribute('tooltiptext', report.testDescription);
 		_(wTestReport).setAttribute('report-type', report.result);
 		if (report.exception) {
-			var message = report.exception.message.replace(/^\s+/, '');
-			message = message.split(/[\n\r]+<(?:EXPECTED|ACTUAL)>:/);
-			if (message.length > 1) {
-				_(wTestReport, 'actual-value').textContent = message.pop();
-				_(wTestReport, 'expected-value').textContent = message.pop();
+			if (report.exception.expected) {
+				_(wTestReport, 'expected-value').textContent = report.exception.expected;
+				_(wTestReport, 'expected-row').removeAttribute('hidden');
+			}
+			if (report.exception.actual) {
+				_(wTestReport, 'actual-value').textContent = report.exception.actual;
+				_(wTestReport, 'actual-row').removeAttribute('hidden');
+			}
+			if (report.exception.expected || report.exception.actual) {
 				_(wTestReport, 'vs').removeAttribute('hidden');
 			}
-			message = message.join('\n');
-			_(wTestReport, 'additionalInfo').textContent = message;
+			_(wTestReport, 'additionalInfo').textContent = report.exception.message.replace(/^\s+/, '');
 			if (report.exception.stack) {
 				displayStackTrace(report.exception, _(wTestReport, 'stack-trace'));
 				_(wTestReport, 'stack-trace').hidden = false;

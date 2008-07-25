@@ -144,12 +144,12 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 						<column pack="start" flex="1"/>
 					</columns>
 					<rows>
-						<row>
+						<row role="expected-row" hidden="true">
 							<vbox><label>&mozunit.expected.label;</label></vbox>
 							<vbox><label>&mozunit.expected.separator;</label></vbox>
 							<vbox><description role="expected-value" flex="1"/></vbox>
 						</row>
-						<row>
+						<row role="actual-row" hidden="true">
 							<vbox><label>&mozunit.actual.label;</label></vbox>
 							<vbox><label>&mozunit.actual.separator;</label></vbox>
 							<vbox><description role="actual-value" flex="1"/></vbox>
