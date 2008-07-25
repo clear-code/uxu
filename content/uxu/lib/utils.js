@@ -55,7 +55,7 @@ function getFileFromURLSpec(aURI)
 		aURI = ChromeRegistry.convertChromeURL(makeURIFromSpec(aURI)).spec;
 	}
 
-	if (aURI.indexOf('file://') != 0) return '';
+	if (aURI.indexOf('file://') != 0) return null;
 
 	var fileHandler = IOService.getProtocolHandler('file')
 						.QueryInterface(Ci.nsIFileProtocolHandler);
