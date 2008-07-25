@@ -50,14 +50,35 @@ function testEquals()
 
 	assert.assertSucceed(assertionsModule.equals, [[1, "2", true],
                                                        [1, "2", true]]);
-	assert.assertFailed(assertionsModule.equals, [[1, 2, false],
-                                                      [1, "2", false],
-                                                      message]);
+	assert.assertSucceed(assertionsModule.equals, [[1, 2, false],
+                                                       [1, "2", false]]);
 
 	assert.assertSucceed(assertionsModule.equals,
                              [new Date(2007, 5, 27, 7, 23, 54),
                               new Date(2007, 5, 27, 7, 23, 54)]);
 	assert.assertFailed(assertionsModule.equals,
+                            [new Date(2008, 5, 27, 7, 23, 54),
+                             new Date(2007, 5, 27, 7, 23, 54),
+                             message]);
+}
+
+function testStrictlyEquals()
+{
+	var message = Math.random() * 65000;
+
+	assert.assertSucceed(assertionsModule.strictlyEquals, [1, 1]);
+	assert.assertFailed(assertionsModule.strictlyEquals, [0, 1, message]);
+
+	assert.assertSucceed(assertionsModule.strictlyEquals, [[1, "2", true],
+                                                               [1, "2", true]]);
+	assert.assertFailed(assertionsModule.strictlyEquals, [[1, 2, false],
+                                                              [1, "2", false],
+                                                              message]);
+
+	assert.assertSucceed(assertionsModule.strictlyEquals,
+                             [new Date(2007, 5, 27, 7, 23, 54),
+                              new Date(2007, 5, 27, 7, 23, 54)]);
+	assert.assertFailed(assertionsModule.strictlyEquals,
                             [new Date(2008, 5, 27, 7, 23, 54),
                              new Date(2007, 5, 27, 7, 23, 54),
                              message]);

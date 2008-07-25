@@ -668,9 +668,10 @@ function p()
 	}
 }
 
-function equals(aObject1, aObject2)
+
+function _equals(compare, aObject1, aObject2)
 {
-	if (aObject1 == aObject2)
+	if (compare(aObject1, aObject2))
 		return true;
 
 	var isArray = function (aObject) {
@@ -687,15 +688,27 @@ function equals(aObject1, aObject2)
 		if (length != aObject2.length)
 			return false;
 		for (i = 0; i < length; i++) {
-			if (!equals(aObject1[i], aObject2[i]))
+			if (!_equals(compare, aObject1[i], aObject2[i]))
 				return false;
 		}
 		return true;
 	}
 
 	if (isDate(aObject1) && isDate(aObject2)) {
-		return aObject1.getTime() == aObject2.getTime();
+		return _equals(compare, aObject1.getTime(), aObject2.getTime());
 	}
 
 	return false;
+}
+
+function equals(aObject1, aObject2)
+{
+	return _equals(function (aObj1, aObj2) {return aObj1 == aObj2},
+				   aObject1, aObject2);
+}
+
+function strictlyEquals(aObject1, aObject2)
+{
+	return _equals(function (aObj1, aObj2) {return aObj1 === aObj2},
+				   aObject1, aObject2);
 }

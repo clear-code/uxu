@@ -42,6 +42,24 @@ function notEquals(aExpected, aActual, aMessage)
 }
 function notEqual(aExpected, aActual, aMessage) { this.notEquals(aExpected, aActual, aMessage); }
 
+function strictlyEquals(aExpected, aActual, aMessage)
+{
+	if (!utils.strictlyEquals(aExpected, aActual))
+		fail(bundle.getFormattedString('assert_strictly_equals',
+					       appendTypeString([aExpected, aActual])),
+		     aMessage);
+}
+function strictlyEqual(aExpected, aActual, aMessage) { this.strictlyEquals(aExpected, aActual, aMessage); }
+
+function notStrictlyEquals(aExpected, aActual, aMessage)
+{
+	if (utils.strictlyEquals(aExpected, aActual))
+		fail(bundle.getFormattedString('assert_not_strictly_equals',
+					       appendTypeString([aExpected, aActual])),
+		     aMessage);
+}
+function notStrictlyEqual(aExpected, aActual, aMessage) { this.notStrictlyEquals(aExpected, aActual, aMessage); }
+
 function isTrue(aActual, aMessage)
 {
 	if (!aActual)
