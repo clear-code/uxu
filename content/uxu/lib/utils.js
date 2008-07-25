@@ -635,7 +635,8 @@ function inspect(aObject)
 				});
 			inspected[aTarget] = "[" + values.join(", ") + "]";
 			return inspected[aTarget];
-		} else if (aTarget instanceof eval('String', aTarget)) {
+		} else if (typeof aTarget == 'string' ||
+		           aTarget instanceof eval('String', aTarget)) {
 			return '"' + aTarget.replace(/\"/g, '\\"') + '"';
 		} else {
 			return aTarget.toString();

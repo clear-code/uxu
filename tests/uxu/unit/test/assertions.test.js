@@ -259,14 +259,16 @@ function test_fail()
 {
 	var exception = null;
 	try {
-		assertionsModule.fail(0, 1, 2);
+		assertionsModule.fail(0, 1, 2, 3, 4);
 	}
 	catch(e) {
 		exception = e;
 	}
 	assert.isNotNull(exception);
 	assert.equals('AssertionFailed', exception.name);
-	assert.equals('2\n1\n0', exception.message);
+	assert.equals(0, exception.expected);
+	assert.equals(1, exception.actual);
+	assert.equals('4\n3\n2', exception.message);
 }
 
 function test_appendTypeString()
@@ -274,6 +276,7 @@ function test_appendTypeString()
 	assert.equals('true (boolean)', assertionsModule.appendTypeString(true));
 	assert.equals('0 (number)',     assertionsModule.appendTypeString(0));
 	assert.equals('"a" (string)',   assertionsModule.appendTypeString('a'));
+	assert.equals('"a" (String)',   assertionsModule.appendTypeString(new String('a')));
 	assert.equals('{} (Object)',    assertionsModule.appendTypeString({}));
 	assert.equals('[] (Array)',     assertionsModule.appendTypeString([]));
 	assert.equals('null',           assertionsModule.appendTypeString(null));
