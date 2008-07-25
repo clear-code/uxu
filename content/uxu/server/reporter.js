@@ -59,12 +59,29 @@ function onFinish()
 {
 	var _this = this;
 
-	_this.result += "\n";
-	this.badResults.forEach(function(aResult) {
-		var detail;
-		detail = aResult.result + ': ';
-		detail += aResult.testDescription + '\n';
-		detail += _this._formatError(aResult.exception) + '\n';
+	_this.result += "\n\n";
+	this.badResults.forEach(function(aResult, aIndex) {
+		var detail, exception;
+		detail = [aResult.result, aResult.testDescription].join(': ') + '\n';
+
+		exception = aResult.exception;
+		if (aResult.result == "failure") {
+			if (exception.message) {
+				detail += exception.message.replace(/(^[\s\n]+|[\s\n]+$)/, '');
+				detail += "\n";
+			}
+			if (exception.expected) {
+				detail += "expected: " + utils.inspect(exception.expected);
+				detail += "\n";
+			}
+			if (exception.actual) {
+				detail += "  actual: " + utils.inspect(exception.actual);
+				detail += "\n";
+			}
+			detail += _this._formatStackTrace(exception);
+		} else {
+			detail += _this._formatError(exception);
+		}
 		_this.result += utils.UCS2ToUTF8(detail);
 	});
 
@@ -111,7 +128,12 @@ function onError(aError)
 
 function _formatError(aError)
 {
-	var result = aError.toString() + "\n";
+	return aError.toString() + "\n" + this._formatStackTrace(aError);
+}
+
+function _formatStackTrace(aError)
+{
+	var result = "";
 	var options = {
 	  onlyFile: true,
 	  onlyExternal: true,
@@ -134,3 +156,4 @@ function _formatError(aError)
 
 	return result;
 }
+
