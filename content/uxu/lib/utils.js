@@ -678,7 +678,7 @@ function _equals(aCompare, aObject1, aObject2)
 	    return aObject && aObject instanceof eval('Array', aObject);
 	}
 	var isDate = function (aObject) {
-	    return aObject && aObject isntanceof eval('Date', aObject);
+	    return aObject && aObject instanceof eval('Date', aObject);
 	}
 
 	if (isArray(aObject1) && isArray(aObject2)) {
