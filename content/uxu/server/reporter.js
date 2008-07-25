@@ -71,11 +71,11 @@ function onFinish()
 				detail += "\n";
 			}
 			if (exception.expected) {
-				detail += "expected: " + utils.inspect(exception.expected);
+				detail += " expected: " + utils.inspect(exception.expected);
 				detail += "\n";
 			}
 			if (exception.actual) {
-				detail += "  actual: " + utils.inspect(exception.actual);
+				detail += "   actual: " + utils.inspect(exception.actual);
 				detail += "\n";
 			}
 			detail += _this._formatStackTrace(exception);
