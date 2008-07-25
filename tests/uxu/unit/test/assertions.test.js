@@ -76,6 +76,15 @@ function testEquals()
                             [{my: 1, name: "is", Nakano: "NO!", additional: 0},
                              {my: 1, name: "is", Nakano: "NO!"},
                              message]);
+
+	var node = document.createElement('box');
+	assert.assertSucceed(assertionsModule.equals,
+                             [node,
+                              node]);
+	assert.assertFailed(assertionsModule.equals,
+                             [node,
+                              document.createElement('box'),
+                              message]);
 }
 
 function testStrictlyEquals()

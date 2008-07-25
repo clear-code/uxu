@@ -720,8 +720,8 @@ function _equals(aCompare, aObject1, aObject2)
 		return _equals(aCompare, aObject1.getTime(), aObject2.getTime());
 	}
 
-	if (aObject1 && typeof aObject1 == "object" &&
-		aObject2 && typeof aObject2 == "object") {
+	if (aObject1 && typeof aObject1 == "object" && aObject1 == '[object Object]' &&
+		aObject2 && typeof aObject2 == "object" && aObject2 == '[object Object]') {
 		return _equalObject(aCompare, aObject1, aObject2);
 	}
 
