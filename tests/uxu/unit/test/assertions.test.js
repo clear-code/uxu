@@ -271,26 +271,12 @@ function test_fail()
 
 function test_appendTypeString()
 {
-	assert.arrayEquals(
-		[
-			'true (boolean)',
-			'0 (number)',
-			'"a" (string)',
-			'{} (Object)',
-			'[] (Array)',
-			'null',
-			'undefined',
-			'function () {\n} (function)'
-		],
-		assertionsModule.appendTypeString([
-			true,
-			0,
-			'a',
-			{},
-			[],
-			null,
-			void(0),
-			(function() {})
-		])
-	);
+	assert.equals('true (boolean)', assertionsModule.appendTypeString(true));
+	assert.equals('0 (number)',     assertionsModule.appendTypeString(0));
+	assert.equals('"a" (string)',   assertionsModule.appendTypeString('a'));
+	assert.equals('{} (Object)',    assertionsModule.appendTypeString({}));
+	assert.equals('[] (Array)',     assertionsModule.appendTypeString([]));
+	assert.equals('null',           assertionsModule.appendTypeString(null));
+	assert.equals('undefined',      assertionsModule.appendTypeString(void(0)));
+	assert.equals('function () {\n} (function)', assertionsModule.appendTypeString(function() {}));
 }
