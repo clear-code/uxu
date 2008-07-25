@@ -70,14 +70,10 @@ function onFinish()
 				detail += exception.message.replace(/(^[\s\n]+|[\s\n]+$)/, '');
 				detail += "\n";
 			}
-			if (exception.expected) {
-				detail += " expected: " + utils.inspect(exception.expected);
-				detail += "\n";
-			}
-			if (exception.actual) {
-				detail += "   actual: " + utils.inspect(exception.actual);
-				detail += "\n";
-			}
+			if (exception.expected)
+				detail += " expected: " + exception.expected + "\n";
+			if (exception.actual)
+				detail += "   actual: " + exception.actual + "\n";
 			detail += _this._formatStackTrace(exception);
 		} else {
 			detail += _this._formatError(exception);
