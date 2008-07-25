@@ -45,7 +45,7 @@ function notEqual(aExpected, aActual, aMessage) { this.notEquals(aExpected, aAct
 function isTrue(aActual, aMessage)
 {
 	if (!aActual)
-		fail(bundle.getString('assert_is_true_expected'),
+		fail(null,
 		     bundle.getFormattedString('assert_is_true_actual', [appendTypeString(aActual)]),
 		     bundle.getString('assert_is_true'), aMessage);
 }
@@ -53,7 +53,7 @@ function isTrue(aActual, aMessage)
 function isFalse(aActual, aMessage)
 {
 	if (aActual)
-		fail(bundle.getString('assert_is_false_expected'),
+		fail(null,
 		     bundle.getFormattedString('assert_is_false_actual', [appendTypeString(aActual)]),
 		     bundle.getString('assert_is_false'), aMessage);
 }
@@ -61,7 +61,7 @@ function isFalse(aActual, aMessage)
 function isBoolean(aActual, aMessage)
 {
 	if (typeof aActual != 'boolean')
-		fail(bundle.getString('assert_is_boolean_expected'),
+		fail(null,
 		     bundle.getFormattedString('assert_is_boolean_actual', [appendTypeString(aActual)]),
 		     bundle.getString('assert_is_boolean'), aMessage);
 }
@@ -69,7 +69,7 @@ function isBoolean(aActual, aMessage)
 function isNotBoolean(aActual, aMessage)
 {
 	if (typeof aActual == 'boolean')
-		fail(bundle.getString('assert_is_not_boolean_expected'),
+		fail(null,
 		     bundle.getFormattedString('assert_is_not_boolean_actual', [appendTypeString(aActual)]),
 		     bundle.getString('assert_is_not_boolean'), aMessage);
 }
@@ -77,7 +77,7 @@ function isNotBoolean(aActual, aMessage)
 function isString(aActual, aMessage)
 {
 	if (typeof aActual != 'string')
-		fail(bundle.getString('assert_is_string_expected'),
+		fail(null,
 		     bundle.getFormattedString('assert_is_string_actual', [appendTypeString(aActual)]),
 		     bundle.getString('assert_is_string'), aMessage);
 }
@@ -85,7 +85,7 @@ function isString(aActual, aMessage)
 function isNotString(aActual, aMessage)
 {
 	if (typeof aActual == 'string')
-		fail(bundle.getString('assert_is_not_string_expected'),
+		fail(null,
 		     bundle.getFormattedString('assert_is_not_string_actual', [appendTypeString(aActual)]),
 		     bundle.getString('assert_is_not_string'), aMessage);
 }
@@ -93,7 +93,7 @@ function isNotString(aActual, aMessage)
 function isNumber(aActual, aMessage)
 {
 	if (typeof aActual != 'number')
-		fail(bundle.getString('assert_is_number_expected'),
+		fail(null,
 		     bundle.getFormattedString('assert_is_number_actual', [appendTypeString(aActual)]),
 		     bundle.getString('assert_is_number'), aMessage);
 }
@@ -101,7 +101,7 @@ function isNumber(aActual, aMessage)
 function isNotNumber(aActual, aMessage)
 {
 	if (typeof aActual == 'number')
-		fail(bundle.getString('assert_is_not_number_expected'),
+		fail(null,
 		     bundle.getFormattedString('assert_is_not_number_actual', [appendTypeString(aActual)]),
 		     bundle.getString('assert_is_not_number'), aMessage);
 }
@@ -109,7 +109,7 @@ function isNotNumber(aActual, aMessage)
 function isFunction(aActual, aMessage)
 {
 	if (typeof aActual != 'function')
-		fail(bundle.getString('assert_is_function_expected'),
+		fail(null,
 		     bundle.getFormattedString('assert_is_function_actual', [appendTypeString(aActual)]),
 		     bundle.getString('assert_is_function'), aMessage);
 }
@@ -117,7 +117,7 @@ function isFunction(aActual, aMessage)
 function isNotFunction(aActual, aMessage)
 {
 	if (typeof aActual == 'function')
-		fail(bundle.getString('assert_is_not_function_expected'),
+		fail(null,
 		     bundle.getFormattedString('assert_is_not_function_actual', [appendTypeString(aActual)]),
 		     bundle.getString('assert_is_not_function'), aMessage);
 }
@@ -125,7 +125,7 @@ function isNotFunction(aActual, aMessage)
 function isDefined(aActual, aMessage)
 {
 	if (aActual === undefined)
-		fail(bundle.getString('assert_is_defined_expected'),
+		fail(null,
 		     bundle.getFormattedString('assert_is_defined_actual', [appendTypeString(aActual)]),
 		     bundle.getString('assert_is_defined'), aMessage);
 }
@@ -133,7 +133,7 @@ function isDefined(aActual, aMessage)
 function isUndefined(aActual, aMessage)
 {
 	if (aActual !== undefined)
-		fail(bundle.getString('assert_is_undefined_expected'),
+		fail(null,
 		     bundle.getFormattedString('assert_is_undefined_actual', [appendTypeString(aActual)]),
 		     bundle.getString('assert_is_undefined'), aMessage);
 }
@@ -141,7 +141,7 @@ function isUndefined(aActual, aMessage)
 function isNull(aActual, aMessage)
 {
 	if (aActual !== null)
-		fail(bundle.getString('assert_is_null_expected'),
+		fail(null,
 		     bundle.getFormattedString('assert_is_null_actual', [appendTypeString(aActual)]),
 		     bundle.getString('assert_is_null'), aMessage);
 }
@@ -149,7 +149,7 @@ function isNull(aActual, aMessage)
 function isNotNull(aActual, aMessage)
 {
 	if (aActual === null)
-		fail(bundle.getString('assert_is_not_null_expected'),
+		fail(null,
 		     bundle.getFormattedString('assert_is_not_null_actual', [appendTypeString(aActual)]),
 		     bundle.getString('assert_is_not_null'), aMessage);
 }
@@ -168,7 +168,7 @@ function raises(aExpectedException, aFunction, aContext, aMessage)
 	}
 	if (!raised)
 		fail(bundle.getFormattedString('assert_raises_expected', [aExpectedException]),
-		     bundle.getString('assert_raises_actual'),
+		     null,
 		     bundle.getString('assert_raises'), aMessage);
 }
 function raise(aExpectedException, aFunction, aContext, aMessage) { this.raises(aExpectedException, aFunction, aContext, aMessage); }
