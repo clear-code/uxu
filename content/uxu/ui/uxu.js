@@ -29,7 +29,11 @@ function Shutdown() {
 
 var testRunnerlistener = {
     onStart: function() {
-		var node = document.createElement('label');
+		var node;
+
+		this._clearLog();
+
+		node = document.createElement('label');
 		node.setAttribute('style', 'border: 1px solid; padding: 0.5em;');
 		node.setAttribute('value', 'New testcase starts');
 		gLog.appendChild(node);
@@ -56,5 +60,13 @@ var testRunnerlistener = {
 		node.setAttribute('style', 'border: 1px solid; padding: 0.5em; '+color+';');
 		node.setAttribute('value', aData.description);
 		gLog.appendChild(node);
+	},
+
+	_clearLog: function() {
+		var node;
+
+		while ((node = gLog.firstChild)) {
+			gLog.removeChild(node);
+		}
 	}
 };
