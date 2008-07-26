@@ -61,8 +61,10 @@ function onFinish()
 
 	_this.result += "\n\n";
 	this.badResults.forEach(function(aResult, aIndex) {
-		var detail, exception;
-		detail = [aResult.result, aResult.testDescription].join(': ') + '\n';
+		var formattedIndex, detail, exception;
+		formattedIndex = _this._formatIndex(aIndex + 1, _this.badResults.length);
+		detail = [" " + formattedIndex + ") " + aResult.result,
+				  aResult.testDescription].join(': ') + '\n';
 
 		exception = aResult.exception;
 		if (aResult.result == "failure") {
@@ -122,6 +124,28 @@ function onError(aError)
 	dump(this._formatError(aError));
 }
 
+function _log10(aNumber)
+{
+	return Math.log(aNumber) / Math.log(10);
+}
+
+function _formatIndex(aIndex, aMax)
+{
+	var result = "";
+	var width, maxWidth;
+	var i;
+
+	width = Math.floor(this._log10(aIndex)) + 1;
+	maxWidth = Math.floor(this._log10(aMax)) + 1;
+
+	for (i = maxWidth - width; i > 0; i--) {
+		result += " ";
+	}
+	result += aIndex;
+
+	return result;
+}
+
 function _formatError(aError)
 {
 	return aError.toString() + "\n" + this._formatStackTrace(aError);
@@ -152,4 +176,3 @@ function _formatStackTrace(aError)
 
 	return result;
 }
-
