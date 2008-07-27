@@ -220,38 +220,64 @@ function formatStackTrace(aException, aOptions)
 	}
 
 	var trace = '';
-	if (aException.stack) {
-		aException.stack.split('\n').forEach(function(aLine) {
-			if (!aLine.length) return;
+	var stackLines = [];
+	var exceptionPosition;
 
-			aLine = String(aLine).replace(/\\n/g, '\n');
+	exceptionPosition = "@" + aException.fileName + ":" + aException.lineNumber;
+	if (exceptionPosition.match(subScriptRegExp)) {
+		var i;
+		var lines = (aException.stack || "").split("\n");
 
-			if ('maxLength' in aOptions &&
-				aLine.length > aOptions.maxLength)
-				aLine = aLine.substr(0, aOptions.maxLength) + '[...]\n';
+		for (i = 0; i < lines.length; i++) {
+			var line = lines[i];
+			if (line.match(/^eval\("(.*)"\)@:0$/)) {
+				var source, errorLine;
 
-			if (aLine.match(subScriptRegExp)) {
-				var lineNum = RegExp.$3;
-				if (RegExp.$1) {
-					var includeSource = decodeURIComponent(RegExp.$1);
-					aLine = aLine.replace(subScriptRegExp, '@'+includeSource+':'+lineNum);
-				}
-				else if (RegExp.$2) {
-					if (aOptions.onlyFile) return;
-					var code = decodeURIComponent(RegExp.$2);
-					aLine = '(eval):' +
-					        aLine.replace(subScriptRegExp, '') +
-					        lineNum + ':' + code;
-				}
+				source = eval('"\\\"' + RegExp.$1 + '\\\""');
+				errorLine = source.split("\n")[aException.lineNumber - 1];
+				exceptionPosition = errorLine + exceptionPosition;
+				break;
 			}
-			if (
-				(aOptions.onlyExternal && comesFromFramework(aLine)) ||
-				(aOptions.onlyTraceLine && !lineRegExp.test(aLine))
-				)
-				return;
-			trace += aLine + '\n';
-		});
+		}
+
+		stackLines.push(exceptionPosition);
 	}
+
+	if (aException.stack) {
+		stackLines = stackLines.concat(aException.stack.split('\n'));
+	}
+
+	stackLines.forEach(function(aLine) {
+		if (!aLine.length) return;
+
+		aLine = String(aLine).replace(/\\n/g, '\n');
+
+		if ('maxLength' in aOptions &&
+			aLine.length > aOptions.maxLength)
+			aLine = aLine.substr(0, aOptions.maxLength) + '[...]\n';
+
+		if (aLine.match(subScriptRegExp)) {
+			var lineNum = RegExp.$3;
+			if (RegExp.$1) {
+				var includeSource = decodeURIComponent(RegExp.$1);
+				aLine = aLine.replace(subScriptRegExp, '@'+includeSource+':'+lineNum);
+			}
+			else if (RegExp.$2) {
+				if (aOptions.onlyFile) return;
+				var code = decodeURIComponent(RegExp.$2);
+				aLine = '(eval):' +
+					aLine.replace(subScriptRegExp, '') +
+					lineNum + ':' + code;
+			}
+		}
+		if (
+			(aOptions.onlyExternal && comesFromFramework(aLine)) ||
+			(aOptions.onlyTraceLine && !lineRegExp.test(aLine))
+			)
+			return;
+		trace += aLine + '\n';
+	});
+
 	return trace;
 }
 
