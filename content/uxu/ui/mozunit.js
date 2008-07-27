@@ -589,7 +589,7 @@ function run(aAll)
 	 
 function runByPref() 
 {
-	run(utils.getPref('extensions.uxu.mozunit.runMode') == 1 ? true : false );
+	run(utils.getPref('extensions.uxu.mozunit.runMode') == 1);
 }
   
 function runFailed() 
