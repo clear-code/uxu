@@ -255,6 +255,21 @@ function notPattern(aExpectedString, aActualPattern, aMessage)
 function arrayEquals(aExpected, aActual, aMessage) { this.equals(aExpected, aActual, aMessage); }
 function arrayEqual(aExpected, aActual, aMessage) { this.arrayEquals(aExpected, aActual, aMessage); }
 
+function inDelta(aExpected, aActual, aDelta, aMessage)
+{
+	if (aExpected - aDelta < aActual && aActual < aExpected + aDelta)
+		return;
+
+	fail(bundle.getFormattedString('assert_in_delta_expected',
+								   [appendTypeString(aExpected),
+									appendTypeString(aActual),
+									appendTypeString(aDelta)]),
+		 bundle.getFormattedString('assert_in_delta_actual',
+								   [appendTypeString(aActual)]),
+		 bundle.getString('assert_in_delta'),
+		 aMessage);
+}
+
 function fail()
 {
 	var args = Array.slice(arguments);

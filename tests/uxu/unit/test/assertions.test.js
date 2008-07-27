@@ -1,3 +1,5 @@
+// -*- indent-tabs-mode: t; tab-width: 4 -*-
+
 var assertionsModule;
 
 function setUp()
@@ -290,6 +292,17 @@ function test_assertions()
 	assert.assertFailed(assertionsModule.arrayEqual,
 		[[0, 1, 2], [3, 4, 5], message]
 	);
+}
+
+function testInDelta()
+{
+	var message = Math.random() * 65000;
+
+	assert.assertSucceed(assertionsModule.inDelta, [1.0, 1.1, 0.11]);
+	assert.assertFailed(assertionsModule.inDelta, [1.0, 1.1, 0.1, message]);
+
+	assert.assertSucceed(assertionsModule.inDelta, [1.0, 0.9, 0.11]);
+	assert.assertFailed(assertionsModule.inDelta, [1.0, 0.9, 0.1, message]);
 }
 
 function test_fail()
