@@ -1,4 +1,4 @@
-// -*- indent-tabs-mode: t -*-
+// -*- indent-tabs-mode: t; tab-width: 4 -*-
 // Copyright (C) 2006 by Massimiliano Mirra
 //
 // This program is free software; you can redistribute it and/or modify
