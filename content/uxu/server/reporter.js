@@ -1,4 +1,6 @@
-// -*- indent-tabs-mode: t; tab-width: 4 -*-const Cc = Components.classes;
+// -*- indent-tabs-mode: t; tab-width: 4 -*-
+
+const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
@@ -6,11 +8,14 @@ var utils = lib_module.require('package', 'utils');
 var color = lib_module.require('package', 'color');
 const Color = color.Color;
 
+var statusOrder = ["success", "failure", "error"];
+
 function constructor(aOptions)
 {
 	this.nTests     = 0;
 	this.finished   = false;
 	this.result     = '';
+	this.resultStatus = "success";
 	this.badResults = [];
 
 	if (!aOptions)
@@ -67,14 +72,13 @@ function onFinish()
 
 	_this.result += "\n\n";
 	this.badResults.forEach(function(aResult, aIndex) {
-		var formattedIndex, color, summary, detail, exception;
+		var formattedIndex, summary, detail, exception;
 
 		formattedIndex = _this._formatIndex(aIndex + 1, _this.badResults.length);
 		formattedIndex = " " + formattedIndex + ") ";
-		color = _this[aResult.result + "Color"];
 		detail = _this._colorize([aResult.result,
 								  aResult.testDescription].join(': '),
-								 color);
+								 _this._statusColor(aResult.result));
 		detail = formattedIndex + detail + '\n';
 
 		exception = aResult.exception;
@@ -94,12 +98,16 @@ function onFinish()
 		_this.result += utils.UCS2ToUTF8(detail);
 	});
 
-	var successRate;
+	var resultColor, successRate;
+
+	resultColor = this._statusColor(this.resultStatus);
+
 	if (this.nTests > 0)
 		successRate = (this.nTests - this.badResults.length) / this.nTests * 100;
 	else
 		successRate = 0;
-	this.result += successRate + '% passed.\n';
+	this.result += _this._colorize(successRate + '% passed.', resultColor);
+	this.result += '\n';
 
 	this.finished = true;
 }
@@ -123,6 +131,8 @@ function onTestFinish(aReport)
 			this.result += '?';
 			break;
 	}
+	if (this._isMoreImportantStatus(aReport.result))
+		this.resultStatus = aReport.result;
 
 	this.nTests++;
 	if (aReport.exception)
@@ -207,4 +217,14 @@ function _colorize(aText, aColor)
 		return aText;
 
 	return aColor.escapeSequence() + aText + this.resetColor.escapeSequence();
+}
+
+function _isMoreImportantStatus(aStatus)
+{
+	return statusOrder.indexOf(aStatus) > statusOrder.indexOf(this.resultStatus);
+}
+
+function _statusColor(aStatus)
+{
+	return this[aStatus + "Color"];
 }
