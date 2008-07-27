@@ -150,10 +150,10 @@ function _reportSummary()
 
 	resultColor = this._statusColor(this.resultStatus);
 
-	summary = [this.nTests + " tests",
-			   // this.nAssertions + " assertions",
-			   this.nFailures + " failures",
-			   this.nErrors + " errors"].join(', ');
+	summary = [this.nTests + " test(s)",
+			   // this.nAssertions + " assertion(s)",
+			   this.nFailures + " failure(s)",
+			   this.nErrors + " error(s)"].join(', ');
 	this.result += this._colorize(summary, resultColor);
 	this.result += "\n";
 
