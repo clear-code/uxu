@@ -221,26 +221,30 @@ function formatStackTrace(aException, aOptions)
 
 	var trace = '';
 	var stackLines = [];
-	var exceptionPosition;
 
-	exceptionPosition = "@" + aException.fileName + ":" + aException.lineNumber;
-	if (exceptionPosition.match(subScriptRegExp)) {
-		var i;
-		var lines = (aException.stack || "").split("\n");
+	if (aException.name == "SyntaxError") {
+		var exceptionPosition;
+		exceptionPosition = "@" + aException.fileName;
+		exceptionPosition += ":" + aException.lineNumber;
 
-		for (i = 0; i < lines.length; i++) {
-			var line = lines[i];
-			if (line.match(/^eval\("(.*)"\)@:0$/)) {
-				var source, errorLine;
+		if (exceptionPosition.match(subScriptRegExp)) {
+			var i;
+			var lines = (aException.stack || "").split("\n");
 
-				source = eval('"\\\"' + RegExp.$1 + '\\\""');
-				errorLine = source.split("\n")[aException.lineNumber - 1];
-				exceptionPosition = errorLine + exceptionPosition;
-				break;
+			for (i = 0; i < lines.length; i++) {
+				var line = lines[i];
+				if (line.match(/^eval\("(.*)"\)@:0$/)) {
+					var source, errorLine;
+
+					source = eval('"\\\"' + RegExp.$1 + '\\\""');
+					errorLine = source.split("\n")[aException.lineNumber - 1];
+					exceptionPosition = errorLine + exceptionPosition;
+					break;
+				}
 			}
-		}
 
-		stackLines.push(exceptionPosition);
+			stackLines.push(exceptionPosition);
+		}
 	}
 
 	if (aException.stack) {
