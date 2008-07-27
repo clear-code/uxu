@@ -654,7 +654,7 @@ function inspect(aObject)
 			inspected[aTarget] = aTarget.toString();
 			var values = [];
 			for (var name in aTarget) {
-				values.push(name + ": " + _inspect(aTarget[name]));
+				values.push(name.quote() + ": " + _inspect(aTarget[name]));
 			}
 			inspected[aTarget] = "{" + values.join(", ") + "}";
 			return inspected[aTarget];
