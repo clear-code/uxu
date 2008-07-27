@@ -48,7 +48,7 @@ function constructor(aInput, aOutput)
 				return;
 			}
 			var result = _this.evaluate(code);
-			if (result != undefined)
+			if (result !== undefined)
 				_this.puts(result);
 		}
 	};

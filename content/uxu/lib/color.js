@@ -8,7 +8,7 @@ function Color(aName, aOptions)
         aOptions = {};
 
     this.foreground = aOptions.foreground;
-    if (this.foreground == undefined)
+    if (this.foreground === undefined)
         this.foreground = true;
     this.intensity = aOptions.intensity;
     this.bold = aOptions.bold;
