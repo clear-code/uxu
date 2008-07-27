@@ -12,7 +12,10 @@ var statusOrder = ["success", "failure", "error"];
 
 function constructor(aOptions)
 {
-	this.nTests     = 0;
+	this.nTests = 0;
+	this.nAssertions = 0;
+	this.nFailures = 0;
+	this.nErrors = 0;
 	this.finished   = false;
 	this.result     = '';
 	this.resultStatus = "success";
@@ -68,9 +71,51 @@ function onStart()
 
 function onFinish()
 {
+	this.result += "\n\n";
+	this._reportBadResults();
+	this._reportSummary();
+
+	this.finished = true;
+}
+
+function onTestFinish(aReport)
+{
+	switch (aReport.result)
+	{
+	    case 'passover':
+			return;
+		case 'success':
+			this.result += this._colorize('.', this.successColor);
+			break;
+		case 'failure':
+			this.result += this._colorize('F', this.failureColor);
+			this.nFailures++;
+			break;
+		case 'error':
+			this.result += this._colorize('E', this.errorColor);
+			this.nErrors++;
+			break;
+		default:
+			this.result += '?';
+			break;
+	}
+	if (this._isMoreImportantStatus(aReport.result))
+		this.resultStatus = aReport.result;
+
+	this.nTests++;
+	if (aReport.exception)
+		this.badResults.push(aReport);
+}
+
+function onError(aError)
+{
+	dump(this._formatError(aError));
+}
+
+function _reportBadResults()
+{
 	var _this = this;
 
-	_this.result += "\n\n";
 	this.badResults.forEach(function(aResult, aIndex) {
 		var formattedIndex, summary, detail, exception;
 
@@ -97,51 +142,27 @@ function onFinish()
 		}
 		_this.result += utils.UCS2ToUTF8(detail);
 	});
+}
 
-	var resultColor, successRate;
+function _reportSummary()
+{
+	var resultColor, summary, successRate;
 
 	resultColor = this._statusColor(this.resultStatus);
+
+	summary = [this.nTests + " tests",
+			   // this.nAssertions + " assertions",
+			   this.nFailures + " failures",
+			   this.nErrors + " errors"].join(', ');
+	this.result += this._colorize(summary, resultColor);
+	this.result += "\n";
 
 	if (this.nTests > 0)
 		successRate = (this.nTests - this.badResults.length) / this.nTests * 100;
 	else
 		successRate = 0;
-	this.result += _this._colorize(successRate + '% passed.', resultColor);
-	this.result += '\n';
-
-	this.finished = true;
-}
-
-function onTestFinish(aReport)
-{
-	switch (aReport.result)
-	{
-	    case 'passover':
-		  return;
-		case 'success':
-			this.result += this._colorize('.', this.successColor);
-			break;
-		case 'failure':
-			this.result += this._colorize('F', this.failureColor);
-			break;
-		case 'error':
-			this.result += this._colorize('E', this.errorColor);
-			break;
-		default:
-			this.result += '?';
-			break;
-	}
-	if (this._isMoreImportantStatus(aReport.result))
-		this.resultStatus = aReport.result;
-
-	this.nTests++;
-	if (aReport.exception)
-		this.badResults.push(aReport);
-}
-
-function onError(aError)
-{
-	dump(this._formatError(aError));
+	this.result += this._colorize(successRate + '% passed.', resultColor);
+	this.result += "\n";
 }
 
 function _log10(aNumber)
