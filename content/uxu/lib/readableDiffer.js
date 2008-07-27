@@ -2,7 +2,6 @@
 
 var lib = new ModuleManager(['chrome://uxu/content/lib']);
 var SequenceMatcher = lib.require('class', 'sequenceMatcher');
-var utils = lib.require('package', 'utils');
 
 function constructor(aFrom, aTo)
 {

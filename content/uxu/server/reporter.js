@@ -136,6 +136,8 @@ function _reportBadResults()
 				detail += " expected: " + exception.expected + "\n";
 			if (exception.actual)
 				detail += "   actual: " + exception.actual + "\n";
+			if (exception.diff)
+				detail += "\ndiff:\n" + exception.diff + "\n";
 			detail += _this._formatStackTrace(exception);
 		} else {
 			detail += _this._formatError(exception);

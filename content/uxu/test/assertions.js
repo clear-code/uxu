@@ -20,6 +20,7 @@
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var bundle = lib_module.require('package', 'bundle');
 var utils = lib_module.require('package', 'utils');
+var diff = lib_module.require('package', 'diff');
 
 
 function equals(aExpected, aActual, aMessage)
@@ -273,10 +274,15 @@ function inDelta(aExpected, aActual, aDelta, aMessage)
 function fail()
 {
 	var args = Array.slice(arguments);
-	var error = new Error()
+	var error = new Error();
 	error.name = 'AssertionFailed';
 	error.expected = args.shift();
 	error.actual = args.shift();
+	if (error.expected && error.actual) {
+		var _diff = diff.readable(error.expected, error.actual);
+		if (diff.isInterested(_diff))
+			error.diff = _diff;
+	}
 	error.message = args.reverse().join('\n');
 	throw error;
 }
