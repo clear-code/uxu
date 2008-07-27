@@ -13,6 +13,7 @@ options.wait = 3
 options.n_retries = 3
 options.quit = false
 options.close_main_windows = false
+options.use_color = nil
 
 opts = OptionParser.new("Usage: #{$0} [options] test_or_directory...") do |opts|
   opts.on("--host=HOST",
@@ -31,6 +32,8 @@ opts = OptionParser.new("Usage: #{$0} [options] test_or_directory...") do |opts|
   opts.on("--[no-]close-main-windows",
           "whether close main windows or not",
           "(#{options.close_main_windows})") {|options.close_main_windows|}
+  opts.on("--[no-]use-color",
+          "whether use colorized output or not", "(auto)") {|options.use_color|}
 
   opts.separator ""
   opts.on_tail("--help", "Show this message") do
@@ -52,6 +55,16 @@ class Runner
     @target_paths = target_paths
     @reporter_var_name = "reporter"
     @shown_result_index = 0
+    self.use_color = nil
+  end
+
+  def use_color?
+    @use_color
+  end
+
+  def use_color=(use_color)
+    @use_color = use_color
+    @use_color = guess_use_color if @use_color.nil?
   end
 
   def run
@@ -60,8 +73,10 @@ class Runner
       escaped_path = escape_path(normalized_path.to_s)
       "'#{escaped_path}'"
     end.join(", ")
+    options = "{useColor: #{use_color?}}"
     evaluate("var #{@reporter_var_name};")
-    evaluate("#{@reporter_var_name} = runTest(#{escaped_target_paths}); " +
+    evaluate("#{@reporter_var_name} =" +
+             " runTest(#{options}, #{escaped_target_paths}); " +
              "undefined;")
 
     show_result while running?
@@ -151,6 +166,14 @@ class Runner
       @shown_result_index = result.size
       outputted = true
     end
+  end
+
+  def guess_use_color
+    return false unless @output.tty?
+    term = ENV["TERM"]
+    return true if term and (/term\z/ =~ term or term == "screen")
+    return true if ENV["EMACS"] == "t"
+    false
   end
 end
 

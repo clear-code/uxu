@@ -33,10 +33,10 @@ function addRunnerListener(aListener)
 	this.runnerListeners.push(aListener);
 }
 
-function runTest()
+function runTest(aOptions/*, aTargets, ...*/)
 {
-	var runner = new Runner(this.browser, Array.slice(arguments));
-	var reporter = new Reporter(this);
+	var runner = new Runner(this.browser, Array.slice(arguments, 1));
+	var reporter = new Reporter(aOptions);
 	this.runnerListeners.forEach(function (aListener) {
 		runner.addListener(aListener);
 	});

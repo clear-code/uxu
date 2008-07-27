@@ -1,17 +1,23 @@
-// -*- indent-tabs-mode: t; tab-width: 4 -*-
-
-const Cc = Components.classes;
+// -*- indent-tabs-mode: t; tab-width: 4 -*-const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var utils = lib_module.require('package', 'utils');
+var color = lib_module.require('package', 'color');
+const Color = color.Color;
 
-function constructor()
+function constructor(aOptions)
 {
 	this.nTests     = 0;
 	this.finished   = false;
 	this.result     = '';
 	this.badResults = [];
+
+	if (!aOptions)
+		aOptions = {};
+	this.useColor   = aOptions.useColor;
+
+	this._initializeColor();
 }
 
 function addListener(aListener)
@@ -61,10 +67,15 @@ function onFinish()
 
 	_this.result += "\n\n";
 	this.badResults.forEach(function(aResult, aIndex) {
-		var formattedIndex, detail, exception;
+		var formattedIndex, color, summary, detail, exception;
+
 		formattedIndex = _this._formatIndex(aIndex + 1, _this.badResults.length);
-		detail = [" " + formattedIndex + ") " + aResult.result,
-				  aResult.testDescription].join(': ') + '\n';
+		formattedIndex = " " + formattedIndex + ") ";
+		color = _this[aResult.result + "Color"];
+		detail = _this._colorize([aResult.result,
+								  aResult.testDescription].join(': '),
+								 color);
+		detail = formattedIndex + detail + '\n';
 
 		exception = aResult.exception;
 		if (aResult.result == "failure") {
@@ -100,13 +111,13 @@ function onTestFinish(aReport)
 	    case 'passover':
 		  return;
 		case 'success':
-			this.result += '.';
+			this.result += this._colorize('.', this.successColor);
 			break;
 		case 'failure':
-			this.result += 'F';
+			this.result += this._colorize('F', this.failureColor);
 			break;
 		case 'error':
-			this.result += 'E';
+			this.result += this._colorize('E', this.errorColor);
 			break;
 		default:
 			this.result += '?';
@@ -117,7 +128,6 @@ function onTestFinish(aReport)
 	if (aReport.exception)
 		this.badResults.push(aReport);
 }
-
 
 function onError(aError)
 {
@@ -175,4 +185,26 @@ function _formatStackTrace(aError)
 	});
 
 	return result;
+}
+
+function _initializeColor()
+{
+	this.resetColor = new Color("reset");
+	this.successColor = new Color("green", {bold: true});
+	this.failureColor = new Color("red", {bold: true});
+	this.pendingColor = new Color("magenta", {bold: true});
+	this.omissionColor = new Color("blue", {bold: true});
+	this.notificationColor = new Color("cyan", {bold: true});
+	this.errorColor = new Color("yellow", {bold: true});
+}
+
+function _colorize(aText, aColor)
+{
+	if (!this.useColor)
+		return aText;
+
+	if (!aColor)
+		return aText;
+
+	return aColor.escapeSequence() + aText + this.resetColor.escapeSequence();
 }
