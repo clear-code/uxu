@@ -596,7 +596,8 @@ function _checkPriorityToExec(aTest)
 		finally {
 			statement.reset();
 		}
-		if (lastResult != 'success' && lastResult != 'passover') {
+		if ((lastHash != aTest.hash) ||
+                    (lastResult != 'success' && lastResult != 'passover')) {
 			shouldDo = true;
 		}
 	}
