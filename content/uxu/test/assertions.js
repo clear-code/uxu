@@ -280,8 +280,12 @@ function fail()
 	error.actual = args.shift();
 	if (error.expected && error.actual) {
 		var _diff = diff.readable(error.expected, error.actual);
-		if (diff.isInterested(_diff))
+		if (diff.isInterested(_diff)) {
 			error.diff = _diff;
+			if (diff.needFold(_diff))
+				error.foldedDiff = diff.foldedReadable(error.expected,
+													   error.actual);
+		}
 	}
 	error.message = args.reverse().join('\n');
 	throw error;

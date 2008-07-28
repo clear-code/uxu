@@ -138,6 +138,8 @@ function _reportBadResults()
 				detail += "   actual: " + exception.actual + "\n";
 			if (exception.diff)
 				detail += "\ndiff:\n" + exception.diff + "\n";
+			if (exception.foldedDiff)
+				detail += "\nfolded diff:\n" + exception.foldedDiff + "\n";
 			detail += _this._formatStackTrace(exception);
 		} else {
 			detail += _this._formatError(exception);

@@ -9,6 +9,13 @@ function readable(aFrom, aTo)
 	return differ.diff().join("\n");
 }
 
+function foldedReadable(aFrom, aTo)
+{
+	var differ = new ReadableDiffer(_splitWithLine(_fold(aFrom)),
+									_splitWithLine(_fold(aTo)));
+	return differ.diff().join("\n");
+}
+
 function isInterested(aDiff)
 {
 	if (!aDiff)
@@ -29,7 +36,26 @@ function isInterested(aDiff)
 	return false;
 }
 
+function needFold(aDiff)
+{
+	if (!aDiff)
+		return false;
+
+	if (aDiff.match(/^[-+].{79}/mg))
+		return true;
+
+	return false;
+}
+
 function _splitWithLine(aString)
 {
 	return aString.length == 0 ? [] : aString.split(/\r?\n/);
+}
+
+function _fold(aString)
+{
+	var foldedLines = aString.split("\n").map(function (aLine) {
+		return aLine.replace(/(.{78})/g, "$1\n");
+	});
+	return foldedLines.join("\n");
 }
