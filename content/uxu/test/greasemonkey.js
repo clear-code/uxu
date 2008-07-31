@@ -201,11 +201,12 @@ function GM_log(aMessage)
 }
 
 
-function GM_getValue(aKey)
+function GM_getValue(aKey, aDefault)
 {
 	this.fireEvent({ type : 'GM_getValueCall', key : aKey });
-	return (aKey in this.storage) ? this.storage[aKey] : null ;
+	return (aKey in this.storage) ? this.storage[aKey] : aDefault ;
 }
+
 function GM_setValue(aKey, aValue)
 {
 	this.fireEvent({ type : 'GM_setValueCall', key : aKey, value : aValue });

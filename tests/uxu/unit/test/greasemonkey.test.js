@@ -150,6 +150,8 @@ function test_GM_log()
 
 function test_GM_getValue()
 {
+    assert.equals(null, GMUtils.GM_getValue('nonexistence'));
+    assert.equals(100, GMUtils.GM_getValue('nonexistence', 100));
 }
 
 function test_GM_setValue()
