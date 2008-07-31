@@ -33,6 +33,9 @@ function isInterested(aDiff)
 	if (aDiff.match(/(?:.*\n){2,}/g))
 		return true;
 
+	if (needFold(aDiff))
+		return true;
+
 	return false;
 }
 
