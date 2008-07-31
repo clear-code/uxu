@@ -262,8 +262,10 @@ function inDelta(aExpected, aActual, aDelta, aMessage)
 		return;
 
 	fail(bundle.getFormattedString('assert_in_delta_expected',
-								   [appendTypeString(aExpected),
+								   [appendTypeString(aExpected - aDelta),
 									appendTypeString(aActual),
+									appendTypeString(aExpected + aDelta),
+									appendTypeString(aExpected),
 									appendTypeString(aDelta)]),
 		 bundle.getFormattedString('assert_in_delta_actual',
 								   [appendTypeString(aActual)]),
