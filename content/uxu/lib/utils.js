@@ -732,6 +732,11 @@ function _equals(aCompare, aObject1, aObject2)
 	var isDate = function (aObject) {
 	    return aObject && aObject instanceof eval('Date', aObject);
 	}
+	var isObject = function (aObject) {
+		return (aObject &&
+				typeof aObject == "object" &&
+				aObject == '[object Object]');
+	}
 
 	if (isArray(aObject1) && isArray(aObject2)) {
 		var i;
@@ -750,8 +755,7 @@ function _equals(aCompare, aObject1, aObject2)
 		return _equals(aCompare, aObject1.getTime(), aObject2.getTime());
 	}
 
-	if (aObject1 && typeof aObject1 == "object" && aObject1 == '[object Object]' &&
-		aObject2 && typeof aObject2 == "object" && aObject2 == '[object Object]') {
+	if (isObject(aObject1) && isObject(aObject2)) {
 		return _equalObject(aCompare, aObject1, aObject2);
 	}
 
