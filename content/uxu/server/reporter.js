@@ -92,8 +92,7 @@ function onTestFinish(aReport)
 			this.nFailures++;
 			break;
 		case 'error':
-			this.result += this._colorize('E', this.errorColor);
-			this.nErrors++;
+			this.onError(aReport.exception);
 			break;
 		default:
 			this.result += '?';
@@ -109,7 +108,9 @@ function onTestFinish(aReport)
 
 function onError(aError)
 {
-	dump(this._formatError(aError));
+	this.result += this._colorize('E', this.errorColor);
+	this.badResults.push({result: 'error', exception: aError});
+	this.nErrors++;
 }
 
 function _reportBadResults()
