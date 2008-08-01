@@ -92,7 +92,7 @@ function onTestFinish(aReport)
 			this.nFailures++;
 			break;
 		case 'error':
-			this.onError(aReport.exception);
+			this._handleError(aReport, false);
 			break;
 		default:
 			this.result += '?';
@@ -108,8 +108,19 @@ function onTestFinish(aReport)
 
 function onError(aError)
 {
+	var aReport = {
+		result: 'error',
+		testDescription: "unknown",
+		exception: aError
+	};
+	this._handleError(aReport, true);
+}
+
+function _handleError(aReport, aRegisterBadResults)
+{
 	this.result += this._colorize('E', this.errorColor);
-	this.badResults.push({result: 'error', exception: aError});
+	if (aRegisterBadResults)
+		this.badResults.push(aReport);
 	this.nErrors++;
 }
 
