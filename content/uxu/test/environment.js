@@ -455,6 +455,9 @@ doIteration
 Do
 inspect
 p
+scheduleToRemove
+startScheduledRemove
+stopScheduledRemove
 ]]></>.toString()
 .replace(/^\s+|\s+$/g, '')
 .split('\n')
