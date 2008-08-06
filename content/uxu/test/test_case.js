@@ -606,12 +606,19 @@ function _checkPriorityToExec(aTest)
  
 function _onFinish(aTest, aResult) 
 {
-	var db = utils.getDB();
-	var statement = db.createStatement(<![CDATA[
+	var db, statement;
+	try {
+		db = utils.getDB();
+		statement = db.createStatement(<![CDATA[
 		  INSERT OR REPLACE INTO result_history
 		          (name, description, result, date, hash)
 		    VALUES(?1, ?2, ?3, ?4, ?5)
 		]]>.toString());
+	}
+	catch(e) {
+		return;
+	}
+
 	try {
 		statement.bindStringParameter(0, aTest.name);
 		statement.bindStringParameter(1, aTest.desc);
