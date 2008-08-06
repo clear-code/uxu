@@ -788,7 +788,6 @@ function strictlyEquals(aObject1, aObject2)
 
 function scheduleToRemove(aFile)
 {
-dump('scheduleToRemove\n');
 	if (!this.scheduledFiles) this.scheduledFiles = {};
 	if (aFile.path in this.scheduledFiles) return;
 
@@ -803,7 +802,6 @@ dump('scheduleToRemove\n');
 
 function startScheduledRemove(aThis)
 {
-dump('START TO REMOVE\n');
 	if (!aThis) aThis = this;
 	if (aThis.scheduledRemoveTimer) aThis.stopScheduledRemove();
 	aThis.scheduledRemoveTimer = window.setTimeout(function(aThis) {
@@ -812,19 +810,15 @@ dump('START TO REMOVE\n');
 			var incompleted = {};
 			for (var i in aThis.scheduledFiles)
 			{
-dump('REMOVE '+i+'\n');
 				schedule = aThis.scheduledFiles[i];
 				try {
 					if (schedule.count < 100)
 						schedule.file.remove(true);
-dump('SUCCESS\n');
 				}
 				catch(e) {
-dump('FAIL ');
 					incomplete = true;
 					incompleted[i] = schedule;
 					schedule.count++;
-dump(schedule.count+'\n');
 				}
 			}
 			if (incomplete) {
