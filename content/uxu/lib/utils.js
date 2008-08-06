@@ -783,3 +783,58 @@ function strictlyEquals(aObject1, aObject2)
 	return _equals(function (aObj1, aObj2) {return aObj1 === aObj2},
 				   aObject1, aObject2);
 }
+
+
+
+function scheduleToRemove(aFile)
+{
+	if (!this.scheduledFiles) this.scheduledFiles = {};
+	if (aFile.path in this.scheduledFiles) return;
+
+	this.scheduledFiles[aFile.path] = {
+		file     : aFile,
+		count    : 0
+	};
+
+	if (!this.scheduledRemoveTimer)
+		this.startToWatchScheduledRemove();
+}
+
+function startToWatchScheduledRemove()
+{
+	if (this.scheduledRemoveTimer) this.stopToWatchScheduledRemove();
+	this.scheduledRemoveTimer = window.setTimeout(function(aThis) {
+		if (aThis.scheduledFiles) {
+			var incomplete = false;
+			var incompleted = {};
+			for (var i in aThis.scheduledFiles)
+			{
+				schedule = aThis.scheduledFiles[i];
+				try {
+					if (schedule.count < 100)
+						schedule.file.remove(true);
+				}
+				catch(e) {
+					incomplete = true;
+					incompleted[i] = schedule;
+					schedule.count++;
+				}
+			}
+			if (!incomplete) {
+				aThis.scheduledFiles = incompleted;
+				aThis.scheduledRemoveTimer = window.setTimeout(arguments.callee, 500, aThis)
+				return;
+			}
+			aThis.scheduledFiles = {};
+		}
+		aThis.stopToWatchScheduledRemove();
+		// aThis.scheduledRemoveTimer = window.setTimeout(arguments.callee, 5000, aThis)
+	}, 5000, this);
+}
+
+function stopToWatchScheduledRemove()
+{
+	if (!this.scheduledRemoveTimer) return;
+	window.clearTimeout(this.scheduledRemoveTimer);
+	this.scheduledRemoveTimer = null;
+}
