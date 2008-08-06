@@ -482,10 +482,7 @@ function onAllTestsFinish()
 		var failures = getFailureReports();
 		var errors = getErrorReports();
 		scrollReportsTo(failures.length ? failures[0] : errors[0]);
-		var status = [];
-		if (failures.length) status.push(bundle.getFormattedString('all_result_failure', [gFailureCount]));
-		if (errors.length) status.push(bundle.getFormattedString('all_result_error', [gErrorCount]));
-		_('testResultStatus').setAttribute('label', status.join(' / '));
+		_('testResultStatus').setAttribute('label', bundle.getString('all_result_problem'));
 	}
 	else {
 		scrollReportsTo(_('testcase-reports').firstChild);
