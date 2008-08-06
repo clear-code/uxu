@@ -342,10 +342,10 @@ function run(aStopper)
 	var stateTransitions = {
 		start :         { ok : 'checkPriority' },
 		checkPriority : { ok : 'doSetUp', ko: 'nextTest' },
-		doSetUp :       { ok : 'doTest', ko: 'doReport' },
-		doTest :        { ok : 'doReport' },
-		doReport :      { ok : 'doTearDown' },
-		doTearDown :    { ok : 'nextTest', ko: 'nextTest' },
+		doSetUp :       { ok : 'doTest', ko: 'doTearDown' },
+		doTest :        { ok : 'doTearDown' },
+		doTearDown :    { ok : 'doReport', ko: 'doReport' },
+		doReport :      { ok : 'nextTest' },
 		nextTest :      { ok : 'checkPriority', ko: 'finished' },
 		finished :      { }
 	};
@@ -380,6 +380,7 @@ function run(aStopper)
 			}
 			context = _this.context || {};
 			report.report = {};
+			var errorDescription = bundle.getFormattedString('report_description_setup', [_this._tests[testIndex].desc]);
 			try {
 				var result = _this._setUp.call(context, aContinuation);
 				if (utils.isGeneratedIterator(result)) {
@@ -390,7 +391,7 @@ function run(aStopper)
 						onError : function(e) {
 							report.report.result = 'error';
 							report.report.exception = e;
-							report.report.testDescription = bundle.getString('report_description_setup');
+							report.report.testDescription = errorDescription;
 							aContinuation('ko');
 						}
 					});
@@ -401,7 +402,7 @@ function run(aStopper)
 			} catch(e) {
 				report.report.result = 'error';
 				report.report.exception = e;
-				report.report.testDescription = bundle.getString('report_description_setup');
+				report.report.testDescription = errorDescription;
 				aContinuation('ko');
 			}
 		},
@@ -434,6 +435,7 @@ function run(aStopper)
 				aContinuation('ok');
 				return;
 			}
+			var errorDescription = bundle.getFormattedString('report_description_teardown', [_this._tests[testIndex].desc]);
 			try {
 				// perhaps should pass continuation to tearDown as well
 				var result = _this._tearDown.call(context);
@@ -444,6 +446,9 @@ function run(aStopper)
 						},
 						onError : function(e) {
 							_this._onFinish(_this._tests[testIndex], 'error');
+							report.report.result = 'error';
+							report.report.exception = e;
+							report.report.testDescription = errorDescription;
 							aContinuation('ko');
 						}
 					});
@@ -451,7 +456,11 @@ function run(aStopper)
 				else {
 					aContinuation('ok');
 				}
-			} catch(e) {
+			}
+			catch(e) {
+				report.report.result = 'error';
+				report.report.exception = e;
+				report.report.testDescription = errorDescription;
 				aContinuation('ko');
 			}
 		},
