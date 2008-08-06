@@ -415,7 +415,7 @@ TestListener.prototype = {
 				_(wTestReport, 'vs').removeAttribute('hidden');
 			}
 			_(wTestReport, 'additionalInfo').textContent = report.exception.message.replace(/^\s+/, '');
-			if (report.exception.stack) {
+			if (utils.hasStackTrace(report.exception)) {
 				displayStackTrace(report.exception, _(wTestReport, 'stack-trace'));
 				_(wTestReport, 'stack-trace').hidden = false;
 			}
@@ -444,7 +444,7 @@ var runnerListener = {
 				_('prerun-report', 'error').textContent = bundle.getFormattedString('error_failed', [e.toString()]);
 				_('prerun-report', 'error').hidden = false;
 
-				if (e.stack) {
+				if (utils.hasStackTrace(e)) {
 					displayStackTrace(e, _('prerun-report', 'stack-trace'));
 					_('prerun-report', 'stack-trace').hidden = false;
 					_('prerun-report').hidden = false;

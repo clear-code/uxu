@@ -207,7 +207,14 @@ function formatError(e)
 	return e.toString() + '\n' + formatStackTrace(e, options);
 }
 
+function hasStackTrace(aException)
+{
+	return aException.stack ||
+		(aException.location && JSFrameLocationRegExp.test(aException.location));
+}
+
 var lineRegExp = /@\w+:.+:\d+/;
+var JSFrameLocationRegExp = /JS frame :: (.+) :: .+ :: line (\d+)/;
 var subScriptRegExp = /@chrome:\/\/uxu\/content\/lib\/subScriptRunner\.js(?:\?includeSource=([^;,:]+)(?:;encoding=[^;,:]+)?|\?code=([^;,:]+))?:(\d+)$/i;
 function formatStackTrace(aException, aOptions)
 {
@@ -250,6 +257,9 @@ function formatStackTrace(aException, aOptions)
 	if (aException.stack) {
 		stackLines = stackLines.concat(aException.stack.split('\n'));
 	}
+	else if (aException.location && JSFrameLocationRegExp.test(aException.location)) {
+		stackLines = ['()@' + RegExp.$1 + ':' + RegExp.$2];
+	}
 
 	stackLines.forEach(function(aLine) {
 		if (!aLine.length) return;
@@ -288,7 +298,7 @@ function formatStackTrace(aException, aOptions)
 function makeStackLine(aStack)
 {
 	if (typeof aStack == 'string') return aStack;
-	return '()@' + aStack.filename + ':' + aStack.lineNumber + '\n';;
+	return '()@' + aStack.filename + ':' + aStack.lineNumber + '\n';
 }
 
 function unformatStackLine(aLine)
