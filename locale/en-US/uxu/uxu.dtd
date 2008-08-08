@@ -34,6 +34,8 @@
 <!ENTITY mozunit.editThis.accesskey "E">
 <!ENTITY mozunit.saveReport.label     "Save Report">
 <!ENTITY mozunit.saveReport.accesskey "V">
+<!ENTITY mozunit.restartApplication.label     "Restart Application">
+<!ENTITY mozunit.restartApplication.accesskey "A">
 <!ENTITY mozunit.quit.label     "Quit">
 <!ENTITY mozunit.quit.accesskey "Q">
 

@@ -34,6 +34,8 @@
 <!ENTITY mozunit.editThis.accesskey "E">
 <!ENTITY mozunit.saveReport.label     "結果を保存">
 <!ENTITY mozunit.saveReport.accesskey "V">
+<!ENTITY mozunit.restartApplication.label     "アプリケーションを再起動">
+<!ENTITY mozunit.restartApplication.accesskey "A">
 <!ENTITY mozunit.quit.label     "終了">
 <!ENTITY mozunit.quit.accesskey "Q">
 

@@ -849,3 +849,32 @@ function stopScheduledRemove()
 	window.clearTimeout(this.scheduledRemoveTimer);
 	this.scheduledRemoveTimer = null;
 }
+
+
+function restartApplication()
+{
+	const ObserverService = Cc['@mozilla.org/observer-service;1']
+				.getService(Ci.nsIObserverService);
+
+	var cancelQuit = Cc['@mozilla.org/supports-PRBool;1']
+				.createInstance(Ci.nsISupportsPRBool);
+	ObserverService.notifyObservers(cancelQuit, 'quit-application-requested', null);
+
+	if (!cancelQuit.data) {
+		ObserverService.notifyObservers(null, 'quit-application-granted', null);
+		var windows = Cc['@mozilla.org/appshell/window-mediator;1']
+					.getService(Ci.nsIWindowMediator)
+					.getEnumerator(null);
+		while (windows.hasMoreElements())
+		{
+			var target = windows.getNext().QueryInterface(Ci.nsIDOMWindow);
+			if (('tryToClose' in target) && !target.tryToClose()) {
+				return;
+			}
+		}
+	}
+
+	const startup = Cc['@mozilla.org/toolkit/app-startup;1']
+					.getService(Ci.nsIAppStartup);
+	startup.quit(startup.eRestart | startup.eAttemptQuit);
+}

@@ -85,6 +85,8 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 			oncommand="openInEditor(getFocusedPath());"/>
 		<command id="cmd_copy" label="&mozunit.copy.label;" accesskey="&mozunit.copy.accesskey;"
 			oncommand="goDoCommand('cmd_copy')"/>
+		<command id="restartApplication" label="&mozunit.restartApplication.label;" accesskey="&mozunit.restartApplication.accesskey;"
+			oncommand="utils.restartApplication();"/>
 	</commandset>
 
 	<!-- KEYBINDINGS -->
@@ -197,6 +199,8 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 						hidden="true"/>
 					<menuseparator
 						hidden="true"/>
+					<menuitem command="restartApplication"/>
+					<menuseparator/>
 					<menuitem command="quit"/>
 				</menupopup>
 			</menu>
