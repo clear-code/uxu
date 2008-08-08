@@ -1,3 +1,5 @@
+// -*- indent-tabs-mode: t; tab-width: 8 -*-
+
 var utilsModule;
 var tempFile;
 var onWindows = false;
@@ -379,4 +381,25 @@ function test_getDB()
 {
 	var db = utilsModule.getDB();
 	assert.isTrue(db instanceof Ci.mozIStorageConnection);
+}
+
+assert.inspect = function(aExpected, aObject) {
+	assert.equals(aExpected, utilsModule.inspect(aObject));
+};
+
+testInspect.priority = "must";
+function testInspect()
+{
+	assert.inspect('"String"', "String");
+	assert.inspect('10', 10);
+	assert.inspect('["String", 10]', ["String", 10]);
+	assert.inspect('{"string": "String", "29": 10}',
+		       {string: "String", 29: 10});
+	assert.inspect('[{"string": "String", "29": 10}]',
+		       [{string: "String", 29: 10}]);
+
+	var object = {string: "String", 29: 10};
+	assert.inspect('[{"string": "String", "29": 10}, ' +
+		       '{"string": "String", "29": 10}]',
+		       [object, object]);
 }

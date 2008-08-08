@@ -646,35 +646,45 @@ function getDB()
 
 function inspect(aObject)
 {
-	var inspected = {};
+	var inspectedObjects = [];
+	var inspectedResults = {};
 	var _inspect = function (aTarget)
 	{
+		var index;
+
 		if (aTarget === null)
 			return 'null';
 		if (aTarget === undefined)
 			return 'undefined';
 
-		if (inspected[aTarget])
-			return inspected[aTarget];
+		index = inspectedObjects.indexOf(aTarget);
+		if (index != -1)
+			return inspectedResults[index];
 
 		if (!aTarget.__proto__)
 			return aTarget.toString();
 
 		if (aTarget.__proto__.toString == eval('Object.prototype.toString', aTarget)) {
-			inspected[aTarget] = aTarget.toString();
+			index = inspectedObjects.length;
+			inspectedObjects.push(aTarget);
+			inspectedResults[index] = aTarget.toString();
+
 			var values = [];
 			for (var name in aTarget) {
 				values.push(name.quote() + ": " + _inspect(aTarget[name]));
 			}
-			inspected[aTarget] = "{" + values.join(", ") + "}";
-			return inspected[aTarget];
+			inspectedResults[index] = "{" + values.join(", ") + "}";
+			return inspectedResults[index];
 		} else if (aTarget instanceof eval('Array', aTarget)) {
-			inspected[aTarget] = aTarget.toString();
+			index = inspectedObjects.length;
+			inspectedObjects.push(aTarget);
+			inspectedResults[index] = aTarget.toString();
+
 			var values = aTarget.map(function (aValue) {
 					return _inspect(aValue);
 				});
-			inspected[aTarget] = "[" + values.join(", ") + "]";
-			return inspected[aTarget];
+			inspectedResults[index] = "[" + values.join(", ") + "]";
+			return inspectedResults[index];
 		} else if (typeof aTarget == 'string' ||
 		           aTarget instanceof eval('String', aTarget)) {
 			return '"' + aTarget.replace(/\"/g, '\\"') + '"';
