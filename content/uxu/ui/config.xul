@@ -63,6 +63,9 @@
 		<preference id="extensions.uxu.mozunit.autoStart"
 			name="extensions.uxu.mozunit.autoStart"
 			type="bool"/>
+		<preference id="extensions.uxu.mozunit.autoStart.oneTime.enabled"
+			name="extensions.uxu.mozunit.autoStart.oneTime.enabled"
+			type="bool"/>
 		<preference id="extensions.uxu.mozunit.autoExit"
 			name="extensions.uxu.mozunit.autoExit"
 			type="bool"/>
@@ -89,6 +92,12 @@
 	<checkbox id="extensions.uxu.mozunit.autoStart-check"
 		preference="extensions.uxu.mozunit.autoStart"
 		label="&config.mozunit.autoStart;"/>
+	<hbox>
+		<spacer style="width:1em;"/>
+		<checkbox id="extensions.uxu.mozunit.autoStart.oneTime.enabled-check"
+			preference="extensions.uxu.mozunit.autoStart.oneTime.enabled"
+			label="&config.mozunit.autoStart.oneTime.enabled;"/>
+	</hbox>
 	<checkbox id="extensions.uxu.mozunit.autoExit-check"
 		preference="extensions.uxu.mozunit.autoExit"
 		label="&config.mozunit.autoExit;"/>

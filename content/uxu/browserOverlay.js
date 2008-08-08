@@ -30,8 +30,13 @@ window.addEventListener('load', function() {
 	if (nsPreferences.getBoolPref('extensions.uxu.auto.start'))
 		startUxU();
 
-	if (nsPreferences.getBoolPref('extensions.uxu.mozunit.autoStart') ||
-		nsPreferences.getBoolPref('extensions.uxu.mozunit.autoStart.oneTime')) {
+	if (
+		nsPreferences.getBoolPref('extensions.uxu.mozunit.autoStart') ||
+		(
+			nsPreferences.getBoolPref('extensions.uxu.mozunit.autoStart.oneTime.enabled') &&
+			nsPreferences.getBoolPref('extensions.uxu.mozunit.autoStart.oneTime')
+		)
+		) {
 		nsPreferences.setBoolPref('extensions.uxu.mozunit.autoStart.oneTime', false);
 		openUxUMozUnit();
 	}

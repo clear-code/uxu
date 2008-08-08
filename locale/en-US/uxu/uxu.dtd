@@ -100,6 +100,7 @@
 <!ENTITY config.mozunit.autoExpandWindow.sourceViewer "Expand window automatically when source viewer is open">
 <!ENTITY config.tabs.server "UxU Server">
 <!ENTITY config.mozunit.autoStart "Start MozUnit Test Runner automatically on Firefox's startup">
+<!ENTITY config.mozunit.autoStart.oneTime.enabled "Restore MozUnit Test Runner automatically after Firefox's restart">
 <!ENTITY config.mozunit.autoExit  "Stop MozUnit Test Runner automatically on Firefox's shutdown">
 
 <!ENTITY config.auto.start "Start server automatically on Firefox's startup">

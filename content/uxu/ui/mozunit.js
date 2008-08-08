@@ -222,6 +222,7 @@ function startup()
 		if (utils.getPref('extensions.uxu.mozunit.alwaysRaised'))
 			toggleAlwaysRaised();
 	}
+	ObserverService.addObserver(restartObserver, 'quit-application-requested', false);
 	updateTestCommands();
 	_('content').addEventListener('load', onContentLoad, true);
 }
@@ -239,12 +240,23 @@ var alwaysRaisedObserver = {
 		}
 	}
 };
-  
+ 
+var restartObserver = { 
+	observe : function(aSubect, aTopic, aData)
+	{
+		if (aTopic != 'quit-application-requested') return;
+
+		if (utils.getPref('extensions.uxu.mozunit.autoStart.oneTime.enabled'))
+			utils.setPref('extensions.uxu.mozunit.autoStart.oneTime', true);
+	}
+};
+ 	 
 function shutdown() 
 {
 	if (!isLinux()) {
 		ObserverService.removeObserver(alwaysRaisedObserver, 'xul-window-registered');
 	}
+	ObserverService.removeObserver(restartObserver, 'quit-application-requested');
 	_('content').removeEventListener('load', onContentLoad, true);
 	hideSource();
 }
@@ -321,7 +333,7 @@ function getFocusedPath()
 }
   
 /* runner */ 
-	 
+	
 var gRunner; 
  
 function TestListener() 
@@ -978,12 +990,6 @@ function updateContextMenu()
 	}
 }
  
-function restartApplication() 
-{
-	utils.setPref('extensions.uxu.mozunit.autoStart.oneTime', true);
-	utils.restartApplication();
-}
- 	
 function showPage(aURI) 
 {
 	var recentWindow = Cc['@mozilla.org/appshell/window-mediator;1']
@@ -1009,5 +1015,10 @@ function showPage(aURI)
 					service.loadUrl(uri);
 		}
 	}
+}
+ 
+function restartApplication() 
+{
+	utils.restartApplication();
 }
   

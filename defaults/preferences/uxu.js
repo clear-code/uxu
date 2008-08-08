@@ -17,6 +17,7 @@ pref("extensions.uxu.mozunit.alwaysRaised", true);
 pref("extensions.uxu.mozunit.autoShowContent", true);
 pref("extensions.uxu.mozunit.autoExpandWindow.sourceViewer", true);
 pref("extensions.uxu.mozunit.autoStart", false);
+pref("extensions.uxu.mozunit.autoStart.oneTime.enabled", true);
 pref("extensions.uxu.mozunit.autoStart.oneTime", false);
 pref("extensions.uxu.mozunit.autoExit", false);
 
