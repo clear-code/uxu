@@ -60,6 +60,12 @@
 
 <prefpane id="prefpane-mozunit" label="&config.tabs.mozunit;">
 	<preferences>
+		<preference id="extensions.uxu.mozunit.autoStart"
+			name="extensions.uxu.mozunit.autoStart"
+			type="bool"/>
+		<preference id="extensions.uxu.mozunit.autoExit"
+			name="extensions.uxu.mozunit.autoExit"
+			type="bool"/>
 		<preference id="extensions.uxu.mozunit.showInternalStacks"
 			name="extensions.uxu.mozunit.showInternalStacks"
 			type="bool"/>
@@ -80,6 +86,12 @@
 			type="bool"/>
 	</preferences>
 
+	<checkbox id="extensions.uxu.mozunit.autoStart-check"
+		preference="extensions.uxu.mozunit.autoStart"
+		label="&config.mozunit.autoStart;"/>
+	<checkbox id="extensions.uxu.mozunit.autoExit-check"
+		preference="extensions.uxu.mozunit.autoExit"
+		label="&config.mozunit.autoExit;"/>
 	<checkbox id="extensions.uxu.mozunit.showInternalStacks-check"
 		preference="extensions.uxu.mozunit.showInternalStacks"
 		label="&config.mozunit.showInternalStacks;"/>

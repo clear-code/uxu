@@ -978,6 +978,12 @@ function updateContextMenu()
 	}
 }
  
+function restartApplication() 
+{
+	utils.setPref('extensions.uxu.mozunit.autoStart.oneTime', true);
+	utils.restartApplication();
+}
+ 	
 function showPage(aURI) 
 {
 	var recentWindow = Cc['@mozilla.org/appshell/window-mediator;1']

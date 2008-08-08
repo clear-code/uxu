@@ -86,7 +86,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 		<command id="cmd_copy" label="&mozunit.copy.label;" accesskey="&mozunit.copy.accesskey;"
 			oncommand="goDoCommand('cmd_copy')"/>
 		<command id="restartApplication" label="&mozunit.restartApplication.label;" accesskey="&mozunit.restartApplication.accesskey;"
-			oncommand="utils.restartApplication();"/>
+			oncommand="restartApplication();"/>
 	</commandset>
 
 	<!-- KEYBINDINGS -->

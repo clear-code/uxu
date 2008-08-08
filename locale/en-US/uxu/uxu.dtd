@@ -99,6 +99,8 @@
 <!ENTITY config.mozunit.autoShowContent "Show internal frame while testing automatically">
 <!ENTITY config.mozunit.autoExpandWindow.sourceViewer "Expand window automatically when source viewer is open">
 <!ENTITY config.tabs.server "UxU Server">
+<!ENTITY config.mozunit.autoStart "Start MozUnit Test Runner automatically on Firefox's startup">
+<!ENTITY config.mozunit.autoExit  "Stop MozUnit Test Runner automatically on Firefox's shutdown">
 
 <!ENTITY config.auto.start "Start server automatically on Firefox's startup">
 <!ENTITY config.auto.exit  "Stop server automatically on Firefox's shutdown">
