@@ -80,10 +80,10 @@
 			type="string"/>
 		<preference id="extensions.uxu.mozunit.runParallel"
 			name="extensions.uxu.mozunit.runParallel"
-			type="false"/>
+			type="bool"/>
 		<preference id="extensions.uxu.mozunit.runMode"
 			name="extensions.uxu.mozunit.runMode"
-			type="bool"/>
+			type="int"/>
 	</preferences>
 
 	<checkbox id="extensions.uxu.mozunit.autoStart-check"
