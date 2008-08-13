@@ -878,3 +878,11 @@ function restartApplication()
 					.getService(Ci.nsIAppStartup);
 	startup.quit(startup.eRestart | startup.eAttemptQuit);
 }
+
+
+var _console = Cc['@mozilla.org/consoleservice;1']
+		.getService(Ci.nsIConsoleService);
+function log(aMessage)
+{
+	_console.logStringMessage(aMessage);
+}

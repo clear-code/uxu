@@ -458,6 +458,7 @@ p
 scheduleToRemove
 startScheduledRemove
 stopScheduledRemove
+log
 ]]></>.toString()
 .replace(/^\s+|\s+$/g, '')
 .split('\n')
