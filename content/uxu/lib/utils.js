@@ -882,7 +882,7 @@ function restartApplication()
 
 var _console = Cc['@mozilla.org/consoleservice;1']
 		.getService(Ci.nsIConsoleService);
-function log(aMessage)
+function log()
 {
-	_console.logStringMessage(aMessage);
+	_console.logStringMessage(Array.slice(arguments).join('\n'));
 }
