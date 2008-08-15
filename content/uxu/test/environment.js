@@ -435,6 +435,7 @@ makeURIFromSpec
 makeFileWithPath
 getFileFromURLSpec
 getFilePathFromURLSpec
+normalizeToFile
 getURLFromFilePath
 getURLSpecFromFilePath
 readFrom
@@ -459,6 +460,7 @@ scheduleToRemove
 startScheduledRemove
 stopScheduledRemove
 log
+dump
 ]]></>.toString()
 .replace(/^\s+|\s+$/g, '')
 .split('\n')
