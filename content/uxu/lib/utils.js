@@ -9,6 +9,25 @@ var bundle = lib_module.require('package', 'bundle');
 var IOService = Cc['@mozilla.org/network/io-service;1']
 		.getService(Ci.nsIIOService);
 
+function normalizeToFile(aFile)
+{
+	if (typeof aFile == 'string') {
+		aFile = this.fixupIncompleteURI(aFile);
+		if (aFile.match(/^\w+:\/\//))
+			aFile = makeURIFromSpec(aFile);
+		else
+			aFile = makeFileWithPath(aFile);
+	}
+	try {
+		aFile = aFile.QueryInterface(Ci.nsILocalFile)
+	}
+	catch(e) {
+		aFile = aFile.QueryInterface(Ci.nsIURI);
+		aFile = getFileFromURLSpec(aFile.spec);
+	}
+	return aFile;
+}
+
 // URI文字列からnsIURIのオブジェクトを生成
 function makeURIFromSpec(aURI)
 {
@@ -85,13 +104,7 @@ function getURLSpecFromFilePath(aPath)
 // ファイルまたはURIで示された先のリソースを読み込み、文字列として返す
 function readFrom(aTarget, aEncoding)
 {
-	if (typeof aTarget == 'string') {
-		aTarget = this.fixupIncompleteURI(aTarget);
-		if (aTarget.match(/^\w+:\/\//))
-			aTarget = makeURIFromSpec(aTarget);
-		else
-			aTarget = makeFileWithPath(aTarget);
-	}
+	aTarget = this.normalizeToFile(aTarget);
 
 	var stream;
 	try {
@@ -142,22 +155,7 @@ function readFrom(aTarget, aEncoding)
 // ファイルパスまたはURLで示された先のテキストファイルに文字列を書き出す
 function writeTo(aContent, aTarget, aEncoding)
 {
-	if (typeof aTarget == 'string') {
-		aTarget = this.fixupIncompleteURI(aTarget);
-		if (aTarget.match(/^\w+:\/\//))
-			aTarget = makeURIFromSpec(aTarget);
-		else
-			aTarget = makeFileWithPath(aTarget);
-	}
-
-	try {
-		aTarget = aTarget.QueryInterface(Ci.nsILocalFile)
-	}
-	catch(e) {
-		aTarget = aTarget.QueryInterface(Ci.nsIURI);
-		aTarget = getFileFromURLSpec(aTarget.spec);
-	}
-
+	aTarget = this.normalizeToFile(aTarget);
 
 	// create directories
 	var current = aTarget;
@@ -799,6 +797,7 @@ function strictlyEquals(aObject1, aObject2)
 function scheduleToRemove(aFile)
 {
 	if (!this.scheduledFiles) this.scheduledFiles = {};
+	aFile = normalizeToFile(aFile);
 	if (aFile.path in this.scheduledFiles) return;
 
 	this.scheduledFiles[aFile.path] = {
@@ -885,4 +884,9 @@ var _console = Cc['@mozilla.org/consoleservice;1']
 function log()
 {
 	_console.logStringMessage(Array.slice(arguments).join('\n'));
+}
+
+function dump()
+{
+	this.log.apply(this, arguments);
 }
