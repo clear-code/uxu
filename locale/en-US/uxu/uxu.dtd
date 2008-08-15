@@ -68,6 +68,8 @@
 <!ENTITY mozunit.expected.separator ":">
 <!ENTITY mozunit.actual.label       "But was">
 <!ENTITY mozunit.actual.separator   ":">
+<!ENTITY mozunit.diff.label         "Diff">
+<!ENTITY mozunit.diff.separator     ":">
 
 
 

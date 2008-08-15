@@ -426,6 +426,10 @@ TestListener.prototype = {
 			if (report.exception.expected || report.exception.actual) {
 				_(wTestReport, 'vs').removeAttribute('hidden');
 			}
+			if (report.exception.diff) {
+				_(wTestReport, 'diff-value').textContent = report.exception.foldedDiff || report.exception.diff;
+				_(wTestReport, 'diff-row').removeAttribute('hidden');
+			}
 			_(wTestReport, 'additionalInfo').textContent = report.exception.message.replace(/^\s+/, '');
 			if (utils.hasStackTrace(report.exception)) {
 				displayStackTrace(report.exception, _(wTestReport, 'stack-trace'));

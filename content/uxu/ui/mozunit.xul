@@ -156,6 +156,11 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 							<vbox><label>&mozunit.actual.separator;</label></vbox>
 							<vbox><description role="actual-value" flex="1"/></vbox>
 						</row>
+						<row role="diff-row" hidden="true">
+							<vbox><label>&mozunit.diff.label;</label></vbox>
+							<vbox><label>&mozunit.diff.separator;</label></vbox>
+							<vbox><description role="diff-value" flex="1"/></vbox>
+						</row>
 					</rows>
 				</grid>
 

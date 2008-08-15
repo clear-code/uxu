@@ -68,6 +68,8 @@
 <!ENTITY mozunit.expected.separator ":">
 <!ENTITY mozunit.actual.label       "実際の値">
 <!ENTITY mozunit.actual.separator   ":">
+<!ENTITY mozunit.diff.label         "相違点">
+<!ENTITY mozunit.diff.separator     ":">
 
 
 
