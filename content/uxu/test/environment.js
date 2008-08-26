@@ -344,7 +344,7 @@ function getChromeWindows(aOptions)
 
 
 
-function makeTempFile(aOriginal)
+function makeTempFile(aOriginal, aCosmetic)
 {
 	var DirectoryService = Cc['@mozilla.org/file/directory_service;1']
 			.getService(Ci.nsIProperties);
@@ -367,7 +367,12 @@ function makeTempFile(aOriginal)
 		}
 		temp.append(aOriginal.leafName + '.' + random + '.tmp');
 		if (temp.exists()) temp.remove(true);
-		aOriginal.copyTo(temp.parent, temp.leafName);
+
+		if (aCosmetic)
+			utils.cosmeticClone(aOriginal, temp.parent, temp.leafName);
+		else
+			aOriginal.copyTo(temp.parent, temp.leafName);
+
 		this.tempFiles.push(temp);
 		return temp;
 	}
