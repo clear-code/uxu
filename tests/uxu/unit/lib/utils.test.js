@@ -1,8 +1,33 @@
-// -*- indent-tabs-mode: t; tab-width: 8 -*-
+// -*- indent-tabs-mode: t; tab-width: 4 -*-
 
 var utilsModule;
 var tempFile;
 var onWindows = false;
+var IOService = Cc['@mozilla.org/network/io-service;1']
+		.getService(Ci.nsIIOService);
+
+function simpleMakeURIFromSpec(aURI)
+{
+	try {
+		var newURI;
+		aURI = aURI || '';
+		if (aURI && aURI.match(/^file:/)) {
+			var fileHandler = IOService.getProtocolHandler('file')
+								.QueryInterface(Ci.nsIFileProtocolHandler);
+			var tempLocalFile = fileHandler.getFileFromURLSpec(aURI);
+
+			newURI = IOService.newFileURI(tempLocalFile);
+		}
+		else {
+			newURI = IOService.newURI(aURI, null, null);
+		}
+		return newURI;
+	}
+	catch(e){
+		alert(e);
+	}
+	return null;
+}
 
 function setUp()
 {
@@ -51,78 +76,92 @@ function test_makeURIFromSpec()
 
 function test_makeFileWithPath()
 {
-	var fileExpected = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsILocalFile);
+	var expected = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsILocalFile);
 	var file;
 
 	if (onWindows) {
-		fileExpected.initWithPath('C:\\Windows');
+		expected.initWithPath('C:\\Windows');
 		file = utilsModule.makeFileWithPath('C:\\Windows');
 	} else {
-		fileExpected.initWithPath('/tmp');
+		expected.initWithPath('/tmp');
 		file = utilsModule.makeFileWithPath('/tmp');
-        }
+    }
 
 	assert.isTrue(file);
 	assert.isTrue(file instanceof Ci.nsIFile);
 	assert.isTrue(file instanceof Ci.nsILocalFile);
-	assert.equals(fileExpected.path, file.path);
-	assert.equals(fileExpected.exists(), file.exists());
+	assert.equals(expected.path, file.path);
+	assert.equals(expected.exists(), file.exists());
 }
 
-function test_getFileFromURLSpec()
+function test_getFileFromURL()
 {
-	var fileExpected = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsILocalFile);
+	var expected = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsILocalFile),
+		uriSpec,
+		filePathPattern;
+	if (onWindows) {
+		expected.initWithPath('C:\\Windows');
+		uriSpec = 'file:///C:/Windows';
+		filePathPattern = /C:\\Windows\\?/i;
+	} else {
+		expected.initWithPath('/tmp');
+		uriSpec = 'file:///tmp';
+		filePathPattern = /\/tmp\/?/;
+    }
+	var uri = simpleMakeURIFromSpec(uriSpec);
 	var file;
 
-	if (onWindows) {
-		fileExpected.initWithPath('C:\\Windows');
-		file = utilsModule.getFileFromURLSpec('file:///C:/Windows');
-	} else {
-		fileExpected.initWithPath('/tmp');
-		file = utilsModule.getFileFromURLSpec('file:///tmp');
-        }
-
+	file = utilsModule.getFileFromURL(uri);
 	assert.isTrue(file);
 	assert.isTrue(file instanceof Ci.nsIFile);
 	assert.isTrue(file instanceof Ci.nsILocalFile);
-	assert.equals(fileExpected.path, file.path);
-	assert.equals(fileExpected.exists(), file.exists());
+	assert.equals(expected.path, file.path);
+	assert.equals(expected.exists(), file.exists());
+
+	assert.matches(filePathPattern, utilsModule.getFilePathFromURL(uri));
+
+	file = utilsModule.getFileFromURLSpec(uriSpec);
+	assert.isTrue(file);
+	assert.isTrue(file instanceof Ci.nsIFile);
+	assert.isTrue(file instanceof Ci.nsILocalFile);
+	assert.equals(expected.path, file.path);
+	assert.equals(expected.exists(), file.exists());
+
+	assert.matches(filePathPattern, utilsModule.getFilePathFromURLSpec(uriSpec));
 }
 
-function test_getFilePathFromURLSpec()
+function test_getURLFromFile()
 {
+	var file = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsILocalFile),
+		uriPattern,
+		path,
+		uri;
 	if (onWindows) {
-		assert.matches(/C:\\Windows\\?/i, utilsModule.getFilePathFromURLSpec('file:///C:/Windows'));
+		uriPattern = /file:\/\/\/C:\/Windows\/?/i;
+		path = 'C:\\Windows';
 	} else {
-		assert.matches(/\/tmp\/?/i, utilsModule.getFilePathFromURLSpec('file:///tmp'));
-	}
-}
+		uriPattern = /file:\/\/\/tmp\/?/;
+		path = '/tmp';
+    }
+	file.initWithPath('C:\\Windows');
 
-function test_getURLFromFilePath()
-{
-	var expected, url;
+	uri = utilsModule.getURLFromFile(file);
+	assert.isTrue(uri);
+	assert.isTrue(uri instanceof Ci.nsIURI);
+	assert.isTrue(uri instanceof Ci.nsIFileURL);
+	assert.matches(uriPattern, uri.spec);
+	assert.equals('file', uri.scheme);
 
-	if (onWindows) {
-		expected = /file:\/\/\/C:\/Windows\/?/i;
-		url = utilsModule.getURLFromFilePath('C:\\Windows');
-	} else {
-		expected = /file:\/\/\/tmp\/?/i;
-		url = utilsModule.getURLFromFilePath('/tmp');
-        }
-	assert.isTrue(url);
-	assert.isTrue(url instanceof Ci.nsIURI);
-	assert.isTrue(url instanceof Ci.nsIFileURL);
-	assert.matches(expected, url.spec);
-	assert.equals('file', url.scheme);
-}
+	assert.matches(uriPattern, utilsModule.getURLSpecFromFile(file));
 
-function test_getURLSpecFromFilePath()
-{
-	if (onWindows) {
-		assert.matches(/file:\/\/\/C:\/Windows\/?/i, utilsModule.getURLSpecFromFilePath('C:\\Windows'));
-	} else {
-		assert.matches(/file:\/\/\/tmp\/?/i, utilsModule.getURLSpecFromFilePath('/tmp'));
-        }
+	uri = utilsModule.getURLFromFilePath(path);
+	assert.isTrue(uri);
+	assert.isTrue(uri instanceof Ci.nsIURI);
+	assert.isTrue(uri instanceof Ci.nsIFileURL);
+	assert.matches(uriPattern, uri.spec);
+	assert.equals('file', uri.scheme);
+
+	assert.matches(uriPattern, utilsModule.getURLSpecFromFilePath(path));
 }
 
 function test_readFrom()
@@ -235,7 +274,7 @@ function test_fixupIncompleteURI()
 		assert.equals('C:\\Windows', utilsModule.fixupIncompleteURI('C:\\Windows'));
 	} else {
 		assert.equals('/tmp', utilsModule.fixupIncompleteURI('/tmp'));
-        }
+    }
 }
 
 function test_isGeneratedIterator()
