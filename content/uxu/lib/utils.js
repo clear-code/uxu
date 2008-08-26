@@ -110,7 +110,7 @@ function getURLFromFilePath(aPath)
 
 function getURLSpecFromFile(aFile)
 {
-	return IOService.newFileURI(aFile);
+	return IOService.newFileURI(aFile).spec;
 }
 
 function getURLSpecFromFilePath(aPath)

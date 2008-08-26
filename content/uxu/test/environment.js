@@ -438,10 +438,14 @@ var _this = this;
 <><![CDATA[
 makeURIFromSpec
 makeFileWithPath
-getFileFromURLSpec
-getFilePathFromURLSpec
 normalizeToFile
+getFileFromURL
+getFileFromURLSpec
+getFilePathFromURL
+getFilePathFromURLSpec
+getURLFromFile
 getURLFromFilePath
+getURLSpecFromFile
 getURLSpecFromFilePath
 readFrom
 writeTo
