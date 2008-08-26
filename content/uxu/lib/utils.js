@@ -201,7 +201,7 @@ function writeTo(aContent, aTarget, aEncoding)
 function cosmeticClone(aOriginal, aDist, aName)
 {
 	if (aOriginal.isHidden() || aOriginal.leafName.indexOf('.') == 0)
-		return;
+		return null;
 
 	if (aOriginal.isDirectory()) {
 		var folder = aDist.clone();
@@ -215,9 +215,13 @@ function cosmeticClone(aOriginal, aDist, aName)
 			file = files.getNext().QueryInterface(Ci.nsILocalFile);
 			arguments.callee(file, folder, file.leafName);
 		}
+		return folder;
 	}
 	else {
 		aOriginal.copyTo(aDist, aName);
+		var cloned = aDist.clone();
+		cloned.append(aName);
+		return cloned;
 	}
 }
 
