@@ -50,7 +50,7 @@ function makeURIFromSpec(aURI)
 	catch(e){
 	}
 	return null;
-};
+}
 
 // ファイルのパスからnsIFileのオブジェクトを生成
 function makeFileWithPath(aPath)
@@ -59,10 +59,15 @@ function makeFileWithPath(aPath)
 					.createInstance(Ci.nsILocalFile);
 	newFile.initWithPath(aPath);
 	return newFile;
-};
+}
 
 
-// URL文字列→nsIFile
+// URL→ファイル
+function getFileFromURL(aURI)
+{
+	return getFileFromURLSpec(aURI.spec);
+}
+
 function getFileFromURLSpec(aURI)
 {
 	if (!aURI)
@@ -79,26 +84,39 @@ function getFileFromURLSpec(aURI)
 	var fileHandler = IOService.getProtocolHandler('file')
 						.QueryInterface(Ci.nsIFileProtocolHandler);
 	return fileHandler.getFileFromURLSpec(aURI);
-};
+}
 
-// URL文字列→ファイルのパス
+function getFilePathFromURL(aURI)
+{
+	return getFileFromURLSpec(aURI.spec).path;
+}
+
 function getFilePathFromURLSpec(aURI)
 {
 	return getFileFromURLSpec(aURI).path;
-};
+}
  
-// ファイルのパス→nsIURI
+// ファイル→URL
+function getURLFromFile(aFile)
+{
+	return IOService.newFileURI(aFile);
+}
+
 function getURLFromFilePath(aPath)
 {
 	var tempLocalFile = makeFileWithPath(aPath);
-	return IOService.newFileURI(tempLocalFile);
-};
+	return getURLFromFile(tempLocalFile);
+}
 
-// ファイルのパス→URL文字列
+function getURLSpecFromFile(aFile)
+{
+	return IOService.newFileURI(aFile);
+}
+
 function getURLSpecFromFilePath(aPath)
 {
 	return getURLFromFilePath(aPath).spec;
-};
+}
 
 
 // ファイルまたはURIで示された先のリソースを読み込み、文字列として返す
