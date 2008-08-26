@@ -216,13 +216,13 @@ function writeTo(aContent, aTarget, aEncoding)
 
 
 // Subversionが作る不可視のファイルなどを除外して、普通に目に見えるファイルだけを複製する
-function cosmeticClone(aOriginal, aDist, aName)
+function cosmeticClone(aOriginal, aDest, aName)
 {
 	if (aOriginal.isHidden() || aOriginal.leafName.indexOf('.') == 0)
 		return null;
 
 	if (aOriginal.isDirectory()) {
-		var folder = aDist.clone();
+		var folder = aDest.clone();
 		folder.append(aName);
 		folder.create(folder.DIRECTORY_TYPE, 0777);
 
@@ -236,8 +236,8 @@ function cosmeticClone(aOriginal, aDist, aName)
 		return folder;
 	}
 	else {
-		aOriginal.copyTo(aDist, aName);
-		var cloned = aDist.clone();
+		aOriginal.copyTo(aDest, aName);
+		var cloned = aDest.clone();
 		cloned.append(aName);
 		return cloned;
 	}
