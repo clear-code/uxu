@@ -440,6 +440,7 @@ getURLFromFilePath
 getURLSpecFromFilePath
 readFrom
 writeTo
+cosmeticClone
 getPref
 setPref
 clearPref

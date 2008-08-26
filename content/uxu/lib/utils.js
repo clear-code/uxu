@@ -197,6 +197,32 @@ function writeTo(aContent, aTarget, aEncoding)
 }
 
 
+// Subversionが作る不可視のファイルなどを除外して、普通に目に見えるファイルだけを複製する
+function cosmeticClone(aOriginal, aDist, aName)
+{
+	if (aOriginal.isHidden() || aOriginal.leafName.indexOf('.') == 0)
+		return;
+
+	if (aOriginal.isDirectory()) {
+		var folder = aDist.clone();
+		folder.append(aName);
+		folder.create(folder.DIRECTORY_TYPE, 0777);
+
+		var files = aOriginal.directoryEntries;
+		var file;
+		while (files.hasMoreElements())
+		{
+			file = files.getNext().QueryInterface(Ci.nsILocalFile);
+			arguments.callee(file, folder, file.leafName);
+		}
+	}
+	else {
+		aOriginal.copyTo(aDist, aName);
+	}
+}
+
+
+
 
 
 function formatError(e)
@@ -890,3 +916,4 @@ function dump()
 {
 	this.log.apply(this, arguments);
 }
+
