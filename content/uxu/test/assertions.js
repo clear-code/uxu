@@ -323,6 +323,30 @@ function inDelta(aExpected, aActual, aDelta, aMessage)
 		 aMessage);
 }
 
+function contains(aExpected, aActual, aMessage)
+{
+	if ((utils.isArray(aActual) ? aActual : String(aActual) ).indexOf(aExpected) < 0)
+		fail(appendTypeString(aExpected),
+		     appendTypeString(aActual),
+		     bundle.getFormattedString('assert_contains_expected', [appendTypeString(aExpected)]),
+		     bundle.getFormattedString('assert_contains_actual', [appendTypeString(aActual)]),
+		     bundle.getString('assert_contains'),
+		     aMessage);
+}
+function contain(aExpected, aActual, aMessage) { this.contains(aExpected, aActual, aMessage); }
+
+function notContains(aExpected, aActual, aMessage)
+{
+	if ((utils.isArray(aActual) ? aActual : String(aActual) ).indexOf(aExpected) > -1)
+		fail(appendTypeString(aExpected),
+		     appendTypeString(aActual),
+		     bundle.getFormattedString('assert_not_contains_expected', [appendTypeString(aExpected)]),
+		     bundle.getFormattedString('assert_not_contains_actual', [appendTypeString(aActual)]),
+		     bundle.getString('assert_not_contains'),
+		     aMessage);
+}
+function notContain(aExpected, aActual, aMessage) { this.notContains(aExpected, aActual, aMessage); }
+
 function fail()
 {
 	var args = Array.slice(arguments);
