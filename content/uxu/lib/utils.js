@@ -303,8 +303,8 @@ function formatStackTrace(aException, aOptions)
 	if (aException.stack) {
 		stackLines = stackLines.concat(aException.stack.split('\n'));
 	}
-	else if (aException.location && JSFrameLocationRegExp.test(aException.location)) {
-		stackLines = ['()@' + RegExp.$1 + ':' + RegExp.$2];
+	if (aException.location && JSFrameLocationRegExp.test(aException.location)) {
+		stackLines = stackLines.concat(['()@' + RegExp.$1 + ':' + RegExp.$2]);
 	}
 
 	stackLines.forEach(function(aLine) {
