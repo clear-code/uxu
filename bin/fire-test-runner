@@ -23,7 +23,7 @@ opts = OptionParser.new("Usage: #{$0} [options] test_or_directory...") do |opts|
   opts.on("--firefox=FIREFOX",
           "command to start Firefox (#{options.firefox})") {|options.firefox|}
   opts.on("--wait=SECONDS", Float,
-          "how log wait to start Firefox (#{options.wait})") {|options.wait|}
+          "how long wait to start Firefox (#{options.wait})") {|options.wait|}
   opts.on("--retries=N", Integer,
           "how many times to retry to connect",
           "(#{options.n_retries})") {|options.n_retries|}
