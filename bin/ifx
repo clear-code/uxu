@@ -5,7 +5,12 @@ require 'socket'
 
 port = ARGV.shift || 4444
 
-history_file = "~/.ifx.history"
+history_file = nil
+begin
+  history_file = File.expand_path("~/.ifx.history")
+rescue ArgumentError
+  history_file = "ifx-history.txt"
+end
 max_history_size = 1000
 
 if defined?(Readline::HISTORY)
