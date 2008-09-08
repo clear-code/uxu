@@ -30,18 +30,23 @@ if defined?(Readline::HISTORY)
 end
 
 
-TCPSocket.open("localhost", port) do |socket|
-  while line = Readline.readline("firefox> ", true)
-    begin
-      socket.puts(line)
-    rescue Errno::EPIPE
-      break
+begin
+  TCPSocket.open("localhost", port) do |socket|
+    while line = Readline.readline("firefox> ", true)
+      begin
+        socket.puts(line)
+      rescue Errno::EPIPE
+        break
+      end
+      buffer = ""
+      while IO.select([socket], [], [], 0.05)
+        break if socket.eof?
+        buffer << socket.readpartial(4096)
+      end
+      puts buffer unless buffer.empty?
     end
-    buffer = ""
-    while IO.select([socket], [], [], 0.05)
-      break if socket.eof?
-      buffer << socket.readpartial(4096)
-    end
-    puts buffer unless buffer.empty?
   end
+rescue SystemCallError
+  puts "Is UxU server running? (localhost:#{port})"
+  exit(1)
 end
