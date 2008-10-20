@@ -471,6 +471,7 @@ startScheduledRemove
 stopScheduledRemove
 log
 dump
+notify
 ]]></>.toString()
 .replace(/^\s+|\s+$/g, '')
 .split('\n')
