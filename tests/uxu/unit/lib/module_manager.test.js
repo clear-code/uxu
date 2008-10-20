@@ -1,12 +1,16 @@
 utils.include('../../../../content/uxu/lib/module_manager.js');
 
 var rootManager;
+var libManager;
 var testManager;
+var mailManager;
 
 function setUp()
 {
 	rootManager = new ModuleManager(['chrome://uxu/content']);
+	libManager = new ModuleManager(['chrome://uxu/content/lib']);
 	testManager = new ModuleManager(['chrome://uxu/content/test']);
+	mailManager = new ModuleManager(['chrome://uxu/content/mail']);
 }
 
 function tearDown()
@@ -65,6 +69,11 @@ function testPackageType()
 
 	var package2 = testManager.require('package', 'assertions');
 	assert.equals(package1, package2);
+
+	package1 = libManager.require('package', 'utils');
+	package2 = mailManager.require('package', 'utils');
+	assert.isFunction(package1.writeTo);
+	assert.isUndefined(package2.writeTo);
 }
 
 function testUnknownType()

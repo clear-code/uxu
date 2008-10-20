@@ -43,7 +43,7 @@ ModuleManager.prototype = {
         var directoryOfCaller = Components.stack.caller.filename.replace(/\/[^/]+$/, '');
         var realUrl = this._locate(
             logicalUrl,
-            [directoryOfCaller].concat(this._searchPath),
+            this._searchPath.concat([directoryOfCaller]),
             this._suffixList);
 
         if(realUrl)
@@ -70,7 +70,7 @@ ModuleManager.prototype = {
         var directoryOfCaller = Components.stack.caller.filename.replace(/\/[^/]+$/, '');
         var realUrl = this._locate(
             logicalUrl,
-            [directoryOfCaller].concat(this._searchPath),
+            this._searchPath.concat([directoryOfCaller]),
             this._suffixList);
 
         if(realUrl)
@@ -82,7 +82,7 @@ ModuleManager.prototype = {
     /* Internals */
 
     _loadClassSharedEnv: function(realUrl) {
-        var cacheKey = ['class', realUrl];
+        var cacheKey = 'class::'+realUrl;
 
         var classConstructor = this._requireCache[cacheKey];
         if(!classConstructor) {
@@ -127,7 +127,7 @@ ModuleManager.prototype = {
     },
 
     _loadPackage: function(realUrl) {
-        var cacheKey = ['package', realUrl] // BUG
+        var cacheKey = 'package::'+realUrl;
         var pkg = this._requireCache[cacheKey];
         if(!pkg) {
             pkg = {
