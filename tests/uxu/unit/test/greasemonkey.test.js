@@ -52,7 +52,7 @@ function test_openAndClose()
 	{
 		count++;
 		yield 1000;
-		if (!retVal.value) continue;
+		if (retVal.value) break;
 	}
 	assert.isTrue(retVal.value);
 	assert.isNotNull(retVal.window);
