@@ -152,12 +152,6 @@ function testFold()
                             "8123456789"));
 }
 
-function testToDiffableString()
-{
-    assertEquals("012\\n345\\t678\\r9ab\\\\ncde",
-                 diff._toDiffableString("012\n345\t678\r9ab\\ncde"));
-}
-
 function testFoldedReadable()
 {
     assertEquals("- 0123456789" +
