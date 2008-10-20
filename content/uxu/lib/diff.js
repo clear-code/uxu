@@ -5,12 +5,16 @@ var ReadableDiffer = lib.require('class', 'readableDiffer');
 
 function readable(aFrom, aTo)
 {
+	aFrom = _toDiffableString(aFrom);
+	aTo   = _toDiffableString(aTo);
 	var differ = new ReadableDiffer(_splitWithLine(aFrom), _splitWithLine(aTo));
 	return differ.diff().join("\n");
 }
 
 function foldedReadable(aFrom, aTo)
 {
+	aFrom = _toDiffableString(aFrom);
+	aTo   = _toDiffableString(aTo);
 	var differ = new ReadableDiffer(_splitWithLine(_fold(aFrom)),
 									_splitWithLine(_fold(aTo)));
 	return differ.diff().join("\n");
@@ -63,4 +67,13 @@ function _fold(aString)
 		return aLine.replace(/(.{78})/g, "$1\n");
 	});
 	return foldedLines.join("\n");
+}
+
+function _toDiffableString(aString)
+{
+	return String(aString)
+			.replace(/\\/g, '\\\\')
+			.replace(/\t/g, '\\t')
+			.replace(/\r/g, '\\r')
+			.replace(/\n/g, '\\n');
 }
