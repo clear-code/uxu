@@ -1,6 +1,10 @@
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']); 
 var utils  = lib_module.require('package', 'utils');
 
+var mail_module = new ModuleManager(['chrome://uxu/content/lib']); 
+var mailUtils = mail_module.require('package', 'utils');
+
+
 function constructor(aReal)
 {
 	this._real = aReal;
@@ -22,6 +26,8 @@ function SendMsg(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgress)
 
 function _fakeSendMsg(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgress)
 {
+	mailUtils.emulateSendMessage(aMsgWindow, this._real.compFields);
+
 	var progress = this._real.progress;
 	var compFields = this._real.compFields;
 	var win = this._real.domWindow;
