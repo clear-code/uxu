@@ -52,11 +52,13 @@ function needFold(aDiff)
 
 function _splitWithLine(aString)
 {
+	aString = String(aString);
 	return aString.length == 0 ? [] : aString.split(/\r?\n/);
 }
 
 function _fold(aString)
 {
+	aString = String(aString);
 	var foldedLines = aString.split("\n").map(function (aLine) {
 		return aLine.replace(/(.{78})/g, "$1\n");
 	});
