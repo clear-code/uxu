@@ -1,11 +1,14 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
 var assertionsModule;
+var diff;
 
 function setUp()
 {
 	assertionsModule = {};
 	utils.include('../../../../content/uxu/test/assertions.js', assertionsModule);
+	diff = {};
+	utils.include('../../../../content/uxu/lib/diff.js', diff);
 }
 
 function tearDown()
@@ -309,16 +312,105 @@ function test_fail()
 {
 	var exception = null;
 	try {
-		assertionsModule.fail(0, 1, 2, 3, 4);
+		assertionsModule.fail(
+			null,
+			0,
+			1,
+			2
+		);
 	}
 	catch(e) {
 		exception = e;
 	}
 	assert.isNotNull(exception);
 	assert.equals('AssertionFailed', exception.name);
-	assert.equals(0, exception.expected);
+	assert.isUndefined(exception.expectedRaw);
+	assert.isUndefined(exception.actualRaw);
+	assert.isUndefined(exception.expected);
+	assert.isUndefined(exception.actual);
+	assert.equals('', exception.diff);
+	assert.equals('', exception.foldedDiff);
+	assert.equals('2\n1\n0', exception.message);
+
+
+	exception = null;
+	try {
+		assertionsModule.fail(
+			{
+				actualRaw   : 0,
+				actual      : 1
+			},
+			2,
+			3,
+			4
+		);
+	}
+	catch(e) {
+		exception = e;
+	}
+	assert.isNotNull(exception);
+	assert.equals('AssertionFailed', exception.name);
+	assert.isUndefined(exception.expectedRaw);
+	assert.equals(0, exception.actualRaw);
+	assert.isUndefined(exception.expected);
 	assert.equals(1, exception.actual);
+	assert.equals('', exception.diff);
+	assert.equals('', exception.foldedDiff);
 	assert.equals('4\n3\n2', exception.message);
+
+
+	exception = null;
+	try {
+		assertionsModule.fail(
+			{
+				expectedRaw   : 0,
+				expected      : 1
+			},
+			2,
+			3,
+			4
+		);
+	}
+	catch(e) {
+		exception = e;
+	}
+	assert.isNotNull(exception);
+	assert.equals('AssertionFailed', exception.name);
+	assert.equals(0, exception.expectedRaw);
+	assert.isUndefined(exception.actualRaw);
+	assert.equals(1, exception.expected);
+	assert.isUndefined(exception.actual);
+	assert.equals('', exception.diff);
+	assert.equals('', exception.foldedDiff);
+	assert.equals('4\n3\n2', exception.message);
+
+
+	exception = null;
+	try {
+		assertionsModule.fail(
+			{
+				expectedRaw : '0aaaaaaaaaa',
+				actualRaw   : '1aaaaaaaaaa',
+				expected    : 2,
+				actual      : 3
+			},
+			4,
+			5,
+			6
+		);
+	}
+	catch(e) {
+		exception = e;
+	}
+	assert.isNotNull(exception);
+	assert.equals('AssertionFailed', exception.name);
+	assert.equals('0aaaaaaaaaa', exception.expectedRaw);
+	assert.equals('1aaaaaaaaaa', exception.actualRaw);
+	assert.equals(2, exception.expected);
+	assert.equals(3, exception.actual);
+	assert.equals(diff.readable('0aaaaaaaaaa', '1aaaaaaaaaa'), exception.diff);
+	assert.equals(diff.foldedReadable('0aaaaaaaaaa', '1aaaaaaaaaa'), exception.foldedDiff);
+	assert.equals('6\n5\n4', exception.message);
 }
 
 function test_appendTypeString()

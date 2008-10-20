@@ -26,10 +26,12 @@ var diff = lib_module.require('package', 'diff');
 function equals(aExpected, aActual, aMessage)
 {
 	if (!utils.equals(aExpected, aActual))
-		fail(appendTypeString(aExpected),
-		     appendTypeString(aActual),
-		     bundle.getFormattedString('assert_equals_expected', [appendTypeString(aExpected)]),
-		     bundle.getFormattedString('assert_equals_actual', [appendTypeString(aActual)]),
+		fail({
+		     	expectedRaw : appendTypeString(aExpected),
+		     	actualRaw   : appendTypeString(aActual),
+		     	expected    : bundle.getFormattedString('assert_equals_expected', [appendTypeString(aExpected)]),
+		     	actual      : bundle.getFormattedString('assert_equals_actual', [appendTypeString(aActual)])
+		     },
 		     bundle.getString('assert_equals'),
 		     aMessage);
 }
@@ -38,10 +40,12 @@ function equal(aExpected, aActual, aMessage) { this.equals(aExpected, aActual, a
 function notEquals(aExpected, aActual, aMessage)
 {
 	if (utils.equals(aExpected, aActual))
-		fail(appendTypeString(aExpected),
-		     appendTypeString(aActual),
-		     bundle.getFormattedString('assert_not_equals_expected', [appendTypeString(aExpected)]),
-		     bundle.getFormattedString('assert_not_equals_actual', [appendTypeString(aActual)]),
+		fail({
+		     	expectedRaw : appendTypeString(aExpected),
+		     	actualRaw   : appendTypeString(aActual),
+		     	expected    : bundle.getFormattedString('assert_not_equals_expected', [appendTypeString(aExpected)]),
+		     	actual      : bundle.getFormattedString('assert_not_equals_actual', [appendTypeString(aActual)])
+		     },
 		     bundle.getString('assert_not_equals'),
 		     aMessage);
 }
@@ -50,10 +54,12 @@ function notEqual(aExpected, aActual, aMessage) { this.notEquals(aExpected, aAct
 function strictlyEquals(aExpected, aActual, aMessage)
 {
 	if (!utils.strictlyEquals(aExpected, aActual))
-		fail(appendTypeString(aExpected),
-		     appendTypeString(aActual),
-		     bundle.getFormattedString('assert_strictly_equals_expected', [appendTypeString(aExpected)]),
-		     bundle.getFormattedString('assert_strictly_equals_actual', [appendTypeString(aActual)]),
+		fail({
+		     	expectedRaw : appendTypeString(aExpected),
+		     	actualRaw   : appendTypeString(aActual),
+		     	expected    : bundle.getFormattedString('assert_strictly_equals_expected', [appendTypeString(aExpected)]),
+		     	actual      : bundle.getFormattedString('assert_strictly_equals_actual', [appendTypeString(aActual)])
+		     },
 		     bundle.getString('assert_strictly_equals'),
 		     aMessage);
 }
@@ -62,10 +68,12 @@ function strictlyEqual(aExpected, aActual, aMessage) { this.strictlyEquals(aExpe
 function notStrictlyEquals(aExpected, aActual, aMessage)
 {
 	if (utils.strictlyEquals(aExpected, aActual))
-		fail(appendTypeString(aExpected),
-		     appendTypeString(aActual),
-		     bundle.getFormattedString('assert_not_strictly_equals_expected', [appendTypeString(aExpected)]),
-		     bundle.getFormattedString('assert_not_strictly_equals_actual', [appendTypeString(aActual)]),
+		fail({
+		     	expectedRaw : appendTypeString(aExpected),
+		     	actualRaw   : appendTypeString(aActual),
+		     	expected    : bundle.getFormattedString('assert_not_strictly_equals_expected', [appendTypeString(aExpected)]),
+		     	actual      : bundle.getFormattedString('assert_not_strictly_equals_actual', [appendTypeString(aActual)])
+		     },
 		     bundle.getString('assert_not_strictly_equals'),
 		     aMessage);
 }
@@ -74,140 +82,140 @@ function notStrictlyEqual(aExpected, aActual, aMessage) { this.notStrictlyEquals
 function isTrue(aActual, aMessage)
 {
 	if (!aActual)
-		fail(null,
-		     appendTypeString(aActual),
-		     null,
-		     bundle.getFormattedString('assert_is_true_actual', [appendTypeString(aActual)]),
+		fail({
+		     	actualRaw   : appendTypeString(aActual),
+		     	actual      : bundle.getFormattedString('assert_is_true_actual', [appendTypeString(aActual)])
+		     },
 		     bundle.getString('assert_is_true'), aMessage);
 }
 
 function isFalse(aActual, aMessage)
 {
 	if (aActual)
-		fail(null,
-		     appendTypeString(aActual),
-		     null,
-		     bundle.getFormattedString('assert_is_false_actual', [appendTypeString(aActual)]),
+		fail({
+		     	actualRaw   : appendTypeString(aActual),
+		     	actual      : bundle.getFormattedString('assert_is_false_actual', [appendTypeString(aActual)])
+		     },
 		     bundle.getString('assert_is_false'), aMessage);
 }
 
 function isBoolean(aActual, aMessage)
 {
 	if (typeof aActual != 'boolean')
-		fail(null,
-		     appendTypeString(aActual),
-		     null,
-		     bundle.getFormattedString('assert_is_boolean_actual', [appendTypeString(aActual)]),
+		fail({
+		     	actualRaw   : appendTypeString(aActual),
+		     	actual      : bundle.getFormattedString('assert_is_boolean_actual', [appendTypeString(aActual)])
+		     },
 		     bundle.getString('assert_is_boolean'), aMessage);
 }
 
 function isNotBoolean(aActual, aMessage)
 {
 	if (typeof aActual == 'boolean')
-		fail(null,
-		     appendTypeString(aActual),
-		     null,
-		     bundle.getFormattedString('assert_is_not_boolean_actual', [appendTypeString(aActual)]),
+		fail({
+		     	actualRaw   : appendTypeString(aActual),
+		     	actual      : bundle.getFormattedString('assert_is_not_boolean_actual', [appendTypeString(aActual)])
+		     },
 		     bundle.getString('assert_is_not_boolean'), aMessage);
 }
 
 function isString(aActual, aMessage)
 {
 	if (typeof aActual != 'string')
-		fail(null,
-		     appendTypeString(aActual),
-		     null,
-		     bundle.getFormattedString('assert_is_string_actual', [appendTypeString(aActual)]),
+		fail({
+		     	actualRaw   : appendTypeString(aActual),
+		     	actual      : bundle.getFormattedString('assert_is_string_actual', [appendTypeString(aActual)])
+		     },
 		     bundle.getString('assert_is_string'), aMessage);
 }
 
 function isNotString(aActual, aMessage)
 {
 	if (typeof aActual == 'string')
-		fail(null,
-		     appendTypeString(aActual),
-		     null,
-		     bundle.getFormattedString('assert_is_not_string_actual', [appendTypeString(aActual)]),
+		fail({
+		     	actualRaw   : appendTypeString(aActual),
+		     	actual      : bundle.getFormattedString('assert_is_not_string_actual', [appendTypeString(aActual)])
+		     },
 		     bundle.getString('assert_is_not_string'), aMessage);
 }
 
 function isNumber(aActual, aMessage)
 {
 	if (typeof aActual != 'number')
-		fail(null,
-		     appendTypeString(aActual),
-		     null,
-		     bundle.getFormattedString('assert_is_number_actual', [appendTypeString(aActual)]),
+		fail({
+		     	actualRaw   : appendTypeString(aActual),
+		     	actual      : bundle.getFormattedString('assert_is_number_actual', [appendTypeString(aActual)])
+		     },
 		     bundle.getString('assert_is_number'), aMessage);
 }
 
 function isNotNumber(aActual, aMessage)
 {
 	if (typeof aActual == 'number')
-		fail(null,
-		     appendTypeString(aActual),
-		     null,
-		     bundle.getFormattedString('assert_is_not_number_actual', [appendTypeString(aActual)]),
+		fail({
+		     	actualRaw   : appendTypeString(aActual),
+		     	actual      : bundle.getFormattedString('assert_is_not_number_actual', [appendTypeString(aActual)])
+		     },
 		     bundle.getString('assert_is_not_number'), aMessage);
 }
 
 function isFunction(aActual, aMessage)
 {
 	if (typeof aActual != 'function')
-		fail(null,
-		     appendTypeString(aActual),
-		     null,
-		     bundle.getFormattedString('assert_is_function_actual', [appendTypeString(aActual)]),
+		fail({
+		     	actualRaw   : appendTypeString(aActual),
+		     	actual      : bundle.getFormattedString('assert_is_function_actual', [appendTypeString(aActual)])
+		     },
 		     bundle.getString('assert_is_function'), aMessage);
 }
 
 function isNotFunction(aActual, aMessage)
 {
 	if (typeof aActual == 'function')
-		fail(null,
-		     appendTypeString(aActual),
-		     null,
-		     bundle.getFormattedString('assert_is_not_function_actual', [appendTypeString(aActual)]),
+		fail({
+		     	actualRaw   : appendTypeString(aActual),
+		     	actual      : bundle.getFormattedString('assert_is_not_function_actual', [appendTypeString(aActual)])
+		     },
 		     bundle.getString('assert_is_not_function'), aMessage);
 }
 
 function isDefined(aActual, aMessage)
 {
 	if (aActual === undefined)
-		fail(null,
-		     appendTypeString(aActual),
-		     null,
-		     bundle.getFormattedString('assert_is_defined_actual', [appendTypeString(aActual)]),
+		fail({
+		     	actualRaw   : appendTypeString(aActual),
+		     	actual      : bundle.getFormattedString('assert_is_defined_actual', [appendTypeString(aActual)])
+		     },
 		     bundle.getString('assert_is_defined'), aMessage);
 }
 
 function isUndefined(aActual, aMessage)
 {
 	if (aActual !== undefined)
-		fail(null,
-		     appendTypeString(aActual),
-		     null,
-		     bundle.getFormattedString('assert_is_undefined_actual', [appendTypeString(aActual)]),
+		fail({
+		     	actualRaw   : appendTypeString(aActual),
+		     	actual      : bundle.getFormattedString('assert_is_undefined_actual', [appendTypeString(aActual)])
+		     },
 		     bundle.getString('assert_is_undefined'), aMessage);
 }
 
 function isNull(aActual, aMessage)
 {
 	if (aActual !== null)
-		fail(null,
-		     appendTypeString(aActual),
-		     null,
-		     bundle.getFormattedString('assert_is_null_actual', [appendTypeString(aActual)]),
+		fail({
+		     	actualRaw   : appendTypeString(aActual),
+		     	actual      : bundle.getFormattedString('assert_is_null_actual', [appendTypeString(aActual)])
+		     },
 		     bundle.getString('assert_is_null'), aMessage);
 }
 
 function isNotNull(aActual, aMessage)
 {
 	if (aActual === null)
-		fail(null,
-		     appendTypeString(aActual),
-		     null,
-		     bundle.getFormattedString('assert_is_not_null_actual', [appendTypeString(aActual)]),
+		fail({
+		     	actualRaw   : appendTypeString(aActual),
+		     	actual      : bundle.getFormattedString('assert_is_not_null_actual', [appendTypeString(aActual)])
+		     },
 		     bundle.getString('assert_is_not_null'), aMessage);
 }
 
@@ -224,10 +232,10 @@ function raises(aExpectedException, aFunction, aContext, aMessage)
 		raised = true;
 	}
 	if (!raised)
-		fail(aExpectedException,
-		     null,
-		     bundle.getFormattedString('assert_raises_expected', [aExpectedException]),
-		     null,
+		fail({
+		     	expectedRaw : aExpectedException,
+		     	expected    : bundle.getFormattedString('assert_raises_expected', [aExpectedException])
+		     },
 		     bundle.getString('assert_raises'), aMessage);
 }
 function raise(aExpectedException, aFunction, aContext, aMessage) { this.raises(aExpectedException, aFunction, aContext, aMessage); }
@@ -251,10 +259,12 @@ function notRaises(aExpectedException, aFunction, aContext, aMessage)
 		exception = e;
 	}
 	if (raised)
-		fail(aExpectedException,
-		     exception,
-		     bundle.getFormattedString('assert_not_raises_expected', [aExpectedException]),
-		     bundle.getFormattedString('assert_not_raises_actual', [exception]),
+		fail({
+		     	expectedRaw : aExpectedException,
+		     	actualRaw   : exception,
+		     	expected    : bundle.getFormattedString('assert_not_raises_expected', [aExpectedException]),
+		     	actual      : bundle.getFormattedString('assert_not_raises_actual', [exception])
+		     },
 		     bundle.getString('assert_not_raises'), aMessage);
 }
 function notRaise(aExpectedException, aFunction, aContext, aMessage) { this.notRaises(aExpectedException, aFunction, aContext, aMessage); }
@@ -262,10 +272,12 @@ function notRaise(aExpectedException, aFunction, aContext, aMessage) { this.notR
 function matches(aExpectedPattern, aActualString, aMessage)
 {
 	if (!aActualString.match(aExpectedPattern))
-		fail(aExpectedPattern,
-		     aActualString,
-		     bundle.getFormattedString('assert_matches_expected', [aExpectedPattern]),
-		     bundle.getFormattedString('assert_matches_actual', [aActualString]),
+		fail({
+		     	expectedRaw : aExpectedPattern,
+		     	actualRaw   : aActualString,
+		     	expected    : bundle.getFormattedString('assert_matches_expected', [aExpectedPattern]),
+		     	actual      : bundle.getFormattedString('assert_matches_actual', [aActualString])
+		     },
 		     bundle.getString('assert_matches'), aMessage);
 }
 function match(aExpectedPattern, aActualString, aMessage) { this.matches(aExpectedPattern, aActualString, aMessage); }
@@ -273,10 +285,12 @@ function match(aExpectedPattern, aActualString, aMessage) { this.matches(aExpect
 function notMatches(aExpectedPattern, aActualString, aMessage)
 {
 	if (aActualString.match(aExpectedPattern))
-		fail(aExpectedPattern,
-		     aActualString,
-		     bundle.getFormattedString('assert_not_matches_expected', [aExpectedPattern]),
-		     bundle.getFormattedString('assert_not_matches_actual', [aActualString]),
+		fail({
+		     	expectedRaw : aExpectedPattern,
+		     	actualRaw   : aActualString,
+		     	expected    : bundle.getFormattedString('assert_not_matches_expected', [aExpectedPattern]),
+		     	actual      : bundle.getFormattedString('assert_not_matches_actual', [aActualString])
+		     },
 		     bundle.getString('assert_not_matches'), aMessage);
 }
 function notMatch(aExpectedPattern, aActualString, aMessage) { this.notMatches(aExpectedPattern, aActualString, aMessage); }
@@ -284,20 +298,24 @@ function notMatch(aExpectedPattern, aActualString, aMessage) { this.notMatches(a
 function pattern(aExpectedString, aActualPattern, aMessage)
 {
 	if (!aExpectedString.match(aActualPattern))
-		fail(aExpectedString,
-		     aActualPattern,
-		     bundle.getFormattedString('assert_pattern_expected', [aExpectedString]),
-		     bundle.getFormattedString('assert_pattern_actual', [aActualPattern]),
+		fail({
+		     	expectedRaw : aExpectedString,
+		     	actualRaw   : aActualPattern,
+		     	expected    : bundle.getFormattedString('assert_pattern_expected', [aExpectedString]),
+		     	actual      : bundle.getFormattedString('assert_pattern_actual', [aActualPattern])
+		     },
 		     bundle.getString('assert_pattern'), aMessage);
 }
 
 function notPattern(aExpectedString, aActualPattern, aMessage)
 {
 	if (aExpectedString.match(aActualPattern))
-		fail(aExpectedString,
-		     aActualPattern,
-		     bundle.getFormattedString('assert_not_pattern_expected', [aExpectedString]),
-		     bundle.getFormattedString('assert_not_pattern_actual', [aActualPattern]),
+		fail({
+		     	expectedRaw : aExpectedString,
+		     	actualRaw   : aActualPattern,
+		     	expected    : bundle.getFormattedString('assert_not_pattern_expected', [aExpectedString]),
+		     	actual      : bundle.getFormattedString('assert_not_pattern_actual', [aActualPattern])
+		     },
 		     bundle.getString('assert_not_pattern'), aMessage);
 }
 
@@ -309,16 +327,18 @@ function inDelta(aExpected, aActual, aDelta, aMessage)
 	if (aExpected - aDelta < aActual && aActual < aExpected + aDelta)
 		return;
 
-	fail((aExpected - aDelta)+' - '+(aExpected + aDelta),
-	     aActual,
-		 bundle.getFormattedString('assert_in_delta_expected',
-								   [appendTypeString(aExpected - aDelta),
-									appendTypeString(aActual),
-									appendTypeString(aExpected + aDelta),
-									appendTypeString(aExpected),
-									appendTypeString(aDelta)]),
-		 bundle.getFormattedString('assert_in_delta_actual',
-								   [appendTypeString(aActual)]),
+	fail({
+	     	expectedRaw : (aExpected - aDelta)+' - '+(aExpected + aDelta),
+	     	actualRaw   : aActual,
+	     	expected    : bundle.getFormattedString('assert_in_delta_expected',
+	     							   [appendTypeString(aExpected - aDelta),
+	     								appendTypeString(aActual),
+	     								appendTypeString(aExpected + aDelta),
+	     								appendTypeString(aExpected),
+	     								appendTypeString(aDelta)]),
+	     	actual      : bundle.getFormattedString('assert_in_delta_actual',
+	     							   [appendTypeString(aActual)])
+	     },
 		 bundle.getString('assert_in_delta'),
 		 aMessage);
 }
@@ -326,10 +346,12 @@ function inDelta(aExpected, aActual, aDelta, aMessage)
 function contains(aExpected, aActual, aMessage)
 {
 	if ((utils.isArray(aActual) ? aActual : String(aActual) ).indexOf(aExpected) < 0)
-		fail(appendTypeString(aExpected),
-		     appendTypeString(aActual),
-		     bundle.getFormattedString('assert_contains_expected', [appendTypeString(aExpected)]),
-		     bundle.getFormattedString('assert_contains_actual', [appendTypeString(aActual)]),
+		fail({
+		     	expectedRaw : appendTypeString(aExpected),
+		     	actualRaw   : appendTypeString(aActual),
+		     	expected    : bundle.getFormattedString('assert_contains_expected', [appendTypeString(aExpected)]),
+		     	actual      : bundle.getFormattedString('assert_contains_actual', [appendTypeString(aActual)])
+		     },
 		     bundle.getString('assert_contains'),
 		     aMessage);
 }
@@ -338,10 +360,12 @@ function contain(aExpected, aActual, aMessage) { this.contains(aExpected, aActua
 function notContains(aExpected, aActual, aMessage)
 {
 	if ((utils.isArray(aActual) ? aActual : String(aActual) ).indexOf(aExpected) > -1)
-		fail(appendTypeString(aExpected),
-		     appendTypeString(aActual),
-		     bundle.getFormattedString('assert_not_contains_expected', [appendTypeString(aExpected)]),
-		     bundle.getFormattedString('assert_not_contains_actual', [appendTypeString(aActual)]),
+		fail({
+		     	expectedRaw : appendTypeString(aExpected),
+		     	actualRaw   : appendTypeString(aActual),
+		     	expected    : bundle.getFormattedString('assert_not_contains_expected', [appendTypeString(aExpected)]),
+		     	actual      : bundle.getFormattedString('assert_not_contains_actual', [appendTypeString(aActual)])
+		     },
 		     bundle.getString('assert_not_contains'),
 		     aMessage);
 }
@@ -352,19 +376,23 @@ function fail()
 	var args = Array.slice(arguments);
 	var error = new Error();
 	error.name = 'AssertionFailed';
-	error.expectedRaw = args.shift();
-	error.actualRaw = args.shift();
-	error.expected = args.shift();
-	error.actual = args.shift();
-	if (error.expectedRaw && error.actualRaw) {
+	var results = args.shift() || {};
+	error.expectedRaw = results.expectedRaw;
+	error.actualRaw = results.actualRaw;
+	error.expected = results.expected;
+	error.actual = results.actual;
+	if ('expectedRaw' in results && 'actualRaw' in results) {
 		var _diff = diff.readable(error.expectedRaw, error.actualRaw);
 		if (diff.isInterested(_diff)) {
 			error.diff = _diff;
-			if (diff.needFold(_diff))
+			if (diff.needFold(_diff)) {
 				error.foldedDiff = diff.foldedReadable(error.expectedRaw,
 													   error.actualRaw);
+			}
 		}
 	}
+	if (!('diff' in error)) error.diff = '';
+	if (!('foldedDiff' in error)) error.foldedDiff = error.diff;
 	error.message = args.reverse().join('\n');
 	throw error;
 }
