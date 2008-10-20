@@ -14,7 +14,7 @@ function emulateSendMessage(aMsgWindow, aMsgCompFields)
 
 			newsgroups  : aMsgCompFields.newsgroups,
 			newshost    : aMsgCompFields.newshost,
-			newspostUrl : aMsgCompFields.newspostUrl
+			newspostUrl : aMsgCompFields.newspostUrl,
 			followupTo  : aMsgCompFields.followupTo,
 
 			subject      : aMsgCompFields.subject,
