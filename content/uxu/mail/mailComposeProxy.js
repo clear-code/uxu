@@ -1,7 +1,7 @@
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']); 
 var utils  = lib_module.require('package', 'utils');
 
-var mail_module = new ModuleManager(['chrome://uxu/content/lib']); 
+var mail_module = new ModuleManager(['chrome://uxu/content/mail']); 
 var mailUtils = mail_module.require('package', 'utils');
 
 
@@ -26,28 +26,33 @@ function SendMsg(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgress)
 
 function _fakeSendMsg(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgress)
 {
-	mailUtils.emulateSendMessage(aMsgWindow, this._real.compFields);
+	try {
+		mailUtils.emulateSendMessage(aMsgWindow, this._real.compFields);
 
-	var progress = this._real.progress;
-	var compFields = this._real.compFields;
-	var win = this._real.domWindow;
-	if (compFields.fcc) {
-		if (compFields.fcc.toLowerCase() == 'nocopy://') {
+		var progress = this._real.progress;
+		var compFields = this._real.compFields;
+		var win = this._real.domWindow;
+		if (compFields.fcc) {
+			if (compFields.fcc.toLowerCase() == 'nocopy://') {
+				if (progress) {
+					progress.unregisterListener(this._real);
+		//			progress.closeProgressDialog(false);
+				}
+				if (win) this._real.CloseWindow(true);
+			}
+		}
+		else {
 			if (progress) {
 				progress.unregisterListener(this._real);
-	//			progress.closeProgressDialog(false);
+		//		progress.closeProgressDialog(false);
 			}
 			if (win) this._real.CloseWindow(true);
 		}
+		if (this._real.deleteDraft) this._real.removeCurrentDraftMessage(this._real, false);
 	}
-	else {
-		if (progress) {
-			progress.unregisterListener(this._real);
-	//		progress.closeProgressDialog(false);
-		}
-		if (win) this._real.CloseWindow(true);
+	catch(e) {
+		if (!this.DEBUG) throw e;
 	}
-	if (this._real.deleteDraft) this._real.removeCurrentDraftMessage(this._real, false);
 }
 
 /*
