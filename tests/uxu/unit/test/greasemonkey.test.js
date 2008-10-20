@@ -54,6 +54,7 @@ function test_openAndClose()
 		yield 1000;
 		if (retVal.value) break;
 	}
+	yield 100;
 	assert.isTrue(retVal.value);
 	assert.isNotNull(retVal.window);
 	assert.isTrue(retVal.window instanceof Ci.nsIDOMWindow);
