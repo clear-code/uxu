@@ -442,3 +442,30 @@ function testInspect()
 		       '{"string": "String", "29": 10}]',
 		       [object, object]);
 }
+
+function testNotify()
+{
+	var observer = {
+			observe : function(aSubject, aTopic, aData)
+			{
+				this.lastSubject = aSubject;
+				this.lastTopic = aTopic;
+				this.lastData = aData;
+			},
+			lastSubject : null,
+			lastTopic : null,
+			lastData : null
+		};
+
+	const ObserverService = Cc['@mozilla.org/observer-service;1']
+				.getService(Ci.nsIObserverService);
+	ObserverService.addObserver(observer, 'uxu:test-topic', false);
+
+	utilsModule.notify(window, 'uxu:test-topic', 'data');
+
+	ObserverService.removeObserver(observer, 'uxu:test-topic');
+
+	assert.equals(window, observer.lastSubject);
+	assert.equals('uxu:test-topic', observer.lastTopic);
+	assert.equals('data', observer.lastData);
+}

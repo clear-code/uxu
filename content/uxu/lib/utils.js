@@ -904,15 +904,12 @@ function stopScheduledRemove()
 
 function restartApplication()
 {
-	const ObserverService = Cc['@mozilla.org/observer-service;1']
-				.getService(Ci.nsIObserverService);
-
 	var cancelQuit = Cc['@mozilla.org/supports-PRBool;1']
 				.createInstance(Ci.nsISupportsPRBool);
-	ObserverService.notifyObservers(cancelQuit, 'quit-application-requested', null);
+	this.notify(cancelQuit, 'quit-application-requested', null);
 
 	if (!cancelQuit.data) {
-		ObserverService.notifyObservers(null, 'quit-application-granted', null);
+		this.notify(null, 'quit-application-granted', null);
 		var windows = Cc['@mozilla.org/appshell/window-mediator;1']
 					.getService(Ci.nsIWindowMediator)
 					.getEnumerator(null);
@@ -943,3 +940,10 @@ function dump()
 	this.log.apply(this, arguments);
 }
 
+
+const ObserverService = Cc['@mozilla.org/observer-service;1']
+			.getService(Ci.nsIObserverService);
+function notify(aSubject, aTopic, aData)
+{
+	ObserverService.notifyObservers(aSubject, aTopic, aData);
+}
