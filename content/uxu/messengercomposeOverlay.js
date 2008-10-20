@@ -1,5 +1,5 @@
-var uxuLibModule = new ModuleManager(['chrome://uxu/content/lib']);
-var UXUMailComposeProxy = uxuLibModule.require('class', 'uxuMailComposeProxy');
+var UXUMailModule = new ModuleManager(['chrome://uxu/content/mail']);
+var UXUMailComposeProxy = UXUMailModule.require('class', 'mailComposeProxy');
 
 window.addEventListener('DOMContentLoaded', function() {
 	window.removeEventListener('DOMContentLoaded', arguments.callee, false);
