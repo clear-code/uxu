@@ -1,3 +1,5 @@
+pref("extensions.uxu.running", false);
+
 pref("extensions.uxu.run.ignoreHiddenFiles", true);
 pref("extensions.uxu.run.timeout", 30000);
 pref("extensions.uxu.run.history.expire.days", 30); // days

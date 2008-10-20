@@ -23,6 +23,8 @@ function constructor(aBrowser, aFiles)
  
 function run(aReporter, aAll) 
 {
+	utils.setPref('extensions.uxu.running', true);
+
 	if (aReporter) this.addListener(aReporter);
 
 	this.runningCount = 0;
@@ -200,13 +202,16 @@ function handleEvent(aEvent)
 			this.runningCount--;
 			this._cleanUpModifications(aEvent.target);
 			aEvent.target.removeListener(this);
-			if (this._current == this._testsCount)
+			if (this._current == this._testsCount) {
+				utils.setPref('extensions.uxu.running', false);
 				this.fireEvent('Finish');
+			}
 			break;
 
 		case 'Abort':
 			aEvent.target.removeListener(this);
 		case 'Error':
+			utils.setPref('extensions.uxu.running', false);
 			this.fireEvent(aEvent.type, aEvent.data);
 			break;
 	}
