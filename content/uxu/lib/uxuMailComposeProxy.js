@@ -1,12 +1,56 @@
-function UXUMailComposeProxy(aReal)
+var lib_module = new ModuleManager(['chrome://uxu/content/lib']); 
+var utils  = lib_module.require('package', 'utils');
+
+function constructor(aReal)
 {
 	this._real = aReal;
 	this._init();
+	this.DEBUG = false;
 }
-UXUMailComposeProxy.prototype = {
-	_real : null,
 
-	_properties : <![CDATA[
+
+function SendMsg(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgress)
+{
+	if (this.DEBUG ||
+		utils.getPref('extensions.uxu.running')) {
+		this._fakeSendMsg.apply(this, arguments);
+	}
+	else {
+		return this._real.SendMsg.apply(this._real, arguments);
+	}
+}
+
+function _fakeSendMsg(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgress)
+{
+	var progress = this._real.progress;
+	var compFields = this._real.compFields;
+	var win = this._real.domWindow;
+	if (compFields.fcc) {
+		if (compFields.fcc.toLowerCase() == 'nocopy://') {
+			if (progress) {
+				progress.unregisterListener(this._real);
+	//			progress.closeProgressDialog(false);
+			}
+			if (win) this._real.CloseWindow(true);
+		}
+	}
+	else {
+		if (progress) {
+			progress.unregisterListener(this._real);
+	//		progress.closeProgressDialog(false);
+		}
+		if (win) this._real.CloseWindow(true);
+	}
+	if (this._real.deleteDraft) this._real.removeCurrentDraftMessage(this._real, false);
+}
+
+/*
+function abort()
+{
+}
+*/
+
+var _properties = <![CDATA[
 		type
 		bodyModified
 		savedFolderURI
@@ -14,8 +58,8 @@ UXUMailComposeProxy.prototype = {
 		recycledWindow
 		deleteDraft
 		insertingQuotedContent
-	]]>.toString(),
-	_readOnlyProperties : <![CDATA[
+	]]>.toString();
+var _readOnlyProperties = <![CDATA[
 		messageSend
 		editor
 		domWindow
@@ -24,8 +68,8 @@ UXUMailComposeProxy.prototype = {
 		wrapLength
 		progress
 		originalMsgURI
-	]]>.toString(),
-	_methods : <![CDATA[
+	]]>.toString();
+var _methods = <![CDATA[
 		Initialize 
 		SetDocumentCharset
 		RegisterStateListener
@@ -50,84 +94,38 @@ UXUMailComposeProxy.prototype = {
 		onStopSending
 		onGetDraftFolderURI
 		onSendNotPerformed
-	]]>.toString(),
+	]]>.toString();
 
-	// fallback
-	__noSuchMethod__ : function(aName, aArgs)
-	{
-		return this._real[aName].apply(this._real, aArgs);
-	},
+// fallback
+var __noSuchMethod__ = function(aName, aArgs)
+{
+	return this._real[aName].apply(this._real, aArgs);
+}
 
-	SendMsg : function(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgress)
-	{
-		Pref = Components.classes['@mozilla.org/preferences;1'] 
-				.getService(Components.interfaces.nsIPrefBranch)
-				.QueryInterface(Components.interfaces.nsIPrefBranch2);
-		if (Pref.getBoolPref('extensions.uxu.running')) {
-			var progress = this._real.progress;
-			var compFields = this._real.compFields;
-			var win = this._real.domWindow;
-			if (compFields.fcc) {
-				if (compFields.fcc.toLowerCase() == 'nocopy://') {
-					if (progress) {
-						progress.unregisterListener(this._real);
-			//			progress.closeProgressDialog(false);
-					}
-					if (win) this._real.CloseWindow(true);
-				}
-			}
-			else {
-				if (progress) {
-					progress.unregisterListener(this._real);
-			//		progress.closeProgressDialog(false);
-				}
-				if (win) this._real.CloseWindow(true);
-			}
-			if (this._real.deleteDraft) this._real.removeCurrentDraftMessage(this._real, false);
-		}
-		else {
-			return this._real.SendMsg.apply(this._real, arguments);
-		}
-	},
-//	abort : function()
-//	{
-//	},
 
-	_init : function()
-	{
-		var self = this;
-		this._properties
-			.replace(/^\s+|\s+$/g, '')
-			.replace(/^\s*\/\/.+$/mg, '')
-			.split(/\s+/)
-			.forEach(function(aProp) {
-				if (aProp in this) return;
-				this.__defineGetter__(aProp, function() {
-					return self._real[aProp];
-				});
-				this.__defineSetter__(aProp, function(aValue) {
-					return self._real[aProp] = aValue;
-				});
-			}, this);
-		this._readOnlyProperties
-			.replace(/^\s+|\s+$/g, '')
-			.replace(/^\s*\/\/.+$/mg, '')
-			.split(/\s+/)
-			.forEach(function(aProp) {
-				if (aProp in this) return;
-				this.__defineGetter__(aProp, function() {
-					return self._real[aProp];
-				});
-			}, this);
-		this._methods
-			.replace(/^\s+|\s+$/g, '')
-			.replace(/^\s*\/\/.+$/mg, '')
-			.split(/\s+/)
-			.forEach(function(aProp) {
-				if (aProp in this) return;
-				this[aProp] = function() {
-					return self._real[aProp].apply(self._real, arguments);
-				};
-			}, this);
-	}
-};
+function _init()
+{
+	_properties
+		.replace(/^\s+|\s+$/g, '')
+		.replace(/^\s*\/\/.+$/mg, '')
+		.split(/\s+/)
+		.forEach(function(aProp) {
+			if (aProp in this) return;
+			this.__defineGetter__(aProp, function() {
+				return this._real[aProp];
+			});
+			this.__defineSetter__(aProp, function(aValue) {
+				return this._real[aProp] = aValue;
+			});
+		}, this);
+	(_readOnlyProperties+_methods)
+		.replace(/^\s+|\s+$/g, '')
+		.replace(/^\s*\/\/.+$/mg, '')
+		.split(/\s+/)
+		.forEach(function(aProp) {
+			if (aProp in this) return;
+			this.__defineGetter__(aProp, function() {
+				return this._real[aProp];
+			});
+		}, this);
+}
