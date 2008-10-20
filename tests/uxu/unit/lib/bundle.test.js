@@ -18,16 +18,16 @@ function testGetString()
 	var locale = formatter.formatURL("%LOCALE%");
 
 	if (locale.indexOf('ja') == 0) {
-		expected['report_description_setup'] = 'セットアップ';
-		expected['all_result_failure']       = '1件のテストに失敗しました';
+		expected['report_result_success']    = '成功';
+		expected['report_description_setup'] = 'a の初期化処理';
 		expected['typed_value']              = '1 (2)';
 	}
 	else {
-		expected['report_description_setup'] = 'Setup';
-		expected['all_result_failure']       = '1 test(s) failed.';
+		expected['report_result_success']    = 'SUCCESS';
+		expected['report_description_setup'] = 'Setup of a';
 		expected['typed_value']              = '1 (2)';
 	}
-	assert.equals(expected['report_description_setup'], bundle.getString('report_description_setup'));
-	assert.equals(expected['all_result_failure'], bundle.getFormattedString('all_result_failure', [1]));
+	assert.equals(expected['report_result_success'], bundle.getString('report_result_success'));
+	assert.equals(expected['report_description_setup'], bundle.getFormattedString('report_description_setup', ['a']));
 	assert.equals(expected['typed_value'], bundle.getFormattedString('typed_value', [1, 2]));
 }
