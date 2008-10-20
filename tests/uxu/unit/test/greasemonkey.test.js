@@ -47,7 +47,13 @@ function test_openAndClose()
 	assert.isDefined(retVal.window);
 	assert.isNull(retVal.window);
 
-	yield 1000;
+	var count = 0;
+	while (count < 10)
+	{
+		count++;
+		yield 1000;
+		if (!retVal.value) continue;
+	}
 	assert.isTrue(retVal.value);
 	assert.isNotNull(retVal.window);
 	assert.isTrue(retVal.window instanceof Ci.nsIDOMWindow);
