@@ -323,6 +323,12 @@ function getTabs(aOptions)
 
 
 
+function getChromeWindow(aOptions)
+{
+	var windows = this.getChromeWindows(aOptions);
+	return windows.length ? windows[0] : null ;
+};
+
 function getChromeWindows(aOptions)
 {
 	var info = this.normalizeTestWindowOption(aOptions);
