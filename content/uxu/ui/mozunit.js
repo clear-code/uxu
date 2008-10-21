@@ -406,7 +406,7 @@ TestListener.prototype = {
 
 		_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-problems');
 
-		var id = 'test-report-'+encodeURIComponent(title)+'-'+_(wTestCaseReport, 'test-reports').childNodes.length;
+		var id = 'test-report-'+encodeURIComponent(testCase.title)+'-'+_(wTestCaseReport, 'test-reports').childNodes.length;
 		var wTestReport = clone('test-report');
 		wTestReport.setAttribute('id', id);
 		_(wTestReport, 'result').value = bundle.getString('report_result_'+report.result);
