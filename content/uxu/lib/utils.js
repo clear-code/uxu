@@ -710,18 +710,7 @@ function inspect(aObject)
 		if (!aTarget.__proto__)
 			return aTarget.toString();
 
-		if (aTarget.__proto__.toString == eval('Object.prototype.toString', aTarget)) {
-			index = inspectedObjects.length;
-			inspectedObjects.push(aTarget);
-			inspectedResults[index] = aTarget.toString();
-
-			var values = [];
-			for (var name in aTarget) {
-				values.push(name.quote() + ": " + _inspect(aTarget[name]));
-			}
-			inspectedResults[index] = "{" + values.join(", ") + "}";
-			return inspectedResults[index];
-		} else if (aTarget instanceof eval('Array', aTarget)) {
+		if (aTarget instanceof eval('Array', aTarget)) {
 			index = inspectedObjects.length;
 			inspectedObjects.push(aTarget);
 			inspectedResults[index] = aTarget.toString();
@@ -734,6 +723,17 @@ function inspect(aObject)
 		} else if (typeof aTarget == 'string' ||
 		           aTarget instanceof eval('String', aTarget)) {
 			return '"' + aTarget.replace(/\"/g, '\\"') + '"';
+		} else if (aTarget.__proto__.toString == eval('Object.prototype.toString', aTarget)) {
+			index = inspectedObjects.length;
+			inspectedObjects.push(aTarget);
+			inspectedResults[index] = aTarget.toString();
+
+			var values = [];
+			for (var name in aTarget) {
+				values.push(name.quote() + ": " + _inspect(aTarget[name]));
+			}
+			inspectedResults[index] = "{" + values.join(", ") + "}";
+			return inspectedResults[index];
 		} else {
 			return aTarget.toString();
 		}
