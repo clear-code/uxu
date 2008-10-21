@@ -72,7 +72,8 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 	-moz-user-focus: normal;
 	-moz-user-select: text;
 	cursor : text;
-	white-space: -moz-pre-wrap; /* pre-wrap */
+	white-space: pre-wrap; /* Firefox 3.0 or later */
+	white-space: -moz-pre-wrap; /* Firefox 2.0.0.* */
 	font-family: monospace;
 }
 
