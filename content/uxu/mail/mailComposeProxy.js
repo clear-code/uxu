@@ -1,3 +1,6 @@
+var Cc = Components.classes;
+var Ci = Components.interfaces;
+
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']); 
 var utils  = lib_module.require('package', 'utils');
 
@@ -26,8 +29,45 @@ function SendMsg(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgress)
 
 function _fakeSendMsg(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgress)
 {
+	var compFields = this._real.compFields;
 	try {
-		mailUtils.emulateSendMessage(aMsgWindow, this._real.compFields);
+		if (compFields instanceof Ci.nsIMsgCompFields) {
+			if (!this._real.composeHTML) {
+				if (this._real.editor) {
+					var flags = Ci.nsIDocumentEncoder.OutputFormatted |
+								Ci.nsIDocumentEncoder.OutputCRLineBreak |
+								Ci.nsIDocumentEncoder.OutputLFLineBreak;
+					if (mailUtils.useFormatFlowed(compFields.characterSet))
+						flags |= Ci.nsIDocumentEncoder.OutputFormatFlowed;
+					compFields.body = '';
+					compFields.body = this._real.editor.outputToString('text/plain', flags);
+				}
+			}
+			if (compFields.body) {
+				var info = {};
+				try {
+					info = mailUtils.saveAsCharset(aContentType, compFields.characterSet, compFields.body);
+					if (compFields.forceMsgEncoding) {
+						info.isAsciiOnly = false;
+					}
+				}
+				catch(e) {
+					if (compFields.compFields.needToCheckCharset) {
+						info.output = utils.UnicodeToX(aInput, 'UTF-8');
+					}
+				}
+				if (info.fallbackCharset) {
+					compFields.characterSet = info.fallbackCharset;
+				}
+				compFields.bodyIsAsciiOnly = info.isAsciiOnly;
+				compFields.body = info.output;
+			}
+			else {
+				compFields.body = utils.UnicodeToX(compFields.body, 'ASCII');
+			}
+		}
+
+		mailUtils.emulateSendMessage(aMsgWindow, compFields);
 
 		var progress = this._real.progress;
 		var compFields = this._real.compFields;

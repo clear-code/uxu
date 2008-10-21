@@ -74,3 +74,21 @@ function testSend()
 	assert.equals('UTF-8', data.characterSet);
 	assert.equals('BODY', data.body);
 }
+
+function testUseFormatFlowed()
+{
+	assert.isTrue(utilsModule.useFormatFlowed('UTF-8'));
+	assert.isTrue(utilsModule.useFormatFlowed('Shfit_JIS'));
+}
+
+function testIsMultibyteCharset()
+{
+	assert.isTrue(utilsModule.isMultibyteCharset('Shift_JIS'));
+	assert.isFalse(utilsModule.isMultibyteCharset('ASCII'));
+}
+
+function testIsAscii()
+{
+	assert.isTrue(utilsModule.isAscii('ascii'));
+	assert.isFalse(utilsModule.isAscii('日本語'));
+}

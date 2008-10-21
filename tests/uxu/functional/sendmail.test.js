@@ -80,6 +80,7 @@ function testSend()
 	range.detach();
 	yield 200;
 
+//	action.fireMouseEventOnElement(composeWindow.document.getElementById('button-send'));
 	composeWindow.SendMessage();
 
 	observer.endObserve('uxu:mail:sent');
