@@ -33,6 +33,8 @@ function _fakeSendMsg(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgres
 	try {
 		if (compFields instanceof Ci.nsIMsgCompFields) {
 			var contentType = null;
+			// nsMsgCompose::SendMsgの実装の部分移植。
+			// プレーンテキストメールしか送信できない。HTMLメールはどうしたらいいのやら……
 			if (!this._real.composeHTML) {
 				contentType = 'text/plain';
 				if (this._real.editor) {
