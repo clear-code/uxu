@@ -32,13 +32,16 @@ function _fakeSendMsg(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgres
 	var compFields = this._real.compFields;
 	try {
 		if (compFields instanceof Ci.nsIMsgCompFields) {
+			var contentType = null;
 			if (!this._real.composeHTML) {
+				contentType = 'text/plain';
 				if (this._real.editor) {
-					var flags = Ci.nsIDocumentEncoder.OutputFormatted |
-								Ci.nsIDocumentEncoder.OutputCRLineBreak |
-								Ci.nsIDocumentEncoder.OutputLFLineBreak;
+					/* http://mxr.mozilla.org/mozilla1.8/source/content/base/public/nsIDocumentEncoder.h */
+					var flags = 2    /* nsIDocumentEncoder::OutputFormatted */ |
+								512  /* nsIDocumentEncoder::OutputCRLineBreak */ |
+								1024 /* nsIDocumentEncoder::OutputLFLineBreak */;
 					if (mailUtils.useFormatFlowed(compFields.characterSet))
-						flags |= Ci.nsIDocumentEncoder.OutputFormatFlowed;
+						flags |= 64; /* nsIDocumentEncoder::OutputFormatFlowed */
 					compFields.body = '';
 					compFields.body = this._real.editor.outputToString('text/plain', flags);
 				}
@@ -46,21 +49,23 @@ function _fakeSendMsg(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgres
 			if (compFields.body) {
 				var info = {};
 				try {
-					info = mailUtils.saveAsCharset(aContentType, compFields.characterSet, compFields.body);
+					info = mailUtils.saveAsCharset(contentType, compFields.characterSet, compFields.body);
 					if (compFields.forceMsgEncoding) {
 						info.isAsciiOnly = false;
 					}
 				}
 				catch(e) {
-					if (compFields.compFields.needToCheckCharset) {
-						info.output = utils.UnicodeToX(aInput, 'UTF-8');
+					if (compFields.needToCheckCharset) {
+						info.output = utils.UnicodeToX(compFields.body, 'UTF-8');
 					}
 				}
 				if (info.fallbackCharset) {
 					compFields.characterSet = info.fallbackCharset;
 				}
-				compFields.bodyIsAsciiOnly = info.isAsciiOnly;
-				compFields.body = info.output;
+				compFields.bodyIsAsciiOnly = info.isAsciiOnly || false;
+				if (info.output) {
+					compFields.body = info.output;
+				}
 			}
 			else {
 				compFields.body = utils.UnicodeToX(compFields.body, 'ASCII');

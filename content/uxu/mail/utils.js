@@ -72,7 +72,7 @@ function saveAsCharset(aContentType, aCharset, aInput)
 
 	var isHTML = aContentType == 'text/html';
 	if (aContentType == 'text/plain') {
-		throw new Error(); // NS_ERROR_ILLEGAL_VALUE
+		throw Components.results.NS_ERROR_ILLEGAL_VALUE;
 	}
 
 //	var alias = Cc['@mozilla.org/intl/charsetalias;1']
@@ -116,15 +116,18 @@ function saveAsCharset(aContentType, aCharset, aInput)
 		}
 	}
 
+	var noMap = false;
 	try {
 		info.output = converter.Convert(aInput);
-		if (info.isAsciiOnly && isHTML && info.outpit && !nsMsgI18Nstateful_charset(charsetName))
-			info.isAsciiOnly = isAscii(info.outpit);
 	}
 	catch(e) {
+		noMap = (e == Components.results.NS_ERROR_UENC_NOMAPPING);
+	}
+
+	if (noMap && !isHTML) {
 		var charset = utils.getPref('intl.fallbackCharsetList.'+aCharset);
 		if (!charset)
-			throw new Error(); // NS_ERROR_UENC_NOMAPPING
+			throw Components.results.NS_ERROR_UENC_NOMAPPING;
 
 		converter.Init(
 			charset,
@@ -134,8 +137,15 @@ function saveAsCharset(aContentType, aCharset, aInput)
 			Ci.nsIEntityConverter.transliterate
 		);
 		info.output = converter.Convert(aInput);
-
 		info.fallbackCharset = converter.charset;
+	}
+	else if (
+		info.isAsciiOnly &&
+		isHTML &&
+		info.outpit &&
+		!nsMsgI18Nstateful_charset(charsetName)
+		) {
+		info.isAsciiOnly = isAscii(info.outpit);
 	}
 
 	return info;
