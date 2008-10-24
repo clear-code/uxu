@@ -244,7 +244,6 @@ var RDF = Cc['@mozilla.org/rdf/rdf-service;1']
 
 function getFolderByURI(aURI)
 {
-	if (product != 'thunderbird') return null;
 	return RDF.GetResource(aURI).QueryInterface(Ci.nsIMsgFolder);
 }
 var getFolderByURL = getFolderByURI;
@@ -263,7 +262,7 @@ var deleteFolderByURL = deleteFolderByURI;
 var removeFolderByURI = deleteFolderByURI;
 var removeFolderByURL = deleteFolderByURI;
 
-var localFolder = getMailFolderByURI('mailbox://nobody@Local%20Folders');
+var localFolder = getFolderByURI('mailbox://nobody@Local%20Folders');
 
 
 /*

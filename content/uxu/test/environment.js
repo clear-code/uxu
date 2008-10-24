@@ -16,7 +16,6 @@ var mail_module = new ModuleManager(['chrome://uxu/content/mail']);
 
 var key = 'uxu-test-window-id';
 
-	.getService(Ci.nsIXULAppInfo);
 var product, defaultURI, defaultType, defaultFlags, defaultName;
 
 function constructor(aEnvironment, aURI, aBrowser)
@@ -30,6 +29,7 @@ function constructor(aEnvironment, aURI, aBrowser)
     this.uniqueID = parseInt(Math.random() * 10000000000);
 
 	var XULAppInfo = Cc['@mozilla.org/xre/app-info;1']
+			.getService(Ci.nsIXULAppInfo);
 	switch (XULAppInfo.ID)
 	{
 		case '{ec8030f7-c20a-464f-9b0e-13a3a9e97384}':
