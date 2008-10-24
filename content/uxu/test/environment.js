@@ -28,6 +28,10 @@ function constructor(aEnvironment, aURI, aBrowser)
 	this.environment = aEnvironment || {};
     this.uniqueID = parseInt(Math.random() * 10000000000);
 
+	this.__defineGetter__('_testFrame', function() {
+		return aBrowser;
+	});
+
 	var XULAppInfo = Cc['@mozilla.org/xre/app-info;1']
 			.getService(Ci.nsIXULAppInfo);
 	switch (XULAppInfo.ID)
@@ -38,6 +42,18 @@ function constructor(aEnvironment, aURI, aBrowser)
 			defaultType = 'navigator:browser';
 			defaultFlags = 'chrome,all,dialog=no';
 			defaultName = '_blank';
+			this.__defineGetter__('gBrowser', function() {
+				return this.getBrowser();
+			});
+			this.__defineGetter__('contentWindow', function() {
+				return this.getBrowser().contentWindow;
+			});
+			this.__defineGetter__('content', function() {
+				return this.getBrowser().contentWindow;
+			});
+			this.__defineGetter__('contentDocument', function() {
+				return this.getBrowser().contentDocument;
+			});
 			this.attachGMUtils();
 			break;
 
@@ -54,23 +70,6 @@ function constructor(aEnvironment, aURI, aBrowser)
 			product = '';
 			break;
 	}
-
-
-	this.__defineGetter__('_testFrame', function() {
-		return aBrowser;
-	});
-	this.__defineGetter__('gBrowser', function() {
-		return this.getBrowser();
-	});
-	this.__defineGetter__('contentWindow', function() {
-		return this.getBrowser().contentWindow;
-	});
-	this.__defineGetter__('content', function() {
-		return this.getBrowser().contentWindow;
-	});
-	this.__defineGetter__('contentDocument', function() {
-		return this.getBrowser().contentDocument;
-	});
 
 	this.tempFiles = [];
 	this.backupPrefs = {};
