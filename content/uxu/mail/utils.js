@@ -1,5 +1,8 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
+var Cc = Components.classes;
+var Ci = Components.interfaces;
+
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var utils = lib_module.require('package', 'utils');
 
@@ -232,3 +235,46 @@ hankakuZenkakuCharacters.forEach(function(aChar, aIndex) {
 	hankakuZenkakuTable[hankakuZenkakuCharacters[aIndex-1]] = hankakuZenkakuCharacters[aIndex];
 	zenkakuHankakuTable[hankakuZenkakuCharacters[aIndex]] = hankakuZenkakuCharacters[aIndex-1];
 });
+
+
+
+
+var RDF = Cc['@mozilla.org/rdf/rdf-service;1']
+			.getService(Ci.nsIRDFService);
+
+function getFolderByURI(aURI)
+{
+	if (product != 'thunderbird') return null;
+	return RDF.GetResource(aURI).QueryInterface(Ci.nsIMsgFolder);
+}
+var getFolderByURL = getFolderByURI;
+
+function deleteFolder(aMsgFolder)
+{
+	aMsgFolder.parent.propagateDelete(aMsgFolder, true, null);
+}
+var removeFolder = deleteFolder;
+
+function deleteFolderByURI(aURI)
+{
+	deleteFolder(getFolderByURI(aURI));
+}
+var deleteFolderByURL = deleteFolderByURI;
+var removeFolderByURI = deleteFolderByURI;
+var removeFolderByURL = deleteFolderByURI;
+
+var localFolder = getMailFolderByURI('mailbox://nobody@Local%20Folders');
+
+
+/*
+var datasource = Cc['@mozilla.org/rdf/datasource;1?name=composite-datasource']
+		.createInstance(Ci.nsIRDFCompositeDataSource);
+datasource.AddDataSource(
+	Cc['@mozilla.org/rdf/datasource;1?name=msgaccountmanager']
+		.createInstance(Ci.nsIRDFDataSource)
+);
+datasource.AddDataSource(
+	Cc['@mozilla.org/rdf/datasource;1?name=mailnewsfolders']
+		.getService(Ci.nsIRDFDataSource)
+);
+*/

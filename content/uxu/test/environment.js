@@ -10,10 +10,14 @@ var utils      = lib_module.require('package', 'utils');
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var assertions  = test_module.require('package', 'assertions');
 var action      = test_module.require('package', 'action');
-var GMUtils     = test_module.require('class', 'greasemonkey');
+
+var mail_module = new ModuleManager(['chrome://uxu/content/mail']); 
 
 
 var key = 'uxu-test-window-id';
+
+	.getService(Ci.nsIXULAppInfo);
+var product, defaultURI, defaultType, defaultFlags, defaultName;
 
 function constructor(aEnvironment, aURI, aBrowser)
 {
@@ -24,6 +28,33 @@ function constructor(aEnvironment, aURI, aBrowser)
 
 	this.environment = aEnvironment || {};
     this.uniqueID = parseInt(Math.random() * 10000000000);
+
+	var XULAppInfo = Cc['@mozilla.org/xre/app-info;1']
+	switch (XULAppInfo.ID)
+	{
+		case '{ec8030f7-c20a-464f-9b0e-13a3a9e97384}':
+			product = 'Firefox';
+			defaultURI = 'chrome://browser/content/browser.xul';
+			defaultType = 'navigator:browser';
+			defaultFlags = 'chrome,all,dialog=no';
+			defaultName = '_blank';
+			this.attachGMUtils();
+			break;
+
+		case '{3550f703-e582-4d05-9a08-453d09bdfdc6}':
+			product = 'Thunderbird';
+			defaultURI = 'chrome://messenger/content/messenger.xul';
+			defaultType = null;
+			defaultFlags = 'chrome,all,dialog=no';
+			defaultName = '_blank';
+			this.attachMailUtils();
+			break;
+
+		default:
+			product = '';
+			break;
+	}
+
 
 	this.__defineGetter__('_testFrame', function() {
 		return aBrowser;
@@ -47,7 +78,6 @@ function constructor(aEnvironment, aURI, aBrowser)
 	this.initVariables();
 	this.attachAssertions();
 	this.attachActions();
-	this.attachGMUtils();
 }
 
 function initVariables()
@@ -109,6 +139,7 @@ function attachActions()
 
 function attachGMUtils()
 {
+	var GMUtils = test_module.require('class', 'greasemonkey');
 	this.greasemonkey = {};
 	this.greasemonkey.__proto__ = new GMUtils(this);
 	for (var aMethod in this.greasemonkey)
@@ -128,29 +159,14 @@ function attachGMUtils()
 	}
 }
 
-
-
-
-var XULAppInfo = Cc['@mozilla.org/xre/app-info;1']
-	.getService(Ci.nsIXULAppInfo);
-var defaultURI, defaultType, defaultFlags, defaultName;
-switch (XULAppInfo.ID)
+function attachMailUtils()
 {
-	default:
-	case '{ec8030f7-c20a-464f-9b0e-13a3a9e97384}':
-		defaultURI = 'chrome://browser/content/browser.xul';
-		defaultType = 'navigator:browser';
-		defaultFlags = 'chrome,all,dialog=no';
-		defaultName = '_blank';
-		break;
-
-	case '{3550f703-e582-4d05-9a08-453d09bdfdc6}':
-		defaultURI = 'chrome://messenger/content/messenger.xul';
-		defaultType = null;
-		defaultFlags = 'chrome,all,dialog=no';
-		defaultName = '_blank';
-		break;
+	this.mail = {};
+	this.mail.__proto__ = mail_module.require('package', 'utils');
 }
+
+
+
 
 
 var WindowManager = Cc['@mozilla.org/appshell/window-mediator;1']
@@ -257,9 +273,13 @@ var tearDownTestWindow = closeTestWindow;
 
 
 
+// Firefox specific features
+
 // テスト用のFirefoxウィンドウの現在のタブにURIを読み込む
 function loadURI(aURI, aOptions)
 {
+	if (product != 'firefox') return { value : true };
+
 	if (!aURI) aURI = 'about:blank';
 	aURI = this.fixupIncompleteURI(aURI);
 
@@ -288,6 +308,8 @@ function loadURIInTestFrame(aURI)
 // テスト用のFirefoxウィンドウで新しいタブを開く
 function addTab(aURI, aOptions)
 {
+	if (product != 'firefox') return { value : true, tab : null };
+
 	if (!aURI) aURI = 'about:blank';
 	aURI = this.fixupIncompleteURI(aURI);
 
@@ -309,6 +331,7 @@ function addTab(aURI, aOptions)
 
 function getBrowser(aOptions)
 {
+	if (product != 'firefox') return null;
 	var win = this.getTestWindow(aOptions);
 	if (!win) return this._testFrame;
 	return win.gBrowser;
@@ -316,10 +339,12 @@ function getBrowser(aOptions)
 
 function getTabs(aOptions)
 {
+	if (product != 'firefox') return [];
 	var win = this.getTestWindow(aOptions);
 	if (!win) return null;
-	return win.gBrowser.mTabContainer.childNodes;
+	return Array.slice(win.gBrowser.mTabContainer.childNodes);
 };
+
 
 
 
