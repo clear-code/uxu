@@ -42,6 +42,7 @@ function constructor(aEnvironment, aURI, aBrowser)
 			defaultType = 'navigator:browser';
 			defaultFlags = 'chrome,all,dialog=no';
 			defaultName = '_blank';
+
 			this.__defineGetter__('gBrowser', function() {
 				return this.getBrowser();
 			});
@@ -54,7 +55,9 @@ function constructor(aEnvironment, aURI, aBrowser)
 			this.__defineGetter__('contentDocument', function() {
 				return this.getBrowser().contentDocument;
 			});
+
 			this.attachGMUtils();
+
 			break;
 
 		case '{3550f703-e582-4d05-9a08-453d09bdfdc6}':
@@ -63,7 +66,9 @@ function constructor(aEnvironment, aURI, aBrowser)
 			defaultType = null;
 			defaultFlags = 'chrome,all,dialog=no';
 			defaultName = '_blank';
+
 			this.attachMailUtils();
+
 			break;
 
 		default:
