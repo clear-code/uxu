@@ -164,6 +164,15 @@ function test_getURLFromFile()
 	assert.matches(uriPattern, utilsModule.getURLSpecFromFilePath(path));
 }
 
+function test_getFileFromKeyword()
+{
+	var DirectoryService = Cc['@mozilla.org/file/directory_service;1']
+			.getService(Ci.nsIProperties);
+	assert.equals(DirectoryService.get('TmpD', Ci.nsIFile).path, utilsModule.getFileFromKeyword('TmpD').path);
+	assert.equals(DirectoryService.get('ProfD', Ci.nsIFile).path, utilsModule.getFileFromKeyword('ProfD').path);
+	assert.equals(DirectoryService.get('CurProcD', Ci.nsIFile).path, utilsModule.getFileFromKeyword('CurProcD').path);
+}
+
 function test_readFrom()
 {
 	assert.equals('ASCII', utilsModule.readFrom(baseURL+'../../res/ascii.txt'));
