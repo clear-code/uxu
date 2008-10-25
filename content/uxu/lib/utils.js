@@ -208,13 +208,13 @@ function writeTo(aContent, aTarget, aEncoding)
 			dirs[i].create(dirs[i].DIRECTORY_TYPE, 0644);
 	}
 
-
-	if (aTarget.exists()) aTarget.remove(true);
-	aTarget.create(aTarget.NORMAL_FILE_TYPE, 0666);
+	var tempFile = getFileFromKeyword('TmpD');
+	tempFile.append(aTarget.localName+'.writing');
+	tempFile.createUnique(tempFile.NORMAL_FILE_TYPE, 0666);
 
 	var stream = Cc['@mozilla.org/network/file-output-stream;1']
 			.createInstance(Ci.nsIFileOutputStream);
-	stream.init(aTarget, 2, 0x200, false); // open as "write only"
+	stream.init(tempFile, 2, 0x200, false); // open as "write only"
 
 	if (aEncoding) {
 		var converterStream = Cc['@mozilla.org/intl/converter-output-stream;1']
@@ -229,6 +229,9 @@ function writeTo(aContent, aTarget, aEncoding)
 	}
 
 	stream.close();
+
+	if (aTarget.exists()) aTarget.remove(true);
+	tempFile.moveTo(aTarget.parent, aTarget.leafName);
 
 	return aTarget;
 }
