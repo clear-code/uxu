@@ -447,19 +447,38 @@ assert.inspectDOMNode = function(aExpected, aNode) {
 	assert.equals(aExpected, utilsModule.inspectDOMNode(aNode));
 };
 
+testInspectDOMNode.priority = 'must';
 function testInspectDOMNode()
 {
 	yield utils.loadURIInTestFrame('../../res/html.xml');
 
 	var p1 = content.document.getElementById('paragraph1');
 	assert.isNotNull(p1);
-	assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em xmlns="http://www.w3.org/1999/xhtml">em</em></p>', p1);
+	assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em xmlns="http://www.w3.org/1999/xhtml" class="class" lang="en">em</em></p>', p1);
+
+	var p2 = content.document.getElementById('paragraph2');
+	assert.isNotNull(p2);
+	assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em xmlns="http://www.w3.org/1999/xhtml" class="class" lang="en">em</em></p>', p2);
+
+	var fragment = content.document.createDocumentFragment();
+	fragment.appendChild(p1.cloneNode(true));
+	fragment.appendChild(p2.cloneNode(true));
+	assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em xmlns="http://www.w3.org/1999/xhtml" class="class" lang="en">em</em></p><p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em xmlns="http://www.w3.org/1999/xhtml" class="class" lang="en">em</em></p>', fragment);
 
 	yield utils.loadURIInTestFrame('../../res/html.html');
 
 	p1 = content.document.getElementById('paragraph1');
 	assert.isNotNull(p1);
-	assert.inspectDOMNode('<P id="paragraph1">test<EM>em</EM></P>', p1);
+	assert.inspectDOMNode('<P id="paragraph1">test<EM class="class" lang="en">em</EM></P>', p1);
+
+	p2 = content.document.getElementById('paragraph2');
+	assert.isNotNull(p2);
+	assert.inspectDOMNode('<P id="paragraph2">test<EM class="class" lang="en">em</EM></P>', p2);
+
+	fragment = content.document.createDocumentFragment();
+	fragment.appendChild(p1.cloneNode(true));
+	fragment.appendChild(p2.cloneNode(true));
+	assert.inspectDOMNode('<P id="paragraph1">test<EM class="class" lang="en">em</EM></P><P id="paragraph2">test<EM class="class" lang="en">em</EM></P>', fragment);
 }
 
 function testNotify()
