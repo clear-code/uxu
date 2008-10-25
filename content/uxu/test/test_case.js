@@ -51,8 +51,9 @@ else { // possibly old version, so we have to migrate.
 	}
 }
 
-const kREMOTE_LOG_PREFIX = 'uxu-test-log';
-const kREMOTE_PROFILE_PREFIX = 'uxu-test-profile';
+const REMOTE_LOG_PREFIX = 'uxu-test-log';
+const REMOTE_PROFILE_PREFIX = 'uxu-test-profile';
+const REMOTE_TEST_RESULT_PREFIX = '/*remote-test-finished*/';
  
 /**
  * Invocation: 
@@ -532,12 +533,12 @@ function remoteRun(aStopper)
 	var timeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout'));
 
 	var log = utils.getFileFromKeyword('TmpD');
-	log.append(kREMOTE_LOG_PREFIX);
+	log.append(REMOTE_LOG_PREFIX);
 	log.createUnique(log.NORMAL_FILE_TYPE, 0664);
 	utils.writeTo(Date.now(), log);
 
 	var profile = utils.getFileFromKeyword('TmpD');
-	profile.append(kREMOTE_PROFILE_PREFIX);
+	profile.append(REMOTE_PROFILE_PREFIX);
 	profile.createUnique(profile.DIRECTORY_TYPE, 0777);
 	this.profile.copyTo(profile.parent, profile.leafName);
 
@@ -549,13 +550,13 @@ function remoteRun(aStopper)
 			var result;
 			do {
 				last = Date.now();
-				if (_this._stopper && _this._stopper()) {
+				if (!aborted && _this._stopper && _this._stopper()) {
 					aborted = true;
 					_this.fireEvent('Abort');
 					break;
 				}
 				result = utils.readFrom(log.path, 'UTF-8');
-				if (result.indexOf('/*remote-test-finished*/') == 0) {
+				if (result.indexOf(REMOTE_TEST_RESULT_PREFIX) == 0) {
 					break;
 				}
 				else {

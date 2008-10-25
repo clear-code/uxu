@@ -5,6 +5,7 @@ var bundle = lib_module.require('package', 'bundle');
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var Runner = test_module.require('class', 'runner');
 var formatter = test_module.require('package', 'log_formatter');
+var TestCase = test_module.require('class', 'test_case');
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -533,7 +534,7 @@ function onAllTestsFinish()
 		}
 		if (gOptions.rawLog) {
 			utils.writeTo(
-				'/*remote-test-finished*/'+
+				TestCase.prototype.REMOTE_TEST_RESULT_PREFIX+
 					formatter.formatLogs(gLogs, formatter.FORMAT_RAW),
 				gOptions.rawLog,
 				'UTF-8'
