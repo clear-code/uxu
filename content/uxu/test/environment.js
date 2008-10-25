@@ -500,6 +500,7 @@ fixupIncompleteURI
 doIteration
 Do
 inspect
+inspectDOMNode
 p
 scheduleToRemove
 startScheduledRemove

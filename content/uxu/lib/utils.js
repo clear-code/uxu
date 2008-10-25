@@ -754,6 +754,63 @@ function inspectType(aObject)
 								objectType.length - "]".length);
 }
 
+function inspectDOMNode(aNode)
+{
+	var self = arguments.callee;
+	var result;
+	switch (aNode.nodeType)
+	{
+		case Node.ELEMENT_NODE:
+		case Node.DOCUMENT_NODE:
+		case Node.DOCUMENT_FRAGMENT_NODE:
+			result = Array.slice(aNode.childNodes).map(function(aNode) {
+					return self(aNode);
+				}).join('');
+			break;
+
+		case Node.TEXT_NODE:
+			result = aNode.nodeValue
+						.replace(/&/g, '&ampt;')
+						.replace(/</g, '&lt;')
+						.replace(/>/g, '&gt;')
+						.replace(/"/g, '&quot;');
+			break;
+
+		case Node.CDATA_SECTION_NODE:
+			result = '<![CDATA['+aNode.nodeValue+']]>';
+			break;
+
+		case Node.COMMENT_NODE:
+			result = '<!--'+aNode.nodeValue+'-->';
+			break;
+
+		case Node.ATTRIBUTE_NODE:
+			result = aNode.name+'="'+
+					aNode.value
+						.replace(/&/g, '&ampt;')
+						.replace(/</g, '&lt;')
+						.replace(/>/g, '&gt;')
+						.replace(/"/g, '&quot;')+
+				'"';
+			break;
+
+		default:
+			return '';
+	}
+
+	if (aNode.nodeType == Node.ELEMENT_NODE) {
+		result = '<'+
+			aNode.localName+
+			(aNode.namespaceURI ? ' xmlns="'+aNode.namespaceURI+'"' : '' )+
+			Array.slice(aNode.attributes).map(function(aAttr) {
+				return ' '+self(aAttr);
+			}).sort().join('')+
+			(result ? '>' : ' />' )+
+			(result ? result+'</'+aNode.localName+'>' : '' );
+	}
+	return result;
+}
+
 function p()
 {
 	var i;
