@@ -399,7 +399,7 @@ function run(aStopper)
 
 	this._done = false;
 
-	if (this.shouldRunInRemote && this.remoteRun()) return;
+	if (this.shouldRunInRemote && this._runWithRemotePofile()) return;
 
 	var testIndex = 0;
 	var context;
@@ -552,7 +552,7 @@ function run(aStopper)
 	fsm.go('start', {}, stateHandlers, stateTransitions, []);
 }
 	 
-function remoteRun(aStopper) 
+function _runWithRemotePofile(aStopper) 
 {
 	if (!this.profile.exists()) return false;
 
