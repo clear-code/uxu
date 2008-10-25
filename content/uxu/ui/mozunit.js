@@ -923,7 +923,10 @@ function saveReport(aPath, aFormat)
 
 	if (file.exists()) file.remove(true);
 	utils.writeTo(
-		formatter.formatLogs(gLogs, aFormat || formatter.FORMAT_TEXT),
+		formatter.formatLogs(
+			gLogs,
+			aFormat || (formatter.FORMAT_TEXT | formatter.IGNORE_PASSOVER | formatter.IGNORE_SUCCESS)
+		),
 		file.path,
 		'UTF-8'
 	);
