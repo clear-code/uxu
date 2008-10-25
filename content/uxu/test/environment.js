@@ -382,8 +382,6 @@ function getChromeWindows(aOptions)
 function makeTempFile(aOriginal, aCosmetic)
 {
 	var temp = utils.getFileFromKeyword('TmpD');
-	var random = parseInt(Math.random() * 10000);
-
 	if (aOriginal) {
 		if (typeof aOriginal == 'string') {
 			aOriginal = this.fixupIncompleteURI(aOriginal);
@@ -398,8 +396,12 @@ function makeTempFile(aOriginal, aCosmetic)
 		catch(e) {
 			aOriginal = this.getFileFromURLSpec(aOriginal.spec);
 		}
-		temp.append(aOriginal.leafName + '.' + random + '.tmp');
-		if (temp.exists()) temp.remove(true);
+		temp.append(aOriginal.leafName + '.tmp');
+		temp.createUnique(
+			(aOriginal.isDirectory() ? temp.DIRECTORY_TYPE : temp.NORMAL_FILE_TYPE ),
+			(aOriginal.isDirectory() ? 0777 : 0666)
+		);
+		temp.remove(true);
 
 		if (aCosmetic)
 			utils.cosmeticClone(aOriginal, temp.parent, temp.leafName);
@@ -410,9 +412,8 @@ function makeTempFile(aOriginal, aCosmetic)
 		return temp;
 	}
 	else {
-		temp.append('uxutemp' + parseInt(Math.random() * 10000) + '.tmp');
-		if (temp.exists()) temp.remove(true);
-		temp.create(temp.NORMAL_FILE_TYPE, 0666);
+		temp.append('uxu.tmp');
+		temp.createUnique(temp.NORMAL_FILE_TYPE, 0666);
 		this.tempFiles.push(temp);
 		return temp;
 	}
