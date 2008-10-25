@@ -607,7 +607,8 @@ function remoteRun(aStopper)
 			'-uxu-rawlog',
 			log.path,
 			'-uxu-running-testcase',
-			running.path
+			running.path,
+			'-uxu-hidden'
 		];
 	var process = Cc['@mozilla.org/process/util;1']
 				.createInstance(Ci.nsIProcess);
