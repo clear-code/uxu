@@ -338,6 +338,7 @@ var gRunner;
  
 function TestListener() 
 {
+	this._log = [];
 }
 TestListener.prototype = {
 	registerTest : function(aTestCase)
@@ -361,10 +362,17 @@ TestListener.prototype = {
 	},
 	onStart : function(aEvent)
 	{
+		this._log.push({
+			type      : 'start',
+			timestamp : Date.now(),
+			title     : aEvent.target.title
+		});
 		this.getTestCaseReport(aEvent.target.title);
 	},
 	onTestFinish : function(aEvent)
 	{
+		this._logOnTestFinish(aEvent);
+
 		var testCase = aEvent.target;
 		var report = aEvent.data;
 
@@ -442,11 +450,50 @@ TestListener.prototype = {
 	},
 	onFinish : function(aEvent)
 	{
+		this._log.push({
+			type      : 'finish',
+			timestamp : Date.now()
+		});
+		gLogs.push(this.log);
 		aEvent.target.removeListener(this);
 	},
 	onAbort : function(aEvent)
 	{
+		this._log.push({
+			type      : 'abort',
+			timestamp : Date.now()
+		});
 		this.onFinish(aEvent);
+	},
+	_logOnTestFinish : function(aEvent)
+	{
+		var testCase = aEvent.target;
+		var report = aEvent.data;
+
+		var log = {
+			type      : 'testcase',
+			timestamp : Date.now(),
+			index     : report.testIndex,
+			title     : testCase.title,
+			result    : report.result,
+			description : report.testDescription
+		};
+		if (report.exception) {
+			if (report.exception.expected)
+				log.expected = report.exception.expected;
+			if (report.exception.actual)
+				log.actual = report.exception.actual;
+			if (report.exception.diff)
+				log.diff = report.exception.diff;
+			log.additionalInfo = report.exception.message.replace(/^\s+/, '');
+			if (utils.hasStackTrace(report.exception))
+				log.stackTrace = formatStackTrace(report.exception);
+		}
+		this._log.push(log);
+	},
+	get log()
+	{
+		return this._log;
 	}
 };
  
@@ -489,6 +536,8 @@ function onAllTestsFinish()
 		toggleContent();
 	}
 
+	_('saveReport').removeAttribute('disabled');
+
 	if (gAborted) {
 		_('testResultStatus').setAttribute('label', bundle.getString('all_abort'));
 		return;
@@ -517,9 +566,7 @@ function onAllTestsFinish()
  
 function displayStackTrace(aException, aListbox) 
 {
-	var lines = utils.formatStackTrace(aException, { onlyTraceLine : true, onlyExternal : true }).split('\n');
-	if (!lines.length || utils.getPref('extensions.uxu.mozunit.showInternalStacks'))
-		lines = utils.formatStackTrace(aException, { onlyTraceLine : true }).split('\n');
+	var lines = formatStackTrace(aException);
 	lines.forEach(function(aLine) {
 		if (!aLine) return;
 		var item = document.createElement('listitem');
@@ -529,6 +576,13 @@ function displayStackTrace(aException, aListbox)
 		if (file) item.setAttribute('file', file);
 		aListbox.appendChild(item);
 	});
+}
+function formatStackTrace(aException) 
+{
+	var lines = utils.formatStackTrace(aException, { onlyTraceLine : true, onlyExternal : true }).split('\n');
+	if (!lines.length || utils.getPref('extensions.uxu.mozunit.showInternalStacks'))
+		lines = utils.formatStackTrace(aException, { onlyTraceLine : true }).split('\n');
+	return lines;
 }
  
 function reset() 
@@ -548,6 +602,8 @@ function reset()
 	removeChildrenOf(_('prerun-report', 'stack-trace'));
 	removeChildrenOf(_('testcase-reports'))
 	hideSource();
+	_('saveReport').setAttribute('disabled', true);
+	gLogs = [];
 }
 var gAborted = false;
 var gTotalCount    = 0;
@@ -555,6 +611,7 @@ var gSuccessCount  = 0;
 var gPassOverCount = 0;
 var gErrorCount    = 0;
 var gFailureCount  = 0;
+var gLogs          = [];
  
 function setRunningState(aRunning) 
 {
@@ -645,6 +702,7 @@ function stop()
 	 
 function saveReport() 
 {
+	alert(gLogs.toSource());
 }
  
 function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine) 

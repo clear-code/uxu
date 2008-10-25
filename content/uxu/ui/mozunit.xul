@@ -200,10 +200,8 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 					<menuseparator/>
 					<menuitem command="stop" key="key-stop"/>
 					<menuseparator/>
-					<menuitem command="saveReport" key="key-saveReport"
-						hidden="true"/>
-					<menuseparator
-						hidden="true"/>
+					<menuitem command="saveReport" key="key-saveReport"/>
+					<menuseparator/>
 					<menuitem command="restartApplication"/>
 					<menuseparator/>
 					<menuitem command="quit"/>
