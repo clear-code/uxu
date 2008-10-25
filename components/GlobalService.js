@@ -79,7 +79,37 @@ GlobalService.prototype = {
 		try {
 			var source = this.installedLocation;
 			var dest = this.globalLocation;
-			if (dest.exists()) dest.remove(true);
+
+			if (dest.exists()) {
+				var sourceManifest = source.clone();
+				sourceManifest.append('install.rdf');
+				var sourceVersion = this.getVersionFromManifest(sourceManifest);
+
+				var destManifest = dest.clone();
+				destManifest.append('install.rdf');
+				var destVersion = this.getVersionFromManifest(destManifest);
+
+				while (sourceVersion.length < destVersion.length)
+				{
+					sourceVersion.push(0);
+				}
+				while (destVersion.length < sourceVersion.length)
+				{
+					destVersion.push(0);
+				}
+
+				var keepGlobal = sourvceVersion.some(function(aSource, aIndex) {
+						return parseInt(aSource) < parseInt(destVersion[aIndex]);
+					});
+				if (keepGlobal) {
+					source.remove(true);
+					return true;
+				}
+				else {
+					dest.remove(true);
+				}
+			}
+
 			source.moveTo(dest.parent, kUXU_DIR_NAME);
 		}
 		catch(e) {
@@ -87,6 +117,39 @@ GlobalService.prototype = {
 			return false;
 		}
 		return true;
+	},
+
+	getVersionFromManifest : function(aFile)
+	{
+		aFile = aFile.QueryInterface(Components.interfaces.nsILocalFile)
+		var stream = Components.classes['@mozilla.org/network/file-input-stream;1']
+					.createInstance(Components.interfaces.nsIFileInputStream);
+		try {
+			stream.init(aFile, 1, 0, false); // open as "read only"
+		}
+		catch(ex) {
+			return [];
+		}
+
+		var fileContents = null;
+		try {
+			var scriptableStream = Components.interfaces['@mozilla.org/scriptableinputstream;1']
+					.createInstance(Components.interfaces.nsIScriptableInputStream);
+			scriptableStream.init(stream);
+			fileContents = scriptableStream.read(scriptableStream.available());
+			scriptableStream.close();
+		}
+		finally {
+			stream.close();
+		}
+
+		if (fileContents) {
+			var match = fileContents.match(/<em:version>([^<]+)<\/em:version>/);
+			if (match) return match[1].split('.');
+			match = fileContents.match(/em:version=['"]([^'"]+)['"]/);
+			if (match) return match[1].split('.');
+		}
+		return [];
 	},
 
 	restart : function()
