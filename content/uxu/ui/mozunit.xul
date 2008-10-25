@@ -238,9 +238,12 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 				<toolbaritem flex="1" align="center">
 					<label value="&mozunit.filePath;"/>
 					<label id="file"
-						flex="1" value="" style="font-weight: bold;"
+						flex="1"
+						value=""
+						result=""
+						style="font-weight: bold;"
 						crop="center"
-						persist="value"/>
+						persist="value,result"/>
 				</toolbaritem>
 				<toolbarbutton command="edit"/>
 			</toolbar>

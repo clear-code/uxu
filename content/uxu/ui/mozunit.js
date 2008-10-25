@@ -222,7 +222,7 @@ const fileDNDObserver =
 }; 
    
 /* DOMAIN */ 
-	 
+	
 function startup() 
 {
 	if (!isLinux()) {
@@ -231,9 +231,12 @@ function startup()
 			toggleAlwaysRaised();
 	}
 	ObserverService.addObserver(restartObserver, 'quit-application-requested', false);
+
 	updateTestCommands();
+
 	_('content').addEventListener('load', onContentLoad, true);
 
+	var running = false;
 	if ('arguments' in window &&
 		window.arguments &&
 		window.arguments.length) {
@@ -241,15 +244,34 @@ function startup()
 		if (gOptions instanceof Ci.nsIPropertyBag)
 			gOptions = gOptions.getProperty('arguments');
 
-		var path = gOptions.testcase;
-		if (path.indexOf('file://') > -1)
-			path = utils.getFilePathFromURLSpec(path);
-		_('file').value = path;
-
-		if (gOptions.hidden)
+		if (gOptions.testcase) {
+			var path = gOptions.testcase;
+			if (path.indexOf('file://') > -1)
+				path = utils.getFilePathFromURLSpec(path);
+			_('file').value = path;
+		}
+		if (gOptions.hidden) {
 			window.setTimeout(function() { window.minimize(); }, 0);
+		}
+		if (gOptions.testcase) {
+			run(gOptions.priority || 0);
+		}
+		running = true;
+	}
 
-		run(gOptions.priority || 0);
+	if (!running) {
+		var lastResult = _('file').getAttribute('result');
+		if (lastResult) {
+			try {
+				eval('lastResult = '+lastResult);
+				gLogs = lastResult;
+				buildReportsFromResults(gLogs);
+				onAllTestsFinish();
+			}
+			catch(e) {
+				alert(e);
+			}
+		}
 	}
 }
 	 
@@ -288,7 +310,7 @@ function shutdown()
 }
   
 /* test cases */ 
-	 
+	
 function newTestCase() 
 {
 	var file = pickFile('save', makeTestCaseFileOptions());
@@ -359,7 +381,7 @@ function getFocusedPath()
 }
   
 /* runner */ 
-	 
+	
 var gRunner; 
  
 function TestListener() 
@@ -429,97 +451,7 @@ TestListener.prototype = {
 		return Array.slice(this._log);
 	}
 };
-	 
-function getReport(aTitle) 
-{
-	var id = 'testcase-report-'+encodeURIComponent(aTitle);
-	return _(id) ||
-		(function() {
-			var wTestCaseReport = clone('testcase-report');
-			wTestCaseReport.setAttribute('id', id);
-			wTestCaseReport.setAttribute('title', aTitle);
-			_(wTestCaseReport, 'title').textContent = aTitle;
-			_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-fine');
-			_('testcase-reports').appendChild(wTestCaseReport);
-			scrollReportsTo(wTestCaseReport);
-			return wTestCaseReport;
-		})();
-}
  
-function fillReportFromResult(aTitle, aResult) 
-{
-	var reportNode = getReport(aTitle);
-
-	_(reportNode, 'bar').setAttribute('mode', 'determined');
-	_(reportNode, 'bar').setAttribute('value', aResult.percentage);
-	_(reportNode, 'total-counter').value = aResult.step.split('/')[1];
-
-	_(reportNode, 'bar').setAttribute('testcase-results',
-		_(reportNode, 'bar').getAttribute('testcase-results')+
-		' '+aResult.type
-	);
-
-	gTotalCount++;
-	switch (aResult.type)
-	{
-		case 'success':
-			gSuccessCount++;
-			var successes = parseInt(_(reportNode, 'success-counter').value);
-			_(reportNode, 'success-counter').value = successes + 1;
-			return;
-		case 'passover':
-			gPassOverCount++;
-			var passover = parseInt(_(reportNode, 'passover-counter').value);
-			_(reportNode, 'passover-counter').value = passover + 1;
-			return;
-		case 'failure':
-			gFailureCount++;
-			break;
-		case 'error':
-			gErrorCount++;
-			break;
-		default:
-			break;
-	}
-
-	_(reportNode, 'bar').setAttribute('class', 'testcase-problems');
-
-	var id = 'test-report-'+encodeURIComponent(aTitle)+'-'+_(reportNode, 'test-reports').childNodes.length;
-	var wTestReport = clone('test-report');
-	wTestReport.setAttribute('id', id);
-	_(wTestReport, 'result').value = bundle.getString('report_result_'+aResult.type);
-	_(wTestReport, 'icon').setAttribute('class', 'test-' + aResult.type);
-	_(wTestReport, 'description').textContent = aResult.title;
-	_(wTestReport, 'description').setAttribute('tooltiptext', aResult.title);
-	_(wTestReport).setAttribute('report-type', aResult.type);
-
-	if (aResult.expected) {
-		_(wTestReport, 'expected-value').textContent = aResult.expected;
-		_(wTestReport, 'expected-row').removeAttribute('hidden');
-	}
-	if (aResult.actual) {
-		_(wTestReport, 'actual-value').textContent = aResult.actual;
-		_(wTestReport, 'actual-row').removeAttribute('hidden');
-	}
-	if (aResult.expected || aResult.actual) {
-		_(wTestReport, 'vs').removeAttribute('hidden');
-	}
-	if (aResult.diff) {
-		_(wTestReport, 'diff-value').textContent = aResult.diff;
-		_(wTestReport, 'diff-row').removeAttribute('hidden');
-	}
-	if (aResult.description) {
-		_(wTestReport, 'additionalInfo').textContent = aResult.description;
-	}
-	if (aResult.stackTrace) {
-		displayStackTraceLines(aResult.stackTrace, _(wTestReport, 'stack-trace'));
-		_(wTestReport, 'stack-trace').hidden = false;
-	}
-
-	_(reportNode, 'test-reports').appendChild(wTestReport);
-	scrollReportsTo(wTestReport);
-}
- 	 
 var runnerListener = { 
 	handleEvent : function(aEvent)
 	{
@@ -575,6 +507,8 @@ function onAllTestsFinish()
 			return;
 		}
 	}
+
+	_('file').setAttribute('result', gLogs.toSource());
 
 	if (!_('content').collapsed && contentAutoExpanded) {
 		toggleContent();
@@ -652,6 +586,7 @@ function reset()
 	hideSource();
 	_('saveReport').setAttribute('disabled', true);
 	gLogs = [];
+	_('file').setAttribute('result', '');
 }
 var gAborted = false;
 var gTotalCount    = 0;
@@ -748,6 +683,222 @@ function stop()
   
 /* UI */ 
 	 
+function getReport(aTitle) 
+{
+	var id = 'testcase-report-'+encodeURIComponent(aTitle);
+	return _(id) ||
+		(function() {
+			var wTestCaseReport = clone('testcase-report');
+			wTestCaseReport.setAttribute('id', id);
+			wTestCaseReport.setAttribute('title', aTitle);
+			_(wTestCaseReport, 'title').textContent = aTitle;
+			_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-fine');
+			_('testcase-reports').appendChild(wTestCaseReport);
+			scrollReportsTo(wTestCaseReport);
+			return wTestCaseReport;
+		})();
+}
+ 
+function fillReportFromResult(aTitle, aResult) 
+{
+	var reportNode = getReport(aTitle);
+
+	_(reportNode, 'bar').setAttribute('mode', 'determined');
+	_(reportNode, 'bar').setAttribute('value', aResult.percentage);
+	_(reportNode, 'total-counter').value = aResult.step.split('/')[1];
+
+	_(reportNode, 'bar').setAttribute('testcase-results',
+		_(reportNode, 'bar').getAttribute('testcase-results')+
+		' '+aResult.type
+	);
+
+	gTotalCount++;
+	switch (aResult.type)
+	{
+		case 'success':
+			gSuccessCount++;
+			var successes = parseInt(_(reportNode, 'success-counter').value);
+			_(reportNode, 'success-counter').value = successes + 1;
+			return;
+		case 'passover':
+			gPassOverCount++;
+			var passover = parseInt(_(reportNode, 'passover-counter').value);
+			_(reportNode, 'passover-counter').value = passover + 1;
+			return;
+		case 'failure':
+			gFailureCount++;
+			break;
+		case 'error':
+			gErrorCount++;
+			break;
+		default:
+			break;
+	}
+
+	_(reportNode, 'bar').setAttribute('class', 'testcase-problems');
+
+	var id = 'test-report-'+encodeURIComponent(aTitle)+'-'+_(reportNode, 'test-reports').childNodes.length;
+	var wTestReport = clone('test-report');
+	wTestReport.setAttribute('id', id);
+	_(wTestReport, 'result').value = bundle.getString('report_result_'+aResult.type);
+	_(wTestReport, 'icon').setAttribute('class', 'test-' + aResult.type);
+	_(wTestReport, 'description').textContent = aResult.title;
+	_(wTestReport, 'description').setAttribute('tooltiptext', aResult.title);
+	_(wTestReport).setAttribute('report-type', aResult.type);
+
+	if (aResult.expected) {
+		_(wTestReport, 'expected-value').textContent = aResult.expected;
+		_(wTestReport, 'expected-row').removeAttribute('hidden');
+	}
+	if (aResult.actual) {
+		_(wTestReport, 'actual-value').textContent = aResult.actual;
+		_(wTestReport, 'actual-row').removeAttribute('hidden');
+	}
+	if (aResult.expected || aResult.actual) {
+		_(wTestReport, 'vs').removeAttribute('hidden');
+	}
+	if (aResult.diff) {
+		_(wTestReport, 'diff-value').textContent = aResult.diff;
+		_(wTestReport, 'diff-row').removeAttribute('hidden');
+	}
+	if (aResult.description) {
+		_(wTestReport, 'additionalInfo').textContent = aResult.description;
+	}
+	if (aResult.stackTrace) {
+		displayStackTraceLines(aResult.stackTrace, _(wTestReport, 'stack-trace'));
+		_(wTestReport, 'stack-trace').hidden = false;
+	}
+
+	_(reportNode, 'test-reports').appendChild(wTestReport);
+	scrollReportsTo(wTestReport);
+}
+ 
+function buildReportsFromResults(aResults) 
+{
+	aResults.forEach(function(aResult) {
+		var report = getReport(aResult.title);
+		report.setAttribute('file', aResult.file);
+		aResult.results.forEach(function(aOneResult) {
+			fillReportFromResult(aResult.title, aOneResult);
+		});
+	});
+}
+ 	
+function isLinux() 
+{
+	return /linux/i.test(navigator.platform);
+}
+ 
+function updateRunMode() 
+{
+	var runPriority = _('runPriority');
+	var runAll = _('runAll');
+	var label;
+	switch (utils.getPref('extensions.uxu.mozunit.runMode'))
+	{
+		default:
+		case 0:
+			label = runPriority.getAttribute('label-default');
+			runPriority.setAttribute('label', label);
+			label = runAll.getAttribute('label-normal');
+			runAll.setAttribute('label', label);
+			break;
+
+		case 1:
+			label = runPriority.getAttribute('label-normal');
+			runPriority.setAttribute('label', label);
+			label = runAll.getAttribute('label-default');
+			runAll.setAttribute('label', label);
+			break;
+	}
+}
+ 
+function goUpdateCommand(aCommand) 
+{
+	var node = document.getElementById(aCommand);
+	if (!node) return;
+	try {
+		var controller = document.commandDispatcher.getControllerForCommand(aCommand);
+		var enabled = false
+		if (controller)
+			enabled = controller.isCommandEnabled(aCommand);
+		if (enabled)
+			node.removeAttribute('disabled');
+		else
+			node.setAttribute('disabled', true);
+	}
+	catch(e) {
+	}
+}
+ 
+function updateEditItems() 
+{
+	goUpdateCommand('cmd_copy');
+}
+ 
+function updateViewItems() 
+{
+	if (isLinux()) {
+		_('alwaysRaised-menuitem').setAttribute('hidden', true);
+	}
+	else {
+		var alwaysRaised = _('alwaysRaised');
+		var win = getXULWindow();
+		if (win.zLevel == win.normalZ)
+			alwaysRaised.removeAttribute('checked');
+		else
+			alwaysRaised.setAttribute('checked', true);
+	}
+
+	var toggleContent = _('toggleContent');
+	if (_('content').collapsed)
+		toggleContent.removeAttribute('checked');
+	else
+		toggleContent.setAttribute('checked', true);
+}
+ 
+function updateTestCommands() 
+{
+	var file = _('file').value;
+	if (file &&
+		(file = utils.makeFileWithPath(file)) &&
+		file.exists()) {
+		_('run').removeAttribute('disabled');
+		_('runPriority').removeAttribute('disabled');
+		_('runAll').removeAttribute('disabled');
+		_('runOptions-menu').removeAttribute('disabled');
+		_('runOptions-button').removeAttribute('disabled');
+		if (!file.isDirectory())
+			_('edit').removeAttribute('disabled');
+		else
+			_('edit').setAttribute('disabled', true);
+	}
+	else {
+		_('run').setAttribute('disabled', true);
+		_('runPriority').setAttribute('disabled', true);
+		_('runAll').setAttribute('disabled', true);
+		_('runOptions-menu').setAttribute('disabled', true);
+		_('runOptions-button').setAttribute('disabled', true);
+		_('edit').setAttribute('disabled', true);
+	}
+}
+ 
+function updateContextMenu() 
+{
+	updateEditItems();
+
+	if (getFocusedPath()) {
+		_('editThis-menuitem').removeAttribute('hidden');
+		_('editThis-separator').removeAttribute('hidden');
+	}
+	else {
+		_('editThis-menuitem').setAttribute('hidden', true);
+		_('editThis-separator').setAttribute('hidden', true);
+	}
+}
+  
+/* commands */ 
+	
 function saveReport(aPath, aRaw) 
 {
 	var file;
@@ -885,35 +1036,6 @@ function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine)
 		if (!editor || !editor.path) return;
 		utils.setPref('extensions.uxu.mozunit.editor', '"'+editor.path+'" "%f"');
 		arguments.callee(aFilePath, aLineNumber, aColumnNumber);
-	}
-}
- 
-function isLinux() 
-{
-	return /linux/i.test(navigator.platform);
-}
- 
-function updateRunMode() 
-{
-	var runPriority = _('runPriority');
-	var runAll = _('runAll');
-	var label;
-	switch (utils.getPref('extensions.uxu.mozunit.runMode'))
-	{
-		default:
-		case 0:
-			label = runPriority.getAttribute('label-default');
-			runPriority.setAttribute('label', label);
-			label = runAll.getAttribute('label-normal');
-			runAll.setAttribute('label', label);
-			break;
-
-		case 1:
-			label = runPriority.getAttribute('label-normal');
-			runPriority.setAttribute('label', label);
-			label = runAll.getAttribute('label-default');
-			runAll.setAttribute('label', label);
-			break;
 	}
 }
  
@@ -1063,24 +1185,6 @@ function hideSource()
 	_('source-splitter').hidden = true;
 }
   
-function goUpdateCommand(aCommand) 
-{
-	var node = document.getElementById(aCommand);
-	if (!node) return;
-	try {
-		var controller = document.commandDispatcher.getControllerForCommand(aCommand);
-		var enabled = false
-		if (controller)
-			enabled = controller.isCommandEnabled(aCommand);
-		if (enabled)
-			node.removeAttribute('disabled');
-		else
-			node.setAttribute('disabled', true);
-	}
-	catch(e) {
-	}
-}
- 
 function goDoCommand(aCommand) 
 {
 	try {
@@ -1089,72 +1193,6 @@ function goDoCommand(aCommand)
 			controller.doCommand(aCommand);
 	}
 	catch(e) {
-	}
-}
- 
-function updateEditItems() 
-{
-	goUpdateCommand('cmd_copy');
-}
- 
-function updateViewItems() 
-{
-	if (isLinux()) {
-		_('alwaysRaised-menuitem').setAttribute('hidden', true);
-	}
-	else {
-		var alwaysRaised = _('alwaysRaised');
-		var win = getXULWindow();
-		if (win.zLevel == win.normalZ)
-			alwaysRaised.removeAttribute('checked');
-		else
-			alwaysRaised.setAttribute('checked', true);
-	}
-
-	var toggleContent = _('toggleContent');
-	if (_('content').collapsed)
-		toggleContent.removeAttribute('checked');
-	else
-		toggleContent.setAttribute('checked', true);
-}
- 
-function updateTestCommands() 
-{
-	var file = _('file').value;
-	if (file &&
-		(file = utils.makeFileWithPath(file)) &&
-		file.exists()) {
-		_('run').removeAttribute('disabled');
-		_('runPriority').removeAttribute('disabled');
-		_('runAll').removeAttribute('disabled');
-		_('runOptions-menu').removeAttribute('disabled');
-		_('runOptions-button').removeAttribute('disabled');
-		if (!file.isDirectory())
-			_('edit').removeAttribute('disabled');
-		else
-			_('edit').setAttribute('disabled', true);
-	}
-	else {
-		_('run').setAttribute('disabled', true);
-		_('runPriority').setAttribute('disabled', true);
-		_('runAll').setAttribute('disabled', true);
-		_('runOptions-menu').setAttribute('disabled', true);
-		_('runOptions-button').setAttribute('disabled', true);
-		_('edit').setAttribute('disabled', true);
-	}
-}
- 
-function updateContextMenu() 
-{
-	updateEditItems();
-
-	if (getFocusedPath()) {
-		_('editThis-menuitem').removeAttribute('hidden');
-		_('editThis-separator').removeAttribute('hidden');
-	}
-	else {
-		_('editThis-menuitem').setAttribute('hidden', true);
-		_('editThis-separator').setAttribute('hidden', true);
 	}
 }
  
