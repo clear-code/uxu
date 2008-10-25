@@ -579,11 +579,16 @@ function remoteRun(aStopper)
 
 	var fireRemoteEvent = function(aEventType) {
 			var result = utils.readFrom(log.path, 'UTF-8');
-			eval('result = '+result);
-			if (aEventType == 'RemoteFinish') {
-				result[result.length-1].results.forEach(function(aResult) {
-					_this._onFinish(_this._tests[aResult.index], aResult.type);
-				});
+			try {
+				eval('result = '+result);
+				if (aEventType == 'RemoteFinish') {
+					result[result.length-1].results.forEach(function(aResult) {
+						_this._onFinish(_this._tests[aResult.index], aResult.type);
+					});
+				}
+			}
+			catch(e) {
+				result = [];
 			}
 			_this.fireEvent(aEventType, result);
 		};
