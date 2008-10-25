@@ -114,12 +114,17 @@ function constructor(aTitle, aNamespace, aProfile)
 	var runningProfile = utils.getURLSpecFromFile(utils.getFileFromKeyword('ProfD'));
 	runningProfile = runningProfile.replace(/([^\/])$/, '$1/');
 	runningProfile = utils.getFileFromURLSpec(runningProfile);
+	this._profile = null;
 	if (aProfile) {
 		try {
 			this._profile = utils.fixupIncompleteURI(aProfile).replace(/([^\/])$/, '$1/');
 			this._profile = utils.getFileFromURLSpec(this._profile);
 			this._profile.normalize();
-			if (!this._profile.exists()) this._profile = null;
+			if (
+				!this._profile.exists() ||
+				!this._profile.isDirectory()
+				)
+				this._profile = null;
 		}
 		catch(e) {
 		}
