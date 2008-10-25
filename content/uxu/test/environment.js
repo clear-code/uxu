@@ -282,7 +282,7 @@ var tearDownTestWindow = closeTestWindow;
 // テスト用のFirefoxウィンドウの現在のタブにURIを読み込む
 function loadURI(aURI, aOptions)
 {
-	if (product != 'firefox') return { value : true };
+	if (product != 'Firefox') return { value : true };
 
 	if (!aURI) aURI = 'about:blank';
 	aURI = this.fixupIncompleteURI(aURI);
@@ -312,7 +312,7 @@ function loadURIInTestFrame(aURI)
 // テスト用のFirefoxウィンドウで新しいタブを開く
 function addTab(aURI, aOptions)
 {
-	if (product != 'firefox') return { value : true, tab : null };
+	if (product != 'Firefox') return { value : true, tab : null };
 
 	if (!aURI) aURI = 'about:blank';
 	aURI = this.fixupIncompleteURI(aURI);
@@ -335,7 +335,7 @@ function addTab(aURI, aOptions)
 
 function getBrowser(aOptions)
 {
-	if (product != 'firefox') return null;
+	if (product != 'Firefox') return null;
 	var win = this.getTestWindow(aOptions);
 	if (!win) return this._testFrame;
 	return win.gBrowser;
@@ -343,7 +343,7 @@ function getBrowser(aOptions)
 
 function getTabs(aOptions)
 {
-	if (product != 'firefox') return [];
+	if (product != 'Firefox') return [];
 	var win = this.getTestWindow(aOptions);
 	if (!win) return null;
 	return Array.slice(win.gBrowser.mTabContainer.childNodes);
