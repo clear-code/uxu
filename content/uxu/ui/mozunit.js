@@ -252,6 +252,11 @@ function startup()
 				path = utils.getFilePathFromURLSpec(path);
 			setTestFile(path);
 		}
+		if (gOptions.log && gOptions.log.indexOf('file://') > -1)
+			gOptions.log = utils.getFilePathFromURLSpec(gOptions.log);
+		if (gOptions.rawLog && gOptions.rawLog.indexOf('file://') > -1)
+			gOptions.rawLog = utils.getFilePathFromURLSpec(gOptions.rawLog);
+
 		if (gOptions.hidden) {
 			window.setTimeout(function() { window.minimize(); }, 0);
 		}
@@ -397,12 +402,13 @@ TestListener.prototype = {
 	},
 	onStart : function(aEvent)
 	{
-		this._log.push({
+		gLogs.push({
 			start   : Date.now(),
 			title   : aEvent.target.title,
 			file    : aEvent.target.namespace,
 			results : []
 		});
+		this.onLogged();
 		var report = getReport(aEvent.target.title);
 		report.setAttribute('file', aEvent.target.namespace);
 	},
@@ -415,8 +421,8 @@ TestListener.prototype = {
 			title     : report.testDescription,
 			timestamp : Date.now(),
 			index     : report.testIndex,
-			step      : report.testIndex+'/'+testCase.tests.length,
-			percentage : parseInt(report.testIndex / testCase.tests.length * 100)
+			step      : (report.testIndex+1)+'/'+testCase.tests.length,
+			percentage : parseInt((report.testIndex+1) / testCase.tests.length * 100)
 		};
 		if (report.exception) {
 			if (report.exception.expected)
@@ -431,12 +437,13 @@ TestListener.prototype = {
 		}
 
 		this.lastLog.results.push(result);
+		this.onLogged();
 		fillReportFromResult(aEvent.target.title, result);
 	},
 	onFinish : function(aEvent)
 	{
 		this.lastLog.finish = Date.now();
-		gLogs = this.log;
+		this.onLogged();
 		aEvent.target.removeListener(this);
 	},
 	onAbort : function(aEvent)
@@ -444,13 +451,40 @@ TestListener.prototype = {
 		this.lastLog.aborted = true;
 		this.onFinish(aEvent);
 	},
+
+	onRemoteStart : function(aEvent)
+	{
+		var report = getReport(aEvent.target.title);
+		report.setAttribute('file', aEvent.target.namespace);
+	},
+	onRemoteFinish : function(aEvent)
+	{
+		gLogs = gLogs.concat(aEvent.data);
+		buildReportsFromResults(aEvent.data);
+		this.onFinish(aEvent);
+	},
+
 	get lastLog()
 	{
-		return this._log[this._log.length-1];
+		return gLogs[gLogs.length-1];
 	},
-	get log()
+	onLogged : function()
 	{
-		return Array.slice(this._log);
+		if (!gOptions) return;
+		if (gOptions.log) {
+			utils.writeTo(
+				formatter.formatLogs(gLogs),
+				gOptions.log,
+				'UTF-8'
+			);
+		}
+		if (gOptions.rawLog) {
+			utils.writeTo(
+				formatter.formatLogs(gLogs, formatter.FORMAT_RAW),
+				gOptions.rawLog,
+				'UTF-8'
+			);
+		}
 	}
 };
  
@@ -491,16 +525,19 @@ function onAllTestsFinish()
 {
 	if (gOptions) {
 		if (gOptions.log) {
-			var log = gOptions.log;
-			if (log.indexOf('file://') > -1)
-				log = utils.getFilePathFromURLSpec(log);
-			saveReport(log);
+			utils.writeTo(
+				formatter.formatLogs(gLogs),
+				gOptions.log,
+				'UTF-8'
+			);
 		}
 		if (gOptions.rawLog) {
-			var raw = gOptions.rawLog;
-			if (raw.indexOf('file://') > -1)
-				raw = utils.getFilePathFromURLSpec(raw);
-			saveReport(raw, formatter.FORMAT_RAW);
+			utils.writeTo(
+				'/*remote-test-finished*/'+
+					formatter.formatLogs(gLogs, formatter.FORMAT_RAW),
+				gOptions.rawLog,
+				'UTF-8'
+			);
 		}
 		if (gOptions.testcase && (gOptions.log || gOptions.rawLog)) {
 			const startup = Cc['@mozilla.org/toolkit/app-startup;1']
@@ -935,10 +972,7 @@ function saveReport(aPath, aFormat)
 
 	if (file.exists()) file.remove(true);
 	utils.writeTo(
-		formatter.formatLogs(
-			gLogs,
-			aFormat || (formatter.FORMAT_TEXT | formatter.IGNORE_PASSOVER | formatter.IGNORE_SUCCESS)
-		),
+		formatter.formatLogs(gLogs, aFormat),
 		file.path,
 		'UTF-8'
 	);

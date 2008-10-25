@@ -105,7 +105,8 @@ function _getTestsFromSuite(aSuite)
 	if (testObjects.tests.length) {
 		var newTestCase = new TestCase(
 				aSuite.description || String(aSuite.fileURL.match(/[^\/]+$/)),
-				aSuite.fileURL
+				aSuite.fileURL,
+				aSuite.profile
 			);
 
 		if (testObjects.setUp)
@@ -188,6 +189,7 @@ function handleEvent(aEvent)
 	switch (aEvent.type)
 	{
 		case 'Start':
+		case 'RemoteStart':
 			this.runningCount++;
 			break;
 
@@ -199,6 +201,7 @@ function handleEvent(aEvent)
 			break;
 
 		case 'Finish':
+		case 'RemoteFinish':
 			this.runningCount--;
 			this._cleanUpModifications(aEvent.target);
 			aEvent.target.removeListener(this);

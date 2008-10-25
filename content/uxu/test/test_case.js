@@ -24,7 +24,8 @@
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']); 
 var fsm    = lib_module.require('package', 'fsm');
 var bundle = lib_module.require('package', 'bundle');
-var utils  = lib_module.require('package', 'utils');
+var utils  = {};
+utils.__proto__ = lib_module.require('package', 'utils');
 
 var inherits = lib_module.require('class', 'event_target');
 
@@ -49,7 +50,10 @@ else { // possibly old version, so we have to migrate.
 		db.schemaVersion = SCHEME_VERSION_HASH;
 	}
 }
- 	
+
+const kREMOTE_LOG_PREFIX = 'uxu-test-log';
+const kREMOTE_PROFILE_PREFIX = 'uxu-test-profile';
+ 
 /**
  * Invocation: 
  *     var case = new TestCase('Widget tests');
@@ -59,7 +63,7 @@ else { // possibly old version, so we have to migrate.
  *
  */
  
-function constructor(aTitle, aNamespace) 
+function constructor(aTitle, aNamespace, aProfile) 
 {
 	this._title = aTitle;
 	this.__defineGetter__(
@@ -100,6 +104,35 @@ function constructor(aTitle, aNamespace)
 	this.__defineGetter__(
 		'namespace', function() {
 			return this._namespace;
+		});
+
+	utils.baseURL = aNamespace.replace(/[^\/]*$/, '');
+
+	var runningProfile = utils.getURLSpecFromFile(utils.getFileFromKeyword('ProfD'));
+	runningProfile = runningProfile.replace(/([^\/])$/, '$1/');
+	runningProfile = utils.getFileFromURLSpec(runningProfile);
+	if (aProfile) {
+		try {
+			this._profile = utils.fixupIncompleteURI(aProfile).replace(/([^\/])$/, '$1/');
+			this._profile = utils.getFileFromURLSpec(this._profile);
+			this._profile.normalize();
+			if (!this._profile.exists()) this._profile = null;
+		}
+		catch(e) {
+		}
+	}
+	if (!this._profile) {
+		this._profile = runningProfile;
+	}
+	this.__defineGetter__(
+		'profile', function() {
+			return this._profile;
+		});
+	this.__defineGetter__(
+		'shouldRunInRemote', function() {
+			var tmp = utils.getFileFromKeyword('TmpD');
+			return this._profile.path != runningProfile.path &&
+				!runningProfile.parent.equals(tmp);
 		});
 
 	this._masterPriority = null;
@@ -335,6 +368,10 @@ function run(aStopper)
 {
 	this._stopper = aStopper;
 
+	this._done = false;
+
+	if (this.shouldRunInRemote && this.remoteRun()) return;
+
 	var testIndex = 0;
 	var context;
 	var report = { report : null };
@@ -424,7 +461,7 @@ function run(aStopper)
 		{
 			_this._onFinish(_this._tests[testIndex], report.report.result);
 			report.report.testOwner = _this;
-			report.report.testIndex = testIndex + 1;
+			report.report.testIndex = testIndex;
 			report.report.testID    = _this._tests[testIndex].name;
 			_this.fireEvent('TestFinish', report.report);
 			aContinuation('ok');
@@ -483,10 +520,87 @@ function run(aStopper)
 		}
 	};
 
-	this._done = false;
 	fsm.go('start', {}, stateHandlers, stateTransitions, []);
 }
 	 
+function remoteRun(aStopper) 
+{
+	if (!this.profile.exists()) return false;
+
+	var _this = this;
+	var aborted = false;
+	var timeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout'));
+
+	var log = utils.getFileFromKeyword('TmpD');
+	log.append(kREMOTE_LOG_PREFIX);
+	log.createUnique(log.NORMAL_FILE_TYPE, 0664);
+	utils.writeTo(Date.now(), log);
+
+	var profile = utils.getFileFromKeyword('TmpD');
+	profile.append(kREMOTE_PROFILE_PREFIX);
+	profile.createUnique(profile.DIRECTORY_TYPE, 0777);
+	this.profile.copyTo(profile.parent, profile.leafName);
+
+	this.fireEvent('RemoteStart');
+
+	utils.doIteration(
+		function() {
+			var last;
+			var result;
+			do {
+				last = Date.now();
+				if (_this._stopper && _this._stopper()) {
+					aborted = true;
+					_this.fireEvent('Abort');
+					break;
+				}
+				result = utils.readFrom(log.path, 'UTF-8');
+				if (result.indexOf('/*remote-test-finished*/') == 0) {
+					break;
+				}
+				else {
+					yield 500;
+				}
+			}
+			while (log.exists() && (log.lastModifiedTime - last < timeout));
+			yield 500;
+			if (!log.exists())
+				throw new Error(bungle.getString('error_remote_log_not_exist'));
+		},
+		{
+			onEnd : function(e) {
+				if (!aborted) {
+					result = utils.readFrom(log.path, 'UTF-8');
+					eval('result = '+result);
+					result[0].results.forEach(function(aResult) {
+						_this._onFinish(_this._tests[aResult.index], aResult.type);
+					});
+					_this.fireEvent('RemoteFinish', result);
+				}
+				log.remove(true);
+				profile.remove(true);
+			}
+		}
+	);
+
+	var args = [
+			'-no-remote',
+			'-profile',
+			profile.path,
+			'-uxu-testcase',
+			_this.namespace,
+			'-uxu-rawlog',
+			log.path
+		];
+	var process = Cc['@mozilla.org/process/util;1']
+				.createInstance(Ci.nsIProcess);
+	var exe = utils.getFileFromKeyword('XREExeF');
+	process.init(exe);
+	process.run(false, args, args.length);
+
+	return true;
+}
+ 	
 function _exec(aTest, aContext, aContinuation, aReport) 
 {
 	var report = {

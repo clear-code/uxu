@@ -14,9 +14,12 @@ var FORMAT_TEXT = 2;
 var IGNORE_PASSOVER = 1024;
 var IGNORE_SUCCESS  = 2048;
 
+var FORMAT_DEFUALT = FORMAT_TEXT | IGNORE_PASSOVER | IGNORE_SUCCESS;
+
+
 function formatLogs(aLogs, aFormat)
 {
-	if (!aFormat) aFormat = 0;
+	if (!aFormat) aFormat = FORMAT_DEFUALT;
 
 	if (aFormat & FORMAT_RAW) {
 		return aLogs.toSource();

@@ -656,6 +656,8 @@ function doIteration(aGenerator, aCallbacks)
 				aCallbacks.onFail(e);
 			else if (aCallbacks.onError)
 				aCallbacks.onError(e);
+			else if (aCallbacks.onEnd)
+				aCallbacks.onEnd(e);
 		}
 		catch(e) {
 			try {
@@ -669,6 +671,8 @@ function doIteration(aGenerator, aCallbacks)
 
 			if (aCallbacks.onError)
 				aCallbacks.onError(e);
+			else if (aCallbacks.onEnd)
+				aCallbacks.onEnd(e);
 		}
 	})(null);
 
