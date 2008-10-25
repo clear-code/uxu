@@ -52,11 +52,11 @@ else { // possibly old version, so we have to migrate.
 }
  
 const REMOTE_LOG_PREFIX = 'uxu-test-log'; 
-const REMOTE_RUNNINGFLAG_PREFIX = 'uxu-test-running'; 
+const REMOTE_RUNNINGFLAG_PREFIX = 'uxu-test-running';
 const REMOTE_PROFILE_PREFIX = 'uxu-test-profile';
 const REMOTE_TEST_FINISHED = '/*remote-test-finished*/';
 const REMOTE_TEST_PROGRESS = '/*remote-test-progress*/';
- 	
+ 
 /**
  * Invocation: 
  *     var case = new TestCase('Widget tests');
@@ -66,8 +66,13 @@ const REMOTE_TEST_PROGRESS = '/*remote-test-progress*/';
  *
  */
  
-function constructor(aTitle, aNamespace, aProfile) 
+function constructor(aTitle, aOptions) 
 {
+	if (!aOptions) aOptions = {};
+
+	this._initNamespace(aOptions);
+	this._initProfile(aOptions);
+
 	this._title = aTitle;
 	this.__defineGetter__(
 		'title', function() {
@@ -88,59 +93,6 @@ function constructor(aTitle, aNamespace, aProfile)
 		'stateThat', function(aHash) {
 			this.setTests(aHash);
 			return aHash;
-		});
-
-	if (!aNamespace || typeof aNamespace != 'string') {
-		var path;
-		var stack = Components.stack;
-		do {
-			path = stack.filename;
-			if (path.indexOf('chrome://uxu/content/lib/subScriptRunner.js?') != 0)
-				continue;
-			/.+includeSource=([^;]+)/.test(path);
-			aNamespace = decodeURIComponent(RegExp.$1);
-			break;
-		}
-		while (stack = stack.caller);
-	}
-	this._namespace = aNamespace;
-	this.__defineGetter__(
-		'namespace', function() {
-			return this._namespace;
-		});
-
-	utils.baseURL = aNamespace.replace(/[^\/]*$/, '');
-
-	var runningProfile = utils.getURLSpecFromFile(utils.getFileFromKeyword('ProfD'));
-	runningProfile = runningProfile.replace(/([^\/])$/, '$1/');
-	runningProfile = utils.getFileFromURLSpec(runningProfile);
-	this._profile = null;
-	if (aProfile) {
-		try {
-			this._profile = utils.fixupIncompleteURI(aProfile).replace(/([^\/])$/, '$1/');
-			this._profile = utils.getFileFromURLSpec(this._profile);
-			this._profile.normalize();
-			if (
-				!this._profile.exists() ||
-				!this._profile.isDirectory()
-				)
-				this._profile = null;
-		}
-		catch(e) {
-		}
-	}
-	if (!this._profile) {
-		this._profile = runningProfile;
-	}
-	this.__defineGetter__(
-		'profile', function() {
-			return this._profile;
-		});
-	this.__defineGetter__(
-		'shouldRunInRemote', function() {
-			var tmp = utils.getFileFromKeyword('TmpD');
-			return this._profile.path != runningProfile.path &&
-				!runningProfile.parent.equals(tmp);
 		});
 
 	this._masterPriority = null;
@@ -173,7 +125,73 @@ function constructor(aTitle, aNamespace, aProfile)
 
 	this.initListeners();
 }
+	 
+function _initNamespace(aOptions) 
+{
+	var namespace = aOptions.namespace;
+	if (!namespace || typeof namespace != 'string') {
+		var path;
+		var stack = Components.stack;
+		do {
+			path = stack.filename;
+			if (path.indexOf('chrome://uxu/content/lib/subScriptRunner.js?') != 0)
+				continue;
+			/.+includeSource=([^;]+)/.test(path);
+			namespace = decodeURIComponent(RegExp.$1);
+			break;
+		}
+		while (stack = stack.caller);
+	}
+	this._namespace = namespace;
+	this.__defineGetter__(
+		'namespace', function() {
+			return this._namespace;
+		});
+
+	utils.baseURL = namespace.replace(/[^\/]*$/, '');
+}
  
+function _initProfile(aOptions)
+{
+	var runningProfile = utils.getURLSpecFromFile(utils.getFileFromKeyword('ProfD'));
+	runningProfile = runningProfile.replace(/([^\/])$/, '$1/');
+	runningProfile = utils.getFileFromURLSpec(runningProfile);
+	this._profile = null;
+	if (aProfile) {
+		try {
+			this._profile = utils.fixupIncompleteURI(aProfile).replace(/([^\/])$/, '$1/');
+			this._profile = utils.getFileFromURLSpec(this._profile);
+			this._profile.normalize();
+			if (
+				!this._profile.exists() ||
+				!this._profile.isDirectory()
+				)
+				this._profile = null;
+		}
+		catch(e) {
+		}
+	}
+	if (!this._profile) {
+		this._profile = runningProfile;
+	}
+	this.__defineGetter__(
+		'profile', function() {
+			return this._profile;
+		});
+	this.__defineGetter__(
+		'shouldRunInRemote', function() {
+			var tmp = utils.getFileFromKeyword('TmpD');
+			return this._profile.path != runningProfile.path &&
+				!runningProfile.parent.equals(tmp);
+		});
+
+	this._options = aOptions.options || [];
+	this.__defineGetter__(
+		'options', function() {
+			return this._options;
+		});
+}
+ 	 
 /**
  * Define test cases, optionally with setup and teardown. 
  *
@@ -621,7 +639,9 @@ function remoteRun(aStopper)
 			'-uxu-running-testcase',
 			running.path,
 			'-uxu-hidden'
-		];
+		]
+		.concat(this.options);
+
 	var process = Cc['@mozilla.org/process/util;1']
 				.createInstance(Ci.nsIProcess);
 	var exe = utils.getFileFromKeyword('XREExeF');
