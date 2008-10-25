@@ -499,6 +499,12 @@ TestListener.prototype = {
 	onLogged : function()
 	{
 		if (!gOptions) return;
+		if (gOptions.running &&
+			gOptions.running instanceof Ci.nsIFile &&
+			!gOptions.running.exists()) {
+			stop();
+			return;
+		}
 		if (gOptions.log) {
 			utils.writeTo(
 				formatter.formatLogs(gLogs),
@@ -514,10 +520,6 @@ TestListener.prototype = {
 				'UTF-8'
 			);
 		}
-		if (gOptions.running &&
-			gOptions.running instanceof Ci.nsIFile &&
-			!gOptions.running.exists())
-			stop();
 	}
 };
  
@@ -557,20 +559,24 @@ var runnerListener = {
 function onAllTestsFinish() 
 {
 	if (gOptions) {
-		if (gOptions.log) {
-			utils.writeTo(
-				formatter.formatLogs(gLogs),
-				gOptions.log,
-				'UTF-8'
-			);
-		}
-		if (gOptions.rawLog) {
-			utils.writeTo(
-				TestCase.prototype.REMOTE_TEST_FINISHED+
-					formatter.formatLogs(gLogs, formatter.FORMAT_RAW),
-				gOptions.rawLog,
-				'UTF-8'
-			);
+		if (!gOptions.running ||
+			!(gOptions.running instanceof Ci.nsIFile) ||
+			gOptions.running.exists()) {
+			if (gOptions.log) {
+				utils.writeTo(
+					formatter.formatLogs(gLogs),
+					gOptions.log,
+					'UTF-8'
+				);
+			}
+			if (gOptions.rawLog) {
+				utils.writeTo(
+					TestCase.prototype.REMOTE_TEST_FINISHED+
+						formatter.formatLogs(gLogs, formatter.FORMAT_RAW),
+					gOptions.rawLog,
+					'UTF-8'
+				);
+			}
 		}
 		if (gOptions.testcase && (gOptions.log || gOptions.rawLog)) {
 			const startup = Cc['@mozilla.org/toolkit/app-startup;1']

@@ -597,13 +597,9 @@ function remoteRun(aStopper)
 				if (!aborted) {
 					fireRemoteEvent('RemoteFinish');
 				}
-				if (log.exists()) log.remove(true);
 				if (running.exists()) running.remove(true);
-				try {
-					if (profile.exists()) profile.remove(true);
-				}
-				catch(e) {
-				}
+				utils.scheduleToRemove(log);
+				utils.scheduleToRemove(profile);
 			}
 		}
 	);
