@@ -95,6 +95,25 @@ function getFilePathFromURLSpec(aURI)
 {
 	return getFileFromURLSpec(aURI).path;
 }
+
+var DirectoryService = Cc['@mozilla.org/file/directory_service;1']
+		.getService(Ci.nsIProperties);
+
+function getFileFromKeyword(aKeyword)
+{
+	try {
+		return DirectoryService.get(aKeyword, Ci.nsIFile);
+	}
+	catch(e) {
+	}
+	return null;
+}
+
+function getFilePathFromKeyword(aKeyword)
+{
+	var file = getFileFromKeyword(aKeyword);
+	return file ? file.path : null ;
+}
  
 // ÉtÉ@ÉCÉãÅ®URL
 function getURLFromFile(aFile)
@@ -678,9 +697,7 @@ function getDB()
 {
 	if (_db) return _db;
 
-	const DirectoryService = Cc['@mozilla.org/file/directory_service;1']
-		.getService(Ci.nsIProperties);
-	var file = DirectoryService.get('ProfD', Ci.nsIFile);
+	var file = getFileFromKeyword('ProfD');
 	file.append('uxu.sqlite');
 
 	const StorageService = Cc['@mozilla.org/storage/service;1']

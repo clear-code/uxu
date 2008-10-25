@@ -381,9 +381,7 @@ function getChromeWindows(aOptions)
 
 function makeTempFile(aOriginal, aCosmetic)
 {
-	var DirectoryService = Cc['@mozilla.org/file/directory_service;1']
-			.getService(Ci.nsIProperties);
-	var temp = DirectoryService.get('TmpD', Ci.nsIFile);
+	var temp = utils.getFileFromKeyword('TmpD');
 	var random = parseInt(Math.random() * 10000);
 
 	if (aOriginal) {
@@ -476,8 +474,10 @@ makeFileWithPath
 normalizeToFile
 getFileFromURL
 getFileFromURLSpec
+getFileFromKeyword
 getFilePathFromURL
 getFilePathFromURLSpec
+getFilePathFromKeyword
 getURLFromFile
 getURLFromFilePath
 getURLSpecFromFile

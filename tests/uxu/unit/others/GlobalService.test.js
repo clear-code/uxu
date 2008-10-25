@@ -2,10 +2,6 @@ utils.include('../../../../components/GlobalService.js');
 
 var service;
 
-var DirectoryService = Cc['@mozilla.org/file/directory_service;1']
-		.getService(Ci.nsIProperties);
-
-
 function setUp()
 {
 	service = new GlobalService();
@@ -17,7 +13,7 @@ function tearDown()
 
 function testGetInstallLocation()
 {
-	var dir = DirectoryService.get('CurProcD', Ci.nsIFile);
+	var dir = utils.getFileFromKeyword('CurProcD');
 	dir.append('extensions');
 	dir.append('uxu@clear-code.com');
 	assert.equals(dir.path, service.globalLocation.path);
