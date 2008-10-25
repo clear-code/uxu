@@ -9,7 +9,7 @@
 	<preferences>
 		<preference id="extensions.uxu.run.ignoreHiddenFiles"
 			name="extensions.uxu.run.ignoreHiddenFiles"
-			type="false"
+			type="bool"
 			inverted="true"/>
 		<preference id="extensions.uxu.run.timeout"
 			name="extensions.uxu.run.timeout"
@@ -20,6 +20,9 @@
 		<preference id="extensions.uxu.defaultEncoding"
 			name="extensions.uxu.defaultEncoding"
 			type="string"/>
+		<preference id="extensions.uxu.global"
+			name="extensions.uxu.global"
+			type="bool"/>
 	</preferences>
 
 	<checkbox id="extensions.uxu.run.ignoreHiddenFiles-check"
@@ -52,6 +55,15 @@
 			preference="extensions.uxu.defaultEncoding"
 			style="width:5em;"/>
 	</hbox>
+	<groupbox orient="vertical">
+		<caption label="&config.installLocation.caption;"/>
+		<radiogroup id="extensions.uxu.global-radio"
+			preference="extensions.uxu.global"
+			orient="horizontal">
+			<radio value="false" label="&config.installLocation.profile;"/>
+			<radio value="true" label="&config.installLocation.global;"/>
+		</radiogroup>
+	</groupbox>
 
 </prefpane>
 
