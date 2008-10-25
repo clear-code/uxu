@@ -571,6 +571,7 @@ function remoteRun(aStopper)
 		function() {
 			var last;
 			var result;
+			var wait = 500;
 			do {
 				last = Date.now();
 				if (!aborted && _this._stopper && _this._stopper()) {
@@ -589,11 +590,11 @@ function remoteRun(aStopper)
 					if (result.indexOf(REMOTE_TEST_PROGRESS) == 0) {
 						fireRemoteEvent('RemoteProgress');
 					}
-					yield 500;
+					yield wait;
 				}
 			}
 			while (log.exists() && (log.lastModifiedTime - last < timeout));
-			yield 500;
+			yield wait;
 			if (!log.exists())
 				throw new Error(bungle.getString('error_remote_log_not_exist'));
 		},

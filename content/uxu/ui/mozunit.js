@@ -262,12 +262,15 @@ function startup()
 				gOptions.running = utils.getFilePathFromURLSpec(gOptions.running);
 			gOptions.running = utils.makeFileWithPath(gOptions.running);
 		}
-
-		if (gOptions.hidden) {
-			window.setTimeout(function() { window.minimize(); }, 0);
-		}
 		if (gOptions.testcase) {
 			run(gOptions.priority || 0);
+		}
+		if (gOptions.hidden) {
+			window.setTimeout(function() { window.minimize(); }, 0);
+			Array.slice(document.getElementsByTagName('command'))
+				.forEach(function(aNode) {
+					aNode.setAttribute('disabled', true);
+				});
 		}
 		running = true;
 	}
@@ -577,7 +580,7 @@ function onAllTestsFinish()
 				);
 			}
 		}
-		if (gOptions.testcase && (gOptions.log || gOptions.rawLog)) {
+		if (gOptions.testcase && (gOptions.hidden || gOptions.log || gOptions.rawLog)) {
 			const startup = Cc['@mozilla.org/toolkit/app-startup;1']
 							.getService(Ci.nsIAppStartup);
 			startup.quit(startup.eForceQuit);
