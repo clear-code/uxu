@@ -89,27 +89,14 @@ GlobalService.prototype = {
 				destManifest.append('install.rdf');
 				var destVersion = this.getVersionFromManifest(destManifest);
 
-				while (sourceVersion.length < destVersion.length)
-				{
-					sourceVersion.push(0);
+				if (this.isFirstLargerThanSecond(soruceVersion, destVersion)) {
+					dest.remove(true);
 				}
-				while (destVersion.length < sourceVersion.length)
-				{
-					destVersion.push(0);
-				}
-
-				var keepGlobal = sourvceVersion.some(function(aSource, aIndex) {
-						return parseInt(aSource) < parseInt(destVersion[aIndex]);
-					});
-				if (keepGlobal) {
+				else {
 					source.remove(true);
 					return true;
 				}
-				else {
-					dest.remove(true);
-				}
 			}
-
 			source.moveTo(dest.parent, kUXU_DIR_NAME);
 		}
 		catch(e) {
@@ -150,6 +137,37 @@ GlobalService.prototype = {
 			if (match) return match[1].split('.');
 		}
 		return [];
+	},
+
+	isFirstLargerThanSecond : function(aVersion1, aVersion2)
+	{
+		while (aVersion1.length < aVersion2.length)
+		{
+			aVersion1.push(0);
+		}
+		while (aVersion2.length < aVersion1.length)
+		{
+			aVersion2.push(0);
+		}
+		aVersion1 = aVersion1.map(function(part1, aIndex) {
+			var part2 = aVersion2[aIndex];
+			part1 = String(parseInt(part1));
+			part2 = String(parseInt(part2));
+			while (part1.length < part2.length)
+			{
+				part1 = '0'+part1;
+			}
+			while (part2.length < part1.length)
+			{
+				part2 = '0'+part2;
+			}
+			aVersion2[aIndex] = part2;
+			return part1;
+		});
+
+		aVersion1 = parseInt('1'+aVersion1.join(''));
+		aVersion2 = parseInt('1'+aVersion2.join(''));
+		return aVersion1 > aVersion2;
 	},
 
 	restart : function()
