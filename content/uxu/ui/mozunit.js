@@ -131,7 +131,13 @@ function pickFile(aMode, aOptions)
 			defaultFile = defaultFile.QueryInterface(Ci.nsILocalFile)
 		}
 		catch(e) {
-			defaultFile = utils.makeFileWithPath(defaultFile);
+			try {
+				defaultFile = utils.makeFileWithPath(defaultFile);
+			}
+			catch(e) {
+				picker.defaultString = defaultFile;
+				defaultFile = null;
+			}
 		}
 		if (defaultFile) {
 			if (defaultFile.exists() && defaultFile.isDirectory()) {
@@ -471,12 +477,12 @@ TestListener.prototype = {
 		var report = aEvent.data;
 
 		var log = {
-			type      : 'testcase',
+			type      : 'test',
 			timestamp : Date.now(),
 			index     : report.testIndex,
-			title     : testCase.title,
-			result    : report.result,
-			description : report.testDescription
+			step      : report.testIndex+'/'+testCase.tests.length,
+			title     : report.testDescription,
+			result    : report.result
 		};
 		if (report.exception) {
 			if (report.exception.expected)
@@ -702,7 +708,61 @@ function stop()
 	 
 function saveReport() 
 {
-	alert(gLogs.toSource());
+	var file = pickFile(
+			'save', {
+				defaultFile : 'log.txt',
+				defaultExtension : 'txt',
+				filters : {
+					'Text Files' : '*.txt'
+				},
+				title : bundle.getString('log_picker_title')
+			}
+		);
+	if (!file) return;
+
+	var result = [];
+	gLogs.forEach(function(aLog) {
+		aLog.forEach(function(aOneLog) {
+			var timestamp = new Date(aOneLog.timestamp);
+			switch (aOneLog.type)
+			{
+				case 'start':
+					result.push(bundle.getFormattedString('log_start', [aOneLog.title, timestamp]));
+					break;
+
+				case 'finish':
+					result.push(bundle.getFormattedString('log_finish', [timestamp]));
+					result.push(bundle.getString('log_separator'));
+					break;
+
+				case 'abort':
+					result.push(bundle.getFormattedString('log_abort', [timestamp]));
+					break;
+
+				case 'test':
+					result.push(bundle.getFormattedString('log_test_title', [aOneLog.title]));
+					result.push(bundle.getFormattedString('log_test_step', [aOneLog.step]));
+					result.push(bundle.getFormattedString('log_test_timestamp', [timestamp]));
+					result.push(bundle.getFormattedString('log_test_result', [bundle.getString('report_result_'+aOneLog.result)]));
+					if (aOneLog.additionalInfo)
+						result.push(aOneLog.additionalInfo);
+					if (aOneLog.expected)
+						result.push(bundle.getFormattedString('log_test_expected', [aOneLog.expected]));
+					if (aOneLog.actual)
+						result.push(bundle.getFormattedString('log_test_actual', [aOneLog.actual]));
+					if (aOneLog.diff)
+						result.push(bundle.getFormattedString('log_test_diff', [aOneLog.diff]));
+					break;
+			}
+			result.push(bundle.getString('log_separator'));
+		});
+	});
+	if (result.length) {
+		result.push('');
+	}
+
+	if (file.exists()) file.remove(true);
+	utils.writeTo(result.join('\n'), file.path, 'UTF-8');
 }
  
 function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine) 
