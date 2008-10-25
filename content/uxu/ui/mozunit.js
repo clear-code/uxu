@@ -16,7 +16,7 @@ const ObserverService = Cc['@mozilla.org/observer-service;1']
 var gOptions;
  
 /* UTILITIES */ 
-	
+	 
 function x() 
 {
 	var contextNode, path;
@@ -394,7 +394,7 @@ function getFocusedPath()
 }
   
 /* runner */ 
-	
+	 
 var gRunner; 
  
 function TestListener() 
@@ -454,7 +454,6 @@ TestListener.prototype = {
 	},
 	onAbort : function(aEvent)
 	{
-		_(getReport(aEvent.target.title), 'bar').setAttribute('mode', 'determined');
 		this.lastLog.aborted = true;
 		this.onFinish(aEvent);
 	},
@@ -596,6 +595,8 @@ function onAllTestsFinish()
 	}
 
 	_('saveReport').removeAttribute('disabled');
+
+	stopAllProgressMeters();
 
 	if (gAborted) {
 		_('testResultStatus').setAttribute('label', bundle.getString('all_abort'));
@@ -884,7 +885,7 @@ function setTestFile(aPath, aClear)
 		utils.setPref('extensions.uxu.mozunit.lastResults', '');
 	}
 }
- 	
+ 
 function updateRunMode() 
 {
 	var runPriority = _('runPriority');
@@ -992,7 +993,22 @@ function updateContextMenu()
 		_('editThis-separator').setAttribute('hidden', true);
 	}
 }
-  
+ 
+function stopAllProgressMeters() 
+{
+	var nodes = document.evaluate(
+			'/descendant::*[local-name()="progressmeter" and @mode="undetermined" and not(ancestor::*[@id="blueprints"])]',
+			document,
+			null,
+			XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+			null
+		);
+	for (var i = 0, maxi = nodes.snapshotLength; i < maxi; i++)
+	{
+		nodes.snapshotItem(i).setAttribute('mode', 'determined');
+	}
+}
+ 	 
 /* commands */ 
 	
 function saveReport(aPath, aFormat) 
