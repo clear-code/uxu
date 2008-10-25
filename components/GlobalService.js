@@ -34,11 +34,20 @@ GlobalService.prototype = {
 	init : function() 
 	{
 		Pref.setBoolPref('extensions.uxu.running', false);
+		this.checkInstallGlobal();
+	},
 
+	checkInstallGlobal : function()
+	{
 		var inGlobal = this.installedLocation.path == this.globalLocation.path;
 		if (Pref.getBoolPref('extensions.uxu.global')) {
-			if (!inGlobal && this.installToGlobal())
+			if (inGlobal) return;
+			if (this.installToGlobal()) {
 				this.restart();
+			}
+			else {
+				Pref.setBoolPref('extensions.uxu.global', false);
+			}
 		}
 		else if (inGlobal) {
 			Pref.setBoolPref('extensions.uxu.global', true);
