@@ -153,13 +153,16 @@ function _initNamespace(aOptions)
  
 function _initProfile(aOptions)
 {
+	var profile = aOptions.profile;
+
 	var runningProfile = utils.getURLSpecFromFile(utils.getFileFromKeyword('ProfD'));
 	runningProfile = runningProfile.replace(/([^\/])$/, '$1/');
 	runningProfile = utils.getFileFromURLSpec(runningProfile);
+
 	this._profile = null;
-	if (aProfile) {
+	if (profile) {
 		try {
-			this._profile = utils.fixupIncompleteURI(aProfile).replace(/([^\/])$/, '$1/');
+			this._profile = utils.fixupIncompleteURI(profile).replace(/([^\/])$/, '$1/');
 			this._profile = utils.getFileFromURLSpec(this._profile);
 			this._profile.normalize();
 			if (
