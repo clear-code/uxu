@@ -461,14 +461,35 @@ TestListener.prototype = {
 
 	onRemoteStart : function(aEvent)
 	{
-		var report = getReport(aEvent.target.title);
-		report.setAttribute('file', aEvent.target.namespace);
+		this.onStart(aEvent);
+	},
+	onRemoteProgress : function(aEvent)
+	{
+		this.mergeLogs(aEvent.data);
 	},
 	onRemoteFinish : function(aEvent)
 	{
-		gLogs = gLogs.concat(aEvent.data);
-		buildReportsFromResults(aEvent.data);
+		this.mergeLogs(aEvent.data);
 		this.onFinish(aEvent);
+	},
+	mergeLogs : function(aLogs)
+	{
+		aLogs.forEach(function(aNewLog) {
+			if (gLogs.some(function(aExistingLog) {
+					if (aExistingLog.title == aNewLog.title &&
+						aExistingLog.file == aNewLog.file) {
+						for (var i in aNewLog)
+						{
+							aExistingLog[i] = aNewLog[i];
+						}
+						return true;
+					}
+					return false;
+				}))
+				return;
+			gLogs.push(aNewLog);
+		});
+		buildReportsFromResults(aLogs);
 	},
 
 	get lastLog()
@@ -487,7 +508,8 @@ TestListener.prototype = {
 		}
 		if (gOptions.rawLog) {
 			utils.writeTo(
-				formatter.formatLogs(gLogs, formatter.FORMAT_RAW),
+				TestCase.prototype.REMOTE_TEST_PROGRESS+
+					formatter.formatLogs(gLogs, formatter.FORMAT_RAW),
 				gOptions.rawLog,
 				'UTF-8'
 			);
@@ -544,7 +566,7 @@ function onAllTestsFinish()
 		}
 		if (gOptions.rawLog) {
 			utils.writeTo(
-				TestCase.prototype.REMOTE_TEST_RESULT_PREFIX+
+				TestCase.prototype.REMOTE_TEST_FINISHED+
 					formatter.formatLogs(gLogs, formatter.FORMAT_RAW),
 				gOptions.rawLog,
 				'UTF-8'
@@ -752,6 +774,9 @@ function getReport(aTitle)
  
 function fillReportFromResult(aTitle, aResult) 
 {
+	var id = 'test-report-'+encodeURIComponent(aTitle)+'-'+aResult.index;
+	if (_(id)) return;
+
 	var reportNode = getReport(aTitle);
 
 	_(reportNode, 'bar').setAttribute('mode', 'determined');
@@ -763,6 +788,9 @@ function fillReportFromResult(aTitle, aResult)
 		' '+aResult.type
 	);
 
+	var dummyTestReport = document.createElement('data');
+	dummyTestReport.setAttribute('id', id);
+
 	gTotalCount++;
 	switch (aResult.type)
 	{
@@ -770,11 +798,13 @@ function fillReportFromResult(aTitle, aResult)
 			gSuccessCount++;
 			var successes = parseInt(_(reportNode, 'success-counter').value);
 			_(reportNode, 'success-counter').value = successes + 1;
+			_(reportNode).appendChild(dummyTestReport);
 			return;
 		case 'passover':
 			gPassOverCount++;
 			var passover = parseInt(_(reportNode, 'passover-counter').value);
 			_(reportNode, 'passover-counter').value = passover + 1;
+			_(reportNode).appendChild(dummyTestReport);
 			return;
 		case 'failure':
 			gFailureCount++;
@@ -788,7 +818,6 @@ function fillReportFromResult(aTitle, aResult)
 
 	_(reportNode, 'bar').setAttribute('class', 'testcase-problems');
 
-	var id = 'test-report-'+encodeURIComponent(aTitle)+'-'+_(reportNode, 'test-reports').childNodes.length;
 	var wTestReport = clone('test-report');
 	wTestReport.setAttribute('id', id);
 	_(wTestReport, 'result').value = bundle.getString('report_result_'+aResult.type);

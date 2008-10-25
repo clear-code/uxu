@@ -54,7 +54,8 @@ else { // possibly old version, so we have to migrate.
 const REMOTE_LOG_PREFIX = 'uxu-test-log'; 
 const REMOTE_RUNNINGFLAG_PREFIX = 'uxu-test-running'; 
 const REMOTE_PROFILE_PREFIX = 'uxu-test-profile';
-const REMOTE_TEST_RESULT_PREFIX = '/*remote-test-finished*/';
+const REMOTE_TEST_FINISHED = '/*remote-test-finished*/';
+const REMOTE_TEST_PROGRESS = '/*remote-test-progress*/';
  	
 /**
  * Invocation: 
@@ -550,6 +551,17 @@ function remoteRun(aStopper)
 
 	this.fireEvent('RemoteStart');
 
+	var fireRemoteEvent = function(aEventType) {
+			var result = utils.readFrom(log.path, 'UTF-8');
+			eval('result = '+result);
+			if (aEventType == 'RemoteFinish') {
+				result[result.length-1].results.forEach(function(aResult) {
+					_this._onFinish(_this._tests[aResult.index], aResult.type);
+				});
+			}
+			_this.fireEvent(aEventType, result);
+		};
+
 	utils.doIteration(
 		function() {
 			var last;
@@ -565,10 +577,13 @@ function remoteRun(aStopper)
 					break;
 				}
 				result = utils.readFrom(log.path, 'UTF-8');
-				if (result.indexOf(REMOTE_TEST_RESULT_PREFIX) == 0) {
+				if (result.indexOf(REMOTE_TEST_FINISHED) == 0) {
 					break;
 				}
 				else {
+					if (result.indexOf(REMOTE_TEST_PROGRESS) == 0) {
+						fireRemoteEvent('RemoteProgress');
+					}
 					yield 500;
 				}
 			}
@@ -580,12 +595,7 @@ function remoteRun(aStopper)
 		{
 			onEnd : function(e) {
 				if (!aborted) {
-					result = utils.readFrom(log.path, 'UTF-8');
-					eval('result = '+result);
-					result[0].results.forEach(function(aResult) {
-						_this._onFinish(_this._tests[aResult.index], aResult.type);
-					});
-					_this.fireEvent('RemoteFinish', result);
+					fireRemoteEvent('RemoteFinish');
 				}
 				if (log.exists()) log.remove(true);
 				if (running.exists()) running.remove(true);
