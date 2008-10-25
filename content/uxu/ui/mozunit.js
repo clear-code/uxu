@@ -359,21 +359,20 @@ TestListener.prototype = {
 			file    : aEvent.target.namespace,
 			results : []
 		});
-		getReport(aEvent.target.title);
+		var report = getReport(aEvent.target.title);
+		report.setAttribute('file', aEvent.target.namespace);
 	},
 	onTestFinish : function(aEvent)
 	{
 		var testCase = aEvent.target;
 		var report = aEvent.data;
 		var result = {
-			id        : report.testID,
 			type      : report.result,
 			title     : report.testDescription,
 			timestamp : Date.now(),
 			index     : report.testIndex,
 			step      : report.testIndex+'/'+testCase.tests.length,
-			percentage : parseInt(report.testIndex / testCase.tests.length * 100),
-			file      : testCase.namespace
+			percentage : parseInt(report.testIndex / testCase.tests.length * 100)
 		};
 		if (report.exception) {
 			if (report.exception.expected)
@@ -431,8 +430,6 @@ function fillReportFromResult(aTitle, aResult)
 {
 	var reportNode = getReport(aTitle);
 
-	reportNode.setAttribute('test-id', aResult.id);
-	reportNode.setAttribute('file', aResult.file);
 	_(reportNode, 'bar').setAttribute('mode', 'determined');
 	_(reportNode, 'bar').setAttribute('value', aResult.percentage);
 	_(reportNode, 'total-counter').value = aResult.step.split('/')[1];
@@ -727,6 +724,7 @@ function saveReport()
 	var result = [];
 	gLogs.forEach(function(aLog) {
 		result.push(bundle.getString('log_separator_testcase'));
+		result.push(aLog.file);
 		result.push(bundle.getFormattedString('log_start', [aLog.title, new Date(aLog.start)]));
 		result.push(bundle.getString('log_separator_testcase'));
 		var last = aLog.results.length -1;
