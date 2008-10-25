@@ -1,5 +1,5 @@
 var description = '「特定のプロファイルを使用して実行するテスト」のテスト';
-var profile = '../../res/profile/';
+var profile = '../res/profile/';
 
 function setUp()
 {
