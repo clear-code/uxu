@@ -1,9 +1,6 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/"?>
-<!DOCTYPE prefwindow [
-<!ENTITY % mainDTD SYSTEM "chrome://uxu/locale/uxu.dtd">
-%mainDTD;
-]>
+<!DOCTYPE prefwindow SYSTEM "chrome://uxu/locale/uxu.dtd">
 <prefwindow id="uxu-config"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 	title="&config.title;">

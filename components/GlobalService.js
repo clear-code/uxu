@@ -3,10 +3,14 @@ const kCID  = Components.ID('{dd385d40-9e6f-11dd-ad8b-0800200c9a66}');
 const kID   = '@clear-code.com/uxu/startup;1';
 const kNAME = "UxU Global Service";
 
+const kUXU_DIR_NAME = 'uxu@clear-code.com';
+
 const ObserverService = Components.classes['@mozilla.org/observer-service;1']
 			.getService(Components.interfaces.nsIObserverService);
 
-var Pref;
+const Pref = Components.classes['@mozilla.org/preferences;1'] 
+			.getService(Components.interfaces.nsIPrefBranch)
+			.QueryInterface(Components.interfaces.nsIPrefBranch2);
 	 
 function GlobalService() { 
 }
@@ -17,11 +21,11 @@ GlobalService.prototype = {
 		switch (aTopic)
 		{
 			case 'app-startup':
-				ObserverService.addObserver(this, 'final-ui-startup', false);
+				ObserverService.addObserver(this, 'profile-do-change', false);
 				return;
 
-			case 'final-ui-startup':
-				ObserverService.removeObserver(this, 'final-ui-startup');
+			case 'profile-do-change':
+				ObserverService.removeObserver(this, 'profile-do-change');
 				this.init();
 				return;
 		}
@@ -29,10 +33,54 @@ GlobalService.prototype = {
  
 	init : function() 
 	{
-		Pref = Components.classes['@mozilla.org/preferences;1'] 
-				.getService(Components.interfaces.nsIPrefBranch)
-				.QueryInterface(Components.interfaces.nsIPrefBranch2);
 		Pref.setBoolPref('extensions.uxu.running', false);
+
+		if (Pref.getBoolPref('extensions.uxu.global') &&
+			this.installedLocation.path != this.globalLocation.path) {
+			if (this.installToGlobal())
+				this.restart();
+		}
+	},
+
+	get installedLocation()
+	{
+		var id = 'uxu@clear-code.com';
+		var dir = Components.classes['@mozilla.org/extensions/manager;1']
+				.getService(Components.interfaces.nsIExtensionManager)
+				.getInstallLocation(id)
+				.getItemLocation(id);
+		return dir;
+	},
+
+	get globalLocation()
+	{
+		var dir = Components.classes['@mozilla.org/file/directory_service;1']
+				.getService(Components.interfaces.nsIProperties)
+				.get('CurProcD', Components.interfaces.nsIFile);
+		dir.append('extensions');
+		dir.append(kUXU_DIR_NAME);
+		return dir;
+	},
+
+	installToGlobal : function()
+	{
+		try {
+			var source = this.installedLocation;
+			var dest = this.globalLocation;
+			if (dest.exists()) dest.remove(true);
+			source.moveTo(dest.parent, kUXU_DIR_NAME);
+		}
+		catch(e) {
+			return false;
+		}
+		return true;
+	},
+
+	restart : function()
+	{
+		const startup = Cc['@mozilla.org/toolkit/app-startup;1']
+						.getService(Ci.nsIAppStartup);
+		startup.quit(startup.eRestart | startup.eAttemptQuit);
 	},
  
 	QueryInterface : function(aIID) 
