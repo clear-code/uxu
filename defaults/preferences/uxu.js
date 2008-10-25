@@ -23,6 +23,8 @@ pref("extensions.uxu.mozunit.autoStart", false);
 pref("extensions.uxu.mozunit.autoStart.oneTime.enabled", true);
 pref("extensions.uxu.mozunit.autoStart.oneTime", false);
 pref("extensions.uxu.mozunit.autoExit", false);
+pref("extensions.uxu.mozunit.lastPath", "");
+pref("extensions.uxu.mozunit.lastResults", "");
 
 pref("extensions.uxu.auto.start", false);
 pref("extensions.uxu.auto.exit",  true);

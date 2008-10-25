@@ -8,6 +8,8 @@ var bundle = lib_module.require('package', 'bundle');
 var FORMAT_RAW  = 1;
 var FORMAT_TEXT = 2;
 //var FORMAT_HTML = 4;
+//var FORMAT_CSV  = 8;
+//var FORMAT_TSV  = 16;
 
 var IGNORE_PASSOVER = 1024;
 var IGNORE_SUCCESS  = 2048;
@@ -45,13 +47,15 @@ function _formatLogsToText(aLogs, aFormat)
 				failure  : 0,
 				error    : 0
 			};
+		var outputCount = 0;
 		aLog.results.forEach(function(aResult, aIndex) {
 			count[aResult.type]++;
+			count.total++;
 			if (aFormat & IGNORE_PASSOVER && aResult.type == 'passover') return;
 			if (aFormat & IGNORE_SUCCESS && aResult.type == 'success') return;
 
-			if (count.total) result.push(bundle.getString('log_separator_test'));
-			count.total++;
+			if (outputCount) result.push(bundle.getString('log_separator_test'));
+			outputCount++;
 
 			result.push(bundle.getFormattedString('log_test_title', [aResult.title]));
 			result.push(bundle.getFormattedString('log_test_step', [aResult.step]));

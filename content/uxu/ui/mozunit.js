@@ -184,7 +184,7 @@ const fileDNDObserver =
 	{
 		var file = aTransferData.data;
 		if (this.isTestCase(file)) {
-			_('file').value = file.path;
+			setTestFile(file.path, true);
 			updateTestCommands();
 			reset();
 		}
@@ -233,6 +233,7 @@ function startup()
 	}
 	ObserverService.addObserver(restartObserver, 'quit-application-requested', false);
 
+	setTestFile(utils.getPref('extensions.uxu.mozunit.lastPath'));
 	updateTestCommands();
 
 	_('content').addEventListener('load', onContentLoad, true);
@@ -249,7 +250,7 @@ function startup()
 			var path = gOptions.testcase;
 			if (path.indexOf('file://') > -1)
 				path = utils.getFilePathFromURLSpec(path);
-			_('file').value = path;
+			setTestFile(path);
 		}
 		if (gOptions.hidden) {
 			window.setTimeout(function() { window.minimize(); }, 0);
@@ -261,7 +262,7 @@ function startup()
 	}
 
 	if (!running) {
-		var lastResult = _('file').getAttribute('result');
+		var lastResult = utils.getPref('extensions.uxu.mozunit.lastResults');
 		if (lastResult) {
 			try {
 				eval('lastResult = '+lastResult);
@@ -318,7 +319,7 @@ function newTestCase()
 	if (file) {
 		reset();
 		if (file.exists()) file.remove(true);
-		_('file').value = file.path;
+		setTestFile(file.path, true);
 		writeTemplate(file.path);
 		window.setTimeout(function() {
 			openInEditor(file.path, 4, 29);
@@ -336,7 +337,7 @@ function openTestCase(aIsFolder)
 {
 	var file = pickFile((aIsFolder ? 'getFolder' : '' ), makeTestCaseFileOptions(aIsFolder));
 	if (file) {
-		_('file').value = file.path;
+		setTestFile(file.path, true);
 		updateTestCommands();
 		reset();
 	}
@@ -346,7 +347,7 @@ function pickTestFile(aOptions)
 {
 	var url = pickFileUrl(null, aOptions);
 	if (url) {
-		_('file').value = url;
+		setTestFile(url, true);
 		updateTestCommands();
 		reset();
 	}
@@ -509,7 +510,10 @@ function onAllTestsFinish()
 		}
 	}
 
-	_('file').setAttribute('result', gLogs.toSource());
+	utils.setPref(
+		'extensions.uxu.mozunit.lastResults',
+		formatter.formatLogs(gLogs, formatter.FORMAT_RAW)
+	);
 
 	if (!_('content').collapsed && contentAutoExpanded) {
 		toggleContent();
@@ -545,8 +549,7 @@ function onAllTestsFinish()
  
 function displayStackTrace(aException, aListbox) 
 {
-	var lines = formatStackTrace(aException);
-	displayStackTraceLines(lines, aListbox);
+	displayStackTraceLines(formatStackTrace(aException), aListbox);
 }
 function displayStackTraceLines(aLines, aListbox)
 {
@@ -587,7 +590,6 @@ function reset()
 	hideSource();
 	_('saveReport').setAttribute('disabled', true);
 	gLogs = [];
-	_('file').setAttribute('result', '');
 }
 var gAborted = false;
 var gTotalCount    = 0;
@@ -784,12 +786,22 @@ function buildReportsFromResults(aResults)
 		});
 	});
 }
- 	
+ 
 function isLinux() 
 {
 	return /linux/i.test(navigator.platform);
 }
  
+function setTestFile(aPath, aClear) 
+{
+	_('file').value = aPath;
+	utils.setPref('extensions.uxu.mozunit.lastPath', aPath);
+
+	if (aClear) {
+		utils.setPref('extensions.uxu.mozunit.lastResults', '');
+	}
+}
+ 	
 function updateRunMode() 
 {
 	var runPriority = _('runPriority');

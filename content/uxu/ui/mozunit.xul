@@ -240,10 +240,8 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 					<label id="file"
 						flex="1"
 						value=""
-						result=""
 						style="font-weight: bold;"
-						crop="center"
-						persist="value,result"/>
+						crop="center"/>
 				</toolbaritem>
 				<toolbarbutton command="edit"/>
 			</toolbar>
