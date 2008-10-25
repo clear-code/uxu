@@ -104,7 +104,7 @@ function _getTestsFromSuite(aSuite)
 
 	if (testObjects.tests.length) {
 		var newTestCase = new TestCase(
-				aSuite.description || aSuite.fileURL.match(/[^\/]+$/),
+				aSuite.description || String(aSuite.fileURL.match(/[^\/]+$/)),
 				aSuite.fileURL
 			);
 

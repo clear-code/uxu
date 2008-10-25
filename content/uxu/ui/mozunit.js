@@ -234,8 +234,12 @@ function startup()
 	updateTestCommands();
 	_('content').addEventListener('load', onContentLoad, true);
 
-	if (window.arguments && window.arguments.length) {
+	if ('arguments' in window &&
+		window.arguments &&
+		window.arguments.length) {
 		gOptions = window.arguments[0];
+		if (gOptions instanceof Ci.nsIPropertyBag)
+			gOptions = gOptions.getProperty('arguments');
 		var path = gOptions.testcase;
 		if (path.indexOf('file://') > -1)
 			path = utils.getFilePathFromURLSpec(path);
@@ -405,26 +409,6 @@ TestListener.prototype = {
 		this.lastLog.finish = Date.now();
 		gLogs = this.log;
 		aEvent.target.removeListener(this);
-
-		if (!gOptions) return;
-
-		if (gOptions.log) {
-			var log = gOptions.log;
-			if (log.indexOf('file://') > -1)
-				log = utils.getFilePathFromURLSpec(log);
-			saveReport(log);
-		}
-		if (gOptions.rawLog) {
-			var raw = gOptions.rawLog;
-			if (raw.indexOf('file://') > -1)
-				raw = utils.getFilePathFromURLSpec(raw);
-			saveReport(raw, true);
-		}
-		if (gOptions.testcase && (gOptions.log || gOptions.rawLog)) {
-			const startup = Cc['@mozilla.org/toolkit/app-startup;1']
-							.getService(Ci.nsIAppStartup);
-			startup.quit(startup.eForceQuit);
-		}
 	},
 	onAbort : function(aEvent)
 	{
@@ -566,6 +550,27 @@ var runnerListener = {
  
 function onAllTestsFinish() 
 {
+	if (gOptions) {
+		if (gOptions.log) {
+			var log = gOptions.log;
+			if (log.indexOf('file://') > -1)
+				log = utils.getFilePathFromURLSpec(log);
+			saveReport(log);
+		}
+		if (gOptions.rawLog) {
+			var raw = gOptions.rawLog;
+			if (raw.indexOf('file://') > -1)
+				raw = utils.getFilePathFromURLSpec(raw);
+			saveReport(raw, true);
+		}
+		if (gOptions.testcase && (gOptions.log || gOptions.rawLog)) {
+			const startup = Cc['@mozilla.org/toolkit/app-startup;1']
+							.getService(Ci.nsIAppStartup);
+			startup.quit(startup.eForceQuit);
+			return;
+		}
+	}
+
 	if (!_('content').collapsed && contentAutoExpanded) {
 		toggleContent();
 	}
@@ -740,6 +745,7 @@ function stop()
 	 
 function saveReport(aPath, aRaw) 
 {
+	var file;
 	if (!aPath) {
 		var picked = pickFile(
 				'save', {
@@ -752,7 +758,10 @@ function saveReport(aPath, aRaw)
 				}
 			);
 		if (!picked) return;
-		aPath = picked.path;
+		file = picked;
+	}
+	else {
+		file = utils.makeFileWithPath(aPath);
 	}
 
 	var fileContents;
@@ -793,9 +802,8 @@ function saveReport(aPath, aRaw)
 		fileContents = result.join('\n');
 	}
 
-	var file = utils.getFileFromPath(aPath);
 	if (file.exists()) file.remove(true);
-	utils.writeTo(fileContents, aPath, 'UTF-8');
+	utils.writeTo(fileContents, file.path, 'UTF-8');
 }
  
 function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine) 

@@ -206,7 +206,10 @@ GlobalService.prototype = {
 			var WindowWatcher = Components
 					.classes['@mozilla.org/embedcomp/window-watcher;1']
 					.getService(Components.interfaces.nsIWindowWatcher);
-			WindowWatcher.openWindow(null, 'chrome://uxu/content/ui/mozunit.xul', '_blank', 'chrome,all', arg);
+			var bag = Components.classes['@mozilla.org/hash-property-bag;1']
+					.createInstance(Components.interfaces.nsIWritablePropertyBag);
+			bag.setProperty('arguments', arg);
+			WindowWatcher.openWindow(null, 'chrome://uxu/content/ui/mozunit.xul', '_blank', 'chrome,all', bag);
 		}
 	},
 	_getFullPathFromCommandLine : function(aOption, aCommandLine)
@@ -216,11 +219,12 @@ GlobalService.prototype = {
 			if (!value) return '';
 			if (value.indexOf('/') < 0) {
 				value = aCommandLine.resolveFile(value);
+				return value.path;
 			}
 			else {
 				value = aCommandLine.resolveURI(value);
+				return value.spec;
 			}
-			return value;
 		}
 		catch(e) {
 		}
