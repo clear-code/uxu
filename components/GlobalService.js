@@ -120,7 +120,7 @@ GlobalService.prototype = {
 
 		var fileContents = null;
 		try {
-			var scriptableStream = Components.interfaces['@mozilla.org/scriptableinputstream;1']
+			var scriptableStream = Components.classes['@mozilla.org/scriptableinputstream;1']
 					.createInstance(Components.interfaces.nsIScriptableInputStream);
 			scriptableStream.init(stream);
 			fileContents = scriptableStream.read(scriptableStream.available());
