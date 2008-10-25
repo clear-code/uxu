@@ -443,6 +443,25 @@ function testInspect()
 		       [object, object]);
 }
 
+assert.inspectDOMNode = function(aExpected, aNode) {
+	assert.equals(aExpected, utilsModule.inspectDOMNode(aNode));
+};
+
+function testInspectDOMNode()
+{
+	yield utils.loadURIInTestFrame('../../res/html.xml');
+
+	var p1 = content.document.getElementById('paragraph1');
+	assert.isNotNull(p1);
+	assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em xmlns="http://www.w3.org/1999/xhtml">em</em></p>', p1);
+
+	yield utils.loadURIInTestFrame('../../res/html.html');
+
+	p1 = content.document.getElementById('paragraph1');
+	assert.isNotNull(p1);
+	assert.inspectDOMNode('<P id="paragraph1">test<EM>em</EM></P>', p1);
+}
+
 function testNotify()
 {
 	var observer = {
