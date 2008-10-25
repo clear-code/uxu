@@ -240,10 +240,15 @@ function startup()
 		gOptions = window.arguments[0];
 		if (gOptions instanceof Ci.nsIPropertyBag)
 			gOptions = gOptions.getProperty('arguments');
+
 		var path = gOptions.testcase;
 		if (path.indexOf('file://') > -1)
 			path = utils.getFilePathFromURLSpec(path);
 		_('file').value = path;
+
+		if (gOptions.hidden)
+			window.setTimeout(function() { window.minimize(); }, 0);
+
 		run(gOptions.priority || 0);
 	}
 }

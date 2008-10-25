@@ -188,7 +188,8 @@ GlobalService.prototype = {
 				testcase : this._getFullPathFromCommandLine('uxu-testcase', aCommandLine),
 				log      : this._getFullPathFromCommandLine('uxu-log', aCommandLine),
 				rawLog   : this._getFullPathFromCommandLine('uxu-rawlog', aCommandLine),
-				priority : 0
+				priority : 0,
+				hidden   : false
 			};
 		try {
 			var priority = aCommandLine.handleFlagWithParam('uxu-priority', false);
@@ -196,6 +197,13 @@ GlobalService.prototype = {
 				priority = parseInt(priority);
 				if (!isNaN(priority))
 					arg.priority = priority;
+			}
+		}
+		catch(e) {
+		}
+		try {
+			if (aCommandLine.handleFlag('uxu-hidden', false)) {
+				arg.hidden = true;
 			}
 		}
 		catch(e) {
@@ -231,8 +239,16 @@ GlobalService.prototype = {
 		return '';
 	},
 
-	helpInfo : '  -uxu-testcase <url>  Run the testcase in UnitTest.XUL\n' +
-	           '  -uxu-log <url>       Output the result of the testcase\n',
+	helpInfo : '  -uxu-testcase <url>  Run the testcase in UnitTest.XUL\n'+
+	           '  -uxu-log <url>       Output the result of the testcase\n'+
+	           '                       in human readable format\n'+
+	           '  -uxu-rawlog <url>    Output the result of the testcase\n'+
+	           '                       in raw format\n'+
+	           '  -uxu-priority <priority>\n'+
+	           '                       Run strategy:\n'+
+	           '                           0 : run normally\n'+
+	           '                           1 : run all tests\n'+
+	           '  -uxu-hidden          Hide test runner window\n',
 
 
 	/* nsIFactory */
