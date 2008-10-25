@@ -256,7 +256,7 @@ var restartObserver = {
 			utils.setPref('extensions.uxu.mozunit.autoStart.oneTime', true);
 	}
 };
- 	 
+  
 function shutdown() 
 {
 	if (!isLinux()) {
@@ -268,7 +268,7 @@ function shutdown()
 }
   
 /* test cases */ 
-	
+	 
 function newTestCase() 
 {
 	var file = pickFile('save', makeTestCaseFileOptions());
@@ -282,7 +282,7 @@ function newTestCase()
 		}, 100);
 	}
 }
-	 
+	
 function writeTemplate(aFilePath) 
 {
 	var data = utils.readFrom('chrome://uxu/locale/sample.test.js');
@@ -339,7 +339,7 @@ function getFocusedPath()
 }
   
 /* runner */ 
-	
+	 
 var gRunner; 
  
 function TestListener() 
@@ -351,158 +351,158 @@ TestListener.prototype = {
 	{
 		aTestCase.addListener(this);
 	},
-	getTestCaseReport : function(aTitle)
-	{
-		var id = 'testcase-report-'+encodeURIComponent(aTitle);
-		return _(id) ||
-			(function() {
-				var wTestCaseReport = clone('testcase-report');
-				wTestCaseReport.setAttribute('id', id);
-				wTestCaseReport.setAttribute('title', aTitle);
-				_(wTestCaseReport, 'title').textContent = aTitle;
-				_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-fine');
-				_('testcase-reports').appendChild(wTestCaseReport);
-				scrollReportsTo(wTestCaseReport);
-				return wTestCaseReport;
-			})();
-	},
 	onStart : function(aEvent)
 	{
 		this._log.push({
-			type      : 'start',
-			timestamp : Date.now(),
-			title     : aEvent.target.title
+			start   : Date.now(),
+			title   : aEvent.target.title,
+			file    : aEvent.target.namespace,
+			results : []
 		});
-		this.getTestCaseReport(aEvent.target.title);
+		getReport(aEvent.target.title);
 	},
 	onTestFinish : function(aEvent)
 	{
-		this._logOnTestFinish(aEvent);
-
 		var testCase = aEvent.target;
 		var report = aEvent.data;
-
-		var wTestCaseReport = this.getTestCaseReport(testCase.title);
-		_(wTestCaseReport).setAttribute('test-id', report.testID);
-		_(wTestCaseReport).setAttribute('file', testCase.namespace);
-		_(wTestCaseReport, 'bar').setAttribute('mode', 'determined');
-		_(wTestCaseReport, 'bar').setAttribute(
-			'value', parseInt(report.testIndex / testCase.tests.length * 100));
-		_(wTestCaseReport, 'total-counter').value = testCase.tests.length;
-
-		_(wTestCaseReport, 'bar').setAttribute('testcase-results',
-			_(wTestCaseReport, 'bar').getAttribute('testcase-results')+
-			' '+report.result
-		);
-
-		gTotalCount++;
-		switch (report.result)
-		{
-			case 'success':
-				gSuccessCount++;
-				var successes = parseInt(_(wTestCaseReport, 'success-counter').value);
-				_(wTestCaseReport, 'success-counter').value = successes + 1;
-				return;
-			case 'passover':
-				gPassOverCount++;
-				var passover = parseInt(_(wTestCaseReport, 'passover-counter').value);
-				_(wTestCaseReport, 'passover-counter').value = passover + 1;
-				return;
-			case 'failure':
-				gFailureCount++;
-				break;
-			case 'error':
-				gErrorCount++;
-				break;
-			default:
-				break;
-		}
-
-		_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-problems');
-
-		var id = 'test-report-'+encodeURIComponent(testCase.title)+'-'+_(wTestCaseReport, 'test-reports').childNodes.length;
-		var wTestReport = clone('test-report');
-		wTestReport.setAttribute('id', id);
-		_(wTestReport, 'result').value = bundle.getString('report_result_'+report.result);
-		_(wTestReport, 'icon').setAttribute('class', 'test-' + report.result);
-		_(wTestReport, 'description').textContent = report.testDescription;
-		_(wTestReport, 'description').setAttribute('tooltiptext', report.testDescription);
-		_(wTestReport).setAttribute('report-type', report.result);
+		var result = {
+			id        : report.testID,
+			type      : report.result,
+			title     : report.testDescription,
+			timestamp : Date.now(),
+			index     : report.testIndex,
+			step      : report.testIndex+'/'+testCase.tests.length,
+			percentage : parseInt(report.testIndex / testCase.tests.length * 100),
+			file      : testCase.namespace
+		};
 		if (report.exception) {
-			if (report.exception.expected) {
-				_(wTestReport, 'expected-value').textContent = report.exception.expected;
-				_(wTestReport, 'expected-row').removeAttribute('hidden');
-			}
-			if (report.exception.actual) {
-				_(wTestReport, 'actual-value').textContent = report.exception.actual;
-				_(wTestReport, 'actual-row').removeAttribute('hidden');
-			}
-			if (report.exception.expected || report.exception.actual) {
-				_(wTestReport, 'vs').removeAttribute('hidden');
-			}
-			if (report.exception.diff) {
-				_(wTestReport, 'diff-value').textContent = report.exception.foldedDiff || report.exception.diff;
-				_(wTestReport, 'diff-row').removeAttribute('hidden');
-			}
-			_(wTestReport, 'additionalInfo').textContent = report.exception.message.replace(/^\s+/, '');
-			if (utils.hasStackTrace(report.exception)) {
-				displayStackTrace(report.exception, _(wTestReport, 'stack-trace'));
-				_(wTestReport, 'stack-trace').hidden = false;
-			}
+			if (report.exception.expected)
+				result.expected = report.exception.expected;
+			if (report.exception.actual)
+				result.actual = report.exception.actual;
+			if (report.exception.diff)
+				result.diff = report.exception.foldedDiff || report.exception.diff;
+			result.description = report.exception.message.replace(/^\s+/, '');
+			if (utils.hasStackTrace(report.exception))
+				result.stackTrace = formatStackTrace(report.exception);
 		}
 
-		_(wTestCaseReport, 'test-reports').appendChild(wTestReport);
-		scrollReportsTo(wTestReport);
+		this.lastLog.results.push(result);
+		fillReportFromResult(aEvent.target.title, result);
 	},
 	onFinish : function(aEvent)
 	{
-		this._log.push({
-			type      : 'finish',
-			timestamp : Date.now()
-		});
-		gLogs.push(this.log);
+		this.lastLog.finish = Date.now();
+		gLogs = this.log;
 		aEvent.target.removeListener(this);
 	},
 	onAbort : function(aEvent)
 	{
-		this._log.push({
-			type      : 'abort',
-			timestamp : Date.now()
-		});
+		this.lastLog.aborted = true;
 		this.onFinish(aEvent);
 	},
-	_logOnTestFinish : function(aEvent)
+	get lastLog()
 	{
-		var testCase = aEvent.target;
-		var report = aEvent.data;
-
-		var log = {
-			type      : 'test',
-			timestamp : Date.now(),
-			index     : report.testIndex,
-			step      : report.testIndex+'/'+testCase.tests.length,
-			title     : report.testDescription,
-			result    : report.result
-		};
-		if (report.exception) {
-			if (report.exception.expected)
-				log.expected = report.exception.expected;
-			if (report.exception.actual)
-				log.actual = report.exception.actual;
-			if (report.exception.diff)
-				log.diff = report.exception.diff;
-			log.additionalInfo = report.exception.message.replace(/^\s+/, '');
-			if (utils.hasStackTrace(report.exception))
-				log.stackTrace = formatStackTrace(report.exception);
-		}
-		this._log.push(log);
+		return this._log[this._log.length-1];
 	},
 	get log()
 	{
-		return this._log;
+		return Array.slice(this._log);
 	}
 };
+	 
+function getReport(aTitle) 
+{
+	var id = 'testcase-report-'+encodeURIComponent(aTitle);
+	return _(id) ||
+		(function() {
+			var wTestCaseReport = clone('testcase-report');
+			wTestCaseReport.setAttribute('id', id);
+			wTestCaseReport.setAttribute('title', aTitle);
+			_(wTestCaseReport, 'title').textContent = aTitle;
+			_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-fine');
+			_('testcase-reports').appendChild(wTestCaseReport);
+			scrollReportsTo(wTestCaseReport);
+			return wTestCaseReport;
+		})();
+}
  
+function fillReportFromResult(aTitle, aResult) 
+{
+	var reportNode = getReport(aTitle);
+
+	reportNode.setAttribute('test-id', aResult.id);
+	reportNode.setAttribute('file', aResult.file);
+	_(reportNode, 'bar').setAttribute('mode', 'determined');
+	_(reportNode, 'bar').setAttribute('value', aResult.percentage);
+	_(reportNode, 'total-counter').value = aResult.step.split('/')[1];
+
+	_(reportNode, 'bar').setAttribute('testcase-results',
+		_(reportNode, 'bar').getAttribute('testcase-results')+
+		' '+aResult.type
+	);
+
+	gTotalCount++;
+	switch (aResult.type)
+	{
+		case 'success':
+			gSuccessCount++;
+			var successes = parseInt(_(reportNode, 'success-counter').value);
+			_(reportNode, 'success-counter').value = successes + 1;
+			return;
+		case 'passover':
+			gPassOverCount++;
+			var passover = parseInt(_(reportNode, 'passover-counter').value);
+			_(reportNode, 'passover-counter').value = passover + 1;
+			return;
+		case 'failure':
+			gFailureCount++;
+			break;
+		case 'error':
+			gErrorCount++;
+			break;
+		default:
+			break;
+	}
+
+	_(reportNode, 'bar').setAttribute('class', 'testcase-problems');
+
+	var id = 'test-report-'+encodeURIComponent(aTitle)+'-'+_(reportNode, 'test-reports').childNodes.length;
+	var wTestReport = clone('test-report');
+	wTestReport.setAttribute('id', id);
+	_(wTestReport, 'result').value = bundle.getString('report_result_'+aResult.type);
+	_(wTestReport, 'icon').setAttribute('class', 'test-' + aResult.type);
+	_(wTestReport, 'description').textContent = aResult.title;
+	_(wTestReport, 'description').setAttribute('tooltiptext', aResult.title);
+	_(wTestReport).setAttribute('report-type', aResult.type);
+
+	if (aResult.expected) {
+		_(wTestReport, 'expected-value').textContent = aResult.expected;
+		_(wTestReport, 'expected-row').removeAttribute('hidden');
+	}
+	if (aResult.actual) {
+		_(wTestReport, 'actual-value').textContent = aResult.actual;
+		_(wTestReport, 'actual-row').removeAttribute('hidden');
+	}
+	if (aResult.expected || aResult.actual) {
+		_(wTestReport, 'vs').removeAttribute('hidden');
+	}
+	if (aResult.diff) {
+		_(wTestReport, 'diff-value').textContent = aResult.diff;
+		_(wTestReport, 'diff-row').removeAttribute('hidden');
+	}
+	if (aResult.description) {
+		_(wTestReport, 'additionalInfo').textContent = aResult.description;
+	}
+	if (aResult.stackTrace) {
+		displayStackTraceLines(aResult.stackTrace, _(wTestReport, 'stack-trace'));
+		_(wTestReport, 'stack-trace').hidden = false;
+	}
+
+	_(reportNode, 'test-reports').appendChild(wTestReport);
+	scrollReportsTo(wTestReport);
+}
+ 	 
 var runnerListener = { 
 	handleEvent : function(aEvent)
 	{
@@ -573,7 +573,11 @@ function onAllTestsFinish()
 function displayStackTrace(aException, aListbox) 
 {
 	var lines = formatStackTrace(aException);
-	lines.forEach(function(aLine) {
+	displayStackTraceLines(lines, aListbox);
+}
+function displayStackTraceLines(aLines, aListbox)
+{
+	aLines.forEach(function(aLine) {
 		if (!aLine) return;
 		var item = document.createElement('listitem');
 		item.setAttribute('label', aLine);
@@ -583,7 +587,7 @@ function displayStackTrace(aException, aListbox)
 		aListbox.appendChild(item);
 	});
 }
-function formatStackTrace(aException) 
+function formatStackTrace(aException)
 {
 	var lines = utils.formatStackTrace(aException, { onlyTraceLine : true, onlyExternal : true }).split('\n');
 	if (!lines.length || utils.getPref('extensions.uxu.mozunit.showInternalStacks'))
@@ -662,7 +666,7 @@ function run(aAll)
 
 	gRunner.run(null, aAll);
 }
-	 
+	
 function runByPref() 
 {
 	run(utils.getPref('extensions.uxu.mozunit.runMode') == 1);
@@ -722,40 +726,29 @@ function saveReport()
 
 	var result = [];
 	gLogs.forEach(function(aLog) {
-		aLog.forEach(function(aOneLog) {
-			var timestamp = new Date(aOneLog.timestamp);
-			switch (aOneLog.type)
-			{
-				case 'start':
-					result.push(bundle.getFormattedString('log_start', [aOneLog.title, timestamp]));
-					break;
-
-				case 'finish':
-					result.push(bundle.getFormattedString('log_finish', [timestamp]));
-					result.push(bundle.getString('log_separator'));
-					break;
-
-				case 'abort':
-					result.push(bundle.getFormattedString('log_abort', [timestamp]));
-					break;
-
-				case 'test':
-					result.push(bundle.getFormattedString('log_test_title', [aOneLog.title]));
-					result.push(bundle.getFormattedString('log_test_step', [aOneLog.step]));
-					result.push(bundle.getFormattedString('log_test_timestamp', [timestamp]));
-					result.push(bundle.getFormattedString('log_test_result', [bundle.getString('report_result_'+aOneLog.result)]));
-					if (aOneLog.additionalInfo)
-						result.push(aOneLog.additionalInfo);
-					if (aOneLog.expected)
-						result.push(bundle.getFormattedString('log_test_expected', [aOneLog.expected]));
-					if (aOneLog.actual)
-						result.push(bundle.getFormattedString('log_test_actual', [aOneLog.actual]));
-					if (aOneLog.diff)
-						result.push(bundle.getFormattedString('log_test_diff', [aOneLog.diff]));
-					break;
-			}
-			result.push(bundle.getString('log_separator'));
+		result.push(bundle.getString('log_separator_testcase'));
+		result.push(bundle.getFormattedString('log_start', [aLog.title, new Date(aLog.start)]));
+		result.push(bundle.getString('log_separator_testcase'));
+		var last = aLog.results.length -1;
+		aLog.results.forEach(function(aResult, aIndex) {
+			result.push(bundle.getFormattedString('log_test_title', [aResult.title]));
+			result.push(bundle.getFormattedString('log_test_step', [aResult.step]));
+			result.push(bundle.getFormattedString('log_test_timestamp', [new Date(aResult.timestamp)]));
+			result.push(bundle.getFormattedString('log_test_result', [bundle.getString('report_result_'+aResult.type)]));
+			if (aResult.description)
+				result.push(aResult.description);
+			if (aResult.expected)
+				result.push(bundle.getFormattedString('log_test_expected', [aResult.expected]));
+			if (aResult.actual)
+				result.push(bundle.getFormattedString('log_test_actual', [aResult.actual]));
+			if (aResult.diff)
+				result.push(bundle.getFormattedString('log_test_diff', [aResult.diff]));
+			if (aIndex < last) result.push(bundle.getString('log_separator_test'));
 		});
+		result.push(bundle.getString('log_separator_testcase'));
+		result.push(bundle.getFormattedString(aLog.aborted ? 'log_abort' : 'log_finish', [new Date(aLog.finish)]));
+		result.push(bundle.getString('log_separator_testcase'));
+		result.push('');
 	});
 	if (result.length) {
 		result.push('');
