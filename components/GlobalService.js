@@ -21,11 +21,11 @@ GlobalService.prototype = {
 		switch (aTopic)
 		{
 			case 'app-startup':
-				ObserverService.addObserver(this, 'profile-do-change', false);
+				ObserverService.addObserver(this, 'final-ui-startup', false);
 				return;
 
-			case 'profile-do-change':
-				ObserverService.removeObserver(this, 'profile-do-change');
+			case 'final-ui-startup':
+				ObserverService.removeObserver(this, 'final-ui-startup');
 				this.init();
 				return;
 		}
@@ -74,6 +74,7 @@ GlobalService.prototype = {
 			source.moveTo(dest.parent, kUXU_DIR_NAME);
 		}
 		catch(e) {
+			dump(e);
 			return false;
 		}
 		return true;
@@ -81,8 +82,8 @@ GlobalService.prototype = {
 
 	restart : function()
 	{
-		const startup = Cc['@mozilla.org/toolkit/app-startup;1']
-						.getService(Ci.nsIAppStartup);
+		const startup = Components.classes['@mozilla.org/toolkit/app-startup;1']
+						.getService(Components.interfaces.nsIAppStartup);
 		startup.quit(startup.eRestart | startup.eAttemptQuit);
 	},
  
