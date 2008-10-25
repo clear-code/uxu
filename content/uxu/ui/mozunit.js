@@ -10,6 +10,8 @@ const Ci = Components.interfaces;
 
 const ObserverService = Cc['@mozilla.org/observer-service;1']
 	.getService(Ci.nsIObserverService);
+
+var gOptions;
  
 /* UTILITIES */ 
 	
@@ -231,6 +233,15 @@ function startup()
 	ObserverService.addObserver(restartObserver, 'quit-application-requested', false);
 	updateTestCommands();
 	_('content').addEventListener('load', onContentLoad, true);
+
+	if (window.arguments && window.arguments.length) {
+		gOptions = window.arguments[0];
+		var path = gOptions.testcase;
+		if (path.indexOf('file://') > -1)
+			path = utils.getFilePathFromURLSpec(path);
+		_('file').value = path;
+		run(gOptions.priority || 0);
+	}
 }
 	 
 var alwaysRaisedObserver = { 
@@ -394,6 +405,26 @@ TestListener.prototype = {
 		this.lastLog.finish = Date.now();
 		gLogs = this.log;
 		aEvent.target.removeListener(this);
+
+		if (!gOptions) return;
+
+		if (gOptions.log) {
+			var log = gOptions.log;
+			if (log.indexOf('file://') > -1)
+				log = utils.getFilePathFromURLSpec(log);
+			saveReport(log);
+		}
+		if (gOptions.rawLog) {
+			var raw = gOptions.rawLog;
+			if (raw.indexOf('file://') > -1)
+				raw = utils.getFilePathFromURLSpec(raw);
+			saveReport(raw, true);
+		}
+		if (gOptions.testcase && (gOptions.log || gOptions.rawLog)) {
+			const startup = Cc['@mozilla.org/toolkit/app-startup;1']
+							.getService(Ci.nsIAppStartup);
+			startup.quit(startup.eForceQuit);
+		}
 	},
 	onAbort : function(aEvent)
 	{
@@ -707,53 +738,64 @@ function stop()
   
 /* UI */ 
 	 
-function saveReport() 
+function saveReport(aPath, aRaw) 
 {
-	var file = pickFile(
-			'save', {
-				defaultFile : 'log.txt',
-				defaultExtension : 'txt',
-				filters : {
-					'Text Files' : '*.txt'
-				},
-				title : bundle.getString('log_picker_title')
-			}
-		);
-	if (!file) return;
-
-	var result = [];
-	gLogs.forEach(function(aLog) {
-		result.push(bundle.getString('log_separator_testcase'));
-		result.push(aLog.file);
-		result.push(bundle.getFormattedString('log_start', [aLog.title, new Date(aLog.start)]));
-		result.push(bundle.getString('log_separator_testcase'));
-		var last = aLog.results.length -1;
-		aLog.results.forEach(function(aResult, aIndex) {
-			result.push(bundle.getFormattedString('log_test_title', [aResult.title]));
-			result.push(bundle.getFormattedString('log_test_step', [aResult.step]));
-			result.push(bundle.getFormattedString('log_test_timestamp', [new Date(aResult.timestamp)]));
-			result.push(bundle.getFormattedString('log_test_result', [bundle.getString('report_result_'+aResult.type)]));
-			if (aResult.description)
-				result.push(aResult.description);
-			if (aResult.expected)
-				result.push(bundle.getFormattedString('log_test_expected', [aResult.expected]));
-			if (aResult.actual)
-				result.push(bundle.getFormattedString('log_test_actual', [aResult.actual]));
-			if (aResult.diff)
-				result.push(bundle.getFormattedString('log_test_diff', [aResult.diff]));
-			if (aIndex < last) result.push(bundle.getString('log_separator_test'));
-		});
-		result.push(bundle.getString('log_separator_testcase'));
-		result.push(bundle.getFormattedString(aLog.aborted ? 'log_abort' : 'log_finish', [new Date(aLog.finish)]));
-		result.push(bundle.getString('log_separator_testcase'));
-		result.push('');
-	});
-	if (result.length) {
-		result.push('');
+	if (!aPath) {
+		var picked = pickFile(
+				'save', {
+					defaultFile : 'log.txt',
+					defaultExtension : 'txt',
+					filters : {
+						'Text Files' : '*.txt'
+					},
+					title : bundle.getString('log_picker_title')
+				}
+			);
+		if (!picked) return;
+		aPath = picked.path;
 	}
 
+	var fileContents;
+	if (aRaw) {
+		fileContents = gLogs.toSource();
+	}
+	else {
+		var result = [];
+		gLogs.forEach(function(aLog) {
+			result.push(bundle.getString('log_separator_testcase'));
+			result.push(aLog.file);
+			result.push(bundle.getFormattedString('log_start', [aLog.title, new Date(aLog.start)]));
+			result.push(bundle.getString('log_separator_testcase'));
+			var last = aLog.results.length -1;
+			aLog.results.forEach(function(aResult, aIndex) {
+				result.push(bundle.getFormattedString('log_test_title', [aResult.title]));
+				result.push(bundle.getFormattedString('log_test_step', [aResult.step]));
+				result.push(bundle.getFormattedString('log_test_timestamp', [new Date(aResult.timestamp)]));
+				result.push(bundle.getFormattedString('log_test_result', [bundle.getString('report_result_'+aResult.type)]));
+				if (aResult.description)
+					result.push(aResult.description);
+				if (aResult.expected)
+					result.push(bundle.getFormattedString('log_test_expected', [aResult.expected]));
+				if (aResult.actual)
+					result.push(bundle.getFormattedString('log_test_actual', [aResult.actual]));
+				if (aResult.diff)
+					result.push(bundle.getFormattedString('log_test_diff', [aResult.diff]));
+				if (aIndex < last) result.push(bundle.getString('log_separator_test'));
+			});
+			result.push(bundle.getString('log_separator_testcase'));
+			result.push(bundle.getFormattedString(aLog.aborted ? 'log_abort' : 'log_finish', [new Date(aLog.finish)]));
+			result.push(bundle.getString('log_separator_testcase'));
+			result.push('');
+		});
+		if (result.length) {
+			result.push('');
+		}
+		fileContents = result.join('\n');
+	}
+
+	var file = utils.getFileFromPath(aPath);
 	if (file.exists()) file.remove(true);
-	utils.writeTo(result.join('\n'), file.path, 'UTF-8');
+	utils.writeTo(fileContents, aPath, 'UTF-8');
 }
  
 function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine) 

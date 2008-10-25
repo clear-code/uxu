@@ -4,6 +4,7 @@ const kID   = '@clear-code.com/uxu/startup;1';
 const kNAME = "UxU Global Service";
 
 const kUXU_DIR_NAME = 'uxu@clear-code.com';
+const kCATEGORY = 'm-uxu';
 
 const ObserverService = Components.classes['@mozilla.org/observer-service;1']
 			.getService(Components.interfaces.nsIObserverService);
@@ -177,10 +178,78 @@ GlobalService.prototype = {
 						.getService(Components.interfaces.nsIAppStartup);
 		startup.quit(startup.eRestart | startup.eAttemptQuit);
 	},
- 
+
+
+
+	/* nsICommandLineHandler */
+	handle : function(aCommandLine)
+	{
+		var arg = {
+				testcase : this._getFullPathFromCommandLine('uxu-testcase', aCommandLine),
+				log      : this._getFullPathFromCommandLine('uxu-log', aCommandLine),
+				rawLog   : this._getFullPathFromCommandLine('uxu-rawlog', aCommandLine),
+				priority : 0
+			};
+		try {
+			var priority = aCommandLine.handleFlagWithParam('uxu-priority', false);
+			if (priority) {
+				priority = parseInt(priority);
+				if (!isNaN(priority))
+					arg.priority = priority;
+			}
+		}
+		catch(e) {
+		}
+
+		if (arg.testcase) {
+			aCommandLine.preventDefault = true;
+			var WindowWatcher = Components
+					.classes['@mozilla.org/embedcomp/window-watcher;1']
+					.getService(Components.interfaces.nsIWindowWatcher);
+			WindowWatcher.openWindow(null, 'chrome://uxu/content/ui/mozunit.xul', '_blank', 'chrome,all', arg);
+		}
+	},
+	_getFullPathFromCommandLine : function(aOption, aCommandLine)
+	{
+		try {
+			var value = aCommandLine.handleFlagWithParam(aOption, false);
+			if (!value) return '';
+			if (value.indexOf('/') < 0) {
+				value = aCommandLine.resolveFile(value);
+			}
+			else {
+				value = aCommandLine.resolveURI(value);
+			}
+			return value;
+		}
+		catch(e) {
+		}
+		return '';
+	},
+
+	helpInfo : '  -uxu-testcase <url>  Run the testcase in UnitTest.XUL\n' +
+	           '  -uxu-log <url>       Output the result of the testcase\n',
+
+
+	/* nsIFactory */
+
+	createInstance : function(aOuter, aIID)
+	{
+		if (aOuter != null)
+			throw Components.results.NS_ERROR_NO_AGGREGATION;
+		return this.QueryInterface(aIID);
+	},
+
+	lockFactory : function(aLock)
+	{
+	},
+
+
 	QueryInterface : function(aIID) 
 	{
 		if(!aIID.equals(Components.interfaces.nsIObserver) &&
+			!aIID.equals(Components.interfaces.nsICommandLineHandler) &&
+			!aIID.equals(Components.interfaces.nsIFactory) &&
 			!aIID.equals(Components.interfaces.nsISupports)) {
 			throw Components.results.NS_ERROR_NO_INTERFACE;
 		}
@@ -205,6 +274,7 @@ var gModule = {
 		var catMgr = Components.classes['@mozilla.org/categorymanager;1']
 					.getService(Components.interfaces.nsICategoryManager);
 		catMgr.addCategoryEntry('app-startup', kNAME, kID, true, true);
+		catMgr.addCategoryEntry('command-line-handler', kCATEGORY, kID, true, true);
 	},
 
 	getClassObject : function(aCompMgr, aCID, aIID)
