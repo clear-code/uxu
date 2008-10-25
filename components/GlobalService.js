@@ -89,13 +89,14 @@ GlobalService.prototype = {
 				destManifest.append('install.rdf');
 				var destVersion = this.getVersionFromManifest(destManifest);
 
-				if (this.isFirstLargerThanSecond(soruceVersion, destVersion)) {
-					dest.remove(true);
-				}
-				else {
+				if (
+					this.isFirstLargerThanSecond(destVersion, sourceVersion) &&
+					source.lastModifiedTime < dest.lastModifiedTime
+					) {
 					source.remove(true);
 					return true;
 				}
+				dest.remove(true);
 			}
 			source.moveTo(dest.parent, kUXU_DIR_NAME);
 		}
