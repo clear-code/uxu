@@ -188,6 +188,7 @@ GlobalService.prototype = {
 				testcase : this._getFullPathFromCommandLine('uxu-testcase', aCommandLine),
 				log      : this._getFullPathFromCommandLine('uxu-log', aCommandLine),
 				rawLog   : this._getFullPathFromCommandLine('uxu-rawlog', aCommandLine),
+				running  : this._getFullPathFromCommandLine('uxu-running-testcase', aCommandLine),
 				priority : 0,
 				hidden   : false
 			};

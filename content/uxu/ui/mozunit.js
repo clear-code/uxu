@@ -257,6 +257,11 @@ function startup()
 			gOptions.log = utils.getFilePathFromURLSpec(gOptions.log);
 		if (gOptions.rawLog && gOptions.rawLog.indexOf('file://') > -1)
 			gOptions.rawLog = utils.getFilePathFromURLSpec(gOptions.rawLog);
+		if (gOptions.running) {
+			if (gOptions.running.indexOf('file://') > -1)
+				gOptions.running = utils.getFilePathFromURLSpec(gOptions.running);
+			gOptions.running = utils.makeFileWithPath(gOptions.running);
+		}
 
 		if (gOptions.hidden) {
 			window.setTimeout(function() { window.minimize(); }, 0);
@@ -449,6 +454,7 @@ TestListener.prototype = {
 	},
 	onAbort : function(aEvent)
 	{
+		_(getReport(aEvent.target.title), 'bar').setAttribute('mode', 'determined');
 		this.lastLog.aborted = true;
 		this.onFinish(aEvent);
 	},
@@ -486,6 +492,10 @@ TestListener.prototype = {
 				'UTF-8'
 			);
 		}
+		if (gOptions.running &&
+			gOptions.running instanceof Ci.nsIFile &&
+			!gOptions.running.exists())
+			stop();
 	}
 };
  

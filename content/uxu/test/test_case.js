@@ -50,11 +50,12 @@ else { // possibly old version, so we have to migrate.
 		db.schemaVersion = SCHEME_VERSION_HASH;
 	}
 }
-
-const REMOTE_LOG_PREFIX = 'uxu-test-log';
+ 
+const REMOTE_LOG_PREFIX = 'uxu-test-log'; 
+const REMOTE_RUNNINGFLAG_PREFIX = 'uxu-test-running'; 
 const REMOTE_PROFILE_PREFIX = 'uxu-test-profile';
 const REMOTE_TEST_RESULT_PREFIX = '/*remote-test-finished*/';
- 
+ 	
 /**
  * Invocation: 
  *     var case = new TestCase('Widget tests');
@@ -537,6 +538,11 @@ function remoteRun(aStopper)
 	log.createUnique(log.NORMAL_FILE_TYPE, 0664);
 	utils.writeTo(Date.now(), log);
 
+	var running = utils.getFileFromKeyword('TmpD');
+	running.append(REMOTE_RUNNINGFLAG_PREFIX);
+	running.createUnique(log.NORMAL_FILE_TYPE, 0664);
+	utils.writeTo(this.title, running);
+
 	var profile = utils.getFileFromKeyword('TmpD');
 	profile.append(REMOTE_PROFILE_PREFIX);
 	profile.createUnique(profile.DIRECTORY_TYPE, 0777);
@@ -553,6 +559,9 @@ function remoteRun(aStopper)
 				if (!aborted && _this._stopper && _this._stopper()) {
 					aborted = true;
 					_this.fireEvent('Abort');
+					_this._done = true;
+					if (running.exists())
+						running.remove(true);
 					break;
 				}
 				result = utils.readFrom(log.path, 'UTF-8');
@@ -578,8 +587,13 @@ function remoteRun(aStopper)
 					});
 					_this.fireEvent('RemoteFinish', result);
 				}
-				log.remove(true);
-				profile.remove(true);
+				if (log.exists()) log.remove(true);
+				if (running.exists()) running.remove(true);
+				try {
+					if (profile.exists()) profile.remove(true);
+				}
+				catch(e) {
+				}
 			}
 		}
 	);
@@ -591,7 +605,9 @@ function remoteRun(aStopper)
 			'-uxu-testcase',
 			_this.namespace,
 			'-uxu-rawlog',
-			log.path
+			log.path,
+			'-uxu-running-testcase',
+			running.path
 		];
 	var process = Cc['@mozilla.org/process/util;1']
 				.createInstance(Ci.nsIProcess);
@@ -601,7 +617,7 @@ function remoteRun(aStopper)
 
 	return true;
 }
- 	
+ 
 function _exec(aTest, aContext, aContinuation, aReport) 
 {
 	var report = {
