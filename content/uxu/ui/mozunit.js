@@ -4,6 +4,7 @@ var bundle = lib_module.require('package', 'bundle');
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var Runner = test_module.require('class', 'runner');
+var formatter = test_module.require('package', 'log_formatter');
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -498,7 +499,7 @@ function onAllTestsFinish()
 			var raw = gOptions.rawLog;
 			if (raw.indexOf('file://') > -1)
 				raw = utils.getFilePathFromURLSpec(raw);
-			saveReport(raw, true);
+			saveReport(raw, formatter.FORMAT_RAW);
 		}
 		if (gOptions.testcase && (gOptions.log || gOptions.rawLog)) {
 			const startup = Cc['@mozilla.org/toolkit/app-startup;1']
@@ -899,7 +900,7 @@ function updateContextMenu()
   
 /* commands */ 
 	
-function saveReport(aPath, aRaw) 
+function saveReport(aPath, aFormat) 
 {
 	var file;
 	if (!aPath) {
@@ -920,46 +921,12 @@ function saveReport(aPath, aRaw)
 		file = utils.makeFileWithPath(aPath);
 	}
 
-	var fileContents;
-	if (aRaw) {
-		fileContents = gLogs.toSource();
-	}
-	else {
-		var result = [];
-		gLogs.forEach(function(aLog) {
-			result.push(bundle.getString('log_separator_testcase'));
-			result.push(aLog.file);
-			result.push(bundle.getFormattedString('log_start', [aLog.title, new Date(aLog.start)]));
-			result.push(bundle.getString('log_separator_testcase'));
-			var last = aLog.results.length -1;
-			aLog.results.forEach(function(aResult, aIndex) {
-				result.push(bundle.getFormattedString('log_test_title', [aResult.title]));
-				result.push(bundle.getFormattedString('log_test_step', [aResult.step]));
-				result.push(bundle.getFormattedString('log_test_timestamp', [new Date(aResult.timestamp)]));
-				result.push(bundle.getFormattedString('log_test_result', [bundle.getString('report_result_'+aResult.type)]));
-				if (aResult.description)
-					result.push(aResult.description);
-				if (aResult.expected)
-					result.push(bundle.getFormattedString('log_test_expected', [aResult.expected]));
-				if (aResult.actual)
-					result.push(bundle.getFormattedString('log_test_actual', [aResult.actual]));
-				if (aResult.diff)
-					result.push(bundle.getFormattedString('log_test_diff', [aResult.diff]));
-				if (aIndex < last) result.push(bundle.getString('log_separator_test'));
-			});
-			result.push(bundle.getString('log_separator_testcase'));
-			result.push(bundle.getFormattedString(aLog.aborted ? 'log_abort' : 'log_finish', [new Date(aLog.finish)]));
-			result.push(bundle.getString('log_separator_testcase'));
-			result.push('');
-		});
-		if (result.length) {
-			result.push('');
-		}
-		fileContents = result.join('\n');
-	}
-
 	if (file.exists()) file.remove(true);
-	utils.writeTo(fileContents, file.path, 'UTF-8');
+	utils.writeTo(
+		formatter.formatLogs(gLogs, aFormat || formatter.FORMAT_TEXT),
+		file.path,
+		'UTF-8'
+	);
 }
  
 function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine) 
