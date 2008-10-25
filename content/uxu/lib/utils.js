@@ -786,14 +786,28 @@ function inspectDOMNode(aNode)
 
 		case Node.ATTRIBUTE_NODE:
 			result = aNode.name+'="'+
-					aNode.value
-						.replace(/&/g, '&ampt;')
-						.replace(/</g, '&lt;')
-						.replace(/>/g, '&gt;')
-						.replace(/"/g, '&quot;')+
-				'"';
+						aNode.value
+							.replace(/&/g, '&ampt;')
+							.replace(/</g, '&lt;')
+							.replace(/>/g, '&gt;')
+							.replace(/"/g, '&quot;')+
+						'"';
 			break;
 
+		case Node.PROCESSING_INSTRUCTION_NODE:
+			result = '<?'+aNode.target+' '+aNode.data+'?>';
+			break;
+
+		case Node.DOCUMENT_TYPE_NODE:
+			result = '<!DOCTYPE'+aNode.name+
+						(aNode.publicId ? ' '+aNode.publicId : '' )+
+						(aNode.systemId ? ' '+aNode.systemId : '' )+
+						'>';
+			break;
+
+		case Node.ENTITY_NODE:
+		case Node.ENTITY_REFERENCE_NODE:
+		case Node.NOTATION_NODE:
 		default:
 			return '';
 	}
