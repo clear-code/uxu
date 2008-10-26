@@ -61,7 +61,7 @@ try {
 }
 catch(e) {
 }
- 	
+ 
 const REMOTE_LOG_PREFIX = 'uxu-test-log'; 
 const REMOTE_RUNNINGFLAG_PREFIX = 'uxu-test-running';
 const REMOTE_PROFILE_PREFIX = 'uxu-test-profile';
@@ -663,13 +663,12 @@ function _runWithRemotePofile(aStopper)
 
 	var process = Cc['@mozilla.org/process/util;1']
 				.createInstance(Ci.nsIProcess);
-	var exe = utils.getFileFromKeyword('XREExeF');
-	process.init(exe);
+	process.init(utils.productExecutable);
 	process.run(false, args, args.length);
 
 	return true;
 }
- 
+ 	
 function _exec(aTest, aContext, aContinuation, aReport) 
 {
 	var report = {

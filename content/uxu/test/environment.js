@@ -32,12 +32,10 @@ function constructor(aEnvironment, aURI, aBrowser)
 		return aBrowser;
 	});
 
-	var XULAppInfo = Cc['@mozilla.org/xre/app-info;1']
-			.getService(Ci.nsIXULAppInfo);
-	switch (XULAppInfo.ID)
+	product = utils.product;
+	switch (product)
 	{
-		case '{ec8030f7-c20a-464f-9b0e-13a3a9e97384}':
-			product = 'Firefox';
+		case 'Firefox':
 			defaultURI = 'chrome://browser/content/browser.xul';
 			defaultType = 'navigator:browser';
 			defaultFlags = 'chrome,all,dialog=no';
@@ -60,8 +58,7 @@ function constructor(aEnvironment, aURI, aBrowser)
 
 			break;
 
-		case '{3550f703-e582-4d05-9a08-453d09bdfdc6}':
-			product = 'Thunderbird';
+		case 'Thunderbird':
 			defaultURI = 'chrome://messenger/content/messenger.xul';
 			defaultType = null;
 			defaultFlags = 'chrome,all,dialog=no';
@@ -72,7 +69,6 @@ function constructor(aEnvironment, aURI, aBrowser)
 			break;
 
 		default:
-			product = '';
 			break;
 	}
 

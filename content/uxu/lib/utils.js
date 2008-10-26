@@ -1,4 +1,4 @@
-// -*- indent-tabs-mode: t; tab-width: 4 -*-
+// -*- indent-tabs-mode: t; tab-width: 4 -*- 
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -8,8 +8,10 @@ var bundle = lib_module.require('package', 'bundle');
 
 var IOService = Cc['@mozilla.org/network/io-service;1']
 		.getService(Ci.nsIIOService);
-
-function normalizeToFile(aFile)
+	 
+// ファイル操作 
+	
+function normalizeToFile(aFile) 
 {
 	if (typeof aFile == 'string') {
 		aFile = this.fixupIncompleteURI(aFile);
@@ -27,8 +29,8 @@ function normalizeToFile(aFile)
 	}
 	return aFile;
 }
-
-// URI文字列からnsIURIのオブジェクトを生成
+ 
+// URI文字列からnsIURIのオブジェクトを生成 
 function makeURIFromSpec(aURI)
 {
 	try {
@@ -51,8 +53,8 @@ function makeURIFromSpec(aURI)
 	}
 	return null;
 }
-
-// ファイルのパスからnsIFileのオブジェクトを生成
+ 
+// ファイルのパスからnsIFileのオブジェクトを生成 
 function makeFileWithPath(aPath)
 {
 	var newFile = Cc['@mozilla.org/file/local;1']
@@ -60,15 +62,15 @@ function makeFileWithPath(aPath)
 	newFile.initWithPath(aPath);
 	return newFile;
 }
-
-
-// URL→ファイル
-function getFileFromURL(aURI)
+ 
+// URL→ファイル 
+	
+function getFileFromURL(aURI) 
 {
 	return getFileFromURLSpec(aURI.spec);
 }
-
-function getFileFromURLSpec(aURI)
+ 
+function getFileFromURLSpec(aURI) 
 {
 	if (!aURI)
 		aURI = '';
@@ -85,21 +87,22 @@ function getFileFromURLSpec(aURI)
 						.QueryInterface(Ci.nsIFileProtocolHandler);
 	return fileHandler.getFileFromURLSpec(aURI);
 }
-
-function getFilePathFromURL(aURI)
+ 
+function getFilePathFromURL(aURI) 
 {
 	return getFileFromURLSpec(aURI.spec).path;
 }
-
-function getFilePathFromURLSpec(aURI)
+ 
+function getFilePathFromURLSpec(aURI) 
 {
 	return getFileFromURLSpec(aURI).path;
 }
-
+  
+// キーワード→ファイル 
 var DirectoryService = Cc['@mozilla.org/file/directory_service;1']
 		.getService(Ci.nsIProperties);
-
-function getFileFromKeyword(aKeyword)
+	
+function getFileFromKeyword(aKeyword) 
 {
 	try {
 		return DirectoryService.get(aKeyword, Ci.nsIFile);
@@ -108,37 +111,37 @@ function getFileFromKeyword(aKeyword)
 	}
 	return null;
 }
-
-function getFilePathFromKeyword(aKeyword)
+ 
+function getFilePathFromKeyword(aKeyword) 
 {
 	var file = getFileFromKeyword(aKeyword);
 	return file ? file.path : null ;
 }
- 
-// ファイル→URL
-function getURLFromFile(aFile)
+  
+// ファイル→URL 
+	
+function getURLFromFile(aFile) 
 {
 	return IOService.newFileURI(aFile);
 }
-
-function getURLFromFilePath(aPath)
+ 
+function getURLFromFilePath(aPath) 
 {
 	var tempLocalFile = makeFileWithPath(aPath);
 	return getURLFromFile(tempLocalFile);
 }
-
-function getURLSpecFromFile(aFile)
+ 
+function getURLSpecFromFile(aFile) 
 {
 	return IOService.newFileURI(aFile).spec;
 }
-
-function getURLSpecFromFilePath(aPath)
+ 
+function getURLSpecFromFilePath(aPath) 
 {
 	return getURLFromFilePath(aPath).spec;
 }
-
-
-// ファイルまたはURIで示された先のリソースを読み込み、文字列として返す
+  
+// ファイルまたはURIで示された先のリソースを読み込み、文字列として返す 
 function readFrom(aTarget, aEncoding)
 {
 	aTarget = this.normalizeToFile(aTarget);
@@ -188,8 +191,8 @@ function readFrom(aTarget, aEncoding)
 
 	return fileContents;
 }
-
-// ファイルパスまたはURLで示された先のテキストファイルに文字列を書き出す
+ 
+// ファイルパスまたはURLで示された先のテキストファイルに文字列を書き出す 
 function writeTo(aContent, aTarget, aEncoding)
 {
 	aTarget = this.normalizeToFile(aTarget);
@@ -235,9 +238,8 @@ function writeTo(aContent, aTarget, aEncoding)
 
 	return aTarget;
 }
-
-
-// Subversionが作る不可視のファイルなどを除外して、普通に目に見えるファイルだけを複製する
+ 
+// Subversionが作る不可視のファイルなどを除外して、普通に目に見えるファイルだけを複製する 
 function cosmeticClone(aOriginal, aDest, aName)
 {
 	if (aOriginal.isHidden() || aOriginal.leafName.indexOf('.') == 0)
@@ -264,24 +266,79 @@ function cosmeticClone(aOriginal, aDest, aName)
 		return cloned;
 	}
 }
+ 
+// 遅延削除 
+	
+function scheduleToRemove(aFile) 
+{
+	if (!this.scheduledFiles) this.scheduledFiles = {};
+	aFile = normalizeToFile(aFile);
+	if (aFile.path in this.scheduledFiles) return;
 
+	this.scheduledFiles[aFile.path] = {
+		file     : aFile,
+		count    : 0
+	};
 
-
-
-
-function formatError(e)
+	if (!this.scheduledRemoveTimer)
+		this.startScheduledRemove(this);
+}
+ 
+function startScheduledRemove(aThis) 
+{
+	if (!aThis) aThis = this;
+	if (aThis.scheduledRemoveTimer) aThis.stopScheduledRemove();
+	aThis.scheduledRemoveTimer = window.setTimeout(function(aThis) {
+		if (aThis.scheduledFiles) {
+			var incomplete = false;
+			var incompleted = {};
+			for (var i in aThis.scheduledFiles)
+			{
+				schedule = aThis.scheduledFiles[i];
+				try {
+					if (schedule.count < 100)
+						schedule.file.remove(true);
+				}
+				catch(e) {
+					incomplete = true;
+					incompleted[i] = schedule;
+					schedule.count++;
+				}
+			}
+			if (incomplete) {
+				aThis.scheduledFiles = incompleted;
+				aThis.scheduledRemoveTimer = window.setTimeout(arguments.callee, 500, aThis)
+				return;
+			}
+			aThis.scheduledFiles = {};
+		}
+		aThis.stopScheduledRemove();
+		// aThis.scheduledRemoveTimer = window.setTimeout(arguments.callee, 5000, aThis)
+	}, 5000, aThis);
+}
+ 
+function stopScheduledRemove() 
+{
+	if (!this.scheduledRemoveTimer) return;
+	window.clearTimeout(this.scheduledRemoveTimer);
+	this.scheduledRemoveTimer = null;
+}
+   
+// エラー・スタックトレース整形 
+	
+function formatError(e) 
 {
 	var options = { onlyFile : true, onlyExternal : true, onlyTraceLine : true};
 	return e.toString() + '\n' + formatStackTrace(e, options);
 }
-
-function hasStackTrace(aException)
+ 
+function hasStackTrace(aException) 
 {
 	return aException.stack ||
 		(aException.location && JSFrameLocationRegExp.test(aException.location));
 }
-
-var lineRegExp = /@\w+:.+:\d+/;
+ 
+var lineRegExp = /@\w+:.+:\d+/; 
 var JSFrameLocationRegExp = /JS frame :: (.+) :: .+ :: line (\d+)/;
 var subScriptRegExp = /@chrome:\/\/uxu\/content\/lib\/subScriptRunner\.js(?:\?includeSource=([^;,:]+)(?:;encoding=[^;,:]+)?|\?code=([^;,:]+))?:(\d+)$/i;
 function formatStackTrace(aException, aOptions)
@@ -362,14 +419,14 @@ function formatStackTrace(aException, aOptions)
 
 	return trace;
 }
-
-function makeStackLine(aStack)
+	
+function makeStackLine(aStack) 
 {
 	if (typeof aStack == 'string') return aStack;
 	return '()@' + aStack.filename + ':' + aStack.lineNumber + '\n';
 }
-
-function unformatStackLine(aLine)
+ 
+function unformatStackLine(aLine) 
 {
 	/@(\w+:.*)?:(\d+)/.test(aLine);
 	return {
@@ -377,14 +434,15 @@ function unformatStackLine(aLine)
 		line   : (RegExp.$2 || '')
 	};
 }
-
-
-
-var Pref = Cc['@mozilla.org/preferences;1'] 
+   
+// 設定読み書き 
+var Pref = Cc['@mozilla.org/preferences;1']
 		.getService(Ci.nsIPrefBranch)
 		.QueryInterface(Ci.nsIPrefBranch2);
 
-function getPref(aKey)
+var backupPrefs = {};
+	
+function getPref(aKey) 
 {
 	try {
 		switch (Pref.getPrefType(aKey))
@@ -404,11 +462,8 @@ function getPref(aKey)
 	}
 	return null;
 }
-
-
-var backupPrefs = {};
-
-function setPref(aKey, aValue)
+ 
+function setPref(aKey, aValue) 
 {
 	var type;
 	try {
@@ -440,8 +495,8 @@ function setPref(aKey, aValue)
 	}
 	return aValue;
 }
-
-function clearPref(aKey)
+ 
+function clearPref(aKey) 
 {
 	try {
 		Pref.clearUserPref(aKey);
@@ -449,42 +504,32 @@ function clearPref(aKey)
 	catch(e) {
 	}
 }
-
-
-
-
-function UTF8ToUnicode(aInput)
-{
-	return this.UTF8ToUCS2(aInput);
-}
-function UnicodeToUTF8(aInput)
-{
-	return this.UCS2ToUTF8(aInput);
-}
-
-function UTF8ToUCS2(aInput)
+  
+// エンコーディング変換 
+var UCONV = Cc['@mozilla.org/intl/scriptableunicodeconverter']
+		.getService(Ci.nsIScriptableUnicodeConverter);
+	
+function UTF8ToUCS2(aInput) 
 {
 	return decodeURIComponent(escape(aInput));
 }
-function UCS2ToUTF8(aInput)
+	
+function UTF8ToUnicode(aInput) 
+{
+	return UTF8ToUCS2(aInput);
+}
+  
+function UCS2ToUTF8(aInput) 
 {
 	return unescape(encodeURIComponent(aInput));
 }
-
-var UCONV = Cc['@mozilla.org/intl/scriptableunicodeconverter']
-		.getService(Ci.nsIScriptableUnicodeConverter);
-
-function XToUnicode(aInput, aEncoding)
+	
+function UnicodeToUTF8(aInput) 
 {
-	return this.XToUCS2(aInput, aEncoding);
+	return UCS2ToUTF8(aInput);
 }
-
-function UnicodeToX(aInput, aEncoding)
-{
-	return this.UCS2ToX(aInput, aEncoding);
-}
-
-function XToUCS2(aInput, aEncoding)
+  
+function XToUCS2(aInput, aEncoding) 
 {
 	if (aEncoding == 'UTF-8') return UTF8ToUnicode(aInput);
 	try {
@@ -495,8 +540,13 @@ function XToUCS2(aInput, aEncoding)
 	}
 	return aInput;
 }
-
-function UCS2ToX(aInput, aEncoding)
+	
+function XToUnicode(aInput, aEncoding) 
+{
+	return XToUCS2(aInput, aEncoding);
+}
+  
+function UCS2ToX(aInput, aEncoding) 
 {
 	if (aEncoding == 'UTF-8') return UnicodeToUTF8(aInput);
 
@@ -508,9 +558,13 @@ function UCS2ToX(aInput, aEncoding)
 	}
 	return aInput;
 }
-
-
-function fixupIncompleteURI(aURIOrPart)
+	
+function UnicodeToX(aInput, aEncoding) 
+{
+	return UCS2ToX(aInput, aEncoding);
+}
+   
+function fixupIncompleteURI(aURIOrPart) 
 {
 	if (!this.baseURL ||
 		/^(about|data|javascript|view-source|jar):/.test(aURIOrPart))
@@ -537,9 +591,10 @@ function fixupIncompleteURI(aURIOrPart)
 	}
 	return uri;
 }
-
-
-function isGeneratedIterator(aObject)
+ 
+// イテレータ操作 
+	
+function isGeneratedIterator(aObject) 
 {
 	try {
 		return (
@@ -555,8 +610,8 @@ function isGeneratedIterator(aObject)
 	}
 	return false;
 }
-
-function doIteration(aGenerator, aCallbacks)
+ 
+function doIteration(aGenerator, aCallbacks) 
 {
 	if (!aGenerator)
 		throw new Error('doIteration:: no generator!');
@@ -681,9 +736,8 @@ function doIteration(aGenerator, aCallbacks)
 
 	return retVal;
 }
-
-
-function Do(aObject)
+ 
+function Do(aObject) 
 {
 	if (!aObject)
 		return aObject;
@@ -697,10 +751,11 @@ function Do(aObject)
 				doIteration(retVal) :
 				retVal;
 }
-
-
+  
+// データベース操作 
 var _db = null;
-function getDB()
+	
+function getDB() 
 {
 	if (_db) return _db;
 
@@ -713,8 +768,10 @@ function getDB()
 
 	return _db;
 }
-
-function inspect(aObject)
+  
+// 解析 
+	
+function inspect(aObject) 
 {
 	var inspectedObjects = [];
 	var inspectedResults = {};
@@ -765,8 +822,8 @@ function inspect(aObject)
 
 	return _inspect(aObject);
 }
-
-function inspectType(aObject)
+ 
+function inspectType(aObject) 
 {
 	var type = typeof aObject;
 
@@ -777,8 +834,8 @@ function inspectType(aObject)
 	return objectType.substring("[object ".length,
 								objectType.length - "]".length);
 }
-
-function inspectDOMNode(aNode)
+ 
+function inspectDOMNode(aNode) 
 {
 	var self = arguments.callee;
 	var result;
@@ -848,8 +905,8 @@ function inspectDOMNode(aNode)
 	}
 	return result;
 }
-
-function p()
+ 
+function p() 
 {
 	var i;
 	for (i = 0; i < arguments.length; i++) {
@@ -859,46 +916,27 @@ function p()
 		dump(inspected);
 	}
 }
-
-function _equalObject(aCompare, aObject1, aObject2)
-{
-	if (!aCompare(aObject1.__proto__, aObject2.__proto__))
-		return false;
-
-	var name;
-	var names1 = [], names2 = [];
-	for (name in aObject1) {
-		names1.push(name);
-		if (!(name in aObject2))
-			return false;
-		if (!_equals(aCompare, aObject1[name], aObject2[name]))
-			return false;
-	}
-	for (name in aObject2) {
-		names2.push(name);
-	}
-	names1.sort();
-	names2.sort();
-	return _equals(aCompare, names1, names2);
-}
-
-
-function isArray(aObject)
+ 
+function isArray(aObject) 
 {
     return aObject && aObject instanceof eval('Array', aObject);
 }
-function isDate(aObject)
+ 
+function isDate(aObject) 
 {
     return aObject && aObject instanceof eval('Date', aObject);
 }
-function isObject(aObject)
+ 
+function isObject(aObject) 
 {
 	return (aObject &&
 			typeof aObject == "object" &&
 			aObject == '[object Object]');
 }
-
-function _equals(aCompare, aObject1, aObject2)
+  
+// 比較 
+	
+function _equals(aCompare, aObject1, aObject2) 
 {
 	if (aCompare(aObject1, aObject2))
 		return true;
@@ -926,78 +964,60 @@ function _equals(aCompare, aObject1, aObject2)
 
 	return false;
 }
+	
+function _equalObject(aCompare, aObject1, aObject2) 
+{
+	if (!aCompare(aObject1.__proto__, aObject2.__proto__))
+		return false;
 
-function equals(aObject1, aObject2)
+	var name;
+	var names1 = [], names2 = [];
+	for (name in aObject1) {
+		names1.push(name);
+		if (!(name in aObject2))
+			return false;
+		if (!_equals(aCompare, aObject1[name], aObject2[name]))
+			return false;
+	}
+	for (name in aObject2) {
+		names2.push(name);
+	}
+	names1.sort();
+	names2.sort();
+	return _equals(aCompare, names1, names2);
+}
+  
+function equals(aObject1, aObject2) 
 {
 	return _equals(function (aObj1, aObj2) {return aObj1 == aObj2},
 				   aObject1, aObject2);
 }
-
-function strictlyEquals(aObject1, aObject2)
+ 
+function strictlyEquals(aObject1, aObject2) 
 {
 	return _equals(function (aObj1, aObj2) {return aObj1 === aObj2},
 				   aObject1, aObject2);
 }
-
-
-
-function scheduleToRemove(aFile)
-{
-	if (!this.scheduledFiles) this.scheduledFiles = {};
-	aFile = normalizeToFile(aFile);
-	if (aFile.path in this.scheduledFiles) return;
-
-	this.scheduledFiles[aFile.path] = {
-		file     : aFile,
-		count    : 0
-	};
-
-	if (!this.scheduledRemoveTimer)
-		this.startScheduledRemove(this);
-}
-
-function startScheduledRemove(aThis)
-{
-	if (!aThis) aThis = this;
-	if (aThis.scheduledRemoveTimer) aThis.stopScheduledRemove();
-	aThis.scheduledRemoveTimer = window.setTimeout(function(aThis) {
-		if (aThis.scheduledFiles) {
-			var incomplete = false;
-			var incompleted = {};
-			for (var i in aThis.scheduledFiles)
-			{
-				schedule = aThis.scheduledFiles[i];
-				try {
-					if (schedule.count < 100)
-						schedule.file.remove(true);
-				}
-				catch(e) {
-					incomplete = true;
-					incompleted[i] = schedule;
-					schedule.count++;
-				}
-			}
-			if (incomplete) {
-				aThis.scheduledFiles = incompleted;
-				aThis.scheduledRemoveTimer = window.setTimeout(arguments.callee, 500, aThis)
-				return;
-			}
-			aThis.scheduledFiles = {};
-		}
-		aThis.stopScheduledRemove();
-		// aThis.scheduledRemoveTimer = window.setTimeout(arguments.callee, 5000, aThis)
-	}, 5000, aThis);
-}
-
-function stopScheduledRemove()
-{
-	if (!this.scheduledRemoveTimer) return;
-	window.clearTimeout(this.scheduledRemoveTimer);
-	this.scheduledRemoveTimer = null;
-}
-
-
-function restartApplication()
+  
+// アプリケーション 
+	 
+var product = (function() { 
+	var XULAppInfo = Cc['@mozilla.org/xre/app-info;1']
+			.getService(Ci.nsIXULAppInfo);
+	switch (XULAppInfo.ID)
+	{
+		case '{ec8030f7-c20a-464f-9b0e-13a3a9e97384}':
+			return 'Firefox';
+		case '{3550f703-e582-4d05-9a08-453d09bdfdc6}':
+			return 'Thunderbird';
+		default:
+			return '';
+	}
+})();
+ 
+var productExecutable = getFileFromKeyword('XREExeF'); 
+ 	
+function restartApplication() 
 {
 	var cancelQuit = Cc['@mozilla.org/supports-PRBool;1']
 				.createInstance(Ci.nsISupportsPRBool);
@@ -1021,24 +1041,25 @@ function restartApplication()
 					.getService(Ci.nsIAppStartup);
 	startup.quit(startup.eRestart | startup.eAttemptQuit);
 }
-
-
+  
+// デバッグ 
 var _console = Cc['@mozilla.org/consoleservice;1']
 		.getService(Ci.nsIConsoleService);
-function log()
+	
+function log() 
 {
 	_console.logStringMessage(Array.slice(arguments).join('\n'));
 }
-
-function dump()
+ 
+function dump() 
 {
 	this.log.apply(this, arguments);
 }
-
-
-const ObserverService = Cc['@mozilla.org/observer-service;1']
+  
+const ObserverService = Cc['@mozilla.org/observer-service;1'] 
 			.getService(Ci.nsIObserverService);
 function notify(aSubject, aTopic, aData)
 {
 	ObserverService.notifyObservers(aSubject, aTopic, aData);
 }
+  
