@@ -571,16 +571,6 @@ function _runWithRemotePofile(aStopper)
 	var aborted = false;
 	var timeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout'));
 
-	var log = utils.getFileFromKeyword('TmpD');
-	log.append(REMOTE_LOG_PREFIX);
-	log.createUnique(log.NORMAL_FILE_TYPE, 0664);
-	utils.writeTo(Date.now(), log);
-
-	var running = utils.getFileFromKeyword('TmpD');
-	running.append(REMOTE_RUNNINGFLAG_PREFIX);
-	running.createUnique(log.NORMAL_FILE_TYPE, 0664);
-	utils.writeTo(this.title, running);
-
 	var profile = utils.getFileFromKeyword('TmpD');
 	profile.append(REMOTE_PROFILE_PREFIX);
 	profile.createUnique(profile.DIRECTORY_TYPE, 0777);
@@ -641,26 +631,21 @@ function _runWithRemotePofile(aStopper)
 		{
 			onEnd : function(e) {
 				_this._done = true;
-				if (!aborted) {
+				if (!aborted)
 					fireRemoteEvent('RemoteFinish');
-				}
-				if (running.exists()) running.remove(true);
-				utils.scheduleToRemove(log);
-				utils.scheduleToRemove(profile);
 			}
 		}
 	);
 
+	var socket = this._createSocket();
 	var args = [
 			'-no-remote',
 			'-profile',
 			profile.path,
 			'-uxu-testcase',
 			_this.namespace,
-			'-uxu-rawlog',
-			log.path,
-			'-uxu-running-testcase',
-			running.path,
+			'-uxu-output-port',
+			socket.port,
 			'-uxu-hidden'
 		]
 		.concat(this.options);
@@ -671,6 +656,25 @@ function _runWithRemotePofile(aStopper)
 	process.run(false, args, args.length);
 
 	return true;
+}
+function _createSocket()
+{
+	var socket = Cc['@mozilla.org/network/server-socket;1']
+		.createInstance(Ci.nsIServerSocket);
+	socket.init(-1, true, -1);
+
+	var _this = this;
+	var listener = {
+			onSocketAccepted : function(aSocket, aTransport)
+			{
+			},
+			onStopListening : function(aSocket, aStatus)
+			{
+			},
+		};
+	socket.asyncListen(listener);
+
+	return socket;
 }
  	
 function _exec(aTest, aContext, aContinuation, aReport) 

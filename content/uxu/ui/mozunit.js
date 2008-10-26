@@ -250,6 +250,7 @@ function startup()
 			jsobj.log      = gOptions.getProperty('log');
 			jsobj.rawLog   = gOptions.getProperty('rawLog');
 			jsobj.running  = gOptions.getProperty('running');
+			jsobj.port     = gOptions.getProperty('port');
 			jsobj.priority = gOptions.getProperty('priority');
 			jsobj.hidden   = gOptions.getProperty('hidden');
 			gOptions = jsobj;

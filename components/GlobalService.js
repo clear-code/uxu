@@ -189,19 +189,10 @@ GlobalService.prototype = {
 				log      : this._getFullPathFromCommandLine('uxu-log', aCommandLine),
 				rawLog   : this._getFullPathFromCommandLine('uxu-rawlog', aCommandLine),
 				running  : this._getFullPathFromCommandLine('uxu-running-testcase', aCommandLine),
-				priority : 0,
+				priority : this._getNumberValueFromCommandLine('uxu-priority', aCommandLine),
+				port     : this._getNumberValueFromCommandLine('uxu-output-port', aCommandLine),
 				hidden   : false
 			};
-		try {
-			var priority = aCommandLine.handleFlagWithParam('uxu-priority', false);
-			if (priority) {
-				priority = parseInt(priority);
-				if (!isNaN(priority))
-					arg.priority = priority;
-			}
-		}
-		catch(e) {
-		}
 		try {
 			if (aCommandLine.handleFlag('uxu-hidden', false)) {
 				arg.hidden = true;
@@ -242,12 +233,27 @@ GlobalService.prototype = {
 		}
 		return '';
 	},
+	_getNumberValueFromCommandLine : function(aOption, aCommandLine)
+	{
+		try {
+			var value = aCommandLine.handleFlagWithParam(aOption, false);
+			if (!value) return 0;
+			value = parseInt(value);
+			if (!isNaN(value)) return value;
+		}
+		catch(e) {
+		}
+		return 0;
+	},
 
 	helpInfo : '  -uxu-testcase <url>  Run the testcase in UnitTest.XUL\n'+
 	           '  -uxu-log <url>       Output the result of the testcase\n'+
 	           '                       in human readable format\n'+
 	           '  -uxu-rawlog <url>    Output the result of the testcase\n'+
 	           '                       in raw format\n'+
+	           '  -uxu-output-port <port>\n'+
+	           '                       Output the result of the testcase\n'+
+	           '                       to the port in raw format\n'+
 	           '  -uxu-priority <priority>\n'+
 	           '                       Run strategy:\n'+
 	           '                           0 : run normally\n'+
