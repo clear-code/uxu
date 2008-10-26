@@ -754,17 +754,20 @@ function Do(aObject)
   
 // データベース操作 
 var _db = null;
-	
+	 
+var dbFile = (function() { 
+		var file = getFileFromKeyword('ProfD');
+		file.append('uxu.sqlite');
+		return file;
+	})();
+ 	
 function getDB() 
 {
 	if (_db) return _db;
 
-	var file = getFileFromKeyword('ProfD');
-	file.append('uxu.sqlite');
-
 	const StorageService = Cc['@mozilla.org/storage/service;1']
 		.getService(Ci.mozIStorageService);
-	_db = StorageService.openDatabase(file);
+	_db = StorageService.openDatabase(dbFile);
 
 	return _db;
 }
@@ -1000,7 +1003,7 @@ function strictlyEquals(aObject1, aObject2)
 }
   
 // アプリケーション 
-	 
+	
 var product = (function() { 
 	var XULAppInfo = Cc['@mozilla.org/xre/app-info;1']
 			.getService(Ci.nsIXULAppInfo);
@@ -1016,7 +1019,7 @@ var product = (function() {
 })();
  
 var productExecutable = getFileFromKeyword('XREExeF'); 
- 	
+ 
 function restartApplication() 
 {
 	var cancelQuit = Cc['@mozilla.org/supports-PRBool;1']

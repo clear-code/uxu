@@ -586,6 +586,9 @@ function _runWithRemotePofile(aStopper)
 	profile.createUnique(profile.DIRECTORY_TYPE, 0777);
 	this.profile.copyTo(profile.parent, profile.leafName);
 
+	// 実行時の優先度計算のために必要
+	utils.dbFile.copyTo(profile, utils.dbFile.leafName);
+
 	this.fireEvent('RemoteStart');
 
 	var fireRemoteEvent = function(aEventType) {
