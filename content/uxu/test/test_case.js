@@ -474,8 +474,6 @@ function run(aStopper)
 				aContinuation('ok');
 				return;
 			}
-			context = _this.context || {};
-			report.report = {};
 			try {
 				var result = aFunction.call(context, aContinuation);
 				if (utils.isGeneratedIterator(result)) {
@@ -495,7 +493,8 @@ function run(aStopper)
 				else {
 					if (aFunction.arity == 0) aContinuation('ok');
 				}
-			} catch(e) {
+			}
+			catch(e) {
 				report.report.result = 'error';
 				report.report.exception = e;
 				report.report.testDescription = aErrorDescription;
@@ -513,6 +512,8 @@ function run(aStopper)
 		},
 		doWarmUp : function(aContinuation)
 		{
+			context = _this.context || {};
+ 			report.report = {};
 			doPreOrPostProcess(
 				aContinuation,
 				_this._warmUp,
@@ -533,6 +534,7 @@ function run(aStopper)
 		},
 		doSetUp : function(aContinuation)
 		{
+			report.report = {};
 			doPreOrPostProcess(
 				aContinuation,
 				_this._setUp,
@@ -586,6 +588,7 @@ function run(aStopper)
 		},
 		doWarmDown : function(aContinuation)
 		{
+ 			report.report = {};
 			doPreOrPostProcess(
 				aContinuation,
 				_this._warmDown,
