@@ -482,6 +482,9 @@ getURLSpecFromFilePath
 readFrom
 writeTo
 cosmeticClone
+scheduleToRemove
+startScheduledRemove
+stopScheduledRemove
 getPref
 setPref
 clearPref
@@ -499,9 +502,8 @@ Do
 inspect
 inspectDOMNode
 p
-scheduleToRemove
-startScheduledRemove
-stopScheduledRemove
+product
+productExecutable
 log
 dump
 notify
@@ -509,5 +511,12 @@ notify
 .replace(/^\s+|\s+$/g, '')
 .split('\n')
 .forEach(function(aFunc) {
-	_this[aFunc] = utils[aFunc];
+	if (typeof utils[aFunc] == 'function') {
+		_this[aFunc] = utils[aFunc];
+	}
+	else {
+		_this.__defineGetter__(aFunc, function() {
+			return utils[aFunc];
+		});
+	}
 });
