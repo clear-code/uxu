@@ -91,7 +91,15 @@ function _getTestsFromSuite(aSuite)
 			continue;
 
 		// declaration style
-		if (i.indexOf('setUp') == 0 ||
+		if (i.indexOf('warmUp') == 0 ||
+			obj.isWarmUp)
+			testObjects.warmUp = obj;
+		else if (i.indexOf('warmDown') == 0 ||
+			i.indexOf('coolDown') == 0 ||
+			obj.isWarmDown ||
+			obj.isCoolDown)
+			testObjects.warmDown = obj;
+		else if (i.indexOf('setUp') == 0 ||
 			obj.isSetUp)
 			testObjects.setUp = obj;
 		else if (i.indexOf('tearDown') == 0 ||
@@ -112,6 +120,10 @@ function _getTestsFromSuite(aSuite)
 				}
 			);
 
+		if (testObjects.warmUp)
+			newTestCase.registerWarmUp(testObjects.warmUp);
+		if (testObjects.warmDown)
+			newTestCase.registerWarmDown(testObjects.warmDown);
 		if (testObjects.setUp)
 			newTestCase.registerSetUp(testObjects.setUp);
 		if (testObjects.tearDown)
