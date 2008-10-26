@@ -164,30 +164,33 @@ function _initNamespace(aOptions)
  
 function _initProfile(aOptions) 
 {
-	var profile = aOptions.profile;
-
 	var runningProfile = utils.getURLSpecFromFile(utils.getFileFromKeyword('ProfD'));
 	runningProfile = runningProfile.replace(/([^\/])$/, '$1/');
 	runningProfile = utils.getFileFromURLSpec(runningProfile);
 
 	this._profile = null;
-	if (profile) {
-		try {
-			this._profile = utils.fixupIncompleteURI(profile).replace(/([^\/])$/, '$1/');
-			this._profile = utils.getFileFromURLSpec(this._profile);
-			this._profile.normalize();
-			if (
-				!this._profile.exists() ||
-				!this._profile.isDirectory()
-				)
-				this._profile = null;
-		}
-		catch(e) {
-		}
-	}
-	if (!this._profile) {
-		this._profile = runningProfile;
-	}
+	this.__defineSetter__(
+		'profile', function(aValue) {
+			this._profile = null;
+			if (aValue) {
+				try {
+					this._profile = utils.fixupIncompleteURI(aValue).replace(/([^\/])$/, '$1/');
+					this._profile = utils.getFileFromURLSpec(this._profile);
+					this._profile.normalize();
+					if (
+						!this._profile.exists() ||
+						!this._profile.isDirectory()
+						)
+						this._profile = null;
+				}
+				catch(e) {
+				}
+			}
+			if (!this._profile) {
+				this._profile = runningProfile;
+			}
+			return this._profile;
+		});
 	this.__defineGetter__(
 		'profile', function() {
 			return this._profile;
@@ -199,11 +202,22 @@ function _initProfile(aOptions)
 				!runningProfile.parent.equals(tmp);
 		});
 
-	this._options = aOptions.options || [];
+	this._options = [];
+	this.__defineSetter__(
+		'options', function(aValue) {
+			this._options = aValue || [];
+			if (!utils.isArray(aValue)) {
+				this._options = [];
+			}
+			return this._options;
+		});
 	this.__defineGetter__(
 		'options', function() {
 			return this._options;
 		});
+
+	this.profile = aOptions.profile;
+	this.options = aOptions.options;
 }
   
 /**
