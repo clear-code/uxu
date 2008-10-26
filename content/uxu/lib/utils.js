@@ -843,7 +843,7 @@ function inspectDOMNode(aNode)
 			Array.slice(aNode.attributes).map(function(aAttr) {
 				return ' '+self(aAttr);
 			}).sort().join('')+
-			(result ? '>' : ' />' )+
+			(result ? '>' : '/>' )+
 			(result ? result+'</'+aNode.localName+'>' : '' );
 	}
 	return result;
