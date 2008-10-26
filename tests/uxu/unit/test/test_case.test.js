@@ -7,7 +7,7 @@ var testcase;
 
 function setUp()
 {
-	testcase = new TestCaseClass('description', 'http://www.clear-code.com/');
+	testcase = new TestCaseClass('description', { namespace : 'http://www.clear-code.com/' });
 	yield 0; // to run tests progressively
 }
 
