@@ -28,29 +28,36 @@ var utils  = {};
 utils.__proto__ = lib_module.require('package', 'utils');
 
 var inherits = lib_module.require('class', 'event_target');
-
-var SCHEME_VERSION_HASH = 1;
-var CURRENT_SCHEME = SCHEME_VERSION_HASH;
-var tableDefinitionSQL = <![CDATA[
-	  CREATE TABLE result_history
-	    (name        TEXT PRIMARY KEY,
-	     description TEXT,
-	     result      TEXT,
-	     date        DATETIME,
-	     hash        TEXT)
-	]]>.toString();
-var db = utils.getDB();
-if (!db.tableExists('result_history')) {
-	db.executeSimpleSQL(tableDefinitionSQL);
-	db.schemaVersion = CURRENT_SCHEME;
-}
-else { // possibly old version, so we have to migrate.
-	if (db.schemaVersion < SCHEME_VERSION_HASH) {
-		db.executeSimpleSQL('ALTER TABLE result_history ADD hash TEXT');
-		db.schemaVersion = SCHEME_VERSION_HASH;
+ 
+function _initDB() 
+{
+	var SCHEME_VERSION_HASH = 1;
+	var CURRENT_SCHEME = SCHEME_VERSION_HASH;
+	var tableDefinitionSQL = <![CDATA[
+		  CREATE TABLE result_history
+		    (name        TEXT PRIMARY KEY,
+		     description TEXT,
+		     result      TEXT,
+		     date        DATETIME,
+		     hash        TEXT)
+		]]>.toString();
+	var db = utils.getDB();
+	if (!db.tableExists('result_history')) {
+		db.executeSimpleSQL(tableDefinitionSQL);
+		if ('schemaVersion' in db) // Firefox 3.0.x
+			db.schemaVersion = CURRENT_SCHEME;
+	}
+	else { // possibly old version, so we have to migrate.
+		var currentVersion = 'schemaVersion' in db ? db.schemaVersion : 0 ;
+		if (currentVersion < SCHEME_VERSION_HASH) {
+			db.executeSimpleSQL('ALTER TABLE result_history ADD hash TEXT');
+			if ('schemaVersion' in db) // Firefox 3.0.x
+				db.schemaVersion = SCHEME_VERSION_HASH;
+		}
 	}
 }
- 
+_initDB();
+ 	
 const REMOTE_LOG_PREFIX = 'uxu-test-log'; 
 const REMOTE_RUNNINGFLAG_PREFIX = 'uxu-test-running';
 const REMOTE_PROFILE_PREFIX = 'uxu-test-profile';
@@ -151,7 +158,7 @@ function _initNamespace(aOptions)
 	utils.baseURL = namespace.replace(/[^\/]*$/, '');
 }
  
-function _initProfile(aOptions)
+function _initProfile(aOptions) 
 {
 	var profile = aOptions.profile;
 
@@ -194,7 +201,7 @@ function _initProfile(aOptions)
 			return this._options;
 		});
 }
- 	 
+  
 /**
  * Define test cases, optionally with setup and teardown. 
  *
@@ -235,7 +242,7 @@ function _initProfile(aOptions)
  *         }
  *     }
  */
-	 
+	
 function setTests(aHash) 
 {
 	this.context = aHash;

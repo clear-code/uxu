@@ -217,7 +217,10 @@ GlobalService.prototype = {
 					.getService(Components.interfaces.nsIWindowWatcher);
 			var bag = Components.classes['@mozilla.org/hash-property-bag;1']
 					.createInstance(Components.interfaces.nsIWritablePropertyBag);
-			bag.setProperty('arguments', arg);
+			for (var i in arg)
+			{
+				bag.setProperty(i, arg[i]);
+			}
 			WindowWatcher.openWindow(null, 'chrome://uxu/content/ui/mozunit.xul', '_blank', 'chrome,all', bag);
 		}
 	},

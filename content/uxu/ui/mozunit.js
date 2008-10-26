@@ -244,8 +244,16 @@ function startup()
 		window.arguments &&
 		window.arguments.length) {
 		gOptions = window.arguments[0];
-		if (gOptions instanceof Ci.nsIPropertyBag)
-			gOptions = gOptions.getProperty('arguments');
+		if (gOptions instanceof Ci.nsIPropertyBag) {
+			var jsobj = {};
+			jsobj.testcase = gOptions.getProperty('testcase');
+			jsobj.log      = gOptions.getProperty('log');
+			jsobj.rawLog   = gOptions.getProperty('rawLog');
+			jsobj.running  = gOptions.getProperty('running');
+			jsobj.priority = gOptions.getProperty('priority');
+			jsobj.hidden   = gOptions.getProperty('hidden');
+			gOptions = jsobj;
+		}
 
 		if (gOptions.testcase) {
 			var path = gOptions.testcase;
