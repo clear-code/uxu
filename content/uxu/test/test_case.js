@@ -637,6 +637,7 @@ function _runWithRemotePofile(aStopper)
 		},
 		{
 			onEnd : function(e) {
+				_this._done = true;
 				if (!aborted) {
 					fireRemoteEvent('RemoteFinish');
 				}
