@@ -613,6 +613,7 @@ function _runWithRemotePofile(aStopper)
 				_this._done = true;
 				if (!listener.aborted)
 					_this.fireEvent('RemoteFinish');
+				listener.destroy();
 			}
 		}
 	);
@@ -638,6 +639,21 @@ function _runWithRemotePofile(aStopper)
 }
 function _createRemoteResultListener()
 {
+/*
+	とりあえずやりたいこと：
+	・テストの結果が出る度に、リモート側はログを
+	　このソケットが見ているポートあてに送信。
+	・リモート側は動いている間中マメに接続してくる。
+	・abortedがtrueになったら、レスポンスで「中止操作がされた」旨を
+	　リモート側に伝える。リモート側はそれを検知してテスト実行を中止、
+	　プロセスを終了する。
+	・タイムアウトしたら、もしくは、テストが全部終わったら、
+	　サーバソケット停止。（destroyメソッド）
+	将来的に：
+	・テスト結果をちょっとずつ受け取れるように。
+	　現在の実装だと、ログ丸ごと全部しか受け取れない。
+	短いテストなら問題ないけど、長いテストの場合は結構無駄が多い。
+*/
 	var socket = Cc['@mozilla.org/network/server-socket;1']
 		.createInstance(Ci.nsIServerSocket);
 	socket.init(-1, true, -1);
@@ -654,6 +670,9 @@ function _createRemoteResultListener()
 			aborted       : false,
 			lastTimestamp : 0,
 			result        : null,
+			destroy : function()
+			{
+			},
 
 			socket : socket,
 			port   : socket.port
