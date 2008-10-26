@@ -56,7 +56,11 @@ function _initDB()
 		}
 	}
 }
-_initDB();
+try {
+	_initDB();
+}
+catch(e) {
+}
  	
 const REMOTE_LOG_PREFIX = 'uxu-test-log'; 
 const REMOTE_RUNNINGFLAG_PREFIX = 'uxu-test-running';
@@ -767,13 +771,14 @@ function _checkPriorityToExec(aTest)
 		}
 	}
 	if (!shouldDo && !forceNever) {
-		var db = utils.getDB();
+		var db, statement;
 		var lastResult;
 		var lastHash;
-		var statement = db.createStatement(
-			  'SELECT result, hash FROM result_history WHERE name = ?1'
-			);
 		try {
+			db = utils.getDB();
+			statement = db.createStatement(
+				  'SELECT result, hash FROM result_history WHERE name = ?1'
+				);
 			statement.bindStringParameter(0, aTest.name);
 			while (statement.executeStep())
 			{
