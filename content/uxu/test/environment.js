@@ -16,7 +16,7 @@ var mail_module = new ModuleManager(['chrome://uxu/content/mail']);
 
 var key = 'uxu-test-window-id';
 
-var product, defaultURI, defaultType, defaultFlags, defaultName;
+var defaultURI, defaultType, defaultFlags, defaultName;
 
 function constructor(aEnvironment, aURI, aBrowser)
 {
@@ -32,8 +32,7 @@ function constructor(aEnvironment, aURI, aBrowser)
 		return aBrowser;
 	});
 
-	product = utils.product;
-	switch (product)
+	switch (utils.product)
 	{
 		case 'Firefox':
 			defaultURI = 'chrome://browser/content/browser.xul';
@@ -278,7 +277,7 @@ var tearDownTestWindow = closeTestWindow;
 // テスト用のFirefoxウィンドウの現在のタブにURIを読み込む
 function loadURI(aURI, aOptions)
 {
-	if (product != 'Firefox') return { value : true };
+	if (utils.product != 'Firefox') return { value : true };
 
 	if (!aURI) aURI = 'about:blank';
 	aURI = this.fixupIncompleteURI(aURI);
@@ -308,7 +307,7 @@ function loadURIInTestFrame(aURI)
 // テスト用のFirefoxウィンドウで新しいタブを開く
 function addTab(aURI, aOptions)
 {
-	if (product != 'Firefox') return { value : true, tab : null };
+	if (utils.product != 'Firefox') return { value : true, tab : null };
 
 	if (!aURI) aURI = 'about:blank';
 	aURI = this.fixupIncompleteURI(aURI);
@@ -331,7 +330,7 @@ function addTab(aURI, aOptions)
 
 function getBrowser(aOptions)
 {
-	if (product != 'Firefox') return null;
+	if (utils.product != 'Firefox') return null;
 	var win = this.getTestWindow(aOptions);
 	if (!win) return this._testFrame;
 	return win.gBrowser;
@@ -339,7 +338,7 @@ function getBrowser(aOptions)
 
 function getTabs(aOptions)
 {
-	if (product != 'Firefox') return [];
+	if (utils.product != 'Firefox') return [];
 	var win = this.getTestWindow(aOptions);
 	if (!win) return null;
 	return Array.slice(win.gBrowser.mTabContainer.childNodes);
