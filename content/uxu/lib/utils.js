@@ -498,6 +498,8 @@ function setPref(aKey, aValue)
  
 function clearPref(aKey) 
 {
+	if (!(aKey in this.backupPrefs))
+		this.backupPrefs[aKey] = this.getPref(aKey);
 	try {
 		Pref.clearUserPref(aKey);
 	}
