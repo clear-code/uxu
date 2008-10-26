@@ -568,7 +568,6 @@ function _runWithRemotePofile(aStopper)
 	if (!this.profile.exists()) return false;
 
 	var _this = this;
-	var aborted = false;
 	var timeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout'));
 
 	var profile = utils.getFileFromKeyword('TmpD');
@@ -581,63 +580,43 @@ function _runWithRemotePofile(aStopper)
 
 	this.fireEvent('RemoteStart');
 
-	var fireRemoteEvent = function(aEventType) {
-			var result = utils.readFrom(log.path, 'UTF-8');
-			try {
-				eval('result = '+result);
-				if (aEventType == 'RemoteFinish') {
-					result[result.length-1].results.forEach(function(aResult) {
-						_this._onFinish(_this._tests[aResult.index], aResult.type);
-					});
-				}
-			}
-			catch(e) {
-				result = [];
-			}
-			_this.fireEvent(aEventType, result);
-		};
+	var listener = this._createRemoteResultListener();
+	listener.aborted = false;
+	listener.lastTimestamp = Date.now();
 
 	utils.doIteration(
 		function() {
 			var last;
-			var result;
-			var wait = 500;
+			var wait = 100;
 			do {
 				last = Date.now();
-				if (!aborted && _this._stopper && _this._stopper()) {
-					aborted = true;
+				fireProgressEvent();
+				if (!listener.aborted && _this._stopper && _this._stopper()) {
+					listener.aborted = true;
 					_this.fireEvent('Abort');
 					_this._done = true;
-					if (running.exists())
-						running.remove(true);
 					break;
 				}
-				result = utils.readFrom(log.path, 'UTF-8');
-				if (result.indexOf(REMOTE_TEST_FINISHED) == 0) {
-					break;
-				}
-				else {
-					if (result.indexOf(REMOTE_TEST_PROGRESS) == 0) {
-						fireRemoteEvent('RemoteProgress');
+				if (listener.result && listener.result.title) {
+					_this.fireEvent('RemoteProgress', listener.result);
+					if (listener.result.finish) {
+						break;
 					}
-					yield wait;
 				}
+				yield wait;
 			}
-			while (log.exists() && (log.lastModifiedTime - last < timeout));
-			yield wait;
-			if (!log.exists())
-				throw new Error(bungle.getString('error_remote_log_not_exist'));
+			while (listener.available && (listener.lastTimestamp - last < timeout));
 		},
 		{
 			onEnd : function(e) {
+				_this.fireEvent('RemoteProgress', listener.result);
 				_this._done = true;
-				if (!aborted)
-					fireRemoteEvent('RemoteFinish');
+				if (!listener.aborted)
+					_this.fireEvent('RemoteFinish');
 			}
 		}
 	);
 
-	var socket = this._createSocket();
 	var args = [
 			'-no-remote',
 			'-profile',
@@ -645,7 +624,7 @@ function _runWithRemotePofile(aStopper)
 			'-uxu-testcase',
 			_this.namespace,
 			'-uxu-output-port',
-			socket.port,
+			listener.port,
 			'-uxu-hidden'
 		]
 		.concat(this.options);
@@ -657,7 +636,7 @@ function _runWithRemotePofile(aStopper)
 
 	return true;
 }
-function _createSocket()
+function _createRemoteResultListener()
 {
 	var socket = Cc['@mozilla.org/network/server-socket;1']
 		.createInstance(Ci.nsIServerSocket);
@@ -671,10 +650,17 @@ function _createSocket()
 			onStopListening : function(aSocket, aStatus)
 			{
 			},
+
+			aborted       : false,
+			lastTimestamp : 0,
+			result        : null,
+
+			socket : socket,
+			port   : socket.port
 		};
 	socket.asyncListen(listener);
 
-	return socket;
+	return listener;
 }
  	
 function _exec(aTest, aContext, aContinuation, aReport) 
