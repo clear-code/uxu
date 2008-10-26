@@ -85,9 +85,8 @@
 <!ENTITY config.run.history.expire.days.before "Store result histories while">
 <!ENTITY config.run.history.expire.days.after  "days.">
 <!ENTITY config.defaultEncoding        "Default character encoding of files read from utility methods:">
-<!ENTITY config.installLocation.caption "Install location of UnitTest.XUL">
-<!ENTITY config.installLocation.profile "in the User Profile">
-<!ENTITY config.installLocation.global  "in the Application Directory">
+<!ENTITY config.installGlobalLocation.caption "Install location of UnitTest.XUL">
+<!ENTITY config.installGlobalLocation.check   "Activate UnitTest.XUL for all users on this computer (*administrative privileges required)">
 
 <!ENTITY config.tabs.mozunit "MozUnit Test Runner">
 

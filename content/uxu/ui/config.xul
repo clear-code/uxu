@@ -56,13 +56,10 @@
 			style="width:5em;"/>
 	</hbox>
 	<groupbox orient="vertical">
-		<caption label="&config.installLocation.caption;"/>
-		<radiogroup id="extensions.uxu.global-radio"
+		<caption label="&config.installGlobalLocation.caption;"/>
+		<checkbox id="extensions.uxu.global-check"
 			preference="extensions.uxu.global"
-			orient="horizontal">
-			<radio value="false" label="&config.installLocation.profile;"/>
-			<radio value="true" label="&config.installLocation.global;"/>
-		</radiogroup>
+			label="&config.installGlobalLocation.check;"/>
 	</groupbox>
 
 </prefpane>

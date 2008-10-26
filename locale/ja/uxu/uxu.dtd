@@ -85,9 +85,8 @@
 <!ENTITY config.run.history.expire.days.before "テストの実行結果の履歴を">
 <!ENTITY config.run.history.expire.days.after  "日前の分まで保存する">
 <!ENTITY config.defaultEncoding        "読み込むファイルの文字エンコーディングの初期値：">
-<!ENTITY config.installLocation.caption "UnitTest.XULのインストール先">
-<!ENTITY config.installLocation.profile "ユーザプロファイル内">
-<!ENTITY config.installLocation.global  "アプリケーションディレクトリ内">
+<!ENTITY config.installGlobalLocation.caption "UnitTest.XULのインストール先">
+<!ENTITY config.installGlobalLocation.check   "このコンピュータのすべてのユーザでUnitTest.XULを利用可能にする（※管理者権限が必要です）">
 
 <!ENTITY config.tabs.mozunit "MozUnitテストランナー">
 
