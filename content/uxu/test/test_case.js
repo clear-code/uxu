@@ -269,6 +269,13 @@ function setTests(aHash)
 		if (typeof aHash[desc] != 'function') continue;
 		switch (desc)
 		{
+			case 'warmUp':
+				this.registerWarmUp(aHash[desc]);
+				break;
+			case 'warmDown':
+			case 'coolDown':
+				this.registerWarmDown(aHash[desc]);
+				break;
 			case 'setUp':
 			case 'given':
 				this.registerSetUp(aHash[desc]);
@@ -286,6 +293,22 @@ function setTests(aHash)
  
 // for UxU declaration style syntax 
 	
+function registerWarmUp(aFunction) 
+{
+	if (typeof aFunction != 'function') return;
+	this._warmUp = aFunction;
+}
+ 
+function registerWarmDown(aFunction) 
+{
+	if (typeof aFunction != 'function') return;
+	this._warmDown = aFunction;
+}
+function registerCoolDown(aFunction)
+{
+	this.registerWarmDown(aFunction);
+}
+ 
 function registerSetUp(aFunction) 
 {
 	if (typeof aFunction != 'function') return;
@@ -431,17 +454,54 @@ function run(aStopper)
 	var report = { report : null };
 
 	var stateTransitions = {
-		start :         { ok : 'checkPriority' },
+		start :         { ok : 'doWarmUp' },
+		doWarmUp :      { ok : 'checkPriority', ko: 'doWarmDown' },
 		checkPriority : { ok : 'doSetUp', ko: 'nextTest' },
 		doSetUp :       { ok : 'doTest', ko: 'doTearDown' },
 		doTest :        { ok : 'doTearDown' },
 		doTearDown :    { ok : 'doReport', ko: 'doReport' },
 		doReport :      { ok : 'nextTest' },
-		nextTest :      { ok : 'checkPriority', ko: 'finished' },
+		nextTest :      { ok : 'checkPriority', ko: 'doWarmDown' },
+		doWarmDown :    { ok : 'finished', ko: 'finished' },
 		finished :      { }
 	};
 
 	var nullContinuation = function() {};
+
+	var doPreOrPostProcess = function(aContinuation, aFunction, aErrorDescription, aErrorProcess)
+		{
+			if (!aFunction) {
+				aContinuation('ok');
+				return;
+			}
+			context = _this.context || {};
+			report.report = {};
+			try {
+				var result = aFunction.call(context, aContinuation);
+				if (utils.isGeneratedIterator(result)) {
+					utils.doIteration(result, {
+						onEnd : function(e) {
+							if (aFunction.arity == 0) aContinuation('ok');
+						},
+						onError : function(e) {
+							if (aErrorProcess) aErrorProcess();
+							report.report.result = 'error';
+							report.report.exception = e;
+							report.report.testDescription = aErrorDescription;
+							aContinuation('ko');
+						}
+					});
+				}
+				else {
+					if (aFunction.arity == 0) aContinuation('ok');
+				}
+			} catch(e) {
+				report.report.result = 'error';
+				report.report.exception = e;
+				report.report.testDescription = aErrorDescription;
+				aContinuation('ko');
+			}
+		};
 
 	var _this = this;
 	var aborted = false;
@@ -450,6 +510,14 @@ function run(aStopper)
 		{
 			_this.fireEvent('Start');
 			aContinuation('ok')
+		},
+		doWarmUp : function(aContinuation)
+		{
+			doPreOrPostProcess(
+				aContinuation,
+				_this._warmUp,
+				bundle.getFormattedString('report_description_warmup', [_this.title])
+			);
 		},
 		checkPriority : function(aContinuation)
 		{
@@ -465,37 +533,11 @@ function run(aStopper)
 		},
 		doSetUp : function(aContinuation)
 		{
-			if (!_this._setUp) {
-				aContinuation('ok');
-				return;
-			}
-			context = _this.context || {};
-			report.report = {};
-			var errorDescription = bundle.getFormattedString('report_description_setup', [_this._tests[testIndex].desc]);
-			try {
-				var result = _this._setUp.call(context, aContinuation);
-				if (utils.isGeneratedIterator(result)) {
-					utils.doIteration(result, {
-						onEnd : function(e) {
-							if (_this._setUp.arity == 0) aContinuation('ok');
-						},
-						onError : function(e) {
-							report.report.result = 'error';
-							report.report.exception = e;
-							report.report.testDescription = errorDescription;
-							aContinuation('ko');
-						}
-					});
-				}
-				else {
-					if (_this._setUp.arity == 0) aContinuation('ok');
-				}
-			} catch(e) {
-				report.report.result = 'error';
-				report.report.exception = e;
-				report.report.testDescription = errorDescription;
-				aContinuation('ko');
-			}
+			doPreOrPostProcess(
+				aContinuation,
+				_this._setUp,
+				bundle.getFormattedString('report_description_setup', [_this._tests[testIndex].desc])
+			);
 		},
 		doTest : function(aContinuation)
 		{
@@ -521,39 +563,15 @@ function run(aStopper)
 			aContinuation('ok');
 		},
 		doTearDown : function(aContinuation)
-		{ // exceptions in setup/teardown are not reported correctly
-			if (!_this._tearDown) {
-				aContinuation('ok');
-				return;
-			}
-			var errorDescription = bundle.getFormattedString('report_description_teardown', [_this._tests[testIndex].desc]);
-			try {
-				// perhaps should pass continuation to tearDown as well
-				var result = _this._tearDown.call(context);
-				if (utils.isGeneratedIterator(result)) {
-					utils.doIteration(result, {
-						onEnd : function(e) {
-							aContinuation('ok');
-						},
-						onError : function(e) {
-							_this._onFinish(_this._tests[testIndex], 'error');
-							report.report.result = 'error';
-							report.report.exception = e;
-							report.report.testDescription = errorDescription;
-							aContinuation('ko');
-						}
-					});
+		{
+			doPreOrPostProcess(
+				aContinuation,
+				_this._tearDown,
+				bundle.getFormattedString('report_description_teardown', [_this._tests[testIndex].desc]),
+				function() {
+					_this._onFinish(_this._tests[testIndex], 'error');
 				}
-				else {
-					aContinuation('ok');
-				}
-			}
-			catch(e) {
-				report.report.result = 'error';
-				report.report.exception = e;
-				report.report.testDescription = errorDescription;
-				aContinuation('ko');
-			}
+			);
 		},
 		nextTest : function(aContinuation)
 		{
@@ -565,6 +583,17 @@ function run(aStopper)
 			}
 			testIndex += 1;
 			_this._tests[testIndex] ? aContinuation('ok') : aContinuation('ko');
+		},
+		doWarmDown : function(aContinuation)
+		{
+			doPreOrPostProcess(
+				aContinuation,
+				_this._warmDown,
+				bundle.getFormattedString('report_description_warmdown', [_this.title]),
+				function() {
+					_this._onFinish(_this._tests[testIndex], 'error');
+				}
+			);
 		},
 		finished : function(aContinuation)
 		{
