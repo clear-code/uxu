@@ -42,7 +42,7 @@ function toString(aFormat)
 		return this._items.toSource();
 	}
 
-	return _toText(aFormat);
+	return this._toText(aFormat);
 }
 
 function _toText(aFormat)
@@ -89,6 +89,10 @@ function _toText(aFormat)
 				result.push(bundle.getFormattedString('log_test_actual', [aResult.actual]));
 			if (aResult.diff)
 				result.push(bundle.getFormattedString('log_test_diff', [aResult.diff]));
+			if (aResult.stackTrace) {
+				result.push('');
+				result.push(aResult.stackTrace);
+			}
 		});
 		result.push(bundle.getString('log_separator_testcase'));
 		result.push(bundle.getFormattedString(aLog.aborted ? 'log_abort' : 'log_finish', [new Date(aLog.finish)]));
