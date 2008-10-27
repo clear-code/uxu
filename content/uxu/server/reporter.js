@@ -8,6 +8,9 @@ var utils = lib_module.require('package', 'utils');
 var color = lib_module.require('package', 'color');
 const Color = color.Color;
 
+var test_module = new ModuleManager(['chrome://uxu/content/test']);
+var formatter = test_module.require('package', 'log_formatter');
+
 var statusOrder = ["success", "failure", "error"];
 
 function constructor(aOptions)
@@ -20,6 +23,8 @@ function constructor(aOptions)
 	this.result     = '';
 	this.resultStatus = "success";
 	this.badResults = [];
+
+	this.log = [];
 
 	if (!aOptions)
 		aOptions = {};
@@ -43,7 +48,7 @@ try {
 			break;
 
 		case 'Report':
-			this.onTestFinish(aEvent.data);
+			this.onTestFinish(aEvent);
 			break;
 
 		case 'Finish':
@@ -51,7 +56,15 @@ try {
 			break;
 
 		case 'Error':
-			this.onError(aEvent.data);
+			this.onError(aEvent);
+			break;
+
+		case 'RemoteStart':
+			break;
+
+		case 'RemoteProgress':
+		case 'RemoteFinish':
+			formatter.concatLogs(this.log, aEvent.data);
 			break;
 	}
 } catch (e) {
@@ -66,11 +79,20 @@ function isFinished()
 
 function onStart()
 {
+	this.log.push({
+		start   : Date.now(),
+		title   : aEvent.target.title,
+		file    : aEvent.target.namespace,
+		results : []
+	});
+
 	this.finished = false;
 }
 
 function onFinish()
 {
+	this.log[this.log.length-1].finish = Date.now();
+
 	this.result += "\n\n";
 	this._reportBadResults();
 	this._reportSummary();
@@ -78,9 +100,32 @@ function onFinish()
 	this.finished = true;
 }
 
-function onTestFinish(aReport)
+function onTestFinish(aEvent)
 {
-	switch (aReport.result)
+	var testCase = aEvent.target;
+	var report = aEvent.data;
+	var result = {
+		type      : report.result,
+		title     : report.testDescription,
+		timestamp : Date.now(),
+		index     : report.testIndex,
+		step      : (report.testIndex+1)+'/'+testCase.tests.length,
+		percentage : parseInt((report.testIndex+1) / testCase.tests.length * 100)
+	};
+	if (report.exception) {
+		if (report.exception.expected)
+			result.expected = report.exception.expected;
+		if (report.exception.actual)
+			result.actual = report.exception.actual;
+		if (report.exception.diff)
+			result.diff = report.exception.foldedDiff || report.exception.diff;
+		result.description = report.exception.message.replace(/^\s+/, '');
+		if (utils.hasStackTrace(report.exception))
+			result.stackTrace = utils.formatStackTraceForDisplay(report.exception);
+	}
+	this.log[this.log.length-1].results.push(result);
+
+	switch (report.result)
 	{
 	    case 'passover':
 			return;
@@ -92,26 +137,27 @@ function onTestFinish(aReport)
 			this.nFailures++;
 			break;
 		case 'error':
-			this._handleError(aReport, false);
+			this._handleError(report, false);
 			break;
 		default:
 			this.result += '?';
 			break;
 	}
-	if (this._isMoreImportantStatus(aReport.result))
-		this.resultStatus = aReport.result;
+	if (this._isMoreImportantStatus(report.result))
+		this.resultStatus = report.result;
 
 	this.nTests++;
-	if (aReport.exception)
-		this.badResults.push(aReport);
+	if (report.exception)
+		this.badResults.push(report);
 }
 
-function onError(aError)
+function onError(aEvent)
 {
+	var error = aEvent.data;
 	var aReport = {
 		result: 'error',
 		testDescription: "unknown",
-		exception: aError
+		exception: error
 	};
 	this._handleError(aReport, true);
 }

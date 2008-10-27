@@ -87,3 +87,23 @@ function _formatLogsToText(aLogs, aFormat)
 	}
 	return result.join('\n');
 }
+
+function concatLogs(aOldLog, aNewLog)
+{
+	aNewLog.forEach(function(aOneNewLog) {
+		if (aOldLog.some(function(aOneOldLog) {
+				if (aOneOldLog.title == aOneNewLog.title &&
+					aOneOldLog.file == aOneNewLog.file) {
+					for (var i in aOneNewLog)
+					{
+						aOneOldLog[i] = aOneNewLog[i];
+					}
+					return true;
+				}
+				return false;
+			}))
+			return;
+		aOldLog.push(aOneNewLog);
+	});
+	return aOldLog;
+}

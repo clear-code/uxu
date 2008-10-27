@@ -484,21 +484,7 @@ TestListener.prototype = {
 	},
 	mergeLogs : function(aLogs)
 	{
-		aLogs.forEach(function(aNewLog) {
-			if (gLogs.some(function(aExistingLog) {
-					if (aExistingLog.title == aNewLog.title &&
-						aExistingLog.file == aNewLog.file) {
-						for (var i in aNewLog)
-						{
-							aExistingLog[i] = aNewLog[i];
-						}
-						return true;
-					}
-					return false;
-				}))
-				return;
-			gLogs.push(aNewLog);
-		});
+		formatter.concatLogs(gLogs, aLogs);
 		buildReportsFromResults(aLogs);
 	},
 
@@ -637,7 +623,7 @@ function onAllTestsFinish()
  
 function displayStackTrace(aException, aListbox) 
 {
-	displayStackTraceLines(formatStackTrace(aException), aListbox);
+	displayStackTraceLines(utils.formatStackTraceForDisplay(aException), aListbox);
 }
 function displayStackTraceLines(aLines, aListbox)
 {
@@ -650,13 +636,6 @@ function displayStackTraceLines(aLines, aListbox)
 		if (file) item.setAttribute('file', file);
 		aListbox.appendChild(item);
 	});
-}
-function formatStackTrace(aException)
-{
-	var lines = utils.formatStackTrace(aException, { onlyTraceLine : true, onlyExternal : true }).split('\n');
-	if (!lines.length || utils.getPref('extensions.uxu.mozunit.showInternalStacks'))
-		lines = utils.formatStackTrace(aException, { onlyTraceLine : true }).split('\n');
-	return lines;
 }
  
 function reset() 

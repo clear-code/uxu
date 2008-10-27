@@ -338,6 +338,14 @@ function hasStackTrace(aException)
 		(aException.location && JSFrameLocationRegExp.test(aException.location));
 }
  
+function formatStackTraceForDisplay(aException)
+{
+	var lines = formatStackTrace(aException, { onlyTraceLine : true, onlyExternal : true }).split('\n');
+	if (!lines.length || utils.getPref('extensions.uxu.mozunit.showInternalStacks'))
+		lines = formatStackTrace(aException, { onlyTraceLine : true }).split('\n');
+	return lines;
+}
+ 
 var lineRegExp = /@\w+:.+:\d+/; 
 var JSFrameLocationRegExp = /JS frame :: (.+) :: .+ :: line (\d+)/;
 var subScriptRegExp = /@chrome:\/\/uxu\/content\/lib\/subScriptRunner\.js(?:\?includeSource=([^;,:]+)(?:;encoding=[^;,:]+)?|\?code=([^;,:]+))?:(\d+)$/i;
