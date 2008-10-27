@@ -9,7 +9,7 @@ var color = lib_module.require('package', 'color');
 const Color = color.Color;
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
-var formatter = test_module.require('package', 'log_formatter');
+var TestLog = test_module.require('class', 'test_log');
 
 var statusOrder = ["success", "failure", "error"];
 
@@ -24,7 +24,7 @@ function constructor(aOptions)
 	this.resultStatus = "success";
 	this.badResults = [];
 
-	this.log = [];
+	this.log = new TestLog();
 
 	if (!aOptions)
 		aOptions = {};
@@ -44,7 +44,7 @@ try {
 	switch (aEvent.type)
 	{
 		case 'Start':
-			this.onStart();
+			this.onStart(aEvent);
 			break;
 
 		case 'Report':
@@ -52,7 +52,7 @@ try {
 			break;
 
 		case 'Finish':
-			this.onFinish();
+			this.onFinish(aEvent);
 			break;
 
 		case 'Error':
@@ -64,7 +64,7 @@ try {
 
 		case 'RemoteProgress':
 		case 'RemoteFinish':
-			formatter.concatLogs(this.log, aEvent.data);
+			this.log.append(aEvent.data);
 			break;
 	}
 } catch (e) {
@@ -77,21 +77,15 @@ function isFinished()
 	return this.finished;
 }
 
-function onStart()
+function onStart(aEvent)
 {
-	this.log.push({
-		start   : Date.now(),
-		title   : aEvent.target.title,
-		file    : aEvent.target.namespace,
-		results : []
-	});
-
+	this.log.onStart(aEvent);
 	this.finished = false;
 }
 
-function onFinish()
+function onFinish(aEvent)
 {
-	this.log[this.log.length-1].finish = Date.now();
+	this.log.onFinish(aEvent);
 
 	this.result += "\n\n";
 	this._reportBadResults();
@@ -102,29 +96,9 @@ function onFinish()
 
 function onTestFinish(aEvent)
 {
-	var testCase = aEvent.target;
-	var report = aEvent.data;
-	var result = {
-		type      : report.result,
-		title     : report.testDescription,
-		timestamp : Date.now(),
-		index     : report.testIndex,
-		step      : (report.testIndex+1)+'/'+testCase.tests.length,
-		percentage : parseInt((report.testIndex+1) / testCase.tests.length * 100)
-	};
-	if (report.exception) {
-		if (report.exception.expected)
-			result.expected = report.exception.expected;
-		if (report.exception.actual)
-			result.actual = report.exception.actual;
-		if (report.exception.diff)
-			result.diff = report.exception.foldedDiff || report.exception.diff;
-		result.description = report.exception.message.replace(/^\s+/, '');
-		if (utils.hasStackTrace(report.exception))
-			result.stackTrace = utils.formatStackTraceForDisplay(report.exception);
-	}
-	this.log[this.log.length-1].results.push(result);
+	this.log.onTestFinish(aEvent);
 
+	var report = aEvent.data;
 	switch (report.result)
 	{
 	    case 'passover':

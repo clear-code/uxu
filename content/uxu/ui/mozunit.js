@@ -4,7 +4,7 @@ var bundle = lib_module.require('package', 'bundle');
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var Runner = test_module.require('class', 'runner');
-var formatter = test_module.require('package', 'log_formatter');
+var TestLog = test_module.require('class', 'test_log');
 var TestCase = test_module.require('class', 'test_case');
 
 const Cc = Components.classes;
@@ -14,6 +14,7 @@ const ObserverService = Cc['@mozilla.org/observer-service;1']
 	.getService(Ci.nsIObserverService);
 
 var gOptions;
+var gLog;
  
 /* UTILITIES */ 
 	 
@@ -227,6 +228,8 @@ const fileDNDObserver =
 	
 function startup() 
 {
+	gLog = new TestLog();
+
 	if (!isLinux()) {
 		ObserverService.addObserver(alwaysRaisedObserver, 'xul-window-registered', false);
 		if (utils.getPref('extensions.uxu.mozunit.alwaysRaised'))
@@ -288,8 +291,8 @@ function startup()
 		if (lastResult) {
 			try {
 				eval('lastResult = '+lastResult);
-				gLogs = lastResult;
-				buildReportsFromResults(gLogs);
+				gLog.items = lastResult;
+				buildReportsFromResults(gLog.items);
 				onAllTestsFinish();
 			}
 			catch(e) {
@@ -419,53 +422,27 @@ TestListener.prototype = {
 	},
 	onStart : function(aEvent)
 	{
-		gLogs.push({
-			start   : Date.now(),
-			title   : aEvent.target.title,
-			file    : aEvent.target.namespace,
-			results : []
-		});
+		gLog.onStart(aEvent);
 		this.onLogged();
 		var report = getReport(aEvent.target.title);
 		report.setAttribute('file', aEvent.target.namespace);
 	},
 	onTestFinish : function(aEvent)
 	{
-		var testCase = aEvent.target;
-		var report = aEvent.data;
-		var result = {
-			type      : report.result,
-			title     : report.testDescription,
-			timestamp : Date.now(),
-			index     : report.testIndex,
-			step      : (report.testIndex+1)+'/'+testCase.tests.length,
-			percentage : parseInt((report.testIndex+1) / testCase.tests.length * 100)
-		};
-		if (report.exception) {
-			if (report.exception.expected)
-				result.expected = report.exception.expected;
-			if (report.exception.actual)
-				result.actual = report.exception.actual;
-			if (report.exception.diff)
-				result.diff = report.exception.foldedDiff || report.exception.diff;
-			result.description = report.exception.message.replace(/^\s+/, '');
-			if (utils.hasStackTrace(report.exception))
-				result.stackTrace = formatStackTrace(report.exception);
-		}
-
-		this.lastLog.results.push(result);
+		gLog.onTestFinish(aEvent);
+		var results = gLog.lastItem.results;
 		this.onLogged();
-		fillReportFromResult(aEvent.target.title, result);
+		fillReportFromResult(aEvent.target.title, results[results.length-1]);
 	},
 	onFinish : function(aEvent)
 	{
-		this.lastLog.finish = Date.now();
+		gLog.onFinish(aEvent);
 		this.onLogged();
 		aEvent.target.removeListener(this);
 	},
 	onAbort : function(aEvent)
 	{
-		this.lastLog.aborted = true;
+		gLog.onAbort(aEvent);
 		this.onFinish(aEvent);
 	},
 
@@ -475,23 +452,16 @@ TestListener.prototype = {
 	},
 	onRemoteProgress : function(aEvent)
 	{
-		this.mergeLogs(aEvent.data);
+		gLog.append(aEvent.data);
+		buildReportsFromResults(aEvent.data);
 	},
 	onRemoteFinish : function(aEvent)
 	{
-		this.mergeLogs(aEvent.data);
+		gLog.append(aEvent.data);
+		buildReportsFromResults(aEvent.data);
 		this.onFinish(aEvent);
 	},
-	mergeLogs : function(aLogs)
-	{
-		formatter.concatLogs(gLogs, aLogs);
-		buildReportsFromResults(aLogs);
-	},
 
-	get lastLog()
-	{
-		return gLogs[gLogs.length-1];
-	},
 	onLogged : function()
 	{
 		if (!gOptions) return;
@@ -503,7 +473,7 @@ TestListener.prototype = {
 		}
 		if (gOptions.log) {
 			utils.writeTo(
-				formatter.formatLogs(gLogs),
+				gLog.toString(),
 				gOptions.log,
 				'UTF-8'
 			);
@@ -511,7 +481,7 @@ TestListener.prototype = {
 		if (gOptions.rawLog) {
 			utils.writeTo(
 				TestCase.prototype.REMOTE_TEST_PROGRESS+
-					formatter.formatLogs(gLogs, formatter.FORMAT_RAW),
+					gLog.toString(gLog.FORMAT_RAW),
 				gOptions.rawLog,
 				'UTF-8'
 			);
@@ -560,7 +530,7 @@ function onAllTestsFinish()
 			gOptions.running.exists()) {
 			if (gOptions.log) {
 				utils.writeTo(
-					formatter.formatLogs(gLogs),
+					gLog.toString(),
 					gOptions.log,
 					'UTF-8'
 				);
@@ -568,7 +538,7 @@ function onAllTestsFinish()
 			if (gOptions.rawLog) {
 				utils.writeTo(
 					TestCase.prototype.REMOTE_TEST_FINISHED+
-						formatter.formatLogs(gLogs, formatter.FORMAT_RAW),
+						gLog.toString(gLog.FORMAT_RAW),
 					gOptions.rawLog,
 					'UTF-8'
 				);
@@ -584,7 +554,7 @@ function onAllTestsFinish()
 
 	utils.setPref(
 		'extensions.uxu.mozunit.lastResults',
-		formatter.formatLogs(gLogs, formatter.FORMAT_RAW)
+		gLog.toString(gLog.FORMAT_RAW)
 	);
 
 	if (!_('content').collapsed && contentAutoExpanded) {
@@ -656,7 +626,7 @@ function reset()
 	removeChildrenOf(_('testcase-reports'))
 	hideSource();
 	_('saveReport').setAttribute('disabled', true);
-	gLogs = [];
+	gLog.clear();
 }
 var gAborted = false;
 var gTotalCount    = 0;
@@ -664,7 +634,6 @@ var gSuccessCount  = 0;
 var gPassOverCount = 0;
 var gErrorCount    = 0;
 var gFailureCount  = 0;
-var gLogs          = [];
  
 function setRunningState(aRunning) 
 {
@@ -1024,7 +993,7 @@ function saveReport(aPath, aFormat)
 
 	if (file.exists()) file.remove(true);
 	utils.writeTo(
-		formatter.formatLogs(gLogs, aFormat),
+		gLog.toString(aFormat),
 		file.path,
 		'UTF-8'
 	);

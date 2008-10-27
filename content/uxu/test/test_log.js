@@ -1,14 +1,8 @@
-/*
-	・packageじゃなくてclassにする
-	・イベント発生時に自分でログを取る？
-	・concatLogs()→concat(aNewLog)
-	・formatLogs()→toString(aFormat)
-*/
-
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
+var utils = lib_module.require('package', 'utils');
 var bundle = lib_module.require('package', 'bundle');
 
 
@@ -24,18 +18,34 @@ var IGNORE_SUCCESS  = 2048;
 var FORMAT_DEFUALT = FORMAT_TEXT | IGNORE_PASSOVER | IGNORE_SUCCESS;
 
 
-function formatLogs(aLogs, aFormat)
+function constructor()
+{
+	this._items = [];
+
+	this.__defineGetter__('items', function() {
+		return this._items;
+	});
+	this.__defineSetter__('items', function(aValue) {
+		this._items = aValue;
+		return aValue;
+	});
+	this.__defineGetter__('lastItem', function() {
+		return this._items[this._items.length-1];
+	});
+}
+
+function toString(aFormat)
 {
 	if (!aFormat) aFormat = FORMAT_DEFUALT;
 
 	if (aFormat & FORMAT_RAW) {
-		return aLogs.toSource();
+		return this._items.toSource();
 	}
 
-	return _formatLogsToText(aLogs, aFormat);
+	return _toText(aFormat);
 }
 
-function _formatLogsToText(aLogs, aFormat)
+function _toText(aFormat)
 {
 	var result = [];
 	var allCount = {
@@ -45,7 +55,7 @@ function _formatLogsToText(aLogs, aFormat)
 			failure  : 0,
 			error    : 0
 		};
-	aLogs.forEach(function(aLog) {
+	this._items.forEach(function(aLog) {
 		result.push(bundle.getString('log_separator_testcase'));
 		result.push(aLog.file);
 		result.push(bundle.getFormattedString('log_start', [aLog.title, new Date(aLog.start)]));
@@ -95,22 +105,73 @@ function _formatLogsToText(aLogs, aFormat)
 	return result.join('\n');
 }
 
-function concatLogs(aOldLog, aNewLog)
+function append(aNewItems)
 {
-	aNewLog.forEach(function(aOneNewLog) {
-		if (aOldLog.some(function(aOneOldLog) {
-				if (aOneOldLog.title == aOneNewLog.title &&
-					aOneOldLog.file == aOneNewLog.file) {
-					for (var i in aOneNewLog)
+	aNewItems.forEach(function(aOneNewItem) {
+		if (this._items.some(function(aOneOldItem) {
+				if (aOneOldItem.title == aOneNewItem.title &&
+					aOneOldItem.file == aOneNewItem.file) {
+					for (var i in aOneNewItem)
 					{
-						aOneOldLog[i] = aOneNewLog[i];
+						aOneOldItem[i] = aOneNewItem[i];
 					}
 					return true;
 				}
 				return false;
 			}))
 			return;
-		aOldLog.push(aOneNewLog);
+		this._items.push(aOneNewItem);
+	}, this);
+}
+
+function clear()
+{
+	this._items = [];
+}
+
+
+function onStart(aEvent)
+{
+	this._items.push({
+		start   : Date.now(),
+		title   : aEvent.target.title,
+		file    : aEvent.target.namespace,
+		results : []
 	});
-	return aOldLog;
+}
+
+function onTestFinish(aEvent)
+{
+	var testCase = aEvent.target;
+	var report = aEvent.data;
+	var result = {
+		type      : report.result,
+		title     : report.testDescription,
+		timestamp : Date.now(),
+		index     : report.testIndex,
+		step      : (report.testIndex+1)+'/'+testCase.tests.length,
+		percentage : parseInt((report.testIndex+1) / testCase.tests.length * 100)
+	};
+	if (report.exception) {
+		if (report.exception.expected)
+			result.expected = report.exception.expected;
+		if (report.exception.actual)
+			result.actual = report.exception.actual;
+		if (report.exception.diff)
+			result.diff = report.exception.foldedDiff || report.exception.diff;
+		result.description = report.exception.message.replace(/^\s+/, '');
+		if (utils.hasStackTrace(report.exception))
+			result.stackTrace = utils.formatStackTraceForDisplay(report.exception);
+	}
+	this.lastItem.results.push(result);
+}
+
+function onFinish(aEvent)
+{
+	this.lastItem.finish = Date.now();
+}
+
+function onAbort(aEvent)
+{
+	this.lastItem.aborted = true;
 }
