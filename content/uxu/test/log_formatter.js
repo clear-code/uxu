@@ -1,3 +1,10 @@
+/*
+	・packageじゃなくてclassにする
+	・イベント発生時に自分でログを取る？
+	・concatLogs()→concat(aNewLog)
+	・formatLogs()→toString(aFormat)
+*/
+
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
