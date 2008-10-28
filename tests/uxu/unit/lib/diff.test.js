@@ -1,9 +1,10 @@
+var topDir = baseURL+'../../../../';
 var diff;
 
 function setUp()
 {
     diff = {};
-    utils.include('../../../../content/uxu/lib/diff.js', diff);
+    utils.include(topDir+'content/uxu/lib/diff.js', diff);
 }
 
 function testIsInterested()

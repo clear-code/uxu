@@ -1,6 +1,8 @@
-utils.include('../../../../content/uxu/lib/module_manager.js');
+var topDir = baseURL+'../../../../';
 
-var test_module = new ModuleManager([baseURL+'../../../../content/uxu/test']);
+utils.include(topDir+'content/uxu/lib/module_manager.js');
+
+var test_module = new ModuleManager([topDir+'content/uxu/test']);
 var GMUtilsClass = test_module.require('class', 'greasemonkey');
 
 var GMUtils;

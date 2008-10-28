@@ -1,9 +1,11 @@
+var topDir = baseURL+'../../../../';
+
 var bundle;
 
 function setUp()
 {
 	bundle = {};
-	utils.include('../../../../content/uxu/lib/bundle.js', bundle);
+	utils.include(topDir+'content/uxu/lib/bundle.js', bundle);
 }
 
 function tearDown()

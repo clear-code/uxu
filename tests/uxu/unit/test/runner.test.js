@@ -1,12 +1,14 @@
 // -*- indent-tabs-mode: t -*-
 
-utils.include('../../../../content/uxu/lib/module_manager.js');
+var topDir = baseURL+'../../../../';
 
-var test_module = new ModuleManager([baseURL+'../../../../content/uxu/test']);
+utils.include(topDir+'content/uxu/lib/module_manager.js');
+
+var test_module = new ModuleManager([topDir+'content/uxu/test']);
 var Runner = test_module.require('class', 'runner');
 
-var declarationStyleTest = baseURL+'../../../samples/declaration.test.js';
-var mozLabStyleTest = baseURL+'../../../samples/unit.test.js';
+var declarationStyleTest = topDir+'tests/samples/declaration.test.js';
+var mozLabStyleTest = topDir+'tests/samples/unit.test.js';
 
 var runenr;
 var tempFiles;

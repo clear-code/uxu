@@ -1,3 +1,4 @@
+var topDir = baseURL+'../../../../';
 var fsm;
 
 var eventHandlers = {
@@ -19,7 +20,7 @@ var eventHandlers = {
 function setUp()
 {
 	fsm = {};
-	utils.include('../../../../content/uxu/lib/fsm.js', fsm);
+	utils.include(topDir+'content/uxu/lib/fsm.js', fsm);
 }
 
 function tearDown()

@@ -1,8 +1,10 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
-utils.include('../../../../content/uxu/lib/module_manager.js');
+var topDir = baseURL+'../../../../';
 
-var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
+utils.include(topDir+'content/uxu/lib/module_manager.js');
+
+var lib_module = new ModuleManager([topDir+'content/uxu/lib']);
 var ObserverClass = lib_module.require('class', 'observer');
 
 var observer;

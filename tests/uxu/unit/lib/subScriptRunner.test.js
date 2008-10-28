@@ -1,3 +1,5 @@
+var topDir = baseURL+'../../../../';
+
 function setUp()
 {
 }
@@ -19,7 +21,7 @@ function testLoad()
 	var loader = Cc['@mozilla.org/moz/jssubscript-loader;1']
 			.getService(Ci.mozIJSSubScriptLoader);
 	loader.loadSubScript(
-		baseURL + '../../../../content/uxu/lib/subScriptRunner.js',
+		topDir + 'content/uxu/lib/subScriptRunner.js',
 		env
 	);
 	assert.isTrue(env.a);

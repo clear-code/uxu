@@ -1,4 +1,6 @@
-utils.include('../../../../content/uxu/lib/module_manager.js');
+var topDir = baseURL+'../../../../';
+
+utils.include(topDir+'content/uxu/lib/module_manager.js');
 
 var rootManager;
 var libManager;
@@ -7,10 +9,10 @@ var mailManager;
 
 function setUp()
 {
-	rootManager = new ModuleManager(['chrome://uxu/content']);
-	libManager = new ModuleManager(['chrome://uxu/content/lib']);
-	testManager = new ModuleManager(['chrome://uxu/content/test']);
-	mailManager = new ModuleManager(['chrome://uxu/content/mail']);
+	rootManager = new ModuleManager([topDir+'content/uxu']);
+	libManager = new ModuleManager([topDir+'content/uxu/lib']);
+	testManager = new ModuleManager([topDir+'content/uxu/test']);
+	mailManager = new ModuleManager([topDir+'content/uxu/mail']);
 }
 
 function tearDown()

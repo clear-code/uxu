@@ -1,5 +1,7 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
+var topDir = baseURL+'../../../../';
+
 var utilsModule;
 var tempFile;
 var onWindows = false;
@@ -33,7 +35,7 @@ function setUp()
 {
 	onWindows = /win/i.test(navigator.platform);
 	utilsModule = {};
-	utils.include('../../../../content/uxu/lib/utils.js', utilsModule);
+	utils.include(topDir+'content/uxu/lib/utils.js', utilsModule);
 	utilsModule.fileURL = utils.fileURL;
 	utilsModule.baseURL = utils.baseURL;
 

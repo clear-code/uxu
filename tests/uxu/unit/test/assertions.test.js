@@ -1,14 +1,16 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
+var topDir = baseURL+'../../../../';
+
 var assertionsModule;
 var diff;
 
 function setUp()
 {
 	assertionsModule = {};
-	utils.include('../../../../content/uxu/test/assertions.js', assertionsModule);
+	utils.include(topDir+'content/uxu/test/assertions.js', assertionsModule);
 	diff = {};
-	utils.include('../../../../content/uxu/lib/diff.js', diff);
+	utils.include(topDir+'content/uxu/lib/diff.js', diff);
 }
 
 function tearDown()

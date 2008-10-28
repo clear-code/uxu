@@ -1,12 +1,14 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
-utils.include('../../../../content/uxu/lib/module_manager.js');
+var topDir = baseURL+'../../../../';
+
+utils.include(topDir+'content/uxu/lib/module_manager.js');
 
 var ReadableDiffer;
 
 function setUp()
 {
-    var lib = new ModuleManager(['chrome://uxu/content/lib']);
+    var lib = new ModuleManager([topDir+'content/uxu/lib']);
     ReadableDiffer = lib.require('class', 'readableDiffer');
 }
 

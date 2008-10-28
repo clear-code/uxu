@@ -1,10 +1,11 @@
+var topDir = baseURL+'../../../../';
 var Color;
 var MixColor;
 
 function setUp()
 {
     var color = {};
-    utils.include('../../../../content/uxu/lib/color.js', color);
+    utils.include(topDir+'content/uxu/lib/color.js', color);
     Color = color.Color;
     MixColor = color.MixColor;
 }
