@@ -1,3 +1,5 @@
+var targetProduct = 'Firefox';
+
 var topDir = baseURL+'../../../../';
 
 utils.include(topDir+'content/uxu/lib/module_manager.js');
@@ -6,11 +8,6 @@ var test_module = new ModuleManager([topDir+'content/uxu/test']);
 var GMUtilsClass = test_module.require('class', 'greasemonkey');
 
 var GMUtils;
-
-function warmUp()
-{
-	assert.equals('Firefox', utils.product);
-}
 
 function setUp()
 {

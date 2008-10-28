@@ -116,9 +116,12 @@ function _getTestsFromSuite(aSuite)
 		var newTestCase = new TestCase(
 				aSuite.description || String(aSuite.fileURL.match(/[^\/]+$/)),
 				{
-					namespace : aSuite.fileURL,
-					profile   : aSuite.profile,
-					options   : aSuite.options
+					namespace     : aSuite.fileURL,
+					profile       : aSuite.profile,
+					options       : aSuite.options,
+					priority      : aSuite.priority,
+					context       : aSuite.testContext,
+					targetProduct : aSuite.targetProduct
 				}
 			);
 

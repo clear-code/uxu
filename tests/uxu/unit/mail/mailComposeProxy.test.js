@@ -1,16 +1,15 @@
+var targetProduct = 'Thunderbird';
 var topDir = baseURL+'../../../../';
 
 utils.include(topDir+'content/uxu/lib/module_manager.js');
 
-var lib_module = new ModuleManager([topDir+'content/uxu/lib']);
-var ObserverClass = lib_module.require('class', 'observer');
-
+var ObserverClass;
 var MailComposeProxy;
 
 function warmUp()
 {
-	assert.equals('Thunderbird', utils.product);
-
+	var lib_module = new ModuleManager([topDir+'content/uxu/lib']);
+	ObserverClass = lib_module.require('class', 'observer');
 	var mail_module = new ModuleManager([topDir+'content/uxu/mail']);
 	MailComposeProxy = mail_module.require('class', 'mailComposeProxy');
 }

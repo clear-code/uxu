@@ -1,3 +1,5 @@
+var targetProduct = 'Thunderbird';
+
 var topDir = baseURL+'../../../../';
 
 utils.include(topDir+'content/uxu/lib/module_manager.js');
@@ -9,11 +11,6 @@ var mail_module = new ModuleManager([topDir+'content/uxu/mail']);
 var utilsModule;
 
 var observer;
-
-function warmUp()
-{
-	assert.equals('Thunderbird', utils.product);
-}
 
 function setUp()
 {

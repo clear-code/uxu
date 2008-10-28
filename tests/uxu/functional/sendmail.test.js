@@ -1,12 +1,9 @@
+var targetProduct = 'Thunderbird';
+
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var ObserverClass = lib_module.require('class', 'observer');
 
 var observer;
-
-function warmUp()
-{
-	assert.equals('Thunderbird', utils.product);
-}
 
 function setUp()
 {

@@ -106,7 +106,7 @@ function constructor(aTitle, aOptions)
 			return aHash;
 		});
 
-	this._masterPriority = null;
+	this._masterPriority = aOptions.priority || null;
 	this.__defineSetter__(
 		'masterPriority', function(aPriority) {
 			this._masterPriority = aPriority;
@@ -117,7 +117,7 @@ function constructor(aTitle, aOptions)
 			return this._masterPriority;
 		});
 
-	this._context = {};
+	this._context = aOptions.context || {};
 	this.__defineSetter__(
 		'context', function(aContext) {
 			this._context = aContext;
@@ -126,6 +126,17 @@ function constructor(aTitle, aOptions)
 	this.__defineGetter__(
 		'context', function() {
 			return this._context;
+		});
+
+	this._targetProduct = aOptions.targetProduct || null;
+	this.__defineSetter__(
+		'targetProduct', function(aProduct) {
+			this._targetProduct = aProduct;
+			return aProduct;
+		});
+	this.__defineGetter__(
+		'targetProduct', function() {
+			return this._targetProduct;
 		});
 
 	this._done = false;
@@ -449,6 +460,11 @@ function run(aStopper)
 
 	if (this.shouldRunInRemote && this._runWithRemotePofile()) return;
 
+	if (this._targetProduct &&
+		String(this._targetProduct).toLowerCase() != utils.product.toLowerCase()) {
+		this._masterPriority = 'never';
+	}
+
 	var testIndex = 0;
 	var context;
 	var testReport = { report : null };
@@ -471,7 +487,7 @@ function run(aStopper)
 
 	var doPreOrPostProcess = function(aContinuation, aFunction, aErrorDescription, aReport, aErrorProcess)
 		{
-			if (!aFunction) {
+			if (!aFunction || _this._isNever(_this._masterPriority)) {
 				aContinuation('ok');
 				return;
 			}
@@ -789,10 +805,7 @@ function _exec(aTest, aContext, aContinuation, aReport)
  
 function _checkPriorityToExec(aTest) 
 {
-	var forceNever = (
-			(aTest.priority == 'never') ||
-			(typeof aTest.priority == 'number' && Math.max(0, aTest.priority) == 0)
-		);
+	var forceNever = _isNever(aTest.priority) || _isNever(this._masterPriority);
 	var priority = forceNever ? 'never' :
 			(this._masterPriority !== null && this._masterPriority !== void(0)) ?
 				(this._masterPriority || aTest.priority) :
@@ -855,6 +868,13 @@ function _checkPriorityToExec(aTest)
 		}
 	}
 	return shouldDo;
+}
+function _isNever(aPriority)
+{
+	return (
+		(aPriority == 'never') ||
+		(typeof aPriority == 'number' && Math.max(0, aPriority) == 0)
+	);
 }
  
 function _onFinish(aTest, aResult) 
