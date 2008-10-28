@@ -464,8 +464,7 @@ var runnerListener = {
 	},
 	onTestCaseFinish : function(aEvent)
 	{
-		gLog.items = aEvent.data.log.items;
-		this.onLogged();
+		this.onTestCaseTestFinish(aEvent);
 	},
 
 	onTestCaseRemoteStart : function(aEvent)

@@ -7,6 +7,11 @@ var GMUtilsClass = test_module.require('class', 'greasemonkey');
 
 var GMUtils;
 
+function warmUp()
+{
+	assert.equals('Firefox', utils.product);
+}
+
 function setUp()
 {
 	yield Do(utils.loadURI('about:blank'));

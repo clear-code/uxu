@@ -77,8 +77,14 @@ function createMailComposeStub()
 
 var mailComposeStub;
 
+function warmUp()
+{
+	assert.equals('Thunderbird', utils.product);
+}
+
 function setUp()
 {
+	assert.equals('Thunderbird', utils.product);
 	mailComposeStub = createMailComposeStub();
 	proxy = new MailComposeProxy(mailComposeStub);
 }

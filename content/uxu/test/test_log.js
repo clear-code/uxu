@@ -146,32 +146,46 @@ function onStart(aEvent)
 
 function onTestFinish(aEvent)
 {
-	var testCase = aEvent.target;
 	var report = aEvent.data;
-	var result = {
-		type      : report.result,
-		title     : report.testDescription,
-		timestamp : Date.now(),
-		index     : report.testIndex,
-		step      : (report.testIndex+1)+'/'+testCase.tests.length,
-		percentage : parseInt((report.testIndex+1) / testCase.tests.length * 100)
-	};
-	if (report.exception) {
-		if (report.exception.expected)
-			result.expected = report.exception.expected;
-		if (report.exception.actual)
-			result.actual = report.exception.actual;
-		if (report.exception.diff)
-			result.diff = report.exception.foldedDiff || report.exception.diff;
-		result.description = report.exception.message.replace(/^\s+/, '');
-		if (utils.hasStackTrace(report.exception))
-			result.stackTrace = utils.formatStackTraceForDisplay(report.exception);
-	}
+	var result = this._createResultFromReport(report);
+
+	var testCase = aEvent.target;
+	result.index = report.testIndex;
+	result.step  = (report.testIndex+1)+'/'+testCase.tests.length;
+	result.percentage = parseInt((report.testIndex+1) / testCase.tests.length * 100);
+
 	this.lastItem.results.push(result);
+}
+function _createResultFromReport(aReport)
+{
+	var result = {
+		type      : aReport.result,
+		title     : aReport.testDescription,
+		timestamp : Date.now()
+	};
+	if (aReport.exception) {
+		if (aReport.exception.expected)
+			result.expected = aReport.exception.expected;
+		if (aReport.exception.actual)
+			result.actual = aReport.exception.actual;
+		if (aReport.exception.diff)
+			result.diff = aReport.exception.foldedDiff || aReport.exception.diff;
+		result.description = aReport.exception.message.replace(/^\s+/, '');
+		if (utils.hasStackTrace(aReport.exception))
+			result.stackTrace = utils.formatStackTraceForDisplay(aReport.exception);
+	}
+	return result;
 }
 
 function onFinish(aEvent)
 {
+	if (aEvent.data.result == 'error') {
+		var result = this._createResultFromReport(aEvent.data);
+		result.index = -1;
+		result.step  = '0/'+aEvent.target.tests.length
+		result.percentage = 100;
+		this.lastItem.results.push(result);
+	}
 	this.lastItem.finish = Date.now();
 }
 
@@ -179,3 +193,4 @@ function onAbort(aEvent)
 {
 	this.lastItem.aborted = true;
 }
+

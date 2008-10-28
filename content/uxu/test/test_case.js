@@ -451,7 +451,8 @@ function run(aStopper)
 
 	var testIndex = 0;
 	var context;
-	var report = { report : null };
+	var testReport = { report : null };
+	var testCaseReport = { report : null };
 
 	var stateTransitions = {
 		start :         { ok : 'doWarmUp' },
@@ -468,7 +469,7 @@ function run(aStopper)
 
 	var nullContinuation = function() {};
 
-	var doPreOrPostProcess = function(aContinuation, aFunction, aErrorDescription, aErrorProcess)
+	var doPreOrPostProcess = function(aContinuation, aFunction, aErrorDescription, aReport, aErrorProcess)
 		{
 			if (!aFunction) {
 				aContinuation('ok');
@@ -483,9 +484,9 @@ function run(aStopper)
 						},
 						onError : function(e) {
 							if (aErrorProcess) aErrorProcess();
-							report.report.result = 'error';
-							report.report.exception = e;
-							report.report.testDescription = aErrorDescription;
+							aReport.report.result = 'error';
+							aReport.report.exception = e;
+							aReport.report.testDescription = aErrorDescription;
 							aContinuation('ko');
 						}
 					});
@@ -495,9 +496,9 @@ function run(aStopper)
 				}
 			}
 			catch(e) {
-				report.report.result = 'error';
-				report.report.exception = e;
-				report.report.testDescription = aErrorDescription;
+				aReport.report.result = 'error';
+				aReport.report.exception = e;
+				aReport.report.testDescription = aErrorDescription;
 				aContinuation('ko');
 			}
 		};
@@ -513,11 +514,12 @@ function run(aStopper)
 		doWarmUp : function(aContinuation)
 		{
 			context = _this.context || {};
- 			report.report = {};
+ 			testCaseReport.report = {};
 			doPreOrPostProcess(
 				aContinuation,
 				_this._warmUp,
-				bundle.getFormattedString('report_description_warmup', [_this.title])
+				bundle.getFormattedString('report_description_warmup', [_this.title]),
+				testCaseReport
 			);
 		},
 		checkPriority : function(aContinuation)
@@ -527,41 +529,42 @@ function run(aStopper)
 				aContinuation('ok');
 				return;
 			}
-			report.report = {};
-			report.report.result = 'passover';
+			testReport.report = {};
+			testReport.report.result = 'passover';
 			stateHandlers.doReport(nullContinuation);
 			aContinuation('ko');
 		},
 		doSetUp : function(aContinuation)
 		{
-			report.report = {};
+			testReport.report = {};
 			doPreOrPostProcess(
 				aContinuation,
 				_this._setUp,
-				bundle.getFormattedString('report_description_setup', [_this._tests[testIndex].desc])
+				bundle.getFormattedString('report_description_setup', [_this._tests[testIndex].desc]),
+				testReport
 			);
 		},
 		doTest : function(aContinuation)
 		{
 			var test;
 			test = _this._tests[testIndex];
-			var newReport = _this._exec(test, context, aContinuation, report);
+			var newReport = _this._exec(test, context, aContinuation, testReport);
 			if (newReport.result) {
-				report.report = newReport;
-				report.report.testDescription = test.desc;
+				testReport.report = newReport;
+				testReport.report.testDescription = test.desc;
 				aContinuation('ok');
 			}
 			else {
-				report.report.testDescription = test.desc;
+				testReport.report.testDescription = test.desc;
 			}
 		},
 		doReport : function(aContinuation)
 		{
-			_this._onFinish(_this._tests[testIndex], report.report.result);
-			report.report.testOwner = _this;
-			report.report.testIndex = testIndex;
-			report.report.testID    = _this._tests[testIndex].name;
-			_this.fireEvent('TestFinish', report.report);
+			_this._onFinish(_this._tests[testIndex], testReport.report.result);
+			testReport.report.testOwner = _this;
+			testReport.report.testIndex = testIndex;
+			testReport.report.testID    = _this._tests[testIndex].name;
+			_this.fireEvent('TestFinish', testReport.report);
 			aContinuation('ok');
 		},
 		doTearDown : function(aContinuation)
@@ -570,6 +573,7 @@ function run(aStopper)
 				aContinuation,
 				_this._tearDown,
 				bundle.getFormattedString('report_description_teardown', [_this._tests[testIndex].desc]),
+				testReport,
 				function() {
 					_this._onFinish(_this._tests[testIndex], 'error');
 				}
@@ -588,21 +592,18 @@ function run(aStopper)
 		},
 		doWarmDown : function(aContinuation)
 		{
- 			report.report = {};
 			doPreOrPostProcess(
 				aContinuation,
 				_this._warmDown,
 				bundle.getFormattedString('report_description_warmdown', [_this.title]),
-				function() {
-					_this._onFinish(_this._tests[testIndex], 'error');
-				}
+				testCaseReport
 			);
 		},
 		finished : function(aContinuation)
 		{
 			_this._done = true;
 			if (!aborted)
-				_this.fireEvent('Finish');
+				_this.fireEvent('Finish', testCaseReport.report);
 		}
 	};
 

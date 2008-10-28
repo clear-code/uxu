@@ -10,6 +10,11 @@ var utilsModule;
 
 var observer;
 
+function warmUp()
+{
+	assert.equals('Thunderbird', utils.product);
+}
+
 function setUp()
 {
 	utilsModule = mail_module.require('package', 'utils');
