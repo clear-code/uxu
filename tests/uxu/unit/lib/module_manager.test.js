@@ -5,14 +5,14 @@ utils.include(topDir+'content/uxu/lib/module_manager.js');
 var rootManager;
 var libManager;
 var testManager;
-var mailManager;
+var dummyManager;
 
 function setUp()
 {
 	rootManager = new ModuleManager([topDir+'content/uxu']);
 	libManager = new ModuleManager([topDir+'content/uxu/lib']);
 	testManager = new ModuleManager([topDir+'content/uxu/test']);
-	mailManager = new ModuleManager([topDir+'content/uxu/mail']);
+	dummyManager = new ModuleManager([baseURL+'../../res/module']);
 }
 
 function tearDown()
@@ -73,7 +73,7 @@ function testPackageType()
 	assert.equals(package1, package2);
 
 	package1 = libManager.require('package', 'utils');
-	package2 = mailManager.require('package', 'utils');
+	package2 = dummyManager.require('package', 'utils');
 	assert.isFunction(package1.writeTo);
 	assert.isUndefined(package2.writeTo);
 }
