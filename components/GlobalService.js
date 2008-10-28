@@ -185,14 +185,14 @@ GlobalService.prototype = {
 	handle : function(aCommandLine)
 	{
 		var arg = {
+				server     : false,
+				serverPort : this._getNumericValueFromCommandLine('uxu-listen-port', aCommandLine, 0),
 				testcase   : this._getFullPathFromCommandLine('uxu-testcase', aCommandLine, ''),
+				priority   : this._getValueFromCommandLine('uxu-priority', aCommandLine, 0),
 				log        : this._getFullPathFromCommandLine('uxu-log', aCommandLine, ''),
 				rawLog     : this._getFullPathFromCommandLine('uxu-rawlog', aCommandLine, ''),
 				running    : this._getFullPathFromCommandLine('uxu-running-testcase', aCommandLine, ''),
-				priority   : this._getNumberValueFromCommandLine('uxu-priority', aCommandLine, 0),
-				ouputPort  : this._getNumberValueFromCommandLine('uxu-output-port', aCommandLine, 0),
-				server     : false,
-				serverPort : this._getNumberValueFromCommandLine('uxu-listen-port', aCommandLine, 0),
+				ouputPort  : this._getNumericValueFromCommandLine('uxu-output-port', aCommandLine, 0),
 				hidden     : false
 			};
 		try {
@@ -233,51 +233,50 @@ GlobalService.prototype = {
 	_getFullPathFromCommandLine : function(aOption, aCommandLine, aDefaultValue)
 	{
 		if (!aDefaultValue) aDefaultValue = '';
-		try {
-			var value = aCommandLine.handleFlagWithParam(aOption, false);
-			if (!value) return aDefaultValue;
-			if (value.indexOf('/') < 0) {
-				value = aCommandLine.resolveFile(value);
-				return value.path;
-			}
-			else {
-				value = aCommandLine.resolveURI(value);
-				return value.spec;
-			}
+		var value = this._getValueFromCommandLine(aOption, aCommandLine, aDefaultValue);
+		if (!value) return aDefaultValue;
+		if (value.indexOf('/') < 0) {
+			value = aCommandLine.resolveFile(value);
+			return value.path;
 		}
-		catch(e) {
+		else {
+			value = aCommandLine.resolveURI(value);
+			return value.spec;
 		}
-		return aDefaultValue;
 	},
-	_getNumberValueFromCommandLine : function(aOption, aCommandLine, aDefaultValue)
+	_getNumericValueFromCommandLine : function(aOption, aCommandLine, aDefaultValue)
 	{
 		if (!aDefaultValue) aDefaultValue = 0;
+		var value = this._getValueFromCommandLine(aOption, aCommandLine, aDefaultValue);
+		if (!value) return aDefaultValue;
+		value = parseInt(value);
+		return isNaN(value) ? aDefaultValue : value ;
+	},
+	_getValueFromCommandLine : function(aOption, aCommandLine, aDefaultValue)
+	{
+		if (!aDefaultValue) aDefaultValue = '';
 		try {
-			var value = aCommandLine.handleFlagWithParam(aOption, false);
-			if (!value) return aDefaultValue;
-			value = parseInt(value);
-			if (!isNaN(value)) return value;
+			return aCommandLine.handleFlagWithParam(aOption, false);
 		}
 		catch(e) {
 		}
 		return aDefaultValue;
 	},
 
-	helpInfo : '  -uxu-testcase <url>  Run the testcase in UnitTest.XUL\n'+
-	           '  -uxu-log <url>       Output the result of the testcase\n'+
-	           '                       in human readable format\n'+
-	           '  -uxu-rawlog <url>    Output the result of the testcase\n'+
-	           '                       in raw format\n'+
-	           '  -uxu-output-port <port>\n'+
-	           '                       Output the result of the testcase\n'+
-	           '                       to the port in raw format\n'+
-	           '  -uxu-priority <priority>\n'+
-	           '                       Run strategy:\n'+
-	           '                           0 : run normally\n'+
-	           '                           1 : run all tests\n'+
-	           '  -uxu-start-server    Starts UxU Server instead of Firefox\n'+
-	           '  -uxu-listen-port <port>\n'+
-	           '                       Listening port of UxU Server\n',
+	helpInfo :
+		'  -uxu-start-server    Starts UnitTest.XUL Server instead of Firefox\n'+
+		'  -uxu-listen-port <port>\n'+
+		'                       Listening port of UnitTest.XUL Server\n'
+		'  -uxu-testcase <url>  Run the testcase in UnitTest.XUL\n'+
+		'  -uxu-priority <priority>\n'+
+		'                       Run all tests in the testcase with the priority\n'+
+		'  -uxu-log <url>       Output the result of the testcase\n'+
+		'                       in human readable format\n'+
+		'  -uxu-rawlog <url>    Output the result of the testcase\n'+
+		'                       in raw format\n'+
+		'  -uxu-output-port <port>\n'+
+		'                       Output the result of the testcase\n'+
+		'                       to the port in raw format\n',
 
 
 	/* nsIFactory */

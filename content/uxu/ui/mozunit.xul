@@ -51,12 +51,12 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 		<command id="runPriority"
 			label-normal="&mozunit.runPriority.label;"
 			label-default="&mozunit.runPriority.default;"
-			oncommand="run(0);"
+			oncommand="run();"
 			disabled="true"/>
 		<command id="runAll"
 			label-normal="&mozunit.runAll.label;"
 			label-default="&mozunit.runAll.default;"
-			oncommand="run(1);"
+			oncommand="run('must');"
 			disabled="true"/>
 		<command id="runFailed" label="&mozunit.runFailed.label;" oncommand="runFailed();"
 			disabled="true"/>

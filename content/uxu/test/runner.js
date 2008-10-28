@@ -21,7 +21,7 @@ function constructor(aBrowser, aFiles)
 	this.initListeners();
 }
  
-function run(aReporter, aAll) 
+function run(aReporter, aMasterPriority) 
 {
 	utils.setPref('extensions.uxu.running', true);
 
@@ -35,9 +35,9 @@ function run(aReporter, aAll)
 	}, this);
 
 	var tests = this._collectTestCases(suites);
-	if (aAll) {
+	if (aMasterPriority) {
 		tests.forEach(function(aTest) {
-			aTest.masterPriority = 'must';
+			aTest.masterPriority = aMasterPriority;
 		});
 	}
 

@@ -662,7 +662,7 @@ function setRunningState(aRunning)
 	}
 }
  
-function run(aAll) 
+function run(aMasterPriority) 
 {
 	reset();
 
@@ -676,12 +676,12 @@ function run(aAll)
 		return true;
 	});
 
-	gRunner.run(null, aAll);
+	gRunner.run(null, aMasterPriority);
 }
 	
 function runByPref() 
 {
-	run(utils.getPref('extensions.uxu.mozunit.runMode') == 1);
+	run(utils.getPref('extensions.uxu.mozunit.runMode') == 1 ? 'must' : null );
 }
   
 function runFailed() 
