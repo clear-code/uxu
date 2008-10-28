@@ -1,6 +1,6 @@
 utils.include('../../../../content/uxu/lib/module_manager.js');
 
-var test_module = new ModuleManager(['chrome://uxu/content/test']);
+var test_module = new ModuleManager([baseURL+'../../../../content/uxu/test']);
 var GMUtilsClass = test_module.require('class', 'greasemonkey');
 
 var GMUtils;

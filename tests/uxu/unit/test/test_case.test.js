@@ -1,6 +1,6 @@
 utils.include('../../../../content/uxu/lib/module_manager.js');
 
-var test_module = new ModuleManager(['chrome://uxu/content/test']);
+var test_module = new ModuleManager([baseURL+'../../../../content/uxu/test']);
 var TestCaseClass = test_module.require('class', 'test_case');
 
 var testcase;

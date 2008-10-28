@@ -2,7 +2,7 @@
 
 utils.include('../../../../content/uxu/lib/module_manager.js');
 
-var test_module = new ModuleManager(['chrome://uxu/content/test']);
+var test_module = new ModuleManager([baseURL+'../../../../content/uxu/test']);
 var Runner = test_module.require('class', 'runner');
 
 var declarationStyleTest = baseURL+'../../../samples/declaration.test.js';
