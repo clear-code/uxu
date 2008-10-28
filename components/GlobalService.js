@@ -185,19 +185,19 @@ GlobalService.prototype = {
 	handle : function(aCommandLine)
 	{
 		var arg = {
-				testcase : this._getFullPathFromCommandLine('uxu-testcase', aCommandLine),
-				log      : this._getFullPathFromCommandLine('uxu-log', aCommandLine),
-				rawLog   : this._getFullPathFromCommandLine('uxu-rawlog', aCommandLine),
-				running  : this._getFullPathFromCommandLine('uxu-running-testcase', aCommandLine),
-				priority : 0,
-				hidden   : false
+				testcase   : this._getFullPathFromCommandLine('uxu-testcase', aCommandLine, ''),
+				log        : this._getFullPathFromCommandLine('uxu-log', aCommandLine, ''),
+				rawLog     : this._getFullPathFromCommandLine('uxu-rawlog', aCommandLine, ''),
+				running    : this._getFullPathFromCommandLine('uxu-running-testcase', aCommandLine, ''),
+				priority   : this._getNumberValueFromCommandLine('uxu-priority', aCommandLine, 0),
+				ouputPort  : this._getNumberValueFromCommandLine('uxu-output-port', aCommandLine, 0),
+				server     : false,
+				serverPort : this._getNumberValueFromCommandLine('uxu-listen-port', aCommandLine, 0),
+				hidden     : false
 			};
 		try {
-			var priority = aCommandLine.handleFlagWithParam('uxu-priority', false);
-			if (priority) {
-				priority = parseInt(priority);
-				if (!isNaN(priority))
-					arg.priority = priority;
+			if (aCommandLine.handleFlag('uxu-start-server', false)) {
+				arg.server = true;
 			}
 		}
 		catch(e) {
@@ -210,7 +210,7 @@ GlobalService.prototype = {
 		catch(e) {
 		}
 
-		if (arg.testcase) {
+		if (arg.testcase || arg.server) {
 			aCommandLine.preventDefault = true;
 			var WindowWatcher = Components
 					.classes['@mozilla.org/embedcomp/window-watcher;1']
@@ -221,14 +221,21 @@ GlobalService.prototype = {
 			{
 				bag.setProperty(i, arg[i]);
 			}
-			WindowWatcher.openWindow(null, 'chrome://uxu/content/ui/mozunit.xul', '_blank', 'chrome,all', bag);
+			WindowWatcher.openWindow(
+				null,
+				arg.server ? 'chrome://uxu/content/ui/uxu.xul' : 'chrome://uxu/content/ui/mozunit.xul',
+				'_blank',
+				'chrome,all',
+				bag
+			);
 		}
 	},
-	_getFullPathFromCommandLine : function(aOption, aCommandLine)
+	_getFullPathFromCommandLine : function(aOption, aCommandLine, aDefaultValue)
 	{
+		if (!aDefaultValue) aDefaultValue = '';
 		try {
 			var value = aCommandLine.handleFlagWithParam(aOption, false);
-			if (!value) return '';
+			if (!value) return aDefaultValue;
 			if (value.indexOf('/') < 0) {
 				value = aCommandLine.resolveFile(value);
 				return value.path;
@@ -240,7 +247,20 @@ GlobalService.prototype = {
 		}
 		catch(e) {
 		}
-		return '';
+		return aDefaultValue;
+	},
+	_getNumberValueFromCommandLine : function(aOption, aCommandLine, aDefaultValue)
+	{
+		if (!aDefaultValue) aDefaultValue = 0;
+		try {
+			var value = aCommandLine.handleFlagWithParam(aOption, false);
+			if (!value) return aDefaultValue;
+			value = parseInt(value);
+			if (!isNaN(value)) return value;
+		}
+		catch(e) {
+		}
+		return aDefaultValue;
 	},
 
 	helpInfo : '  -uxu-testcase <url>  Run the testcase in UnitTest.XUL\n'+
@@ -248,11 +268,16 @@ GlobalService.prototype = {
 	           '                       in human readable format\n'+
 	           '  -uxu-rawlog <url>    Output the result of the testcase\n'+
 	           '                       in raw format\n'+
+	           '  -uxu-output-port <port>\n'+
+	           '                       Output the result of the testcase\n'+
+	           '                       to the port in raw format\n'+
 	           '  -uxu-priority <priority>\n'+
 	           '                       Run strategy:\n'+
 	           '                           0 : run normally\n'+
 	           '                           1 : run all tests\n'+
-	           '  -uxu-hidden          Hide test runner window\n',
+	           '  -uxu-start-server    Starts UxU Server instead of Firefox\n'+
+	           '  -uxu-listen-port <port>\n'+
+	           '                       Listening port of UxU Server\n',
 
 
 	/* nsIFactory */

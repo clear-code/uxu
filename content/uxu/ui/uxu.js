@@ -13,8 +13,21 @@ var gServer;
 var gLog;
 var gAutoStart;
 
+var gOptions = {};
+
 function Startup() {
-	gServer = new Server(utils.getPref('extensions.uxu.port'));
+	if ('arguments' in window &&
+		window.arguments &&
+		window.arguments.length) {
+		gOptions = window.arguments[0];
+		if (gOptions instanceof Ci.nsIPropertyBag) {
+			var jsobj = {};
+			jsobj.serverPort = gOptions.getProperty('serverPort');
+			gOptions = jsobj;
+		}
+	}
+
+	gServer = new Server(gOptions.serverPort || utils.getPref('extensions.uxu.port'));
 	gServer.start(window.document.getElementById("content"), testRunnerlistener);
 
 	gLog = document.getElementById('log');
