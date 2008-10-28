@@ -8,9 +8,6 @@ var utils = lib_module.require('package', 'utils');
 var color = lib_module.require('package', 'color');
 const Color = color.Color;
 
-var test_module = new ModuleManager(['chrome://uxu/content/test']);
-var TestLog = test_module.require('class', 'test_log');
-
 var statusOrder = ["success", "failure", "error"];
 
 function constructor(aOptions)
@@ -23,8 +20,6 @@ function constructor(aOptions)
 	this.result     = '';
 	this.resultStatus = "success";
 	this.badResults = [];
-
-	this.log = new TestLog();
 
 	if (!aOptions)
 		aOptions = {};
@@ -58,14 +53,6 @@ try {
 		case 'Error':
 			this.onError(aEvent);
 			break;
-
-		case 'RemoteStart':
-			break;
-
-		case 'RemoteProgress':
-		case 'RemoteFinish':
-			this.log.append(aEvent.data);
-			break;
 	}
 } catch (e) {
 	dump(utils.formatError(e));
@@ -79,14 +66,11 @@ function isFinished()
 
 function onStart(aEvent)
 {
-	this.log.onStart(aEvent);
 	this.finished = false;
 }
 
 function onFinish(aEvent)
 {
-	this.log.onFinish(aEvent);
-
 	this.result += "\n\n";
 	this._reportBadResults();
 	this._reportSummary();
@@ -96,8 +80,6 @@ function onFinish(aEvent)
 
 function onTestFinish(aEvent)
 {
-	this.log.onTestFinish(aEvent);
-
 	var report = aEvent.data;
 	switch (report.result)
 	{
