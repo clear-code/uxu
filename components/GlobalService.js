@@ -266,7 +266,7 @@ GlobalService.prototype = {
 	helpInfo :
 		'  -uxu-start-server    Starts UnitTest.XUL Server instead of Firefox\n'+
 		'  -uxu-listen-port <port>\n'+
-		'                       Listening port of UnitTest.XUL Server\n'
+		'                       Listening port of UnitTest.XUL Server\n'+
 		'  -uxu-testcase <url>  Run the testcase in UnitTest.XUL\n'+
 		'  -uxu-priority <priority>\n'+
 		'                       Run all tests in the testcase with the priority\n'+
