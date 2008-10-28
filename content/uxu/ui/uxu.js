@@ -5,6 +5,7 @@ const Ci = Components.interfaces;
 
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']); 
 var utils = lib_module.require('package', 'utils');
+var bundle = lib_module.require('package', 'bundle');
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var Server = server_module.require('class', 'server');
@@ -31,6 +32,8 @@ function Startup() {
 	gServer.start(window.document.getElementById("content"), testRunnerlistener);
 
 	gLog = document.getElementById('log');
+	if (!gLog.scrollBoxObject)
+		gLog.scrollBoxObject = gLog.boxObject.QueryInterface(Ci.nsIScrollBoxObject);
 	gAutoStart = document.getElementById('autostart');
 
 	gAutoStart.checked = utils.getPref('extensions.uxu.auto.start');
@@ -41,45 +44,74 @@ function Shutdown() {
 }
 
 var testRunnerlistener = {
-    onStart: function() {
-		var node;
-
+	onStart: function() {
 		this._clearLog();
-
-		node = document.createElement('label');
+		var node = document.createElement('label');
 		node.setAttribute('style', 'border: 1px solid; padding: 0.5em;');
 		node.setAttribute('value', 'New testcase starts');
 		gLog.appendChild(node);
 	},
 
-	onFinish: function(aData) {
-		var node = document.createElement('label');
-		node.setAttribute('style', 'border: 1px solid; padding: 0.5em; white-space: pre;');
-		node.appendChild(document.createTextNode(aData.result));
-		gLog.appendChild(node);
+	onTestCaseStart: function() {
+		this.count = {
+			success  : 0,
+			failure  : 0,
+			error    : 0,
+			passover : 0
+		};
 	},
 
-	onTestFinish: function(aData) {
-		var color;
-		switch (aData.result)
-		{
-		  case 'success': color = 'background: green; color: white; '; break;
-		  case 'failure': color = 'background: red; color: white;'; break;
-		  case 'error'  : color = 'background: yellow; color: black;'; break;
-		  case 'unknown': color = 'background: gray; color: white;'; break;
-		}
+	onTestCaseFinish: function(aEvent) {
+		var node = document.createElement('label');
+		node.setAttribute('style', 'border: 1px solid; padding: 0.5em; white-space: pre;');
+		node.appendChild(
+			document.createTextNode(
+				bundle.getFormattedString(
+					'all_result_statistical',
+					[
+						this.count.success+this.count.failure+this.count.error+this.count.passover,
+						this.count.success,
+						this.count.failure,
+						this.count.error,
+						this.count.passover
+					]
+				)
+			)
+		);
+		gLog.appendChild(node);
+		gLog.scrollBoxObject.ensureElementIsVisible(node);
+	},
 
+	onTestCaseTestFinish: function(aEvent) {
+		var report = aEvent.data.data;
+		var color;
+		switch (report.result)
+		{
+			case 'success':
+				color = 'background: green; color: white; ';
+				break;
+			case 'failure':
+				color = 'background: red; color: white;';
+				break;
+			case 'error':
+				color = 'background: yellow; color: black;';
+				break;
+			case 'passover':
+				color = 'background: gray; color: white;';
+				break;
+		}
+		this.count[report.result]++;
 		var node = document.createElement('label');
 		node.setAttribute('style', 'border: 1px solid; padding: 0.5em; '+color+';');
-		node.setAttribute('value', aData.description);
+		node.setAttribute('value', report.testDescription);
 		gLog.appendChild(node);
+		gLog.scrollBoxObject.ensureElementIsVisible(node);
 	},
 
 	_clearLog: function() {
-		var node;
-
-		while ((node = gLog.firstChild)) {
-			gLog.removeChild(node);
-		}
+		var range = document.createRange();
+		range.selectNodeCOntents(gLog);
+		range.deleteContents();
+		range.detach();
 	}
 };

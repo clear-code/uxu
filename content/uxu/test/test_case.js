@@ -473,7 +473,7 @@ function run(aStopper)
 	var stateTransitions = {
 		start :         { ok : 'doWarmUp' },
 		doWarmUp :      { ok : 'checkPriority', ko: 'doCoolDown' },
-		checkPriority : { ok : 'doSetUp', ko: 'nextTest' },
+		checkPriority : { ok : 'doSetUp', ko: 'doReport' },
 		doSetUp :       { ok : 'doTest', ko: 'doTearDown' },
 		doTest :        { ok : 'doTearDown' },
 		doTearDown :    { ok : 'doReport', ko: 'doReport' },
@@ -482,8 +482,6 @@ function run(aStopper)
 		doCoolDown :    { ok : 'finished', ko: 'finished' },
 		finished :      { }
 	};
-
-	var nullContinuation = function() {};
 
 	var doPreOrPostProcess = function(aContinuation, aFunction, aErrorDescription, aReport, aErrorProcess)
 		{
@@ -544,13 +542,14 @@ function run(aStopper)
 		checkPriority : function(aContinuation)
 		{
 			_this.fireEvent('TestStart', testIndex);
-			if (_this._checkPriorityToExec(_this._tests[testIndex])) {
+			var test = _this._tests[testIndex];
+			if (_this._checkPriorityToExec(test)) {
 				aContinuation('ok');
 				return;
 			}
 			testReport.report = {};
 			testReport.report.result = 'passover';
-			stateHandlers.doReport(nullContinuation);
+			testReport.report.testDescription = test.desc;
 			aContinuation('ko');
 		},
 		doSetUp : function(aContinuation)
