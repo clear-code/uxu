@@ -24,6 +24,7 @@
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']); 
 var fsm    = lib_module.require('package', 'fsm');
 var bundle = lib_module.require('package', 'bundle');
+var Messenger = lib_module.require('class', 'messenger');
 var utils  = {};
 utils.__proto__ = lib_module.require('package', 'utils');
 
@@ -636,16 +637,6 @@ function _runWithRemotePofile(aStopper)
 	var aborted = false;
 	var timeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout'));
 
-	var log = utils.getFileFromKeyword('TmpD');
-	log.append(REMOTE_LOG_PREFIX);
-	log.createUnique(log.NORMAL_FILE_TYPE, 0664);
-	utils.writeTo(Date.now(), log);
-
-	var running = utils.getFileFromKeyword('TmpD');
-	running.append(REMOTE_RUNNINGFLAG_PREFIX);
-	running.createUnique(log.NORMAL_FILE_TYPE, 0664);
-	utils.writeTo(this.title, running);
-
 	var profile = utils.getFileFromKeyword('TmpD');
 	profile.append(REMOTE_PROFILE_PREFIX);
 	profile.createUnique(profile.DIRECTORY_TYPE, 0777);
@@ -660,6 +651,17 @@ function _runWithRemotePofile(aStopper)
 		if (!extensions.exists()) extensions.create(extensions.DIRECTORY_TYPE, 0777);
 		utils.installedUXU.copyTo(extensions, utils.installedUXU.leafName);
 	}
+
+	var port = utils.createRandomPortNumber();
+	var messenger = new Messenger(
+			'localhost',
+			port,
+			{
+				function onGetMessageResponse(aResponseText)
+				{
+				}
+			}
+		);
 
 	this.fireEvent('RemoteStart');
 
@@ -727,12 +729,9 @@ function _runWithRemotePofile(aStopper)
 			'-no-remote',
 			'-profile',
 			profile.path,
-			'-uxu-testcase',
-			_this.namespace,
-			'-uxu-rawlog',
-			log.path,
-			'-uxu-running-testcase',
-			running.path,
+			'-usu-start-server',
+			'-uxu-listen-port',
+			port,
 			'-uxu-hidden'
 		]
 		.concat(this.options);

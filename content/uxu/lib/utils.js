@@ -338,7 +338,7 @@ function hasStackTrace(aException)
 		(aException.location && JSFrameLocationRegExp.test(aException.location));
 }
  
-function formatStackTraceForDisplay(aException)
+function formatStackTraceForDisplay(aException) 
 {
 	var lines = formatStackTrace(aException, { onlyTraceLine : true, onlyExternal : true }).split('\n');
 	if (!lines.length || utils.getPref('extensions.uxu.mozunit.showInternalStacks'))
@@ -764,13 +764,13 @@ function Do(aObject)
   
 // データベース操作 
 var _db = null;
-	 
+	
 var dbFile = (function() { 
 		var file = getFileFromKeyword('ProfD');
 		file.append('uxu.sqlite');
 		return file;
 	})();
- 	
+ 
 function getDB() 
 {
 	if (_db) return _db;
@@ -1055,11 +1055,23 @@ function restartApplication()
 	startup.quit(startup.eRestart | startup.eAttemptQuit);
 }
  
-var installedUXU = Cc['@mozilla.org/extensions/manager;1']
+var installedUXU = Cc['@mozilla.org/extensions/manager;1'] 
 		.getService(Ci.nsIExtensionManager)
 		.getInstallLocation('uxu@clear-code.com')
 		.getItemLocation('uxu@clear-code.com');
   
+// 通信 
+	 
+function createRandomPortNumber() 
+{
+	var socket = Cc['@mozilla.org/network/server-socket;1']
+		.createInstance(Ci.nsIServerSocket);
+	socket.init(-1, true, -1);
+	var port = socket.port;
+	socket.close();
+	return port;
+}
+ 	 
 // デバッグ 
 var _console = Cc['@mozilla.org/consoleservice;1']
 		.getService(Ci.nsIConsoleService);
