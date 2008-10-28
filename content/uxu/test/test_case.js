@@ -283,9 +283,9 @@ function setTests(aHash)
 			case 'warmUp':
 				this.registerWarmUp(aHash[desc]);
 				break;
-			case 'warmDown':
 			case 'coolDown':
-				this.registerWarmDown(aHash[desc]);
+			case 'warmDown':
+				this.registerCoolDown(aHash[desc]);
 				break;
 			case 'setUp':
 			case 'given':
@@ -310,14 +310,14 @@ function registerWarmUp(aFunction)
 	this._warmUp = aFunction;
 }
  
-function registerWarmDown(aFunction) 
+function registerCoolDown(aFunction) 
 {
 	if (typeof aFunction != 'function') return;
-	this._warmDown = aFunction;
+	this._coolDown = aFunction;
 }
-function registerCoolDown(aFunction)
+function registerWarmDown(aFunction)
 {
-	this.registerWarmDown(aFunction);
+	this.registerCoolDown(aFunction);
 }
  
 function registerSetUp(aFunction) 
@@ -472,14 +472,14 @@ function run(aStopper)
 
 	var stateTransitions = {
 		start :         { ok : 'doWarmUp' },
-		doWarmUp :      { ok : 'checkPriority', ko: 'doWarmDown' },
+		doWarmUp :      { ok : 'checkPriority', ko: 'doCoolDown' },
 		checkPriority : { ok : 'doSetUp', ko: 'nextTest' },
 		doSetUp :       { ok : 'doTest', ko: 'doTearDown' },
 		doTest :        { ok : 'doTearDown' },
 		doTearDown :    { ok : 'doReport', ko: 'doReport' },
 		doReport :      { ok : 'nextTest' },
-		nextTest :      { ok : 'checkPriority', ko: 'doWarmDown' },
-		doWarmDown :    { ok : 'finished', ko: 'finished' },
+		nextTest :      { ok : 'checkPriority', ko: 'doCoolDown' },
+		doCoolDown :    { ok : 'finished', ko: 'finished' },
 		finished :      { }
 	};
 
@@ -609,12 +609,12 @@ function run(aStopper)
 			testIndex += 1;
 			_this._tests[testIndex] ? aContinuation('ok') : aContinuation('ko');
 		},
-		doWarmDown : function(aContinuation)
+		doCoolDown : function(aContinuation)
 		{
 			doPreOrPostProcess(
 				aContinuation,
-				_this._warmDown,
-				bundle.getFormattedString('report_description_warmdown', [_this.title]),
+				_this._coolDown,
+				bundle.getFormattedString('report_description_cooldown', [_this.title]),
 				testCaseReport
 			);
 		},
