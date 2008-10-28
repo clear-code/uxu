@@ -128,12 +128,12 @@ function onTestFinish(aEvent)
 function onError(aEvent)
 {
 	var error = aEvent.data;
-	var aReport = {
+	var report = {
 		result: 'error',
 		testDescription: "unknown",
 		exception: error
 	};
-	this._handleError(aReport, true);
+	this._handleError(report, true);
 }
 
 function _handleError(aReport, aRegisterBadResults)

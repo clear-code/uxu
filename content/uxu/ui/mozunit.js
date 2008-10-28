@@ -274,7 +274,7 @@ function startup()
 			gOptions.running = utils.makeFileWithPath(gOptions.running);
 		}
 		if (gOptions.testcase) {
-			run(gOptions.priority || 0);
+			run(gOptions.priority);
 		}
 		if (gOptions.hidden) {
 			window.setTimeout(function() { window.minimize(); }, 0);
