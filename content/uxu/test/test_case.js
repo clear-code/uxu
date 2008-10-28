@@ -635,6 +635,13 @@ function _runWithRemotePofile(aStopper)
 	// 実行時の優先度計算のために必要
 	utils.dbFile.copyTo(profile, utils.dbFile.leafName);
 
+	if (!utils.getPref('extensions.uxu.global')) {
+		var extensions = profile.clone();
+		extensions.append('extensions');
+		if (!extensions.exists()) extensions.create(extensions.DIRECTORY_TYPE, 0777);
+		utils.installedUXU.copyTo(extensions, utils.installedUXU.leafName);
+	}
+
 	this.fireEvent('RemoteStart');
 
 	var fireRemoteEvent = function(aEventType) {

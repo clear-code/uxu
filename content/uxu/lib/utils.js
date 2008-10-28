@@ -1054,6 +1054,11 @@ function restartApplication()
 					.getService(Ci.nsIAppStartup);
 	startup.quit(startup.eRestart | startup.eAttemptQuit);
 }
+ 
+var installedUXU = Cc['@mozilla.org/extensions/manager;1']
+		.getService(Ci.nsIExtensionManager)
+		.getInstallLocation('uxu@clear-code.com')
+		.getItemLocation('uxu@clear-code.com');
   
 // デバッグ 
 var _console = Cc['@mozilla.org/consoleservice;1']
