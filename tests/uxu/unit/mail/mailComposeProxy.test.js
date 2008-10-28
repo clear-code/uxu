@@ -5,8 +5,15 @@ utils.include(topDir+'content/uxu/lib/module_manager.js');
 var lib_module = new ModuleManager([topDir+'content/uxu/lib']);
 var ObserverClass = lib_module.require('class', 'observer');
 
-var mail_module = new ModuleManager([topDir+'content/uxu/mail']);
-var MailComposeProxy = mail_module.require('class', 'mailComposeProxy');
+var MailComposeProxy;
+
+function warmUp()
+{
+	assert.equals('Thunderbird', utils.product);
+
+	var mail_module = new ModuleManager([topDir+'content/uxu/mail']);
+	MailComposeProxy = mail_module.require('class', 'mailComposeProxy');
+}
 
 var proxy;
 
@@ -76,11 +83,6 @@ function createMailComposeStub()
 }
 
 var mailComposeStub;
-
-function warmUp()
-{
-	assert.equals('Thunderbird', utils.product);
-}
 
 function setUp()
 {
