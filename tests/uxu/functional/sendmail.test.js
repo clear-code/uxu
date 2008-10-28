@@ -3,6 +3,11 @@ var ObserverClass = lib_module.require('class', 'observer');
 
 var observer;
 
+function warmUp()
+{
+	assert.equals('Thunderbird', utils.product);
+}
+
 function setUp()
 {
 	yield utils.setUpTestWindow();
