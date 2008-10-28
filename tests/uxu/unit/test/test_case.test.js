@@ -273,7 +273,7 @@ function testForceRetry()
 	clearCount();
 	testcase.masterPriority = 'never';
 	testcase.run();
-	assert.testDone(1, 1, 0);
+	assert.testDone(0, 0, 0);
 }
 
 function testContext()
