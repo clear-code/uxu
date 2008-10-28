@@ -145,7 +145,7 @@ function test_getURLFromFile()
 		uriPattern = /file:\/\/\/tmp\/?/;
 		path = '/tmp';
     }
-	file.initWithPath('C:\\Windows');
+	file.initWithPath(path);
 
 	uri = utilsModule.getURLFromFile(file);
 	assert.isTrue(uri);
