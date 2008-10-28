@@ -26,7 +26,7 @@ function constructor()
 		return this._items;
 	});
 	this.__defineSetter__('items', function(aValue) {
-		this._items = aValue;
+		this._items = Array.slice(aValue);
 		return aValue;
 	});
 	this.__defineGetter__('lastItem', function() {

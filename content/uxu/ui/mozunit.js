@@ -411,55 +411,77 @@ function getFocusedPath()
 	 
 var gRunner; 
  
-function TestListener() 
-{
-	this._log = [];
-}
-TestListener.prototype = {
-	registerTest : function(aTestCase)
+var runnerListener = { 
+	// events from runner
+	onError : function(aEvent)
 	{
-		aTestCase.addListener(this);
+		var e = aEvent.data;
+		_('prerun-report', 'error').textContent = bundle.getFormattedString('error_failed', [e.toString()]);
+		_('prerun-report', 'error').hidden = false;
+
+		if (utils.hasStackTrace(e)) {
+			displayStackTrace(e, _('prerun-report', 'stack-trace'));
+			_('prerun-report', 'stack-trace').hidden = false;
+			_('prerun-report').hidden = false;
+		}
 	},
-	onStart : function(aEvent)
+	onProgress : function(aEvent)
 	{
-		gLog.onStart(aEvent);
-		this.onLogged();
-		var report = getReport(aEvent.target.title);
-		report.setAttribute('file', aEvent.target.namespace);
-	},
-	onTestFinish : function(aEvent)
-	{
-		gLog.onTestFinish(aEvent);
-		var results = gLog.lastItem.results;
-		this.onLogged();
-		fillReportFromResult(aEvent.target.title, results[results.length-1]);
-	},
-	onFinish : function(aEvent)
-	{
-		gLog.onFinish(aEvent);
-		this.onLogged();
-		aEvent.target.removeListener(this);
+		setRunningState(true);
+		_('testRunningProgressMeter').setAttribute('value', aEvent.data);
 	},
 	onAbort : function(aEvent)
 	{
-		gLog.onAbort(aEvent);
+		gAborted = true;
 		this.onFinish(aEvent);
+	},
+	onFinish : function(aEvent)
+	{
+		setRunningState(false);
+		onAllTestsFinish();
+		aEvent.target.removeListener(this);
 	},
 
-	onRemoteStart : function(aEvent)
+
+	// events from testcases
+	onTestCaseStart : function(aEvent)
 	{
-		this.onStart(aEvent);
+		gLog.items = aEvent.data.log.items;
+		this.onLogged();
+		var report = getReport(aEvent.data.testCase.title);
+		report.setAttribute('file', aEvent.data.testCase.namespace);
 	},
-	onRemoteProgress : function(aEvent)
+	onTestCaseTestFinish : function(aEvent)
 	{
-		gLog.append(aEvent.data);
-		buildReportsFromResults(aEvent.data);
+		gLog.items = aEvent.data.log.items;
+		var results = gLog.lastItem.results;
+		this.onLogged();
+		fillReportFromResult(aEvent.data.testCase.title, results[results.length-1]);
 	},
-	onRemoteFinish : function(aEvent)
+	onTestCaseAbort : function(aEvent)
 	{
-		gLog.append(aEvent.data);
-		buildReportsFromResults(aEvent.data);
-		this.onFinish(aEvent);
+		this.onTestCaseFinish(aEvent);
+	},
+	onTestCaseFinish : function(aEvent)
+	{
+		gLog.items = aEvent.data.log.items;
+		this.onLogged();
+	},
+
+	onTestCaseRemoteStart : function(aEvent)
+	{
+		this.onTestCaseStart(aEvent);
+	},
+	onTestCaseRemoteProgress : function(aEvent)
+	{
+		gLog.items = aEvent.data.log.items;
+		buildReportsFromResults(aEvent.data.data);
+	},
+	onTestCaseRemoteFinish : function(aEvent)
+	{
+		gLog.items = aEvent.data.log.items;
+		buildReportsFromResults(aEvent.data.data);
+		this.onTestCaseFinish(aEvent);
 	},
 
 	onLogged : function()
@@ -485,39 +507,6 @@ TestListener.prototype = {
 				gOptions.rawLog,
 				'UTF-8'
 			);
-		}
-	}
-};
- 
-var runnerListener = { 
-	handleEvent : function(aEvent)
-	{
-		switch (aEvent.type)
-		{
-			case 'Error':
-				var e = aEvent.data;
-				_('prerun-report', 'error').textContent = bundle.getFormattedString('error_failed', [e.toString()]);
-				_('prerun-report', 'error').hidden = false;
-
-				if (utils.hasStackTrace(e)) {
-					displayStackTrace(e, _('prerun-report', 'stack-trace'));
-					_('prerun-report', 'stack-trace').hidden = false;
-					_('prerun-report').hidden = false;
-				}
-				break;
-
-			case 'Progress':
-				setRunningState(true);
-				_('testRunningProgressMeter').setAttribute('value', aEvent.data);
-				break;
-
-			case 'Abort':
-				gAborted = true;
-			case 'Finish':
-				setRunningState(false);
-				onAllTestsFinish();
-				aEvent.target.removeListener(this);
-				break;
 		}
 	}
 };
@@ -670,12 +659,6 @@ function run(aMasterPriority)
 
 	gRunner.addListener(runnerListener);
 
-	var listener = new TestListener();
-	gRunner.addTestFilter(function(aTestCase) {
-		listener.registerTest(aTestCase);
-		return true;
-	});
-
 	gRunner.run(null, aMasterPriority);
 }
 	
@@ -703,12 +686,6 @@ function runFailed()
 	gRunner.addTestFilter(function(aTestCase) {
 		aTestCase.masterPriority = 'must';
 		return aTestCase.title in failedTests;
-	});
-
-	var listener = new TestListener();
-	gRunner.addTestFilter(function(aTestCase) {
-		listener.registerTest(aTestCase);
-		return true;
 	});
 
 	gRunner.run();

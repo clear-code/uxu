@@ -10,6 +10,7 @@ var inherits = lib_module.require('class', 'event_target');
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var TestCase    = test_module.require('class', 'test_case');
+var TestLog     = test_module.require('class', 'test_log');
 var Environment = test_module.require('class', 'environment');
 	 
 function constructor(aBrowser, aFiles) 
@@ -18,6 +19,7 @@ function constructor(aBrowser, aFiles)
 	this.files = aFiles || [];
 	this._browser = aBrowser;
 	this._filters = [];
+	this._log = new TestLog();
 	this.initListeners();
 }
  
@@ -206,18 +208,26 @@ function handleEvent(aEvent)
 		case 'Start':
 		case 'RemoteStart':
 			this.runningCount++;
+			this._log.onStart(aEvent);
+			this._onTestCaseEvent(aEvent);
 			break;
 
 		case 'TestStart':
+			this._onTestCaseEvent(aEvent);
 			break;
 
 		case 'TestFinish':
+			this._log.onTestFinish(aEvent);
+			this._onTestCaseEvent(aEvent);
 			this.fireEvent('Report', aEvent.data);
 			break;
 
-		case 'Finish':
 		case 'RemoteFinish':
+			this._log.append(aEvent.data);
+		case 'Finish':
+			this._log.onFinish(aEvent);
 			this.runningCount--;
+			this._onTestCaseEvent(aEvent);
 			this._cleanUpModifications(aEvent.target);
 			aEvent.target.removeListener(this);
 			if (this._current == this._testsCount) {
@@ -226,13 +236,26 @@ function handleEvent(aEvent)
 			}
 			break;
 
+		case 'RemoteProgress':
+			this._log.append(aEvent.data);
+			break;
+
 		case 'Abort':
 			aEvent.target.removeListener(this);
 		case 'Error':
+			this._onTestCaseEvent(aEvent);
 			utils.setPref('extensions.uxu.running', false);
 			this.fireEvent(aEvent.type, aEvent.data);
 			break;
 	}
+}
+function _onTestCaseEvent(aEvent)
+{
+	this.fireEvent('TestCase'+aEvent.type, {
+		testCase : aEvent.target,
+		data     : aEvent.data,
+		log      : this._log
+	});
 }
 	 
 function _cleanUpModifications(aTestCase) 
