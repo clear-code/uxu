@@ -475,12 +475,15 @@ function run(aStopper)
 				aContinuation('ok');
 				return;
 			}
+			var usesContinuation = aFunction.arity > 0;
 			try {
-				var result = aFunction.call(context, aContinuation);
+				var result = usesContinuation ?
+						aFunction.call(context, aContinuation) :
+						aFunction.call(context) ;
 				if (utils.isGeneratedIterator(result)) {
 					utils.doIteration(result, {
 						onEnd : function(e) {
-							if (aFunction.arity == 0) aContinuation('ok');
+							if (!usesContinuation) aContinuation('ok');
 						},
 						onError : function(e) {
 							if (aErrorProcess) aErrorProcess();
@@ -492,7 +495,7 @@ function run(aStopper)
 					});
 				}
 				else {
-					if (aFunction.arity == 0) aContinuation('ok');
+					if (!usesContinuation) aContinuation('ok');
 				}
 			}
 			catch(e) {
