@@ -11,6 +11,8 @@ var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var assertions  = test_module.require('package', 'assertions');
 var action      = test_module.require('package', 'action');
 
+var server_module = new ModuleManager(['chrome://uxu/content/server']); 
+
 var mail_module = new ModuleManager(['chrome://uxu/content/mail']); 
 
 
@@ -82,6 +84,7 @@ function constructor(aEnvironment, aURI, aBrowser)
 	this.initVariables();
 	this.attachAssertions();
 	this.attachActions();
+	this.attachServerUtils();
 }
 
 function initVariables()
@@ -167,6 +170,17 @@ function attachMailUtils()
 {
 	this.mail = {};
 	this.mail.__proto__ = mail_module.require('package', 'utils');
+}
+
+function attachServerUtils()
+{
+	var serverUtils = server_module.require('package', 'utils');
+	this.sendMessage = function() {
+		return serverUtils.sendMessage.apply(serverUtils, arguments);
+	};
+	this.startListen = function() {
+		return serverUtils.startListen.apply(serverUtils, arguments);
+	};
 }
 
 
@@ -509,8 +523,6 @@ p
 product
 productExecutable
 getInstalledLocationOfProduct
-sendMessage
-startListen
 log
 dump
 notify

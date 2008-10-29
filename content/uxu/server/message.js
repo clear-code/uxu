@@ -42,13 +42,14 @@ function onStopRequest(aRequest, aContext, aStatus)
 function onDataAvailable(aRequest, aContext, aInputStream, aOffset, aCount)
 {
 	var chunk = this._scriptableInput.read(aCount);
+	if (aOffset) chunk = chunk.substring(aOffset);
 	if (/[\r\n]+$/.test(chunk)) {
 		if (this._remoteResultBuffer) {
 			chunk = this._buffer + chunk;
 			this._buffer = '';
 		}
 		if (this._listener && this._listener.onResponse) {
-			this._listener.onResponse(chunk);
+			this._listener.onResponse(chunk.replace(/[\r\n]+$/, ''));
 		}
 	}
 	else {

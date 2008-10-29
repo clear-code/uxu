@@ -6,10 +6,6 @@ const Ci = Components.interfaces;
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var bundle = lib_module.require('package', 'bundle');
 
-var server_module = new ModuleManager(['chrome://uxu/content/server']);
-var Server = server_module.require('class', 'server');
-var Message = server_module.require('class', 'message');
-
 var IOService = Cc['@mozilla.org/network/io-service;1']
 		.getService(Ci.nsIIOService);
 	
@@ -1138,48 +1134,6 @@ function _getInstalledLocationOfMozillaProduct(aProduct)
 	return null;
 }
    
-// 通信 
-	
-function sendMessage(aMessage, aHost, aPort, aListener) 
-{
-	var message = new Message(aMessage, aHost, aPort, aListener);
-	message.send();
-}
- 
-function startListen(aPort, aListener) 
-{
-	if (
-		!aListener ||
-		(
-			typeof aListener != 'function' &&
-			(
-				!aListener.onListen ||
-				typeof aListener.onListen != 'function'
-			)
-		)
-		)
-		return null;
-
-	var server = new Server(aPort);
-	var listener = {
-			stop : function()
-			{
-				server.stop();
-			},
-			onInput : function(aEvent)
-			{
-				if (typeof aListener == 'function')
-					aListener(aEvent.data)
-				else
-					aListener.onListen(aEvent.data);
-			}
-		};
-	server.addListener(listener);
-	server.start();
-	listener.port = server.port;
-	return listener;
-}
-  
 // デバッグ 
 var _console = Cc['@mozilla.org/consoleservice;1']
 		.getService(Ci.nsIConsoleService);

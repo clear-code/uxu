@@ -752,6 +752,7 @@ function onInput(aEvent)
 			input = this._remoteResultBuffer + input;
 			this._remoteResultBuffer = '';
 		}
+		input = input.replace(/[\r\n]+$/, '');
 	}
 	else {
 		this._remoteResultBuffer += input;

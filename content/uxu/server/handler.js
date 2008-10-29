@@ -59,5 +59,6 @@ function onDataAvailable(aRequest, aContext, aInputStream, aOffset, aCount)
 {
 	if (!this._input) return;
 	var input = this._input.read(aCount);
-	this.fireEvent('Input', input);
+	if (aOffset) input = input.substring(aOffset);
+	if (input) this.fireEvent('Input', input);
 }
