@@ -200,7 +200,8 @@ function _initRemote(aOptions)
 	this.__defineGetter__(
 		'shouldRunInRemote', function() {
 			var tmp = utils.getFileFromKeyword('TmpD');
-			return this._profile.path != runningProfile.path &&
+			return this._profile &&
+				this._profile.path != runningProfile.path &&
 				!runningProfile.parent.equals(tmp);
 		});
 
