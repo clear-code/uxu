@@ -468,7 +468,7 @@ function run(aStopper)
 	this._done = false;
 	this._aborted = false;
 
-	if (this.shouldRunInRemote && this._runWithRemotePofile()) return;
+	if (this.shouldRunInRemote && this._runByRemote()) return;
 
 	if (this._targetProduct &&
 		String(this._targetProduct).toLowerCase() != utils.product.toLowerCase()) {
@@ -637,9 +637,14 @@ function run(aStopper)
 	fsm.go('start', {}, stateHandlers, stateTransitions, []);
 }
 	 
-function _runWithRemotePofile(aStopper) 
+function _runByRemote(aStopper) 
 {
 	if (!this._profile || !this._profile.exists()) return false;
+
+	if (this._targetProduct && !this._application) {
+		var application = utils.getInstalledLocationOfProduct(this._targetProduct);
+		if (application) this._application = application;
+	}
 
 	this.fireEvent('Start');
 

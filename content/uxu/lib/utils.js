@@ -1016,7 +1016,7 @@ function strictlyEquals(aObject1, aObject2)
 }
   
 // アプリケーション 
-	
+	 
 var product = (function() { 
 	var XULAppInfo = Cc['@mozilla.org/xre/app-info;1']
 			.getService(Ci.nsIXULAppInfo);
@@ -1026,11 +1026,13 @@ var product = (function() {
 			return 'Firefox';
 		case '{3550f703-e582-4d05-9a08-453d09bdfdc6}':
 			return 'Thunderbird';
+		case '{86c18b42-e466-45a9-ae7a-9b95ba6f5640}':
+			return 'Seamonkey';
 		default:
 			return '';
 	}
 })();
- 
+ 	
 var productExecutable = getFileFromKeyword('XREExeF'); 
  
 function restartApplication() 
@@ -1062,7 +1064,76 @@ var installedUXU = Cc['@mozilla.org/extensions/manager;1']
 		.getService(Ci.nsIExtensionManager)
 		.getInstallLocation('uxu@clear-code.com')
 		.getItemLocation('uxu@clear-code.com');
-  
+ 
+function getInstalledLocationOfProduct(aProduct) 
+{
+	if (
+		!aProduct ||
+		navigator.platform.toLowerCase().indexOf('win32') < 0
+		)
+		return null;
+
+	switch (String(aProduct).toLowerCase())
+	{
+		case 'firefox':
+			return _getInstalledLocationOfMozillaProduct('Firefox') ||
+					_getInstalledLocationOfMozillaProduct('Minefield');
+		case 'thunderbird':
+			return _getInstalledLocationOfMozillaProduct('Thunderbird') ||
+					_getInstalledLocationOfMozillaProduct('Shredder');
+		default:
+			return null;
+	}
+}
+	 
+function _getInstalledLocationOfMozillaProduct(aProduct) 
+{
+	if (
+		!aProduct ||
+		navigator.platform.toLowerCase().indexOf('win32') < 0
+		)
+		return null;
+
+	var key;
+	switch (String(aProduct).toLowerCase())
+	{
+		case 'firefox':
+			key = 'Mozilla\\Mozilla Firefox';
+			break;
+		case 'thunderbird':
+			key = 'Mozilla\\Mozilla Thunderbird';
+			break;
+		case 'minefield':
+			key = 'Mozilla\\Minefield';
+			break;
+		case 'shredder':
+			key = 'Mozilla\\Shredder';
+			break;
+		default:
+			return null;
+	}
+
+	try {
+		var productKey = Cc['@mozilla.org/windows-registry-key;1']
+				.createInstance(Ci.nsIWindowsRegKey);
+		productKey.open(
+			productKey.ROOT_KEY_LOCAL_MACHINE,
+			'SOFTWARE\\'+key,
+			productKey.ACCESS_READ
+		);
+		var version = productKey.readStringValue('CurrentVersion');
+		var curVerKey = productKey.openChild(version+'\\Main', productKey.ACCESS_READ);
+		var path = curVerKey.readStringValue('PathToExe');
+		curVerKey.close();
+		productKey.close();
+
+		return getFileFromPath(path);
+	}
+	catch(e) {
+	}
+	return null;
+}
+   
 // デバッグ 
 var _console = Cc['@mozilla.org/consoleservice;1']
 		.getService(Ci.nsIConsoleService);
@@ -1076,7 +1147,7 @@ function dump()
 {
 	this.log.apply(this, arguments);
 }
-  	
+  
 const ObserverService = Cc['@mozilla.org/observer-service;1'] 
 			.getService(Ci.nsIObserverService);
 function notify(aSubject, aTopic, aData)
