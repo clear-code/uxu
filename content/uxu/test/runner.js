@@ -225,9 +225,9 @@ function handleEvent(aEvent)
 			this.fireEvent('Report', aEvent.data);
 			break;
 
-		case 'RemoteFinish':
 		case 'Finish':
 			this._log.onFinish(aEvent);
+		case 'RemoteFinish':
 			this.runningCount--;
 			this._onTestCaseEvent(aEvent);
 			this._cleanUpModifications(aEvent.target);

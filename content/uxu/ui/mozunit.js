@@ -478,8 +478,6 @@ var runnerListener = {
 	},
 	onTestCaseRemoteFinish : function(aEvent)
 	{
-		var results = gLog.lastItem.results;
-		fillReportFromResult(aEvent.data.testCase.title, results[results.length-1]);
 		this.sendResult(true);
 	},
 

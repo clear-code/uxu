@@ -750,7 +750,7 @@ function _onReceiveRemoteResult(aResult)
 function _onFinishRemoteResult() 
 {
 	this._done = true;
-	if (!_this._aborted) {
+	if (!this._aborted) {
 		this.fireEvent('RemoteFinish');
 	}
 }
