@@ -25,6 +25,7 @@ function Startup() {
 		if (gOptions instanceof Ci.nsIPropertyBag) {
 			var jsobj = {};
 			jsobj.serverPort = gOptions.getProperty('serverPort');
+			jsobj.hidden     = gOptions.getProperty('hidden');
 			gOptions = jsobj;
 		}
 	}
@@ -42,6 +43,10 @@ function Startup() {
 	gAutoStart = document.getElementById('autostart');
 
 	gAutoStart.checked = utils.getPref('extensions.uxu.auto.start');
+
+	if (gOptions.hidden) {
+		window.setTimeout(function() { window.minimize(); }, 0);
+	}
 }
 
 function Shutdown() {

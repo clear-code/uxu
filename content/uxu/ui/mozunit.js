@@ -252,11 +252,13 @@ function startup()
 		gOptions = window.arguments[0];
 		if (gOptions instanceof Ci.nsIPropertyBag) {
 			var jsobj = {};
-			jsobj.testcase = gOptions.getProperty('testcase');
-			jsobj.log      = gOptions.getProperty('log');
-			jsobj.rawLog   = gOptions.getProperty('rawLog');
-			jsobj.priority = gOptions.getProperty('priority');
-			jsobj.hidden   = gOptions.getProperty('hidden');
+			jsobj.testcase   = gOptions.getProperty('testcase');
+			jsobj.outputPort = gOptions.getProperty('outputHost');
+			jsobj.outputPort = gOptions.getProperty('outputPort');
+			jsobj.log        = gOptions.getProperty('log');
+			jsobj.rawLog     = gOptions.getProperty('rawLog');
+			jsobj.priority   = gOptions.getProperty('priority');
+			jsobj.hidden     = gOptions.getProperty('hidden');
 			gOptions = jsobj;
 		}
 

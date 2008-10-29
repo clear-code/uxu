@@ -633,7 +633,7 @@ function _runWithRemotePofile(aStopper)
 {
 	if (!this.profile.exists()) return false;
 
-	var _this = this;
+	this.fireEvent('RemoteStart');
 
 	var profile = utils.getFileFromKeyword('TmpD');
 	profile.append(REMOTE_PROFILE_PREFIX);
@@ -657,8 +657,26 @@ function _runWithRemotePofile(aStopper)
 	server.addListener(this);
 	server.start();
 
-	this.fireEvent('RemoteStart');
+	var args = [
+			'-no-remote',
+			'-profile',
+			profile.path,
+			'-uxu-testcase',
+			this._source,
+			'-uxu-output-host',
+			'localhost',
+			'-uxu-output-port',
+			server.port,
+			'-uxu-hidden'
+		]
+		.concat(this.options);
 
+	var process = Cc['@mozilla.org/process/util;1']
+				.createInstance(Ci.nsIProcess);
+	process.init(utils.productExecutable);
+	process.run(false, args, args.length);
+
+	var _this = this;
 	var interval = 100;
 	var timeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout'));
 	utils.doIteration(
@@ -689,25 +707,6 @@ function _runWithRemotePofile(aStopper)
 			}
 		}
 	);
-
-	var args = [
-			'-no-remote',
-			'-profile',
-			profile.path,
-			'-uxu-testcase',
-			this._source,
-			'-uxu-output-host',
-			'localhost',
-			'-uxu-output-port',
-			server.port,
-			'-uxu-hidden'
-		]
-		.concat(this.options);
-
-	var process = Cc['@mozilla.org/process/util;1']
-				.createInstance(Ci.nsIProcess);
-	process.init(utils.productExecutable);
-	process.run(false, args, args.length);
 
 	return true;
 }
