@@ -252,7 +252,6 @@ function startup()
 			jsobj.testcase = gOptions.getProperty('testcase');
 			jsobj.log      = gOptions.getProperty('log');
 			jsobj.rawLog   = gOptions.getProperty('rawLog');
-			jsobj.running  = gOptions.getProperty('running');
 			jsobj.priority = gOptions.getProperty('priority');
 			jsobj.hidden   = gOptions.getProperty('hidden');
 			gOptions = jsobj;
@@ -268,11 +267,6 @@ function startup()
 			gOptions.log = utils.getFilePathFromURLSpec(gOptions.log);
 		if (gOptions.rawLog && gOptions.rawLog.indexOf('file://') > -1)
 			gOptions.rawLog = utils.getFilePathFromURLSpec(gOptions.rawLog);
-		if (gOptions.running) {
-			if (gOptions.running.indexOf('file://') > -1)
-				gOptions.running = utils.getFilePathFromURLSpec(gOptions.running);
-			gOptions.running = utils.makeFileWithPath(gOptions.running);
-		}
 		if (gOptions.testcase) {
 			run(gOptions.priority);
 		}
@@ -486,12 +480,6 @@ var runnerListener = {
 	onLogged : function()
 	{
 		if (!gOptions) return;
-		if (gOptions.running &&
-			gOptions.running instanceof Ci.nsIFile &&
-			!gOptions.running.exists()) {
-			stop();
-			return;
-		}
 		if (gOptions.log) {
 			utils.writeTo(
 				gLog.toString(),
@@ -513,24 +501,20 @@ var runnerListener = {
 function onAllTestsFinish() 
 {
 	if (gOptions) {
-		if (!gOptions.running ||
-			!(gOptions.running instanceof Ci.nsIFile) ||
-			gOptions.running.exists()) {
-			if (gOptions.log) {
-				utils.writeTo(
-					gLog.toString(),
-					gOptions.log,
-					'UTF-8'
-				);
-			}
-			if (gOptions.rawLog) {
-				utils.writeTo(
-					TestCase.prototype.REMOTE_TEST_FINISHED+
-						gLog.toString(gLog.FORMAT_RAW),
-					gOptions.rawLog,
-					'UTF-8'
-				);
-			}
+		if (gOptions.log) {
+			utils.writeTo(
+				gLog.toString(),
+				gOptions.log,
+				'UTF-8'
+			);
+		}
+		if (gOptions.rawLog) {
+			utils.writeTo(
+				TestCase.prototype.REMOTE_TEST_FINISHED+
+					gLog.toString(gLog.FORMAT_RAW),
+				gOptions.rawLog,
+				'UTF-8'
+			);
 		}
 		if (gOptions.testcase && (gOptions.hidden || gOptions.log || gOptions.rawLog)) {
 			const startup = Cc['@mozilla.org/toolkit/app-startup;1']

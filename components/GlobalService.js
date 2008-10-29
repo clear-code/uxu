@@ -191,7 +191,6 @@ GlobalService.prototype = {
 				priority   : this._getValueFromCommandLine('uxu-priority', aCommandLine, null),
 				log        : this._getFullPathFromCommandLine('uxu-log', aCommandLine, ''),
 				rawLog     : this._getFullPathFromCommandLine('uxu-rawlog', aCommandLine, ''),
-				running    : this._getFullPathFromCommandLine('uxu-running-testcase', aCommandLine, ''),
 				ouputPort  : this._getNumericValueFromCommandLine('uxu-output-port', aCommandLine, 0),
 				hidden     : false
 			};
