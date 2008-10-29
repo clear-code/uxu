@@ -187,8 +187,8 @@ GlobalService.prototype = {
 		var arg = {
 				server     : false,
 				serverPort : this._getNumericValueFromCommandLine('uxu-listen-port', aCommandLine, 0),
-				ouputHost  : this._getValueFromCommandLine('uxu-output-host', aCommandLine, ''),
-				ouputPort  : this._getNumericValueFromCommandLine('uxu-output-port', aCommandLine, 0),
+				outputHost : this._getValueFromCommandLine('uxu-output-host', aCommandLine, ''),
+				outputPort : this._getNumericValueFromCommandLine('uxu-output-port', aCommandLine, 0),
 				testcase   : this._getFullPathFromCommandLine('uxu-testcase', aCommandLine, ''),
 				priority   : this._getValueFromCommandLine('uxu-priority', aCommandLine, null),
 				log        : this._getFullPathFromCommandLine('uxu-log', aCommandLine, ''),
