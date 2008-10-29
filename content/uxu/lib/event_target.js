@@ -21,6 +21,11 @@ function removeListener(aListener)
 		this._listeners.splice(index, 1);
 }
  
+function removeAllListeners() 
+{
+	this._listeners = [];
+}
+ 
 function fireEvent(aType, aData) 
 {
 	var event = {

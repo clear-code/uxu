@@ -9,6 +9,7 @@ var bundle = lib_module.require('package', 'bundle');
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var Server = server_module.require('class', 'server');
+var Context = server_module.require('class', 'context');
 
 var gServer;
 var gLog;
@@ -28,8 +29,11 @@ function Startup() {
 		}
 	}
 
+	var context = new Context(window.document.getElementById("content"));
+	context.addRunnerListener(testRunnerlistener);
+
 	gServer = new Server(gOptions.serverPort || utils.getPref('extensions.uxu.port'));
-	gServer.start(window.document.getElementById("content"), testRunnerlistener);
+	gServer.start(context);
 
 	gLog = document.getElementById('log');
 	if (!gLog.scrollBoxObject)
