@@ -116,7 +116,7 @@ function _getTestsFromSuite(aSuite)
 		var newTestCase = new TestCase(
 				aSuite.description || String(aSuite.fileURL.match(/[^\/]+$/)),
 				{
-					namespace     : aSuite.fileURL,
+					source        : aSuite.fileURL,
 					profile       : aSuite.profile,
 					options       : aSuite.options,
 					priority      : aSuite.priority,
@@ -226,7 +226,6 @@ function handleEvent(aEvent)
 			break;
 
 		case 'RemoteFinish':
-			this._log.append(aEvent.data);
 		case 'Finish':
 			this._log.onFinish(aEvent);
 			this.runningCount--;

@@ -67,7 +67,7 @@ function runTest(aOptions/*, aTargets, ...*/)
 
 function quit()
 {
-	this.fireEvent('HandlerCloseRequest');
+	this.fireEvent('QuitRequest');
 }
 
 function exit()
@@ -78,14 +78,14 @@ function exit()
 function print()
 {
 	var message = Array.slice(arguments).join('');
-	this.fireEvent('HandlerOutputRequest', message);
+	this.fireEvent('OutputRequest', message);
 }
 
 function puts()
 {
 	var message = Array.slice(arguments).join('\n');
 	if (!/\n$/.test(message)) message += '\n';
-	this.fireEvent('HandlerOutputRequest', message);
+	this.fireEvent('OutputRequest', message);
 }
 
 function p()

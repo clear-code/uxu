@@ -57,7 +57,7 @@ function _toText(aFormat)
 		};
 	this._items.forEach(function(aLog) {
 		result.push(bundle.getString('log_separator_testcase'));
-		result.push(aLog.file);
+		result.push(aLog.source);
 		result.push(bundle.getFormattedString('log_start', [aLog.title, new Date(aLog.start)]));
 		result.push(bundle.getString('log_separator_testcase'));
 		var count = {
@@ -114,7 +114,7 @@ function append(aNewItems)
 	aNewItems.forEach(function(aOneNewItem) {
 		if (this._items.some(function(aOneOldItem) {
 				if (aOneOldItem.title == aOneNewItem.title &&
-					aOneOldItem.file == aOneNewItem.file) {
+					aOneOldItem.source == aOneNewItem.source) {
 					for (var i in aOneNewItem)
 					{
 						aOneOldItem[i] = aOneNewItem[i];
@@ -139,7 +139,7 @@ function onStart(aEvent)
 	this._items.push({
 		start   : Date.now(),
 		title   : aEvent.target.title,
-		file    : aEvent.target.namespace,
+		source  : aEvent.target.source,
 		results : []
 	});
 }

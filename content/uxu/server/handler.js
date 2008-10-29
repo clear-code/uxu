@@ -39,12 +39,12 @@ function destroy()
 	this.removeAllListeners();
 }
 
-function onHandlerCloseRequest()
+function onQuitRequest()
 {
 	this.destroy();
 }
 
-function onHandlerOutputRequest(aEvent)
+function onOutputRequest(aEvent)
 {
 	if (this._output)
 		this._output.write(aEvent.data, aEvent.data.length);

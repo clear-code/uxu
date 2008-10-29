@@ -29,6 +29,9 @@ var utils  = {};
 utils.__proto__ = lib_module.require('package', 'utils');
 
 var inherits = lib_module.require('class', 'event_target');
+
+var server_module = new ModuleManager(['chrome://uxu/content/server']);
+var Server = server_module.require('class', 'server');
  
 function _initDB() 
 {
@@ -63,11 +66,9 @@ try {
 catch(e) {
 }
  
-const REMOTE_LOG_PREFIX = 'uxu-test-log'; 
-const REMOTE_RUNNINGFLAG_PREFIX = 'uxu-test-running';
-const REMOTE_PROFILE_PREFIX = 'uxu-test-profile';
-const REMOTE_TEST_FINISHED = '/*remote-test-finished*/';
-const REMOTE_TEST_PROGRESS = '/*remote-test-progress*/';
+const REMOTE_PROFILE_PREFIX = 'uxu-test-profile'; 
+const TESTCASE_FINISED = '/*uxu-testcase-finished*/';
+const TESTCASE_ABORTED = '/*uxu-testcase-aborted*/';
  
 /**
  * Invocation: 
@@ -82,7 +83,7 @@ function constructor(aTitle, aOptions)
 {
 	if (!aOptions) aOptions = {};
 
-	this._initNamespace(aOptions);
+	this._initSource(aOptions);
 	this._initProfile(aOptions);
 
 	this._title = aTitle;
@@ -149,10 +150,10 @@ function constructor(aTitle, aOptions)
 	this.initListeners();
 }
 	 
-function _initNamespace(aOptions) 
+function _initSource(aOptions) 
 {
-	var namespace = aOptions.namespace;
-	if (!namespace || typeof namespace != 'string') {
+	var source = aOptions.source;
+	if (!source || typeof source != 'string') {
 		var path;
 		var stack = Components.stack;
 		do {
@@ -160,18 +161,18 @@ function _initNamespace(aOptions)
 			if (path.indexOf('chrome://uxu/content/lib/subScriptRunner.js?') != 0)
 				continue;
 			/.+includeSource=([^;]+)/.test(path);
-			namespace = decodeURIComponent(RegExp.$1);
+			source = decodeURIComponent(RegExp.$1);
 			break;
 		}
 		while (stack = stack.caller);
 	}
-	this._namespace = namespace;
+	this._source = source;
 	this.__defineGetter__(
-		'namespace', function() {
-			return this._namespace;
+		'source', function() {
+			return this._source;
 		});
 
-	utils.baseURL = namespace.replace(/[^\/]*$/, '');
+	utils.baseURL = source.replace(/[^\/]*$/, '');
 }
  
 function _initProfile(aOptions) 
@@ -357,7 +358,7 @@ function registerTest(aFunction)
 	}
 
 	this._tests.push({
-		name     : (this._namespace + '::' + this.title + '::' + key),
+		name     : (this._source + '::' + this.title + '::' + key),
 		desc     : desc,
 		code     : aFunction,
 		hash     : hash,
@@ -458,6 +459,7 @@ function run(aStopper)
 	this._stopper = aStopper;
 
 	this._done = false;
+	this._aborted = false;
 
 	if (this.shouldRunInRemote && this._runWithRemotePofile()) return;
 
@@ -522,7 +524,6 @@ function run(aStopper)
 		};
 
 	var _this = this;
-	var aborted = false;
 	var stateHandlers = {
 		start : function(aContinuation)
 		{
@@ -601,7 +602,7 @@ function run(aStopper)
 		nextTest : function(aContinuation)
 		{
 			if (_this._stopper && _this._stopper()) {
-				aborted = true;
+				_this._aborted = true;
 				_this.fireEvent('Abort');
 				aContinuation('ko');
 				return;
@@ -621,7 +622,7 @@ function run(aStopper)
 		finished : function(aContinuation)
 		{
 			_this._done = true;
-			if (!aborted)
+			if (!_this._aborted)
 				_this.fireEvent('Finish', testCaseReport.report);
 		}
 	};
@@ -634,8 +635,6 @@ function _runWithRemotePofile(aStopper)
 	if (!this.profile.exists()) return false;
 
 	var _this = this;
-	var aborted = false;
-	var timeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout'));
 
 	var profile = utils.getFileFromKeyword('TmpD');
 	profile.append(REMOTE_PROFILE_PREFIX);
@@ -652,74 +651,38 @@ function _runWithRemotePofile(aStopper)
 		utils.installedUXU.copyTo(extensions, utils.installedUXU.leafName);
 	}
 
-	var port = utils.createRandomPortNumber();
-	var messenger = new Messenger(
-			'localhost',
-			port,
-			{
-				function onGetMessageResponse(aResponseText)
-				{
-				}
-			}
-		);
+	this._remoteResultBuffer = '';
+	this._remoteResultListener = new Server();
+	this._remoteResultListener.addListener(this);
+	this._remoteResultListener.start();
+	this._lastRemoteResponse = Date.now();
 
 	this.fireEvent('RemoteStart');
 
-	var fireRemoteEvent = function(aEventType) {
-			var result = utils.readFrom(log.path, 'UTF-8');
-			try {
-				eval('result = '+result);
-				if (aEventType == 'RemoteFinish') {
-					result[result.length-1].results.forEach(function(aResult) {
-						_this._onFinish(_this._tests[aResult.index], aResult.type);
-					});
-				}
-			}
-			catch(e) {
-				result = [];
-			}
-			_this.fireEvent(aEventType, result);
-		};
-
+	var interval = 100;
+	var timeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout'));
 	utils.doIteration(
 		function() {
-			var last;
-			var result;
-			var wait = 500;
-			do {
-				last = Date.now();
-				if (!aborted && _this._stopper && _this._stopper()) {
-					aborted = true;
+			var last = Date.now();
+			var current;
+			while (!_this._done)
+			{
+				if (!_this._aborted && _this._stopper && _this._stopper()) {
+					_this._aborted = true;
+					_this.fireEvent('OutputRequest', TESTCASE_ABORTED);
 					_this.fireEvent('Abort');
-					_this._done = true;
-					if (running.exists())
-						running.remove(true);
 					break;
 				}
-				result = utils.readFrom(log.path, 'UTF-8');
-				if (result.indexOf(REMOTE_TEST_FINISHED) == 0) {
+				if (Date.now() - _this._lastRemoteResponse > timeout) {
+					_this._onFinishRemoteResult()
 					break;
 				}
-				else {
-					if (result.indexOf(REMOTE_TEST_PROGRESS) == 0) {
-						fireRemoteEvent('RemoteProgress');
-					}
-					yield wait;
-				}
+				yield interval;
 			}
-			while (log.exists() && (log.lastModifiedTime - last < timeout));
-			yield wait;
-			if (!log.exists())
-				throw new Error(bungle.getString('error_remote_log_not_exist'));
 		},
 		{
 			onEnd : function(e) {
-				_this._done = true;
-				if (!aborted) {
-					fireRemoteEvent('RemoteFinish');
-				}
-				if (running.exists()) running.remove(true);
-				utils.scheduleToRemove(log);
+				_this._remoteResultListener.stop();
 				utils.scheduleToRemove(profile);
 			}
 		}
@@ -729,9 +692,12 @@ function _runWithRemotePofile(aStopper)
 			'-no-remote',
 			'-profile',
 			profile.path,
-			'-usu-start-server',
-			'-uxu-listen-port',
-			port,
+			'-uxu-testcase',
+			this._source,
+			'-uxu-output-host',
+			'localhost',
+			'-uxu-output-port',
+			server.port,
 			'-uxu-hidden'
 		]
 		.concat(this.options);
@@ -743,7 +709,55 @@ function _runWithRemotePofile(aStopper)
 
 	return true;
 }
- 	
+	 
+function onInput(aEvent) 
+{
+	this._lastRemoteResponse = Date.now();
+	if (this._aborted) {
+		this._onFinishRemoteResult();
+		return;
+	}
+	var input = aEvent.data;
+	if (/[\r\n]+$/.test(input)) {
+		if (this._remoteResultBuffer) {
+			input = this._remoteResultBuffer + input;
+			this._remoteResultBuffer = '';
+		}
+	}
+	else {
+		this._remoteResultBuffer += input;
+		return;
+	}
+	if (input.indexOf(TESTCASE_FINISED) == 0) {
+		this._onFinishRemoteResult();
+		return;
+	}
+	this._onReceiveRemoteResult(input);
+}
+ 
+function _onReceiveRemoteResult(aResult) 
+{
+	var result;
+	try {
+		eval('result = '+aResult);
+		result[result.length-1].results.forEach(function(aResult) {
+			this._onFinish(this._tests[aResult.index], aResult.type);
+		}, this);
+	}
+	catch(e) {
+		result = [];
+	}
+	this.fireEvent('RemoveProgress', result);
+}
+ 
+function _onFinishRemoteResult() 
+{
+	this._done = true;
+	if (!_this._aborted) {
+		this.fireEvent('RemoteFinish');
+	}
+}
+  	
 function _exec(aTest, aContext, aContinuation, aReport) 
 {
 	var report = {

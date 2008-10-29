@@ -22,8 +22,13 @@ function constructor(aEnvironment, aURI, aBrowser)
 {
 	this.utils = this;
 
-	this.fileURL = aURI;
-	this.baseURL = this.fileURL.replace(/[^/]*$/, '');
+	this.__defineGetter__('fileURL', function() {
+		return aURI;
+	});
+	var baseURL = aURI.replace(/[^/]*$/, '');
+	this.__defineGetter__('baseURL', function() {
+		return baseURL;
+	});
 
 	this.environment = aEnvironment || {};
     this.uniqueID = parseInt(Math.random() * 10000000000);

@@ -1060,18 +1060,6 @@ var installedUXU = Cc['@mozilla.org/extensions/manager;1']
 		.getInstallLocation('uxu@clear-code.com')
 		.getItemLocation('uxu@clear-code.com');
   
-// 通信 
-	 
-function createRandomPortNumber() 
-{
-	var socket = Cc['@mozilla.org/network/server-socket;1']
-		.createInstance(Ci.nsIServerSocket);
-	socket.init(-1, true, -1);
-	var port = socket.port;
-	socket.close();
-	return port;
-}
- 	 
 // デバッグ 
 var _console = Cc['@mozilla.org/consoleservice;1']
 		.getService(Ci.nsIConsoleService);
@@ -1085,7 +1073,7 @@ function dump()
 {
 	this.log.apply(this, arguments);
 }
-  
+  	
 const ObserverService = Cc['@mozilla.org/observer-service;1'] 
 			.getService(Ci.nsIObserverService);
 function notify(aSubject, aTopic, aData)

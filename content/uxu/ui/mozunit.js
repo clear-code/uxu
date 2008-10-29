@@ -5,7 +5,6 @@ var bundle = lib_module.require('package', 'bundle');
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var Runner = test_module.require('class', 'runner');
 var TestLog = test_module.require('class', 'test_log');
-var TestCase = test_module.require('class', 'test_case');
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -389,7 +388,7 @@ function getFocusedPath()
 	var node = document.popupNode;
 	if (node) {
 		var file = document.evaluate(
-				'ancestor-or-self::*[@role="testcase-report" or local-name()="listitem"]/@file',
+				'ancestor-or-self::*[@role="testcase-report" or local-name()="listitem"]/@source',
 				node,
 				null,
 				XPathResult.STRING_TYPE,
@@ -441,15 +440,13 @@ var runnerListener = {
 	onTestCaseStart : function(aEvent)
 	{
 		gLog.items = aEvent.data.log.items;
-		this.onLogged();
 		var report = getReport(aEvent.data.testCase.title);
-		report.setAttribute('file', aEvent.data.testCase.namespace);
+		report.setAttribute('source', aEvent.data.testCase.source);
 	},
 	onTestCaseTestFinish : function(aEvent)
 	{
 		gLog.items = aEvent.data.log.items;
 		var results = gLog.lastItem.results;
-		this.onLogged();
 		fillReportFromResult(aEvent.data.testCase.title, results[results.length-1]);
 	},
 	onTestCaseAbort : function(aEvent)
@@ -472,29 +469,7 @@ var runnerListener = {
 	},
 	onTestCaseRemoteFinish : function(aEvent)
 	{
-		gLog.items = aEvent.data.log.items;
-		buildReportsFromResults(aEvent.data.data);
 		this.onTestCaseFinish(aEvent);
-	},
-
-	onLogged : function()
-	{
-		if (!gOptions) return;
-		if (gOptions.log) {
-			utils.writeTo(
-				gLog.toString(),
-				gOptions.log,
-				'UTF-8'
-			);
-		}
-		if (gOptions.rawLog) {
-			utils.writeTo(
-				TestCase.prototype.REMOTE_TEST_PROGRESS+
-					gLog.toString(gLog.FORMAT_RAW),
-				gOptions.rawLog,
-				'UTF-8'
-			);
-		}
 	}
 };
  
@@ -510,8 +485,7 @@ function onAllTestsFinish()
 		}
 		if (gOptions.rawLog) {
 			utils.writeTo(
-				TestCase.prototype.REMOTE_TEST_FINISHED+
-					gLog.toString(gLog.FORMAT_RAW),
+				gLog.toString(gLog.FORMAT_RAW),
 				gOptions.rawLog,
 				'UTF-8'
 			);
@@ -574,8 +548,8 @@ function displayStackTraceLines(aLines, aListbox)
 		var item = document.createElement('listitem');
 		item.setAttribute('label', aLine);
 		item.setAttribute('crop', 'center');
-		var file = utils.unformatStackLine(aLine).source;
-		if (file) item.setAttribute('file', file);
+		var source = utils.unformatStackLine(aLine).source;
+		if (source) item.setAttribute('source', source);
 		aListbox.appendChild(item);
 	});
 }
@@ -783,7 +757,7 @@ function buildReportsFromResults(aResults)
 {
 	aResults.forEach(function(aResult) {
 		var report = getReport(aResult.title);
-		report.setAttribute('file', aResult.file);
+		report.setAttribute('source', aResult.source);
 		aResult.results.forEach(function(aOneResult) {
 			fillReportFromResult(aResult.title, aOneResult);
 		});
