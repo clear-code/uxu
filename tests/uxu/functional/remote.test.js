@@ -10,9 +10,19 @@ function tearDown()
 {
 }
 
-function testProfilePref()
+function testSuccess()
 {
 	var value = utils.getPref('uxu.test.pref.value.boolean');
 	assert.isNotNull(value);
 	assert.isTrue(value);
+}
+
+function testFail()
+{
+	assert.isTrue(false);
+}
+
+function testError()
+{
+	undefinedFunction();
 }
