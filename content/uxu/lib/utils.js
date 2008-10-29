@@ -1176,6 +1176,7 @@ function startListen(aPort, aListener)
 		};
 	server.addListener(listener);
 	server.start();
+	listener.port = server.port;
 	return listener;
 }
   
