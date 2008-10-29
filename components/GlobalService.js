@@ -187,11 +187,12 @@ GlobalService.prototype = {
 		var arg = {
 				server     : false,
 				serverPort : this._getNumericValueFromCommandLine('uxu-listen-port', aCommandLine, 0),
+				ouputHost  : this._getValueFromCommandLine('uxu-output-host', aCommandLine, ''),
+				ouputPort  : this._getNumericValueFromCommandLine('uxu-output-port', aCommandLine, 0),
 				testcase   : this._getFullPathFromCommandLine('uxu-testcase', aCommandLine, ''),
 				priority   : this._getValueFromCommandLine('uxu-priority', aCommandLine, null),
 				log        : this._getFullPathFromCommandLine('uxu-log', aCommandLine, ''),
 				rawLog     : this._getFullPathFromCommandLine('uxu-rawlog', aCommandLine, ''),
-				ouputPort  : this._getNumericValueFromCommandLine('uxu-output-port', aCommandLine, 0),
 				hidden     : false
 			};
 		try {
@@ -266,16 +267,19 @@ GlobalService.prototype = {
 		'  -uxu-start-server    Starts UnitTest.XUL Server instead of Firefox\n'+
 		'  -uxu-listen-port <port>\n'+
 		'                       Listening port of UnitTest.XUL Server\n'+
+		'  -uxu-output-host <host>\n'+
+		'                       Output the result of the testcase\n'+
+		'                       to the host in raw format\n',
+		'  -uxu-output-port <port>\n'+
+		'                       Listening port of the host specified by the\n'+
+		'                       "-uxu-output-host" option\n'+
 		'  -uxu-testcase <url>  Run the testcase in UnitTest.XUL\n'+
 		'  -uxu-priority <priority>\n'+
 		'                       Run all tests in the testcase with the priority\n'+
 		'  -uxu-log <url>       Output the result of the testcase\n'+
 		'                       in human readable format\n'+
 		'  -uxu-rawlog <url>    Output the result of the testcase\n'+
-		'                       in raw format\n'+
-		'  -uxu-output-port <port>\n'+
-		'                       Output the result of the testcase\n'+
-		'                       to the port in raw format\n',
+		'                       in raw format\n',
 
 
 	/* nsIFactory */
