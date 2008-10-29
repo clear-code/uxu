@@ -24,7 +24,6 @@
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']); 
 var fsm    = lib_module.require('package', 'fsm');
 var bundle = lib_module.require('package', 'bundle');
-var Messenger = lib_module.require('class', 'messenger');
 var utils  = {};
 utils.__proto__ = lib_module.require('package', 'utils');
 
@@ -652,10 +651,11 @@ function _runWithRemotePofile(aStopper)
 	}
 
 	this._remoteResultBuffer = '';
-	this._remoteResultListener = new Server();
-	this._remoteResultListener.addListener(this);
-	this._remoteResultListener.start();
 	this._lastRemoteResponse = Date.now();
+
+	var server = new Server();
+	server.addListener(this);
+	server.start();
 
 	this.fireEvent('RemoteStart');
 
@@ -671,6 +671,7 @@ function _runWithRemotePofile(aStopper)
 					_this._aborted = true;
 					_this.fireEvent('OutputRequest', TESTCASE_ABORTED);
 					_this.fireEvent('Abort');
+					_this._onFinishRemoteResult();
 					break;
 				}
 				if (Date.now() - _this._lastRemoteResponse > timeout) {
@@ -682,7 +683,8 @@ function _runWithRemotePofile(aStopper)
 		},
 		{
 			onEnd : function(e) {
-				_this._remoteResultListener.stop();
+				server.stop();
+				server = null;
 				utils.scheduleToRemove(profile);
 			}
 		}
@@ -713,10 +715,6 @@ function _runWithRemotePofile(aStopper)
 function onInput(aEvent) 
 {
 	this._lastRemoteResponse = Date.now();
-	if (this._aborted) {
-		this._onFinishRemoteResult();
-		return;
-	}
 	var input = aEvent.data;
 	if (/[\r\n]+$/.test(input)) {
 		if (this._remoteResultBuffer) {
