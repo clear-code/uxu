@@ -7,9 +7,6 @@ var Runner = test_module.require('class', 'runner');
 var TestLog = test_module.require('class', 'test_log');
 var TestCase = test_module.require('class', 'test_case');
 
-var server_module = new ModuleManager(['chrome://uxu/content/server']);
-var Message = server_module.require('class', 'message');
-
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
@@ -497,8 +494,7 @@ var gRemoteRun = {
 				msg = gLog.toString(gLog.FORMAT_RAW);
 				break;
 		}
-		var message = new Message(msg, gOptions.outputHost, gOptions.outputPort, this);
-		message.send();
+		utils.sendMessage(msg, gOptions.outputHost, gOptions.outputPort, this);
 	},
 
 	onResponse : function(aResponseText)

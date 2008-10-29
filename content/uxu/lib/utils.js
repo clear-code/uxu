@@ -6,9 +6,12 @@ const Ci = Components.interfaces;
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var bundle = lib_module.require('package', 'bundle');
 
+var server_module = new ModuleManager(['chrome://uxu/content/server']);
+var Message = server_module.require('class', 'message');
+
 var IOService = Cc['@mozilla.org/network/io-service;1']
 		.getService(Ci.nsIIOService);
-	 
+	
 // ファイル操作 
 	
 function normalizeToFile(aFile) 
@@ -1016,7 +1019,7 @@ function strictlyEquals(aObject1, aObject2)
 }
   
 // アプリケーション 
-	 
+	
 var product = (function() { 
 	var XULAppInfo = Cc['@mozilla.org/xre/app-info;1']
 			.getService(Ci.nsIXULAppInfo);
@@ -1032,7 +1035,7 @@ var product = (function() {
 			return '';
 	}
 })();
- 	
+ 
 var productExecutable = getFileFromKeyword('XREExeF'); 
  
 function restartApplication() 
@@ -1085,7 +1088,7 @@ function getInstalledLocationOfProduct(aProduct)
 			return null;
 	}
 }
-	 
+	
 function _getInstalledLocationOfMozillaProduct(aProduct) 
 {
 	if (
@@ -1134,6 +1137,14 @@ function _getInstalledLocationOfMozillaProduct(aProduct)
 	return null;
 }
    
+// 通信 
+	
+function sendMessage(aMessage, aHost, aPort, aListener) 
+{
+	var message = new Message(aMessage, aHost, aPort, aListener);
+	message.send();
+}
+  
 // デバッグ 
 var _console = Cc['@mozilla.org/consoleservice;1']
 		.getService(Ci.nsIConsoleService);

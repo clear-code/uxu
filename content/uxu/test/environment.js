@@ -508,6 +508,8 @@ inspectDOMNode
 p
 product
 productExecutable
+getInstalledLocationOfProduct
+sendMessage
 log
 dump
 notify
