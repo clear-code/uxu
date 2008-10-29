@@ -78,20 +78,14 @@ function exit()
 function print()
 {
 	var message = Array.slice(arguments).join('');
-	if (this.output)
-		this.output.write(message, message.length);
-	else
-		dump("QUITED: " + message);
+	this.fireEvent('HandlerOutputRequest', message);
 }
 
 function puts()
 {
 	var message = Array.slice(arguments).join('\n');
 	if (!/\n$/.test(message)) message += '\n';
-	if (this.output)
-		this.output.write(message, message.length);
-	else
-		dump("QUITED: " + message);
+	this.fireEvent('HandlerOutputRequest', message);
 }
 
 function p()

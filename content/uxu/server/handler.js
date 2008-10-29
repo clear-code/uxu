@@ -44,6 +44,14 @@ function onHandlerCloseRequest()
 	this.destroy();
 }
 
+function onHandlerOutputRequest(aEvent)
+{
+	if (this._output)
+		this._output.write(aEvent.data, aEvent.data.length);
+	else
+		dump("QUITED: " + aEvent.data);
+}
+
 
 // nsIStreamListener
 
