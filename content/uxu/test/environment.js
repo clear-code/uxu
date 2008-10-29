@@ -510,6 +510,7 @@ product
 productExecutable
 getInstalledLocationOfProduct
 sendMessage
+startListen
 log
 dump
 notify
