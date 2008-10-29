@@ -253,7 +253,7 @@ function startup()
 		if (gOptions instanceof Ci.nsIPropertyBag) {
 			var jsobj = {};
 			jsobj.testcase   = gOptions.getProperty('testcase');
-			jsobj.outputPort = gOptions.getProperty('outputHost');
+			jsobj.outputHost = gOptions.getProperty('outputHost');
 			jsobj.outputPort = gOptions.getProperty('outputPort');
 			jsobj.log        = gOptions.getProperty('log');
 			jsobj.rawLog     = gOptions.getProperty('rawLog');
