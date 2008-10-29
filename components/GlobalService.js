@@ -254,7 +254,7 @@ GlobalService.prototype = {
 	},
 	_getValueFromCommandLine : function(aOption, aCommandLine, aDefaultValue)
 	{
-		if (!aDefaultValue) aDefaultValue = '';
+		if (aDefaultValue === void(0)) aDefaultValue = '';
 		try {
 			return aCommandLine.handleFlagWithParam(aOption, false);
 		}

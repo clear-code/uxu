@@ -11,7 +11,7 @@ var inherits = lib_module.require('class', 'event_target');
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var Handler = server_module.require('class', 'handler');
 
-function constructor(aListener, aPort)
+function constructor(aPort)
 {
 	this._port  = (typeof aPort == 'number') ? aPort : -1 ;
 	this.__defineGetter__('port', function() {
