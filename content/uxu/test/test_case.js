@@ -744,7 +744,7 @@ function _onReceiveRemoteResult(aResult)
 	catch(e) {
 		result = [];
 	}
-	this.fireEvent('RemoveProgress', result);
+	this.fireEvent('RemoteProgress', result);
 }
  
 function _onFinishRemoteResult() 

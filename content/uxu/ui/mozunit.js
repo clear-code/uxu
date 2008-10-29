@@ -478,7 +478,9 @@ var runnerListener = {
 	},
 	onTestCaseRemoteFinish : function(aEvent)
 	{
-		this.onTestCaseFinish(aEvent);
+		var results = gLog.lastItem.results;
+		fillReportFromResult(aEvent.data.testCase.title, results[results.length-1]);
+		this.sendResult(true);
 	},
 
 	sendResult : function(aFinish)
@@ -491,7 +493,7 @@ var runnerListener = {
 
 		var message = new Message(
 				(aFinish ?
-					TestCase.TESTCASE_FINISED :
+					TestCase.prototype.TESTCASE_FINISED :
 					gLog.toString(gLog.FORMAT_RAW)
 				),
 				gOptions.outputHost,
@@ -502,7 +504,8 @@ var runnerListener = {
 	},
 	onResponse : function(aResponseText)
 	{
-		if (aResponseText.indexOf(TestCase.TESTCASE_ABORTED) == 0) {
+		dump('UXU RESPONSE: '+aResponseText+'\n');
+		if (aResponseText.indexOf(TestCase.prototype.TESTCASE_ABORTED) == 0) {
 			stop();
 		}
 	}

@@ -240,6 +240,7 @@ function handleEvent(aEvent)
 
 		case 'RemoteProgress':
 			this._log.append(aEvent.data);
+			this._onTestCaseEvent(aEvent);
 			break;
 
 		case 'Abort':
