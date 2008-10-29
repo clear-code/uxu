@@ -3,6 +3,7 @@ pref("extensions.uxu.global", false);
 
 pref("extensions.uxu.run.ignoreHiddenFiles", true);
 pref("extensions.uxu.run.timeout", 30000);
+pref("extensions.uxu.run.timeout.application", 300000);
 pref("extensions.uxu.run.history.expire.days", 30); // days
 pref("extensions.uxu.defaultEncoding", "UTF-8");
 pref("extensions.uxu.priority.important", "0.9");

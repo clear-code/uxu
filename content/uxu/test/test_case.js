@@ -66,6 +66,7 @@ catch(e) {
 }
  
 const REMOTE_PROFILE_PREFIX = 'uxu-test-profile'; 
+const TESTCASE_STARTED = '/*uxu-testcase-started*/';
 const TESTCASE_FINISED = '/*uxu-testcase-finished*/';
 const TESTCASE_ABORTED = '/*uxu-testcase-aborted*/';
  
@@ -633,7 +634,7 @@ function _runWithRemotePofile(aStopper)
 {
 	if (!this.profile.exists()) return false;
 
-	this.fireEvent('RemoteStart');
+	this.fireEvent('Start');
 
 	var profile = utils.getFileFromKeyword('TmpD');
 	profile.append(REMOTE_PROFILE_PREFIX);
@@ -652,6 +653,7 @@ function _runWithRemotePofile(aStopper)
 
 	this._remoteResultBuffer = '';
 	this._lastRemoteResponse = Date.now();
+	this._remoteReady = false;
 
 	var server = new Server();
 	server.addListener(this);
@@ -678,29 +680,41 @@ function _runWithRemotePofile(aStopper)
 
 	var _this = this;
 	var interval = 100;
-	var timeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout'));
+	var readyTimeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout.application'));
+	var testCaseTimeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout'));
+	var report = {};
 	utils.doIteration(
 		function() {
 			var last = Date.now();
 			var current;
+			var timeout;
 			while (!_this._done)
 			{
+				timeout = _this._remoteReady ? testCaseTimeout : readyTimeout ;
 				if (!_this._aborted && _this._stopper && _this._stopper()) {
 					_this._aborted = true;
-					_this.fireEvent('OutputRequest', TESTCASE_ABORTED);
-					_this.fireEvent('Abort');
-					_this._onFinishRemoteResult();
-					break;
 				}
 				if (Date.now() - _this._lastRemoteResponse > timeout) {
-					_this._onFinishRemoteResult()
-					break;
+					throw new Error(bundle.getFormattedString('error_remote_timeout', [parseInt(timeout / 1000)]));
 				}
 				yield interval;
 			}
 		},
 		{
 			onEnd : function(e) {
+				report.result = 'success';
+				_this._onFinishRemoteResult(report);
+
+				server.stop();
+				server = null;
+				utils.scheduleToRemove(profile);
+			},
+			onError : function(e) {
+				report.result = 'error';
+				report.exception = e;
+				report.testDescription = bundle.getFormattedString('report_description_remote', [_this.title]);
+				_this._onFinishRemoteResult(report);
+
 				server.stop();
 				server = null;
 				utils.scheduleToRemove(profile);
@@ -725,8 +739,17 @@ function onInput(aEvent)
 		this._remoteResultBuffer += input;
 		return;
 	}
-	if (input.indexOf(TESTCASE_FINISED) == 0) {
-		this._onFinishRemoteResult();
+	if (this._aborted) {
+		this.fireEvent('OutputRequest', TESTCASE_ABORTED);
+		this.fireEvent('Abort');
+		return;
+	}
+	if (input.indexOf(TESTCASE_STARTED) == 0) {
+		this._remoteReady = true;
+		return;
+	}
+	else if (input.indexOf(TESTCASE_FINISED) == 0) {
+		this._done = true;
 		return;
 	}
 	this._onReceiveRemoteResult(input);
@@ -744,14 +767,14 @@ function _onReceiveRemoteResult(aResult)
 	catch(e) {
 		result = [];
 	}
-	this.fireEvent('RemoteProgress', result);
+	this.fireEvent('RemoteTestFinish', result);
 }
  
-function _onFinishRemoteResult() 
+function _onFinishRemoteResult(aReport) 
 {
 	this._done = true;
 	if (!this._aborted) {
-		this.fireEvent('RemoteFinish');
+		this.fireEvent('Finish', aReport);
 	}
 }
   	

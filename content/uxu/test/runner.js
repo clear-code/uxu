@@ -209,7 +209,6 @@ function handleEvent(aEvent)
 	switch (aEvent.type)
 	{
 		case 'Start':
-		case 'RemoteStart':
 			this.runningCount++;
 			this._log.onStart(aEvent);
 			this._onTestCaseEvent(aEvent);
@@ -222,12 +221,15 @@ function handleEvent(aEvent)
 		case 'TestFinish':
 			this._log.onTestFinish(aEvent);
 			this._onTestCaseEvent(aEvent);
-			this.fireEvent('Report', aEvent.data);
+			break;
+
+		case 'RemoteTestFinish':
+			this._log.append(aEvent.data);
+			this._onTestCaseEvent(aEvent);
 			break;
 
 		case 'Finish':
 			this._log.onFinish(aEvent);
-		case 'RemoteFinish':
 			this.runningCount--;
 			this._onTestCaseEvent(aEvent);
 			this._cleanUpModifications(aEvent.target);
@@ -236,11 +238,6 @@ function handleEvent(aEvent)
 				utils.setPref('extensions.uxu.running', false);
 				this.fireEvent('Finish');
 			}
-			break;
-
-		case 'RemoteProgress':
-			this._log.append(aEvent.data);
-			this._onTestCaseEvent(aEvent);
 			break;
 
 		case 'Abort':

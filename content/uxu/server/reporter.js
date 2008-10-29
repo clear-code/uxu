@@ -42,7 +42,7 @@ try {
 			this.onStart(aEvent);
 			break;
 
-		case 'Report':
+		case 'TestCaseTestFinish':
 			this.onTestFinish(aEvent);
 			break;
 
@@ -80,7 +80,7 @@ function onFinish(aEvent)
 
 function onTestFinish(aEvent)
 {
-	var report = aEvent.data;
+	var report = aEvent.data.data;
 	switch (report.result)
 	{
 	    case 'passover':

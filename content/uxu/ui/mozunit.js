@@ -445,17 +445,24 @@ var runnerListener = {
 	// events from testcases
 	onTestCaseStart : function(aEvent)
 	{
+		this.sendMessage('start');
 		gLog.items = aEvent.data.log.items;
-		this.sendResult();
+		this.sendMessage('progress');
 		var report = getReport(aEvent.data.testCase.title);
 		report.setAttribute('source', aEvent.data.testCase.source);
 	},
 	onTestCaseTestFinish : function(aEvent)
 	{
 		gLog.items = aEvent.data.log.items;
-		this.sendResult();
+		this.sendMessage('progress');
 		var results = gLog.lastItem.results;
 		fillReportFromResult(aEvent.data.testCase.title, results[results.length-1]);
+	},
+	onTestCaseRemoteTestFinish : function(aEvent)
+	{
+		gLog.items = aEvent.data.log.items;
+		this.sendMessage('progress');
+		buildReportsFromResults(aEvent.data.data);
 	},
 	onTestCaseAbort : function(aEvent)
 	{
@@ -464,24 +471,10 @@ var runnerListener = {
 	onTestCaseFinish : function(aEvent)
 	{
 		this.onTestCaseTestFinish(aEvent);
-		this.sendResult(true);
+		this.sendMessage('finish');
 	},
 
-	onTestCaseRemoteStart : function(aEvent)
-	{
-		this.onTestCaseStart(aEvent);
-	},
-	onTestCaseRemoteProgress : function(aEvent)
-	{
-		gLog.items = aEvent.data.log.items;
-		buildReportsFromResults(aEvent.data.data);
-	},
-	onTestCaseRemoteFinish : function(aEvent)
-	{
-		this.sendResult(true);
-	},
-
-	sendResult : function(aFinish)
+	sendMessage : function(aType)
 	{
 		if (
 			!gOptions ||
@@ -489,15 +482,20 @@ var runnerListener = {
 			)
 			return;
 
-		var message = new Message(
-				(aFinish ?
-					TestCase.prototype.TESTCASE_FINISED :
-					gLog.toString(gLog.FORMAT_RAW)
-				),
-				gOptions.outputHost,
-				gOptions.outputPort,
-				this
-			);
+		var msg;
+		switch (aType)
+		{
+			case 'start':
+				msg = TestCase.prototype.TESTCASE_STARTED;
+				break;
+			case 'finish':
+				msg = TestCase.prototype.TESTCASE_FINISED;
+				break;
+			default:
+				msg = gLog.toString(gLog.FORMAT_RAW);
+				break;
+		}
+		var message = new Message(msg, gOptions.outputHost, gOptions.outputPort, this);
 		message.send();
 	},
 	onResponse : function(aResponseText)
@@ -508,7 +506,7 @@ var runnerListener = {
 		}
 	}
 };
- 
+ 	
 function onAllTestsFinish() 
 {
 	if (gOptions) {
@@ -686,7 +684,8 @@ function runFailed()
  
 function stop() 
 {
-	gRunner.abort();
+	if (gRunner) gRunner.abort();
+	gRunner = null;
 	_('stop').setAttribute('disabled', true);
 }
   
@@ -780,7 +779,7 @@ function fillReportFromResult(aTitle, aResult)
 	if (aResult.description) {
 		_(wTestReport, 'additionalInfo').textContent = aResult.description;
 	}
-	if (aResult.stackTrace) {
+	if (aResult.stackTrace && aResult.stackTrace.length) {
 		displayStackTraceLines(aResult.stackTrace, _(wTestReport, 'stack-trace'));
 		_(wTestReport, 'stack-trace').hidden = false;
 	}
@@ -937,7 +936,7 @@ function stopAllProgressMeters()
 		nodes.snapshotItem(i).setAttribute('mode', 'determined');
 	}
 }
- 	 
+  
 /* commands */ 
 	
 function saveReport(aPath, aFormat) 
