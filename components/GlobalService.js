@@ -269,7 +269,7 @@ GlobalService.prototype = {
 		'                       Listening port of UnitTest.XUL Server\n'+
 		'  -uxu-output-host <host>\n'+
 		'                       Output the result of the testcase\n'+
-		'                       to the host in raw format\n',
+		'                       to the host in raw format\n'+
 		'  -uxu-output-port <port>\n'+
 		'                       Listening port of the host specified by the\n'+
 		'                       "-uxu-output-host" option\n'+
