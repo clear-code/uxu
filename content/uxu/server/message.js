@@ -19,15 +19,15 @@ function constructor(aMessage, aHost, aPort, aListener)
 				.createInstance(Ci.nsIScriptableInputStream);
 	this._scriptableInput.init(this._input);
 
-	var pump = Cc['@mozilla.org/network/input-stream-pump;1']
-			.createInstance(Ci.nsIInputStreamPump);
-	pump.init(this._input, -1, -1, 0, 0, false);
-	pump.asyncRead(this, null);
+	this._output.write(this._message, this._message.length);
 }
 
 function send()
 {
-	this._output.write(this._message, this._message.length);
+	var pump = Cc['@mozilla.org/network/input-stream-pump;1']
+			.createInstance(Ci.nsIInputStreamPump);
+	pump.init(this._input, -1, -1, 0, 0, false);
+	pump.asyncRead(this, null);
 }
 
 function onStartRequest(aRequest, aContext)

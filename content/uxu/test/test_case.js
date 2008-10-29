@@ -756,7 +756,7 @@ function onInput(aEvent)
 		return;
 	}
 	if (this._aborted) {
-		this.fireEvent('OutputRequest', TESTCASE_ABORTED);
+		this.fireEvent('OutputRequest', TESTCASE_ABORTED+'\n');
 		this.fireEvent('Abort');
 		return;
 	}

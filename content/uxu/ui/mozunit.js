@@ -228,7 +228,7 @@ const fileDNDObserver =
 }; 
    
 /* DOMAIN */ 
-	
+	 
 function startup() 
 {
 	gLog = new TestLog();
@@ -273,7 +273,8 @@ function startup()
 		if (gOptions.rawLog && gOptions.rawLog.indexOf('file://') > -1)
 			gOptions.rawLog = utils.getFilePathFromURLSpec(gOptions.rawLog);
 		if (gOptions.testcase) {
-			run(gOptions.priority);
+			messenger.send('start');
+			runWithDelay(gOptions.priority);
 		}
 		if (gOptions.hidden) {
 			window.setTimeout(function() { window.minimize(); }, 0);
@@ -425,7 +426,8 @@ var runnerListener = {
 		}
 	},
 	onProgress : function(aEvent)
-	{
+	{			stop();
+
 		setRunningState(true);
 		_('testRunningProgressMeter').setAttribute('value', aEvent.data);
 	},
@@ -445,23 +447,22 @@ var runnerListener = {
 	// events from testcases
 	onTestCaseStart : function(aEvent)
 	{
-		this.sendMessage('start');
 		gLog.items = aEvent.data.log.items;
-		this.sendMessage('progress');
+		messenger.send('progress');
 		var report = getReport(aEvent.data.testCase.title);
 		report.setAttribute('source', aEvent.data.testCase.source);
 	},
 	onTestCaseTestFinish : function(aEvent)
 	{
 		gLog.items = aEvent.data.log.items;
-		this.sendMessage('progress');
+		messenger.send('progress');
 		var results = gLog.lastItem.results;
 		fillReportFromResult(aEvent.data.testCase.title, results[results.length-1]);
 	},
 	onTestCaseRemoteTestFinish : function(aEvent)
 	{
 		gLog.items = aEvent.data.log.items;
-		this.sendMessage('progress');
+		messenger.send('progress');
 		buildReportsFromResults(aEvent.data.data);
 	},
 	onTestCaseAbort : function(aEvent)
@@ -471,10 +472,12 @@ var runnerListener = {
 	onTestCaseFinish : function(aEvent)
 	{
 		this.onTestCaseTestFinish(aEvent);
-		this.sendMessage('finish');
-	},
-
-	sendMessage : function(aType)
+		messenger.send('finish');
+	}
+};
+ 
+var messenger = { 
+	send : function(aType)
 	{
 		if (
 			!gOptions ||
@@ -498,40 +501,41 @@ var runnerListener = {
 		var message = new Message(msg, gOptions.outputHost, gOptions.outputPort, this);
 		message.send();
 	},
+
 	onResponse : function(aResponseText)
 	{
-		dump('UXU RESPONSE: '+aResponseText+'\n');
-		if (aResponseText.indexOf(TestCase.prototype.TESTCASE_ABORTED) == 0) {
-			stop();
+		if (aResponseText.indexOf(TestCase.prototype.TESTCASE_ABORTED) != 0)
+			return;
+
+		cancelDelayedRun();
+		stop();
+		if (gOptions) {
+			if (gOptions.log) {
+				utils.writeTo(
+					gLog.toString(),
+					gOptions.log,
+					'UTF-8'
+				);
+			}
+			if (gOptions.rawLog) {
+				utils.writeTo(
+					gLog.toString(gLog.FORMAT_RAW),
+					gOptions.rawLog,
+					'UTF-8'
+				);
+			}
+			if (gOptions.testcase && (gOptions.hidden || gOptions.log || gOptions.rawLog)) {
+				const startup = Cc['@mozilla.org/toolkit/app-startup;1']
+								.getService(Ci.nsIAppStartup);
+				startup.quit(startup.eForceQuit);
+				return;
+			}
 		}
 	}
 };
  	
 function onAllTestsFinish() 
 {
-	if (gOptions) {
-		if (gOptions.log) {
-			utils.writeTo(
-				gLog.toString(),
-				gOptions.log,
-				'UTF-8'
-			);
-		}
-		if (gOptions.rawLog) {
-			utils.writeTo(
-				gLog.toString(gLog.FORMAT_RAW),
-				gOptions.rawLog,
-				'UTF-8'
-			);
-		}
-		if (gOptions.testcase && (gOptions.hidden || gOptions.log || gOptions.rawLog)) {
-			const startup = Cc['@mozilla.org/toolkit/app-startup;1']
-							.getService(Ci.nsIAppStartup);
-			startup.quit(startup.eForceQuit);
-			return;
-		}
-	}
-
 	utils.setPref(
 		'extensions.uxu.mozunit.lastResults',
 		gLog.toString(gLog.FORMAT_RAW)
@@ -657,6 +661,21 @@ function runByPref()
 {
 	run(utils.getPref('extensions.uxu.mozunit.runMode') == 1 ? 'must' : null );
 }
+ 
+function runWithDelay(aMasterPriority) 
+{
+	_delayedRunTimer = window.setTimeout(function() {
+		_delayedRunTimer = null;
+		run(aMasterPriority);
+	}, 0);
+}
+function cancelDelayedRun()
+{
+	if (!_delayedRunTimer) return;
+	window.clearTimeout(_delayedRunTimer);
+	_delayedRunTimer = null;
+}
+var _delayedRunTimer = null;
   
 function runFailed() 
 {
