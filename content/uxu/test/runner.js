@@ -118,6 +118,7 @@ function _getTestsFromSuite(aSuite)
 				{
 					source        : aSuite.fileURL,
 					profile       : aSuite.profile,
+					application   : aSuite.application,
 					options       : aSuite.options,
 					priority      : aSuite.priority,
 					context       : aSuite.testContext,

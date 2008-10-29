@@ -84,7 +84,7 @@ function constructor(aTitle, aOptions)
 	if (!aOptions) aOptions = {};
 
 	this._initSource(aOptions);
-	this._initProfile(aOptions);
+	this._initRemote(aOptions);
 
 	this._title = aTitle;
 	this.__defineGetter__(
@@ -175,7 +175,7 @@ function _initSource(aOptions)
 	utils.baseURL = source.replace(/[^\/]*$/, '');
 }
  
-function _initProfile(aOptions) 
+function _initRemote(aOptions) 
 {
 	var runningProfile = utils.getURLSpecFromFile(utils.getFileFromKeyword('ProfD'));
 	runningProfile = runningProfile.replace(/([^\/])$/, '$1/');
@@ -184,24 +184,13 @@ function _initProfile(aOptions)
 	this._profile = null;
 	this.__defineSetter__(
 		'profile', function(aValue) {
-			this._profile = null;
-			if (aValue) {
-				try {
-					this._profile = utils.fixupIncompleteURI(aValue).replace(/([^\/])$/, '$1/');
-					this._profile = utils.getFileFromURLSpec(this._profile);
-					this._profile.normalize();
-					if (
-						!this._profile.exists() ||
-						!this._profile.isDirectory()
-						)
-						this._profile = null;
-				}
-				catch(e) {
-				}
-			}
-			if (!this._profile) {
-				this._profile = runningProfile;
-			}
+			this._profile = aValue ? utils.normalizeToFile(aValue) : null ;
+			if (
+				!this._profile ||
+				!this._profile.exists() ||
+				!this._profile.isDirectory()
+				)
+				this._profile = null;
 			return this._profile;
 		});
 	this.__defineGetter__(
@@ -213,6 +202,23 @@ function _initProfile(aOptions)
 			var tmp = utils.getFileFromKeyword('TmpD');
 			return this._profile.path != runningProfile.path &&
 				!runningProfile.parent.equals(tmp);
+		});
+
+	this._application = null;
+	this.__defineSetter__(
+		'application', function(aValue) {
+			this._application = aValue ? utils.normalizeToFile(aValue) : null ;
+			if (
+				!this._application ||
+				!this._application.exists() ||
+				this._application.isDirectory()
+				)
+				this._application = null;
+			return this._application;
+		});
+	this.__defineGetter__(
+		'application', function() {
+			return this._application;
 		});
 
 	this._options = [];
@@ -230,6 +236,7 @@ function _initProfile(aOptions)
 		});
 
 	this.profile = aOptions.profile;
+	this.application = aOptions.application;
 	this.options = aOptions.options;
 }
   
@@ -632,14 +639,14 @@ function run(aStopper)
 	 
 function _runWithRemotePofile(aStopper) 
 {
-	if (!this.profile.exists()) return false;
+	if (!this._profile || !this._profile.exists()) return false;
 
 	this.fireEvent('Start');
 
 	var profile = utils.getFileFromKeyword('TmpD');
 	profile.append(REMOTE_PROFILE_PREFIX);
 	profile.createUnique(profile.DIRECTORY_TYPE, 0777);
-	this.profile.copyTo(profile.parent, profile.leafName);
+	this._profile.copyTo(profile.parent, profile.leafName);
 
 	// 実行時の優先度計算のために必要
 	utils.dbFile.copyTo(profile, utils.dbFile.leafName);
@@ -675,7 +682,7 @@ function _runWithRemotePofile(aStopper)
 
 	var process = Cc['@mozilla.org/process/util;1']
 				.createInstance(Ci.nsIProcess);
-	process.init(utils.productExecutable);
+	process.init(this._application || utils.productExecutable);
 	process.run(false, args, args.length);
 
 	var _this = this;
