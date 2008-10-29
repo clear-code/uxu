@@ -9,7 +9,7 @@ var testcase;
 
 function setUp()
 {
-	testcase = new TestCaseClass('description', { namespace : 'http://www.clear-code.com/' });
+	testcase = new TestCaseClass('description');
 	yield 0; // to run tests progressively
 }
 
@@ -20,7 +20,6 @@ function tearDown()
 function testProperties()
 {
 	assert.equals('description', testcase.title);
-	assert.equals('http://www.clear-code.com/', testcase.namespace);
 	assert.isNull(testcase.masterPriority);
 }
 
