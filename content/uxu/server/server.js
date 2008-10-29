@@ -11,7 +11,11 @@ var utils = lib_module.require('package', 'utils');
 
 function constructor(aPort)
 {
-	this.port   = aPort;
+	this._port  = (typeof aPort == 'number') ? aPort : -1 ;
+	this.__defineGetter__('port', function() {
+		return this.socket ? this.socket.port : this._port ;
+	});
+
 	this.socket = null;
 	this._handlers = [];
 }
@@ -22,7 +26,7 @@ function start(aListener)
 		.createInstance(Ci.nsIServerSocket);
 
 	try {
-		this.socket.init(this.port, true, -1);
+		this.socket.init(this._port, true, -1);
 		this.socket.asyncListen(this);
 	}
 	catch (e) {
