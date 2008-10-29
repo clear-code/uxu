@@ -273,7 +273,7 @@ function startup()
 		if (gOptions.rawLog && gOptions.rawLog.indexOf('file://') > -1)
 			gOptions.rawLog = utils.getFilePathFromURLSpec(gOptions.rawLog);
 		if (gOptions.testcase) {
-			messenger.send('start');
+			gRemoteRun.onEvent('start');
 			runWithDelay(gOptions.priority);
 		}
 		if (gOptions.hidden) {
@@ -426,8 +426,7 @@ var runnerListener = {
 		}
 	},
 	onProgress : function(aEvent)
-	{			stop();
-
+	{
 		setRunningState(true);
 		_('testRunningProgressMeter').setAttribute('value', aEvent.data);
 	},
@@ -448,21 +447,21 @@ var runnerListener = {
 	onTestCaseStart : function(aEvent)
 	{
 		gLog.items = aEvent.data.log.items;
-		messenger.send('progress');
+		gRemoteRun.onEvent('progress');
 		var report = getReport(aEvent.data.testCase.title);
 		report.setAttribute('source', aEvent.data.testCase.source);
 	},
 	onTestCaseTestFinish : function(aEvent)
 	{
 		gLog.items = aEvent.data.log.items;
-		messenger.send('progress');
+		gRemoteRun.onEvent('progress');
 		var results = gLog.lastItem.results;
 		fillReportFromResult(aEvent.data.testCase.title, results[results.length-1]);
 	},
 	onTestCaseRemoteTestFinish : function(aEvent)
 	{
 		gLog.items = aEvent.data.log.items;
-		messenger.send('progress');
+		gRemoteRun.onEvent('progress');
 		buildReportsFromResults(aEvent.data.data);
 	},
 	onTestCaseAbort : function(aEvent)
@@ -472,12 +471,12 @@ var runnerListener = {
 	onTestCaseFinish : function(aEvent)
 	{
 		this.onTestCaseTestFinish(aEvent);
-		messenger.send('finish');
+		gRemoteRun.onEvent('finish');
 	}
 };
  
-var messenger = { 
-	send : function(aType)
+var gRemoteRun = { 
+	onEvent : function(aType)
 	{
 		if (
 			!gOptions ||
@@ -507,8 +506,17 @@ var messenger = {
 		if (aResponseText.indexOf(TestCase.prototype.TESTCASE_ABORTED) != 0)
 			return;
 
-		cancelDelayedRun();
-		stop();
+		if (gRunner) {
+			stop();
+		}
+		else {
+			cancelDelayedRun();
+			this.onFinish();
+		}
+	},
+
+	onFinish : function()
+	{
 		if (gOptions) {
 			if (gOptions.log) {
 				utils.writeTo(
@@ -548,6 +556,8 @@ function onAllTestsFinish()
 	_('saveReport').removeAttribute('disabled');
 
 	stopAllProgressMeters();
+
+	gRemoteRun.onFinish();
 
 	if (gAborted) {
 		_('testResultStatus').setAttribute('label', bundle.getString('all_abort'));
