@@ -5,6 +5,10 @@ var bundle = lib_module.require('package', 'bundle');
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var Runner = test_module.require('class', 'runner');
 var TestLog = test_module.require('class', 'test_log');
+var TestCase = test_module.require('class', 'test_case');
+
+var server_module = new ModuleManager(['chrome://uxu/content/server']);
+var Message = server_module.require('class', 'message');
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -440,12 +444,14 @@ var runnerListener = {
 	onTestCaseStart : function(aEvent)
 	{
 		gLog.items = aEvent.data.log.items;
+		this.sendResult();
 		var report = getReport(aEvent.data.testCase.title);
 		report.setAttribute('source', aEvent.data.testCase.source);
 	},
 	onTestCaseTestFinish : function(aEvent)
 	{
 		gLog.items = aEvent.data.log.items;
+		this.sendResult();
 		var results = gLog.lastItem.results;
 		fillReportFromResult(aEvent.data.testCase.title, results[results.length-1]);
 	},
@@ -456,6 +462,7 @@ var runnerListener = {
 	onTestCaseFinish : function(aEvent)
 	{
 		this.onTestCaseTestFinish(aEvent);
+		this.sendResult(true);
 	},
 
 	onTestCaseRemoteStart : function(aEvent)
@@ -470,6 +477,32 @@ var runnerListener = {
 	onTestCaseRemoteFinish : function(aEvent)
 	{
 		this.onTestCaseFinish(aEvent);
+	},
+
+	sendResult : function(aFinish)
+	{
+		if (
+			!gOptions ||
+			(!gOptions.outputHost && !gOptions.outputPort)
+			)
+			return;
+
+		var message = new Message(
+				(aFinish ?
+					TestCase.TESTCASE_FINISED :
+					gLog.toString(gLog.FORMAT_RAW)
+				),
+				gOptions.outputHost,
+				gOptions.outputPort,
+				this
+			);
+		message.send();
+	},
+	onResponse : function(aResponseText)
+	{
+		if (aResponseText.indexOf(TestCase.TESTCASE_ABORTED) == 0) {
+			stop();
+		}
 	}
 };
  
