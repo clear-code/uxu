@@ -18,6 +18,8 @@ function constructor(aInput, aOutput)
 	this._input = scriptableInput;
 	this._output = aOutput;
 
+	this._buffer = '';
+
 	pump.init(aInput, -1, -1, 0, 0, false);
 	pump.asyncRead(this, null);
 }
@@ -26,6 +28,7 @@ function destroy()
 {
 	this._input.close();
 	this._input = null;
+	this._buffer = '';
 
 	this._output.close();
 	this._output = null;
@@ -59,6 +62,5 @@ function onDataAvailable(aRequest, aContext, aInputStream, aOffset, aCount)
 {
 	if (!this._input) return;
 	var input = this._input.read(aCount);
-	if (aOffset) input = input.substring(aOffset);
 	if (input) this.fireEvent('Input', input);
 }

@@ -42,7 +42,6 @@ function onStopRequest(aRequest, aContext, aStatus)
 function onDataAvailable(aRequest, aContext, aInputStream, aOffset, aCount)
 {
 	var chunk = this._scriptableInput.read(aCount);
-	if (aOffset) chunk = chunk.substring(aOffset);
 	if (/[\r\n]+$/.test(chunk)) {
 		if (this._remoteResultBuffer) {
 			chunk = this._buffer + chunk;
