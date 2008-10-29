@@ -32,12 +32,12 @@ function send()
 
 function onStartRequest(aRequest, aContext)
 {
-},
+}
 
 function onStopRequest(aRequest, aContext, aStatus)
 {
 	this.destroy();
-},
+}
 
 function onDataAvailable(aRequest, aContext, aInputStream, aOffset, aCount)
 {
