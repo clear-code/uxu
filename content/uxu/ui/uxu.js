@@ -33,7 +33,8 @@ function Startup() {
 	context.addRunnerListener(testRunnerlistener);
 
 	gServer = new Server(gOptions.serverPort || utils.getPref('extensions.uxu.port'));
-	gServer.start(context);
+	gServer.addListener(context);
+	gServer.start();
 
 	gLog = document.getElementById('log');
 	if (!gLog.scrollBoxObject)

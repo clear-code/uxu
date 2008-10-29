@@ -3,13 +3,15 @@
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-var server_module = new ModuleManager(['chrome://uxu/content/server']);
-var Handler = server_module.require('class', 'handler');
-
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var utils = lib_module.require('package', 'utils');
 
-function constructor(aPort)
+var inherits = lib_module.require('class', 'event_target');
+
+var server_module = new ModuleManager(['chrome://uxu/content/server']);
+var Handler = server_module.require('class', 'handler');
+
+function constructor(aListener, aPort)
 {
 	this._port  = (typeof aPort == 'number') ? aPort : -1 ;
 	this.__defineGetter__('port', function() {
@@ -20,7 +22,7 @@ function constructor(aPort)
 	this._handlers = [];
 }
 
-function start(aListener)
+function start()
 {
 	this.socket = Cc['@mozilla.org/network/server-socket;1']
 		.createInstance(Ci.nsIServerSocket);
@@ -43,6 +45,12 @@ function stop()
 }
 
 
+function onInput(aEvent)
+{
+	this.fireEvent('Input', aEvent.data);
+}
+
+
 // nsIServerSocketListener
 
 function onSocketAccepted(aSocket, aTransport)
@@ -50,7 +58,7 @@ function onSocketAccepted(aSocket, aTransport)
 	try {
 		var input  = aTransport.openInputStream(0, 0, 0);
 		var output = aTransport.openOutputStream(0, 0, 0);
-		var handler = new Handler(input, output, aListener);
+		var handler = new Handler(input, output, this);
 		this._handlers.push(handler);
 	}
 	catch (e) {
