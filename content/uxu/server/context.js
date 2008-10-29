@@ -21,7 +21,7 @@ var WindowManager = Cc['@mozilla.org/appshell/window-mediator;1']
 var loader = Cc['@mozilla.org/moz/jssubscript-loader;1']
 	.getService(Ci.mozIJSSubScriptLoader);
 
-function constructor(aHandler, aBrowser)
+function constructor(aBrowser)
 {
 	this.browser = aBrowser;
 	this.runTest = runTest;
@@ -103,13 +103,13 @@ function error(aException)
 
 function load(aURI, aContext)
 {
-	return loader.loadSubScript(aURI, aContext || this.context || {});
+	return loader.loadSubScript(aURI, aContext || this || {});
 }
 
 function evaluate(aCode)
 {
 	try {
-		this.context._lastEvaluatedScript = aCode;
+		this._lastEvaluatedScript = aCode;
 		return this.load('chrome://uxu/content/lib/subScriptRunner.js?code='+encodeURIComponent(aCode));
 	}
 	catch(e) {

@@ -39,15 +39,10 @@ function start()
 
 function stop()
 {
+	this.removeAllListeners();
 	if (!this.socket) return;
 	this.socket.close();
 	this.socket = null;
-}
-
-
-function onInput(aEvent)
-{
-	this.fireEvent('Input', aEvent.data);
 }
 
 
@@ -59,6 +54,10 @@ function onSocketAccepted(aSocket, aTransport)
 		var input  = aTransport.openInputStream(0, 0, 0);
 		var output = aTransport.openOutputStream(0, 0, 0);
 		var handler = new Handler(input, output, this);
+		this._listeners.forEach(function(aListener) {
+			handler.addListener(aListener);
+			aListener.addListener(handler);
+		});
 		this._handlers.push(handler);
 	}
 	catch (e) {
@@ -69,7 +68,11 @@ function onSocketAccepted(aSocket, aTransport)
 function onStopListening(aSocket, aStatus)
 {
 	this._handlers.forEach(function (aHandler) {
+			this._listeners.forEach(function(aListener) {
+				handler.removeListener(aListener);
+				aListener.removeListener(handler);
+			});
 			aHandler.destroy();
-		});
+		}, this);
 	this._handlers = [];
 }

@@ -7,7 +7,7 @@ var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 
 var inherits = lib_module.require('class', 'event_target');
 
-function constructor(aInput, aOutput, aListener)
+function constructor(aInput, aOutput)
 {
 	var scriptableInput = Cc['@mozilla.org/scriptableinputstream;1']
 			.createInstance(Ci.nsIScriptableInputStream);
@@ -17,10 +17,6 @@ function constructor(aInput, aOutput, aListener)
 	scriptableInput.init(aInput);
 	this._input = scriptableInput;
 	this._output = aOutput;
-
-	this._listener = aListener;
-	this._listener.addListener(this);
-	this.addListener(this._listener);
 
 	pump.init(aInput, -1, -1, 0, 0, false);
 	pump.asyncRead(this, null);
@@ -33,10 +29,6 @@ function destroy()
 
 	this._output.close();
 	this._output = null;
-
-	this._listener.removeListener(this);
-	this._listener = null;
-	this.removeAllListeners();
 }
 
 function onQuitRequest()
