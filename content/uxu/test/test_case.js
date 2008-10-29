@@ -679,18 +679,21 @@ function _runWithRemotePofile(aStopper)
 	process.run(false, args, args.length);
 
 	var _this = this;
-	var interval = 100;
-	var readyTimeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout.application'));
-	var testCaseTimeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout'));
+	var beforeReadyTimeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout.application'));
+	var beforeReadyInterval = 500;
+	var afterReadyTimeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout'));
+	var afterReadyInterval = 50;
 	var report = {};
 	utils.doIteration(
 		function() {
 			var last = Date.now();
 			var current;
 			var timeout;
+			var interval;
 			while (!_this._done)
 			{
-				timeout = _this._remoteReady ? testCaseTimeout : readyTimeout ;
+				timeout = _this._remoteReady ? afterReadyTimeout : beforeReadyTimeout ;
+				interval = _this._remoteReady ? afterReadyInterval : beforeReadyInterval ;
 				if (!_this._aborted && _this._stopper && _this._stopper()) {
 					_this._aborted = true;
 				}
