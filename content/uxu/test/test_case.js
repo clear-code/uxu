@@ -642,7 +642,9 @@ function _runByRemote(aStopper)
 {
 	if (!this._profile || !this._profile.exists()) return false;
 
-	if (this._targetProduct && !this._application) {
+	if (this._targetProduct &&
+		String(this._targetProduct).toLowerCase() != utils.product.toLowerCase() &&
+		!this._application) {
 		var application = utils.getInstalledLocationOfProduct(this._targetProduct);
 		if (application) this._application = application;
 	}
