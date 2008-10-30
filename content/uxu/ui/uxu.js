@@ -17,6 +17,21 @@ var gAutoStart;
 
 var gOptions = {};
 
+const ObserverService = Cc['@mozilla.org/observer-service;1']
+	.getService(Ci.nsIObserverService);
+
+var restartObserver = { 
+	observe : function(aSubect, aTopic, aData)
+	{
+		if (aTopic != 'quit-application-requested') return;
+
+		if (utils.getPref('extensions.uxu.autoStart.oneTime.enabled')) {
+			utils.setPref('extensions.uxu.autoStart.oneTime', true);
+			utils.setPref('extensions.uxu.autoStart.oneTime.port', gServer.port);
+		}
+	}
+};
+
 function Startup() {
 	if ('arguments' in window &&
 		window.arguments &&
@@ -47,10 +62,12 @@ function Startup() {
 	if (gOptions.hidden) {
 		window.setTimeout(function() { window.minimize(); }, 0);
 	}
+	ObserverService.addObserver(restartObserver, 'quit-application-requested', false);
 }
 
 function Shutdown() {
 	gServer.stop();
+	ObserverService.removeObserver(restartObserver, 'quit-application-requested');
 }
 
 var testRunnerlistener = {

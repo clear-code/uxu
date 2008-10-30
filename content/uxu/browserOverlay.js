@@ -1,4 +1,6 @@
-function startUxU() {
+function startUxU(aOptions) {
+	if (!aOptions) aOptions = {};
+
 	const WindowManager = Components.classes['@mozilla.org/appshell/window-mediator;1']
 			.getService(Components.interfaces.nsIWindowMediator);
 
@@ -8,7 +10,7 @@ function startUxU() {
 		return;
 
 	}
-	window.openDialog('chrome://uxu/content/ui/uxu.xul', '_blank', 'chrome,all');
+	window.openDialog('chrome://uxu/content/ui/uxu.xul', '_blank', 'chrome,all', aOptions);
 }
 
 function openUxUMozUnit() {
@@ -27,8 +29,14 @@ function openUxUMozUnit() {
 window.addEventListener('load', function() {
 	window.removeEventListener('load', arguments.callee, false);
 
-	if (nsPreferences.getBoolPref('extensions.uxu.auto.start'))
-		startUxU();
+	if (
+		nsPreferences.getBoolPref('extensions.uxu.auto.start') ||
+		(
+			nsPreferences.getBoolPref('extensions.uxu.autoStart.oneTime.enabled') &&
+			nsPreferences.getBoolPref('extensions.uxu.autoStart.oneTime')
+		)
+		)
+		startUxU({ serverPort : nsPreferences.getIntPref('extensions.uxu.autoStart.oneTime.port') });
 
 	if (
 		nsPreferences.getBoolPref('extensions.uxu.mozunit.autoStart') ||
