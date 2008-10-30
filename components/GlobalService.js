@@ -185,7 +185,7 @@ GlobalService.prototype = {
 	handle : function(aCommandLine)
 	{
 		var arg = {
-				server     : false,
+				server     : this._getBooleanValueFromCommandLine('uxu-start-server'),
 				serverPort : this._getNumericValueFromCommandLine('uxu-listen-port', aCommandLine, 0),
 				outputHost : this._getValueFromCommandLine('uxu-output-host', aCommandLine, ''),
 				outputPort : this._getNumericValueFromCommandLine('uxu-output-port', aCommandLine, 0),
@@ -193,22 +193,9 @@ GlobalService.prototype = {
 				priority   : this._getValueFromCommandLine('uxu-priority', aCommandLine, null),
 				log        : this._getFullPathFromCommandLine('uxu-log', aCommandLine, ''),
 				rawLog     : this._getFullPathFromCommandLine('uxu-rawlog', aCommandLine, ''),
-				hidden     : false
+				autoQuit   : this._getBooleanValueFromCommandLine('uxu-autoquit', aCommandLine),
+				hidden     : this._getBooleanValueFromCommandLine('uxu-hidden')
 			};
-		try {
-			if (aCommandLine.handleFlag('uxu-start-server', false)) {
-				arg.server = true;
-			}
-		}
-		catch(e) {
-		}
-		try {
-			if (aCommandLine.handleFlag('uxu-hidden', false)) {
-				arg.hidden = true;
-			}
-		}
-		catch(e) {
-		}
 
 		if (arg.testcase || arg.server) {
 			aCommandLine.preventDefault = true;
@@ -261,6 +248,17 @@ GlobalService.prototype = {
 		catch(e) {
 		}
 		return aDefaultValue;
+	},
+	_getBooleanValueFromCommandLine : function(aOption, aCommandLine)
+	{
+		try {
+			if (aCommandLine.handleFlag(aOption, false)) {
+				return true;
+			}
+		}
+		catch(e) {
+		}
+		return false;
 	},
 
 	helpInfo :

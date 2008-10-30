@@ -1035,29 +1035,48 @@ var product = (function() {
  
 var productExecutable = getFileFromKeyword('XREExeF'); 
  
-function restartApplication() 
+function restartApplication(aForce) 
 {
-	var cancelQuit = Cc['@mozilla.org/supports-PRBool;1']
-				.createInstance(Ci.nsISupportsPRBool);
-	this.notify(cancelQuit, 'quit-application-requested', null);
+	_quitApplication(aForce, Ci.nsIAppStartup.eRestart);
+}
+ 
+function quitApplication(aForce) 
+{
+	_quitApplication(aForce);
+}
+ 
+function _quitApplication(aForce, aOption) 
+{
+	var quitSeverity;
+	if (aForce) {
+		quitSeverity = Ci.nsIAppStartup.eForceQuit;
+	}
+	else {
+		var cancelQuit = Cc['@mozilla.org/supports-PRBool;1']
+					.createInstance(Ci.nsISupportsPRBool);
+		this.notify(cancelQuit, 'quit-application-requested', null);
 
-	if (!cancelQuit.data) {
-		this.notify(null, 'quit-application-granted', null);
-		var windows = Cc['@mozilla.org/appshell/window-mediator;1']
-					.getService(Ci.nsIWindowMediator)
-					.getEnumerator(null);
-		while (windows.hasMoreElements())
-		{
-			var target = windows.getNext().QueryInterface(Ci.nsIDOMWindow);
-			if (('tryToClose' in target) && !target.tryToClose()) {
-				return;
+		if (!cancelQuit.data) {
+			this.notify(null, 'quit-application-granted', null);
+			var windows = Cc['@mozilla.org/appshell/window-mediator;1']
+						.getService(Ci.nsIWindowMediator)
+						.getEnumerator(null);
+			while (windows.hasMoreElements())
+			{
+				var target = windows.getNext().QueryInterface(Ci.nsIDOMWindow);
+				if (('tryToClose' in target) && !target.tryToClose()) {
+					return;
+				}
 			}
 		}
+		quitSeverity = Ci.nsIAppStartup.eAttemptQuit;
 	}
+
+	if (aOption) quitSeverity |= aOption;
 
 	const startup = Cc['@mozilla.org/toolkit/app-startup;1']
 					.getService(Ci.nsIAppStartup);
-	startup.quit(startup.eRestart | startup.eAttemptQuit);
+	startup.quit(quitSeverity);
 }
  
 var installedUXU = Cc['@mozilla.org/extensions/manager;1'] 

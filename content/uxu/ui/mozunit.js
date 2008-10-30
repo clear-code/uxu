@@ -258,6 +258,7 @@ function startup()
 			jsobj.log        = gOptions.getProperty('log');
 			jsobj.rawLog     = gOptions.getProperty('rawLog');
 			jsobj.priority   = gOptions.getProperty('priority');
+			jsobj.autoQuit   = gOptions.getProperty('autoQuit');
 			jsobj.hidden     = gOptions.getProperty('hidden');
 			gOptions = jsobj;
 		}
@@ -532,10 +533,16 @@ var gRemoteRun = {
 					'UTF-8'
 				);
 			}
-			if (gOptions.testcase && (gOptions.hidden || gOptions.log || gOptions.rawLog)) {
-				const startup = Cc['@mozilla.org/toolkit/app-startup;1']
-								.getService(Ci.nsIAppStartup);
-				startup.quit(startup.eForceQuit);
+			if (
+				gOptions.testcase &&
+				(
+					gOptions.hidden ||
+					gOptions.log ||
+					gOptions.rawLog ||
+					gOptions.autoQuit
+				)
+				) {
+				utils.quitApplication(true);
 				return;
 			}
 		}
