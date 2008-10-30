@@ -9,8 +9,8 @@ options = OpenStruct.new
 options.host = "localhost"
 options.port = 4444
 options.firefox = "firefox"
-options.named_profile = ""
-options.profile = ""
+options.named_profile = nil
+options.profile = nil
 options.no_remote = nil
 options.wait = 3
 options.n_retries = 3
@@ -212,8 +212,8 @@ rescue SystemCallError
     command = [options.firefox,
                "-uxu-start-server",
                "-uxu-listen-port", options.port.to_s]
-    command += ["-p", options.named_profile] unless options.named_profile == ""
-    command += ["-profile", options.profile] unless options.profile == ""
+    command += ["-p", options.named_profile] if options.named_profile
+    command += ["-profile", options.profile] if options.profile
     command += ["-no-remote"] if options.no_remote
     command += ["&"]
     system(command.join(" "))
