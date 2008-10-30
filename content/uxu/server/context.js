@@ -21,9 +21,8 @@ var WindowManager = Cc['@mozilla.org/appshell/window-mediator;1']
 
 function constructor(aBrowser)
 {
-	this.browser = aBrowser;
-	this.runTest = runTest;
-	this.runnerListeners = [];
+	this._browser = aBrowser;
+	this._runnerListeners = [];
 
 	// bufferにコードからアクセスできないようにするため、クロージャを使用する
 	var buffer = '';
@@ -48,14 +47,14 @@ function constructor(aBrowser)
 
 function addRunnerListener(aListener)
 {
-	this.runnerListeners.push(aListener);
+	this._runnerListeners.push(aListener);
 }
 
 function runTest(aOptions/*, aTargets, ...*/)
 {
-	var runner = new Runner(this.browser, Array.slice(arguments, 1));
+	var runner = new Runner(this._browser, Array.slice(arguments, 1));
 	var reporter = new Reporter(aOptions);
-	this.runnerListeners.forEach(function (aListener) {
+	this._runnerListeners.forEach(function (aListener) {
 		runner.addListener(aListener);
 	});
 	runner.addListener(reporter);

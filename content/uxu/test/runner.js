@@ -17,6 +17,7 @@ function constructor(aBrowser/*, aFile, ...*/)
 {
 	this.runningCount = 0;
 	this.files = Array.slice(arguments, 1);
+	if (utils.isArray(this.files[0])) this.files = this.files[0];
 	this._browser = aBrowser;
 	this._filters = [];
 	this._log = new TestLog();
