@@ -185,7 +185,7 @@ GlobalService.prototype = {
 	handle : function(aCommandLine)
 	{
 		var arg = {
-				server     : this._getBooleanValueFromCommandLine('uxu-start-server'),
+				server     : this._getBooleanValueFromCommandLine('uxu-start-server', aCommandLine),
 				serverPort : this._getNumericValueFromCommandLine('uxu-listen-port', aCommandLine, 0),
 				outputHost : this._getValueFromCommandLine('uxu-output-host', aCommandLine, ''),
 				outputPort : this._getNumericValueFromCommandLine('uxu-output-port', aCommandLine, 0),
@@ -194,7 +194,7 @@ GlobalService.prototype = {
 				log        : this._getFullPathFromCommandLine('uxu-log', aCommandLine, ''),
 				rawLog     : this._getFullPathFromCommandLine('uxu-rawlog', aCommandLine, ''),
 				autoQuit   : this._getBooleanValueFromCommandLine('uxu-autoquit', aCommandLine),
-				hidden     : this._getBooleanValueFromCommandLine('uxu-hidden')
+				hidden     : this._getBooleanValueFromCommandLine('uxu-hidden', aCommandLine)
 			};
 
 		if (arg.testcase || arg.server) {
