@@ -26,7 +26,7 @@ function testGetString()
 	}
 	else {
 		expected['report_result_success']    = 'Success';
-		expected['report_description_setup'] = 'Setup of a';
+		expected['report_description_setup'] = 'Setup of "a"';
 		expected['typed_value']              = '1 (2)';
 	}
 	assert.equals(expected['report_result_success'], bundle.getString('report_result_success'));
