@@ -109,4 +109,5 @@
 
 <!ENTITY config.auto.start "Start server automatically on Firefox's startup">
 <!ENTITY config.auto.exit  "Stop server automatically on Firefox's shutdown">
-<!ENTITY config.port  "Port:">
+<!ENTITY config.autoStart.oneTime.enabled "Restore server automatically after Firefox's restart">
+<!ENTITY config.port  "Default Port:">

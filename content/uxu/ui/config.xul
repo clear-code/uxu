@@ -156,6 +156,9 @@
 		<preference id="extensions.uxu.auto.exit"
 			name="extensions.uxu.auto.exit"
 			type="bool"/>
+		<preference id="extensions.uxu.autoStart.oneTime.enabled"
+			name="extensions.uxu.autoStart.oneTime.enabled"
+			type="bool"/>
 		<preference id="extensions.uxu.port"
 			name="extensions.uxu.port"
 			type="int"/>
@@ -164,6 +167,12 @@
 	<checkbox id="extensions.uxu.auto.start-check"
 		preference="extensions.uxu.auto.start"
 		label="&config.auto.start;"/>
+	<hbox>
+		<spacer style="width:1em;"/>
+		<checkbox id="extensions.uxu.autoStart.oneTime.enabled-check"
+			preference="extensions.uxu.autoStart.oneTime.enabled"
+			label="&config.autoStart.oneTime.enabled;"/>
+	</hbox>
 	<checkbox id="extensions.uxu.auto.exit-check"
 		preference="extensions.uxu.auto.exit"
 		label="&config.auto.exit;"/>
