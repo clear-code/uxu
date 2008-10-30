@@ -262,7 +262,6 @@ function startup()
 			jsobj.hidden     = gOptions.getProperty('hidden');
 			gOptions = jsobj;
 		}
-		alert(utils.inspect(gOptions));
 
 		if (gOptions.testcase) {
 			var path = gOptions.testcase;
