@@ -25,7 +25,7 @@ function testGetString()
 		expected['typed_value']              = '1 (2)';
 	}
 	else {
-		expected['report_result_success']    = 'SUCCESS';
+		expected['report_result_success']    = 'Success';
 		expected['report_description_setup'] = 'Setup of a';
 		expected['typed_value']              = '1 (2)';
 	}
