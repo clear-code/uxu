@@ -534,12 +534,14 @@ var gRemoteRun = {
 				);
 			}
 			if (
-				gOptions.testcase &&
+				gOptions.autoQuit ||
 				(
-					gOptions.hidden ||
-					gOptions.log ||
-					gOptions.rawLog ||
-					gOptions.autoQuit
+					gOptions.testcase &&
+					(
+						gOptions.hidden ||
+						gOptions.log ||
+						gOptions.rawLog
+					)
 				)
 				) {
 				utils.quitApplication(true);
