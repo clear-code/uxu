@@ -11,7 +11,6 @@ options.port = 4444
 options.firefox = "firefox"
 options.named_profile = nil
 options.profile = nil
-options.remote = true
 options.wait = 3
 options.n_retries = 3
 options.quit = false
@@ -30,9 +29,6 @@ opts = OptionParser.new("Usage: #{$0} [options] test_or_directory...") do |opts|
           "(#{options.named_profile})") {|options.named_profile|}
   opts.on("--profile=PROFILE",
           "path to Firefox's profile (#{options.profile})") {|options.profile|}
-  opts.on("--[no-]remote",
-          "allow to start multiple processes of Firefox",
-          "(#{options.remote})") {|options.remote|}
   opts.on("--wait=SECONDS", Float,
           "how long wait to start Firefox (#{options.wait})") {|options.wait|}
   opts.on("--retries=N", Integer,
@@ -214,7 +210,7 @@ rescue SystemCallError
                "-uxu-listen-port", options.port.to_s]
     command += ["-p", options.named_profile] if options.named_profile
     command += ["-profile", options.profile] if options.profile
-    command += ["-no-remote"] unless options.remote
+    command += ["-no-remote"] if options.named_profile or options.profile
     command += ["&"]
     system(command.join(" "))
     sleep options.wait
