@@ -215,7 +215,7 @@ rescue SystemCallError
     command += ["-p", options.named_profile] unless options.named_profile == ""
     command += ["-profile", options.profile] unless options.profile == ""
     command += ["-no-remote"] if options.no_remote
-    command += "&"
+    command += ["&"]
     system(command.join(" "))
     sleep options.wait
     retry
