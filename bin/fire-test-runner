@@ -9,6 +9,9 @@ options = OpenStruct.new
 options.host = "localhost"
 options.port = 4444
 options.firefox = "firefox"
+options.named_profile = ""
+options.profile = ""
+options.no_remote = nil
 options.wait = 3
 options.n_retries = 3
 options.quit = false
@@ -22,6 +25,14 @@ opts = OptionParser.new("Usage: #{$0} [options] test_or_directory...") do |opts|
           "port number to connect Firefox (#{options.port})") {|options.port|}
   opts.on("--firefox=FIREFOX",
           "command to start Firefox (#{options.firefox})") {|options.firefox|}
+  opts.on("--named-profile=PROFILE",
+          "name of Firefox's profile",
+          "(#{options.named_profile})") {|options.named_profile|}
+  opts.on("--profile=PROFILE",
+          "path to Firefox's profile (#{options.profile})") {|options.profile|}
+  opts.on("--no-remote",
+          "allow to start multiple processes of Firefox",
+          "(#{options.no_remote})") {|options.no_remote|}
   opts.on("--wait=SECONDS", Float,
           "how long wait to start Firefox (#{options.wait})") {|options.wait|}
   opts.on("--retries=N", Integer,
@@ -198,10 +209,14 @@ begin
 rescue SystemCallError
   n_retried += 1
   if n_retried <= options.n_retries
-    system([options.firefox,
-            "-uxu-start-server",
-            "-uxu-listen-port", options.port.to_s,
-            "&"].join(" "))
+    command = [options.firefox,
+               "-uxu-start-server",
+               "-uxu-listen-port", options.port.to_s]
+    command += ["-p", options.named_profile] unless options.named_profile == ""
+    command += ["-profile", options.profile] unless options.profile == ""
+    command += ["-no-remote"] if options.no_remote
+    command += "&"
+    system(command.join(" "))
     sleep options.wait
     retry
   end
