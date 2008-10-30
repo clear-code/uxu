@@ -669,7 +669,7 @@ function run(aMasterPriority)
 {
 	reset();
 
-	gRunner = new Runner(_('content'), [_('file').value]);
+	gRunner = new Runner(_('content'), _('file').value);
 
 	gRunner.addListener(runnerListener);
 
@@ -708,7 +708,7 @@ function runFailed()
 
 	reset();
 
-	gRunner = new Runner(_('content'), [_('file').value]);
+	gRunner = new Runner(_('content'), _('file').value);
 
 	gRunner.addListener(runnerListener);
 

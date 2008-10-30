@@ -13,10 +13,10 @@ var TestCase    = test_module.require('class', 'test_case');
 var TestLog     = test_module.require('class', 'test_log');
 var Environment = test_module.require('class', 'environment');
 	 
-function constructor(aBrowser, aFiles) 
+function constructor(aBrowser/*, aFile, ...*/) 
 {
 	this.runningCount = 0;
-	this.files = aFiles || [];
+	this.files = Array.slice(arguments, 1);
 	this._browser = aBrowser;
 	this._filters = [];
 	this._log = new TestLog();

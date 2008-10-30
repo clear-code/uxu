@@ -242,6 +242,9 @@ function writeTo(aContent, aTarget, aEncoding)
 // Subversionが作る不可視のファイルなどを除外して、普通に目に見えるファイルだけを複製する 
 function cosmeticClone(aOriginal, aDest, aName)
 {
+	aOriginal = normalizeToFile(aOriginal);
+	aDest = normalizeToFile(aDest);
+
 	if (aOriginal.isHidden() || aOriginal.leafName.indexOf('.') == 0)
 		return null;
 

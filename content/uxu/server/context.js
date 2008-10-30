@@ -11,15 +11,13 @@ var inherits = lib_module.require('class', 'event_target');
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var Runner      = test_module.require('class', 'runner');
 var Environment = test_module.require('class', 'environment');
+var action = test_module.require('package', 'action');
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var Reporter    = server_module.require('class', 'reporter');
 
 var WindowManager = Cc['@mozilla.org/appshell/window-mediator;1']
 		.getService(Ci.nsIWindowMediator);
-
-var loader = Cc['@mozilla.org/moz/jssubscript-loader;1']
-	.getService(Ci.mozIJSSubScriptLoader);
 
 function constructor(aBrowser)
 {
@@ -75,6 +73,16 @@ function exit()
 	this.quit();
 }
 
+function inspect(aObject)
+{
+	return utils.inspect(aObject);
+}
+
+function inspectDOMNode(aNode)
+{
+	return utils.inspectDOMNode(aNode);
+}
+
 function print()
 {
 	var message = Array.slice(arguments).join('');
@@ -101,9 +109,12 @@ function error(aException)
 	this.print(this.formatError(aException));
 }
 
+var loader = Cc['@mozilla.org/moz/jssubscript-loader;1']
+	.getService(Ci.mozIJSSubScriptLoader);
+
 function load(aURI, aContext)
 {
-	return loader.loadSubScript(aURI, aContext || this || {});
+	loader.loadSubScript(aURI, aContext || this || {});
 }
 
 function evaluate(aCode)
@@ -119,17 +130,7 @@ function evaluate(aCode)
 
 function quitApplication(aForceQuit)
 {
-	var appStartup, quitSeverity;
-
-	appStartup = Components.classes['@mozilla.org/toolkit/app-startup;1'].
-		getService(Components.interfaces.nsIAppStartup);
-
-	if (aForceQuit)
-		quitSeverity = Components.interfaces.nsIAppStartup.eForceQuit;
-	else
-		quitSeverity = Components.interfaces.nsIAppStartup.eAttemptQuit;
-
-	appStartup.quit(quitSeverity);
+	utils.quitApplication(aForceQuit);
 }
 
 function closeMainWindows()
