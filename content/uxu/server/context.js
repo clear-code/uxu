@@ -113,7 +113,7 @@ var loader = Cc['@mozilla.org/moz/jssubscript-loader;1']
 
 function load(aURI, aContext)
 {
-	loader.loadSubScript(aURI, aContext || this || {});
+	return loader.loadSubScript(aURI, aContext || this || {});
 }
 
 function evaluate(aCode)
