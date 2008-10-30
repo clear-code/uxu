@@ -640,7 +640,12 @@ function run(aStopper)
 	 
 function _runByRemote(aStopper) 
 {
-	if (!this._profile || !this._profile.exists()) return false;
+	if (
+		!this._profile ||
+		!this._profile.exists() ||
+		this._isNever(this._masterPriority)
+		)
+		return false;
 
 	if (this._targetProduct &&
 		String(this._targetProduct).toLowerCase() != utils.product.toLowerCase() &&
@@ -685,8 +690,11 @@ function _runByRemote(aStopper)
 			'-uxu-output-port',
 			server.port,
 			'-uxu-hidden'
-		]
-		.concat(this.options);
+		];
+	if (this._masterPriority) {
+		args = args.concat(['-uxu-priority', this._masterPriority]);
+	}
+	args = args.concat(this.options);
 
 	var process = Cc['@mozilla.org/process/util;1']
 				.createInstance(Ci.nsIProcess);
