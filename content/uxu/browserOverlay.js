@@ -35,8 +35,10 @@ window.addEventListener('load', function() {
 			nsPreferences.getBoolPref('extensions.uxu.autoStart.oneTime.enabled') &&
 			nsPreferences.getBoolPref('extensions.uxu.autoStart.oneTime')
 		)
-		)
+		) {
+		nsPreferences.setBoolPref('extensions.uxu.autoStart.oneTime', false);
 		startUxU({ serverPort : nsPreferences.getIntPref('extensions.uxu.autoStart.oneTime.port') });
+	}
 
 	if (
 		nsPreferences.getBoolPref('extensions.uxu.mozunit.autoStart') ||
