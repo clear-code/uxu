@@ -241,6 +241,7 @@ function startup()
 	ObserverService.addObserver(restartObserver, 'quit-application-requested', false);
 
 	setTestFile(utils.getPref('extensions.uxu.mozunit.lastPath'));
+	window.setTimeout(setTestFile, 0, utils.getPref('extensions.uxu.mozunit.lastPath')); // ‹Œ”Å‚Ìpersist‘®«‚É‚æ‚Á‚Ä•Û‘¶‚³‚ê‚Ä‚¢‚½’l‚ª•œŒ³‚³‚ê‚Ä‚µ‚Ü‚Á‚½ê‡‚Ì‚½‚ß‚É
 	updateTestCommands();
 
 	_('content').addEventListener('load', onContentLoad, true);
