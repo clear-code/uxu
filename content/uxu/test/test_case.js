@@ -494,9 +494,14 @@ function run(aStopper)
 		finished :      { }
 	};
 
-	var doPreOrPostProcess = function(aContinuation, aFunction, aErrorDescription, aReport, aErrorProcess)
+	var testCaseStart;
+	var setUpStart;
+	var testStart;
+
+	var doPreOrPostProcess = function(aContinuation, aFunction, aOptions)
 		{
 			if (!aFunction || _this._isNever(_this._masterPriority)) {
+				aOptions.report.report.time = Date.now() - aOptions.startAt;
 				aContinuation('ok');
 				return;
 			}
@@ -508,25 +513,29 @@ function run(aStopper)
 				if (utils.isGeneratedIterator(result)) {
 					utils.doIteration(result, {
 						onEnd : function(e) {
+							aOptions.report.report.time = Date.now() - aOptions.startAt;
 							if (!usesContinuation) aContinuation('ok');
 						},
 						onError : function(e) {
-							if (aErrorProcess) aErrorProcess();
-							aReport.report.result = 'error';
-							aReport.report.exception = e;
-							aReport.report.testDescription = aErrorDescription;
+							if (aOptions.onError) aOptions.onError();
+							aOptions.report.report.result = 'error';
+							aOptions.report.report.exception = e;
+							aOptions.report.report.testDescription = aOptions.errorDescription;
+							aOptions.report.report.time = Date.now() - aOptions.startAt;
 							aContinuation('ko');
 						}
 					});
 				}
 				else {
+					aOptions.report.report.time = Date.now() - aOptions.startAt;
 					if (!usesContinuation) aContinuation('ok');
 				}
 			}
 			catch(e) {
-				aReport.report.result = 'error';
-				aReport.report.exception = e;
-				aReport.report.testDescription = aErrorDescription;
+				aOptions.report.report.result = 'error';
+				aOptions.report.report.exception = e;
+				aOptions.report.report.testDescription = aOptions.errorDescription;
+				aOptions.report.report.time = Date.now() - aOptions.startAt;
 				aContinuation('ko');
 			}
 		};
@@ -540,13 +549,18 @@ function run(aStopper)
 		},
 		doWarmUp : function(aContinuation)
 		{
+			testCaseStart = Date.now();
+
 			context = _this.context || {};
  			testCaseReport.report = {};
 			doPreOrPostProcess(
 				aContinuation,
 				_this._warmUp,
-				bundle.getFormattedString('report_description_warmup', [_this.title]),
-				testCaseReport
+				{
+					errorDescription : bundle.getFormattedString('report_description_warmup', [_this.title]),
+					report : testCaseReport,
+					startAt : testCaseStart
+				}
 			);
 		},
 		checkPriority : function(aContinuation)
@@ -560,30 +574,40 @@ function run(aStopper)
 			testReport.report = {};
 			testReport.report.result = 'passover';
 			testReport.report.testDescription = test.desc;
+			testReport.report.time = 0;
 			aContinuation('ko');
 		},
 		doSetUp : function(aContinuation)
 		{
+			setUpStart = Date.now();
+
 			testReport.report = {};
 			doPreOrPostProcess(
 				aContinuation,
 				_this._setUp,
-				bundle.getFormattedString('report_description_setup', [_this._tests[testIndex].desc]),
-				testReport
+				{
+					errorDescription : bundle.getFormattedString('report_description_setup', [_this._tests[testIndex].desc]),
+					report : testReport,
+					startAt : setUpStart
+				}
 			);
 		},
 		doTest : function(aContinuation)
 		{
+			testStart = Date.now();
+
 			var test;
 			test = _this._tests[testIndex];
 			var newReport = _this._exec(test, context, aContinuation, testReport);
 			if (newReport.result) {
 				testReport.report = newReport;
 				testReport.report.testDescription = test.desc;
+				testReport.report.detailedTime = Date.now() - testStart;
 				aContinuation('ok');
 			}
 			else {
 				testReport.report.testDescription = test.desc;
+				testReport.report.detailedTime = Date.now() - testStart;
 			}
 		},
 		doReport : function(aContinuation)
@@ -600,10 +624,13 @@ function run(aStopper)
 			doPreOrPostProcess(
 				aContinuation,
 				_this._tearDown,
-				bundle.getFormattedString('report_description_teardown', [_this._tests[testIndex].desc]),
-				testReport,
-				function() {
-					_this._onFinish(_this._tests[testIndex], 'error');
+				{
+					errorDescription : bundle.getFormattedString('report_description_teardown', [_this._tests[testIndex].desc]),
+					report : testReport,
+					onError : function() {
+						_this._onFinish(_this._tests[testIndex], 'error');
+					},
+					startAt : setUpStart
 				}
 			);
 		},
@@ -623,8 +650,11 @@ function run(aStopper)
 			doPreOrPostProcess(
 				aContinuation,
 				_this._coolDown,
-				bundle.getFormattedString('report_description_cooldown', [_this.title]),
-				testCaseReport
+				{
+					errorDescription : bundle.getFormattedString('report_description_cooldown', [_this.title]),
+					report : testCaseReport,
+					startAt : testCaseStart
+				}
 			);
 		},
 		finished : function(aContinuation)

@@ -15,7 +15,7 @@ var FORMAT_TEXT = 2;
 var IGNORE_PASSOVER = 1024;
 var IGNORE_SUCCESS  = 2048;
 
-var FORMAT_DEFUALT = FORMAT_TEXT | IGNORE_PASSOVER | IGNORE_SUCCESS;
+var FORMAT_DEFUALT = FORMAT_TEXT | IGNORE_PASSOVER;// | IGNORE_SUCCESS;
 
 
 function constructor()
@@ -55,6 +55,7 @@ function _toText(aFormat)
 			failure  : 0,
 			error    : 0
 		};
+	var totalTime = 0;
 	this._items.forEach(function(aLog) {
 		result.push(bundle.getString('log_separator_testcase'));
 		result.push(aLog.source);
@@ -81,6 +82,9 @@ function _toText(aFormat)
 			result.push(bundle.getFormattedString('log_test_step', [aResult.step]));
 			result.push(bundle.getFormattedString('log_test_timestamp', [new Date(aResult.timestamp)]));
 			result.push(bundle.getFormattedString('log_test_result', [bundle.getString('report_result_'+aResult.type)]));
+			result.push(bundle.getFormattedString('log_test_time', [aResult.time]));
+			if (aResult.detailedTime && aResult.time != aResult.detailedTime)
+				result.push(bundle.getFormattedString('log_test_detailedTime', [aResult.detailedTime]));
 			if (aResult.description)
 				result.push(aResult.description);
 			if (aResult.expected)
@@ -96,13 +100,16 @@ function _toText(aFormat)
 		});
 		result.push(bundle.getString('log_separator_testcase'));
 		result.push(bundle.getFormattedString(aLog.aborted ? 'log_abort' : 'log_finish', [new Date(aLog.finish)]));
+		result.push(bundle.getFormattedString('log_test_time', [aLog.time]));
 		result.push(bundle.getFormattedString('log_result', [count.success, count.failure, count.error, count.passover]));
 		result.push(bundle.getString('log_separator_testcase'));
 		result.push('');
 		for (var i in count) allCount[i] += count[i];
+		totalTime += aLog.time;
 	});
 	if (result.length) {
 		result.unshift('');
+		result.unshift(bundle.getFormattedString('log_test_time', [totalTime]));
 		result.unshift(bundle.getFormattedString('all_result_statistical', [allCount.total, allCount.success, allCount.failure, allCount.error, allCount.passover]));
 		result.push('');
 	}
@@ -161,7 +168,9 @@ function _createResultFromReport(aReport)
 	var result = {
 		type      : aReport.result,
 		title     : aReport.testDescription,
-		timestamp : Date.now()
+		timestamp : Date.now(),
+		time      : aReport.time,
+		detailedTime : aReport.detailedTime
 	};
 	if (aReport.exception) {
 		if (aReport.exception.expected)
@@ -187,6 +196,7 @@ function onFinish(aEvent)
 		this.lastItem.results.push(result);
 	}
 	this.lastItem.finish = Date.now();
+	this.lastItem.time = aEvent.data.time;
 }
 
 function onAbort(aEvent)
