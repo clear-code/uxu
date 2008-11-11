@@ -213,38 +213,6 @@ function test_assertions()
 	assert.assertSucceed(assertionsModule.isNotNull, [void(0)]);
 	assert.assertFailed(assertionsModule.isNotNull, [null, message]);
 
-	assert.assertSucceed(assertionsModule.raises,
-		['test', function() { throw 'test'; }, {}]
-	);
-	assert.assertFailed(assertionsModule.raises,
-		['test', function() { return true; }, {}, message]
-	);
-	assert.assertSucceed(assertionsModule.raise,
-		['test', function() { throw 'test'; }, {}]
-	);
-	assert.assertFailed(assertionsModule.raise,
-		['test', function() { return true; }, {}, message]
-	);
-
-	assert.assertSucceed(assertionsModule.notRaises,
-		['test', function() { return true; }, {}]
-	);
-	assert.assertSucceed(assertionsModule.notRaises,
-		['test', function() { throw 'text'; }, {}]
-	);
-	assert.assertFailed(assertionsModule.notRaises,
-		['test', function() { throw 'test'; }, {}, message]
-	);
-	assert.assertSucceed(assertionsModule.notRaise,
-		['test', function() { return true; }, {}]
-	);
-	assert.assertSucceed(assertionsModule.notRaise,
-		['test', function() { throw 'text'; }, {}]
-	);
-	assert.assertFailed(assertionsModule.notRaise,
-		['test', function() { throw 'test'; }, {}, message]
-	);
-
 	assert.assertSucceed(assertionsModule.matches,
 		[/te[sx]t/, 'test']
 	);
@@ -299,6 +267,43 @@ function test_assertions()
 	);
 }
 
+function testRaises()
+{
+	var message = Math.random() * 65000;
+
+	assert.assertSucceed(assertionsModule.raises,
+		['test', function() { throw 'test'; }, {}]
+	);
+	assert.assertFailed(assertionsModule.raises,
+		['test', function() { return true; }, {}, message]
+	);
+	assert.assertSucceed(assertionsModule.raise,
+		['test', function() { throw 'test'; }, {}]
+	);
+	assert.assertFailed(assertionsModule.raise,
+		['test', function() { return true; }, {}, message]
+	);
+
+	assert.assertSucceed(assertionsModule.notRaises,
+		['test', function() { return true; }, {}]
+	);
+	assert.assertSucceed(assertionsModule.notRaises,
+		['test', function() { throw 'text'; }, {}]
+	);
+	assert.assertFailed(assertionsModule.notRaises,
+		['test', function() { throw 'test'; }, {}, message]
+	);
+	assert.assertSucceed(assertionsModule.notRaise,
+		['test', function() { return true; }, {}]
+	);
+	assert.assertSucceed(assertionsModule.notRaise,
+		['test', function() { throw 'text'; }, {}]
+	);
+	assert.assertFailed(assertionsModule.notRaise,
+		['test', function() { throw 'test'; }, {}, message]
+	);
+}
+
 function testInDelta()
 {
 	var message = Math.random() * 65000;
@@ -318,8 +323,21 @@ function testFinishesWithin()
 		assertionsModule.finishesWithin,
 		[
 			1000,
-			function() {},
+			function() {
+				assert.isTrue(true);
+			},
 			{}
+		]
+	);
+	assert.assertFailed(
+		assertionsModule.finishesWithin,
+		[
+			1000,
+			function() {
+				assert.isTrue(false, message);
+			},
+			{},
+			message
 		]
 	);
 	assert.assertFailed(
@@ -335,20 +353,25 @@ function testFinishesWithin()
 		]
 	);
 
-	yield assertionsModule.finishesWithin(
+	yield Do(assertionsModule.finishesWithin(
 		1000,
 		function() {
 			yield 10;
 		},
 		{}
-	);
-	yield assertionsModule.finishesWithin(
+	));
+
+	var result = Do(assertionsModule.finishesWithin(
 		10,
 		function() {
-			yield 1200;
+			yield 100;
 		},
 		{}
-	);
+	));
+	yield (function() { return result.value; });
+	assert.isDefined(result.error);
+	assert.isNotNull(result.error);
+	assert.equals('AssertionFailed', result.error.name);
 }
 
 function test_fail()

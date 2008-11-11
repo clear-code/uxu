@@ -238,15 +238,12 @@ function raises(aExpectedException, aTask, aContext, aMessage)
 			onEnd : function(e)
 			{
 				if (
-					e &&
+					!e ||
 					(
-						e == aExpectedException ||
-						e.name == aExpectedException
+						e != aExpectedException &&
+						e.name != aExpectedException
 					)
-					) {
-					raised = true;
-				}
-				if (!raised)
+					)
 					_onRaisesFinish(aExpectedException, aMessage);
 			}
 		});
@@ -292,17 +289,15 @@ function notRaises(aExpectedException, aTask, aContext, aMessage)
 			onEnd : function(e)
 			{
 				if (
-					e &&
+					!e ||
 					(
-						e == aExpectedException ||
-						e.name == aExpectedException
+						e != aExpectedException &&
+						e.name != aExpectedException
 					)
-					) {
-					exception = e;
-					raised = true;
-				}
-				if (raised)
-					_onNotRaisesFinish(aExpectedException, exception, aMessage);
+					)
+					return;
+				exception = e;
+				_onNotRaisesFinish(aExpectedException, exception, aMessage);
 			}
 		});
 	}
