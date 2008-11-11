@@ -371,6 +371,21 @@ function notContains(aExpected, aActual, aMessage)
 }
 function notContain(aExpected, aActual, aMessage) { this.notContains(aExpected, aActual, aMessage); }
 
+function finishesWithin(aExpectedTime, aFunction, aMessage)
+{
+	var startAt = Date.now();
+	aFunction();
+	var actualTime = Date.now() - startAt;
+	if (actualTime > aExpectedTime)
+		fail({
+		     	expected    : bundle.getFormattedString('assert_finishes_within_expected', [aExpectedTime]),
+		     	actual      : bundle.getFormattedString('assert_finishes_within_actual', [actualTime])
+		     },
+		     bundle.getString('assert_finishes_within'),
+		     aMessage);
+}
+function finishWithin(aExpectedTime, aFunction, aMessage) { this.finishesWithin(aExpectedTime, aFunction, aMessage); }
+
 function fail()
 {
 	var args = Array.slice(arguments);

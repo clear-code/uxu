@@ -310,6 +310,30 @@ function testInDelta()
 	assert.assertFailed(assertionsModule.inDelta, [1.0, 0.9, 0.1, message]);
 }
 
+function testFinishesWithin()
+{
+	var message = Math.random() * 65000;
+
+	assert.assertSucceed(
+		assertionsModule.finishesWithin,
+		[
+			1000,
+			function() {}
+		]
+	);
+	assert.assertFailed(
+		assertionsModule.finishesWithin,
+		[
+			10,
+			function() {
+				var startAt = Date.now();
+				while (Date.now() - startAt < 50) {}
+			},
+			message
+		]
+	);
+}
+
 function test_fail()
 {
 	var exception = null;
