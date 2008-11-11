@@ -737,6 +737,7 @@ function _runByRemote(aStopper)
 	var afterReadyTimeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout'));
 	var afterReadyInterval = 50;
 	var report = {};
+	var testCaseStart = Date.now();
 	utils.doIteration(
 		function() {
 			var last = Date.now();
@@ -759,6 +760,7 @@ function _runByRemote(aStopper)
 		{
 			onEnd : function(e) {
 				report.result = 'success';
+				report.time = Date.now() - testCaseStart;
 				_this._onFinishRemoteResult(report);
 
 				server.stop();
@@ -769,6 +771,7 @@ function _runByRemote(aStopper)
 				report.result = 'error';
 				report.exception = e;
 				report.testDescription = bundle.getFormattedString('report_description_remote', [_this.title]);
+				report.time = Date.now() - testCaseStart;
 				_this._onFinishRemoteResult(report);
 
 				server.stop();

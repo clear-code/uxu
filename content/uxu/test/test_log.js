@@ -82,9 +82,9 @@ function _toText(aFormat)
 			result.push(bundle.getFormattedString('log_test_step', [aResult.step]));
 			result.push(bundle.getFormattedString('log_test_timestamp', [new Date(aResult.timestamp)]));
 			result.push(bundle.getFormattedString('log_test_result', [bundle.getString('report_result_'+aResult.type)]));
-			result.push(bundle.getFormattedString('log_test_time', [aResult.time]));
+			result.push(_getLogTimeStr(aResult.time));
 			if (aResult.detailedTime && aResult.time != aResult.detailedTime)
-				result.push(bundle.getFormattedString('log_test_detailedTime', [aResult.detailedTime]));
+				result.push(_getLogTimeStr(aResult.detailedTime, true));
 			if (aResult.description)
 				result.push(aResult.description);
 			if (aResult.expected)
@@ -100,7 +100,7 @@ function _toText(aFormat)
 		});
 		result.push(bundle.getString('log_separator_testcase'));
 		result.push(bundle.getFormattedString(aLog.aborted ? 'log_abort' : 'log_finish', [new Date(aLog.finish)]));
-		result.push(bundle.getFormattedString('log_test_time', [aLog.time]));
+		result.push(_getLogTimeStr(aLog.time));
 		result.push(bundle.getFormattedString('log_result', [count.success, count.failure, count.error, count.passover]));
 		result.push(bundle.getString('log_separator_testcase'));
 		result.push('');
@@ -109,11 +109,19 @@ function _toText(aFormat)
 	});
 	if (result.length) {
 		result.unshift('');
-		result.unshift(bundle.getFormattedString('log_test_time', [totalTime]));
+		result.unshift(_getLogTimeStr(totalTime));
 		result.unshift(bundle.getFormattedString('all_result_statistical', [allCount.total, allCount.success, allCount.failure, allCount.error, allCount.passover]));
 		result.push('');
 	}
 	return result.join('\n');
+}
+function _getLogTimeStr(aTime, aDetailed)
+{
+	var key = aDetailed ? 'log_test_detailedTime' : 'log_test_time' ;
+	var timeStr = bundle.getFormattedString(key, [aTime]);
+	if (aTime >= 1000)
+		timeStr += ' '+bundle.getFormattedString(key+'_long', [Math.round(aTime / 1000)]);
+	return timeStr;
 }
 
 function append(aNewItems)
