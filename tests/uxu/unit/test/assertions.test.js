@@ -318,7 +318,8 @@ function testFinishesWithin()
 		assertionsModule.finishesWithin,
 		[
 			1000,
-			function() {}
+			function() {},
+			{}
 		]
 	);
 	assert.assertFailed(
@@ -329,8 +330,24 @@ function testFinishesWithin()
 				var startAt = Date.now();
 				while (Date.now() - startAt < 50) {}
 			},
+			{},
 			message
 		]
+	);
+
+	yield assertionsModule.finishesWithin(
+		1000,
+		function() {
+			yield 10;
+		},
+		{}
+	);
+	yield assertionsModule.finishesWithin(
+		10,
+		function() {
+			yield 1200;
+		},
+		{}
 	);
 }
 

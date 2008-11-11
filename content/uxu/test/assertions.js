@@ -219,55 +219,105 @@ function isNotNull(aActual, aMessage)
 		     bundle.getString('assert_is_not_null'), aMessage);
 }
 
-function raises(aExpectedException, aFunction, aContext, aMessage)
+function raises(aExpectedException, aTask, aContext, aMessage)
 {
 	var raised = false;
-	try {
-		aFunction.call(aContext);
+	if (typeof aTask == 'function') {
+		try {
+			aTask = aTask.call(aContext);
+		}
+		catch(e if e == aExpectedException) {
+			raised = true;
+		}
+		catch(e if e.name == aExpectedException) {
+			raised = true;
+		}
 	}
-	catch(e if e == aExpectedException) {
-		raised = true;
+	if (aTask && utils.isGeneratedIterator(aTask)) {
+		return utils.doIteration(aTask, {
+			onEnd : function(e)
+			{
+				if (
+					e &&
+					(
+						e == aExpectedException ||
+						e.name == aExpectedException
+					)
+					) {
+					raised = true;
+				}
+				if (!raised)
+					_onRaisesFinish(aExpectedException, aMessage);
+			}
+		});
 	}
-	catch(e if e.name == aExpectedException) {
-		raised = true;
+	else if (!raised) {
+		_onRaisesFinish(aExpectedException, aMessage);
 	}
-	if (!raised)
-		fail({
-		     	expectedRaw : aExpectedException,
-		     	expected    : bundle.getFormattedString('assert_raises_expected', [aExpectedException])
-		     },
-		     bundle.getString('assert_raises'), aMessage);
 }
-function raise(aExpectedException, aFunction, aContext, aMessage) { this.raises(aExpectedException, aFunction, aContext, aMessage); }
+function raise(aExpectedException, aTask, aContext, aMessage) { this.raises(aExpectedException, aTask, aContext, aMessage); }
+function _onRaisesFinish(aExpectedException, aMessage)
+{
+	fail({
+	     	expectedRaw : aExpectedException,
+	     	expected    : bundle.getFormattedString('assert_raises_expected', [aExpectedException])
+	     },
+	     bundle.getString('assert_raises'), aMessage);
+}
 
-function notRaises(aExpectedException, aFunction, aContext, aMessage)
+function notRaises(aExpectedException, aTask, aContext, aMessage)
 {
 	var raised = false;
 	var exception;
-	try {
-		aFunction.call(aContext);
+	if (typeof aTask == 'function') {
+		try {
+			aTask = aTask.call(aContext);
+		}
+		catch(e if e == aExpectedException) {
+			exception = e;
+			raised = true;
+		}
+		catch(e if e.name == aExpectedException) {
+			exception = e;
+			raised = true;
+		}
+		catch(e) {
+			exception = e;
+		}
+		if (raised)
+			_onNotRaisesFinish(aExpectedException, exception, aMessage);
 	}
-	catch(e if e == aExpectedException) {
-		exception = e;
-		raised = true;
+	if (aTask && utils.isGeneratedIterator(aTask)) {
+		return utils.doIteration(aTask, {
+			onEnd : function(e)
+			{
+				if (
+					e &&
+					(
+						e == aExpectedException ||
+						e.name == aExpectedException
+					)
+					) {
+					exception = e;
+					raised = true;
+				}
+				if (raised)
+					_onNotRaisesFinish(aExpectedException, exception, aMessage);
+			}
+		});
 	}
-	catch(e if e.name == aExpectedException) {
-		exception = e;
-		raised = true;
-	}
-	catch(e) {
-		exception = e;
-	}
-	if (raised)
-		fail({
-		     	expectedRaw : aExpectedException,
-		     	actualRaw   : exception,
-		     	expected    : bundle.getFormattedString('assert_not_raises_expected', [aExpectedException]),
-		     	actual      : bundle.getFormattedString('assert_not_raises_actual', [exception])
-		     },
-		     bundle.getString('assert_not_raises'), aMessage);
 }
-function notRaise(aExpectedException, aFunction, aContext, aMessage) { this.notRaises(aExpectedException, aFunction, aContext, aMessage); }
+function notRaise(aExpectedException, aTask, aContext, aMessage) { this.notRaises(aExpectedException, aTask, aContext, aMessage); }
+function _onNotRaisesFinish(aExpectedException, aActualException, aMessage)
+{
+	fail({
+	     	expectedRaw : aExpectedException,
+	     	actualRaw   : aActualException,
+	     	expected    : bundle.getFormattedString('assert_not_raises_expected', [aExpectedException]),
+	     	actual      : bundle.getFormattedString('assert_not_raises_actual', [aActualException])
+	     },
+	     bundle.getString('assert_not_raises'), aMessage);
+}
 
 function matches(aExpectedPattern, aActualString, aMessage)
 {
@@ -371,20 +421,45 @@ function notContains(aExpected, aActual, aMessage)
 }
 function notContain(aExpected, aActual, aMessage) { this.notContains(aExpected, aActual, aMessage); }
 
-function finishesWithin(aExpectedTime, aFunction, aMessage)
+function finishesWithin(aExpectedTime, aTask, aContext, aMessage)
 {
 	var startAt = Date.now();
-	aFunction();
-	var actualTime = Date.now() - startAt;
-	if (actualTime > aExpectedTime)
-		fail({
-		     	expected    : bundle.getFormattedString('assert_finishes_within_expected', [aExpectedTime]),
-		     	actual      : bundle.getFormattedString('assert_finishes_within_actual', [actualTime])
-		     },
-		     bundle.getString('assert_finishes_within'),
-		     aMessage);
+	if (typeof aTask == 'function') aTask = aTask.call(aContext);
+	if (aTask && utils.isGeneratedIterator(aTask)) {
+		return utils.doIteration(aTask, {
+			onEnd : function(e)
+			{
+				_onFinishesWithinFinish(aExpectedTime, startAt, aMessage);
+			},
+			onError : function(e)
+			{
+				throw e;
+			}
+		});
+	}
+	else {
+		_onFinishesWithinFinish(aExpectedTime, startAt, aMessage);
+	}
 }
-function finishWithin(aExpectedTime, aFunction, aMessage) { this.finishesWithin(aExpectedTime, aFunction, aMessage); }
+function finishWithin(aExpectedTime, aTask, aContext, aMessage) { this.finishesWithin(aExpectedTime, aTask, aContext, aMessage); }
+function _onFinishesWithinFinish(aExpectedTime, aStartAt, aMessage)
+{
+	var actualTime = Date.now() - aStartAt;
+	if (actualTime <= aExpectedTime) return;
+
+	var longExpectedTime = aExpectedTime < 1000 ?
+			'' :
+			bundle.getFormattedString('assert_finishes_within_expected_long', [Math.round(aExpectedTime / 1000)]) ;
+	var longActualTime = actualTime < 1000 ?
+			'' :
+			bundle.getFormattedString('assert_finishes_within_actual_long', [Math.round(actualTime / 1000)]) ;
+	fail({
+	     	expected : bundle.getFormattedString('assert_finishes_within_expected', [aExpectedTime, longExpectedTime]),
+	     	actual   : bundle.getFormattedString('assert_finishes_within_actual', [actualTime, longActualTime])
+	     },
+	     bundle.getString('assert_finishes_within'),
+	     aMessage);
+}
 
 function fail()
 {

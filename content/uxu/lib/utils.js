@@ -713,8 +713,13 @@ function doIteration(aGenerator, aCallbacks)
 			retVal.value = true;
 			if (!aCallbacks) return;
 
-			if (aCallbacks.onEnd)
-				aCallbacks.onEnd(e);
+			try {
+				if (aCallbacks.onEnd)
+					aCallbacks.onEnd(e);
+			}
+			catch(e) {
+				retVal.error = e;
+			}
 		}
 		catch(e if e.name == 'AssertionFailed') {
 			try {
@@ -726,12 +731,17 @@ function doIteration(aGenerator, aCallbacks)
 			retVal.value = true;
 			if (!aCallbacks) return;
 
-			if (aCallbacks.onFail)
-				aCallbacks.onFail(e);
-			else if (aCallbacks.onError)
-				aCallbacks.onError(e);
-			else if (aCallbacks.onEnd)
-				aCallbacks.onEnd(e);
+			try {
+				if (aCallbacks.onFail)
+					aCallbacks.onFail(e);
+				else if (aCallbacks.onError)
+					aCallbacks.onError(e);
+				else if (aCallbacks.onEnd)
+					aCallbacks.onEnd(e);
+			}
+			catch(e) {
+				retVal.error = e;
+			}
 		}
 		catch(e) {
 			try {
@@ -743,10 +753,15 @@ function doIteration(aGenerator, aCallbacks)
 			retVal.value = true;
 			if (!aCallbacks) return;
 
-			if (aCallbacks.onError)
-				aCallbacks.onError(e);
-			else if (aCallbacks.onEnd)
-				aCallbacks.onEnd(e);
+			try {
+				if (aCallbacks.onError)
+					aCallbacks.onError(e);
+				else if (aCallbacks.onEnd)
+					aCallbacks.onEnd(e);
+			}
+			catch(e) {
+				retVal.error = e;
+			}
 		}
 	})(null);
 
