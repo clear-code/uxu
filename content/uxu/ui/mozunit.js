@@ -240,8 +240,9 @@ function startup()
 	}
 	ObserverService.addObserver(restartObserver, 'quit-application-requested', false);
 
-	setTestFile(utils.getPref('extensions.uxu.mozunit.lastPath'));
-	window.setTimeout(setTestFile, 0, utils.getPref('extensions.uxu.mozunit.lastPath')); // ‹Œ”Å‚Ìpersist‘®«‚É‚æ‚Á‚Ä•Û‘¶‚³‚ê‚Ä‚¢‚½’l‚ª•œŒ³‚³‚ê‚Ä‚µ‚Ü‚Á‚½ê‡‚Ì‚½‚ß‚É
+	var defaultTestPath = utils.getPref('extensions.uxu.mozunit.lastPath');
+
+	setTestFile(defaultTestPath);
 	updateTestCommands();
 
 	_('content').addEventListener('load', onContentLoad, true);
@@ -269,6 +270,7 @@ function startup()
 			if (path.indexOf('file://') > -1)
 				path = utils.getFilePathFromURLSpec(path);
 			setTestFile(path);
+			defaultTestPath = path;
 		}
 		if (gOptions.log && gOptions.log.indexOf('file://') > -1)
 			gOptions.log = utils.getFilePathFromURLSpec(gOptions.log);
@@ -302,6 +304,9 @@ function startup()
 			}
 		}
 	}
+
+	// ‹Œ”Å‚Ìpersist‘®«‚É‚æ‚Á‚Ä•Û‘¶‚³‚ê‚Ä‚¢‚½’l‚ª•œŒ³‚³‚ê‚Ä‚µ‚Ü‚Á‚½ê‡‚Ì‚½‚ß‚É
+	window.setTimeout(setTestFile, 0, defaultTestPath);
 }
 	 
 var alwaysRaisedObserver = { 
