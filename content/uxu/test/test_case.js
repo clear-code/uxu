@@ -690,6 +690,7 @@ function _runByRemote(aStopper)
 	profile.append(REMOTE_PROFILE_PREFIX);
 	profile.createUnique(profile.DIRECTORY_TYPE, 0777);
 //	this._profile.copyTo(profile.parent, profile.leafName);
+	profile.remove(true);
 	utils.cosmeticClone(this._profile, profile.parent, profile.leafName);
 
 	// 実行時の優先度計算のために必要
