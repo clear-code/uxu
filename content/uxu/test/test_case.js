@@ -689,7 +689,8 @@ function _runByRemote(aStopper)
 	var profile = utils.getFileFromKeyword('TmpD');
 	profile.append(REMOTE_PROFILE_PREFIX);
 	profile.createUnique(profile.DIRECTORY_TYPE, 0777);
-	this._profile.copyTo(profile.parent, profile.leafName);
+//	this._profile.copyTo(profile.parent, profile.leafName);
+	utils.cosmeticClone(this._profile, profile.parent, profile.leafName);
 
 	// 実行時の優先度計算のために必要
 	utils.dbFile.copyTo(profile, utils.dbFile.leafName);
