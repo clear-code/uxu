@@ -52,14 +52,16 @@ function stop()
 
 function onSocketAccepted(aSocket, aTransport)
 {
+	aTransport = aTransport.QueryInterface(Ci.nsISocketTransport);
 	try {
 		if (this._allowAccessesFromRemote) {
-			var host = aTransport.QueryInterface(Ci.nsISocketTransport).host;
+			var host = aTransport.host;
 			var list = utils.getPref('extensions.uxu.allowAccessesFromRemote.allowedList');
 			if (!list.split(/[,;\s]+/).some(function(aHost) {
 					aHost = new RegExp('^'+aHost.replace(/\./g, '\\.').replace(/\*/g, '.*')+'$', 'i');
 					return aHost.test(host);
 				})) {
+				aTransport.close(Components.results.NS_ERROR_UNKNOWN_HOST);
 				dump('Access from <'+host+'> is rejected by UxU.\n');
 				return;
 			}
@@ -76,6 +78,7 @@ function onSocketAccepted(aSocket, aTransport)
 		this._handlers.push(handler);
 	}
 	catch (e) {
+		aTransport.close(Components.results.NS_ERROR_UNEXPECTED);
 		dump('UxU: Error: ' + utils.formatError(utils.normalizeError(e)) + '\n');
 	}
 }
