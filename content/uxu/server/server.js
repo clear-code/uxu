@@ -18,6 +18,8 @@ function constructor(aPort)
 		return this.socket ? this.socket.port : this._port ;
 	});
 
+	this._allowAccessesFromRemote = utils.getPref('extensions.uxu.allowAccessesFromRemote');
+
 	this.socket = null;
 	this._handlers = [];
 }
@@ -28,7 +30,7 @@ function start()
 		.createInstance(Ci.nsIServerSocket);
 
 	try {
-		this.socket.init(this._port, !utils.getPref('extensions.uxu.allowAccessesFromRemote'), -1);
+		this.socket.init(this._port, !this._allowAccessesFromRemote, -1);
 		this.socket.asyncListen(this);
 	}
 	catch (e) {
@@ -51,6 +53,16 @@ function stop()
 function onSocketAccepted(aSocket, aTransport)
 {
 	try {
+		if (this._allowAccessesFromRemote) {
+			var host = aTransport.QueryInterface(Ci.nsISocketTransport).host;
+			var list = utils.getPref('extensions.uxu.allowAccessesFromRemote.allowedList');
+			if (!list.split(/[,\s]+/).some(function(aHost) {
+					aHost = new RegExp('^'+aHost.replace(/\./g, '\\.').replace(/\*/g, '.*')+'$', 'i');
+					return aHost.test(host);
+				}))
+				dump('Access from '+host+' is rejected by UxU.\n');
+		}
+
 		var input  = aTransport.openInputStream(0, 0, 0);
 		var output = aTransport.openOutputStream(0, 0, 0);
 		var handler = new Handler(input, output, this);
