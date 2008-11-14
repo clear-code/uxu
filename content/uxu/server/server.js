@@ -56,11 +56,14 @@ function onSocketAccepted(aSocket, aTransport)
 		if (this._allowAccessesFromRemote) {
 			var host = aTransport.QueryInterface(Ci.nsISocketTransport).host;
 			var list = utils.getPref('extensions.uxu.allowAccessesFromRemote.allowedList');
-			if (!list.split(/[,\s]+/).some(function(aHost) {
+			if (!list.split(/[,;\s]+/).some(function(aHost) {
 					aHost = new RegExp('^'+aHost.replace(/\./g, '\\.').replace(/\*/g, '.*')+'$', 'i');
 					return aHost.test(host);
-				}))
-				dump('Access from '+host+' is rejected by UxU.\n');
+				})) {
+				dump('Access from <'+host+'> is rejected by UxU.\n');
+				return;
+			}
+			dump('Access from <'+host+'> is accepted by UxU.\n');
 		}
 
 		var input  = aTransport.openInputStream(0, 0, 0);
