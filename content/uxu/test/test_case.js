@@ -533,7 +533,7 @@ function run(aStopper)
 			}
 			catch(e) {
 				aOptions.report.report.result = 'error';
-				aOptions.report.report.exception = e;
+				aOptions.report.report.exception = utils.normalizeError(e);
 				aOptions.report.report.testDescription = aOptions.errorDescription;
 				aOptions.report.report.time = Date.now() - aOptions.startAt;
 				aContinuation('ko');
@@ -890,7 +890,7 @@ function _exec(aTest, aContext, aContinuation, aReport)
 	}
 	catch(exception) {
 		report.result = 'error';
-		report.exception = exception;
+		report.exception = utils.normalizeError(exception);;
 		this._onFinish(aTest, report.result);
 	}
 

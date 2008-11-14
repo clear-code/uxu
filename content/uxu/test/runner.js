@@ -67,7 +67,7 @@ function _collectTestCases(aSuites)
 			allTests = allTests.concat(tests);
 		}
 		catch(e) {
-			this.fireEvent('Error', e);
+			this.fireEvent('Error', utils.normalizeError(e));
 		}
 	}, this);
 
@@ -168,7 +168,7 @@ function _runTests(aTests)
 				aTest.run(stopper);
 			}
 			catch(e) {
-				_this.fireEvent('Error', e);
+				_this.fireEvent('Error', utils.normalizeError(e));
 			}
 		};
 	var stopper = function() {
@@ -350,7 +350,7 @@ function loadFile(aFile)
 	}
 	catch(e) {
 		if (/\.(js|jsm)$/i.test(aFile.leafName))
-			this.fireEvent('Error', e);
+			this.fireEvent('Error', utils.normalizeError(e));
 		suite = null;
 	}
 	return suite;

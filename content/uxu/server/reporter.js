@@ -55,7 +55,7 @@ try {
 			break;
 	}
 } catch (e) {
-	dump(utils.formatError(e));
+	dump(utils.formatError(utils.normalizeError(e)));
 }
 }
 

@@ -61,7 +61,7 @@ function onSocketAccepted(aSocket, aTransport)
 		this._handlers.push(handler);
 	}
 	catch (e) {
-		dump('UxU: Error: ' + utils.formatError(e) + '\n');
+		dump('UxU: Error: ' + utils.formatError(utils.normalizeError(e)) + '\n');
 	}
 }
 

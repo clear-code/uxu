@@ -329,6 +329,26 @@ function stopScheduledRemove()
    
 // エラー・スタックトレース整形 
 	
+function normalizeError(e) 
+{
+	switch (typeof e)
+	{
+		case 'number':
+			var msg = bundle.getString('error_unknown');
+			for (var i in Components.results)
+			{
+				if (Components.results[i] != e) continue;
+				msg = i;
+				break;
+			}
+			return new Error(msg);
+
+		case 'string':
+			return new Error(e);
+	}
+	return e;
+}
+ 
 function formatError(e) 
 {
 	var options = { onlyFile : true, onlyExternal : true, onlyTraceLine : true};
@@ -744,6 +764,7 @@ function doIteration(aGenerator, aCallbacks)
 			}
 		}
 		catch(e) {
+			e = normalizeError(e);
 			try {
 				e.stack += callerStack;
 			}

@@ -123,7 +123,7 @@ function evaluate(aCode)
 		return this.load('chrome://uxu/content/lib/subScriptRunner.js?code='+encodeURIComponent(aCode));
 	}
 	catch(e) {
-		return utils.formatError(e);
+		return utils.formatError(utils.normalizeError(e));
 	}
 }
 
