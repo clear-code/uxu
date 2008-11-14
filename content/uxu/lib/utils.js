@@ -334,7 +334,7 @@ function normalizeError(e)
 	switch (typeof e)
 	{
 		case 'number':
-			var msg = bundle.getFormattedString('error_unknown', [e]);
+			var msg = bundle.getFormattedString('unknown_exception', [e]);
 			for (var i in Components.results)
 			{
 				if (Components.results[i] != e) continue;
@@ -347,7 +347,7 @@ function normalizeError(e)
 
 		case 'string':
 		case 'boolean':
-			var msg = bundle.getFormattedString('error_unknown', [e]);
+			var msg = bundle.getFormattedString('unknown_exception', [e]);
 			e = new Error(msg);
 			e.stack = getCurrentStacks();
 			break;
