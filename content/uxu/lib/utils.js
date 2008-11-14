@@ -334,17 +334,21 @@ function normalizeError(e)
 	switch (typeof e)
 	{
 		case 'number':
-			var msg = bundle.getString('error_unknown');
+			var msg = bundle.getFormattedString('error_unknown', [e]);
 			for (var i in Components.results)
 			{
 				if (Components.results[i] != e) continue;
-				msg = i;
+				msg = i+' ('+e+')';
 				break;
 			}
-			return new Error(msg);
+			var error = new Error(msg);
+			error.stack = getCurrentStacks();
+			return error;
 
 		case 'string':
-			return new Error(e);
+			var error = new Error(e);
+			error.stack = getCurrentStacks();
+			return error;
 	}
 	return e;
 }
@@ -458,6 +462,18 @@ function makeStackLine(aStack)
 {
 	if (typeof aStack == 'string') return aStack;
 	return '()@' + aStack.filename + ':' + aStack.lineNumber + '\n';
+}
+ 
+function getCurrentStacks()
+{
+	var callerStack = '';
+	var caller = Components.stack;
+	while (caller)
+	{
+		callerStack += makeStackLine(caller);
+		caller = caller.caller;
+	}
+	return callerStack;
 }
  
 function unformatStackLine(aLine) 
@@ -658,13 +674,7 @@ function doIteration(aGenerator, aCallbacks)
 	if (!isGeneratedIterator(iterator))
 		throw new Error('doIteration:: ['+aGenerator+'] is not a generator!');
 
-	var caller = Components.stack.caller;
-	var callerStack = '';
-	while (caller)
-	{
-		callerStack += makeStackLine(caller);
-		caller = caller.caller;
-	}
+	var callerStack = getCurrentStacks();
 
 	var retVal = { value : false };
 	var lastRun = (new Date()).getTime();
