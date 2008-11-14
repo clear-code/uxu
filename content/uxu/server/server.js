@@ -28,7 +28,7 @@ function start()
 		.createInstance(Ci.nsIServerSocket);
 
 	try {
-		this.socket.init(this._port, true, -1);
+		this.socket.init(this._port, !utils.getPref('extensions.uxu.allowAccessesFromRemote'), -1);
 		this.socket.asyncListen(this);
 	}
 	catch (e) {

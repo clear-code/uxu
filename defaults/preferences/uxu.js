@@ -30,6 +30,7 @@ pref("extensions.uxu.mozunit.lastResults", "");
 pref("extensions.uxu.auto.start", false);
 pref("extensions.uxu.auto.exit",  true);
 pref("extensions.uxu.port",       4444);
+pref("extensions.uxu.allowAccessesFromRemote", false);
 pref("extensions.uxu.autoStart.oneTime.enabled", true);
 pref("extensions.uxu.autoStart.oneTime", false);
 pref("extensions.uxu.autoStart.oneTime.port", 0);
