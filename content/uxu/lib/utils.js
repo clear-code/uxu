@@ -341,14 +341,16 @@ function normalizeError(e)
 				msg = i+' ('+e+')';
 				break;
 			}
-			var error = new Error(msg);
-			error.stack = getCurrentStacks();
-			return error;
+			e = new Error(msg);
+			e.stack = getCurrentStacks();
+			break;
 
 		case 'string':
-			var error = new Error(e);
-			error.stack = getCurrentStacks();
-			return error;
+		case 'boolean':
+			var msg = bundle.getFormattedString('error_unknown', [e]);
+			e = new Error(msg);
+			e.stack = getCurrentStacks();
+			break;
 	}
 	return e;
 }
