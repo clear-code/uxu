@@ -188,13 +188,57 @@ ModuleManager.prototype = {
     },
 
     _loadSubScript: function(url, env) {
-        var subScriptRegExp = /chrome:\/\/uxu\/content\/lib\/subScriptRunner\.js\?includeSource=([^;,:]+)/i;
+        var subScriptRegExp = /chrome:\/\/uxu\/content\/lib\/subScriptRunner\.js\?includeSource=([^;,:]+)(?:;encoding=([^;,:\s]+))?/i;
         var match = url.match(subScriptRegExp);
         if (match) {
-            url = decodeURIComponent(match[1]);
+            var script = decodeURIComponent(match[1]);
+            var encoding = match[2] ? match[2] : null ;
+            env._lastEvaluatedScript = this._readFrom(script, encoding);
         }
         this._loader.loadSubScript(url, env);
-	}
+    },
+    _readFrom: function(url, encoding) {
+        const IOService = Components.classes['@mozilla.org/network/io-service;1']
+                      .getService(Components.interfaces.nsIIOService);
+        var stream;
+        if (url.indexOf('file:') == 0) {
+            var file = IOService.getProtocolHandler('file')
+                         .QueryInterface(Components.interfaces.nsIFileProtocolHandler)
+                         .getFileFromURLSpec(url);
+            stream = Components.classes['@mozilla.org/network/file-input-stream;1']
+                      .createInstance(Components.interfaces.nsIFileInputStream);
+            stream.init(file, 1, 0, false); // open as "read only"
+        }
+        else {
+            var channel = IOService.newChannelFromURI(IOService.newURI(url, null, null));
+            stream = channel.open();
+        }
+        var fileContents = null;
+        try {
+            if (encoding) {
+                var converterStream = Components.classes['@mozilla.org/intl/converter-input-stream;1']
+                        .createInstance(Components.interfaces.nsIConverterInputStream);
+                var buffer = stream.available();
+                converterStream.init(stream, encoding, buffer,
+                    converterStream.DEFAULT_REPLACEMENT_CHARACTER);
+                var out = { value : null };
+                converterStream.readString(stream.available(), out);
+                converterStream.close();
+                fileContents = out.value;
+            }
+            else {
+                var scriptableStream = Components.classes['@mozilla.org/scriptableinputstream;1']
+                        .createInstance(Components.interfaces.nsIScriptableInputStream);
+                scriptableStream.init(stream);
+                fileContents = scriptableStream.read(scriptableStream.available());
+                scriptableStream.close();
+            }
+        }
+        finally {
+            stream.close();
+        }
+        return fileContents;
+    },
 };
 
 ModuleManager.testBasic = function() {
