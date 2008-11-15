@@ -155,7 +155,7 @@ var testRunnerlistener = {
 
 	_clearLog: function() {
 		var range = document.createRange();
-		range.selectNodeCOntents(gLog);
+		range.selectNodeContents(gLog);
 		range.deleteContents();
 		range.detach();
 	}
