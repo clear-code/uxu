@@ -31,6 +31,9 @@ var inherits = lib_module.require('class', 'event_target');
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var Server = server_module.require('class', 'server');
+
+var test_module = new ModuleManager(['chrome://uxu/content/test']);
+var Report = test_module.require('class', 'report');
  
 function _initDB() 
 {
@@ -494,14 +497,10 @@ function run(aStopper)
 		finished :      { }
 	};
 
-	var testCaseStart;
-	var setUpStart;
-	var testStart;
-
 	var doPreOrPostProcess = function(aContinuation, aFunction, aOptions)
 		{
 			if (!aFunction || _this._isNever(_this._masterPriority)) {
-				aOptions.report.report.time = Date.now() - aOptions.startAt;
+				aOptions.report.report.onFinish();
 				aContinuation('ok');
 				return;
 			}
@@ -513,21 +512,21 @@ function run(aStopper)
 				if (utils.isGeneratedIterator(result)) {
 					utils.doIteration(result, {
 						onEnd : function(e) {
-							aOptions.report.report.time = Date.now() - aOptions.startAt;
+							aOptions.report.report.onFinish();
 							if (!usesContinuation) aContinuation('ok');
 						},
 						onError : function(e) {
 							if (aOptions.onError) aOptions.onError();
 							aOptions.report.report.result = 'error';
-							aOptions.report.report.exception = e;
+							aOptions.report.report.exception = utils.normalizeError(e);
 							aOptions.report.report.testDescription = aOptions.errorDescription;
-							aOptions.report.report.time = Date.now() - aOptions.startAt;
+							aOptions.report.report.onFinish();
 							aContinuation('ko');
 						}
 					});
 				}
 				else {
-					aOptions.report.report.time = Date.now() - aOptions.startAt;
+					aOptions.report.report.onFinish();
 					if (!usesContinuation) aContinuation('ok');
 				}
 			}
@@ -535,7 +534,7 @@ function run(aStopper)
 				aOptions.report.report.result = 'error';
 				aOptions.report.report.exception = utils.normalizeError(e);
 				aOptions.report.report.testDescription = aOptions.errorDescription;
-				aOptions.report.report.time = Date.now() - aOptions.startAt;
+				aOptions.report.report.onFinish();
 				aContinuation('ko');
 			}
 		};
@@ -549,17 +548,14 @@ function run(aStopper)
 		},
 		doWarmUp : function(aContinuation)
 		{
-			testCaseStart = Date.now();
-
 			context = _this.context || {};
- 			testCaseReport.report = {};
+ 			testCaseReport.report = new Report();
 			doPreOrPostProcess(
 				aContinuation,
 				_this._warmUp,
 				{
 					errorDescription : bundle.getFormattedString('report_description_warmup', [_this.title]),
-					report : testCaseReport,
-					startAt : testCaseStart
+					report : testCaseReport
 				}
 			);
 		},
@@ -571,43 +567,38 @@ function run(aStopper)
 				aContinuation('ok');
 				return;
 			}
-			testReport.report = {};
+			testReport.report = new Report();
 			testReport.report.result = 'passover';
 			testReport.report.testDescription = test.desc;
-			testReport.report.time = 0;
 			aContinuation('ko');
 		},
 		doSetUp : function(aContinuation)
 		{
-			setUpStart = Date.now();
-
-			testReport.report = {};
+			testReport.report = new Report();
 			doPreOrPostProcess(
 				aContinuation,
 				_this._setUp,
 				{
 					errorDescription : bundle.getFormattedString('report_description_setup', [_this._tests[testIndex].desc]),
-					report : testReport,
-					startAt : setUpStart
+					report : testReport
 				}
 			);
 		},
 		doTest : function(aContinuation)
 		{
-			testStart = Date.now();
-
+			testReport.report.onDetailedStart();
 			var test;
 			test = _this._tests[testIndex];
 			var newReport = _this._exec(test, context, aContinuation, testReport);
 			if (newReport.result) {
 				testReport.report = newReport;
 				testReport.report.testDescription = test.desc;
-				testReport.report.detailedTime = Date.now() - testStart;
+				testReport.report.onDetailedFinish();
 				aContinuation('ok');
 			}
 			else {
 				testReport.report.testDescription = test.desc;
-				testReport.report.detailedTime = Date.now() - testStart;
+				testReport.report.onDetailedFinish();
 			}
 		},
 		doReport : function(aContinuation)
@@ -629,8 +620,7 @@ function run(aStopper)
 					report : testReport,
 					onError : function() {
 						_this._onFinish(_this._tests[testIndex], 'error');
-					},
-					startAt : setUpStart
+					}
 				}
 			);
 		},
@@ -652,8 +642,7 @@ function run(aStopper)
 				_this._coolDown,
 				{
 					errorDescription : bundle.getFormattedString('report_description_cooldown', [_this.title]),
-					report : testCaseReport,
-					startAt : testCaseStart
+					report : testCaseReport
 				}
 			);
 		},
@@ -738,8 +727,7 @@ function _runByRemote(aStopper)
 	var beforeReadyInterval = 500;
 	var afterReadyTimeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout'));
 	var afterReadyInterval = 50;
-	var report = {};
-	var testCaseStart = Date.now();
+	var report = new Report();
 	utils.doIteration(
 		function() {
 			var last = Date.now();
@@ -762,7 +750,7 @@ function _runByRemote(aStopper)
 		{
 			onEnd : function(e) {
 				report.result = 'success';
-				report.time = Date.now() - testCaseStart;
+				report.onFinish();
 				_this._onFinishRemoteResult(report);
 
 				server.stop();
@@ -773,7 +761,7 @@ function _runByRemote(aStopper)
 				report.result = 'error';
 				report.exception = e;
 				report.testDescription = bundle.getFormattedString('report_description_remote', [_this.title]);
-				report.time = Date.now() - testCaseStart;
+				report.onFinish();
 				_this._onFinishRemoteResult(report);
 
 				server.stop();
@@ -842,10 +830,7 @@ function _onFinishRemoteResult(aReport)
   	
 function _exec(aTest, aContext, aContinuation, aReport) 
 {
-	var report = {
-		result:    undefined,
-		exception: undefined
-	};
+	var report = new Report();
 
 	if (this._stopper && this._stopper()) {
 		report.result = 'passover';
