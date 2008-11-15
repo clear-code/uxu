@@ -175,27 +175,34 @@ function onTestFinish(aEvent)
 }
 function _createResultsFromReport(aReport)
 {
-	var results = [];
-	aReport.exceptions.forEach(function(aException, aIndex) {
-		var result = {
-			type      : aReport.result,
-			title     : aReport.testDescriptions[aIndex] || aReport.testDescription,
-			timestamp : Date.now(),
-			time      : aReport.time,
-			detailedTime : aReport.detailedTime
-		};
-		if (aException.expected)
-			result.expected = aException.expected;
-		if (aException.actual)
-			result.actual = aException.actual;
-		if (aException.diff)
-			result.diff = aException.foldedDiff || aException.diff;
-		result.description = aException.message.replace(/^\s+/, '');
-		if (utils.hasStackTrace(aException))
-			result.stackTrace = utils.formatStackTraceForDisplay(aException);
-		results.push(result);
-	}, this);
+	var timestamp = Date.now();
+	var results = aReport.exceptions.map(function(aException, aIndex) {
+			var result = this._createResultFromReport(aReport, timestamp);
+			result.title = aReport.testDescriptions[aIndex] || result.title;
+			if (aException.expected)
+				result.expected = aException.expected;
+			if (aException.actual)
+				result.actual = aException.actual;
+			if (aException.diff)
+				result.diff = aException.foldedDiff || aException.diff;
+			result.description = aException.message.replace(/^\s+/, '');
+			if (utils.hasStackTrace(aException))
+				result.stackTrace = utils.formatStackTraceForDisplay(aException);
+			return result;
+		}, this);
+	if (!results.length)
+		results = [this._createResultFromReport(aReport, timestamp)];
 	return results;
+}
+function _createResultFromReport(aReport, aTimestamp)
+{
+	return {
+		type      : aReport.result,
+		title     : aReport.testDescription,
+		timestamp : (aTimestamp || Date.now()),
+		time      : aReport.time,
+		detailedTime : aReport.detailedTime
+	};
 }
 
 function onFinish(aEvent)

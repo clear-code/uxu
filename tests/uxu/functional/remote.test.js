@@ -19,10 +19,18 @@ function testSuccess()
 
 function testFail()
 {
-	assert.isTrue(false);
+	assert.raises('AssertionFailed', function() {
+		assert.isTrue(false);
+	});
 }
 
 function testError()
 {
-	undefinedFunction();
+	try {
+		undefinedFunction();
+		assert.isTrue(false);
+	}
+	catch(e) {
+		assert.isTrue(true);
+	}
 }
