@@ -92,6 +92,12 @@ function testEquals()
                              [node,
                               document.createElement('box'),
                               message]);
+
+
+	assert.assertSucceed(assertionsModule.notEquals, [0, 1]);
+	assert.assertFailed(assertionsModule.notEquals, [1, 1, message]);
+	assert.assertSucceed(assertionsModule.notEqual, [0, 1]);
+	assert.assertFailed(assertionsModule.notEqual, [1, 1, message]);
 }
 
 function testStrictlyEquals()
@@ -128,14 +134,9 @@ function testStrictlyEquals()
                              message]);
 }
 
-function test_assertions()
+function testBoolean()
 {
 	var message = Math.random() * 65000;
-
-	assert.assertSucceed(assertionsModule.notEquals, [0, 1]);
-	assert.assertFailed(assertionsModule.notEquals, [1, 1, message]);
-	assert.assertSucceed(assertionsModule.notEqual, [0, 1]);
-	assert.assertFailed(assertionsModule.notEqual, [1, 1, message]);
 
 	assert.assertSucceed(assertionsModule.isTrue, [true]);
 	assert.assertSucceed(assertionsModule.isTrue, [{}]);
@@ -150,6 +151,11 @@ function test_assertions()
 	assert.assertSucceed(assertionsModule.isFalse, [null]);
 	assert.assertFailed(assertionsModule.isFalse, [true, message]);
 	assert.assertFailed(assertionsModule.isFalse, [{}, message]);
+}
+
+function testType()
+{
+	var message = Math.random() * 65000;
 
 	assert.assertSucceed(assertionsModule.isBoolean, [true]);
 	assert.assertFailed(assertionsModule.isBoolean, ['true', message]);
@@ -184,6 +190,11 @@ function test_assertions()
 	assert.assertSucceed(assertionsModule.isNotFunction, [null]);
 	assert.assertFailed(assertionsModule.isNotFunction, [(function() {}), message]);
 	assert.assertFailed(assertionsModule.isNotFunction, [(new Function('foo', 'return foo')), message]);
+}
+
+function testNullAndUndefined()
+{
+	var message = Math.random() * 65000;
 
 	assert.assertSucceed(assertionsModule.isDefined, [true]);
 	assert.assertSucceed(assertionsModule.isDefined, [false]);
@@ -212,6 +223,11 @@ function test_assertions()
 	assert.assertSucceed(assertionsModule.isNotNull, ['']);
 	assert.assertSucceed(assertionsModule.isNotNull, [void(0)]);
 	assert.assertFailed(assertionsModule.isNotNull, [null, message]);
+}
+
+function testRegExp()
+{
+	var message = Math.random() * 65000;
 
 	assert.assertSucceed(assertionsModule.matches,
 		[/te[sx]t/, 'test']
@@ -252,6 +268,11 @@ function test_assertions()
 	assert.assertFailed(assertionsModule.notPattern,
 		['test', /te[sx]t/, message]
 	);
+}
+
+function testArray()
+{
+	var message = Math.random() * 65000;
 
 	assert.assertSucceed(assertionsModule.arrayEquals,
 		[[0, 1, 2], [0, 1, 2]]
@@ -313,6 +334,38 @@ function testInDelta()
 
 	assert.assertSucceed(assertionsModule.inDelta, [1.0, 0.9, 0.11]);
 	assert.assertFailed(assertionsModule.inDelta, [1.0, 0.9, 0.1, message]);
+}
+
+function testLarge()
+{
+	var message = Math.random() * 65000;
+	assert.assertSucceed(assertionsModule.largerThan, [10, 20]);
+	assert.assertFailed(assertionsModule.largerThan, [10, 5, message]);
+	assert.assertFailed(assertionsModule.largerThan, [10, 10, message]);
+
+	assert.assertSucceed(assertionsModule.larger, [10, 20]);
+	assert.assertFailed(assertionsModule.larger, [10, 5, message]);
+	assert.assertFailed(assertionsModule.larger, [10, 10, message]);
+
+	assert.assertSucceed(assertionsModule.large, [10, 20]);
+	assert.assertFailed(assertionsModule.large, [10, 5, message]);
+	assert.assertFailed(assertionsModule.large, [10, 10, message]);
+}
+
+function testSmall()
+{
+	var message = Math.random() * 65000;
+	assert.assertSucceed(assertionsModule.smallerThan, [10, 5]);
+	assert.assertFailed(assertionsModule.smallerThan, [10, 20, message]);
+	assert.assertFailed(assertionsModule.smallerThan, [10, 10, message]);
+
+	assert.assertSucceed(assertionsModule.smaller, [10, 5]);
+	assert.assertFailed(assertionsModule.smaller, [10, 20, message]);
+	assert.assertFailed(assertionsModule.smaller, [10, 10, message]);
+
+	assert.assertSucceed(assertionsModule.small, [10, 5]);
+	assert.assertFailed(assertionsModule.small, [10, 20, message]);
+	assert.assertFailed(assertionsModule.small, [10, 10, message]);
 }
 
 function testFinishesWithin()

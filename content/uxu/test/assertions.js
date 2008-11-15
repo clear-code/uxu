@@ -388,6 +388,44 @@ function inDelta(aExpected, aActual, aDelta, aMessage)
 		 aMessage);
 }
 
+function largerThan(aExpected, aActual, aMessage)
+{
+	if (aExpected < aActual)
+		return;
+
+	fail({
+	     	expectedRaw : aExpected,
+	     	actualRaw   : aActual,
+	     	expected    : bundle.getFormattedString('assert_larger_than_expected',
+	     							   [appendTypeString(aExpected)]),
+	     	actual      : bundle.getFormattedString('assert_larger_than_actual',
+	     							   [appendTypeString(aActual)])
+	     },
+		 bundle.getString('assert_larger_than'),
+		 aMessage);
+}
+function larger(aExpected, aActual, aMessage) { this.largerThan(aExpected, aActual, aMessage); }
+function large(aExpected, aActual, aMessage) { this.largerThan(aExpected, aActual, aMessage); }
+
+function smallerThan(aExpected, aActual, aMessage)
+{
+	if (aExpected > aActual)
+		return;
+
+	fail({
+	     	expectedRaw : aExpected,
+	     	actualRaw   : aActual,
+	     	expected    : bundle.getFormattedString('assert_smaller_than_expected',
+	     							   [appendTypeString(aExpected)]),
+	     	actual      : bundle.getFormattedString('assert_smaller_than_actual',
+	     							   [appendTypeString(aActual)])
+	     },
+		 bundle.getString('assert_smaller_than'),
+		 aMessage);
+}
+function smaller(aExpected, aActual, aMessage) { this.smallerThan(aExpected, aActual, aMessage); }
+function small(aExpected, aActual, aMessage) { this.smallerThan(aExpected, aActual, aMessage); }
+
 function contains(aExpected, aActual, aMessage)
 {
 	if ((utils.isArray(aActual) ? aActual : String(aActual) ).indexOf(aExpected) < 0)
