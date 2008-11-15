@@ -46,7 +46,7 @@ ModuleManager.prototype = {
             this._searchPath.concat([directoryOfCaller]),
             this._suffixList);
 
-        if(realUrl)
+        if (realUrl)
             switch(type) {
             case 'class_p': // DEPRECATED
                 return this._loadClassPrivateEnv(realUrl);
@@ -73,8 +73,8 @@ ModuleManager.prototype = {
             this._searchPath.concat([directoryOfCaller]),
             this._suffixList);
 
-        if(realUrl)
-            this._loader.loadSubScript(realUrl, target);
+        if (realUrl)
+            this._loadSubScript(realUrl, target);
         else
             throw new Error('No script with given logical URL available. (' + logicalUrl + ')');        
     },
@@ -95,8 +95,7 @@ ModuleManager.prototype = {
             };
 
             this._requireCache[cacheKey] = classConstructor;
-
-            this._loader.loadSubScript(realUrl, proto);
+            this._loadSubScript(realUrl, proto);
 
             if(proto.inheritor)
                 classConstructor.prototype = proto.inheritor();
@@ -117,11 +116,10 @@ ModuleManager.prototype = {
     // and evaluated *each time* the constructor is called.
 
     _loadClassPrivateEnv: function(realUrl) {
-        var _loader = this._loader;
         var _module = this;
         return function() {
             this.module = _module;
-            _loader.loadSubScript(realUrl, this);
+            _module._loadSubScript(realUrl, this);
             this.constructor.apply(this, arguments);
         }
     },
@@ -135,7 +133,7 @@ ModuleManager.prototype = {
             };
             this._requireCache[cacheKey] = pkg;
 
-            this._loader.loadSubScript(realUrl, pkg);
+            this._loadSubScript(realUrl, pkg);
         }
         return pkg;
     },
@@ -156,7 +154,7 @@ ModuleManager.prototype = {
                     fileName +
                     suffixName;
 
-                if(this._urlAvailable(url))
+                if (this._urlAvailable(url))
                     return url;
             }
         }
@@ -187,7 +185,16 @@ ModuleManager.prototype = {
             return false;
         }
         return false;
-    }
+    },
+
+    _loadSubScript: function(url, env) {
+        var subScriptRegExp = /chrome:\/\/uxu\/content\/lib\/subScriptRunner\.js\?includeSource=([^;,:]+)/i;
+        var match = url.match(subScriptRegExp);
+        if (match) {
+            url = decodeURIComponent(match[1]);
+        }
+        this._loader.loadSubScript(url, env);
+	}
 };
 
 ModuleManager.testBasic = function() {
