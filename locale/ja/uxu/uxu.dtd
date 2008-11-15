@@ -112,3 +112,6 @@
 <!ENTITY config.auto.exit  "Firefoxの終了と同時にサーバとしての動作を終了する">
 <!ENTITY config.autoStart.oneTime.enabled "Firefoxの再起動時にサーバを自動的に復帰させる">
 <!ENTITY config.port  "リモート接続を受け付ける既定のポート番号：">
+
+<!ENTITY config.allowAccessesFromRemote "ローカル以外からの接続を受け付ける">
+<!ENTITY config.allowAccessesFromRemote.allowedList "接続を受け付けるホスト：">

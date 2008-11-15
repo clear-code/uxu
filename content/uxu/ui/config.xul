@@ -162,6 +162,12 @@
 		<preference id="extensions.uxu.port"
 			name="extensions.uxu.port"
 			type="int"/>
+		<preference id="extensions.uxu.allowAccessesFromRemote"
+			name="extensions.uxu.allowAccessesFromRemote"
+			type="bool"/>
+		<preference id="extensions.uxu.allowAccessesFromRemote.allowedList"
+			name="extensions.uxu.allowAccessesFromRemote.allowedList"
+			type="string"/>
 	</preferences>
 
 	<checkbox id="extensions.uxu.auto.start-check"
@@ -184,6 +190,21 @@
 			type="number"
 			min="0" increment="1" style="width:5em;"/>
 	</hbox>
+
+	<groupbox>
+		<caption>
+			<checkbox id="extensions.uxu.allowAccessesFromRemote-check"
+				preference="extensions.uxu.allowAccessesFromRemote"
+				label="&config.allowAccessesFromRemote;"/>
+		</caption>
+		<hbox align="center">
+			<label value="&config.allowAccessesFromRemote.allowedList;"
+				control="extensions.uxu.allowAccessesFromRemote.allowedList-textbox"/>
+			<textbox id="extensions.uxu.allowAccessesFromRemote.allowedList-textbox"
+				preference="extensions.uxu.allowAccessesFromRemote.allowedList"
+				flex="1"/>
+		</hbox>
+	</groupbox>
 
 </prefpane>
 
