@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/"?>
+<?xml-stylesheet href="chrome://uxu/skin/style.css"?>
 <!DOCTYPE window SYSTEM "chrome://uxu/locale/uxu.dtd">
 <window id="uxu-window"
 	title="&uxu.server.title;"

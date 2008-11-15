@@ -80,3 +80,14 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 *[role=result-box] {
 	width: 72px;
 }
+
+
+
+.server-report {
+	margin-bottom: 1em;
+}
+
+.server-report label {
+	padding: 0.5em;
+	-moz-box-flex: 1;
+}

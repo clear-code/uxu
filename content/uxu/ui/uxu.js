@@ -79,33 +79,48 @@ var testRunnerlistener = {
 		gLog.appendChild(node);
 	},
 
-	onTestCaseStart: function() {
+	getReport: function(aTestCase) {
+		var id = 'testcase-report-'+encodeURIComponent(aTestCase.title)+'-'+encodeURIComponent(aTestCase.source);
+
+		var node = document.getElementById(id);
+		if (node) return node;
+
+		node = document.createElement('groupbox');
+		node.setAttribute('id', id);
+		node.setAttribute('class', 'server-report');
+		node.appendChild(document.createElement('caption'));
+		node.lastChild.setAttribute('class', 'testcase-start');
+		node.lastChild.setAttribute('label', aTestCase.title);
+		gLog.appendChild(node);
+		return node;
+	},
+
+	onTestCaseStart: function(aEvent) {
 		this.count = {
 			success  : 0,
 			failure  : 0,
 			error    : 0,
 			passover : 0
 		};
+		gLog.scrollBoxObject.ensureElementIsVisible(this.getReport(aEvent.data.testCase));
 	},
 
 	onTestCaseFinish: function(aEvent) {
-		var node = document.createElement('label');
-		node.setAttribute('style', 'border: 1px solid; padding: 0.5em; white-space: pre;');
-		node.appendChild(
-			document.createTextNode(
-				bundle.getFormattedString(
-					'all_result_statistical',
-					[
-						this.count.success+this.count.failure+this.count.error+this.count.passover,
-						this.count.success,
-						this.count.failure,
-						this.count.error,
-						this.count.passover
-					]
-				)
-			)
-		);
-		gLog.appendChild(node);
+		var parent = this.getReport(aEvent.data.testCase);
+		var node = document.createElement('hbox');
+		node.setAttribute('class', 'testcase-finish');
+		node.appendChild(document.createElement('label'));
+		node.lastChild.setAttribute('value', bundle.getFormattedString(
+			'all_result_statistical',
+			[
+				this.count.success+this.count.failure+this.count.error+this.count.passover,
+				this.count.success,
+				this.count.failure,
+				this.count.error,
+				this.count.passover
+			]
+		));
+		parent.appendChild(node);
 		gLog.scrollBoxObject.ensureElementIsVisible(node);
 	},
 
@@ -128,10 +143,13 @@ var testRunnerlistener = {
 				break;
 		}
 		this.count[report.result]++;
-		var node = document.createElement('label');
-		node.setAttribute('style', 'border: 1px solid; padding: 0.5em; '+color+';');
-		node.setAttribute('value', report.testDescription);
-		gLog.appendChild(node);
+		var parent = this.getReport(aEvent.data.testCase);
+		var node = document.createElement('hbox');
+		node.setAttribute('class', 'test-finish');
+		node.appendChild(document.createElement('label'));
+		node.lastChild.setAttribute('style', color);
+		node.lastChild.setAttribute('value', report.testDescription);
+		parent.appendChild(node);
 		gLog.scrollBoxObject.ensureElementIsVisible(node);
 	},
 

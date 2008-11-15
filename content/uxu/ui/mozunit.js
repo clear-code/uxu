@@ -455,7 +455,7 @@ var runnerListener = {
 	{
 		gLog.items = aEvent.data.log.items;
 		gRemoteRun.onEvent('progress');
-		var report = getReport(aEvent.data.testCase.title);
+		var report = getReport(aEvent.data.testCase);
 		report.setAttribute('source', aEvent.data.testCase.source);
 	},
 	onTestCaseTestFinish : function(aEvent)
@@ -463,7 +463,7 @@ var runnerListener = {
 		gLog.items = aEvent.data.log.items;
 		gRemoteRun.onEvent('progress');
 		gLog.lastItem.results.forEach(function(aOneResult) {
-			fillReportFromResult(aEvent.data.testCase.title, aOneResult);
+			fillReportFromResult(aEvent.data.testCase, aOneResult);
 		});
 	},
 	onTestCaseRemoteTestFinish : function(aEvent)
@@ -736,15 +736,15 @@ function stop()
   
 /* UI */ 
 	 
-function getReport(aTitle) 
+function getReport(aTestCase) 
 {
-	var id = 'testcase-report-'+encodeURIComponent(aTitle);
+	var id = 'testcase-report-'+encodeURIComponent(aTestCase.title)+'-'+encodeURIComponent(aTestCase.source);
 	return _(id) ||
 		(function() {
 			var wTestCaseReport = clone('testcase-report');
 			wTestCaseReport.setAttribute('id', id);
-			wTestCaseReport.setAttribute('title', aTitle);
-			_(wTestCaseReport, 'title').textContent = aTitle;
+			wTestCaseReport.setAttribute('title', aTestCase.title);
+			_(wTestCaseReport, 'title').textContent = aTestCase.title;
 			_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-fine');
 			_('testcase-reports').appendChild(wTestCaseReport);
 			scrollReportsTo(wTestCaseReport);
@@ -752,12 +752,12 @@ function getReport(aTitle)
 		})();
 }
  
-function fillReportFromResult(aTitle, aResult) 
+function fillReportFromResult(aTestCase, aResult) 
 {
-	var id = 'test-report-'+encodeURIComponent(aTitle)+'-'+aResult.index+'-'+encodeURIComponent(aResult.title);
+	var id = 'test-report-'+encodeURIComponent(aTestCase.title)+'-'+encodeURIComponent(aTestCase.source)+'-'+aResult.index+'-'+encodeURIComponent(aResult.title);
 	if (_(id)) return;
 
-	var reportNode = getReport(aTitle);
+	var reportNode = getReport(aTestCase);
 
 	_(reportNode, 'bar').setAttribute('mode', 'determined');
 	_(reportNode, 'bar').setAttribute('value', aResult.percentage);
@@ -836,10 +836,10 @@ function fillReportFromResult(aTitle, aResult)
 function buildReportsFromResults(aResults) 
 {
 	aResults.forEach(function(aResult) {
-		var report = getReport(aResult.title);
+		var report = getReport(aResult);
 		report.setAttribute('source', aResult.source);
 		aResult.results.forEach(function(aOneResult) {
-			fillReportFromResult(aResult.title, aOneResult);
+			fillReportFromResult(aResult, aOneResult);
 		});
 	});
 }
