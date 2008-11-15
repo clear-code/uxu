@@ -162,46 +162,52 @@ function onStart(aEvent)
 function onTestFinish(aEvent)
 {
 	var report = aEvent.data;
-	var result = this._createResultFromReport(report);
+	var results = this._createResultsFromReport(report);
 
 	var testCase = aEvent.target;
-	result.index = report.testIndex;
-	result.step  = (report.testIndex+1)+'/'+testCase.tests.length;
-	result.percentage = parseInt((report.testIndex+1) / testCase.tests.length * 100);
+	results.forEach(function(aResult) {
+		aResult.index = report.testIndex;
+		aResult.step  = (report.testIndex+1)+'/'+testCase.tests.length;
+		aResult.percentage = parseInt((report.testIndex+1) / testCase.tests.length * 100);
+	}, this);
 
-	this.lastItem.results.push(result);
+	this.lastItem.results = this.lastItem.results.concat(results);
 }
-function _createResultFromReport(aReport)
+function _createResultsFromReport(aReport)
 {
-	var result = {
-		type      : aReport.result,
-		title     : aReport.testDescription,
-		timestamp : Date.now(),
-		time      : aReport.time,
-		detailedTime : aReport.detailedTime
-	};
-	if (aReport.exception) {
-		if (aReport.exception.expected)
-			result.expected = aReport.exception.expected;
-		if (aReport.exception.actual)
-			result.actual = aReport.exception.actual;
-		if (aReport.exception.diff)
-			result.diff = aReport.exception.foldedDiff || aReport.exception.diff;
-		result.description = aReport.exception.message.replace(/^\s+/, '');
-		if (utils.hasStackTrace(aReport.exception))
-			result.stackTrace = utils.formatStackTraceForDisplay(aReport.exception);
-	}
-	return result;
+	var results = [];
+	aReport.exceptions.forEach(function(aException, aIndex) {
+		var result = {
+			type      : aReport.result,
+			title     : aReport.testDescriptions[aIndex] || aReport.testDescription,
+			timestamp : Date.now(),
+			time      : aReport.time,
+			detailedTime : aReport.detailedTime
+		};
+		if (aException.expected)
+			result.expected = aException.expected;
+		if (aException.actual)
+			result.actual = aException.actual;
+		if (aException.diff)
+			result.diff = aException.foldedDiff || aException.diff;
+		result.description = aException.message.replace(/^\s+/, '');
+		if (utils.hasStackTrace(aException))
+			result.stackTrace = utils.formatStackTraceForDisplay(aException);
+		results.push(result);
+	}, this);
+	return results;
 }
 
 function onFinish(aEvent)
 {
 	if (aEvent.data.result == 'error') {
-		var result = this._createResultFromReport(aEvent.data);
-		result.index = -1;
-		result.step  = '0/'+aEvent.target.tests.length
-		result.percentage = 100;
-		this.lastItem.results.push(result);
+		var results = this._createResultsFromReport(aEvent.data);
+		results.forEach(function(aResult) {
+			aResult.index = -1;
+			aResult.step  = '0/'+aEvent.target.tests.length
+			aResult.percentage = 100;
+		}, this);
+		this.lastItem.results = this.lastItem.results.concat(results);
 	}
 	this.lastItem.finish = Date.now();
 	this.lastItem.time = aEvent.data.time;

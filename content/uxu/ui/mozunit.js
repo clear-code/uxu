@@ -462,8 +462,9 @@ var runnerListener = {
 	{
 		gLog.items = aEvent.data.log.items;
 		gRemoteRun.onEvent('progress');
-		var results = gLog.lastItem.results;
-		fillReportFromResult(aEvent.data.testCase.title, results[results.length-1]);
+		gLog.lastItem.results.forEach(function(aOneResult) {
+			fillReportFromResult(aEvent.data.testCase.title, aOneResult);
+		});
 	},
 	onTestCaseRemoteTestFinish : function(aEvent)
 	{
@@ -753,7 +754,7 @@ function getReport(aTitle)
  
 function fillReportFromResult(aTitle, aResult) 
 {
-	var id = 'test-report-'+encodeURIComponent(aTitle)+'-'+aResult.index;
+	var id = 'test-report-'+encodeURIComponent(aTitle)+'-'+aResult.index+'-'+encodeURIComponent(aResult.title);
 	if (_(id)) return;
 
 	var reportNode = getReport(aTitle);
