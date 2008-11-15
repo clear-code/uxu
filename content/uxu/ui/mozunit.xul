@@ -63,6 +63,8 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 		<command id="stop" label="&mozunit.stop.label;" accesskey="&mozunit.stop.accesskey;"
 			oncommand="stop();"
 			disabled="true"/>
+		<command id="toggleInternalStacks" oncommand="toggleInternalStacks();"
+			label="&mozunit.toggleInternalStacks.label;" accesskey="&mozunit.toggleInternalStacks.accesskey;"/>
 		<command id="alwaysRaised" oncommand="toggleAlwaysRaised();"
 			label="&mozunit.alwaysRaised.label;" accesskey="&mozunit.alwaysRaised.accesskey;"/>
 		<command id="toggleContent" oncommand="toggleContent();"
@@ -214,6 +216,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 			</menu>
 			<menu id="view-menu" label="&mozunit.viewMenu.label;" accesskey="&mozunit.viewMenu.accesskey;">
 				<menupopup onpopupshowing="updateViewItems();">
+					<menuitem type="checkbox" command="toggleInternalStacks"/>
 					<menuitem id="alwaysRaised-menuitem"
 						type="checkbox" command="alwaysRaised"/>
 					<menuitem type="checkbox" command="toggleContent"/>

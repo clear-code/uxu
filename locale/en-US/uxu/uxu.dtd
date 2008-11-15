@@ -41,6 +41,8 @@
 
 <!ENTITY mozunit.viewMenu.label     "View">
 <!ENTITY mozunit.viewMenu.accesskey "V">
+<!ENTITY mozunit.toggleInternalStacks.label "Show internal errors in stack traces">
+<!ENTITY mozunit.toggleInternalStacks.accesskey "I">
 <!ENTITY mozunit.alwaysRaised.label     "Always raised on top">
 <!ENTITY mozunit.alwaysRaised.accesskey "A">
 <!ENTITY mozunit.toggleContent.label     "Show internal frame for testing">
@@ -85,6 +87,7 @@
 <!ENTITY config.run.history.expire.days.before "Store result histories while">
 <!ENTITY config.run.history.expire.days.after  "days.">
 <!ENTITY config.defaultEncoding        "Default character encoding of files read from utility methods:">
+<!ENTITY config.showInternalStacks "Show internal errors in stack traces">
 <!ENTITY config.installGlobalLocation.caption "Install location of UnitTest.XUL">
 <!ENTITY config.installGlobalLocation.check   "Activate UnitTest.XUL for all users on this computer (*administrative privileges required)">
 
@@ -93,7 +96,6 @@
 <!ENTITY config.mozunit.editor.caption "Text editor for testcases">
 <!ENTITY config.mozunit.editor.label   "Command line:">
 <!ENTITY config.mozunit.editor.desctiption "*If you set it blank, you can choose an editor when you edit a testcase.">
-<!ENTITY config.mozunit.showInternalStacks "Show internal errors in stack traces">
 <!ENTITY config.mozunit.runParallel "Running multiple tests">
 <!ENTITY config.mozunit.runParallel.true  "Parallelly">
 <!ENTITY config.mozunit.runParallel.false "Sequentially">

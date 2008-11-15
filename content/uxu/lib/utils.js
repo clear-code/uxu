@@ -370,7 +370,7 @@ function hasStackTrace(aException)
 function formatStackTraceForDisplay(aException) 
 {
 	var lines = formatStackTrace(aException, { onlyTraceLine : true, onlyExternal : true }).split('\n');
-	if (!lines.length || utils.getPref('extensions.uxu.mozunit.showInternalStacks'))
+	if (!lines.length || utils.getPref('extensions.uxu.showInternalStacks'))
 		lines = formatStackTrace(aException, { onlyTraceLine : true }).split('\n');
 	lines = lines.filter(function(aLine) {
 		return aLine;

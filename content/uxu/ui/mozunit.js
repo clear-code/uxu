@@ -908,6 +908,13 @@ function updateEditItems()
  
 function updateViewItems() 
 {
+	var toggleInternalStacks = _('toggleInternalStacks');
+	var showInternalStacks = utils.getPref('extensions.uxu.showInternalStacks');
+	if (showInternalStacks)
+		toggleInternalStacks.setAttribute('checked', true);
+	else
+		toggleInternalStacks.removeAttribute('checked');
+
 	if (isLinux()) {
 		_('alwaysRaised-menuitem').setAttribute('hidden', true);
 	}
@@ -1088,6 +1095,11 @@ function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine)
 		utils.setPref('extensions.uxu.mozunit.editor', '"'+editor.path+'" "%f"');
 		arguments.callee(aFilePath, aLineNumber, aColumnNumber);
 	}
+}
+ 
+function toggleInternalStacks() 
+{
+	utils.setPref('extensions.uxu.showInternalStacks', !utils.getPref('extensions.uxu.showInternalStacks'));
 }
  
 function toggleAlwaysRaised() 

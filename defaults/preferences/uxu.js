@@ -6,6 +6,7 @@ pref("extensions.uxu.run.timeout", 30000);
 pref("extensions.uxu.run.timeout.application", 300000);
 pref("extensions.uxu.run.history.expire.days", 30); // days
 pref("extensions.uxu.defaultEncoding", "UTF-8");
+pref("extensions.uxu.showInternalStacks", false);
 pref("extensions.uxu.priority.important", "0.9");
 pref("extensions.uxu.priority.high",      "0.7");
 pref("extensions.uxu.priority.normal",    "0.5");
@@ -15,7 +16,6 @@ pref("extensions.uxu.action.fireKeyEvent.useOldMethod", true);
 
 pref("extensions.uxu.mozunit.runMode", 0); // 0 = run by priority, 1 = run all
 pref("extensions.uxu.mozunit.runParallel", false);
-pref("extensions.uxu.mozunit.showInternalStacks", false);
 pref("extensions.uxu.mozunit.editor", "/usr/bin/gedit +%l %f");
 pref("extensions.uxu.mozunit.alwaysRaised", false);
 pref("extensions.uxu.mozunit.autoShowContent", true);

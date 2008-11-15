@@ -41,6 +41,8 @@
 
 <!ENTITY mozunit.viewMenu.label     "表示">
 <!ENTITY mozunit.viewMenu.accesskey "V">
+<!ENTITY mozunit.toggleInternalStacks.label "スタックトレースにUxUの内部エラーも表示する">
+<!ENTITY mozunit.toggleInternalStacks.accesskey "I">
 <!ENTITY mozunit.alwaysRaised.label     "常に最前面に表示">
 <!ENTITY mozunit.alwaysRaised.accesskey "A">
 <!ENTITY mozunit.toggleContent.label     "テスト用フレームの内容を表示">
@@ -85,6 +87,7 @@
 <!ENTITY config.run.history.expire.days.before "テストの実行結果の履歴を">
 <!ENTITY config.run.history.expire.days.after  "日前の分まで保存する">
 <!ENTITY config.defaultEncoding        "読み込むファイルの文字エンコーディングの初期値：">
+<!ENTITY config.showInternalStacks "スタックトレースにUxUの内部エラーも表示する">
 <!ENTITY config.installGlobalLocation.caption "UnitTest.XULのインストール先">
 <!ENTITY config.installGlobalLocation.check   "このコンピュータのすべてのユーザでUnitTest.XULを利用可能にする（※管理者権限が必要です）">
 
@@ -93,7 +96,6 @@
 <!ENTITY config.mozunit.editor.caption "テストの編集に使用するエディタ">
 <!ENTITY config.mozunit.editor.label   "起動コマンド：">
 <!ENTITY config.mozunit.editor.desctiption "※空欄にすると次回編集時にファイル選択ダイアログを表示します">
-<!ENTITY config.mozunit.showInternalStacks "スタックトレースにUxUの内部エラーも表示する">
 <!ENTITY config.mozunit.runParallel "複数テストの実行時">
 <!ENTITY config.mozunit.runParallel.true  "複数テストを平行して実行する">
 <!ENTITY config.mozunit.runParallel.false "テストを一つずつ実行する">
