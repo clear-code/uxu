@@ -486,5 +486,8 @@ function appendTypeString(aValue)
 {
 	if (aValue === null) return 'null';
 	if (aValue === void(0)) return 'undefined';
-	return bundle.getFormattedString('typed_value', [utils.inspect(aValue), utils.inspectType(aValue)]);
+	var args = (aValue instanceof Ci.nsIDOMNode) ?
+			[utils.inspectDOMNode(aValue), utils.inspect(aValue)] :
+			[utils.inspect(aValue), utils.inspectType(aValue)]
+	return bundle.getFormattedString('typed_value', args);
 }
