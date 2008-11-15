@@ -341,6 +341,9 @@ function addTab(aURI, aOptions)
 		tab.linkedBrowser.removeEventListener('load', arguments.callee, true);
 		loadedFlag.value = true;
 		loadedFlag.tab = tab;
+		if (aOptions.selected) {
+			win.gBrowser.selectedTab = tab;
+		}
 	}, true);
 	tab.linkedBrowser.loadURI(aURI);
 
