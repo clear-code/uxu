@@ -336,36 +336,55 @@ function testInDelta()
 	assert.assertFailed(assertionsModule.inDelta, [1.0, 0.9, 0.1, message]);
 }
 
-function testLarge()
+function testCompare()
 {
 	var message = Math.random() * 65000;
-	assert.assertSucceed(assertionsModule.largerThan, [10, 20]);
-	assert.assertFailed(assertionsModule.largerThan, [10, 5, message]);
-	assert.assertFailed(assertionsModule.largerThan, [10, 10, message]);
+	assert.assertSucceed(assertionsModule.greaterThan, [10, 20]);
+	assert.assertFailed(assertionsModule.greaterThan, [10, 5, message]);
+	assert.assertFailed(assertionsModule.greaterThan, [10, 10, message]);
 
-	assert.assertSucceed(assertionsModule.larger, [10, 20]);
-	assert.assertFailed(assertionsModule.larger, [10, 5, message]);
-	assert.assertFailed(assertionsModule.larger, [10, 10, message]);
+	assert.assertSucceed(assertionsModule.greater, [10, 20]);
+	assert.assertFailed(assertionsModule.greater, [10, 5, message]);
+	assert.assertFailed(assertionsModule.greater, [10, 10, message]);
 
-	assert.assertSucceed(assertionsModule.large, [10, 20]);
-	assert.assertFailed(assertionsModule.large, [10, 5, message]);
-	assert.assertFailed(assertionsModule.large, [10, 10, message]);
-}
+	assert.assertSucceed(assertionsModule.greaterOrEqual, [10, 20]);
+	assert.assertFailed(assertionsModule.greaterOrEqual, [10, 5, message]);
+	assert.assertSucceed(assertionsModule.greaterOrEqual, [10, 10]);
 
-function testSmall()
-{
-	var message = Math.random() * 65000;
-	assert.assertSucceed(assertionsModule.smallerThan, [10, 5]);
-	assert.assertFailed(assertionsModule.smallerThan, [10, 20, message]);
-	assert.assertFailed(assertionsModule.smallerThan, [10, 10, message]);
+	assert.assertSucceed(assertionsModule.lessThan, [10, 5]);
+	assert.assertFailed(assertionsModule.lessThan, [10, 20, message]);
+	assert.assertFailed(assertionsModule.lessThan, [10, 10, message]);
 
-	assert.assertSucceed(assertionsModule.smaller, [10, 5]);
-	assert.assertFailed(assertionsModule.smaller, [10, 20, message]);
-	assert.assertFailed(assertionsModule.smaller, [10, 10, message]);
+	assert.assertSucceed(assertionsModule.less, [10, 5]);
+	assert.assertFailed(assertionsModule.less, [10, 20, message]);
+	assert.assertFailed(assertionsModule.less, [10, 10, message]);
 
-	assert.assertSucceed(assertionsModule.small, [10, 5]);
-	assert.assertFailed(assertionsModule.small, [10, 20, message]);
-	assert.assertFailed(assertionsModule.small, [10, 10, message]);
+	assert.assertSucceed(assertionsModule.lessOrEqual, [10, 5]);
+	assert.assertFailed(assertionsModule.lessOrEqual, [10, 20, message]);
+	assert.assertSucceed(assertionsModule.lessOrEqual, [10, 10]);
+
+
+	assert.assertSucceed(assertionsModule.compare, [10, '<', 20]);
+	assert.assertFailed(assertionsModule.compare, [10, '<', 5, message]);
+	assert.assertFailed(assertionsModule.compare, [10, '<', 10, message]);
+
+	assert.assertSucceed(assertionsModule.compare, [10, '<=', 20]);
+	assert.assertFailed(assertionsModule.compare, [10, '<=', 5, message]);
+	assert.assertSucceed(assertionsModule.compare, [10, '<=', 10]);
+	assert.assertSucceed(assertionsModule.compare, [10, '=<', 20]);
+	assert.assertFailed(assertionsModule.compare, [10, '=<', 5, message]);
+	assert.assertSucceed(assertionsModule.compare, [10, '=<', 10]);
+
+	assert.assertSucceed(assertionsModule.compare, [10, '>', 5]);
+	assert.assertFailed(assertionsModule.compare, [10, '>', 20, message]);
+	assert.assertFailed(assertionsModule.compare, [10, '>', 10, message]);
+
+	assert.assertSucceed(assertionsModule.compare, [10, '>=', 5]);
+	assert.assertFailed(assertionsModule.compare, [10, '>=', 20, message]);
+	assert.assertSucceed(assertionsModule.compare, [10, '>=', 10]);
+	assert.assertSucceed(assertionsModule.compare, [10, '=>', 5]);
+	assert.assertFailed(assertionsModule.compare, [10, '=>', 20, message]);
+	assert.assertSucceed(assertionsModule.compare, [10, '=>', 10]);
 }
 
 function testFinishesWithin()

@@ -388,43 +388,95 @@ function inDelta(aExpected, aActual, aDelta, aMessage)
 		 aMessage);
 }
 
-function largerThan(aExpected, aActual, aMessage)
+function greaterThan(aExpected, aActual, aMessage)
 {
-	if (aExpected < aActual)
-		return;
-
+	if (aExpected < aActual) return;
 	fail({
 	     	expectedRaw : aExpected,
 	     	actualRaw   : aActual,
-	     	expected    : bundle.getFormattedString('assert_larger_than_expected',
+	     	expected    : bundle.getFormattedString('assert_greater_than_expected',
 	     							   [appendTypeString(aExpected)]),
-	     	actual      : bundle.getFormattedString('assert_larger_than_actual',
+	     	actual      : bundle.getFormattedString('assert_greater_than_actual',
 	     							   [appendTypeString(aActual)])
 	     },
-		 bundle.getString('assert_larger_than'),
+		 bundle.getString('assert_greater_than'),
 		 aMessage);
 }
-function larger(aExpected, aActual, aMessage) { this.largerThan(aExpected, aActual, aMessage); }
-function large(aExpected, aActual, aMessage) { this.largerThan(aExpected, aActual, aMessage); }
+function greater(aExpected, aActual, aMessage) { this.greaterThan(aExpected, aActual, aMessage); }
 
-function smallerThan(aExpected, aActual, aMessage)
+function greaterOrEqual(aExpected, aActual, aMessage)
 {
-	if (aExpected > aActual)
-		return;
-
+	if (aExpected <= aActual) return;
 	fail({
 	     	expectedRaw : aExpected,
 	     	actualRaw   : aActual,
-	     	expected    : bundle.getFormattedString('assert_smaller_than_expected',
+	     	expected    : bundle.getFormattedString('assert_greater_or_equal_expected',
 	     							   [appendTypeString(aExpected)]),
-	     	actual      : bundle.getFormattedString('assert_smaller_than_actual',
+	     	actual      : bundle.getFormattedString('assert_greater_or_equal_actual',
 	     							   [appendTypeString(aActual)])
 	     },
-		 bundle.getString('assert_smaller_than'),
+		 bundle.getString('assert_greater_or_equal'),
 		 aMessage);
 }
-function smaller(aExpected, aActual, aMessage) { this.smallerThan(aExpected, aActual, aMessage); }
-function small(aExpected, aActual, aMessage) { this.smallerThan(aExpected, aActual, aMessage); }
+
+function lessThan(aExpected, aActual, aMessage)
+{
+	if (aExpected > aActual) return;
+	fail({
+	     	expectedRaw : aExpected,
+	     	actualRaw   : aActual,
+	     	expected    : bundle.getFormattedString('assert_less_than_expected',
+	     							   [appendTypeString(aExpected)]),
+	     	actual      : bundle.getFormattedString('assert_less_than_actual',
+	     							   [appendTypeString(aActual)])
+	     },
+		 bundle.getString('assert_less_than'),
+		 aMessage);
+}
+function less(aExpected, aActual, aMessage) { this.lessThan(aExpected, aActual, aMessage); }
+
+function lessOrEqual(aExpected, aActual, aMessage)
+{
+	if (aExpected >= aActual) return;
+	fail({
+	     	expectedRaw : aExpected,
+	     	actualRaw   : aActual,
+	     	expected    : bundle.getFormattedString('assert_less_or_equal_expected',
+	     							   [appendTypeString(aExpected)]),
+	     	actual      : bundle.getFormattedString('assert_less_or_equal_actual',
+	     							   [appendTypeString(aActual)])
+	     },
+		 bundle.getString('assert_less_or_equal'),
+		 aMessage);
+}
+
+function compare(aExpected, aOperator, aActual, aMessage)
+{
+	switch (aOperator)
+	{
+		case '<':
+			return this.greaterThan(aExpected, aActual, aMessage);
+		case '=<':
+		case '<=':
+			return this.greaterOrEqual(aExpected, aActual, aMessage);
+		case '>':
+			return this.lessThan(aExpected, aActual, aMessage);
+		case '=>':
+		case '>=':
+			return this.lessOrEqual(aExpected, aActual, aMessage);
+		case '=':
+		case '==':
+			return this.equals(aExpected, aActual, aMessage);
+		case '!=':
+			return this.notEquals(aExpected, aActual, aMessage);
+		case '===':
+			return this.strictlyEquals(aExpected, aActual, aMessage);
+		case '!==':
+			return this.notStrictlyEquals(aExpected, aActual, aMessage);
+		default:
+			throw new Error(bundle.getFormattedString('assert_compare_invalid_operator', [aOperator]));
+	}
+}
 
 function contains(aExpected, aActual, aMessage)
 {
