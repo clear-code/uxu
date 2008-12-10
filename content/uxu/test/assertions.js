@@ -546,6 +546,16 @@ function _onFinishesWithinFinish(aExpectedTime, aStartAt, aMessage)
 	     aMessage);
 }
 
+function ok(aExpression, aMessage)
+{
+	this.isTrue(aExpression, aMessage);
+}
+
+function is(aExpected, aActual, aMessage)
+{
+	this.equals(aExpected, aActual, aMessage);
+}
+
 function fail()
 {
 	var args = Array.slice(arguments);

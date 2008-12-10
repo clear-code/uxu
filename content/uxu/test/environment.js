@@ -122,10 +122,12 @@ function attachAssertions()
 					return aObj[aMethod].apply(aObj, arguments);
 				};
 			aSelf[aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)] = func;
-			if (aMethod.indexOf('is') == 0)
+			if (aMethod.indexOf('is') == 0 && aMethod.substring(2))
 				aSelf[aPrefix+aMethod.substring(2)] = func;
 		})(aMethod, this, this.assert, 'assert');
 	}
+	this.ok = function() { this.assert.ok.apply(this, arguments); };
+	this.is = function() { this.assert.is.apply(this, arguments); };
 }
 
 function attachActions()
