@@ -364,8 +364,19 @@ function getTabs(aOptions)
 {
 	if (utils.product != 'Firefox') return [];
 	var win = this.getTestWindow(aOptions);
-	if (!win) return null;
-	return Array.slice(win.gBrowser.mTabContainer.childNodes);
+	if (!win) return [];
+	var tabs = win.document.evaluate(
+			'descendant::*[local-name()="tab"]',
+			win.gBrowser.mTabContainer,
+			null,
+			XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+			null
+		);
+	for (var i = 0, maxi = tabs.snapshotLength; i < maxi)
+	{
+		array.push(tabs.snapshotItem(i));
+	}
+	return array;
 };
 
 
