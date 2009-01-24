@@ -373,7 +373,7 @@ function getTabs(aOptions)
 			null
 		);
 	var array = [];
-	for (var i = 0, maxi = tabs.snapshotLength; i < maxi)
+	for (var i = 0, maxi = tabs.snapshotLength; i < maxi; i++)
 	{
 		array.push(tabs.snapshotItem(i));
 	}
