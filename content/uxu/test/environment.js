@@ -372,6 +372,7 @@ function getTabs(aOptions)
 			XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
 			null
 		);
+	var array = [];
 	for (var i = 0, maxi = tabs.snapshotLength; i < maxi)
 	{
 		array.push(tabs.snapshotItem(i));
