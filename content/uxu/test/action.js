@@ -318,14 +318,52 @@ function _updateMouseEventOptionsOnElement(aOptions, aElement)
 	if (!aOptions) aOptions = {};
 
 	var doc = this._getDocumentFromEventTarget(aElement);
+	var frame = doc.defaultView;
 	var box = doc.getBoxObjectFor(aElement);
-	if (!('screenX' in aOptions)) aOptions.screenX = box.screenX + parseInt(box.width / 2);
-	if (!('screenY' in aOptions)) aOptions.screenY = box.screenY + parseInt(box.height / 2);
-
 	var root = doc.documentElement;
-	box = doc.getBoxObjectFor(root);
-	if (!('x' in aOptions)) aOptions.x = aOptions.screenX - box.screenX - doc.defaultView.scrollX;
-	if (!('y' in aOptions)) aOptions.y = aOptions.screenY - box.screenY - doc.defaultView.scrollY;
+	var rootBox = doc.getBoxObjectFor(root);
+
+	var frameX = frame.scrollX + rootBox.screenX;
+	var frameY = frame.scrollY + rootBox.screenY;
+	var frameW = Math.min(rootBox.width, frame.innerWidth);
+	var frameH = Math.min(rootBox.height, frame.innerHeight);
+
+	if ( // out of screen
+		box.screenX > frameX + frameW ||
+		box.screenY > frameY + frameH ||
+		box.screenX + box.width < frameX ||
+		box.screenY + box.height < frameY
+		) {
+		if (!('screenX' in aOptions)) aOptions.screenX = box.screenX + parseInt(box.width / 2);
+		if (!('screenY' in aOptions)) aOptions.screenY = box.screenY + parseInt(box.height / 2);
+	}
+	else { // inside of screen:
+		var visibleX = box.screenX;
+		var visibleW = box.width;
+		if (box.screenX < frameX) {
+			visibleX = frameX;
+			visibleW -= (frameX - box.screenX);
+		}
+		else if (box.screenX + box.width > frameX + frameW) {
+			visibleW -= ((box.screenX + box.width) - (frameX + frameW));
+		}
+
+		var visibleY = box.screeenY;
+		var visibleH = box.height;
+		if (box.screenY < frameY) {
+			visibleY = frameY;
+			visibleH -= (frameY - box.screenY);
+		}
+		else if (box.screenY + box.height > frameY + frameH) {
+			visibleH -= ((box.screenY + box.height) - (frameY + frameH));
+		}
+
+		if (!('screenX' in aOptions)) aOptions.screenX = visibleX + parseInt(visibleW / 2);
+		if (!('screenY' in aOptions)) aOptions.screenY = visibleY + parseInt(visibleH / 2);
+	}
+
+	if (!('x' in aOptions)) aOptions.x = aOptions.screenX - rootBox.screenX - frame.scrollX;
+	if (!('y' in aOptions)) aOptions.y = aOptions.screenY - rootBox.screenY - frame.scrollY;
 }
   
 function dragStart(aWindow, aOptions) 
