@@ -7,6 +7,8 @@ var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var bundle     = lib_module.require('package', 'bundle');
 var utils      = lib_module.require('package', 'utils');
 
+var inherits = lib_module.require('class', 'event_target');
+
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var assertions  = test_module.require('package', 'assertions');
 var action      = test_module.require('package', 'action');
@@ -22,6 +24,8 @@ var defaultURI, defaultType, defaultFlags, defaultName;
 
 function constructor(aEnvironment, aURI, aBrowser)
 {
+	this.initListeners();
+
 	this.utils = this;
 
 	this.__defineGetter__('fileURL', function() {
@@ -69,6 +73,17 @@ function constructor(aEnvironment, aURI, aBrowser)
 	this.attachAssertions();
 	this.attachActions();
 	this.attachServerUtils();
+}
+
+function onFinish()
+{
+	this.destroy();
+}
+
+function destroy()
+{
+	this.fireEvent('Destroy', null);
+	this.removeAllListeners();
 }
 
 function initVariables()
@@ -172,6 +187,7 @@ function attachMailUtils()
 {
 	var MailUtils = mail_module.require('class', 'utils');
 	this.mail = new MailUtils();
+	this.addListener(this.mail);
 }
 
 function attachServerUtils()

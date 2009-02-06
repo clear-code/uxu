@@ -84,6 +84,8 @@ const TESTCASE_ABORTED = '/*uxu-testcase-aborted*/';
  
 function constructor(aTitle, aOptions) 
 {
+	this.initListeners();
+
 	if (!aOptions) aOptions = {};
 
 	this._initSource(aOptions);
@@ -150,9 +152,9 @@ function constructor(aTitle, aOptions)
 			return this._done;
 		});
 
-	this.initListeners();
+	this.addListener(this);
 }
-	 
+	
 function _initSource(aOptions) 
 {
 	var source = aOptions.source;
@@ -243,7 +245,22 @@ function _initRemote(aOptions)
 	this.application = aOptions.application;
 	this.options = aOptions.options;
 }
-  
+  	
+function onStart() 
+{
+	this.addListener(this.environment);
+}
+ 
+function onFinish() 
+{
+	this.removeAllListeners();
+}
+ 
+function onAbort() 
+{
+	this.onFinish();
+}
+ 
 /**
  * Define test cases, optionally with setup and teardown. 
  *
@@ -656,7 +673,7 @@ function run(aStopper)
 
 	fsm.go('start', {}, stateHandlers, stateTransitions, []);
 }
-	 
+	
 function _runByRemote(aStopper) 
 {
 	if (
@@ -827,7 +844,7 @@ function _onFinishRemoteResult(aReport)
 		this.fireEvent('Finish', aReport);
 	}
 }
-  	
+  
 function _exec(aTest, aContext, aContinuation, aReport) 
 {
 	var report = new Report();
