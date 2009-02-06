@@ -8,18 +8,41 @@ var lib_module = new ModuleManager([topDir+'content/uxu/lib']);
 var ObserverClass = lib_module.require('class', 'observer');
 
 var mail_module = new ModuleManager([topDir+'content/uxu/mail']);
+var UtilsClass = mail_module.require('class', 'utils');
 var utilsModule;
 
 var observer;
 
 function setUp()
 {
-	utilsModule = mail_module.require('package', 'utils');
+	utilsModule = new UtilsClass();
 }
 
 function tearDown()
 {
+	utilsModule.destroy();
 }
+
+var mailCompFields = {
+		from    : 'from@foobar',
+		replyTo : 'reply-to@foobar',
+		to      : 'to@foobar',
+		cc      : 'cc@foobar',
+		bcc     : 'bcc@foobar',
+
+		newsgroups  : 'group',
+		newshost    : 'host',
+		newspostUrl : 'url',
+		followupTo  : 'followup',
+
+		subject      : 'SUBJECT',
+		organization : 'ORGANIZATION',
+		priority     : 'high',
+		messageId    : 'foobar',
+		characterSet : 'UTF-8',
+
+		body : 'BODY'
+	};
 
 function testSend()
 {
@@ -27,27 +50,6 @@ function testSend()
 
 	observer = new ObserverClass();
 	assert.equals(0, observer.count);
-
-	var mailCompFields = {
-			from    : 'from@foobar',
-			replyTo : 'reply-to@foobar',
-			to      : 'to@foobar',
-			cc      : 'cc@foobar',
-			bcc     : 'bcc@foobar',
-
-			newsgroups  : 'group',
-			newshost    : 'host',
-			newspostUrl : 'url',
-			followupTo  : 'followup',
-
-			subject      : 'SUBJECT',
-			organization : 'ORGANIZATION',
-			priority     : 'high',
-			messageId    : 'foobar',
-			characterSet : 'UTF-8',
-
-			body : 'BODY'
-		};
 
 	observer.startObserve('uxu:mail:sent');
 	utilsModule.emulateSendMessage(window, mailCompFields);
@@ -77,6 +79,35 @@ function testSend()
 	assert.equals('foobar', data.messageId);
 	assert.equals('UTF-8', data.characterSet);
 	assert.equals('BODY', data.body);
+}
+
+function testDeliveries()
+{
+	assert.isDefined(utilsModule.deliveries);
+
+	utilsModule.emulateSendMessage(window, mailCompFields);
+	assert.equals(1, utilsModule.deliveries.length);
+
+	var data = utilsModule.deliveries[0];
+	assert.equals('from@foobar', data.from);
+	assert.equals('reply-to@foobar', data.replyTo);
+	assert.equals('to@foobar', data.to);
+	assert.equals('cc@foobar', data.cc);
+	assert.equals('bcc@foobar', data.bcc);
+	assert.equals('group', data.newsgroups);
+	assert.equals('host', data.newshost);
+	assert.equals('url', data.newspostUrl);
+	assert.equals('followup', data.followupTo);
+	assert.equals('SUBJECT', data.subject);
+	assert.equals('ORGANIZATION', data.organization);
+	assert.equals('high', data.priority);
+	assert.equals('foobar', data.messageId);
+	assert.equals('UTF-8', data.characterSet);
+	assert.equals('BODY', data.body);
+
+	assert.isFunction(utilsModule.clear);
+	utilsModule.clear();
+	assert.equals(0, utilsModule.deliveries.length);
 }
 
 function testUseFormatFlowed()

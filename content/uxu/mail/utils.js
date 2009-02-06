@@ -6,6 +6,27 @@ var Ci = Components.interfaces;
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var utils = lib_module.require('package', 'utils');
 
+var mail_module = new ModuleManager(['chrome://uxu/content/mail']);
+var MailObserver = mail_module.require('class', 'observer');
+
+function constructor()
+{
+	this._observer = new MailObserver();
+	this.__defineGetter__('deliveries', function() {
+		return this._observer.data;
+	});
+}
+
+function destroy()
+{
+	this._observer.destroy();
+}
+
+function clear()
+{
+	this._observer.clear();
+}
+
 function emulateSendMessage(aMsgWindow, aMsgCompFields)
 {
 	var mail = {

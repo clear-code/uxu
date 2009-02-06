@@ -27,6 +27,11 @@ function endObserve(aTopic)
 	ObserverService.removeObserver(this, aTopic);
 }
 
+function stopObserve(aTopic)
+{
+	this.endObserve(aTopic);
+}
+
 function clear()
 {
 	this.subjects = [];

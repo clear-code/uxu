@@ -170,8 +170,8 @@ function attachGMUtils()
 
 function attachMailUtils()
 {
-	this.mail = {};
-	this.mail.__proto__ = mail_module.require('package', 'utils');
+	var MailUtils = mail_module.require('class', 'utils');
+	this.mail = new MailUtils();
 }
 
 function attachServerUtils()
