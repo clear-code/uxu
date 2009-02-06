@@ -348,7 +348,7 @@ function _updateMouseEventOptionsOnElement(aOptions, aElement)
 			visibleW -= ((box.screenX + box.width) - (frameX + frameW));
 		}
 
-		var visibleY = box.screeenY;
+		var visibleY = box.screenY;
 		var visibleH = box.height;
 		if (box.screenY < frameY) {
 			visibleY = frameY;
