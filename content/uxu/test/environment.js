@@ -46,22 +46,7 @@ function constructor(aEnvironment, aURI, aBrowser)
 			defaultType = 'navigator:browser';
 			defaultFlags = 'chrome,all,dialog=no';
 			defaultName = '_blank';
-
-			this.__defineGetter__('gBrowser', function() {
-				return this.getBrowser();
-			});
-			this.__defineGetter__('contentWindow', function() {
-				return this.getBrowser().contentWindow;
-			});
-			this.__defineGetter__('content', function() {
-				return this.getBrowser().contentWindow;
-			});
-			this.__defineGetter__('contentDocument', function() {
-				return this.getBrowser().contentDocument;
-			});
-
 			this.attachGMUtils();
-
 			break;
 
 		case 'Thunderbird':
@@ -69,9 +54,7 @@ function constructor(aEnvironment, aURI, aBrowser)
 			defaultType = null;
 			defaultFlags = 'chrome,all,dialog=no';
 			defaultName = '_blank';
-
 			this.attachMailUtils();
-
 			break;
 
 		default:
@@ -82,6 +65,7 @@ function constructor(aEnvironment, aURI, aBrowser)
 	this.backupPrefs = {};
 
 	this.initVariables();
+	this.attachFrames();
 	this.attachAssertions();
 	this.attachActions();
 	this.attachServerUtils();
@@ -108,6 +92,22 @@ function initVariables()
 
 	this.environment.Cc = Cc;
 	this.environment.Ci = Ci;
+}
+
+function attachFrames()
+{
+	this.__defineGetter__('gBrowser', function() {
+		return this.getTestFrameOwner();
+	});
+	this.__defineGetter__('contentWindow', function() {
+		return this.getTestFrameOwner().contentWindow;
+	});
+	this.__defineGetter__('content', function() {
+		return this.getTestFrameOwner().contentWindow;
+	});
+	this.__defineGetter__('contentDocument', function() {
+		return this.getTestFrameOwner().contentDocument;
+	});
 }
 
 function attachAssertions()
@@ -298,8 +298,6 @@ var tearDownTestWindow = closeTestWindow;
 // テスト用のFirefoxウィンドウの現在のタブにURIを読み込む
 function loadURI(aURI, aOptions)
 {
-	if (utils.product != 'Firefox') return { value : true };
-
 	if (!aURI) aURI = 'about:blank';
 	aURI = this.fixupIncompleteURI(aURI);
 
@@ -310,6 +308,7 @@ function loadURI(aURI, aOptions)
 		var win = this.getTestWindow(aOptions);
 		if (win) b = win.gBrowser;
 	}
+	if (!b) return { value : true };
 	b.addEventListener('load', function() {
 		b.removeEventListener('load', arguments.callee, true);
 		loadedFlag.value = true;
@@ -355,6 +354,11 @@ function addTab(aURI, aOptions)
 function getBrowser(aOptions)
 {
 	if (utils.product != 'Firefox') return null;
+	return this.getTestFrameOwner(aOptions);
+};
+
+function getTestFrameOwner(aOptions)
+{
 	var win = this.getTestWindow(aOptions);
 	if (!win) return this._testFrame;
 	return win.gBrowser;

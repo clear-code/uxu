@@ -31,6 +31,10 @@ function simpleMakeURIFromSpec(aURI)
 	return null;
 }
 
+var Pref = Cc['@mozilla.org/preferences;1'] 
+		.getService(Ci.nsIPrefBranch);
+var prefKeyRoot;
+
 function setUp()
 {
 	onWindows = /win/i.test(navigator.platform);
@@ -45,12 +49,20 @@ function setUp()
 	tempFile.append('tmp' + parseInt(Math.random() * 650000) + '.tmp');
 
 	yield 0; // to run tests progressively
+
+	prefKeyRoot = 'uxu.testing.'+parseInt(Math.random() * 65000)+'.';
+	Pref.setBoolPref(prefKeyRoot+'bool', true);
+	Pref.setIntPref(prefKeyRoot+'int', 1);
+	Pref.setCharPref(prefKeyRoot+'string', 'foobar');
 }
 
 function tearDown()
 {
 	if (tempFile.exists())
 		tempFile.remove(true);
+	Pref.clearUserPref(prefKeyRoot+'bool', true);
+	Pref.clearUserPref(prefKeyRoot+'int', 1);
+	Pref.clearUserPref(prefKeyRoot+'string', 'foobar');
 }
 
 
@@ -207,26 +219,23 @@ function test_formatStackTrace()
 {
 }
 
-var Pref = Cc['@mozilla.org/preferences;1'] 
-		.getService(Ci.nsIPrefBranch);
-
 function test_getPref()
 {
 	var value;
 
-	value = utilsModule.getPref('general.autoScroll');
+	value = utilsModule.getPref(prefKeyRoot+'bool');
 	assert.isBoolean(value);
-	assert.equals(Pref.getBoolPref('general.autoScroll'), value);
+	assert.isTrue(value);
 
-	value = utilsModule.getPref('accessibility.tabfocus');
+	value = utilsModule.getPref(prefKeyRoot+'int');
 	assert.isNumber(value);
-	assert.equals(Pref.getIntPref('accessibility.tabfocus'), value);
+	assert.equals(1, value);
 
-	value = utilsModule.getPref('general.useragent.locale');
+	value = utilsModule.getPref(prefKeyRoot+'string');
 	assert.isString(value);
-	assert.equals(Pref.getCharPref('general.useragent.locale'), value);
+	assert.equals('foobar', value);
 
-	value = utilsModule.getPref('undefined.pref.'+parseInt(Math.random() * 65000));
+	value = utilsModule.getPref(prefKeyRoot+'undefined');
 	assert.isNull(value);
 }
 
