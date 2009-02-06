@@ -8,6 +8,7 @@ var observer;
 function setUp()
 {
 	yield utils.setUpTestWindow();
+	mail.clear();
 }
 
 function tearDown()
@@ -49,10 +50,6 @@ function clickDummyRow(aWindow)
 
 function testSend()
 {
-	observer = new ObserverClass();
-	observer.startObserve('uxu:mail:sent');
-	assert.equals(0, observer.count);
-
 	var mainWindow = utils.getTestWindow();
 	var composeWindow = null;
 	yield 500; // wait for initializing processes
@@ -70,6 +67,7 @@ function testSend()
 	yield (function() {
 			return getDummyRow(composeWindow);
 		});
+	yield 500;
 	clickDummyRow(composeWindow);
 	yield 500;
 
@@ -93,16 +91,9 @@ function testSend()
 //	action.fireMouseEventOnElement(composeWindow.document.getElementById('button-send'));
 	composeWindow.SendMessage();
 
-	observer.endObserve('uxu:mail:sent');
+	assert.equals(1, mail.deliveries.length);
 
-	assert.equals(1, observer.count);
-	assert.equals('uxu:mail:sent', observer.lastTopic);
-	assert.isTrue(observer.lastData);
-
-	var data ;
-	eval('data = '+observer.lastData);
-	assert.isTrue(data);
-
+	var data = mail.deliveries[0];
 	assert.matches(/^\s*address1@test\s*,\s*address2@test\s*$/, data.to);
 	assert.equals('test subject', data.subject);
 	assert.equals('test body\nnew row', data.body);
