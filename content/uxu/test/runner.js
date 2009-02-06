@@ -311,6 +311,8 @@ function _getTestFiles(aFolder, aIgnoreHiddenFiles)
 	return filesMayBeTest;
 }
 var testFileNamePattern = /\.test\.js$/im;
+var unitTestPattern = /\bunit/i;
+var functionalTestPattern = /\bfunctional/i;
 function _getTestFilesInternal(aFolder, aIgnoreHiddenFiles)
 {
 	var files = aFolder.directoryEntries;
@@ -318,26 +320,45 @@ function _getTestFilesInternal(aFolder, aIgnoreHiddenFiles)
 	var filesMayBeTest = [];
 	if (aIgnoreHiddenFiles === void(0))
 		aIgnoreHiddenFiles = utils.getPref('extensions.uxu.run.ignoreHiddenFiles');
+
+	var tests = [];
+	var unitTests = [];
+	var functionalTests = [];
 	while (files.hasMoreElements())
 	{
 		file = files.getNext().QueryInterface(Ci.nsILocalFile);
-
-		if (
-			aIgnoreHiddenFiles &&
-			(
-				file.isHidden() ||
-				file.leafName.indexOf('.') == 0
-			)
-			)
+		if (aIgnoreHiddenFiles &&
+			(file.isHidden() || file.leafName.indexOf('.') == 0)) {
 			continue;
-
+		}
 		if (file.isDirectory()) {
-			filesMayBeTest = filesMayBeTest.concat(_getTestFilesInternal(file));
+			if (unitTestPattern.test(file.leafName)) {
+				unitTests.push(file);
+				continue;
+			}
+			else if (functionalTestPattern.test(file.leafName)) {
+				functionalTests.push(file);
+				continue;
+			}
 		}
-		else if (/\.js$/i.test(file.leafName)) {
-			filesMayBeTest.push(file);
-		}
+		tests.push(file);
 	}
+
+	tests = tests.concat(unitTests).concat(functionalTests);
+	if (!unitTests.length || !functionalTests.length) {
+		tests.sort(function(aA, aB) {
+			return aA.leafName - aB.leafName;
+		});
+	}
+
+	tests.forEach(function(aFile) {
+		if (aFile.isDirectory()) {
+			filesMayBeTest = filesMayBeTest.concat(_getTestFilesInternal(aFile));
+		}
+		else if (/\.js$/i.test(aFile.leafName)) {
+			filesMayBeTest.push(aFile);
+		}
+	});
 	return filesMayBeTest;
 }
   
