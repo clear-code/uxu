@@ -30,16 +30,21 @@ function getTextboxesFor(aWindow, aTarget)
 		);
 }
 
-function clickDummyRow(aWindow)
+
+function getDummyRow(aWindow)
 {
-	var row = aWindow.document.evaluate(
+	return aWindow.document.evaluate(
 			'/descendant::*[@class="dummy-row"]',
 			aWindow.document,
 			null,
 			XPathResult.FIRST_ORDERED_NODE_TYPE,
 			null
 		).singleNodeValue;
-	action.fireMouseEventOnElement(row);
+}
+
+function clickDummyRow(aWindow)
+{
+	action.fireMouseEventOnElement(getDummyRow(aWindow));
 }
 
 function testSend()
@@ -62,6 +67,9 @@ function testSend()
 	var toBox = getTextboxesFor(composeWindow, 'to').snapshotItem(0);
 	toBox.value = 'address1@test';
 
+	yield (function() {
+			return getDummyRow(composeWindow);
+		});
 	clickDummyRow(composeWindow);
 	yield 500;
 
