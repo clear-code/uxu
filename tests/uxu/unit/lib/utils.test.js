@@ -452,12 +452,10 @@ function testInspect()
 	assert.inspect('"String"', "String");
 	assert.inspect('10', 10);
 	assert.inspect('["String", 10]', ["String", 10]);
-	assert.inspect('{"29": 10, "string": "String"}',
-		       {string: "String", 29: 10});
-	assert.inspect('[{"29": 10, "string": "String"}]',
-		       [{string: "String", 29: 10}]);
 
 	var object = {string: "String", 29: 10};
+	assert.inspect('{"29": 10, "string": "String"}', object);
+	assert.inspect('[{"29": 10, "string": "String"}]', [object]);
 	assert.inspect('[{"29": 10, "string": "String"}, ' +
 		       '{"29": 10, "string": "String"}]',
 		       [object, object]);

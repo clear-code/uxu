@@ -466,7 +466,7 @@ function makeStackLine(aStack)
 	return '()@' + aStack.filename + ':' + aStack.lineNumber + '\n';
 }
  
-function getCurrentStacks()
+function getCurrentStacks() 
 {
 	var callerStack = '';
 	var caller = Components.stack;
@@ -1036,8 +1036,8 @@ function _equals(aCompare, aObject1, aObject2, aStrict, aAltTable)
 		return true;
 
 	aAltTable = _createAltTable(aAltTable);
-	aObject1 = _getAltTextForRecursivelyReference(aObject1, aStrict, aAltTable);
-	aObject2 = _getAltTextForRecursivelyReference(aObject2, aStrict, aAltTable);
+	aObject1 = _getAltTextForRecursiveReference(aObject1, aStrict, aAltTable);
+	aObject2 = _getAltTextForRecursiveReference(aObject2, aStrict, aAltTable);
 
 	if (isArray(aObject1) && isArray(aObject2)) {
 		var length = aObject1.length;
@@ -1066,8 +1066,8 @@ function _equalObject(aCompare, aObject1, aObject2, aStrict, aAltTable)
 	if (!aCompare(aObject1.__proto__, aObject2.__proto__))
 
 	aAltTable = _createAltTable(aAltTable);
-	aObject1 = _getAltTextForRecursivelyReference(aObject1, aStrict, aAltTable);
-	aObject2 = _getAltTextForRecursivelyReference(aObject2, aStrict, aAltTable);
+	aObject1 = _getAltTextForRecursiveReference(aObject1, aStrict, aAltTable);
+	aObject2 = _getAltTextForRecursiveReference(aObject2, aStrict, aAltTable);
 	if (typeof aObject1 == 'string' || typeof aObject2 == 'string') {
 		return _equals(aCompare, aObject1, aObject2, aStrict, aAltTable);
 	}
@@ -1088,7 +1088,7 @@ function _equalObject(aCompare, aObject1, aObject2, aStrict, aAltTable)
 	names2.sort();
 	return _equals(aCompare, names1, names2, aStrict, aAltTable);
 }
-  
+ 
 function equals(aObject1, aObject2) 
 {
 	return _equals(function (aObj1, aObj2) {return aObj1 == aObj2},
@@ -1103,16 +1103,16 @@ function strictlyEquals(aObject1, aObject2)
 				   true);
 }
  
-function _createAltTable(aAltTable)
+function _createAltTable(aAltTable) 
 {
 	return aAltTable || { objects : [], alt : [], count : [] };
 }
  
-var RECURSIVELY_REFERENCE_MAX_COUNT = 10;
+var RECURSIVE_REFERENCE_MAX_COUNT = 10;
  
-function _getAltTextForRecursivelyReference(aObject, aStrict, aAltTable)
+function _getAltTextForRecursiveReference(aObject, aStrict, aAltTable)
 {
-	if (RECURSIVELY_REFERENCE_MAX_COUNT < 0 ||
+	if (RECURSIVE_REFERENCE_MAX_COUNT < 0 ||
 		typeof aObject == 'string')	 {
 		return aObject;
 	}
@@ -1127,12 +1127,12 @@ function _getAltTextForRecursivelyReference(aObject, aStrict, aAltTable)
 		);
 		aAltTable.count.push(0);
 	}
-	else if (aAltTable.count[index]++ > RECURSIVELY_REFERENCE_MAX_COUNT) {
+	else if (aAltTable.count[index]++ > RECURSIVE_REFERENCE_MAX_COUNT) {
 		aObject = aAltTable.alt[index];
 	}
 	return aObject;
 }
-	
+  
 // アプリケーション 
 	
 var product = (function() { 
