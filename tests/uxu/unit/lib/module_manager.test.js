@@ -73,7 +73,7 @@ function testPackageType()
 	assert.equals(package1, package2);
 
 	package1 = libManager.require('package', 'utils');
-	package2 = dummyManager.require('package', 'utils');
+	package2 = testManager.require('package', 'action');
 	assert.isFunction(package1.writeTo);
 	assert.isUndefined(package2.writeTo);
 }

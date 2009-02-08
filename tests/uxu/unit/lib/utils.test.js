@@ -501,6 +501,39 @@ function testInspectDOMNode()
 	assert.inspectDOMNode('<P id="paragraph1">test<EM class="class" lang="en">em</EM></P><P id="paragraph2">test<EM class="class" lang="en">em</EM></P>', fragment);
 }
 
+assert.utilsEquals = function(aValue1, aValue2, aValue3, aMessage) {
+	assert.isTrue(utilsModule.equals(aValue1, aValue2), aMessage);
+	assert.isFalse(utilsModule.equals(aValue1, aValue3), aMessage);
+}
+
+test_equals.priority = 'must';
+function test_equals()
+{
+	assert.utilsEquals(true, true, false, 'primitive, bool');
+	assert.utilsEquals(1, 1, 2, 'primitive, int');
+	assert.utilsEquals('a', 'a', 'b', 'primitive, string');
+	assert.utilsEquals(
+		{ prop : true },
+		{ prop : true },
+		{ prop : false },
+		'hash'
+	);
+	assert.utilsEquals(
+		[String, Object],
+		[String, Object],
+		[Number, Object],
+		'array'
+	);
+
+	function MyClass(aName) {
+		this.self = this;
+		this.name = aName;
+	}
+	var instance1 = new MyClass(1);
+	var instance2 = new MyClass(2);
+	assert.utilsEquals(instance1, instance1, instance2, 'custom class, includes recursively reference');
+}
+
 function testNotify()
 {
 	var observer = {
