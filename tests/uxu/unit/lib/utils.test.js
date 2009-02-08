@@ -461,6 +461,22 @@ function testInspect()
 	assert.inspect('[{"29": 10, "string": "String"}, ' +
 		       '{"29": 10, "string": "String"}]',
 		       [object, object]);
+
+	object = {
+		get propGetter()
+		{
+			return true;
+		},
+		get propError()
+		{
+			throw 'error';
+		}
+	};
+	object.self = object;
+	var inspected = '{"propError": (INACCESSIBLE #1, REASON: error), '+
+					'"propGetter": true, "self": [object Object]}';
+	assert.inspect(inspected, object);
+	assert.inspect('['+inspected+', '+inspected+']', [object, object]);
 }
 
 assert.inspectDOMNode = function(aExpected, aNode) {
