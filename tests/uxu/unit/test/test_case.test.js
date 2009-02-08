@@ -218,8 +218,8 @@ function testPriority()
 	}
 	assert.equals(testCount, setUpCount);
 	assert.equals(testCount, tearDownCount);
-	assert.isTrue(testCount > 40, testCount);
-	assert.isTrue(testCount < 60, testCount);
+	assert.compare(testCount, '>', 40, testCount);
+	assert.compare(testCount, '<', 60, testCount);
 }
 
 function testMasterPriority()
@@ -340,7 +340,7 @@ function testListener()
 	assert.equals(1, failCount);
 	assert.equals(1, errorCount);
 
-        testcase.removeListener(listener);
+	testcase.removeListener(listener);
 	testcase.addListener({handleEvent : listener});
 	clearCount();
 	errorCount = 0;
