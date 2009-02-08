@@ -1108,12 +1108,12 @@ function _createAltTable(aAltTable)
 	return aAltTable || { objects : [], alt : [], count : [] };
 }
  
-var RECURSIVE_REFERENCE_MAX_COUNT = 10;
+var RECURSIVE_REFERENCE_MAX_COUNT = 100;
  
 function _getAltTextForRecursiveReference(aObject, aStrict, aAltTable)
 {
 	if (RECURSIVE_REFERENCE_MAX_COUNT < 0 ||
-		typeof aObject == 'string')	 {
+		typeof aObject != 'object') {
 		return aObject;
 	}
 
