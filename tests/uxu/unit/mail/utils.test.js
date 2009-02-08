@@ -5,16 +5,18 @@ var topDir = baseURL+'../../../../';
 utils.include(topDir+'content/uxu/lib/module_manager.js');
 
 var lib_module = new ModuleManager([topDir+'content/uxu/lib']);
-var ObserverClass = lib_module.require('class', 'observer');
+var ObserverClass;
 
 var mail_module = new ModuleManager([topDir+'content/uxu/mail']);
-var UtilsClass = mail_module.require('class', 'utils');
+var UtilsClass;
 var utilsModule;
 
 var observer;
 
 function setUp()
 {
+	ObserverClass = lib_module.require('class', 'observer');
+	UtilsClass = mail_module.require('class', 'utils');
 	utilsModule = new UtilsClass();
 }
 
