@@ -842,8 +842,13 @@ function inspect(aObject)
 {
 	var inspectedObjects = [];
 	var inspectedResults = {};
-	var _inspect = function (aTarget)
-	{
+	var inaccessible = {
+			objects    : [],
+			properties : [],
+			values     : [],
+			count      : 0
+		};
+	return (function (aTarget) {
 		var index;
 
 		if (aTarget === null)
@@ -863,9 +868,7 @@ function inspect(aObject)
 			inspectedObjects.push(aTarget);
 			inspectedResults[index] = aTarget.toString();
 
-			var values = aTarget.map(function (aValue) {
-					return _inspect(aValue);
-				});
+			var values = aTarget.map(arguments.callee);
 			inspectedResults[index] = "[" + values.join(", ") + "]";
 			return inspectedResults[index];
 		} else if (typeof aTarget == 'string' ||
@@ -876,18 +879,42 @@ function inspect(aObject)
 			inspectedObjects.push(aTarget);
 			inspectedResults[index] = aTarget.toString();
 
-			var values = [];
+			var names = [];
 			for (var name in aTarget) {
-				values.push(name.quote() + ": " + _inspect(aTarget[name]));
+				names.push(name);
 			}
+			var values = names.sort().map(function(aName) {
+					var value;
+					try {
+						value = this(aTarget[aName]);
+					}
+					catch(e) {
+						var objIndex = inaccessible.objects.indexOf(aTarget);
+						if (objIndex < 0) {
+							inaccessible.objects.push(aTarget);
+							inaccessible.properties.push([]);
+							inaccessible.values.push([]);
+							objIndex++;
+						}
+						var props = inaccessible.properties[objIndex];
+						var propIndex = props.indexOf(aName);
+						if (propIndex < 0) {
+							props.push(aName);
+							value = '(INACCESSIBLE #'+(++inaccessible.count)+', REASON: '+e+')';
+							inaccessible.values[objIndex].push(value);
+						}
+						else {
+							value = inaccessible.values[objIndex][propIndex];
+						}
+					}
+					return aName.quote() + ': ' + value;
+				}, arguments.callee);
 			inspectedResults[index] = "{" + values.join(", ") + "}";
 			return inspectedResults[index];
 		} else {
 			return aTarget.toString();
 		}
-	};
-
-	return _inspect(aObject);
+	})(aObject);
 }
  
 function inspectType(aObject) 
@@ -1003,39 +1030,47 @@ function isObject(aObject)
   
 // 比較 
 	
-function _equals(aCompare, aObject1, aObject2) 
+function _equals(aCompare, aObject1, aObject2, aStrict, aAltTable) 
 {
 	if (aCompare(aObject1, aObject2))
 		return true;
 
-	if (isArray(aObject1) && isArray(aObject2)) {
-		var i;
-		var length = aObject1.length;
+	aAltTable = _createAltTable(aAltTable);
+	aObject1 = _getAltTextForRecursivelyReference(aObject1, aStrict, aAltTable);
+	aObject2 = _getAltTextForRecursivelyReference(aObject2, aStrict, aAltTable);
 
+	if (isArray(aObject1) && isArray(aObject2)) {
+		var length = aObject1.length;
 		if (length != aObject2.length)
 			return false;
-		for (i = 0; i < length; i++) {
-			if (!_equals(aCompare, aObject1[i], aObject2[i]))
+		for (var i = 0; i < length; i++) {
+			if (!_equals(aCompare, aObject1[i], aObject2[i], aStrict, aAltTable))
 				return false;
 		}
 		return true;
 	}
 
 	if (isDate(aObject1) && isDate(aObject2)) {
-		return _equals(aCompare, aObject1.getTime(), aObject2.getTime());
+		return _equals(aCompare, aObject1.getTime(), aObject2.getTime(), aStrict, aAltTable);
 	}
 
 	if (isObject(aObject1) && isObject(aObject2)) {
-		return _equalObject(aCompare, aObject1, aObject2);
+		return _equalObject(aCompare, aObject1, aObject2, aStrict, aAltTable);
 	}
 
 	return false;
 }
-	
-function _equalObject(aCompare, aObject1, aObject2) 
+ 
+function _equalObject(aCompare, aObject1, aObject2, aStrict, aAltTable) 
 {
 	if (!aCompare(aObject1.__proto__, aObject2.__proto__))
-		return false;
+
+	aAltTable = _createAltTable(aAltTable);
+	aObject1 = _getAltTextForRecursivelyReference(aObject1, aStrict, aAltTable);
+	aObject2 = _getAltTextForRecursivelyReference(aObject2, aStrict, aAltTable);
+	if (typeof aObject1 == 'string' || typeof aObject2 == 'string') {
+		return _equals(aCompare, aObject1, aObject2, aStrict, aAltTable);
+	}
 
 	var name;
 	var names1 = [], names2 = [];
@@ -1043,7 +1078,7 @@ function _equalObject(aCompare, aObject1, aObject2)
 		names1.push(name);
 		if (!(name in aObject2))
 			return false;
-		if (!_equals(aCompare, aObject1[name], aObject2[name]))
+		if (!_equals(aCompare, aObject1[name], aObject2[name], aStrict, aAltTable))
 			return false;
 	}
 	for (name in aObject2) {
@@ -1051,21 +1086,53 @@ function _equalObject(aCompare, aObject1, aObject2)
 	}
 	names1.sort();
 	names2.sort();
-	return _equals(aCompare, names1, names2);
+	return _equals(aCompare, names1, names2, aStrict, aAltTable);
 }
   
 function equals(aObject1, aObject2) 
 {
 	return _equals(function (aObj1, aObj2) {return aObj1 == aObj2},
-				   aObject1, aObject2);
+				   aObject1, aObject2,
+				   false);
 }
  
 function strictlyEquals(aObject1, aObject2) 
 {
 	return _equals(function (aObj1, aObj2) {return aObj1 === aObj2},
-				   aObject1, aObject2);
+				   aObject1, aObject2,
+				   true);
 }
-  
+ 
+function _createAltTable(aAltTable)
+{
+	return aAltTable || { objects : [], alt : [], count : [] };
+}
+ 
+var RECURSIVELY_REFERENCE_MAX_COUNT = 10;
+ 
+function _getAltTextForRecursivelyReference(aObject, aStrict, aAltTable)
+{
+	if (RECURSIVELY_REFERENCE_MAX_COUNT < 0 ||
+		typeof aObject == 'string')	 {
+		return aObject;
+	}
+
+	var index = aAltTable.objects.indexOf(aObject);
+	if (index < 0) {
+		aAltTable.objects.push(aObject);
+		aAltTable.alt.push(
+			aStrict ?
+				String(aObject)+'(#'+(aAltTable.alt.length+1)+')' :
+				inspect(aObject)
+		);
+		aAltTable.count.push(0);
+	}
+	else if (aAltTable.count[index]++ > RECURSIVELY_REFERENCE_MAX_COUNT) {
+		aObject = aAltTable.alt[index];
+	}
+	return aObject;
+}
+	
 // アプリケーション 
 	
 var product = (function() { 
