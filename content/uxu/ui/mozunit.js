@@ -458,6 +458,13 @@ var runnerListener = {
 		var report = getReport(aEvent.data.testCase);
 		report.setAttribute('source', aEvent.data.testCase.source);
 	},
+	onTestCaseTestStart : function(aEvent)
+	{
+		var report = getReport(aEvent.data.testCase);
+		_(report, 'running-status').setAttribute('value',
+			bundle.getFormattedString('status_running', [aEvent.data.data.title])
+		);
+	},
 	onTestCaseTestFinish : function(aEvent)
 	{
 		gLog.items = aEvent.data.log.items;
@@ -761,6 +768,7 @@ function fillReportFromResult(aTestCase, aResult)
 
 	_(reportNode, 'bar').setAttribute('mode', 'determined');
 	_(reportNode, 'bar').setAttribute('value', aResult.percentage);
+	_(reportNode, 'running-status').removeAttribute('value');
 	_(reportNode, 'total-counter').value = aResult.step.split('/')[1];
 
 	_(reportNode, 'bar').setAttribute('testcase-results',

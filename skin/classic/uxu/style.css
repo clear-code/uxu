@@ -31,6 +31,12 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 	background-color: red !important;
 }
 
+/*
+*[role="running-status"] {
+	color: white;
+}
+*/
+
 .testcase-summary {
 	border: threedshadow;
 }

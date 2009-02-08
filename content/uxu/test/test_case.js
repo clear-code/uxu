@@ -388,6 +388,7 @@ function registerTest(aFunction)
 	this._tests.push({
 		name     : (this._source + '::' + this.title + '::' + key),
 		desc     : desc,
+		title    : desc,
 		code     : aFunction,
 		hash     : hash,
 		priority : (
@@ -578,8 +579,8 @@ function run(aStopper)
 		},
 		checkPriority : function(aContinuation)
 		{
-			_this.fireEvent('TestStart', testIndex);
 			var test = _this._tests[testIndex];
+			_this.fireEvent('TestStart', test);
 			if (_this._checkPriorityToExec(test)) {
 				aContinuation('ok');
 				return;
