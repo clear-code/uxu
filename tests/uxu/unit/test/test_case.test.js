@@ -186,7 +186,7 @@ function testAsync()
 	testcase.masterPriority = 'must';
 	testcase.run();
 	yield (function() { return testcase.done; });
-	assert.isTrue(Date.now() - start >= (100 * 3) * 3);
+	assert.compare(Date.now() - start, '>=', (100 * 3) * 3);
 	assert.testDone(3, 3, 3);
 }
 
