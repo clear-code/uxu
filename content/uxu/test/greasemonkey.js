@@ -321,7 +321,7 @@ function GM_xmlhttpRequest(aDetails)
 
 function GM_addStyle(aDocument, aStyle)
 {
-	this.fireEvent({ type : 'GM_addStyleCall', document : aDocument, sytle : aStyle });
+	this.fireEvent({ type : 'GM_addStyleCall', document : aDocument, style : aStyle });
 	var head = aDocument.getElementsByTagName('head')[0];
 	if (!head) return;
 	var style = aDocument.createElement('style');
