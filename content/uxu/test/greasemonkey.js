@@ -353,10 +353,9 @@ function GM_addStyle(aDocument, aStyle)
 
 const kRESOURCE = /^([^\s]+)\s+(.+)$/;
 
-function GM_getResourceText(aKey, aHeaders)
+function _getResourceURI(aKey, aHeaders)
 {
-	this.fireEvent({ type : 'GM_getResourceTextCall', key : aKey });
-	if (!aKey || !aHeaders) return '';
+	if (!aKey || !aHeaders) return null;
 	var match;
 	for (var i in aHeaders)
 	{
@@ -365,15 +364,42 @@ function GM_getResourceText(aKey, aHeaders)
 			continue;
 		if (match[1] == aKey) return match[2];
 	}
+	return null;
+}
+
+function _getResponseText(aURI)
+{
+	if (!aURI) return '';
+	var request = Cc['@mozilla.org/xmlextras/xmlhttprequest;1']
+			.createInstance(Ci.nsIXMLHttpRequest)
+			.QueryInterface(Ci.nsIDOMEventTarget);
+	request.open('GET', aURI, false);
+	try {
+		request.send(null);
+	}
+	catch(e) {
+	}
+	return request.responseText;
+}
+
+function GM_getResourceText(aKey, aHeaders)
+{
+	this.fireEvent({ type : 'GM_getResourceTextCall', key : aKey });
+	var uri = _getResourceURI(aKey, aHeaders);
+	if (uri) {
+		return _getResponseText(uri);
+	}
 	return '';
 }
 
 function GM_getResourceURL(aKey, aHeaders)
 {
 	this.fireEvent({ type : 'GM_getResourceURLCall', key : aKey });
-	if (!aKey || !aHeaders) return '';
-	var text = GM_getResourceText(aKey, aHeaders);
-	return text;
+	var uri = _getResourceURI(aKey, aHeaders);
+	if (uri) {
+		return _getResponseText(uri);
+	}
+	return '';
 }
 
 function GM_openInTab(aURI)

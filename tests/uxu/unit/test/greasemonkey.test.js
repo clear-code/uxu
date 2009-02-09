@@ -173,18 +173,22 @@ function test_GM_addStyle()
 {
 }
 
-function test_GM_getResourceURL()
-{
-	var url = baseURL+'../../../samples/greasemonkey/greasemonkey.user.js';
-	var sandbox = GMUtils.loadScript(url);
-	assert.notEquals('http://www.clear-code.com/', sandbox.GM_getResourceURL('URL'));
-}
-
 function test_GM_getResourceText()
 {
 	var url = baseURL+'../../../samples/greasemonkey/greasemonkey.user.js';
 	var sandbox = GMUtils.loadScript(url);
-	assert.equals('this is a sample text', sandbox.GM_getResourceText('TEXT'));
+	var text = sandbox.GM_getResourceText('about');
+	assert.notEquals('about:', text);
+	assert.equals('<?xml version="1.0" encoding="UTF-8"?>', text.substring(0, 38));
+}
+
+function test_GM_getResourceURL()
+{
+	var url = baseURL+'../../../samples/greasemonkey/greasemonkey.user.js';
+	var sandbox = GMUtils.loadScript(url);
+	var resource = sandbox.GM_getResourceURL('logo');
+	assert.notEquals('about:logo', resource);
+	assert.equals('data:image/png;base64,', resource.substring(0, 22));
 }
 
 function test_GM_openInTab()
