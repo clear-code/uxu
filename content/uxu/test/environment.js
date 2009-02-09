@@ -514,6 +514,7 @@ function include(aSource, aEnvironment, aEncoding)
 			';encoding='+encoding,
 		env
 	);
+	return script;
 };
 
 

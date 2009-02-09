@@ -82,6 +82,7 @@ function getSandboxFor(aURI)
 	if (aURI in this.sandboxes) return this.sandboxes[aURI];
 
 	var env = this;
+	var headers = [];
 	var sandbox = {
 		get window() {
 			return env.frame.contentWindow;
@@ -111,11 +112,11 @@ function getSandboxFor(aURI)
 		GM_addStyle : function() {
 			return GM_addStyle.apply(env, arguments);
 		},
-		GM_getResourceURL : function() {
-			return GM_getResourceURL.apply(env, arguments);
+		GM_getResourceURL : function(aResourceName) {
+			return GM_getResourceURL.call(env, aResourceName, headers);
 		},
-		GM_getResourceText : function() {
-			return GM_getResourceText.apply(env, arguments);
+		GM_getResourceText : function(aResourceName) {
+			return GM_getResourceText.call(env, aResourceName, headers);
 		},
 		GM_openInTab : function() {
 			return GM_openInTab.apply(env, arguments);
@@ -124,6 +125,9 @@ function getSandboxFor(aURI)
 			log : function() {
 				return GM_log.apply(env, arguments);
 			}
+		},
+		get GM_headers() {
+			return headers;
 		}
 	};
 	this.sandboxes[aURI] = sandbox;
@@ -134,10 +138,27 @@ function getSandBoxFor(aURI)
 	return this.getSandboxFor(aURI);
 }
 
+const kHEADER_START = /==UserScript==/i;
+const kHEADER_END   = /==\/UserScript==/i;
+const kHEADER_LINE  = /^[^\@]*(\@[^\s]+)\s+(.*)$/;
+
 function loadScript(aURI, aEncoding)
 {
 	var sandbox = this.getSandboxFor(aURI);
-	this.utils.include(aURI, sandbox, aEncoding);
+	var script = this.utils.include(aURI, sandbox, aEncoding);
+	var headers = sandbox.GM_headers;
+	if (kHEADER_START.test(script) && kHEADER_END.test(script)) {
+		script.split(kHEADER_START)[1].split(kHEADER_END)[0]
+			.split(/[\n\r]+/)
+			.forEach(function(aLine) {
+				var match = aLine.match(kHEADER_LINE);
+				if (!match) return;
+				headers.push({
+					name  : match[1],
+					value : match[2]
+				});
+			});
+	}
 	return sandbox;
 }
 
@@ -330,14 +351,29 @@ function GM_addStyle(aDocument, aStyle)
 	head.appendChild(style);
 }
 
-function GM_getResourceURL()
+function GM_getResourceURL(aResourceName, aHeaders)
 {
-	this.fireEvent({ type : 'GM_getResourceURLCall' });
+	if (!aResourceName || !aHeaders) return;
+	this.fireEvent({ type : 'GM_getResourceURLCall', resourceName : aResourceName });
+	var text = GM_getResourceText(aResourceName, aHeaders);
+	return text;
 }
 
-function GM_getResourceText()
+const kRESOURCE = /^([^\s]+)\s+(.+)$/;
+
+function GM_getResourceText(aResourceName, aHeaders)
 {
-	this.fireEvent({ type : 'GM_getResourceTextCall' });
+	if (!aResourceName || !aHeaders) return;
+	this.fireEvent({ type : 'GM_getResourceTextCall', resourceName : aResourceName });
+	var match;
+	for (var i in aHeaders)
+	{
+		if (aHeaders[i].name.toLowerCase() != '@resource' ||
+			!(match = aHeaders[i].value.match(kRESOURCE)))
+			continue;
+		if (match[1] == aResourceName) return match[2];
+	}
+	return '';
 }
 
 function GM_openInTab(aURI)
