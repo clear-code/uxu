@@ -112,11 +112,11 @@ function getSandboxFor(aURI)
 		GM_addStyle : function() {
 			return GM_addStyle.apply(env, arguments);
 		},
-		GM_getResourceURL : function(aResourceName) {
-			return GM_getResourceURL.call(env, aResourceName, headers);
+		GM_getResourceURL : function(aKey) {
+			return GM_getResourceURL.call(env, aKey, headers);
 		},
-		GM_getResourceText : function(aResourceName) {
-			return GM_getResourceText.call(env, aResourceName, headers);
+		GM_getResourceText : function(aKey) {
+			return GM_getResourceText.call(env, aKey, headers);
 		},
 		GM_openInTab : function() {
 			return GM_openInTab.apply(env, arguments);
@@ -351,29 +351,29 @@ function GM_addStyle(aDocument, aStyle)
 	head.appendChild(style);
 }
 
-function GM_getResourceURL(aResourceName, aHeaders)
-{
-	if (!aResourceName || !aHeaders) return;
-	this.fireEvent({ type : 'GM_getResourceURLCall', resourceName : aResourceName });
-	var text = GM_getResourceText(aResourceName, aHeaders);
-	return text;
-}
-
 const kRESOURCE = /^([^\s]+)\s+(.+)$/;
 
-function GM_getResourceText(aResourceName, aHeaders)
+function GM_getResourceText(aKey, aHeaders)
 {
-	if (!aResourceName || !aHeaders) return;
-	this.fireEvent({ type : 'GM_getResourceTextCall', resourceName : aResourceName });
+	if (!aKey || !aHeaders) return;
+	this.fireEvent({ type : 'GM_getResourceTextCall', key : aKey });
 	var match;
 	for (var i in aHeaders)
 	{
 		if (aHeaders[i].name.toLowerCase() != '@resource' ||
 			!(match = aHeaders[i].value.match(kRESOURCE)))
 			continue;
-		if (match[1] == aResourceName) return match[2];
+		if (match[1] == aKey) return match[2];
 	}
 	return '';
+}
+
+function GM_getResourceURL(aKey, aHeaders)
+{
+	if (!aKey || !aHeaders) return;
+	this.fireEvent({ type : 'GM_getResourceURLCall', key : aKey });
+	var text = GM_getResourceText(aKey, aHeaders);
+	return text;
 }
 
 function GM_openInTab(aURI)
