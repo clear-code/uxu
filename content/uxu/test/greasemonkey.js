@@ -355,8 +355,8 @@ const kRESOURCE = /^([^\s]+)\s+(.+)$/;
 
 function GM_getResourceText(aKey, aHeaders)
 {
-	if (!aKey || !aHeaders) return;
 	this.fireEvent({ type : 'GM_getResourceTextCall', key : aKey });
+	if (!aKey || !aHeaders) return '';
 	var match;
 	for (var i in aHeaders)
 	{
@@ -370,8 +370,8 @@ function GM_getResourceText(aKey, aHeaders)
 
 function GM_getResourceURL(aKey, aHeaders)
 {
-	if (!aKey || !aHeaders) return;
 	this.fireEvent({ type : 'GM_getResourceURLCall', key : aKey });
+	if (!aKey || !aHeaders) return '';
 	var text = GM_getResourceText(aKey, aHeaders);
 	return text;
 }

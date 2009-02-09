@@ -3,6 +3,8 @@
 // @namespace    http://www.clear-code.com/
 // @description  test
 // @include      http://www.clear-code.com/
+// @resource     URL http://www.clear-code.com/
+// @resource     TEXT this is a sample text
 // ==/UserScript==
 
 function getDocumentTitleAndURI() {

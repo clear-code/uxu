@@ -19,6 +19,7 @@ function setUp()
 function tearDown()
 {
 	yield Do(utils.loadURI('about:blank'));
+	yield Do(GMUtils.close());
 }
 
 function test_loadAndUnload()
@@ -141,15 +142,6 @@ function test_loadScript()
 }
 
 
-// TBD
-function test_events()
-{
-	GMUtils.fireEvent({});
-	GMUtils.addListener(listener);
-	GMUtils.removeListener(listener);
-}
-
-
 function test_doAndWaitLoad()
 {
 }
@@ -183,12 +175,166 @@ function test_GM_addStyle()
 
 function test_GM_getResourceURL()
 {
+	var url = baseURL+'../../../samples/greasemonkey/greasemonkey.user.js';
+	var sandbox = GMUtils.loadScript(url);
+	assert.notEquals('http://www.clear-code.com/', sandbox.GM_getResourceURL('URL'));
 }
 
 function test_GM_getResourceText()
 {
+	var url = baseURL+'../../../samples/greasemonkey/greasemonkey.user.js';
+	var sandbox = GMUtils.loadScript(url);
+	assert.equals('this is a sample text', sandbox.GM_getResourceText('TEXT'));
 }
 
 function test_GM_openInTab()
 {
+	yield Do(GMUtils.open('about:'));
+	var win = utils.getTestWindow();
+	var tabs = win.gBrowser.mTabs;
+	var count = tabs.length;
+	GMUtils.GM_openInTab('about:config');
+	yield 200;
+	assert.equals(count+1, tabs.length);
+	assert.equals('about:config', tabs[tabs.length-1].linkedBrowser.currentURI.spec);
+}
+
+
+function test_listeningEvents()
+{
+	function defaultHandler(aEvent) { this.setResult(aEvent); };
+	var listener = {
+			results : [],
+			get count()
+			{
+				return this.results.length;
+			},
+			get lastResult()
+			{
+				return this.results[this.results.length-1];
+			},
+			setResult : function(aEvent)
+			{
+				var result = {};
+				for (var i in aEvent)
+				{
+					result[i] = aEvent[i];
+				}
+				this.results.push(result);
+			},
+			clear : function()
+			{
+				this.results = [];
+			},
+			onGM_logCall : defaultHandler,
+			onGM_getValueCall : defaultHandler,
+			onGM_setValueCall : defaultHandler,
+			onGM_xmlhttpRequestCall : defaultHandler,
+			onGM_xmlhttpRequestBeforeLoad : defaultHandler,
+			onGM_xmlhttpRequestLoad : defaultHandler,
+			onGM_xmlhttpRequestBeforeError : defaultHandler,
+			onGM_xmlhttpRequestError : defaultHandler,
+			onGM_xmlhttpRequestBeforeReadystatechange : defaultHandler,
+			onGM_xmlhttpRequestReadystatechange : defaultHandler,
+			onGM_registerMenuCommandCall : defaultHandler,
+			onGM_addStyleCall : defaultHandler,
+			onGM_getResourceURLCall : defaultHandler,
+			onGM_getResourceTextCall : defaultHandler,
+			onGM_openInTabCall : defaultHandler
+		};
+
+	function assertClear()
+	{
+		listener.clear();
+		assert.equals(0, listener.count);
+	}
+
+	function assertResult(aExpected)
+	{
+		assert.equals(1, listener.count);
+		for (var i in aExpected)
+		{
+			assert.isDefined(i, i);
+			assert.equals(aExpected[i], listener.lastResult[i]);
+		}
+		assertClear();
+	}
+
+	yield Do(GMUtils.open('about:'));
+	GMUtils.addListener(listener);
+
+	var url = baseURL+'../../../samples/greasemonkey/greasemonkey.user.js';
+	var sandbox = GMUtils.loadScript(url);
+
+	assertClear();
+
+	GMUtils.GM_log('foo');
+	assertResult({
+		type    : 'GM_logCall',
+		message : 'foo'
+	});
+
+	GMUtils.GM_setValue('key', 'value');
+	assertResult({
+		type  : 'GM_setValueCall',
+		key   : 'key',
+		value : 'value'
+	});
+
+	GMUtils.GM_getValue('key');
+	assertResult({
+		type : 'GM_getValueCall',
+		key  : 'key',
+	});
+
+	var func = function(aArg) { return true; };
+	GMUtils.GM_registerMenuCommand('command', func, 'c', 'control', 'd');
+	assertResult({
+		type           : 'GM_registerMenuCommandCall',
+		name           : 'command',
+		function       : func,
+		accelKey       : 'c',
+		accelModifiers : 'control',
+		accessKey      : 'd'
+	});
+
+	GMUtils.GM_addStyle(content.document, '* { color: red; }');
+	assertResult({
+		type     : 'GM_addStyleCall',
+		document : content.document,
+		style    : '* { color: red; }'
+	});
+
+	GMUtils.GM_getResourceText('TEXT');
+	assertResult({
+		type : 'GM_getResourceTextCall',
+		key  : 'TEXT'
+	});
+
+	GMUtils.GM_getResourceURL('URL');
+	assertResult({
+		type : 'GM_getResourceURLCall',
+		key  : 'URL'
+	});
+
+	GMUtils.GM_openInTab('about:config');
+	yield 200;
+	assertResult({
+		type : 'GM_openInTabCall',
+		uri  : 'about:config'
+	});
+
+/*
+GM_xmlhttpRequestCall
+GM_xmlhttpRequestBeforeLoad
+GM_xmlhttpRequestLoad
+GM_xmlhttpRequestBeforeError
+GM_xmlhttpRequestError
+GM_xmlhttpRequestBeforeReadystatechange
+GM_xmlhttpRequestReadystatechange
+*/
+
+	GMUtils.removeListener(listener);
+
+//	GMUtils.fireEvent({});
 }
