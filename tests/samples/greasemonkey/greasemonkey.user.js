@@ -4,7 +4,7 @@
 // @description  test
 // @include      http://www.clear-code.com/
 // @resource     about about:
-// @resource     logo  about:logo
+// @resource     page  http://www.clear-code.com/
 // ==/UserScript==
 
 function getDocumentTitleAndURI() {

@@ -186,9 +186,9 @@ function test_GM_getResourceURL()
 {
 	var url = baseURL+'../../../samples/greasemonkey/greasemonkey.user.js';
 	var sandbox = GMUtils.loadScript(url);
-	var resource = sandbox.GM_getResourceURL('logo');
-	assert.notEquals('about:logo', resource);
-	assert.equals('data:image/png;base64,', resource.substring(0, 22));
+	var resource = sandbox.GM_getResourceURL('page');
+	assert.notEquals('http://www.clear-code.com/', resource);
+	assert.equals('data:text/html;base64,', resource.substring(0, 22));
 }
 
 function test_GM_openInTab()
@@ -309,16 +309,16 @@ function test_listeningEvents()
 		style    : '* { color: red; }'
 	});
 
-	GMUtils.GM_getResourceText('TEXT');
+	GMUtils.GM_getResourceText('about');
 	assertResult({
 		type : 'GM_getResourceTextCall',
-		key  : 'TEXT'
+		key  : 'about'
 	});
 
-	GMUtils.GM_getResourceURL('URL');
+	GMUtils.GM_getResourceURL('about');
 	assertResult({
 		type : 'GM_getResourceURLCall',
-		key  : 'URL'
+		key  : 'about'
 	});
 
 	GMUtils.GM_openInTab('about:config');

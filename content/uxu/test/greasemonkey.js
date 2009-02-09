@@ -367,19 +367,18 @@ function _getResourceURI(aKey, aHeaders)
 	return null;
 }
 
-function _getResponseText(aURI)
+function _getResponse(aURI, aMethod)
 {
-	if (!aURI) return '';
 	var request = Cc['@mozilla.org/xmlextras/xmlhttprequest;1']
 			.createInstance(Ci.nsIXMLHttpRequest)
 			.QueryInterface(Ci.nsIDOMEventTarget);
-	request.open('GET', aURI, false);
 	try {
+		request.open(aMethod || 'GET', aURI, false);
 		request.send(null);
 	}
 	catch(e) {
 	}
-	return request.responseText;
+	return request;
 }
 
 function GM_getResourceText(aKey, aHeaders)
@@ -387,7 +386,7 @@ function GM_getResourceText(aKey, aHeaders)
 	this.fireEvent({ type : 'GM_getResourceTextCall', key : aKey });
 	var uri = _getResourceURI(aKey, aHeaders);
 	if (uri) {
-		return _getResponseText(uri);
+		return _getResponse(uri).responseText;
 	}
 	return '';
 }
@@ -397,7 +396,31 @@ function GM_getResourceURL(aKey, aHeaders)
 	this.fireEvent({ type : 'GM_getResourceURLCall', key : aKey });
 	var uri = _getResourceURI(aKey, aHeaders);
 	if (uri) {
-		return _getResponseText(uri);
+		var response = _getResponse(uri, 'HEAD');
+		var mimeType = response.getResponseHeader('Content-Type');
+		if (!mimeType) {
+			var mimeService = Cc['@mozilla.org/mime;1']
+					.getService(Ci.nsIMIMEService);
+			if (uri.substring(0, 5) == 'file:') {
+				mimeType = mimeService.getTypeFromFile(utils.getFileFromURLSpec(uri));
+			}
+			else {
+				try {
+					mimeType = mimeService.getTypeFromURI(utils.makeURIFromSpec(uri));
+				}
+				catch(e) {
+				}
+			}
+		}
+		var channel = Cc['@mozilla.org/network/io-service;1']
+					.getService(Ci.nsIIOService)
+					.newChannelFromURI(utils.makeURIFromSpec(uri));
+		var stream = channel.open();
+		var binaryStream = Cc['@mozilla.org/binaryinputstream;1']
+					.createInstance(Ci.nsIBinaryInputStream);
+		binaryStream.setInputStream(stream);
+		var data = binaryStream.readBytes(binaryStream.available());
+		return 'data:'+mimeType+';base64,'+encodeURIComponent(btoa(data));
 	}
 	return '';
 }
