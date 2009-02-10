@@ -59,7 +59,7 @@ function testSend()
 	yield (function() {
 			return composeWindow = utils.getChromeWindow({ type : 'msgcompose' });
 		});
-	yield 500;
+	yield 3000;
 
 	var toBox = getTextboxesFor(composeWindow, 'to').snapshotItem(0);
 	toBox.value = 'address1@test';
@@ -69,7 +69,7 @@ function testSend()
 		});
 	yield 500;
 	clickDummyRow(composeWindow);
-	yield 500;
+	yield 1000;
 
 	toBox = getTextboxesFor(composeWindow, 'to').snapshotItem(1);
 	toBox.value = 'address2@test';
