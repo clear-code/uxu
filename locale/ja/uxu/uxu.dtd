@@ -31,6 +31,8 @@
 <!ENTITY mozunit.edit.label     "編集...">
 <!ENTITY mozunit.edit.accesskey "E">
 <!ENTITY mozunit.editThis.label     "このファイルを編集...">
+<!ENTITY mozunit.editThis.label.file "&quot;&#37;f&quot;を編集...">
+<!ENTITY mozunit.editThis.label.line "&quot;&#37;f&quot;の&#37;l行目を編集...">
 <!ENTITY mozunit.editThis.accesskey "E">
 <!ENTITY mozunit.saveReport.label     "結果を保存">
 <!ENTITY mozunit.saveReport.accesskey "V">

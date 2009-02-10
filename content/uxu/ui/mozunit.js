@@ -976,7 +976,15 @@ function updateContextMenu()
 {
 	updateEditItems();
 
-	if (getFocusedFile().path) {
+	var focused = getFocusedFile();
+	if (focused.path) {
+		var command = _('editThis');
+		command.setAttribute(
+			'label',
+			command.getAttribute(focused.line ? 'label-line' : 'label-file' )
+				.replace(/\%f/gi, focused.path.match(/[^\/\\]+$/))
+				.replace(/\%l/gi, focused.line)
+		);
 		_('editThis-menuitem').removeAttribute('hidden');
 		_('editThis-separator').removeAttribute('hidden');
 	}

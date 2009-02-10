@@ -31,6 +31,8 @@
 <!ENTITY mozunit.edit.label     "Edit...">
 <!ENTITY mozunit.edit.accesskey "E">
 <!ENTITY mozunit.editThis.label     "Edit this file...">
+<!ENTITY mozunit.editThis.label.file "Edit &quot;&#37;f&quot;...">
+<!ENTITY mozunit.editThis.label.line "Edit &quot;&#37;f&quot;, line at &#37;l...">
 <!ENTITY mozunit.editThis.accesskey "E">
 <!ENTITY mozunit.saveReport.label     "Save Report">
 <!ENTITY mozunit.saveReport.accesskey "V">
