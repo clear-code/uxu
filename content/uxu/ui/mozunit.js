@@ -1072,10 +1072,10 @@ function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine)
 	var argv = tokens.map(
 		function(word) {
 			return word.
-				replace('%l', aLineNumber).
-				replace('%c', aColumnNumber).
-				replace('%u', utils.getURLSpecFromFilePath(aFilePath)).
-				replace('%f', aFilePath);
+				replace(/\%l/gi, aLineNumber).
+				replace(/\%c/gi, aColumnNumber).
+				replace(/\%u/gi, utils.getURLSpecFromFilePath(aFilePath)).
+				replace(/\%f/gi, aFilePath);
 		});
 
 	var editorPath;
