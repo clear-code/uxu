@@ -1036,8 +1036,8 @@ function _equals(aCompare, aObject1, aObject2, aStrict, aAltTable)
 		return true;
 
 	aAltTable = _createAltTable(aAltTable);
-	aObject1 = _getAltTextForRecursiveReference(aObject1, aStrict, aAltTable);
-	aObject2 = _getAltTextForRecursiveReference(aObject2, aStrict, aAltTable);
+	aObject1 = _getAltTextForCircularReference(aObject1, aStrict, aAltTable);
+	aObject2 = _getAltTextForCircularReference(aObject2, aStrict, aAltTable);
 
 	if (isArray(aObject1) && isArray(aObject2)) {
 		var length = aObject1.length;
@@ -1066,8 +1066,8 @@ function _equalObject(aCompare, aObject1, aObject2, aStrict, aAltTable)
 	if (!aCompare(aObject1.__proto__, aObject2.__proto__))
 
 	aAltTable = _createAltTable(aAltTable);
-	aObject1 = _getAltTextForRecursiveReference(aObject1, aStrict, aAltTable);
-	aObject2 = _getAltTextForRecursiveReference(aObject2, aStrict, aAltTable);
+	aObject1 = _getAltTextForCircularReference(aObject1, aStrict, aAltTable);
+	aObject2 = _getAltTextForCircularReference(aObject2, aStrict, aAltTable);
 	if (typeof aObject1 == 'string' || typeof aObject2 == 'string') {
 		return _equals(aCompare, aObject1, aObject2, aStrict, aAltTable);
 	}
@@ -1108,11 +1108,11 @@ function _createAltTable(aAltTable)
 	return aAltTable || { objects : [], alt : [], count : [] };
 }
  
-var RECURSIVE_REFERENCE_MAX_COUNT = 100;
+var CIRCULAR_REFERENCE_MAX_COUNT = 500;
  
-function _getAltTextForRecursiveReference(aObject, aStrict, aAltTable)
+function _getAltTextForCircularReference(aObject, aStrict, aAltTable)
 {
-	if (RECURSIVE_REFERENCE_MAX_COUNT < 0 ||
+	if (CIRCULAR_REFERENCE_MAX_COUNT < 0 ||
 		typeof aObject != 'object') {
 		return aObject;
 	}
@@ -1127,7 +1127,7 @@ function _getAltTextForRecursiveReference(aObject, aStrict, aAltTable)
 		);
 		aAltTable.count.push(0);
 	}
-	else if (aAltTable.count[index]++ > RECURSIVE_REFERENCE_MAX_COUNT) {
+	else if (aAltTable.count[index]++ > CIRCULAR_REFERENCE_MAX_COUNT) {
 		aObject = aAltTable.alt[index];
 	}
 	return aObject;

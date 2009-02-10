@@ -545,7 +545,7 @@ function test_equals()
 	}
 	var instance1 = new MyClass(1);
 	var instance2 = new MyClass(2);
-	assert.utilsEquals(instance1, instance1, instance2, 'custom class, includes recursively reference');
+	assert.utilsEquals(instance1, instance1, instance2, 'custom class, includes circular reference');
 }
 
 function testNotify()
