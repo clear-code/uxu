@@ -397,21 +397,24 @@ function makeTestCaseFileOptions(aIsFolder)
 	};
 }
  
-function getFocusedPath() 
+function getFocusedFile() 
 {
+	var info = { path : null, line : 0 };
 	var node = document.popupNode;
 	if (node) {
-		var file = document.evaluate(
-				'ancestor-or-self::*[@role="testcase-report" or local-name()="listitem"]/@source',
+		node = document.evaluate(
+				'ancestor-or-self::*[(@role="testcase-report" or local-name()="listitem") and starts-with(@source, "file:")][1]',
 				node,
 				null,
-				XPathResult.STRING_TYPE,
+				XPathResult.FIRST_ORDERED_NODE_TYPE,
 				null
-			).stringValue;
-		if (file && file.indexOf('file:') > -1)
-			return utils.getFilePathFromURLSpec(file);
+			).singleNodeValue;
 	}
-	return null;
+	if (node) {
+		info.path = utils.getFilePathFromURLSpec(node.getAttribute('source'));
+		info.line = node.getAttribute('line') || 0;
+	}
+	return info;
 }
   
 /* runner */ 
@@ -619,8 +622,9 @@ function displayStackTraceLines(aLines, aListbox)
 		var item = document.createElement('listitem');
 		item.setAttribute('label', aLine);
 		item.setAttribute('crop', 'center');
-		var source = utils.unformatStackLine(aLine).source;
-		if (source) item.setAttribute('source', source);
+		var unformatted = utils.unformatStackLine(aLine);
+		if (unformatted.source) item.setAttribute('source', unformatted.source);
+		if (unformatted.line) item.setAttribute('line', unformatted.line);
 		aListbox.appendChild(item);
 	});
 }
@@ -972,7 +976,7 @@ function updateContextMenu()
 {
 	updateEditItems();
 
-	if (getFocusedPath()) {
+	if (getFocusedFile().path) {
 		_('editThis-menuitem').removeAttribute('hidden');
 		_('editThis-separator').removeAttribute('hidden');
 	}

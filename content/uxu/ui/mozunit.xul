@@ -84,7 +84,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 		<command id="quit" label="&mozunit.quit.label;" accesskey="&mozunit.quit.accesskey;"
 			oncommand="window.close();"/>
 		<command id="editThis" label="&mozunit.editThis.label;" accesskey="&mozunit.editThis.accesskey;"
-			oncommand="openInEditor(getFocusedPath());"/>
+			oncommand="var info = getFocusedFile(); openInEditor(info.path, info.line);"/>
 		<command id="cmd_copy" label="&mozunit.copy.label;" accesskey="&mozunit.copy.accesskey;"
 			oncommand="goDoCommand('cmd_copy')"/>
 		<command id="restartApplication" label="&mozunit.restartApplication.label;" accesskey="&mozunit.restartApplication.accesskey;"
