@@ -328,11 +328,10 @@ function _waitFrameLoad(aOwner, aLoadedFlag, aOnComplete, aCount)
 		_getFrameOwners(aOwner.contentWindow).forEach(function(aSubOwner) {
 			_waitFrameLoad(aSubOwner, aLoadedFlag, aOnComplete, aCount);
 		});
-		if (!aCount.count) {
-			aLoadedFlag.value = true;
-			if (aOnComplete && typeof aOnComplete == 'function')
-				aOnComplete();
-		}
+		if (aCount.count) return;
+		aLoadedFlag.value = true;
+		if (aOnComplete && typeof aOnComplete == 'function')
+			aOnComplete();
 	}, true);
 }
 
