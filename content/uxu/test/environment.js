@@ -351,6 +351,7 @@ function loadURI(aURI, aOptions)
 		if (win) b = win.gBrowser;
 	}
 	if (!b) return { value : true };
+	b.stop();
 	_waitFrameLoad(b, loadedFlag);
 	b.loadURI(aURI);
 
