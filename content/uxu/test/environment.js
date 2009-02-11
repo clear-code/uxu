@@ -343,6 +343,8 @@ function loadURIInTestFrame(aURI)
 // テスト用のFirefoxウィンドウで新しいタブを開く
 function addTab(aURI, aOptions)
 {
+	if (!aOptions) aOptions = {};
+
 	if (utils.product != 'Firefox') return { value : true, tab : null };
 
 	if (!aURI) aURI = 'about:blank';
