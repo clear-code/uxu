@@ -311,24 +311,48 @@ var tearDownTestWindow = closeTestWindow;
 
 // Firefox specific features
 
+function _getFrameOwners(aFrame)
+{
+	return Array.slice(aFrame.document.getElementsByTagName('frame'))
+		.concat(Array.slice(aFrame.document.getElementsByTagName('iframe')))
+		.concat(Array.slice(aFrame.document.getElementsByTagName('browser')))
+}
+
+function _waitFrameLoad(aOwner, aLoadedFlag, aOnComplete, aCount)
+{
+	if (!aCount) aCount = { count : 0 };
+	aCount.count++;
+	aOwner.addEventListener('load', function() {
+		aOwner.removeEventListener('load', arguments.callee, true);
+		aCount.count--;
+		_getFrameOwners(aOwner.contentWindow).forEach(function(aSubOwner) {
+			_waitFrameLoad(aSubOwner, aLoadedFlag, aOnComplete, aCount);
+		});
+		if (!aCount.count) {
+			aLoadedFlag.value = true;
+			if (aOnComplete && typeof aOnComplete == 'function')
+				aOnComplete();
+		}
+	}, true);
+}
+
 // テスト用のFirefoxウィンドウの現在のタブにURIを読み込む
 function loadURI(aURI, aOptions)
 {
+	if (!aOptions) aOptions = {};
+
 	if (!aURI) aURI = 'about:blank';
 	aURI = this.fixupIncompleteURI(aURI);
 
 	var loadedFlag = { value : false };
 
 	var b = this._testFrame;
-	if (!aOptions || !aOptions.inFrame) {
+	if (!aOptions.inFrame) {
 		var win = this.getTestWindow(aOptions);
 		if (win) b = win.gBrowser;
 	}
 	if (!b) return { value : true };
-	b.addEventListener('load', function() {
-		b.removeEventListener('load', arguments.callee, true);
-		loadedFlag.value = true;
-	}, true);
+	_waitFrameLoad(b, loadedFlag);
 	b.loadURI(aURI);
 
 	return loadedFlag;
@@ -356,14 +380,12 @@ function addTab(aURI, aOptions)
 	if (!win) return null;
 
 	var tab = win.gBrowser.addTab();
-	tab.linkedBrowser.addEventListener('load', function() {
-		tab.linkedBrowser.removeEventListener('load', arguments.callee, true);
-		loadedFlag.value = true;
+	_waitFrameLoad(tab.linkedBrowser, loadedFlag, function() {
 		loadedFlag.tab = tab;
 		if (aOptions.selected) {
 			win.gBrowser.selectedTab = tab;
 		}
-	}, true);
+	});
 	tab.linkedBrowser.loadURI(aURI);
 
 	return loadedFlag;
