@@ -80,6 +80,7 @@ function _getTestsFromSuite(aSuite)
 	var testObjects = { tests : [] };
 	var obj;
 
+	var name;
 	for (var i in aSuite)
 	{
 		obj = aSuite[i];
@@ -94,21 +95,17 @@ function _getTestsFromSuite(aSuite)
 			continue;
 
 		// declaration style
-		if (i.indexOf('warmUp') == 0 ||
-			obj.isWarmUp)
+		name = i.toLowerCase();
+		if (name == 'warmup' || obj.isWarmUp)
 			testObjects.warmUp = obj;
-		else if (i.indexOf('coolDown') == 0 ||
-			i.indexOf('warmDown') == 0 ||
-			obj.isCoolDown ||
-			obj.isWarmDown)
+		else if (name == 'cooldown' || name == 'warmdown' ||
+			obj.isCoolDown || obj.isWarmDown)
 			testObjects.coolDown = obj;
-		else if (i.indexOf('setUp') == 0 ||
-			obj.isSetUp)
+		else if (name == 'setup' || obj.isSetUp)
 			testObjects.setUp = obj;
-		else if (i.indexOf('tearDown') == 0 ||
-			obj.isTearDown)
+		else if (name == 'teardown' || obj.isTearDown)
 			testObjects.tearDown = obj;
-		else if (i.indexOf('test') == 0 ||
+		else if (name.indexOf('test') == 0 ||
 			obj.isTest || obj.description)
 			testObjects.tests.push(obj);
 	}

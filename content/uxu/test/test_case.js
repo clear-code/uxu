@@ -308,20 +308,20 @@ function setTests(aHash)
 	for (var desc in aHash)
 	{
 		if (typeof aHash[desc] != 'function') continue;
-		switch (desc)
+		switch (desc.toLowerCase())
 		{
-			case 'warmUp':
+			case 'warmup':
 				this.registerWarmUp(aHash[desc]);
 				break;
-			case 'coolDown':
-			case 'warmDown':
+			case 'cooldown':
+			case 'warmdown':
 				this.registerCoolDown(aHash[desc]);
 				break;
-			case 'setUp':
+			case 'setup':
 			case 'given':
 				this.registerSetUp(aHash[desc]);
 				break;
-			case 'tearDown':
+			case 'teardown':
 				this.registerTearDown(aHash[desc]);
 				break;
 			default:
