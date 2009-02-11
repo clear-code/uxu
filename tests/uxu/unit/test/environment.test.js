@@ -66,7 +66,7 @@ function test_loadURI()
 	yield Do(utils.loadURI('about:'));
 	assert.equals('about:', content.location.href);
 
-	yield Do(utils.loadURI('../../res/frameTest.html'));
+	yield Do(utils.loadURI('../../res/frameTest.html?'+Date.now()));
 	assert.contains('/res/frameTest.html', content.location.href);
 	assert.equals(3, content.frames.length);
 	assert.equals('about:logo', content.frames[0].location.href);
@@ -75,7 +75,7 @@ function test_loadURI()
 	assert.equals(1, body.length);
 	assert.notEquals(0, body[0].childNodes.length);
 
-	yield Do(utils.loadURI('../../res/frameTestInline.html'));
+	yield Do(utils.loadURI('../../res/frameTestInline.html?'+Date.now()));
 	assert.contains('/res/frameTestInline.html', content.location.href);
 	assert.equals(2, content.frames.length);
 	assert.equals('about:logo', content.frames[0].location.href);
