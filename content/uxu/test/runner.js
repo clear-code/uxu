@@ -95,17 +95,16 @@ function _getTestsFromSuite(aSuite)
 			continue;
 
 		// declaration style
-		name = i.toLowerCase();
-		if (name == 'warmup' || obj.isWarmUp)
+		if (/^warm[uU]p/.test(i) || obj.isWarmUp)
 			testObjects.warmUp = obj;
-		else if (name == 'cooldown' || name == 'warmdown' ||
+		else if (/^(warm[dD]own|cool[dD]own)/.test(i) ||
 			obj.isCoolDown || obj.isWarmDown)
 			testObjects.coolDown = obj;
-		else if (name == 'setup' || obj.isSetUp)
+		else if (/^set[uU]p/.test(i) || obj.isSetUp)
 			testObjects.setUp = obj;
-		else if (name == 'teardown' || obj.isTearDown)
+		else if (/^tear[dD]own/.test(i) || obj.isTearDown)
 			testObjects.tearDown = obj;
-		else if (name.indexOf('test') == 0 ||
+		else if (/^test/.test(i) ||
 			obj.isTest || obj.description)
 			testObjects.tests.push(obj);
 	}
