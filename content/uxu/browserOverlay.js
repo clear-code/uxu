@@ -10,7 +10,7 @@ function startUxU(aOptions) {
 		return;
 
 	}
-	window.openDialog('chrome://uxu/content/ui/uxu.xul', '_blank', 'chrome,all', aOptions);
+	window.openDialog('chrome://uxu/content/ui/uxu.xul', '_blank', 'chrome,all,dialog=no', aOptions);
 }
 
 function openUxUMozUnit() {
@@ -23,7 +23,7 @@ function openUxUMozUnit() {
 		return;
 	}
 
-	window.openDialog('chrome://uxu/content/ui/mozunit.xul', '_blank', 'chrome,all');
+	window.openDialog('chrome://uxu/content/ui/mozunit.xul', '_blank', 'chrome,all,dialog=no');
 }
 
 window.addEventListener('load', function() {

@@ -212,7 +212,7 @@ GlobalService.prototype = {
 				null,
 				arg.server ? 'chrome://uxu/content/ui/uxu.xul' : 'chrome://uxu/content/ui/mozunit.xul',
 				'_blank',
-				'chrome,all',
+				'chrome,all,dialog=no',
 				bag
 			);
 		}
