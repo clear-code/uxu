@@ -49,16 +49,25 @@ function test_addTab()
 	assert.equals('about:', tabs[1].linkedBrowser.currentURI.spec);
 	gBrowser.removeTab(tabs[1]);
 
-	yield Do(utils.addTab('../../res/frameTest.html', { selected : true }));
+	yield Do(utils.addTab('../../res/frameTest.html?'+Date.now(), { selected : true }));
 	assert.equals(2, tabs.length);
 	assert.equals(tabs[1], gBrowser.selectedTab);
 	assert.contains('/res/frameTest.html', tabs[1].linkedBrowser.currentURI.spec);
 	assert.equals(3, content.frames.length);
 	assert.equals('about:logo', content.frames[0].location.href);
+	assert.equals('about:logo', content.frames[1].location.href);
 	assert.contains('/links.html', content.frames[2].location.href);
-	var body = content.frames[2].document.getElementsByTagName('body');
-	assert.equals(1, body.length);
-	assert.notEquals(0, body[0].childNodes.length);
+	assert.notEquals(0, content.frames[2].document.links.length);
+	gBrowser.removeTab(tabs[1]);
+
+	yield Do(utils.addTab('../../res/frameTestInline.html?'+Date.now(), { selected : true }));
+	assert.equals(2, tabs.length);
+	assert.contains('/res/frameTestInline.html', tabs[1].linkedBrowser.currentURI.spec);
+	assert.equals(2, content.frames.length);
+	assert.equals('about:logo', content.frames[0].location.href);
+	assert.contains('/links.html', content.frames[1].location.href);
+	assert.notEquals(0, content.frames[1].document.links.length);
+	gBrowser.removeTab(tabs[1]);
 }
 
 function test_loadURI()
@@ -70,19 +79,16 @@ function test_loadURI()
 	assert.contains('/res/frameTest.html', content.location.href);
 	assert.equals(3, content.frames.length);
 	assert.equals('about:logo', content.frames[0].location.href);
+	assert.equals('about:logo', content.frames[1].location.href);
 	assert.contains('/links.html', content.frames[2].location.href);
-	var body = content.frames[2].document.getElementsByTagName('body');
-	assert.equals(1, body.length);
-	assert.notEquals(0, body[0].childNodes.length);
+	assert.notEquals(0, content.frames[2].document.links.length);
 
 	yield Do(utils.loadURI('../../res/frameTestInline.html?'+Date.now()));
 	assert.contains('/res/frameTestInline.html', content.location.href);
 	assert.equals(2, content.frames.length);
 	assert.equals('about:logo', content.frames[0].location.href);
 	assert.contains('/links.html', content.frames[1].location.href);
-	var body = content.frames[1].document.getElementsByTagName('body');
-	assert.equals(1, body.length);
-	assert.notEquals(0, body[0].childNodes.length);
+	assert.notEquals(0, content.frames[1].document.links.length);
 }
 
 function test_include()

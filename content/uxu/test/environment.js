@@ -311,28 +311,34 @@ var tearDownTestWindow = closeTestWindow;
 
 // Firefox specific features
 
-function _getFrameOwners(aFrame)
+function _waitBrowserLoad(aBrowser, aLoadedFlag, aOnComplete)
 {
-	return Array.slice(aFrame.document.getElementsByTagName('frame'))
-		.concat(Array.slice(aFrame.document.getElementsByTagName('iframe')))
-		.concat(Array.slice(aFrame.document.getElementsByTagName('browser')))
-}
-
-function _waitFrameLoad(aOwner, aLoadedFlag, aOnComplete, aCount)
-{
-	if (!aCount) aCount = { count : 0 };
-	aCount.count++;
-	aOwner.addEventListener('load', function() {
-		aOwner.removeEventListener('load', arguments.callee, true);
-		aCount.count--;
-		_getFrameOwners(aOwner.contentWindow).forEach(function(aSubOwner) {
-			_waitFrameLoad(aSubOwner, aLoadedFlag, aOnComplete, aCount);
-		});
-		if (aCount.count) return;
-		aLoadedFlag.value = true;
-		if (aOnComplete && typeof aOnComplete == 'function')
-			aOnComplete();
-	}, true);
+	var listener = {
+		onProgressChange : function() {},
+		onStateChange : function(aWebProgress, aRequest, aStateFlags, aStatus)
+		{
+			if (aStateFlags & Ci.nsIWebProgressListener.STATE_STOP &&
+				aStateFlags & Ci.nsIWebProgressListener.STATE_IS_NETWORK) {
+				aBrowser.removeProgressListener(listener);
+				aLoadedFlag.value = true;
+				if (aOnComplete && typeof aOnComplete == 'function')
+					aOnComplete();
+			}
+		},
+		onLocationChange : function() {},
+		onStatusChange : function() {},
+		onSecurityChange : function() {},
+		QueryInterface : function(aIID)
+		{
+			if (aIID.equals(Ci.nsIWebProgressListener) ||
+				aIID.equals(Ci.nsISupportsWeakReference) ||
+				aIID.equals(Ci.nsISupports)) {
+				return this;
+			}
+			throw Components.results.NS_NOINTERFACE;
+		}
+	};
+	aBrowser.addProgressListener(listener);
 }
 
 // テスト用のFirefoxウィンドウの現在のタブにURIを読み込む
@@ -352,7 +358,7 @@ function loadURI(aURI, aOptions)
 	}
 	if (!b) return { value : true };
 	b.stop();
-	_waitFrameLoad(b, loadedFlag);
+	_waitBrowserLoad(b, loadedFlag);
 	b.loadURI(aURI);
 
 	return loadedFlag;
@@ -380,7 +386,8 @@ function addTab(aURI, aOptions)
 	if (!win) return null;
 
 	var tab = win.gBrowser.addTab();
-	_waitFrameLoad(tab.linkedBrowser, loadedFlag, function() {
+	tab.linkedBrowser.stop();
+	_waitBrowserLoad(tab.linkedBrowser, loadedFlag, function() {
 		loadedFlag.tab = tab;
 		if (aOptions.selected) {
 			win.gBrowser.selectedTab = tab;
