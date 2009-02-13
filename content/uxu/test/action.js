@@ -96,8 +96,6 @@ function fireMouseEvent(aWindow, aOptions)
 				utils.sendMouseEvent('mouseup', x, y, button, detail, flags);
 				break;
 			case 'dblclick':
-				utils.sendMouseEvent('mousedown', x, y, button, detail, flags);
-				utils.sendMouseEvent('mouseup', x, y, button, detail, flags);
 			case 'click':
 			default:
 				utils.sendMouseEvent('mousedown', x, y, button, detail, flags);
