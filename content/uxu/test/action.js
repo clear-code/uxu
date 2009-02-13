@@ -81,26 +81,27 @@ function fireMouseEvent(aWindow, aOptions)
 
 		var button = (aOptions.button || 0);
 		var detail = (aOptions.detail || 1);
+		if (aOptions.type == 'dblclick') detail = 2;
 		if (aOptions.type == 'click' && detail == 2) aOptions.type = 'dblclick';
 		switch (aOptions.type)
 		{
 			case 'mousemove':
 			case 'mouseover':
-				utils.sendMouseEvent(aOptions.type, x, y, button, 1, flags);
+				utils.sendMouseEvent(aOptions.type, x, y, button, detail, flags);
 				break;
 			case 'mousedown':
-				utils.sendMouseEvent('mousedown', x, y, button, 1, flags);
+				utils.sendMouseEvent('mousedown', x, y, button, detail, flags);
 				break;
 			case 'mouseup':
-				utils.sendMouseEvent('mouseup', x, y, button, 1, flags);
+				utils.sendMouseEvent('mouseup', x, y, button, detail, flags);
 				break;
 			case 'dblclick':
-				utils.sendMouseEvent('mousedown', x, y, button, 1, flags);
-				utils.sendMouseEvent('mouseup', x, y, button, 1, flags);
+				utils.sendMouseEvent('mousedown', x, y, button, detail, flags);
+				utils.sendMouseEvent('mouseup', x, y, button, detail, flags);
 			case 'click':
 			default:
-				utils.sendMouseEvent('mousedown', x, y, button, 1, flags);
-				utils.sendMouseEvent('mouseup', x, y, button, 1, flags);
+				utils.sendMouseEvent('mousedown', x, y, button, detail, flags);
+				utils.sendMouseEvent('mouseup', x, y, button, detail, flags);
 				this._emulateClickOnXULElement(node, aOptions);
 				break;
 		}
