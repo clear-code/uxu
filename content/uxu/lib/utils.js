@@ -1184,6 +1184,61 @@ function _getAltTextForCircularReference(aObject, aStrict, aAltTable)
 	return aObject;
 }
   
+// DOMノード調査 
+	
+function isTargetInRange(aTarget, aRange) 
+{
+	var targetRangeCreated = false;
+	if (aTarget instanceof Ci.nsIDOMNode) {
+		try {
+			var range = aTarget.ownerDocument.createRange();
+			range.selectNode(aTarget);
+			aTarget = range;
+			targetRangeCreated = true;
+		}
+		catch(e) {
+		}
+	}
+	if (aTarget instanceof Ci.nsIDOMRange) {
+		try {
+			var inRange = (
+					aTarget.compareBoundaryPoints(Range.START_TO_START, aRange) >= 0 &&
+					aTarget.compareBoundaryPoints(Range.END_TO_END, aRange) <= 0
+				);
+			if (targetRangeCreated) aTarget.detach();
+			return inRange;
+		}
+		catch(e) {
+		}
+		return false;
+	}
+	return aRange.toString().indexOf(aTarget.toString()) > -1;
+}
+ 
+function isTargetInSelection(aTarget, aSelection) 
+{
+	for (var i = 0, maxi = aSelection.rangeCount; i < maxi; i++)
+	{
+		if (isTargetInRange(aTarget, aSelection.getRangeAt(i)))
+			return true;
+	}
+	return false;
+}
+ 
+function isTargetInSubTree(aTarget, aNode) 
+{
+	try {
+		var range = aNode.ownerDocument.createRange();
+		range.selectNode(aNode);
+		var result = isTargetInRange(aTarget, range);
+		range.detach();
+		return result;
+	}
+	catch(e) {
+	}
+	return false;
+}
+  
 // アプリケーション 
 	
 var product = (function() { 

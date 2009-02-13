@@ -480,7 +480,15 @@ function compare(aExpected, aOperator, aActual, aMessage)
 
 function contains(aExpected, aActual, aMessage)
 {
-	if ((utils.isArray(aActual) ? aActual : String(aActual) ).indexOf(aExpected) < 0)
+	if (
+		(aActual instanceof Ci.nsIDOMRange) ?
+			!utils.isTargetInRange(aExpected, aActual) :
+		(aActual instanceof Ci.nsISelection) ?
+			!utils.isTargetInSelection(aExpected, aActual) :
+		(aActual instanceof Ci.nsIDOMNode) ?
+			!utils.isTargetInSubTree(aExpected, aActual) :
+			(utils.isArray(aActual) ? aActual : String(aActual) ).indexOf(aExpected) < 0
+		) {
 		fail({
 		     	expectedRaw : appendTypeString(aExpected),
 		     	actualRaw   : appendTypeString(aActual),
@@ -489,12 +497,21 @@ function contains(aExpected, aActual, aMessage)
 		     },
 		     bundle.getString('assert_contains'),
 		     aMessage);
+	}
 }
 function contain(aExpected, aActual, aMessage) { this.contains(aExpected, aActual, aMessage); }
 
 function notContains(aExpected, aActual, aMessage)
 {
-	if ((utils.isArray(aActual) ? aActual : String(aActual) ).indexOf(aExpected) > -1)
+	if (
+		(aActual instanceof Ci.nsIDOMRange) ?
+			utils.isTargetInRange(aExpected, aActual) :
+		(aActual instanceof Ci.nsISelection) ?
+			utils.isTargetInSelection(aExpected, aActual) :
+		(aActual instanceof Ci.nsIDOMNode) ?
+			utils.isTargetInSubTree(aExpected, aActual) :
+			(utils.isArray(aActual) ? aActual : String(aActual) ).indexOf(aExpected) > -1
+		) {
 		fail({
 		     	expectedRaw : appendTypeString(aExpected),
 		     	actualRaw   : appendTypeString(aActual),
@@ -503,6 +520,7 @@ function notContains(aExpected, aActual, aMessage)
 		     },
 		     bundle.getString('assert_not_contains'),
 		     aMessage);
+	}
 }
 function notContain(aExpected, aActual, aMessage) { this.notContains(aExpected, aActual, aMessage); }
 

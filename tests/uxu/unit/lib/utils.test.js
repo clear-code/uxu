@@ -636,7 +636,94 @@ function testNotify()
 function test_include()
 {
 	var namespace = {};
-	utils.include('../../res/test.js', namespace, 'UTF-8');
+	utilsModule.include('../../res/test.js', namespace, 'UTF-8');
 	assert.isDefined(namespace.string);
 	assert.equals('文字列', namespace.string);
+}
+
+function $(aId)
+{
+	return content.document.getElementById(aId);
+}
+
+function test_isTargetInRange()
+{
+	yield Do(utils.loadURI('../../res/links.html'));
+
+	var range = content.document.createRange();
+	range.setStartBefore($('item4'));
+	range.setEndAfter($('item9'));
+
+	assert.isTrue(utilsModule.isTargetInRange($('link5'), range));
+	assert.isFalse(utilsModule.isTargetInRange($('link10'), range));
+
+	assert.isTrue(utilsModule.isTargetInRange('リンク5', range));
+	assert.isFalse(utilsModule.isTargetInRange('リンク10', range));
+
+	var targetRange = content.document.createRange();
+	targetRange.selectNode($('link5'));
+	assert.isTrue(utilsModule.isTargetInRange(targetRange, range));
+	targetRange.selectNode($('link10'));
+	assert.isFalse(utilsModule.isTargetInRange(targetRange, range));
+
+	range.detach();
+	targetRange.detach();
+}
+
+function test_isTargetInSelection()
+{
+	yield Do(utils.loadURI('../../res/links.html'));
+
+	var selection = content.getSelection();
+	selection.removeAllRanges();
+
+	var range1 = content.document.createRange();
+	range1.setStartBefore($('item4'));
+	range1.setEndAfter($('item9'));
+	selection.addRange(range1);
+
+	var range2 = content.document.createRange();
+	range2.setStartBefore($('item12'));
+	range2.setEndAfter($('item14'));
+	selection.addRange(range2);
+
+	assert.isTrue(utilsModule.isTargetInSelection($('link5'), selection));
+	assert.isFalse(utilsModule.isTargetInSelection($('link10'), selection));
+	assert.isTrue(utilsModule.isTargetInSelection($('link13'), selection));
+
+	assert.isTrue(utilsModule.isTargetInSelection('リンク5', selection));
+	assert.isFalse(utilsModule.isTargetInSelection('リンク10', selection));
+	assert.isTrue(utilsModule.isTargetInSelection('リンク13', selection));
+
+	var targetRange = content.document.createRange();
+	targetRange.selectNode($('link5'));
+	assert.isTrue(utilsModule.isTargetInSelection(targetRange, selection));
+	targetRange.selectNode($('link10'));
+	assert.isFalse(utilsModule.isTargetInSelection(targetRange, selection));
+	targetRange.selectNode($('link13'));
+	assert.isTrue(utilsModule.isTargetInSelection(targetRange, selection));
+
+	targetRange.detach();
+	selection.removeAllRanges();
+}
+
+function test_isTargetInSubTree()
+{
+	yield Do(utils.loadURI('../../res/links.html'));
+
+	var root = $('item5');
+
+	assert.isTrue(utilsModule.isTargetInSubTree($('link5'), root));
+	assert.isFalse(utilsModule.isTargetInSubTree($('link10'), root));
+
+	assert.isTrue(utilsModule.isTargetInSubTree('リンク5', root));
+	assert.isFalse(utilsModule.isTargetInSubTree('リンク10', root));
+
+	var targetRange = content.document.createRange();
+	targetRange.selectNode($('link5'));
+	assert.isTrue(utilsModule.isTargetInSubTree(targetRange, root));
+	targetRange.selectNode($('link10'));
+	assert.isFalse(utilsModule.isTargetInSubTree(targetRange, root));
+
+	targetRange.detach();
 }

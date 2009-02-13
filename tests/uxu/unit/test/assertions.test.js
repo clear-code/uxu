@@ -134,6 +134,188 @@ function testStrictlyEquals()
                              message]);
 }
 
+function testContains()
+{
+	var message = Math.random() * 65000;
+
+	// simple string
+	assert.assertSucceed(assertionsModule.contains,
+                         ['text', 'long text']);
+	assert.assertFailed(assertionsModule.contains,
+                        ['outside', 'long text', message]);
+	assert.assertFailed(assertionsModule.notContains,
+                        ['text', 'long text', message]);
+	assert.assertSucceed(assertionsModule.notContains,
+                         ['outside', 'long text']);
+
+	// array
+	var item = { value : true };
+	var array = ['string', 29, true, item];
+	assert.assertSucceed(assertionsModule.contains,
+                         ['string', array]);
+	assert.assertSucceed(assertionsModule.contains,
+                         [29, array]);
+	assert.assertSucceed(assertionsModule.contains,
+                         [true, array]);
+	assert.assertSucceed(assertionsModule.contains,
+                         [item, array]);
+	assert.assertFailed(assertionsModule.contains,
+                        ['outside', array, message]);
+	assert.assertFailed(assertionsModule.notContains,
+                         ['string', array, message]);
+	assert.assertFailed(assertionsModule.notContains,
+                         [29, array, message]);
+	assert.assertFailed(assertionsModule.notContains,
+                         [true, array, message]);
+	assert.assertFailed(assertionsModule.notContains,
+                         [item, array, message]);
+	assert.assertSucceed(assertionsModule.notContains,
+                         ['outside', array]);
+
+
+	yield Do(utils.loadURI('../../res/links.html'));
+
+	function $(aId)
+	{
+		return content.document.getElementById(aId);
+	}
+
+	var targetRange;
+
+	// range
+	var range = content.document.createRange();
+	range.setStartBefore($('item4'));
+	range.setEndAfter($('item9'));
+
+	assert.assertSucceed(assertionsModule.contains,
+                         [$('link5'), range]);
+	assert.assertFailed(assertionsModule.contains,
+                        [$('link10'), range, message]);
+	assert.assertFailed(assertionsModule.notContains,
+                        [$('link5'), range, message]);
+	assert.assertSucceed(assertionsModule.notContains,
+                         [$('link10'), range]);
+
+	assert.assertSucceed(assertionsModule.contains,
+                         ['リンク5', range]);
+	assert.assertFailed(assertionsModule.contains,
+                        ['リンク10', range, message]);
+	assert.assertFailed(assertionsModule.notContains,
+                        ['リンク5', range, message]);
+	assert.assertSucceed(assertionsModule.notContains,
+                         ['リンク10', range]);
+
+	targetRange = content.document.createRange();
+	targetRange.selectNode($('link5'));
+	assert.assertSucceed(assertionsModule.contains,
+                         [targetRange, range]);
+	assert.assertFailed(assertionsModule.notContains,
+                        [targetRange, range, message]);
+	targetRange.selectNode($('link10'));
+	assert.assertFailed(assertionsModule.contains,
+                        [targetRange, range, message]);
+	assert.assertSucceed(assertionsModule.notContains,
+                         [targetRange, range]);
+
+	range.detach();
+	targetRange.detach();
+
+	// selection
+	var selection = content.getSelection();
+	selection.removeAllRanges();
+
+	var range1 = content.document.createRange();
+	range1.setStartBefore($('item4'));
+	range1.setEndAfter($('item9'));
+	selection.addRange(range1);
+
+	var range2 = content.document.createRange();
+	range2.setStartBefore($('item12'));
+	range2.setEndAfter($('item14'));
+	selection.addRange(range2);
+
+	assert.assertSucceed(assertionsModule.contains,
+                         [$('link5'), selection]);
+	assert.assertFailed(assertionsModule.contains,
+                        [$('link10'), selection, message]);
+	assert.assertSucceed(assertionsModule.contains,
+                         [$('link13'), selection]);
+	assert.assertFailed(assertionsModule.notContains,
+                        [$('link5'), selection, message]);
+	assert.assertSucceed(assertionsModule.notContains,
+                         [$('link10'), selection]);
+	assert.assertFailed(assertionsModule.notContains,
+                        [$('link13'), selection, message]);
+
+	assert.assertSucceed(assertionsModule.contains,
+                         ['リンク5', selection]);
+	assert.assertFailed(assertionsModule.contains,
+                        ['リンク10', selection, message]);
+	assert.assertSucceed(assertionsModule.contains,
+                         ['リンク13', selection]);
+	assert.assertFailed(assertionsModule.notContains,
+                        ['リンク5', selection, message]);
+	assert.assertSucceed(assertionsModule.notContains,
+                         ['リンク10', selection]);
+	assert.assertFailed(assertionsModule.notContains,
+                        ['リンク13', selection, message]);
+
+	targetRange = content.document.createRange();
+	targetRange.selectNode($('link5'));
+	assert.assertSucceed(assertionsModule.contains,
+                         [targetRange, selection]);
+	assert.assertFailed(assertionsModule.notContains,
+                        [targetRange, selection, message]);
+	targetRange.selectNode($('link10'));
+	assert.assertFailed(assertionsModule.contains,
+                        [targetRange, selection, message]);
+	assert.assertSucceed(assertionsModule.notContains,
+                         [targetRange, selection]);
+	targetRange.selectNode($('link13'));
+	assert.assertSucceed(assertionsModule.contains,
+                         [targetRange, selection]);
+	assert.assertFailed(assertionsModule.notContains,
+                        [targetRange, selection, message]);
+
+	targetRange.detach();
+	selection.removeAllRanges();
+
+	// sub tree
+	var root = $('item5');
+
+	assert.assertSucceed(assertionsModule.contains,
+                         [$('link5'), root]);
+	assert.assertFailed(assertionsModule.contains,
+                        [$('link10'), root, message]);
+	assert.assertFailed(assertionsModule.notContains,
+                        [$('link5'), root, message]);
+	assert.assertSucceed(assertionsModule.notContains,
+                         [$('link10'), root]);
+
+	assert.assertSucceed(assertionsModule.contains,
+                         ['リンク5', root]);
+	assert.assertFailed(assertionsModule.contains,
+                        ['リンク10', root, message]);
+	assert.assertFailed(assertionsModule.notContains,
+                        ['リンク5', root, message]);
+	assert.assertSucceed(assertionsModule.notContains,
+                         ['リンク10', root]);
+
+	targetRange = content.document.createRange();
+	targetRange.selectNode($('link5'));
+	assert.assertSucceed(assertionsModule.contains,
+                         [targetRange, root]);
+	assert.assertFailed(assertionsModule.notContains,
+                        [targetRange, root, message]);
+	targetRange.selectNode($('link10'));
+	assert.assertFailed(assertionsModule.contains,
+                        [targetRange, root, message]);
+	assert.assertSucceed(assertionsModule.notContains,
+                         [targetRange, root]);
+
+	targetRange.detach();
+}
+
 function testBoolean()
 {
 	var message = Math.random() * 65000;
