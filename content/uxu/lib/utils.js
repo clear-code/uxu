@@ -578,12 +578,21 @@ function clearPref(aKey)
 	}
 }
  
-function loadPrefs(aFile) 
+function loadPrefs(aFile, aHash) 
 {
+	if (aHash && typeof aHash != 'object') aHash = null;
+	var result = {};
+
 	var _this = this;
 	function _setPref(aName, aValue)
 	{
-		_this.setPref(aName, aValue);
+		if (aHash) {
+			aHash[aName] = aValue
+		}
+		else {
+			_this.setPref(aName, aValue);
+		}
+		result[aName] = aValue
 	}
 
 	var sandbox = {
@@ -597,6 +606,8 @@ function loadPrefs(aFile)
 	}
 	catch(e) {
 	}
+
+	return result;
 }
   
 // エンコーディング変換 

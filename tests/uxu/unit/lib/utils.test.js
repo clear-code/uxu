@@ -277,21 +277,53 @@ function test_setAndClearPref()
 
 function test_loadPrefs()
 {
+	var hash;
+	var result;
+
+	hash = {};
+	result = utilsModule.loadPrefs('../../res/default.js', hash);
+	assert.equals(true, hash['uxu.test.default.pref.bool']);
+	assert.equals(29, hash['uxu.test.default.pref.int']);
+	assert.equals('string', hash['uxu.test.default.pref.string']);
+	assert.equals(hash, result);
+
+	hash = {};
+	result = utilsModule.loadPrefs('../../res/user.js', hash);
+	assert.equals(true, hash['uxu.test.user.pref.bool']);
+	assert.equals(29, hash['uxu.test.user.pref.int']);
+	assert.equals('string', hash['uxu.test.user.pref.string']);
+	assert.equals(hash, result);
+
+
 	assert.isNull(utils.getPref('uxu.test.default.pref.bool'));
 	assert.isNull(utils.getPref('uxu.test.default.pref.int'));
 	assert.isNull(utils.getPref('uxu.test.default.pref.string'));
-	utilsModule.loadPrefs('../../res/default.js');
+
+	result = utilsModule.loadPrefs('../../res/default.js');
 	assert.isTrue(utils.getPref('uxu.test.default.pref.bool'));
 	assert.equals(29, utils.getPref('uxu.test.default.pref.int'));
 	assert.equals('string', utils.getPref('uxu.test.default.pref.string'));
+	assert.equals(
+		{ 'uxu.test.default.pref.bool' : true,
+		  'uxu.test.default.pref.int' : 29,
+		  'uxu.test.default.pref.string' : 'string' },
+		result
+	);
 
 	assert.isNull(utils.getPref('uxu.test.user.pref.bool'));
 	assert.isNull(utils.getPref('uxu.test.user.pref.int'));
 	assert.isNull(utils.getPref('uxu.test.user.pref.string'));
-	utilsModule.loadPrefs('../../res/user.js');
+
+	result = utilsModule.loadPrefs('../../res/user.js');
 	assert.isTrue(utils.getPref('uxu.test.user.pref.bool'));
 	assert.equals(29, utils.getPref('uxu.test.user.pref.int'));
 	assert.equals('string', utils.getPref('uxu.test.user.pref.string'));
+	assert.equals(
+		{ 'uxu.test.user.pref.bool' : true,
+		  'uxu.test.user.pref.int' : 29,
+		  'uxu.test.user.pref.string' : 'string' },
+		result
+	);
 }
 
 function test_convertEncoding()
