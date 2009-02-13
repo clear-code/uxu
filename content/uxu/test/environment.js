@@ -313,16 +313,22 @@ var tearDownTestWindow = closeTestWindow;
 
 function _waitBrowserLoad(aBrowser, aLoadedFlag, aOnComplete)
 {
+	if (aBrowser.localName == 'tabbrowser') {
+		aBrowser = aBrowser.selectedTab.linkedBrowser;
+	}
 	var listener = {
+		started : false,
 		onProgressChange : function() {},
 		onStateChange : function(aWebProgress, aRequest, aStateFlags, aStatus)
 		{
-			if (aStateFlags & Ci.nsIWebProgressListener.STATE_STOP &&
+			if (aStateFlags & Ci.nsIWebProgressListener.STATE_START &&
 				aStateFlags & Ci.nsIWebProgressListener.STATE_IS_NETWORK) {
-				aBrowser.removeProgressListener(listener);
-				aLoadedFlag.value = true;
-				if (aOnComplete && typeof aOnComplete == 'function')
-					aOnComplete();
+				this.started = true;
+			}
+			if (this.started &&
+				aStateFlags & Ci.nsIWebProgressListener.STATE_STOP &&
+				aStateFlags & Ci.nsIWebProgressListener.STATE_IS_NETWORK) {
+				this.onFinish();
 			}
 		},
 		onLocationChange : function() {},
@@ -336,9 +342,19 @@ function _waitBrowserLoad(aBrowser, aLoadedFlag, aOnComplete)
 				return this;
 			}
 			throw Components.results.NS_NOINTERFACE;
+		},
+		onFinish : function()
+		{
+			aBrowser.removeProgressListener(listener);
+			aLoadedFlag.value = true;
+			if (aOnComplete && typeof aOnComplete == 'function')
+				aOnComplete();
 		}
 	};
 	aBrowser.addProgressListener(listener);
+	window.setTimeout(function() {
+		if (!listener.started) listener.onFinish();
+	}, 0);
 }
 
 // テスト用のFirefoxウィンドウの現在のタブにURIを読み込む
@@ -358,8 +374,10 @@ function loadURI(aURI, aOptions)
 	}
 	if (!b) return { value : true };
 	b.stop();
-	_waitBrowserLoad(b, loadedFlag);
-	b.loadURI(aURI);
+	window.setTimeout(function() {
+		_waitBrowserLoad(b, loadedFlag);
+		b.loadURI(aURI);
+	}, 0);
 
 	return loadedFlag;
 };
@@ -387,13 +405,15 @@ function addTab(aURI, aOptions)
 
 	var tab = win.gBrowser.addTab();
 	tab.linkedBrowser.stop();
-	_waitBrowserLoad(tab.linkedBrowser, loadedFlag, function() {
-		loadedFlag.tab = tab;
-		if (aOptions.selected) {
-			win.gBrowser.selectedTab = tab;
-		}
-	});
-	tab.linkedBrowser.loadURI(aURI);
+	window.setTimeout(function() {
+		_waitBrowserLoad(tab.linkedBrowser, loadedFlag, function() {
+			loadedFlag.tab = tab;
+			if (aOptions.selected) {
+				win.gBrowser.selectedTab = tab;
+			}
+		});
+		tab.linkedBrowser.loadURI(aURI);
+	}, 0);
 
 	return loadedFlag;
 };
