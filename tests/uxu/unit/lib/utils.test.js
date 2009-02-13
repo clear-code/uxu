@@ -661,9 +661,12 @@ function test_isTargetInRange()
 	assert.isFalse(utilsModule.isTargetInRange('リンク10', range));
 
 	var targetRange = content.document.createRange();
-	targetRange.selectNode($('link5'));
+	targetRange.selectNodeContents($('em5'));
+	targetRange.setEnd($('em5').lastChild, 3);
+	targetRange.setEnd(targetRange.endContainer, targetRange.endOffset-1);
 	assert.isTrue(utilsModule.isTargetInRange(targetRange, range));
-	targetRange.selectNode($('link10'));
+	targetRange.selectNodeContents($('em10'));
+	targetRange.setEnd($('em10').lastChild, 3);
 	assert.isFalse(utilsModule.isTargetInRange(targetRange, range));
 
 	range.detach();
@@ -696,11 +699,14 @@ function test_isTargetInSelection()
 	assert.isTrue(utilsModule.isTargetInSelection('リンク13', selection));
 
 	var targetRange = content.document.createRange();
-	targetRange.selectNode($('link5'));
+	targetRange.selectNodeContents($('em5'));
+	targetRange.setEnd($('em5').lastChild, 3);
 	assert.isTrue(utilsModule.isTargetInSelection(targetRange, selection));
-	targetRange.selectNode($('link10'));
+	targetRange.selectNodeContents($('em10'));
+	targetRange.setEnd($('em10').lastChild, 3);
 	assert.isFalse(utilsModule.isTargetInSelection(targetRange, selection));
-	targetRange.selectNode($('link13'));
+	targetRange.selectNodeContents($('em13'));
+	targetRange.setEnd($('em13').lastChild, 3);
 	assert.isTrue(utilsModule.isTargetInSelection(targetRange, selection));
 
 	targetRange.detach();
@@ -720,9 +726,11 @@ function test_isTargetInSubTree()
 	assert.isFalse(utilsModule.isTargetInSubTree('リンク10', root));
 
 	var targetRange = content.document.createRange();
-	targetRange.selectNode($('link5'));
+	targetRange.selectNodeContents($('em5'));
+	targetRange.setEnd($('em5').lastChild, 3);
 	assert.isTrue(utilsModule.isTargetInSubTree(targetRange, root));
-	targetRange.selectNode($('link10'));
+	targetRange.selectNodeContents($('em10'));
+	targetRange.setEnd($('em10').lastChild, 3);
 	assert.isFalse(utilsModule.isTargetInSubTree(targetRange, root));
 
 	targetRange.detach();

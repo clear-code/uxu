@@ -206,12 +206,14 @@ function testContains()
                          ['リンク10', range]);
 
 	targetRange = content.document.createRange();
-	targetRange.selectNode($('link5'));
+	targetRange.selectNode($('em5'));
+	targetRange.setEnd($('em5').lastChild, 3);
 	assert.assertSucceed(assertionsModule.contains,
                          [targetRange, range]);
 	assert.assertFailed(assertionsModule.notContains,
                         [targetRange, range, message]);
-	targetRange.selectNode($('link10'));
+	targetRange.selectNode($('em10'));
+	targetRange.setEnd($('em10').lastChild, 3);
 	assert.assertFailed(assertionsModule.contains,
                         [targetRange, range, message]);
 	assert.assertSucceed(assertionsModule.notContains,
@@ -261,17 +263,20 @@ function testContains()
                         ['リンク13', selection, message]);
 
 	targetRange = content.document.createRange();
-	targetRange.selectNode($('link5'));
+	targetRange.selectNode($('em5'));
+	targetRange.setEnd($('em5').lastChild, 3);
 	assert.assertSucceed(assertionsModule.contains,
                          [targetRange, selection]);
 	assert.assertFailed(assertionsModule.notContains,
                         [targetRange, selection, message]);
-	targetRange.selectNode($('link10'));
+	targetRange.selectNode($('em10'));
+	targetRange.setEnd($('em10').lastChild, 3);
 	assert.assertFailed(assertionsModule.contains,
                         [targetRange, selection, message]);
 	assert.assertSucceed(assertionsModule.notContains,
                          [targetRange, selection]);
-	targetRange.selectNode($('link13'));
+	targetRange.selectNode($('em13'));
+	targetRange.setEnd($('em13').lastChild, 3);
 	assert.assertSucceed(assertionsModule.contains,
                          [targetRange, selection]);
 	assert.assertFailed(assertionsModule.notContains,
@@ -302,12 +307,14 @@ function testContains()
                          ['リンク10', root]);
 
 	targetRange = content.document.createRange();
-	targetRange.selectNode($('link5'));
+	targetRange.selectNode($('em5'));
+	targetRange.setEnd($('em5').lastChild, 3);
 	assert.assertSucceed(assertionsModule.contains,
                          [targetRange, root]);
 	assert.assertFailed(assertionsModule.notContains,
                         [targetRange, root, message]);
-	targetRange.selectNode($('link10'));
+	targetRange.selectNode($('em10'));
+	targetRange.setEnd($('em10').lastChild, 3);
 	assert.assertFailed(assertionsModule.contains,
                         [targetRange, root, message]);
 	assert.assertSucceed(assertionsModule.notContains,
