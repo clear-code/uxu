@@ -735,3 +735,14 @@ function test_isTargetInSubTree()
 
 	targetRange.detach();
 }
+
+function test_setAndGetClipBoard()
+{
+	var random = Math.random() * 65000;
+	utils.setClipBoard(random);
+	assert.equals(random, utilsModule.getClipBoard());
+
+	random = Math.random() * 65000;
+	utilsModule.setClipBoard(random);
+	assert.equals(random, utils.getClipBoard());
+}

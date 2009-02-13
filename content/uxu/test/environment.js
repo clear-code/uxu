@@ -582,6 +582,8 @@ getPref
 setPref
 clearPref
 loadPrefs
+getClipBoard
+setClipBoard
 UTF8ToUnicode
 UnicodeToUTF8
 UTF8ToUCS2

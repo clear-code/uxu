@@ -98,3 +98,14 @@ function test_include()
 	assert.isDefined(namespace.string);
 	assert.equals('文字列', namespace.string);
 }
+
+function test_setAndGetClipBoard()
+{
+	var random = Math.random() * 65000;
+	utils.setClipBoard(random);
+	assert.equals(random, utils.getClipBoard());
+
+	random = Math.random() * 65000;
+	utils.setClipBoard(random);
+	assert.equals(random, utils.getClipBoard());
+}

@@ -610,6 +610,41 @@ function loadPrefs(aFile, aHash)
 	return result;
 }
   
+// クリップボード 
+var Clipboard = Cc['@mozilla.org/widget/clipboard;1'].getService(Ci.nsIClipboard)
+	
+function getClipBoard() 
+{
+	var string = '';
+
+	var trans = Cc['@mozilla.org/widget/transferable;1'].createInstance(Ci.nsITransferable);
+	trans.addDataFlavor('text/unicode');
+	try {
+		Clipboard.getData(trans, Clipboard.kSelectionClipboard);
+	}
+	catch(ex) {
+		Clipboard.getData(trans, Clipboard.kGlobalClipboard);
+	}
+
+	var data       = {},
+		dataLength = {};
+	trans.getTransferData('text/unicode', data, dataLength);
+
+	if (!data) return string;
+
+	data = data.value.QueryInterface(Ci.nsISupportsString);
+	string = data.data.substring(0, dataLength.value / 2);
+
+	return string;
+}
+ 
+function setClipBoard(aString) 
+{
+	Cc['@mozilla.org/widget/clipboardhelper;1']
+		.getService(Ci.nsIClipboardHelper)
+		.copyString(aString);
+}
+  
 // エンコーディング変換 
 var UCONV = Cc['@mozilla.org/intl/scriptableunicodeconverter']
 		.getService(Ci.nsIScriptableUnicodeConverter);
