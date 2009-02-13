@@ -522,23 +522,9 @@ function cleanUpModifiedPrefs()
 
 
 
-var loader = Cc['@mozilla.org/moz/jssubscript-loader;1']
-		.getService(Ci.mozIJSSubScriptLoader);
-
 function include(aSource, aEnvironment, aEncoding)
 {
-	aSource = this.fixupIncompleteURI(aSource);
-	var encoding = aEncoding || this.getPref('extensions.uxu.defaultEncoding')
-	var script = this.readFrom(aSource, encoding) || '';
-	var env = aEnvironment || this.environment;
-	env._lastEvaluatedScript = script;
-	loader.loadSubScript(
-		'chrome://uxu/content/lib/subScriptRunner.js?includeSource='+
-			encodeURIComponent(aSource)+
-			';encoding='+encoding,
-		env
-	);
-	return script;
+	return utils.include.call(this, aSource, (aEnvironment || this.environment), aEncoding);
 };
 
 
@@ -568,6 +554,7 @@ stopScheduledRemove
 getPref
 setPref
 clearPref
+loadPrefs
 UTF8ToUnicode
 UnicodeToUTF8
 UTF8ToUCS2

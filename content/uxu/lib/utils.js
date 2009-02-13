@@ -326,7 +326,26 @@ function stopScheduledRemove()
 	window.clearTimeout(this.scheduledRemoveTimer);
 	this.scheduledRemoveTimer = null;
 }
-   
+  
+var loader = Cc['@mozilla.org/moz/jssubscript-loader;1'] 
+		.getService(Ci.mozIJSSubScriptLoader);
+
+function include(aSource, aEnvironment, aEncoding)
+{
+	aSource = this.fixupIncompleteURI(aSource);
+	var encoding = aEncoding || this.getPref('extensions.uxu.defaultEncoding')
+	var script = this.readFrom(aSource, encoding) || '';
+	var env = aEnvironment || {};
+	env._lastEvaluatedScript = script;
+	loader.loadSubScript(
+		'chrome://uxu/content/lib/subScriptRunner.js?includeSource='+
+			encodeURIComponent(aSource)+
+			';encoding='+encoding,
+		env
+	);
+	return script;
+};
+  
 // エラー・スタックトレース整形 
 	
 function normalizeError(e) 
@@ -554,6 +573,27 @@ function clearPref(aKey)
 		this.backupPrefs[aKey] = this.getPref(aKey);
 	try {
 		Pref.clearUserPref(aKey);
+	}
+	catch(e) {
+	}
+}
+ 
+function loadPrefs(aFile) 
+{
+	var _this = this;
+	function _setPref(aName, aValue)
+	{
+		_this.setPref(aName, aValue);
+	}
+
+	var sandbox = {
+			pref      : _setPref,
+			user_pref : _setPref
+		};
+
+	try {
+		aFile = this.normalizeToFile(aFile);
+		this.include(this.getURLSpecFromFile(aFile), sandbox, 'UTF-8');
 	}
 	catch(e) {
 	}
@@ -1108,9 +1148,9 @@ function _createAltTable(aAltTable)
 	return aAltTable || { objects : [], alt : [], count : [] };
 }
  
-var CIRCULAR_REFERENCE_MAX_COUNT = 500;
+var CIRCULAR_REFERENCE_MAX_COUNT = 500; 
  
-function _getAltTextForCircularReference(aObject, aStrict, aAltTable)
+function _getAltTextForCircularReference(aObject, aStrict, aAltTable) 
 {
 	if (CIRCULAR_REFERENCE_MAX_COUNT < 0 ||
 		typeof aObject != 'object') {

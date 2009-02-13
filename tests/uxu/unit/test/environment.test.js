@@ -85,3 +85,10 @@ function test_loadURI()
 	assert.notEquals(0, body[0].childNodes.length);
 }
 
+function test_include()
+{
+	var namespace = {};
+	utils.include('../../res/test.js', namespace, 'UTF-8');
+	assert.isDefined(namespace.string);
+	assert.equals('文字列', namespace.string);
+}

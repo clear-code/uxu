@@ -60,9 +60,16 @@ function tearDown()
 {
 	if (tempFile.exists())
 		tempFile.remove(true);
-	Pref.clearUserPref(prefKeyRoot+'bool', true);
-	Pref.clearUserPref(prefKeyRoot+'int', 1);
-	Pref.clearUserPref(prefKeyRoot+'string', 'foobar');
+	utils.clearPref(prefKeyRoot+'bool', true);
+	utils.clearPref(prefKeyRoot+'int', 1);
+	utils.clearPref(prefKeyRoot+'string', 'foobar');
+
+	utils.clearPref('uxu.test.default.pref.bool');
+	utils.clearPref('uxu.test.default.pref.int');
+	utils.clearPref('uxu.test.default.pref.string');
+	utils.clearPref('uxu.test.user.pref.bool');
+	utils.clearPref('uxu.test.user.pref.int');
+	utils.clearPref('uxu.test.user.pref.string');
 }
 
 
@@ -266,6 +273,25 @@ function test_setAndClearPref()
 	assert.equals('string', value);
 	utilsModule.clearPref(key);
 	assert.isNull(utils.getPref(key));
+}
+
+function test_loadPrefs()
+{
+	assert.isNull(utils.getPref('uxu.test.default.pref.bool'));
+	assert.isNull(utils.getPref('uxu.test.default.pref.int'));
+	assert.isNull(utils.getPref('uxu.test.default.pref.string'));
+	utilsModule.loadPrefs('../../res/default.js');
+	assert.isTrue(utils.getPref('uxu.test.default.pref.bool'));
+	assert.equals(29, utils.getPref('uxu.test.default.pref.int'));
+	assert.equals('string', utils.getPref('uxu.test.default.pref.string'));
+
+	assert.isNull(utils.getPref('uxu.test.user.pref.bool'));
+	assert.isNull(utils.getPref('uxu.test.user.pref.int'));
+	assert.isNull(utils.getPref('uxu.test.user.pref.string'));
+	utilsModule.loadPrefs('../../res/user.js');
+	assert.isTrue(utils.getPref('uxu.test.user.pref.bool'));
+	assert.equals(29, utils.getPref('uxu.test.user.pref.int'));
+	assert.equals('string', utils.getPref('uxu.test.user.pref.string'));
 }
 
 function test_convertEncoding()
@@ -573,4 +599,12 @@ function testNotify()
 	assert.equals(window, observer.lastSubject);
 	assert.equals('uxu:test-topic', observer.lastTopic);
 	assert.equals('data', observer.lastData);
+}
+
+function test_include()
+{
+	var namespace = {};
+	utils.include('../../res/test.js', namespace, 'UTF-8');
+	assert.isDefined(namespace.string);
+	assert.equals('文字列', namespace.string);
 }
