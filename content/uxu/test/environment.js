@@ -1,4 +1,4 @@
-// -*- indent-tabs-mode: t; tab-width: 4 -*-
+// -*- indent-tabs-mode: t; tab-width: 4 -*- 
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -13,16 +13,15 @@ var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var assertions  = test_module.require('package', 'assertions');
 var action      = test_module.require('package', 'action');
 
-var server_module = new ModuleManager(['chrome://uxu/content/server']); 
+var server_module = new ModuleManager(['chrome://uxu/content/server']);
 
-var mail_module = new ModuleManager(['chrome://uxu/content/mail']); 
-
-
-var key = 'uxu-test-window-id';
-
-var defaultURI, defaultType, defaultFlags, defaultName;
-
-function constructor(aEnvironment, aURI, aBrowser)
+var mail_module = new ModuleManager(['chrome://uxu/content/mail']);
+	
+var key = 'uxu-test-window-id'; 
+ 
+var defaultURI, defaultType, defaultFlags, defaultName; 
+ 
+function constructor(aEnvironment, aURI, aBrowser) 
 {
 	this.initListeners();
 
@@ -74,22 +73,22 @@ function constructor(aEnvironment, aURI, aBrowser)
 	this.attachActions();
 	this.attachServerUtils();
 }
-
-function onFinish()
-{
-	this.destroy();
-}
-
-function destroy()
+	
+function destroy() 
 {
 	this.fireEvent('Destroy', null);
 	this.removeAllListeners();
 }
-
-function initVariables()
+	
+function onFinish() 
 {
-	// __proto__ã§å®šç¾©ã•ã‚ŒãŸã‚²ãƒƒã‚¿ã¨åŒåã®å¤‰æ•°ã‚’å®šç¾©ã§ããªããªã£ã¦ã—ã¾ã†ãŸã‚
-	// ã‚²ãƒƒã‚¿ã¨ã‚»ãƒƒã‚¿ã‚’è‡ªå‹•è¨­å®šã™ã‚‹ã‚ˆã†ã«ã—ã¦å•é¡Œã‚’å›é¿
+	this.destroy();
+}
+  
+function initVariables() 
+{
+	// __proto__‚Å’è‹`‚³‚ê‚½ƒQƒbƒ^‚Æ“¯–¼‚Ì•Ï”‚ğ’è‹`‚Å‚«‚È‚­‚È‚Á‚Ä‚µ‚Ü‚¤‚½‚ß
+	// ƒQƒbƒ^‚ÆƒZƒbƒ^‚ğ©“®İ’è‚·‚é‚æ‚¤‚É‚µ‚Ä–â‘è‚ğ‰ñ”ğ
 	var _this = this;
 	'gBrowser,contentWindow,content,contentDocument'.split(',')
 		.forEach(function(aProperty) {
@@ -108,8 +107,8 @@ function initVariables()
 	this.environment.Cc = Cc;
 	this.environment.Ci = Ci;
 }
-
-function attachFrames()
+ 
+function attachFrames() 
 {
 	this.__defineGetter__('gBrowser', function() {
 		return this.getTestFrameOwner();
@@ -124,8 +123,8 @@ function attachFrames()
 		return this.getTestFrameOwner().contentDocument;
 	});
 }
-
-function attachAssertions()
+ 
+function attachAssertions() 
 {
 	this.assert = {};
 	this.assert.__proto__ = assertions;
@@ -144,8 +143,8 @@ function attachAssertions()
 	this.ok = function() { this.assert.ok.apply(this, arguments); };
 	this.is = function() { this.assert.is.apply(this, arguments); };
 }
-
-function attachActions()
+ 
+function attachActions() 
 {
 	this.action = {};
 	this.action.__proto__ = action;
@@ -160,8 +159,8 @@ function attachActions()
 		})(aMethod, this, this.action, 'action');
 	}
 }
-
-function attachGMUtils()
+ 
+function attachGMUtils() 
 {
 	var GMUtils = test_module.require('class', 'greasemonkey');
 	this.greasemonkey = {};
@@ -182,15 +181,15 @@ function attachGMUtils()
 		})(aMethod, this, this.greasemonkey, 'greasemonkey');
 	}
 }
-
-function attachMailUtils()
+ 
+function attachMailUtils() 
 {
 	var MailUtils = mail_module.require('class', 'utils');
 	this.mail = new MailUtils();
 	this.addListener(this.mail);
 }
-
-function attachServerUtils()
+ 
+function attachServerUtils() 
 {
 	var serverUtils = server_module.require('package', 'utils');
 	this.sendMessage = function() {
@@ -200,15 +199,13 @@ function attachServerUtils()
 		return serverUtils.startListen.apply(serverUtils, arguments);
 	};
 }
-
-
-
-
-
-var WindowManager = Cc['@mozilla.org/appshell/window-mediator;1']
+  
+// window management 
+	
+var WindowManager = Cc['@mozilla.org/appshell/window-mediator;1'] 
 		.getService(Ci.nsIWindowMediator);
-
-function normalizeTestWindowOption(aOptions)
+ 
+function normalizeTestWindowOption(aOptions) 
 {
 	if (!aOptions) aOptions = {};
 	if (!aOptions.uri && !aOptions.type) {
@@ -226,8 +223,8 @@ function normalizeTestWindowOption(aOptions)
 	}
 	return aOptions;
 };
-
-// ãƒ†ã‚¹ãƒˆç”¨ã®Firefoxã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’å–å¾—ã™ã‚‹
+ 
+// ƒeƒXƒg—p‚ÌFirefoxƒEƒBƒ“ƒhƒE‚ğæ“¾‚·‚é 
 function getTestWindow(aOptions)
 {
 	var info = this.normalizeTestWindowOption(aOptions);
@@ -244,16 +241,16 @@ function getTestWindow(aOptions)
 
 	return null;
 };
-
-// ãƒ†ã‚¹ãƒˆç”¨ã®Firefoxã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’é–‹ãç›´ã™
+ 
+// ƒeƒXƒg—p‚ÌFirefoxƒEƒBƒ“ƒhƒE‚ğŠJ‚«’¼‚· 
 function reopenTestWindow(aOptions, callback)
 {
 	var win = this.getTestWindow(aOptions);
 	if (win) win.close();
 	return this.openTestWindow(aOptions, callback);
 };
-
-// ãƒ†ã‚¹ãƒˆç”¨ã®Firefoxã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’é–‹ã
+ 
+// ƒeƒXƒg—p‚ÌFirefoxƒEƒBƒ“ƒhƒE‚ğŠJ‚­ 
 function openTestWindow(aOptions, callback)
 {
 	var win = this.getTestWindow(aOptions);
@@ -275,16 +272,15 @@ function openTestWindow(aOptions, callback)
 	}
 	return win;
 };
-
-// ãƒ†ã‚¹ãƒˆç”¨ã®Firefoxã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’é–‰ã˜ã‚‹
+ 
+// ƒeƒXƒg—p‚ÌFirefoxƒEƒBƒ“ƒhƒE‚ğ•Â‚¶‚é 
 function closeTestWindow(aOptions)
 {
 	var win = this.getTestWindow(aOptions);
 	if (win) win.close();
 };
-
-
-function setUpTestWindow(aContinuation, aOptions)
+ 
+function setUpTestWindow(aContinuation, aOptions) 
 {
 	var loadedFlag = { value : false };
 	if (this.getTestWindow(aOptions)) {
@@ -304,14 +300,37 @@ function setUpTestWindow(aContinuation, aOptions)
 	}
 	return loadedFlag;
 };
+ 
+var tearDownTestWindow = closeTestWindow; 
+ 
+function getChromeWindow(aOptions) 
+{
+	var windows = this.getChromeWindows(aOptions);
+	return windows.length ? windows[0] : null ;
+};
+ 
+function getChromeWindows(aOptions) 
+{
+	var info = this.normalizeTestWindowOption(aOptions);
+	var targets = WindowManager.getEnumerator(info.type),
+		target;
+	var result = [];
+	while (targets.hasMoreElements())
+	{
+		target = targets.getNext().
+			QueryInterface(Ci.nsIDOMWindowInternal);
+		if (info.type)
+			result.push(target);
+		else if (info.uri == target.location.href)
+			result.push(target);
+	}
 
-var tearDownTestWindow = closeTestWindow;
-
-
-
-// Firefox specific features
-
-function _waitBrowserLoad(aBrowser, aLoadedFlag, aOnComplete)
+	return result;
+};
+  
+// load page 
+	
+function _waitBrowserLoad(aBrowser, aLoadedFlag, aOnComplete) 
 {
 	if (aBrowser.localName == 'tabbrowser') {
 		aBrowser = aBrowser.selectedTab.linkedBrowser;
@@ -356,8 +375,8 @@ function _waitBrowserLoad(aBrowser, aLoadedFlag, aOnComplete)
 		if (!listener.started) listener.onFinish();
 	}, 0);
 }
-
-// ãƒ†ã‚¹ãƒˆç”¨ã®Firefoxã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ç¾åœ¨ã®ã‚¿ãƒ–ã«URIã‚’èª­ã¿è¾¼ã‚€
+ 
+// ƒeƒXƒg—p‚ÌFirefoxƒEƒBƒ“ƒhƒE‚ÌŒ»İ‚Ìƒ^ƒu‚ÉURI‚ğ“Ç‚İ‚Ş 
 function loadURI(aURI, aOptions)
 {
 	if (!aOptions) aOptions = {};
@@ -381,14 +400,13 @@ function loadURI(aURI, aOptions)
 
 	return loadedFlag;
 };
-
-function loadURIInTestFrame(aURI)
+ 
+function loadURIInTestFrame(aURI) 
 {
 	return this.loadURI(aURI, { inFrame : true });
 }
-
-
-// ãƒ†ã‚¹ãƒˆç”¨ã®Firefoxã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã§æ–°ã—ã„ã‚¿ãƒ–ã‚’é–‹ã
+ 
+// ƒeƒXƒg—p‚ÌFirefoxƒEƒBƒ“ƒhƒE‚ÅV‚µ‚¢ƒ^ƒu‚ğŠJ‚­ 
 function addTab(aURI, aOptions)
 {
 	if (!aOptions) aOptions = {};
@@ -417,21 +435,21 @@ function addTab(aURI, aOptions)
 
 	return loadedFlag;
 };
-
-function getBrowser(aOptions)
+ 
+function getBrowser(aOptions) 
 {
 	if (utils.product != 'Firefox') return null;
 	return this.getTestFrameOwner(aOptions);
 };
-
-function getTestFrameOwner(aOptions)
+ 
+function getTestFrameOwner(aOptions) 
 {
 	var win = this.getTestWindow(aOptions);
 	if (!win) return this._testFrame;
 	return win.gBrowser;
 };
-
-function getTabs(aOptions)
+ 
+function getTabs(aOptions) 
 {
 	if (utils.product != 'Firefox') return [];
 	var win = this.getTestWindow(aOptions);
@@ -450,38 +468,10 @@ function getTabs(aOptions)
 	}
 	return array;
 };
-
-
-
-
-function getChromeWindow(aOptions)
-{
-	var windows = this.getChromeWindows(aOptions);
-	return windows.length ? windows[0] : null ;
-};
-
-function getChromeWindows(aOptions)
-{
-	var info = this.normalizeTestWindowOption(aOptions);
-	var targets = WindowManager.getEnumerator(info.type),
-		target;
-	var result = [];
-	while (targets.hasMoreElements())
-	{
-		target = targets.getNext().
-			QueryInterface(Ci.nsIDOMWindowInternal);
-		if (info.type)
-			result.push(target);
-		else if (info.uri == target.location.href)
-			result.push(target);
-	}
-
-	return result;
-};
-
-
-
-function makeTempFile(aOriginal, aCosmetic)
+  
+// file operations 
+	
+function makeTempFile(aOriginal, aCosmetic) 
 {
 	var temp = utils.getFileFromKeyword('TmpD');
 	if (aOriginal) {
@@ -520,8 +510,8 @@ function makeTempFile(aOriginal, aCosmetic)
 		return temp;
 	}
 };
-
-function cleanUpTempFiles()
+ 
+function cleanUpTempFiles() 
 {
 	this.tempFiles.forEach(function(aFile) {
 		try {
@@ -533,9 +523,10 @@ function cleanUpTempFiles()
 	});
 	this.tempFiles = [];
 };
-
-
-function cleanUpModifiedPrefs()
+  
+// prefs 
+	
+function cleanUpModifiedPrefs() 
 {
 	for (var i in this.backupPrefs)
 	{
@@ -546,18 +537,15 @@ function cleanUpModifiedPrefs()
 	}
 	this.backupPrefs = {};
 };
-
-
-
-function include(aSource, aEnvironment, aEncoding)
+  
+// utils 
+	
+function include(aSource, aEnvironment, aEncoding) 
 {
 	return utils.include.call(this, aSource, (aEnvironment || this.environment), aEncoding);
 };
-
-
-
-
-var _this = this;
+  
+var _this = this; 
 <><![CDATA[
 makeURIFromSpec
 makeFileWithPath
@@ -617,3 +605,4 @@ notify
 		});
 	}
 });
+  
