@@ -66,24 +66,12 @@ function tearDown()
 	utils.clearPref(prefKeyRoot+'int', 1);
 	utils.clearPref(prefKeyRoot+'string', 'foobar');
 
-	utils.clearPref('uxu.test.default.pref.bool');
-	utils.clearPref('uxu.test.default.pref.bool.false');
-	utils.clearPref('uxu.test.default.pref.int');
-	utils.clearPref('uxu.test.default.pref.string');
-	utils.clearPref('uxu.test.default.pref.string.escaped');
-	utils.clearPref('uxu.test.default.pref.string.single');
-	utils.clearPref('uxu.test.default.pref.comment1');
-	utils.clearPref('uxu.test.default.pref.comment2');
-	utils.clearPref('uxu.test.default.pref.comment3');
-	utils.clearPref('uxu.test.user.pref.bool');
-	utils.clearPref('uxu.test.user.pref.bool.false');
-	utils.clearPref('uxu.test.user.pref.int');
-	utils.clearPref('uxu.test.user.pref.string');
-	utils.clearPref('uxu.test.user.pref.string.escaped');
-	utils.clearPref('uxu.test.user.pref.string.single');
-	utils.clearPref('uxu.test.user.pref.comment1');
-	utils.clearPref('uxu.test.user.pref.comment2');
-	utils.clearPref('uxu.test.user.pref.comment3');
+	defaultPrefs.forEach(function(aItem) {
+		utils.clearPref(aItem.name);
+	});
+	userPrefs.forEach(function(aItem) {
+		utils.clearPref(aItem.name);
+	});
 }
 
 
