@@ -26,4 +26,22 @@ function test_read()
 	file = this.normalizeToFile('../../res/user.js');
 	assert.equals(userPrefs, prefreadModule.read(file));
 
+	file = this.normalizeToFile('../../res/invalid_calculate.js');
+	assert.raises(
+		prefreadModule.ERROR_MALFORMED_PREF_FILE,
+		function() { prefreadModule.read(file); }
+	);
+
+	file = this.normalizeToFile('../../res/invalid_variable.js');
+	assert.raises(
+		prefreadModule.ERROR_MALFORMED_PREF_FILE,
+		function() { prefreadModule.read(file); }
+	);
+
+	file = this.normalizeToFile('../../res/invalid_array.js');
+	assert.raises(
+		prefreadModule.ERROR_MALFORMED_PREF_FILE,
+		function() { prefreadModule.read(file); }
+	);
+
 }

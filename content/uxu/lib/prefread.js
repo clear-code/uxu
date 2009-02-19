@@ -1,12 +1,5 @@
-/* JavaScript-translated version, from:
-   http://mxr.mozilla.org/mozilla-central/source/modules/libpref/src/prefread.cpp
-
-   The original version of prefread is licensed under the tri-license,
-   MPL1.1/GPL2.0/LGPL2.1. However, the license of UxU is GPL. This
-   JS-translated version is also licensed under GPL until UxU's license
-   becomes tri-license.
- */
-
+// JavaScript version of
+// http://mxr.mozilla.org/mozilla-central/source/modules/libpref/src/prefread.cpp
 
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
@@ -24,11 +17,12 @@
   * The Original Code is Mozilla.
   *
   * The Initial Developer of the Original Code is Darin Fisher.
-  * Portions created by the Initial Developer are Copyright (C) 2003
+  * Portions created by the Initial Developer are Copyright (C) 2003-2009
   * the Initial Developer. All Rights Reserved.
   *
   * Contributor(s):
   *   Darin Fisher <darin@meer.net>
+  *   SHIMODA Hiroshi <shimoda@clear-code.com> (porting to JavaScript)
   *
   * Alternatively, the contents of this file may be used under the terms of
   * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -46,6 +40,10 @@
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
+
+const ERROR_MALFORMED_PREF_FILE = new Error('malformed pref file');
+const ERROR_NO_NAME             = new Error('invalid pref: no name');
+const ERROR_INVALID_TYPE        = new Error('invalid pref: invalid type');
 
 const PREF_PARSE_INIT                    = 0;
 const PREF_PARSE_MATCH_STRING            = 1 << 0;
@@ -101,12 +99,12 @@ function read(aFile)
 	function pref_DoCallback()
 	{
 		if (!name) {
-			throw new Error('invalid pref: no name');
+			throw ERROR_NO_NAME;
 		}
 		switch (type)
 		{
 			case PREF_INVALID:
-				throw new Error('invalid pref: invalid type');
+				throw ERROR_INVALID_TYPE;
 				return;
 
 			case PREF_BOOL:
@@ -172,7 +170,7 @@ function read(aFile)
 					/* else wait for next char */
 				}
 				else {
-					throw new Error('malformed pref file');
+					throw ERROR_MALFORMED_PREF_FILE;
 				}
 				break;
 
@@ -204,7 +202,7 @@ function read(aFile)
 					state = PREF_PARSE_COMMENT_MAYBE_START;
 				}
 				else if (!spaceRegExp.test(c)) {
-					throw new Error('malformed pref file');
+					throw ERROR_MALFORMED_PREF_FILE;
 				}
 				break;
 
@@ -220,7 +218,7 @@ function read(aFile)
 					state = PREF_PARSE_COMMENT_MAYBE_START;
 				}
 				else if (!spaceRegExp.test(c)) {
-					throw new Error('malformed pref file');
+					throw ERROR_MALFORMED_PREF_FILE;
 				}
 				break;
 
@@ -253,7 +251,7 @@ function read(aFile)
 					state = PREF_PARSE_COMMENT_MAYBE_START;
 				}
 				else if (!spaceRegExp.test(c)) {
-					throw new Error('malformed pref file');
+					throw ERROR_MALFORMED_PREF_FILE;
 				}
 				break;
 			case PREF_PARSE_INT_VALUE:
@@ -274,7 +272,7 @@ function read(aFile)
 						state = PREF_PARSE_UNTIL_CLOSE_PAREN;
 					}
 					else {
-						throw new Error('malformed pref file');
+						throw ERROR_MALFORMED_PREF_FILE;
 					}
 				}
 				break;
@@ -291,7 +289,7 @@ function read(aFile)
 						break;
 					default:
 						/* pref file is malformed */
-						throw new Error('malformed pref file');
+						throw ERROR_MALFORMED_PREF_FILE;
 				}
 				break;
 			case PREF_PARSE_COMMENT_BLOCK:
@@ -418,7 +416,7 @@ function read(aFile)
 					state = PREF_PARSE_COMMENT_MAYBE_START;
 				}
 				else if (!spaceRegExp.test(c)) {
-					throw new Error('malformed pref file');
+					throw ERROR_MALFORMED_PREF_FILE;
 				}
 				break;
 			case PREF_PARSE_UNTIL_CLOSE_PAREN:
@@ -431,7 +429,7 @@ function read(aFile)
 					state = PREF_PARSE_COMMENT_MAYBE_START;
 				}
 				else if (!spaceRegExp.test(c)) {
-					throw new Error('malformed pref file');
+					throw ERROR_MALFORMED_PREF_FILE;
 				}
 				break;
 
@@ -451,7 +449,7 @@ function read(aFile)
 					state = PREF_PARSE_COMMENT_MAYBE_START;
 				}
 				else if (!spaceRegExp.test(c)) {
-					throw new Error('malformed pref file');
+					throw ERROR_MALFORMED_PREF_FILE;
 				}
 				break;
 

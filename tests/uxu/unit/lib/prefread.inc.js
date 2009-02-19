@@ -6,6 +6,8 @@ var userPrefs = [];
 			'uxu.test.%type%.pref.bool': true,
 			'uxu.test.%type%.pref.bool.false': false,
 			'uxu.test.%type%.pref.int': 29,
+			'uxu.test.%type%.pref.plus': 29,
+			'uxu.test.%type%.pref.minus': -29,
 			'uxu.test.%type%.pref.string': 'string',
 			'uxu.test.%type%.pref.string.escaped': '"\'\\\r\n\x10\\x??\u0010\\u????\\t\\/',
 			'uxu.test.%type%.pref.string.single': 'single quote',

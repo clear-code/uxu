@@ -1,10 +1,16 @@
+# comment line
 // comment line
 /* comment block */
 /* comment block
    multiline */
 pref("uxu.test.default.pref.bool", true);
-pref("uxu.test.default.pref.bool.false", false);
+pref( // with white spaces
+	"uxu.test.default.pref.bool.false"  ,
+	false
+)  ;
 pref("uxu.test.default.pref.int", 29);
+pref("uxu.test.default.pref.plus", +29);
+pref("uxu.test.default.pref.minus", -29);
 pref("uxu.test.default.pref.string", "string");
 pref("uxu.test.default.pref.string.escaped", "\"\'\\\r\n\x10\x??\u0010\u????\t\/");
 pref('uxu.test.default.pref.string.single', 'single quote');
