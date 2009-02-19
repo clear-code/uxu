@@ -112,9 +112,7 @@ function read(aFile)
 				break;
 
 			case PREF_INT:
-				var evaluated;
-				eval('evaluated = ('+value+')');
-				value = parseInt(evaluated);
+				value = parseInt(value);
 				break;
 
 			case PREF_STRING:
