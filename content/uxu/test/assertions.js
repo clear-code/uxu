@@ -278,6 +278,9 @@ function notRaises(aUnexpectedException, aTask, aContext, aMessage)
 			exception = e;
 			raised = true;
 		}
+		catch(e) {
+			exception = e;
+		}
 		if (raised)
 			_onNotRaisesFinish(aUnexpectedException, exception, aMessage);
 	}

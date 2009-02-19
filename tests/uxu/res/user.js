@@ -7,7 +7,7 @@ user_pref("uxu.test.user.pref.bool", true);
 user_pref( // with white spaces
 	"uxu.test.user.pref.bool.false"  ,
 	false
-);
+)  ;
 user_pref("uxu.test.user.pref.int", 29);
 user_pref("uxu.test.user.pref.plus", +29);
 user_pref("uxu.test.user.pref.minus", -29);
