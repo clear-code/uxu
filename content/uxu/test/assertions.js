@@ -262,7 +262,7 @@ function _onRaisesFinish(aExpectedException, aMessage)
 	     bundle.getString('assert_raises'), aMessage);
 }
 
-function notRaises(aExpectedException, aTask, aContext, aMessage)
+function notRaises(aUnexpectedException, aTask, aContext, aMessage)
 {
 	var raised = false;
 	var exception;
@@ -270,19 +270,16 @@ function notRaises(aExpectedException, aTask, aContext, aMessage)
 		try {
 			aTask = aTask.call(aContext);
 		}
-		catch(e if e == aExpectedException) {
+		catch(e if e == aUnexpectedException) {
 			exception = e;
 			raised = true;
 		}
-		catch(e if e.name == aExpectedException) {
+		catch(e if e.name == aUnexpectedException) {
 			exception = e;
 			raised = true;
-		}
-		catch(e) {
-			exception = e;
 		}
 		if (raised)
-			_onNotRaisesFinish(aExpectedException, exception, aMessage);
+			_onNotRaisesFinish(aUnexpectedException, exception, aMessage);
 	}
 	if (aTask && utils.isGeneratedIterator(aTask)) {
 		return utils.doIteration(aTask, {
@@ -291,24 +288,24 @@ function notRaises(aExpectedException, aTask, aContext, aMessage)
 				if (
 					!e ||
 					(
-						e != aExpectedException &&
-						e.name != aExpectedException
+						e != aUnexpectedException &&
+						e.name != aUnexpectedException
 					)
 					)
 					return;
 				exception = e;
-				_onNotRaisesFinish(aExpectedException, exception, aMessage);
+				_onNotRaisesFinish(aUnexpectedException, exception, aMessage);
 			}
 		});
 	}
 }
-function notRaise(aExpectedException, aTask, aContext, aMessage) { this.notRaises(aExpectedException, aTask, aContext, aMessage); }
-function _onNotRaisesFinish(aExpectedException, aActualException, aMessage)
+function notRaise(aUnexpectedException, aTask, aContext, aMessage) { this.notRaises(aUnexpectedException, aTask, aContext, aMessage); }
+function _onNotRaisesFinish(aUnexpectedException, aActualException, aMessage)
 {
 	fail({
-	     	expectedRaw : aExpectedException,
+	     	expectedRaw : aUnexpectedException,
 	     	actualRaw   : aActualException,
-	     	expected    : bundle.getFormattedString('assert_not_raises_expected', [aExpectedException]),
+	     	expected    : bundle.getFormattedString('assert_not_raises_expected', [aUnexpectedException]),
 	     	actual      : bundle.getFormattedString('assert_not_raises_actual', [aActualException])
 	     },
 	     bundle.getString('assert_not_raises'), aMessage);
@@ -327,18 +324,18 @@ function matches(aExpectedPattern, aActualString, aMessage)
 }
 function match(aExpectedPattern, aActualString, aMessage) { this.matches(aExpectedPattern, aActualString, aMessage); }
 
-function notMatches(aExpectedPattern, aActualString, aMessage)
+function notMatches(aUnexpectedPattern, aActualString, aMessage)
 {
-	if (aActualString.match(aExpectedPattern))
+	if (aActualString.match(aUnexpectedPattern))
 		fail({
-		     	expectedRaw : aExpectedPattern,
+		     	expectedRaw : aUnexpectedPattern,
 		     	actualRaw   : aActualString,
-		     	expected    : bundle.getFormattedString('assert_not_matches_expected', [aExpectedPattern]),
+		     	expected    : bundle.getFormattedString('assert_not_matches_expected', [aUnexpectedPattern]),
 		     	actual      : bundle.getFormattedString('assert_not_matches_actual', [aActualString])
 		     },
 		     bundle.getString('assert_not_matches'), aMessage);
 }
-function notMatch(aExpectedPattern, aActualString, aMessage) { this.notMatches(aExpectedPattern, aActualString, aMessage); }
+function notMatch(aUnexpectedPattern, aActualString, aMessage) { this.notMatches(aUnexpectedPattern, aActualString, aMessage); }
 
 function pattern(aExpectedString, aActualPattern, aMessage)
 {
@@ -352,13 +349,13 @@ function pattern(aExpectedString, aActualPattern, aMessage)
 		     bundle.getString('assert_pattern'), aMessage);
 }
 
-function notPattern(aExpectedString, aActualPattern, aMessage)
+function notPattern(aUnexpectedString, aActualPattern, aMessage)
 {
-	if (aExpectedString.match(aActualPattern))
+	if (aUnexpectedString.match(aActualPattern))
 		fail({
-		     	expectedRaw : aExpectedString,
+		     	expectedRaw : aUnexpectedString,
 		     	actualRaw   : aActualPattern,
-		     	expected    : bundle.getFormattedString('assert_not_pattern_expected', [aExpectedString]),
+		     	expected    : bundle.getFormattedString('assert_not_pattern_expected', [aUnexpectedString]),
 		     	actual      : bundle.getFormattedString('assert_not_pattern_actual', [aActualPattern])
 		     },
 		     bundle.getString('assert_not_pattern'), aMessage);
@@ -388,7 +385,7 @@ function inDelta(aExpected, aActual, aDelta, aMessage)
 		 aMessage);
 }
 
-function greaterThan(aExpected, aActual, aMessage)
+function _greaterThan(aExpected, aActual, aMessage)
 {
 	if (aExpected < aActual) return;
 	fail({
@@ -402,9 +399,9 @@ function greaterThan(aExpected, aActual, aMessage)
 		 bundle.getString('assert_greater_than'),
 		 aMessage);
 }
-function greater(aExpected, aActual, aMessage) { this.greaterThan(aExpected, aActual, aMessage); }
+function _greater(aExpected, aActual, aMessage) { this._greaterThan(aExpected, aActual, aMessage); }
 
-function greaterOrEqual(aExpected, aActual, aMessage)
+function _greaterOrEqual(aExpected, aActual, aMessage)
 {
 	if (aExpected <= aActual) return;
 	fail({
@@ -419,7 +416,7 @@ function greaterOrEqual(aExpected, aActual, aMessage)
 		 aMessage);
 }
 
-function lessThan(aExpected, aActual, aMessage)
+function _lessThan(aExpected, aActual, aMessage)
 {
 	if (aExpected > aActual) return;
 	fail({
@@ -433,9 +430,9 @@ function lessThan(aExpected, aActual, aMessage)
 		 bundle.getString('assert_less_than'),
 		 aMessage);
 }
-function less(aExpected, aActual, aMessage) { this.lessThan(aExpected, aActual, aMessage); }
+function _less(aExpected, aActual, aMessage) { this._lessThan(aExpected, aActual, aMessage); }
 
-function lessOrEqual(aExpected, aActual, aMessage)
+function _lessOrEqual(aExpected, aActual, aMessage)
 {
 	if (aExpected >= aActual) return;
 	fail({
@@ -455,15 +452,15 @@ function compare(aExpected, aOperator, aActual, aMessage)
 	switch (aOperator)
 	{
 		case '<':
-			return this.greaterThan(aExpected, aActual, aMessage);
+			return this._greaterThan(aExpected, aActual, aMessage);
 		case '=<':
 		case '<=':
-			return this.greaterOrEqual(aExpected, aActual, aMessage);
+			return this._greaterOrEqual(aExpected, aActual, aMessage);
 		case '>':
-			return this.lessThan(aExpected, aActual, aMessage);
+			return this._lessThan(aExpected, aActual, aMessage);
 		case '=>':
 		case '>=':
-			return this.lessOrEqual(aExpected, aActual, aMessage);
+			return this._lessOrEqual(aExpected, aActual, aMessage);
 		case '=':
 		case '==':
 			return this.equals(aExpected, aActual, aMessage);
