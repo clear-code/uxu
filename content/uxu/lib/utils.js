@@ -5,6 +5,7 @@ const Ci = Components.interfaces;
 
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var bundle = lib_module.require('package', 'bundle');
+var prefread = lib_module.require('package', 'prefread');
 
 var IOService = Cc['@mozilla.org/network/io-service;1']
 		.getService(Ci.nsIIOService);
@@ -581,31 +582,20 @@ function clearPref(aKey)
 function loadPrefs(aFile, aHash) 
 {
 	if (aHash && typeof aHash != 'object') aHash = null;
+
 	var result = {};
-
-	var _this = this;
-	function _setPref(aName, aValue)
-	{
-		if (aHash) {
-			aHash[aName] = aValue
-		}
-		else {
-			_this.setPref(aName, aValue);
-		}
-		result[aName] = aValue
-	}
-
-	var sandbox = {
-			pref      : _setPref,
-			user_pref : _setPref
-		};
-
-	try {
-		aFile = this.normalizeToFile(aFile);
-		this.include(this.getURLSpecFromFile(aFile), sandbox, 'UTF-8');
-	}
-	catch(e) {
-	}
+	prefread.read(this.normalizeToFile(aFile)).forEach(
+		(aHash ?
+			function(aItem) {
+				aHash[aItem.name] = aItem.value;
+				result[aItem.name] = aItem.value;
+			} :
+			function(aItem) {
+				this.setPref(aItem.name, aItem.value);
+				result[aItem.name] = aItem.value;
+			}),
+		this
+	);
 
 	return result;
 }

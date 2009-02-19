@@ -1,5 +1,7 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
+utils.include('prefread.inc.js');
+
 var topDir = baseURL+'../../../../';
 
 var utilsModule;
@@ -65,11 +67,23 @@ function tearDown()
 	utils.clearPref(prefKeyRoot+'string', 'foobar');
 
 	utils.clearPref('uxu.test.default.pref.bool');
+	utils.clearPref('uxu.test.default.pref.bool.false');
 	utils.clearPref('uxu.test.default.pref.int');
 	utils.clearPref('uxu.test.default.pref.string');
+	utils.clearPref('uxu.test.default.pref.string.escaped');
+	utils.clearPref('uxu.test.default.pref.string.single');
+	utils.clearPref('uxu.test.default.pref.comment1');
+	utils.clearPref('uxu.test.default.pref.comment2');
+	utils.clearPref('uxu.test.default.pref.comment3');
 	utils.clearPref('uxu.test.user.pref.bool');
+	utils.clearPref('uxu.test.user.pref.bool.false');
 	utils.clearPref('uxu.test.user.pref.int');
 	utils.clearPref('uxu.test.user.pref.string');
+	utils.clearPref('uxu.test.user.pref.string.escaped');
+	utils.clearPref('uxu.test.user.pref.string.single');
+	utils.clearPref('uxu.test.user.pref.comment1');
+	utils.clearPref('uxu.test.user.pref.comment2');
+	utils.clearPref('uxu.test.user.pref.comment3');
 }
 
 
@@ -282,46 +296,51 @@ function test_loadPrefs()
 
 	hash = {};
 	result = utilsModule.loadPrefs('../../res/default.js', hash);
-	assert.equals(true, hash['uxu.test.default.pref.bool']);
-	assert.equals(29, hash['uxu.test.default.pref.int']);
-	assert.equals('string', hash['uxu.test.default.pref.string']);
+	defaultPrefs.forEach(function(aItem) {
+		assert.equals(aItem.value, result[aItem.name], aItem.name);
+		assert.isNull(utils.getPref(aItem.name), aItem.name);
+	}, this);
 	assert.equals(hash, result);
 
 	hash = {};
 	result = utilsModule.loadPrefs('../../res/user.js', hash);
-	assert.equals(true, hash['uxu.test.user.pref.bool']);
-	assert.equals(29, hash['uxu.test.user.pref.int']);
-	assert.equals('string', hash['uxu.test.user.pref.string']);
+	userPrefs.forEach(function(aItem) {
+		assert.equals(aItem.value, result[aItem.name], aItem.name);
+		assert.isNull(utils.getPref(aItem.name), aItem.name);
+	}, this);
 	assert.equals(hash, result);
 
-
-	assert.isNull(utils.getPref('uxu.test.default.pref.bool'));
-	assert.isNull(utils.getPref('uxu.test.default.pref.int'));
-	assert.isNull(utils.getPref('uxu.test.default.pref.string'));
-
 	result = utilsModule.loadPrefs('../../res/default.js');
-	assert.isTrue(utils.getPref('uxu.test.default.pref.bool'));
-	assert.equals(29, utils.getPref('uxu.test.default.pref.int'));
-	assert.equals('string', utils.getPref('uxu.test.default.pref.string'));
+	defaultPrefs.forEach(function(aItem) {
+		assert.equals(aItem.value, utils.getPref(aItem.name), aItem.name);
+	}, this);
 	assert.equals(
-		{ 'uxu.test.default.pref.bool' : true,
-		  'uxu.test.default.pref.int' : 29,
-		  'uxu.test.default.pref.string' : 'string' },
+		{ 'uxu.test.default.pref.bool': true,
+		  'uxu.test.default.pref.bool.false': false,
+		  'uxu.test.default.pref.int': 29,
+		  'uxu.test.default.pref.string': 'string',
+		  'uxu.test.default.pref.string.escaped': '"\'\\\r\n\x10\\x??\u0010\\u????\\t\\/',
+		  'uxu.test.default.pref.string.single': 'single quote',
+		  'uxu.test.default.pref.comment1': true,
+		  'uxu.test.default.pref.comment2': true,
+		  'uxu.test.default.pref.comment3': true },
 		result
 	);
 
-	assert.isNull(utils.getPref('uxu.test.user.pref.bool'));
-	assert.isNull(utils.getPref('uxu.test.user.pref.int'));
-	assert.isNull(utils.getPref('uxu.test.user.pref.string'));
-
 	result = utilsModule.loadPrefs('../../res/user.js');
-	assert.isTrue(utils.getPref('uxu.test.user.pref.bool'));
-	assert.equals(29, utils.getPref('uxu.test.user.pref.int'));
-	assert.equals('string', utils.getPref('uxu.test.user.pref.string'));
+	userPrefs.forEach(function(aItem) {
+		assert.equals(aItem.value, utils.getPref(aItem.name), aItem.name);
+	}, this);
 	assert.equals(
-		{ 'uxu.test.user.pref.bool' : true,
-		  'uxu.test.user.pref.int' : 29,
-		  'uxu.test.user.pref.string' : 'string' },
+		{ 'uxu.test.user.pref.bool': true,
+		  'uxu.test.user.pref.bool.false': false,
+		  'uxu.test.user.pref.int': 29,
+		  'uxu.test.user.pref.string': 'string',
+		  'uxu.test.user.pref.string.escaped': '"\'\\\r\n\x10\\x??\u0010\\u????\\t\\/',
+		  'uxu.test.user.pref.string.single': 'single quote',
+		  'uxu.test.user.pref.comment1': true,
+		  'uxu.test.user.pref.comment2': true,
+		  'uxu.test.user.pref.comment3': true },
 		result
 	);
 }
