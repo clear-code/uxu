@@ -274,6 +274,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 
 			<hbox flex="1">
 				<vbox flex="1" style="padding-top: 1em;">
+					<vbox flex="1">
 					<vbox id="prerun-report">
 						<description role="error" hidden="true" class="header"
 							context="contextMenu"/>
@@ -282,9 +283,9 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 							style="font-size: 0.8em;"
 							onselect="showSource(this.selectedItem.label);"/>
 					</vbox>
-
 					<scrollbox id="testcase-reports" flex="1" orient="vertical" style="overflow: auto;"
 						context="contextMenu"/>
+					</vbox>
 
 					<splitter id="content-splitter" hidden="true"
 						collapse="after" resizeafter="closest"/>

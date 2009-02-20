@@ -1160,6 +1160,11 @@ function onContentLoad()
 		contentAutoExpanded = false;
 		toggleContent();
 	}
+	var minHeight = parseInt(_('content').parentNode.boxObject.height / 2);
+	if (!_('content').collapsed && _('content').boxObject.height < minHeight) {
+		_('content').previousSibling.previousSibling.height = minHeight;
+		_('content').height = minHeight;
+	}
 }
   
 function showSource(aTraceLine) 
