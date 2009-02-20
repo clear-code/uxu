@@ -751,33 +751,45 @@ function test_setAndGetClipBoard()
 {
 	var random = Math.random() * 65000;
 	utils.setClipBoard(random);
-	assert.equals(random, utilsModule.getClipBoard(false));
+	assert.equals(random, utilsModule.getClipBoard());
 
 	random = Math.random() * 65000;
 	utilsModule.setClipBoard(random);
-	assert.equals(random, utils.getClipBoard(false));
+	assert.equals(random, utils.getClipBoard());
 
-	if (navigator.platform.toLowerCase().indexOf('linux') > -1) {
-		yield Do(utils.loadURI('../../res/html.html'));
+	var isLinux = (navigator.platform.toLowerCase().indexOf('linux') > -1);
 
-		var selection = content.getSelection();
-		selection.removeAllRanges();
+	yield Do(utils.loadURI('../../res/html.html'));
 
-		action.fireMouseEventOnElement(
-			content.document.getElementById('paragraph3'),
-			{ type : 'dblclick', button : 0 }
-		);
-		yield 100;
-		assert.equals('paragraph3', selection.toString());
-		assert.equals('paragraph3', utilsModule.getClipBoard(true));
-		selection.removeAllRanges();
+	var selection = content.getSelection();
+	selection.removeAllRanges();
 
-		action.fireMouseEventOnElement(
-			content.document.getElementById('paragraph4'),
-			{ type : 'dblclick', button : 0 }
-		);
-		yield 100;
-		assert.equals('paragraph4', selection.toString());
-		assert.equals('paragraph4', utilsModule.getClipBoard(true));
+	action.fireMouseEventOnElement(
+		content.document.getElementById('paragraph3'),
+		{ type : 'dblclick', button : 0 }
+	);
+	yield 100;
+	assert.equals('paragraph3', selection.toString());
+	if (isLinux) {
+		assert.equals('paragraph3', utilsModule.getSelectionClipBoard());
 	}
+	else {
+		assert.equals('', utilsModule.getSelectionClipBoard());
+	}
+	assert.equals(random, utilsModule.getClipBoard());
+	selection.removeAllRanges();
+
+	action.fireMouseEventOnElement(
+		content.document.getElementById('paragraph4'),
+		{ type : 'dblclick', button : 0 }
+	);
+	yield 100;
+	assert.equals('paragraph4', selection.toString());
+	if (isLinux) {
+		assert.equals('paragraph4', utilsModule.getSelectionClipBoard());
+	}
+	else {
+		assert.equals('', utilsModule.getSelectionClipBoard());
+	}
+	assert.equals(random, utilsModule.getClipBoard());
 }

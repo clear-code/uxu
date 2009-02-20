@@ -603,7 +603,17 @@ function loadPrefs(aFile, aHash)
 // クリップボード 
 var Clipboard = Cc['@mozilla.org/widget/clipboard;1'].getService(Ci.nsIClipboard)
 	
-function getClipBoard(aSelection) 
+function getClipBoard()
+{
+	return _getClipBoard(false);
+}
+ 
+function getSelectionClipBoard()
+{
+	return _getClipBoard(true);
+}
+ 
+function _getClipBoard(aSelection) 
 {
 	var string = '';
 
@@ -616,7 +626,7 @@ function getClipBoard(aSelection)
 			Clipboard.getData(trans, Clipboard.kGlobalClipboard);
 	}
 	catch(ex) {
-		Clipboard.getData(trans, Clipboard.kGlobalClipboard);
+		return string;
 	}
 
 	var data       = {},
