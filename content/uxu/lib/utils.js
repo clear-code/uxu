@@ -603,14 +603,17 @@ function loadPrefs(aFile, aHash)
 // クリップボード 
 var Clipboard = Cc['@mozilla.org/widget/clipboard;1'].getService(Ci.nsIClipboard)
 	
-function getClipBoard() 
+function getClipBoard(aSelection) 
 {
 	var string = '';
 
 	var trans = Cc['@mozilla.org/widget/transferable;1'].createInstance(Ci.nsITransferable);
 	trans.addDataFlavor('text/unicode');
 	try {
-		Clipboard.getData(trans, Clipboard.kSelectionClipboard);
+		if (aSelection)
+			Clipboard.getData(trans, Clipboard.kSelectionClipboard);
+		else
+			Clipboard.getData(trans, Clipboard.kGlobalClipboard);
 	}
 	catch(ex) {
 		Clipboard.getData(trans, Clipboard.kGlobalClipboard);

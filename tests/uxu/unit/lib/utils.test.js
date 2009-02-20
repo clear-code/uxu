@@ -751,9 +751,33 @@ function test_setAndGetClipBoard()
 {
 	var random = Math.random() * 65000;
 	utils.setClipBoard(random);
-	assert.equals(random, utilsModule.getClipBoard());
+	assert.equals(random, utilsModule.getClipBoard(false));
 
 	random = Math.random() * 65000;
 	utilsModule.setClipBoard(random);
-	assert.equals(random, utils.getClipBoard());
+	assert.equals(random, utils.getClipBoard(false));
+
+	if (navigator.platform.toLowerCase().indexOf('linux') > -1) {
+		yield Do(utils.loadURI('../../res/html.html'));
+
+		var selection = content.getSelection();
+		selection.removeAllRanges();
+
+		action.fireMouseEventOnElement(
+			content.document.getElementById('paragraph3'),
+			{ type : 'dblclick', button : 0 }
+		);
+		yield 100;
+		assert.equals('paragraph3', selection.toString());
+		assert.equals('paragraph3', utilsModule.getClipBoard(true));
+		selection.removeAllRanges();
+
+		action.fireMouseEventOnElement(
+			content.document.getElementById('paragraph4'),
+			{ type : 'dblclick', button : 0 }
+		);
+		yield 100;
+		assert.equals('paragraph4', selection.toString());
+		assert.equals('paragraph4', utilsModule.getClipBoard(true));
+	}
 }
