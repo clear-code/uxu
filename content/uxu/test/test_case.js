@@ -385,9 +385,30 @@ function registerTest(aFunction)
 		}
 	}
 
+	var privSetUp = null;
+	var privTearDown = null;
+	for (let i in aFunction)
+	{
+		if (
+			!privSetUp &&
+			/^set[uU]p/.test(i) &&
+			typeof aFunction[i] == 'function'
+			) {
+			privSetUp = aFunction[i];
+		}
+		else if (
+			!privTearDown &&
+			/^tear[dD]own/.test(i) &&
+			typeof aFunction[i] == 'function'
+			) {
+			privTearDown = aFunction[i];
+		}
+		if (privSetUp && privTearDown) break;
+	}
+
 	this._tests.push({
 		name     : (this._source + '::' + this.title + '::' + key),
-		desc     : desc,
+		description : desc,
 		title    : desc,
 		code     : aFunction,
 		hash     : hash,
@@ -396,7 +417,9 @@ function registerTest(aFunction)
 				aFunction.priority :
 				(String(aFunction.priority || '').toLowerCase() || 'normal')
 		),
-		id       : 'test-'+parseInt(Math.random() * 65000)
+		id       : 'test-'+parseInt(Math.random() * 65000),
+		setUp    : privSetUp,
+		tearDown : privTearDown
 	});
 }
 function _getHashFromString(aString)
@@ -503,16 +526,18 @@ function run(aStopper)
 	var testCaseReport = { report : null };
 
 	var stateTransitions = {
-		start :         { ok : 'doWarmUp' },
-		doWarmUp :      { ok : 'checkPriority', ko: 'doCoolDown' },
-		checkPriority : { ok : 'doSetUp', ko: 'doReport' },
-		doSetUp :       { ok : 'doTest', ko: 'doTearDown' },
-		doTest :        { ok : 'doTearDown' },
-		doTearDown :    { ok : 'doReport', ko: 'doReport' },
-		doReport :      { ok : 'nextTest' },
-		nextTest :      { ok : 'checkPriority', ko: 'doCoolDown' },
-		doCoolDown :    { ok : 'finished', ko: 'finished' },
-		finished :      { }
+		start :          { ok : 'doWarmUp' },
+		doWarmUp :       { ok : 'checkPriority', ko: 'doCoolDown' },
+		checkPriority :  { ok : 'doSetUp', ko: 'doReport' },
+		doSetUp :        { ok : 'doPrivSetUp', ko: 'doPrivTearDown' },
+		doPrivSetUp :    { ok : 'doTest', ko: 'doPrivTearDown' },
+		doTest :         { ok : 'doPrivTearDown' },
+		doPrivTearDown : { ok : 'doTearDown', ko: 'doTearDown' },
+		doTearDown :     { ok : 'doReport', ko: 'doReport' },
+		doReport :       { ok : 'nextTest' },
+		nextTest :       { ok : 'checkPriority', ko: 'doCoolDown' },
+		doCoolDown :     { ok : 'finished', ko: 'finished' },
+		finished :       { }
 	};
 
 	var doPreOrPostProcess = function(aContinuation, aFunction, aOptions)
@@ -587,7 +612,7 @@ function run(aStopper)
 			}
 			testReport.report = new Report();
 			testReport.report.result = 'passover';
-			testReport.report.testDescription = test.desc;
+			testReport.report.testDescription = test.description;
 			aContinuation('ko');
 		},
 		doSetUp : function(aContinuation)
@@ -597,7 +622,24 @@ function run(aStopper)
 				aContinuation,
 				_this._setUp,
 				{
-					errorDescription : bundle.getFormattedString('report_description_setup', [_this._tests[testIndex].desc]),
+					errorDescription : bundle.getFormattedString('report_description_setup', [_this._tests[testIndex].description]),
+					report : testReport
+				}
+			);
+		},
+		doPrivSetUp : function(aContinuation)
+		{
+			var test = _this._tests[testIndex];
+			if (!test.setUp) {
+				aContinuation('ok');
+				return;
+			}
+			testReport.report = new Report();
+			doPreOrPostProcess(
+				aContinuation,
+				test.setUp,
+				{
+					errorDescription : bundle.getFormattedString('report_description_priv_setup', [test.description]),
 					report : testReport
 				}
 			);
@@ -605,17 +647,16 @@ function run(aStopper)
 		doTest : function(aContinuation)
 		{
 			testReport.report.onDetailedStart();
-			var test;
-			test = _this._tests[testIndex];
+			var test = _this._tests[testIndex];
 			var newReport = _this._exec(test, context, aContinuation, testReport);
 			if (newReport.result) {
 				testReport.report = newReport;
-				testReport.report.testDescription = test.desc;
+				testReport.report.testDescription = test.description;
 				testReport.report.onDetailedFinish();
 				aContinuation('ok');
 			}
 			else {
-				testReport.report.testDescription = test.desc;
+				testReport.report.testDescription = test.description;
 				testReport.report.onDetailedFinish();
 			}
 		},
@@ -628,13 +669,32 @@ function run(aStopper)
 			_this.fireEvent('TestFinish', testReport.report);
 			aContinuation('ok');
 		},
+		doPrivTearDown : function(aContinuation)
+		{
+			var test = _this._tests[testIndex];
+			if (!test.tearDown) {
+				aContinuation('ok');
+				return;
+			}
+			doPreOrPostProcess(
+				aContinuation,
+				test.tearDown,
+				{
+					errorDescription : bundle.getFormattedString('report_description_priv_teardown', [test.description]),
+					report : testReport,
+					onError : function() {
+						_this._onFinish(test, 'error');
+					}
+				}
+			);
+		},
 		doTearDown : function(aContinuation)
 		{
 			doPreOrPostProcess(
 				aContinuation,
 				_this._tearDown,
 				{
-					errorDescription : bundle.getFormattedString('report_description_teardown', [_this._tests[testIndex].desc]),
+					errorDescription : bundle.getFormattedString('report_description_teardown', [_this._tests[testIndex].description]),
 					report : testReport,
 					onError : function() {
 						_this._onFinish(_this._tests[testIndex], 'error');
@@ -991,7 +1051,7 @@ function _onFinish(aTest, aResult)
 
 	try {
 		statement.bindStringParameter(0, aTest.name);
-		statement.bindStringParameter(1, aTest.desc);
+		statement.bindStringParameter(1, aTest.description);
 		statement.bindStringParameter(2, aResult);
 		statement.bindDoubleParameter(3, Date.now());
 		statement.bindStringParameter(4, aTest.hash);

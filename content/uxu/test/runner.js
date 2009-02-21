@@ -97,7 +97,7 @@ function _getTestsFromSuite(aSuite)
 		// declaration style
 		if (/^warm[uU]p/.test(i) || obj.isWarmUp)
 			testObjects.warmUp = obj;
-		else if (/^(warm[dD]own|cool[dD]own)/.test(i) ||
+		else if (/^(warm|cool)[dD]own/.test(i) ||
 			obj.isCoolDown || obj.isWarmDown)
 			testObjects.coolDown = obj;
 		else if (/^set[uU]p/.test(i) || obj.isSetUp)

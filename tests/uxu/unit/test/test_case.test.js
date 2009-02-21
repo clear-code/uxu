@@ -44,7 +44,7 @@ assert.testDone = function(aSetUp, aTearDown, aTestCount)
 
 assert.testInitialized = function(aTest, aDescription)
 {
-	assert.equals(aDescription, aTest.desc);
+	assert.equals(aDescription, aTest.description);
 	assert.equals('normal', aTest.priority);
 	assert.matches(/^test-\d+$/, aTest.id);
 };
@@ -52,20 +52,58 @@ assert.testInitialized = function(aTest, aDescription)
 function testRegisterTestFunctions()
 {
 	testcase.tests = {
-		'1' : function() {},
-		'2' : (new Function('arg', 'return true')),
-		'3' : 10,
-		'4' : 'str',
-		'5' : true,
+		'function式' : function() {},
+		'Fuctionコンストラクタ' : (new Function('arg', 'return true')),
+		'各種プロパティ付き' : (function() {
+			var f = function() {};
+			f.description = '説明（ここで定義された説明は、ハッシュのキーで上書きされる）';
+			f.priority = 'must';
+			f.setUp = function() {};
+			f.tearDown = function() {};
+			return f;
+		})(),
+		'各種プロパティ付き2' : (function() {
+			var f = function() {};
+			f.setup = function() {};
+			f.teardown = function() {};
+			return f;
+		})(),
+		'不正なテスト：数値' : 10,
+		'不正なテスト：文字列' : 'str',
+		'不正なテスト：真偽値' : true
 	};
-	assert.equals(2, testcase.tests.length);
+	assert.equals(4, testcase.tests.length);
+	assert.equals('各種プロパティ付き', testcase.tests[2].description);
+	assert.isNotNull(testcase.tests[2].setUp);
+	assert.isNotNull(testcase.tests[2].tearDown);
+	assert.isNotNull(testcase.tests[3].setUp);
+	assert.isNotNull(testcase.tests[3].tearDown);
 
 	testcase.registerTest(function() {});
 	testcase.registerTest(new Function('arg', 'return true'));
+	testcase.registerTest((function() {
+		var f = function() {};
+		f.description = '説明';
+		f.priority = 'must';
+		f.setUp = function() {};
+		f.tearDown = function() {};
+		return f;
+	})());
+	testcase.registerTest((function() {
+		var f = function() {};
+		f.setup = function() {};
+		f.teardown = function() {};
+		return f;
+	})());
 	testcase.registerTest(10);
 	testcase.registerTest('str');
 	testcase.registerTest('true');
-	assert.equals(4, testcase.tests.length);
+	assert.equals(8, testcase.tests.length);
+	assert.equals('説明', testcase.tests[6].description);
+	assert.isNotNull(testcase.tests[6].setUp);
+	assert.isNotNull(testcase.tests[6].tearDown);
+	assert.isNotNull(testcase.tests[7].setUp);
+	assert.isNotNull(testcase.tests[7].tearDown);
 }
 
 function testNormalStyle1()
@@ -381,5 +419,64 @@ function testStopper()
 	shouldStop = true;
 	yield 500;
 	assert.testDone(1, 1, 1);
+}
+function testPrivSetUpTearDown()
+{
+	var steps = [];
+	testcase.registerWarmUp(function() {
+		steps.push('w');
+	});
+	testcase.registerCoolDown(function() {
+		steps.push('c');
+	});
+	testcase.registerSetUp(function() {
+		steps.push('s0');
+	});
+	testcase.registerTearDown(function() {
+		steps.push('d0');
+	});
+	testcase.registerTest((function() {
+		var f = function() {
+			steps.push('t1');
+		};
+		f.setUp = function() {
+			steps.push('s1');
+		};
+		f.tearDown = function() {
+			steps.push('d1');
+		};
+		return f;
+	})());
+	testcase.registerTest((function() {
+		var f = function() {
+			steps.push('t2');
+		};
+		f.setUp = function() {
+			steps.push('s2');
+		};
+		f.tearDown = function() {
+			steps.push('d2');
+		};
+		return f;
+	})());
+	testcase.registerTest((function() {
+		var f = function() {
+			steps.push('t3');
+		};
+		f.setUp = function() {
+			steps.push('s3');
+		};
+		f.tearDown = function() {
+			steps.push('d3');
+		};
+		return f;
+	})());
+	assert.equals(3, testcase.tests.length);
+	assert.isFalse(testcase.done);
+	var start = Date.now();
+	testcase.masterPriority = 'must';
+	testcase.run();
+	yield (function() { return testcase.done; });
+	assert.equals('w,s0,s1,t1,d1,d0,s0,s2,t2,d2,d0,s0,s3,t3,d3,d0,c', steps.join(','));
 }
 
