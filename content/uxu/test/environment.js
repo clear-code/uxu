@@ -266,6 +266,14 @@ function openTestWindow(aOptions, callback)
 			win.addEventListener('load', function() {
 				win.removeEventListener('load', arguments.callee, false);
 				win.document.documentElement.setAttribute(key, id);
+				if ('width' in aOptions || 'height' in aOptions) {
+					win.resizeTo(aOptions.width || 10, aOptions.height || 10);
+				}
+				if ('screenX' in aOptions || 'x' in aOptions ||
+				    'screenY' in aOptions || 'y' in aOptions) {
+					win.moveTo(aOptions.screenX || aOptions.x || 0,
+					           aOptions.screenY || aOptions.y || 0);
+				}
 				callback(win);
 			}, false);
 		}
@@ -282,6 +290,13 @@ function closeTestWindow(aOptions)
  
 function setUpTestWindow(aContinuation, aOptions) 
 {
+	if (!aOptions) aOptions = {};
+	if (aContinuation && typeof aContinuation != 'function') {
+		for (var i in aContinuation)
+		{
+			aOptions[i] = aContinuation[i];
+		}
+	}
 	var loadedFlag = { value : false };
 	if (this.getTestWindow(aOptions)) {
 		if (aContinuation) aContinuation("ok");
