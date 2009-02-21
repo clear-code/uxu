@@ -747,6 +747,15 @@ function test_isTargetInSubTree()
 	targetRange.detach();
 }
 
+test_setAndGetClipBoard.setUp = function() {
+	yield Do(utils.setUpTestWindow());
+	yield Do(utils.loadURI('../../res/html.html'));
+
+}
+test_setAndGetClipBoard.tearDown = function() {
+	utils.tearDownTestWindow();
+
+}
 function test_setAndGetClipBoard()
 {
 	var random = Math.random() * 65000;
@@ -758,8 +767,6 @@ function test_setAndGetClipBoard()
 	assert.equals(random, utils.getClipBoard());
 
 	var isLinux = (navigator.platform.toLowerCase().indexOf('linux') > -1);
-
-	yield Do(utils.loadURI('../../res/html.html'));
 
 	var selection = content.getSelection();
 	selection.removeAllRanges();
