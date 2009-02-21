@@ -452,6 +452,7 @@ function testStopper()
 			steps.push('t2');
 		};
 		f.setUp = function() {
+			throw 'error';
 			steps.push('s2');
 		};
 		f.tearDown = function() {
@@ -461,6 +462,7 @@ function testStopper()
 	})());
 	testcase.registerTest((function() {
 		var f = function() {
+			throw 'error';
 			steps.push('t3');
 		};
 		f.setUp = function() {
@@ -471,12 +473,25 @@ function testStopper()
 		};
 		return f;
 	})());
-	assert.equals(3, testcase.tests.length);
+	testcase.registerTest((function() {
+		var f = function() {
+			steps.push('t4');
+		};
+		f.setUp = function() {
+			steps.push('s4');
+		};
+		f.tearDown = function() {
+			throw 'error';
+			steps.push('d4');
+		};
+		return f;
+	})());
+	assert.equals(4, testcase.tests.length);
 	assert.isFalse(testcase.done);
 	var start = Date.now();
 	testcase.masterPriority = 'must';
 	testcase.run();
 	yield (function() { return testcase.done; });
-	assert.equals('w,s0,s1,t1,d1,d0,s0,s2,t2,d2,d0,s0,s3,t3,d3,d0,c', steps.join(','));
+	assert.equals('w,s0,s1,t1,d1,d0,s0,d2,d0,s0,s3,d3,d0,s0,s4,t4,d0,c', steps.join(','));
 }
 
