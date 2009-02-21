@@ -1144,7 +1144,7 @@ function getXULWindow()
 function toggleContent() 
 {
 	_('content').collapsed = !_('content').collapsed;
-	_('content-splitter').hidden = !_('content-splitter').hidden;
+	_('content-splitter').collapsed = !_('content-splitter').collapsed;
 }
 	
 var contentAutoExpanded = false; 
@@ -1160,11 +1160,9 @@ function onContentLoad()
 		contentAutoExpanded = false;
 		toggleContent();
 	}
-	var minHeight = parseInt(_('content').parentNode.boxObject.height / 2);
-	if (!_('content').collapsed && _('content').boxObject.height < minHeight) {
-		_('content').previousSibling.previousSibling.height = minHeight;
-		_('content').height = minHeight;
-	}
+//	var minHeight = parseInt(_('content').parentNode.boxObject.height / 2);
+//	_('content').previousSibling.previousSibling.height = minHeight;
+//	_('content').height = minHeight;
 }
   
 function showSource(aTraceLine) 
@@ -1173,8 +1171,8 @@ function showSource(aTraceLine)
 	if (!unformatted.source || !unformatted.line) return;
 
 	var frame = _('source-viewer', 'source');
-	var opened = !_('source-splitter').hidden;
-	_('source-splitter').hidden = false;
+	var opened = !_('source-splitter').collapsed;
+	_('source-splitter').collapsed = false;
 	_('source-viewer').collapsed = false;
 	if (!opened && utils.getPref('extensions.uxu.mozunit.autoExpandWindow.sourceViewer')) {
 		window.resizeBy(
@@ -1261,7 +1259,7 @@ function stylizeSource(aSourceDocument, aLineCallback)
  
 function hideSource() 
 {
-	if (_('source-splitter').hidden) return;
+	if (_('source-splitter').collapsed) return;
 	if (utils.getPref('extensions.uxu.mozunit.autoExpandWindow.sourceViewer')) {
 		window.resizeBy(
 			-_('source-splitter').boxObject.width
@@ -1270,7 +1268,7 @@ function hideSource()
 		);
 	}
 	_('source-viewer').collapsed = true;
-	_('source-splitter').hidden = true;
+	_('source-splitter').collapsed = true;
 }
   
 function goDoCommand(aCommand) 

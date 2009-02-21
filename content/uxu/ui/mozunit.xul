@@ -275,19 +275,19 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 			<hbox flex="1">
 				<vbox flex="1" style="padding-top: 1em;">
 					<vbox flex="1">
-					<vbox id="prerun-report">
-						<description role="error" hidden="true" class="header"
+						<vbox id="prerun-report">
+							<description role="error" hidden="true" class="header"
+								context="contextMenu"/>
+							<listbox hidden="true" role="stack-trace"
+								flex="1" rows="5" class="inset"
+								style="font-size: 0.8em;"
+								onselect="showSource(this.selectedItem.label);"/>
+						</vbox>
+						<scrollbox id="testcase-reports" flex="1" orient="vertical" style="overflow: auto;"
 							context="contextMenu"/>
-						<listbox hidden="true" role="stack-trace"
-							flex="1" rows="5" class="inset"
-							style="font-size: 0.8em;"
-							onselect="showSource(this.selectedItem.label);"/>
-					</vbox>
-					<scrollbox id="testcase-reports" flex="1" orient="vertical" style="overflow: auto;"
-						context="contextMenu"/>
 					</vbox>
 
-					<splitter id="content-splitter" hidden="true"
+					<splitter id="content-splitter" collapsed="true"
 						collapse="after" resizeafter="closest"/>
 
 					<browser id="content"
@@ -313,7 +313,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 	</statusbar>
 </vbox>
 
-	<splitter id="source-splitter" hidden="true"/>
+	<splitter id="source-splitter" collapsed="true"/>
 	<vbox id="source-viewer" width="300" collapsed="true"
 		persist="width">
 		<toolbar align="center">
