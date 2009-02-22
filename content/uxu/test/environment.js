@@ -262,21 +262,21 @@ function openTestWindow(aOptions, callback)
 		win = window.openDialog.apply(window, [info.uri, info.name, info.flags].concat(info.arguments));
 		win[key] = this.uniqueID;
 		var id = info.uri+'?'+this.uniqueID;
-		if (callback) {
-			win.addEventListener('load', function() {
-				win.removeEventListener('load', arguments.callee, false);
-				win.document.documentElement.setAttribute(key, id);
-				if ('width' in aOptions || 'height' in aOptions) {
-					win.resizeTo(aOptions.width || 10, aOptions.height || 10);
-				}
-				if ('screenX' in aOptions || 'x' in aOptions ||
-				    'screenY' in aOptions || 'y' in aOptions) {
-					win.moveTo(aOptions.screenX || aOptions.x || 0,
-					           aOptions.screenY || aOptions.y || 0);
-				}
+		win.addEventListener('load', function() {
+			win.removeEventListener('load', arguments.callee, false);
+			win.document.documentElement.setAttribute(key, id);
+			if ('width' in aOptions || 'height' in aOptions) {
+				win.resizeTo(aOptions.width || 10, aOptions.height || 10);
+			}
+			if ('screenX' in aOptions || 'x' in aOptions ||
+			    'screenY' in aOptions || 'y' in aOptions) {
+				win.moveTo(aOptions.screenX || aOptions.x || 0,
+				           aOptions.screenY || aOptions.y || 0);
+			}
+			if (callback) {
 				callback(win);
-			}, false);
-		}
+			}
+		}, false);
 	}
 	return win;
 };
@@ -296,6 +296,7 @@ function setUpTestWindow(aContinuation, aOptions)
 		{
 			aOptions[i] = aContinuation[i];
 		}
+		aContinuation = void(0);
 	}
 	var loadedFlag = { value : false };
 	if (this.getTestWindow(aOptions)) {
