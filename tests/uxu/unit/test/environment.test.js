@@ -20,6 +20,7 @@ function test_properties()
 	assertProperty('contentWindow');
 }
 
+if (utils.product != 'Firefox') test_contentFrames.priority = 'never';
 function test_contentFrames()
 {
 	var win = utils.getTestWindow();
@@ -38,6 +39,7 @@ function test_contentFrames()
 	assert.equals(frame.contentWindow, utils.contentWindow);
 }
 
+if (utils.product != 'Firefox') test_addTab.priority = 'never';
 function test_addTab()
 {
 	var tabs = gBrowser.mTabs;

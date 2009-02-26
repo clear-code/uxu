@@ -461,7 +461,7 @@ function getBrowser(aOptions)
 function getTestFrameOwner(aOptions) 
 {
 	var win = this.getTestWindow(aOptions);
-	if (!win) return this._testFrame;
+	if (!win || !win.gBrowser) return this._testFrame;
 	return win.gBrowser;
 };
  
