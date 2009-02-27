@@ -370,21 +370,6 @@ function registerTest(aFunction)
 		}))
 		return;
 
-	var desc = aFunction.description;
-	var key = desc;
-	var source = aFunction.toSource();
-	var hash = this._getHashFromString(source);
-	if (!desc) {
-		if (source.match(/\(?function ([^\(]+)\s*\(/)) {
-			desc = RegExp.$1;
-			key = desc;
-		}
-		else {
-			desc = source.substring(0, 30);
-			key = hash;
-		}
-	}
-
 	var privSetUp = null;
 	var privTearDown = null;
 	for (let i in aFunction)
@@ -404,6 +389,24 @@ function registerTest(aFunction)
 			privTearDown = aFunction[i];
 		}
 		if (privSetUp && privTearDown) break;
+	}
+
+	var desc = aFunction.description;
+	var key = desc;
+	var source = [];
+	if (privSetUp) source.push(privSetUp.toSource());
+	source.push(aFunction.toSource());
+	if (privTearDown) source.push(privTearDown.toSource());
+	var hash = this._getHashFromString(source.join('\n'));
+	if (!desc) {
+		if (source.match(/\(?function ([^\(]+)\s*\(/)) {
+			desc = RegExp.$1;
+			key = desc;
+		}
+		else {
+			desc = source.substring(0, 30);
+			key = hash;
+		}
 	}
 
 	this._tests.push({
