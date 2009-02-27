@@ -388,12 +388,9 @@ function closeComposeWindow()
 {
 	var composeWindow = this.getComposeWindow();
 	if (composeWindow) {
-		try {
-			composeWindow.close();
-			return true;
-		}
-		catch(e) {
-		}
+		composeWindow.SetContentAndBodyAsUnmodified();
+		composeWindow.MsgComposeCloseWindow(true);
+		return true;
 	}
 	return false;
 }
@@ -411,12 +408,9 @@ function closeComposeWindows()
 	var composeWindows = this.getComposeWindows();
 	for (let i in composeWindows)
 	{
-		try {
-			composeWindows[i].close();
-			closed = true;
-		}
-		catch(e) {
-		}
+		composeWindows[i].SetContentAndBodyAsUnmodified();
+		composeWindows[i].MsgComposeCloseWindow(true);
+		closed = true;
 	}
 	return closed;
 }
