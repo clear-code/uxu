@@ -72,6 +72,10 @@ function test_addTab()
 	gBrowser.removeTab(tabs[1]);
 }
 
+test_loadURI.setUp = function()
+{
+	utils.tearDownTestWindow();
+}
 function test_loadURI()
 {
 	yield Do(utils.loadURI('about:'));
