@@ -397,7 +397,8 @@ function registerTest(aFunction)
 	if (privSetUp) source.push(privSetUp.toSource());
 	source.push(aFunction.toSource());
 	if (privTearDown) source.push(privTearDown.toSource());
-	var hash = this._getHashFromString(source.join('\n'));
+	source = source.join('\n');
+	var hash = this._getHashFromString(source);
 	if (!desc) {
 		if (source.match(/\(?function ([^\(]+)\s*\(/)) {
 			desc = RegExp.$1;
