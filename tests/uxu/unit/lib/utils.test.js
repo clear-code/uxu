@@ -748,9 +748,11 @@ function test_isTargetInSubTree()
 }
 
 test_setAndGetClipBoard.setUp = function() {
-	yield Do(utils.setUpTestWindow());
+	if (utils.product == 'Firefox') {
+		yield Do(utils.setUpTestWindow());
+	}
 	yield Do(utils.loadURI('../../res/html.html'));
-
+	assert.contains('/res/html.html', content.location.href);
 }
 test_setAndGetClipBoard.tearDown = function() {
 	utils.tearDownTestWindow();
