@@ -11,8 +11,14 @@ var inherits = lib_module.require('class', 'event_target');
 var mail_module = new ModuleManager(['chrome://uxu/content/mail']);
 var MailObserver = mail_module.require('class', 'observer');
 
-function constructor()
+var test_module = new ModuleManager(['chrome://uxu/content/test']);
+var action = test_module.require('package', 'action');
+
+var ERROR_NO_COMPOSE_WINDOW = new Error('no compose window');
+
+function constructor(aEnvironment)
 {
+	this._environment = aEnvironment;
 	this.initListeners();
 	this._observer = new MailObserver();
 	this.__defineGetter__('deliveries', function() {
@@ -24,6 +30,7 @@ function destroy()
 {
 	this._observer.destroy();
 	this.removeAllListeners();
+	delete this._environment;
 }
 
 function onDestroy()
@@ -35,6 +42,7 @@ function clear()
 {
 	this._observer.clear();
 }
+
 
 function emulateSendMessage(aMsgWindow, aMsgCompFields)
 {
@@ -307,3 +315,235 @@ datasource.AddDataSource(
 		.getService(Ci.nsIRDFDataSource)
 );
 */
+
+
+
+function getComposeWindow()
+{
+	var composeWindows = this.getComposeWindows();
+	return composeWindows.length ? composeWindows[0] : null ;
+}
+
+function getComposeWindows()
+{
+	var composeWindows = [];
+	this._environment.getChromeWindows({ type : 'msgcompose' })
+		.forEach(function(aWindow) {
+			if (this._isComposeWindowReady(aWindow)) {
+				composeWindows.push(aWindow);
+			}
+		}, this);
+	return composeWindows;
+}
+
+function _isComposeWindowReady(aComposeWindow)
+{
+	var textboxes = getAddressTextboxes(aComposeWindow);
+	return (
+			textboxes.snapshotLength > 1 ||
+			(
+				textboxes.snapshotLength > 0 &&
+				getLastAddressTextbox(aComposeWindow) &&
+				getDummyRow(aComposeWindow)
+			)
+		);
+}
+
+function _ensureComposeWindowReady(aComposeWindow)
+{
+	if (!aComposeWindow) {
+		aComposeWindow = this.getComposeWindow();
+	}
+	if (!aComposeWindow) {
+		throw ERROR_NO_COMPOSE_WINDOW;
+	}
+	return aComposeWindow;
+}
+
+
+function setUpComposeWindow()
+{
+	return utils.doIteration((function(aSelf) {
+		yield aSelf._environment.setUpTestWindow();
+
+		var mainWindow = aSelf._environment.getTestWindow();
+		yield (function() {
+				return 'MsgNewMessage' in mainWindow;
+			});
+
+		yield 500; // wait for initializing processes
+
+		// 新規メッセージのウィンドウを開く
+		mainWindow.MsgNewMessage(null);
+
+		// ウィンドウが開かれるまで待つ
+		yield (function() {
+				return composeWindow = aSelf.getComposeWindow();
+			});
+	})(this));
+}
+
+function closeComposeWindow()
+{
+	var composeWindow = this.getComposeWindow();
+	if (composeWindow) {
+		try {
+			composeWindow.close();
+			return true;
+		}
+		catch(e) {
+		}
+	}
+	return false;
+}
+
+function tearDownComposeWindow()
+{
+	if (this.closeComposeWindow()) {
+		this._environment.tearDownTestWindow();
+	}
+}
+
+function closeComposeWindows()
+{
+	var closed = false;
+	var composeWindows = this.getComposeWindows();
+	for (let i in composeWindows)
+	{
+		try {
+			composeWindows[i].close();
+			closed = true;
+		}
+		catch(e) {
+		}
+	}
+	return closed;
+}
+
+function tearDownComposeWindows()
+{
+	if (this.closeComposeWindows()) {
+		this._environment.tearDownTestWindow();
+	}
+}
+
+
+function getLastAddressTextbox(aComposeWindow)
+{
+	aComposeWindow = this._ensureComposeWindowReady(aComposeWindow);
+	return aComposeWindow.document.evaluate(
+			'/descendant::*[local-name()="menulist" and starts-with(@value, "addr_")][last()]'+
+			'/ancestor::*[local-name()="listitem"]/descendant::*[local-name()="textbox"]',
+			aComposeWindow.document,
+			null,
+			XPathResult.FIRST_ORDERED_NODE_TYPE,
+			null
+		).singleNodeValue;
+}
+
+function getAddressTextboxes(aComposeWindow)
+{
+	aComposeWindow = this._ensureComposeWindowReady(aComposeWindow);
+	return aComposeWindow.document.evaluate(
+			'/descendant::*[local-name()="menulist" and starts-with(@value, "addr_")]'+
+			'/ancestor::*[local-name()="listitem"]/descendant::*[local-name()="textbox"]',
+			aComposeWindow.document,
+			null,
+			XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+			null
+		);
+}
+
+function getLastAddressType(aComposeWindow)
+{
+	aComposeWindow = this._ensureComposeWindowReady(aComposeWindow);
+	return aComposeWindow.document.evaluate(
+			'/descendant::*[local-name()="menulist" and starts-with(@value, "addr_")][last()]',
+			aComposeWindow.document,
+			null,
+			XPathResult.FIRST_ORDERED_NODE_TYPE,
+			null
+		).singleNodeValue;
+}
+
+function getAddressTypes(aComposeWindow)
+{
+	aComposeWindow = this._ensureComposeWindowReady(aComposeWindow);
+	return aComposeWindow.document.evaluate(
+			'/descendant::*[local-name()="menulist" and starts-with(@value, "addr_")]',
+			aComposeWindow.document,
+			null,
+			XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+			null
+		);
+}
+
+function getDummyRow(aComposeWindow)
+{
+	aComposeWindow = this._ensureComposeWindowReady(aComposeWindow);
+	return aComposeWindow.document.evaluate(
+			'/descendant::*[@class="dummy-row"]',
+			aComposeWindow.document,
+			null,
+			XPathResult.FIRST_ORDERED_NODE_TYPE,
+			null
+		).singleNodeValue;
+}
+
+function getRecipients(aComposeWindow)
+{
+	aComposeWindow = this._ensureComposeWindowReady(aComposeWindow);
+
+	var types = getAddressTypes(aComposeWindow);
+	var textboxes = getAddressTextboxes(aComposeWindow);
+	var array = [];
+	for (let i = 0, maxi = textboxes.snapshotLength; i < maxi; i++)
+	{
+		let value = textboxes.snapshotItem(i).value;
+		if (value) {
+			array.push({
+				type    : types.snapshotItem(i).value.replace('addr_', ''),
+				address : value
+			});
+		}
+	}
+	return array;
+}
+
+function setRecipients(aAddresses, aComposeWindow)
+{
+	aComposeWindow = this._ensureComposeWindowReady(aComposeWindow);
+	return utils.doIteration((function(aSelf) {
+		for (let i in aAddresses)
+		{
+			let type = aAddresses[i].type,
+				address = aAddresses[i].address;
+
+			getLastAddressType(aComposeWindow).value = 'addr_'+type.toLowerCase();
+
+			let textbox = getLastAddressTextbox(aComposeWindow);
+
+			textbox.focus();
+			action.inputTextToField(textbox, address);
+
+			// 少し待ってからEnterキーのイベントを送出しないと
+			// 正常に処理されない（オートコンプリートのタイムアウト待ち）
+			while (textbox.value)
+			{
+				textbox = getLastAddressTextbox(aComposeWindow);
+				textbox.focus();
+				action.fireKeyEventOnElement(textbox, {
+					type    : 'keypress',
+					keyCode : Ci.nsIDOMKeyEvent.DOM_VK_RETURN
+				});
+				yield 100;
+			}
+		}
+	})(this));
+}
+
+function setSubject(aSubject, aComposeWindow)
+{
+	aComposeWindow = this._ensureComposeWindowReady(aComposeWindow);
+	action.inputTextToField(aComposeWindow.document.getElementById('msgSubject'), aSubject);
+}

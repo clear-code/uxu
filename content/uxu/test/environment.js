@@ -185,7 +185,7 @@ function attachGMUtils()
 function attachMailUtils() 
 {
 	var MailUtils = mail_module.require('class', 'utils');
-	this.mail = new MailUtils();
+	this.mail = new MailUtils(this);
 	this.addListener(this.mail);
 }
  
@@ -328,12 +328,11 @@ function getChromeWindow(aOptions)
 function getChromeWindows(aOptions) 
 {
 	var info = this.normalizeTestWindowOption(aOptions);
-	var targets = WindowManager.getEnumerator(info.type),
-		target;
+	var targets = WindowManager.getEnumerator(info.type);
 	var result = [];
 	while (targets.hasMoreElements())
 	{
-		target = targets.getNext().
+		let target = targets.getNext().
 			QueryInterface(Ci.nsIDOMWindowInternal);
 		if (info.type)
 			result.push(target);
