@@ -11,6 +11,7 @@ var inherits = lib_module.require('class', 'event_target');
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var TestCase    = test_module.require('class', 'test_case');
 var TestLog     = test_module.require('class', 'test_log');
+var assertions  = test_module.require('package', 'assertions');
 var Environment = test_module.require('class', 'environment');
 	 
 function constructor(aBrowser/*, aFile, ...*/) 
@@ -380,6 +381,13 @@ function _createTestSuite(aURL)
 
 	suite.TestCase      = TestCase;
 	suite.Specification = TestCase;
+	suite.mozlab = {
+		mozunit : {
+			TestCase      : TestCase,
+			Specification : TestCase,
+			assertions    : assertions
+		}
+	};
 
 	suite.include(suite.fileURL);
 
