@@ -549,7 +549,7 @@ function setSubject(aSubject, aComposeWindow)
 	action.inputTextToField(aComposeWindow.document.getElementById('msgSubject'), aSubject);
 }
 
-function getBodyFrame()
+function getBodyFrame(aComposeWindow)
 {
 	aComposeWindow = this._ensureComposeWindowReady(aComposeWindow);
 	return aComposeWindow.document.getElementById('content-frame');
@@ -585,6 +585,16 @@ function inputToBody(aContents, aAppend, aComposeWindow)
 		range.insertNode(fragment);
 	}
 	range.detach();
+}
+
+function attachFile(aFile, aComposeWindow)
+{
+	if (!aFile) return;
+	aFile = this._environment.normalizeToFile(aFile);
+	if (!aFile || !aFile.exists()) return;
+
+	aComposeWindow = this._ensureComposeWindowReady(aComposeWindow);
+	aComposeWindow.AttachFile(aFile);
 }
 
 function doSend(aAsync, aComposeWindow)
