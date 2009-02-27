@@ -547,3 +547,37 @@ function setSubject(aSubject, aComposeWindow)
 	aComposeWindow = this._ensureComposeWindowReady(aComposeWindow);
 	action.inputTextToField(aComposeWindow.document.getElementById('msgSubject'), aSubject);
 }
+
+function doSend(aAsync, aComposeWindow)
+{
+	this.doSendByAPI(aAsync, aComposeWindow);
+}
+
+function _doSend(aCommand, aAsync, aComposeWindow)
+{
+	aComposeWindow = this._ensureComposeWindowReady(aComposeWindow);
+	if (aAsync) {
+		// このタイミングでダイアログ等が開かれるとメインスレッドの
+		// 処理が止まってしまうため、タイマーを使って非同期で開く。
+		aComposeWindow.setTimeout(aCommand);
+	}
+	else {
+		aCommand();
+	}
+}
+
+function doSendByAPI(aAsync, aComposeWindow)
+{
+	aComposeWindow = this._ensureComposeWindowReady(aComposeWindow);
+	this._doSend(function() {
+		aComposeWindow.SendMessage();
+	}, aAsync);
+}
+
+function doSendByButtonClick(aAsync, aComposeWindow)
+{
+	aComposeWindow = this._ensureComposeWindowReady(aComposeWindow);
+	this._doSend(function() {
+		action.fireMouseEventOnElement(aComposeWindow.document.getElementById('button-send'));
+	}, aAsync);
+}
