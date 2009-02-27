@@ -8,7 +8,8 @@ var test_module = new ModuleManager([topDir+'content/uxu/test']);
 var Runner = test_module.require('class', 'runner');
 
 var declarationStyleTest = topDir+'tests/samples/declaration.test.js';
-var mozLabStyleTest = topDir+'tests/samples/unit.test.js';
+var mozLabStyleTest = topDir+'tests/samples/mozlab.test.js';
+var mozLabStyleTestWithoutImporting = topDir+'tests/samples/unit.test.js';
 
 var runenr;
 var tempFiles;
@@ -67,13 +68,19 @@ function test_getTestsFromSuite()
 	assert.equals(1, tests.length);
 	assert.equals('This is a unit test.', tests[0].title);
 	assert.equals(1, tests[0].tests.length);
+
+	suite = runner._createTestSuite(mozLabStyleTestWithoutImporting);
+	tests = runner._getTestsFromSuite(suite);
+	assert.equals(1, tests.length);
+	assert.equals('This is a unit test.', tests[0].title);
+	assert.equals(1, tests[0].tests.length);
 }
 
 function test_getTestFiles()
 {
 	var folder = utils.getFileFromURLSpec(baseURL+'../../../samples/');
 	var files = runner._getTestFiles(folder, true);
-	assert.equals(5, files.length);
+	assert.equals(6, files.length);
 }
 
 function test_cleanUpModifications()

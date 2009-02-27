@@ -161,15 +161,17 @@ function _initSource(aOptions)
 	if (!source || typeof source != 'string') {
 		var path;
 		var stack = Components.stack;
-		do {
-			path = stack.filename;
-			if (path.indexOf('chrome://uxu/content/lib/subScriptRunner.js?') != 0)
+		while (stack)
+		{
+			path = stack.filename || '';
+			if (path.indexOf('chrome://uxu/content/lib/subScriptRunner.js?') != 0) {
+				stack = stack.caller
 				continue;
+			}
 			/.+includeSource=([^;]+)/.test(path);
 			source = decodeURIComponent(RegExp.$1);
 			break;
 		}
-		while (stack = stack.caller);
 	}
 	this._source = source;
 	this.__defineGetter__(
