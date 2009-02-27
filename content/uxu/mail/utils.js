@@ -317,6 +317,7 @@ datasource.AddDataSource(
 */
 
 
+// features for compose window
 
 function getComposeWindow()
 {
@@ -546,6 +547,44 @@ function setSubject(aSubject, aComposeWindow)
 {
 	aComposeWindow = this._ensureComposeWindowReady(aComposeWindow);
 	action.inputTextToField(aComposeWindow.document.getElementById('msgSubject'), aSubject);
+}
+
+function getBodyFrame()
+{
+	aComposeWindow = this._ensureComposeWindowReady(aComposeWindow);
+	return aComposeWindow.document.getElementById('content-frame');
+}
+
+function inputToBody(aContents, aAppend, aComposeWindow)
+{
+	aComposeWindow = this._ensureComposeWindowReady(aComposeWindow);
+
+	var frame = this.getBodyFrame(aComposeWindow);
+	var doc = frame.contentDocument;
+
+	var range = doc.createRange();
+	range.selectNodeContents(doc.body);
+	if (!aAppend) {
+		range.deleteContents();
+	}
+	range.collapse(false);
+	if (aContents instanceof Ci.nsIDOMDocumentFragment ||
+		aContents instanceof Ci.nsIDOMNode) {
+		aContents = doc.importNode(aContents);
+		range.insertNode(aContents);
+	}
+	else {
+		var fragment = doc.createDocumentFragment();
+		var lines = String(aContents).split(/[\r\n]+/);
+		lines.forEach(function(aLine, aIndex) {
+			fragment.appendChild(doc.createTextNode(aLine));
+			if (aIndex < lines.length-1) {
+				fragment.appendChild(doc.createElement('br'));
+			}
+		});
+		range.insertNode(fragment);
+	}
+	range.detach();
 }
 
 function doSend(aAsync, aComposeWindow)
