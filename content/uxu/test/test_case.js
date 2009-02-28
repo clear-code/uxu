@@ -862,6 +862,7 @@ function onInput(aEvent)
 {
 	this._lastRemoteResponse = Date.now();
 	var input = aEvent.data;
+utils.log('INPUT "'+input+'"');
 	if (/[\r\n]+$/.test(input)) {
 		if (this._remoteResultBuffer) {
 			input = this._remoteResultBuffer + input;

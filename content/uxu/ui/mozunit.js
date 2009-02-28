@@ -292,6 +292,11 @@ function startup()
 					aNode.setAttribute('disabled', true);
 				});
 		}
+
+		if (gOptions && (gOptions.outputHost || gOptions.outputPort)) {
+			gRemoteRun.startPinging();
+		}
+
 		running = true;
 	}
 
@@ -340,6 +345,8 @@ var restartObserver = {
   
 function shutdown() 
 {
+	gRemoteRun.stopPinging();
+
 	if (!isLinux()) {
 		ObserverService.removeObserver(alwaysRaisedObserver, 'xul-window-registered');
 	}
@@ -570,7 +577,27 @@ var gRemoteRun = {
 				return;
 			}
 		}
-	}
+	},
+
+	startPinging : function()
+	{
+		this.stopPinging();
+		this._pingTimer = window.setInterval(function(aSelf) {
+			aSelf.ping();
+		}, 3000, this);
+	},
+	stopPinging : function()
+	{
+		if (this._pingTimer) {
+			window.clearTimeout(this._pingTimer);
+		}
+	},
+	ping : function()
+	{
+		var message = new Message(' ', gOptions.outputHost, gOptions.outputPort, this);
+		message.send();
+	},
+	_pingTimer : null
 };
  	
 function onAllTestsFinish() 
