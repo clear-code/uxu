@@ -157,6 +157,9 @@ var _methods = <![CDATA[
 // fallback
 var __noSuchMethod__ = function(aName, aArgs)
 {
+	if (!(aName in this._real)) {
+		throw 'MailComposeProxy: the property "'+aName+'" is undefined.';
+	}
 	return this._real[aName].apply(this._real, aArgs);
 }
 
@@ -168,7 +171,7 @@ function _init()
 		.replace(/^\s*\/\/.+$/mg, '')
 		.split(/\s+/)
 		.forEach(function(aProp) {
-			if (aProp in this) return;
+			if (aProp in this || !(aProp in this._real)) return;
 			this.__defineGetter__(aProp, function() {
 				return this._real[aProp];
 			});
@@ -181,7 +184,7 @@ function _init()
 		.replace(/^\s*\/\/.+$/mg, '')
 		.split(/\s+/)
 		.forEach(function(aProp) {
-			if (aProp in this) return;
+			if (aProp in this || !(aProp in this._real)) return;
 			this.__defineGetter__(aProp, function() {
 				return this._real[aProp];
 			});
