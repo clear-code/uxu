@@ -198,12 +198,12 @@ function test_getFileFromKeyword()
 
 function test_readFrom()
 {
-	assert.equals('ASCII', utilsModule.readFrom(baseURL+'../../res/ascii.txt'));
-	assert.equals('ASCII', utilsModule.readFrom('../../res/ascii.txt'));
-	assert.equals('日本語', utilsModule.readFrom(baseURL+'../../res/utf8.txt', 'UTF-8'));
-	assert.equals('日本語', utilsModule.readFrom('../../res/utf8.txt', 'UTF-8'));
-	assert.equals('日本語', utilsModule.readFrom(baseURL+'../../res/shift_jis.txt', 'Shift_JIS'));
-	assert.equals('日本語', utilsModule.readFrom('../../res/shift_jis.txt', 'Shift_JIS'));
+	assert.equals('ASCII', utilsModule.readFrom(baseURL+'../../fixtures/ascii.txt'));
+	assert.equals('ASCII', utilsModule.readFrom('../../fixtures/ascii.txt'));
+	assert.equals('日本語', utilsModule.readFrom(baseURL+'../../fixtures/utf8.txt', 'UTF-8'));
+	assert.equals('日本語', utilsModule.readFrom('../../fixtures/utf8.txt', 'UTF-8'));
+	assert.equals('日本語', utilsModule.readFrom(baseURL+'../../fixtures/shift_jis.txt', 'Shift_JIS'));
+	assert.equals('日本語', utilsModule.readFrom('../../fixtures/shift_jis.txt', 'Shift_JIS'));
 }
 
 function test_writeTo()
@@ -283,7 +283,7 @@ function test_loadPrefs()
 	var result;
 
 	hash = {};
-	result = utilsModule.loadPrefs('../../res/default.js', hash);
+	result = utilsModule.loadPrefs('../../fixtures/default.js', hash);
 	defaultPrefs.forEach(function(aItem) {
 		assert.equals(aItem.value, result[aItem.name], aItem.name);
 		assert.isNull(utils.getPref(aItem.name), aItem.name);
@@ -291,14 +291,14 @@ function test_loadPrefs()
 	assert.equals(hash, result);
 
 	hash = {};
-	result = utilsModule.loadPrefs('../../res/user.js', hash);
+	result = utilsModule.loadPrefs('../../fixtures/user.js', hash);
 	userPrefs.forEach(function(aItem) {
 		assert.equals(aItem.value, result[aItem.name], aItem.name);
 		assert.isNull(utils.getPref(aItem.name), aItem.name);
 	}, this);
 	assert.equals(hash, result);
 
-	result = utilsModule.loadPrefs('../../res/default.js');
+	result = utilsModule.loadPrefs('../../fixtures/default.js');
 	defaultPrefs.forEach(function(aItem) {
 		assert.equals(aItem.value, utils.getPref(aItem.name), aItem.name);
 	}, this);
@@ -317,7 +317,7 @@ function test_loadPrefs()
 		result
 	);
 
-	result = utilsModule.loadPrefs('../../res/user.js');
+	result = utilsModule.loadPrefs('../../fixtures/user.js');
 	userPrefs.forEach(function(aItem) {
 		assert.equals(aItem.value, utils.getPref(aItem.name), aItem.name);
 	}, this);
@@ -339,15 +339,15 @@ function test_loadPrefs()
 
 function test_convertEncoding()
 {
-	var utf8String = utilsModule.readFrom('../../res/utf8.txt');
-	var ucs2String = utilsModule.readFrom('../../res/utf8.txt', 'UTF-8');
+	var utf8String = utilsModule.readFrom('../../fixtures/utf8.txt');
+	var ucs2String = utilsModule.readFrom('../../fixtures/utf8.txt', 'UTF-8');
 
 	assert.equals(ucs2String, UTF8ToUnicode(utf8String));
 	assert.equals(ucs2String, UTF8ToUCS2(utf8String));
 	assert.equals(utf8String, UnicodeToUTF8(ucs2String));
 	assert.equals(utf8String, UCS2ToUTF8(ucs2String));
 
-	var sjisString = utilsModule.readFrom('../../res/shift_jis.txt');
+	var sjisString = utilsModule.readFrom('../../fixtures/shift_jis.txt');
 
 	assert.equals('日本語', XToUnicode(sjisString, 'Shift_JIS'));
 	assert.equals('日本語', XToUCS2(sjisString, 'Shift_JIS'));
@@ -553,7 +553,7 @@ assert.inspectDOMNode = function(aExpected, aNode) {
 testInspectDOMNode.priority = 'must';
 function testInspectDOMNode()
 {
-	yield utils.loadURIInTestFrame('../../res/html.xml');
+	yield utils.loadURIInTestFrame('../../fixtures/html.xml');
 
 	var p1 = content.document.getElementById('paragraph1');
 	assert.isNotNull(p1);
@@ -568,7 +568,7 @@ function testInspectDOMNode()
 	fragment.appendChild(p2.cloneNode(true));
 	assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em xmlns="http://www.w3.org/1999/xhtml" class="class" lang="en">em</em></p><p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em xmlns="http://www.w3.org/1999/xhtml" class="class" lang="en">em</em></p>', fragment);
 
-	yield utils.loadURIInTestFrame('../../res/html.html');
+	yield utils.loadURIInTestFrame('../../fixtures/html.html');
 
 	p1 = content.document.getElementById('paragraph1');
 	assert.isNotNull(p1);
@@ -647,7 +647,7 @@ function testNotify()
 function test_include()
 {
 	var namespace = {};
-	utilsModule.include('../../res/test.js', namespace, 'UTF-8');
+	utilsModule.include('../../fixtures/test.js', namespace, 'UTF-8');
 	assert.isDefined(namespace.string);
 	assert.equals('文字列', namespace.string);
 }
@@ -659,7 +659,7 @@ function $(aId)
 
 function test_isTargetInRange()
 {
-	yield Do(utils.loadURI('../../res/links.html'));
+	yield Do(utils.loadURI('../../fixtures/links.html'));
 
 	var range = content.document.createRange();
 	range.setStartBefore($('item4'));
@@ -686,7 +686,7 @@ function test_isTargetInRange()
 
 function test_isTargetInSelection()
 {
-	yield Do(utils.loadURI('../../res/links.html'));
+	yield Do(utils.loadURI('../../fixtures/links.html'));
 
 	var selection = content.getSelection();
 	selection.removeAllRanges();
@@ -726,7 +726,7 @@ function test_isTargetInSelection()
 
 function test_isTargetInSubTree()
 {
-	yield Do(utils.loadURI('../../res/links.html'));
+	yield Do(utils.loadURI('../../fixtures/links.html'));
 
 	var root = $('item5');
 
@@ -751,8 +751,8 @@ test_setAndGetClipBoard.setUp = function() {
 	if (utils.product == 'Firefox') {
 		yield Do(utils.setUpTestWindow());
 	}
-	yield Do(utils.loadURI('../../res/html.html'));
-	assert.contains('/res/html.html', content.location.href);
+	yield Do(utils.loadURI('../../fixtures/html.html'));
+	assert.contains('/fixtures/html.html', content.location.href);
 }
 test_setAndGetClipBoard.tearDown = function() {
 	utils.tearDownTestWindow();

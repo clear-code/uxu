@@ -28,12 +28,12 @@ function testGetInstallLocation()
 
 function testGetVersion()
 {
-	var file = utils.getFileFromURLSpec(baseURL+'../../res/element.install.rdf');
+	var file = utils.getFileFromURLSpec(baseURL+'../../fixtures/element.install.rdf');
 	assert.isNotNull(file);
 	var version = service.getVersionFromManifest(file);
 	assert.equals([0, 12, 3, 45], version);
 
-	file = utils.getFileFromURLSpec(baseURL+'../../res/attribute.install.rdf');
+	file = utils.getFileFromURLSpec(baseURL+'../../fixtures/attribute.install.rdf');
 	assert.isNotNull(file);
 	version = service.getVersionFromManifest(file);
 	assert.equals([0, 12, 3, 45], version);

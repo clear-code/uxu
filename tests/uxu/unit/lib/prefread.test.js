@@ -20,25 +20,25 @@ function test_read()
 {
 	var file;
 
-	file = this.normalizeToFile('../../res/default.js');
+	file = this.normalizeToFile('../../fixtures/default.js');
 	assert.equals(defaultPrefs, prefreadModule.read(file));
 
-	file = this.normalizeToFile('../../res/user.js');
+	file = this.normalizeToFile('../../fixtures/user.js');
 	assert.equals(userPrefs, prefreadModule.read(file));
 
-	file = this.normalizeToFile('../../res/invalid_calculate.js');
+	file = this.normalizeToFile('../../fixtures/invalid_calculate.js');
 	assert.raises(
 		prefreadModule.ERROR_MALFORMED_PREF_FILE,
 		function() { prefreadModule.read(file); }
 	);
 
-	file = this.normalizeToFile('../../res/invalid_variable.js');
+	file = this.normalizeToFile('../../fixtures/invalid_variable.js');
 	assert.raises(
 		prefreadModule.ERROR_MALFORMED_PREF_FILE,
 		function() { prefreadModule.read(file); }
 	);
 
-	file = this.normalizeToFile('../../res/invalid_array.js');
+	file = this.normalizeToFile('../../fixtures/invalid_array.js');
 	assert.raises(
 		prefreadModule.ERROR_MALFORMED_PREF_FILE,
 		function() { prefreadModule.read(file); }

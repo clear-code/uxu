@@ -173,7 +173,7 @@ function testContains()
                          ['outside', array]);
 
 
-	yield Do(utils.loadURI('../../res/links.html'));
+	yield Do(utils.loadURI('../../fixtures/links.html'));
 
 	function $(aId)
 	{

@@ -12,7 +12,7 @@ function setUp()
 	rootManager = new ModuleManager([topDir+'content/uxu']);
 	libManager = new ModuleManager([topDir+'content/uxu/lib']);
 	testManager = new ModuleManager([topDir+'content/uxu/test']);
-	dummyManager = new ModuleManager([baseURL+'../../res/module']);
+	dummyManager = new ModuleManager([baseURL+'../../fixtures/module']);
 }
 
 function tearDown()

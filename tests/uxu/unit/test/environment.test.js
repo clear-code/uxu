@@ -51,10 +51,10 @@ function test_addTab()
 	assert.equals('about:', tabs[1].linkedBrowser.currentURI.spec);
 	gBrowser.removeTab(tabs[1]);
 
-	yield Do(utils.addTab('../../res/frameTest.html?'+Date.now(), { selected : true }));
+	yield Do(utils.addTab('../../fixtures/frameTest.html?'+Date.now(), { selected : true }));
 	assert.equals(2, tabs.length);
 	assert.equals(tabs[1], gBrowser.selectedTab);
-	assert.contains('/res/frameTest.html', tabs[1].linkedBrowser.currentURI.spec);
+	assert.contains('/fixtures/frameTest.html', tabs[1].linkedBrowser.currentURI.spec);
 	assert.equals(3, content.frames.length);
 	assert.contains('/html.html', content.frames[0].location.href);
 	assert.contains('/ascii.txt', content.frames[1].location.href);
@@ -62,9 +62,9 @@ function test_addTab()
 	assert.notEquals(0, content.frames[2].document.links.length);
 	gBrowser.removeTab(tabs[1]);
 
-	yield Do(utils.addTab('../../res/frameTestInline.html?'+Date.now(), { selected : true }));
+	yield Do(utils.addTab('../../fixtures/frameTestInline.html?'+Date.now(), { selected : true }));
 	assert.equals(2, tabs.length);
-	assert.contains('/res/frameTestInline.html', tabs[1].linkedBrowser.currentURI.spec);
+	assert.contains('/fixtures/frameTestInline.html', tabs[1].linkedBrowser.currentURI.spec);
 	assert.equals(2, content.frames.length);
 	assert.contains('/html.html', content.frames[0].location.href);
 	assert.contains('/links.html', content.frames[1].location.href);
@@ -92,16 +92,16 @@ function test_loadURI()
 	yield Do(utils.loadURI('about:'));
 	assert.equals('about:', content.location.href);
 
-	yield Do(utils.loadURI('../../res/frameTest.html?'+Date.now()));
-	assert.contains('/res/frameTest.html', content.location.href);
+	yield Do(utils.loadURI('../../fixtures/frameTest.html?'+Date.now()));
+	assert.contains('/fixtures/frameTest.html', content.location.href);
 	assert.equals(3, content.frames.length);
 	assert.contains('/html.html', content.frames[0].location.href);
 	assert.contains('/ascii.txt', content.frames[1].location.href);
 	assert.contains('/links.html', content.frames[2].location.href);
 	assert.notEquals(0, content.frames[2].document.links.length);
 
-	yield Do(utils.loadURI('../../res/frameTestInline.html?'+Date.now()));
-	assert.contains('/res/frameTestInline.html', content.location.href);
+	yield Do(utils.loadURI('../../fixtures/frameTestInline.html?'+Date.now()));
+	assert.contains('/fixtures/frameTestInline.html', content.location.href);
 	assert.equals(2, content.frames.length);
 	assert.contains('/html.html', content.frames[0].location.href);
 	assert.contains('/links.html', content.frames[1].location.href);
@@ -111,7 +111,7 @@ function test_loadURI()
 function test_include()
 {
 	var namespace = {};
-	utils.include('../../res/test.js', namespace, 'UTF-8');
+	utils.include('../../fixtures/test.js', namespace, 'UTF-8');
 	assert.isDefined(namespace.string);
 	assert.equals('文字列', namespace.string);
 }
