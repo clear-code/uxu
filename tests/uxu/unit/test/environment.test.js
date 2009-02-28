@@ -56,8 +56,8 @@ function test_addTab()
 	assert.equals(tabs[1], gBrowser.selectedTab);
 	assert.contains('/res/frameTest.html', tabs[1].linkedBrowser.currentURI.spec);
 	assert.equals(3, content.frames.length);
-	assert.equals('about:logo', content.frames[0].location.href);
-	assert.equals('about:logo', content.frames[1].location.href);
+	assert.contains('/html.html', content.frames[0].location.href);
+	assert.contains('/ascii.txt', content.frames[1].location.href);
 	assert.contains('/links.html', content.frames[2].location.href);
 	assert.notEquals(0, content.frames[2].document.links.length);
 	gBrowser.removeTab(tabs[1]);
@@ -66,7 +66,7 @@ function test_addTab()
 	assert.equals(2, tabs.length);
 	assert.contains('/res/frameTestInline.html', tabs[1].linkedBrowser.currentURI.spec);
 	assert.equals(2, content.frames.length);
-	assert.equals('about:logo', content.frames[0].location.href);
+	assert.contains('/html.html', content.frames[0].location.href);
 	assert.contains('/links.html', content.frames[1].location.href);
 	assert.notEquals(0, content.frames[1].document.links.length);
 	gBrowser.removeTab(tabs[1]);
@@ -75,6 +75,17 @@ function test_addTab()
 test_loadURI.setUp = function()
 {
 	utils.tearDownTestWindow();
+	if (utils.product != 'Firefox') {
+		utils.setPref('network.protocol-handler.expose.file', true);
+		utils.setPref('network.protocol-handler.expose.http', true);
+	}
+}
+test_loadURI.tearDown = function()
+{
+	if (utils.product != 'Firefox') {
+		utils.clearPref('network.protocol-handler.expose.file');
+		utils.clearPref('network.protocol-handler.expose.http');
+	}
 }
 function test_loadURI()
 {
@@ -84,15 +95,15 @@ function test_loadURI()
 	yield Do(utils.loadURI('../../res/frameTest.html?'+Date.now()));
 	assert.contains('/res/frameTest.html', content.location.href);
 	assert.equals(3, content.frames.length);
-	assert.equals('about:logo', content.frames[0].location.href);
-	assert.equals('about:logo', content.frames[1].location.href);
+	assert.contains('/html.html', content.frames[0].location.href);
+	assert.contains('/ascii.txt', content.frames[1].location.href);
 	assert.contains('/links.html', content.frames[2].location.href);
 	assert.notEquals(0, content.frames[2].document.links.length);
 
 	yield Do(utils.loadURI('../../res/frameTestInline.html?'+Date.now()));
 	assert.contains('/res/frameTestInline.html', content.location.href);
 	assert.equals(2, content.frames.length);
-	assert.equals('about:logo', content.frames[0].location.href);
+	assert.contains('/html.html', content.frames[0].location.href);
 	assert.contains('/links.html', content.frames[1].location.href);
 	assert.notEquals(0, content.frames[1].document.links.length);
 }
