@@ -180,15 +180,18 @@ function pickFileUrl(aMode, aOptions)
 const fileDNDObserver = 
 {
 	
-	isTestCase : function(aFile) 
+	mayBeTestCase : function(aFile) 
 	{
-		return aFile && (aFile.isDirectory() || /\.js$/.test(aFile.leafName));
+		if (!aFile) return false;
+		aFile = aFile.QueryInterface(Ci.nsILocalFile);
+		return aFile.isDirectory() || /\.js$/.test(aFile.leafName);
 	},
  
 	onDrop : function(aEvent, aTransferData, aSession) 
 	{
 		var file = aTransferData.data;
-		if (this.isTestCase(file)) {
+		file = utils.normalizeToFile(file);
+		if (this.mayBeTestCase(file)) {
 			setTestFile(file.path, true);
 			updateTestCommands();
 			reset();
@@ -203,7 +206,8 @@ const fileDNDObserver =
 			var data = nsDragAndDrop.getData(this.getSupportedFlavours());
 			if (!data.Count) return false;
 			data = data.GetElementAt(0);
-			return this.isTestCase(data);
+			data = utils.normalizeToFile(data);
+			return this.mayBeTestCase(data);
 		}
 		catch(e) {
 			return true;
@@ -222,6 +226,7 @@ const fileDNDObserver =
 	{
 		var flavours = new FlavourSet();
 		flavours.appendFlavour('application/x-moz-file', 'nsIFile');
+		flavours.appendFlavour('text/x-moz-url');
 		return flavours;
 	}
  
