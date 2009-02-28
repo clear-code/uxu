@@ -327,7 +327,7 @@ function getAttachments(aComposeWIndow)
 	{
 		let attachment = bucket.getItemAtIndex(i).attachment;
 		if (attachment) {
-			attachment = utils.normalizeToFile(attachment.url);
+			attachment = this._environment.normalizeToFile(attachment.url);
 			if (attachment) {
 				files.push(attachment);
 			}
@@ -336,14 +336,16 @@ function getAttachments(aComposeWIndow)
 	return files;
 }
 
-function setAttachments(aFiles, aComposeWIndow)
+function setAttachments(aFiles, aComposeWindow)
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 	if (!utils.isArray(aFiles)) {
 		aFiles = [aFiles];
 	}
 	aComposeWindow.RemoveAllAttachments();
-	aFiles.forEach(this.attachFile, this);
+	aFiles.forEach(function(aFile) {
+		this.attachFile(aFile, aComposeWindow);
+	}, this);
 }
 
 function attachFile(aFile, aComposeWindow)
