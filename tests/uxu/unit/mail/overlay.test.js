@@ -32,5 +32,11 @@ function testOverridenFunctions()
 	assert.isDefined(composeWindow.ComposeStartup);
 	assert.isFunction(composeWindow.ComposeStartup);
 	assert.contains('UXUMailComposeProxy', composeWindow.ComposeStartup.toSource());
+
+	assert.isDefined(composeWindow.AttachFile);
+	assert.isFunction(composeWindow.AttachFile);
+	var source = composeWindow.AttachFile.toSource();
+	var match = source.match(/__uxu__fileFromArgument/g);
+	assert.contains('AddFileAttachment' in composeWindow ? 0 : 4, match.length, source);
 }
 

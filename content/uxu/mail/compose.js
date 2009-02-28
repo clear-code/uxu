@@ -354,7 +354,12 @@ function attachFile(aFile, aComposeWindow)
 	aFile = this._environment.normalizeToFile(aFile);
 	if (!aFile || !aFile.exists()) return;
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	aComposeWindow.AddFileAttachment(aFile);
+	if ('AddFileAttachment' in aComposeWindow) { // Thunderbird 3 or later
+		aComposeWindow.AddFileAttachment(aFile);
+	}
+	else { // Thunderbird 2
+		aComposeWindow.AttachFile(aFile);
+	}
 }
 
 
