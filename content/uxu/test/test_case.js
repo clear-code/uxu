@@ -72,6 +72,7 @@ const REMOTE_PROFILE_PREFIX = 'uxu-test-profile';
 const TESTCASE_STARTED = '/*uxu-testcase-started*/';
 const TESTCASE_FINISED = '/*uxu-testcase-finished*/';
 const TESTCASE_ABORTED = '/*uxu-testcase-aborted*/';
+const PING_INTERVAL = 3000;
  
 /**
  * Invocation: 
@@ -809,7 +810,7 @@ function _runByRemote(aStopper)
 	var _this = this;
 	var beforeReadyTimeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout.application'));
 	var beforeReadyInterval = 500;
-	var afterReadyTimeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout'));
+	var afterReadyTimeout = PING_INTERVAL + Math.max(0, utils.getPref('extensions.uxu.run.timeout'));
 	var afterReadyInterval = 50;
 	var report = new Report();
 	utils.doIteration(
@@ -862,7 +863,6 @@ function onInput(aEvent)
 {
 	this._lastRemoteResponse = Date.now();
 	var input = aEvent.data;
-utils.log('INPUT "'+input+'"');
 	if (/[\r\n]+$/.test(input)) {
 		if (this._remoteResultBuffer) {
 			input = this._remoteResultBuffer + input;

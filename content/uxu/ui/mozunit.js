@@ -584,7 +584,7 @@ var gRemoteRun = {
 		this.stopPinging();
 		this._pingTimer = window.setInterval(function(aSelf) {
 			aSelf.ping();
-		}, 3000, this);
+		}, TestCase.prototype.PING_INTERVAL, this);
 	},
 	stopPinging : function()
 	{
