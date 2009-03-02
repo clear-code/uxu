@@ -547,9 +547,15 @@ function include(aSource, aEnvironment, aEncoding)
 {
 	return utils.include.call(this, aSource, (aEnvironment || this.environment), aEncoding);
 };
+ 
+function $(aNodeOrID, aOwner) 
+{
+	return utils.$(aNodeOrID, aOwner || this.getTestWindow() || this.content);
+}
   
 var _this = this; 
 <><![CDATA[
+$X
 makeURIFromSpec
 makeFileWithPath
 normalizeToFile

@@ -39,6 +39,33 @@ function test_contentFrames()
 	assert.equals(frame.contentWindow, utils.contentWindow);
 }
 
+test$.setUp = function()
+{
+	yield Do(utils.loadURI('../../fixtures/html.html'));
+}
+test$.tearDown = function()
+{
+	utils.tearDownTestWindow();
+}
+function test$()
+{
+	var expected = content.document.getElementById('paragraph1');
+	assert.equals(expected, $('paragraph1'));
+	assert.equals(expected, $(expected));
+	assert.equals(expected, $('paragraph1', content));
+	assert.equals(expected, $(expected, content));
+
+	var node = $('content', document);
+	expected = document.getElementById('content');
+	assert.equals(expected, node);
+	assert.equals(expected, $(node));
+	assert.equals(expected, $(node, document));
+
+	yield Do(utils.setUpTestWindow());
+	expected = utils.getTestWindow().document.getElementById('content');
+	assert.equals(expected, $('content'));
+}
+
 if (utils.product != 'Firefox') test_addTab.priority = 'never';
 function test_addTab()
 {
@@ -144,4 +171,3 @@ function test_setUpTearDownTestWindow()
 	yield 100;
 	assert.isTrue(win.closed);
 }
-
