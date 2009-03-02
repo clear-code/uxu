@@ -200,10 +200,15 @@ function testSubject()
 	});
 }
 
-/*
 function testBody()
 {
 	assert.equals($('content-frame', composeWindow.document).contentDocument.body, compose.body);
+	compose.body = 'foobar\nhoge';
+	var body = compose.body;
+	assert.equals(3, body.childNodes.length);
+	assert.equals('foobar', utils.inspectDOMNode(body.childNodes[0]));
+	assert.equals('<BR/>', utils.inspectDOMNode(body.childNodes[1]));
+	assert.equals('hoge', utils.inspectDOMNode(body.childNodes[2]));
 
 	compose.tearDown();
 	assert.isNull(compose.window);
@@ -216,10 +221,15 @@ function testAttachments()
 {
 	assert.equals([], compose.attachments);
 
+	compose.attachments = ['compose.test.js', 'utils.test.js'];
+	var attachments = compose.attachments;
+	assert.equals(2, attachments.length);
+	assert.equals(utils.getFilePathFromURLSpec(baseURL+'compose.test.js'), attachments[0].path);
+	assert.equals(utils.getFilePathFromURLSpec(baseURL+'utils.test.js'), attachments[1].path);
+
 	compose.tearDown();
 	assert.isNull(compose.window);
 	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.attachments;
 	});
 }
-*/
