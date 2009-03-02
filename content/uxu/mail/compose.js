@@ -1,4 +1,4 @@
-// -*- indent-tabs-mode: t; tab-width: 4 -*-
+// -*- indent-tabs-mode: t; tab-width: 4 -*- 
 
 var Cc = Components.classes;
 var Ci = Components.interfaces;
@@ -10,42 +10,41 @@ var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var action = test_module.require('package', 'action');
 
 var ERROR_NO_COMPOSE_WINDOW = new Error('no compose window');
-
-function constructor(aMailUtils, aEnvironment)
+	
+function constructor(aMailUtils, aEnvironment) 
 {
 	this._utils = aMailUtils;
 	this._environment = aEnvironment;
+	this._defineProperties();
+}
+	
+function _defineProperties() 
+{
+	this.__defineGetter__('window', _getWindow);
+	this.__defineGetter__('windows', _getWindows);
 
-	this.__defineGetter__('window', getWindow);
-	this.__defineGetter__('windows', getWindows);
+	this.__defineGetter__('recipients', _getRecipients);
+	this.__defineSetter__('recipients', _setRecipients);
 
-	this.__defineGetter__('recipients', getRecipients);
-	this.__defineSetter__('recipients', setRecipients);
+	this.__defineGetter__('subject', _getSubject);
+	this.__defineSetter__('subject', _setSubject);
 
-	this.__defineGetter__('subject', getSubject);
-	this.__defineSetter__('subject', setSubject);
-
-	this.__defineGetter__('body', getBodyContents);
+	this.__defineGetter__('body', _getBodyContents);
 	this.__defineSetter__('body', setBodyContents);
 
-	this.__defineGetter__('attachments', getAttachments);
-	this.__defineSetter__('attachments', setAttachments);
+	this.__defineGetter__('attachments', _getAttachments);
+	this.__defineSetter__('attachments', _setAttachments);
 }
-
-function destroy()
+  
+function destroy() 
 {
 	delete this._utils;
 	delete this._environment;
 }
-
-
-function getWindow()
-{
-	var composeWindows = this.getWindows();
-	return composeWindows.length ? composeWindows[0] : null ;
-}
-
-function getWindows()
+ 
+// compose window 
+	
+function _getWindows() 
 {
 	var composeWindows = [];
 	this._environment.getChromeWindows({ type : 'msgcompose' })
@@ -56,33 +55,43 @@ function getWindows()
 		}, this);
 	return composeWindows;
 }
-
-function _isWindowReady(aComposeWindow)
+	
+function _getWindow() 
+{
+	var composeWindows = this._getWindows();
+	return composeWindows.length ? composeWindows[0] : null ;
+}
+  
+function _isWindowReady(aComposeWindow) 
 {
 	var textboxes = getAddressTextboxes(aComposeWindow);
 	return (
-			textboxes.snapshotLength > 1 ||
+			!aComposeWindow.closed &&
 			(
-				textboxes.snapshotLength > 0 &&
-				getLastAddressTextbox(aComposeWindow) &&
-				getDummyRow(aComposeWindow)
+				textboxes.snapshotLength > 1 ||
+				(
+					textboxes.snapshotLength > 0 &&
+					getLastAddressTextbox(aComposeWindow) &&
+					getDummyRow(aComposeWindow)
+				)
 			)
 		);
 }
-
-function _ensureWindowReady(aComposeWindow)
+ 
+function _ensureWindowReady(aComposeWindow) 
 {
 	if (!aComposeWindow) {
-		aComposeWindow = this.getWindow();
+		aComposeWindow = this._getWindow();
 	}
 	if (!aComposeWindow) {
 		throw ERROR_NO_COMPOSE_WINDOW;
 	}
 	return aComposeWindow;
 }
-
-
-function setUp()
+  
+// window operation 
+	
+function setUp() 
 {
 	return utils.doIteration((function(aSelf) {
 		yield aSelf._environment.setUpTestWindow();
@@ -94,19 +103,26 @@ function setUp()
 
 		yield 500; // wait for initializing processes
 
-		// Êñ∞Ë¶è„É°„ÉÉ„Çª„Éº„Ç∏„ÅÆ„Ç¶„Ç£„É≥„Éâ„Ç¶„ÇíÈñã„Åè
+		// êVãKÉÅÉbÉZÅ[ÉWÇÃÉEÉBÉìÉhÉEÇäJÇ≠
 		mainWindow.MsgNewMessage(null);
 
-		// „Ç¶„Ç£„É≥„Éâ„Ç¶„ÅåÈñã„Åã„Çå„Çã„Åæ„ÅßÂæÖ„Å§
+		// ÉEÉBÉìÉhÉEÇ™äJÇ©ÇÍÇÈÇ‹Ç≈ë“Ç¬
 		yield (function() {
-				return composeWindow = aSelf.getWindow();
+				return composeWindow = aSelf._getWindow();
 			});
 	})(this));
 }
-
-function close()
+ 
+function tearDown() 
 {
-	var composeWindow = this.getWindow();
+	if (this._close()) {
+		this._environment.tearDownTestWindow();
+	}
+}
+	
+function _close(aWindow) 
+{
+	var composeWindow = aWindow || this._getWindow();
 	if (composeWindow) {
 		composeWindow.SetContentAndBodyAsUnmodified();
 		composeWindow.MsgComposeCloseWindow(true);
@@ -114,36 +130,30 @@ function close()
 	}
 	return false;
 }
-
-function tearDown()
+  
+function tearDownAll() 
 {
-	if (this.close()) {
+	if (this._closeAll()) {
 		this._environment.tearDownTestWindow();
 	}
 }
-
-function closeAll()
+	
+function _closeAll() 
 {
-	var closed = false;
-	var composeWindows = this.getWindows();
+	var closedInverted = true;
+	var composeWindows = this._getWindows();
 	for (let i in composeWindows)
 	{
-		composeWindows[i].SetContentAndBodyAsUnmodified();
-		composeWindows[i].MsgComposeCloseWindow(true);
-		closed = true;
+		if (!this._close(composeWindows[i])) {
+			closedInverted = false;
+		}
 	}
-	return closed;
+	return !closedInverted;
 }
-
-function tearDownAll()
-{
-	if (this.closes()) {
-		this._environment.tearDownTestWindow();
-	}
-}
-
-
-function getLastAddressTextbox(aComposeWindow)
+   
+// get input fields 
+	
+function getLastAddressTextbox(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 	return aComposeWindow.document.evaluate(
@@ -155,8 +165,8 @@ function getLastAddressTextbox(aComposeWindow)
 			null
 		).singleNodeValue;
 }
-
-function getAddressTextboxes(aComposeWindow)
+ 
+function getAddressTextboxes(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 	return aComposeWindow.document.evaluate(
@@ -168,8 +178,8 @@ function getAddressTextboxes(aComposeWindow)
 			null
 		);
 }
-
-function getLastAddressType(aComposeWindow)
+ 
+function getLastAddressType(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 	return aComposeWindow.document.evaluate(
@@ -180,8 +190,8 @@ function getLastAddressType(aComposeWindow)
 			null
 		).singleNodeValue;
 }
-
-function getAddressTypes(aComposeWindow)
+ 
+function getAddressTypes(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 	return aComposeWindow.document.evaluate(
@@ -192,8 +202,8 @@ function getAddressTypes(aComposeWindow)
 			null
 		);
 }
-
-function getDummyRow(aComposeWindow)
+ 
+function getDummyRow(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 	return aComposeWindow.document.evaluate(
@@ -204,75 +214,16 @@ function getDummyRow(aComposeWindow)
 			null
 		).singleNodeValue;
 }
-
-
-function getRecipients(aComposeWindow)
-{
-	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-
-	var types = getAddressTypes(aComposeWindow);
-	var textboxes = getAddressTextboxes(aComposeWindow);
-	var array = [];
-	for (let i = 0, maxi = textboxes.snapshotLength; i < maxi; i++)
-	{
-		let value = textboxes.snapshotItem(i).value;
-		if (value) {
-			array.push({
-				type    : types.snapshotItem(i).value.replace('addr_', ''),
-				address : value
-			});
-		}
-	}
-	return array;
-}
-
-function setRecipients(aAddresses, aComposeWindow)
-{
-	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	for (let i in aAddresses)
-	{
-		let type = aAddresses[i].type,
-			address = aAddresses[i].address;
-
-		getLastAddressType(aComposeWindow).value = 'addr_'+type.toLowerCase();
-
-		let textbox = getLastAddressTextbox(aComposeWindow);
-
-		textbox.focus();
-		action.inputTextToField(textbox, address);
-
-		aComposeWindow.awReturnHit(textbox);
-	}
-	return aAddresses;
-}
-
-
-function getSubject(aComposeWindow)
-{
-	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return aComposeWindow.document.getElementById('msgSubject').value;
-}
-
-function setSubject(aSubject, aComposeWindow)
-{
-	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	action.inputTextToField(aComposeWindow.document.getElementById('msgSubject'), aSubject);
-}
-
-
-function getBodyFrame(aComposeWindow)
+ 
+function getBodyFrame(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 	return aComposeWindow.document.getElementById('content-frame');
 }
-
-function getBodyContents(aComposeWindow)
-{
-	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return this.getBodyFrame(aComposeWindow).contentDocument;
-}
-
-function setBodyContents(aContents, aAppend, aComposeWindow)
+  
+// commands 
+	
+function setBodyContents(aContents, aAppend, aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 
@@ -292,7 +243,7 @@ function setBodyContents(aContents, aAppend, aComposeWindow)
 	}
 	else {
 		var fragment = doc.createDocumentFragment();
-		var lines = String(aContents).split(/[¬•r¬•n]+/);
+		var lines = String(aContents).split(/[\r\n]+/);
 		lines.forEach(function(aLine, aIndex) {
 			fragment.appendChild(doc.createTextNode(aLine));
 			if (aIndex < lines.length-1) {
@@ -304,8 +255,122 @@ function setBodyContents(aContents, aAppend, aComposeWindow)
 	range.detach();
 }
 
+ 
+function attachFile(aFile, aComposeWindow) 
+{
+	if (!aFile) return;
+	aFile = this._environment.normalizeToFile(aFile);
+	if (!aFile || !aFile.exists()) return;
+	aComposeWindow = this._ensureWindowReady(aComposeWindow);
+	if ('AddFileAttachment' in aComposeWindow) { // Thunderbird 3 or later
+		aComposeWindow.AddFileAttachment(aFile);
+	}
+	else { // Thunderbird 2
+		aComposeWindow.AttachFile(aFile);
+	}
+}
+ 
+function send(aAsync, aComposeWindow) 
+{
+	this.sendByAPI(aAsync, aComposeWindow);
+}
+	
+function _send(aCommand, aAsync, aComposeWindow) 
+{
+	aComposeWindow = this._ensureWindowReady(aComposeWindow);
+	if (aAsync) {
+		// Ç±ÇÃÉ^ÉCÉ~ÉìÉOÇ≈É_ÉCÉAÉçÉOìôÇ™äJÇ©ÇÍÇÈÇ∆ÉÅÉCÉìÉXÉåÉbÉhÇÃ
+		// èàóùÇ™é~Ç‹Ç¡ÇƒÇµÇ‹Ç§ÇΩÇﬂÅAÉ^ÉCÉ}Å[ÇégÇ¡ÇƒîÒìØä˙Ç≈äJÇ≠ÅB
+		aComposeWindow.setTimeout(aCommand, 0);
+	}
+	else {
+		aCommand();
+	}
+}
+ 
+function sendByAPI(aAsync, aComposeWindow) 
+{
+	aComposeWindow = this._ensureWindowReady(aComposeWindow);
+	this._send(function() {
+		aComposeWindow.SendMessage();
+	}, aAsync);
+}
+ 
+function sendByButtonClick(aAsync, aComposeWindow) 
+{
+	aComposeWindow = this._ensureWindowReady(aComposeWindow);
+	this._send(function() {
+		action.fireMouseEventOnElement(aComposeWindow.document.getElementById('button-send'));
+	}, aAsync);
+}
+   
+// user input emulation 
+	
+function _getSubject(aComposeWindow) 
+{
+	aComposeWindow = this._ensureWindowReady(aComposeWindow);
+	return aComposeWindow.document.getElementById('msgSubject').value;
+}
+ 
+function _setSubject(aSubject, aComposeWindow) 
+{
+	aComposeWindow = this._ensureWindowReady(aComposeWindow);
+	action.inputTextToField(aComposeWindow.document.getElementById('msgSubject'), aSubject);
+}
+ 
+function _getRecipients(aComposeWindow) 
+{
+	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 
-function getAttachments(aComposeWIndow)
+	var types = getAddressTypes(aComposeWindow);
+	var textboxes = getAddressTextboxes(aComposeWindow);
+	var array = [];
+	for (let i = 0, maxi = textboxes.snapshotLength; i < maxi; i++)
+	{
+		let value = textboxes.snapshotItem(i).value;
+		if (value) {
+			array.push({
+				type    : types.snapshotItem(i).value.replace('addr_', ''),
+				address : value
+			});
+		}
+	}
+	return array;
+}
+ 
+function _setRecipients(aAddresses, aComposeWindow) 
+{
+	aComposeWindow = this._ensureWindowReady(aComposeWindow);
+	for (let i in aAddresses)
+	{
+		let type = aAddresses[i].type,
+			address = aAddresses[i].address;
+
+		getLastAddressType(aComposeWindow).value = 'addr_'+type.toLowerCase();
+
+		let textbox = getLastAddressTextbox(aComposeWindow);
+
+		textbox.focus();
+		action.inputTextToField(textbox, address);
+
+		aComposeWindow.awReturnHit(textbox);
+	}
+	return aAddresses;
+}
+ 
+function _getBodyContents(aComposeWindow) 
+{
+	aComposeWindow = this._ensureWindowReady(aComposeWindow);
+	return this.getBodyFrame(aComposeWindow).contentDocument.body;
+}
+ 
+function _setBodyContents(aContents) 
+{
+	this.setBodyContents(aContents);
+	return aContents;
+}
+ 
+function _getAttachments(aComposeWIndow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 
@@ -323,8 +388,8 @@ function getAttachments(aComposeWIndow)
 	}
 	return files;
 }
-
-function setAttachments(aFiles, aComposeWindow)
+ 
+function _setAttachments(aFiles, aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 	if (!utils.isArray(aFiles)) {
@@ -335,52 +400,4 @@ function setAttachments(aFiles, aComposeWindow)
 		this.attachFile(aFile, aComposeWindow);
 	}, this);
 }
-
-function attachFile(aFile, aComposeWindow)
-{
-	if (!aFile) return;
-	aFile = this._environment.normalizeToFile(aFile);
-	if (!aFile || !aFile.exists()) return;
-	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	if ('AddFileAttachment' in aComposeWindow) { // Thunderbird 3 or later
-		aComposeWindow.AddFileAttachment(aFile);
-	}
-	else { // Thunderbird 2
-		aComposeWindow.AttachFile(aFile);
-	}
-}
-
-
-function send(aAsync, aComposeWindow)
-{
-	this.sendByAPI(aAsync, aComposeWindow);
-}
-
-function _send(aCommand, aAsync, aComposeWindow)
-{
-	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	if (aAsync) {
-		// „Åì„ÅÆ„Çø„Ç§„Éü„É≥„Ç∞„Åß„ÉÄ„Ç§„Ç¢„É≠„Ç∞Á≠â„ÅåÈñã„Åã„Çå„Çã„Å®„É°„Ç§„É≥„Çπ„É¨„ÉÉ„Éâ„ÅÆ
-		// Âá¶ÁêÜ„ÅåÊ≠¢„Åæ„Å£„Å¶„Åó„Åæ„ÅÜ„Åü„ÇÅ„ÄÅ„Çø„Ç§„Éû„Éº„Çí‰Ωø„Å£„Å¶ÈùûÂêåÊúü„ÅßÈñã„Åè„ÄÇ
-		aComposeWindow.setTimeout(aCommand, 0);
-	}
-	else {
-		aCommand();
-	}
-}
-
-function sendByAPI(aAsync, aComposeWindow)
-{
-	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	this._send(function() {
-		aComposeWindow.SendMessage();
-	}, aAsync);
-}
-
-function sendByButtonClick(aAsync, aComposeWindow)
-{
-	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	this._send(function() {
-		action.fireMouseEventOnElement(aComposeWindow.document.getElementById('button-send'));
-	}, aAsync);
-}
+   

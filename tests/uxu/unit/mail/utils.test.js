@@ -17,7 +17,7 @@ function setUp()
 {
 	ObserverClass = lib_module.require('class', 'observer');
 	UtilsClass = mail_module.require('class', 'utils');
-	utilsModule = new UtilsClass();
+	utilsModule = new UtilsClass(this);
 }
 
 function tearDown()
@@ -46,7 +46,7 @@ var mailCompFields = {
 		body : 'BODY'
 	};
 
-function testSend()
+function testEmulateSendMessage()
 {
 	assert.isFunction(utilsModule.emulateSendMessage);
 
