@@ -36,7 +36,7 @@ function _defineProperties()
 	this.__defineSetter__('attachments', _setAttachments);
 
 	this.__defineGetter__('addressFields',     _getAddressFields);
-	this.__defineGetter__('firstAddressField', _getLastAddressField);
+	this.__defineGetter__('firstAddressField', _getFirstAddressField);
 	this.__defineGetter__('lastAddressField',  _getLastAddressField);
 
 	this.__defineGetter__('blankAddressFields',     _getBlankAddressFields);
@@ -176,16 +176,17 @@ function _getAddressFields(aComposeWindow)
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 	return utils.$X(ADDRESS_FIELD, aComposeWindow.document);
 }
- 
 function _getFirstAddressField(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return utils.$X(ADDRESS_FIELD, aComposeWindow.document, XPathResult.FIRST_ORDERED_NODE_TYPE);
+	var fields = _getAddressFields(aComposeWindow);
+	return fields.length ? fields[0] : null ;
 }
 function _getLastAddressField(aComposeWindow)
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return utils.$X('('+ADDRESS_FIELD+')[last()]', aComposeWindow.document, XPathResult.FIRST_ORDERED_NODE_TYPE);
+	var fields = _getAddressFields(aComposeWindow);
+	return fields.length ? fields[fields.length-1] : null ;
 }
  
 function _getBlankAddressFields(aComposeWindow) 
@@ -199,23 +200,17 @@ function _getBlankAddressFields(aComposeWindow)
 	}
 	return blank;
 }
-function _getLastBlankAddressField(aComposeWindow) 
-{
-	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	var blank = _getBlankAddressFields(aComposeWindow);
-	return blank.length ? blank[blank.length-1] : null ;
-}
 function _getFirstBlankAddressField(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 	var blank = _getBlankAddressFields(aComposeWindow);
 	return blank.length ? blank[0] : null ;
 }
- 
-function _getNextAddressField(aField, aComposeWindow) 
+function _getLastBlankAddressField(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return utils.$X('following::*[local-name()="menulist" and starts-with(@value, "addr_")]ancestor::*[local-name()="listitem"]/descendant::*[local-name()="textbox"]', aField, XPathResult.FIRST_ORDERED_NODE_TYPE);
+	var blank = _getBlankAddressFields(aComposeWindow);
+	return blank.length ? blank[blank.length-1] : null ;
 }
  
 function _getAddressTypes(aComposeWindow) 
@@ -223,16 +218,17 @@ function _getAddressTypes(aComposeWindow)
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 	return utils.$X(ADDRESS_TYPE, aComposeWindow.document);
 }
- 
 function _getFirstAddressType(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return utils.$X(ADDRESS_TYPE, aComposeWindow.document, XPathResult.FIRST_ORDERED_NODE_TYPE);
+	var types = _getAddressTypes(aComposeWindow);
+	return types.length ? types[0] : null ;
 }
 function _getLastAddressType(aComposeWindow)
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return utils.$X('('+ADDRESS_TYPE+')[last()]', aComposeWindow.document, XPathResult.FIRST_ORDERED_NODE_TYPE);
+	var types = _getAddressTypes(aComposeWindow);
+	return types.length ? types[types.length-1] : null ;
 }
  
 function getAddressTypeForField(aField, aComposeWindow) 
@@ -246,7 +242,6 @@ function _getDummyRows(aComposeWindow)
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 	return utils.$X(DUMMY_ROW, aComposeWindow.document);
 }
- 
 function _getFirstDummyRow(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);

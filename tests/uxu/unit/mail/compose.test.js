@@ -83,6 +83,7 @@ function testAddressFields()
 	var nodes = $X(expression, composeWindow.document);
 	assert.equals(1, nodes.length);
 	assert.equals(nodes, compose.addressFields);
+	assert.equals(nodes[0], compose.firstAddressField);
 	assert.equals(nodes[0], compose.lastAddressField);
 
 	action.inputTextToField(nodes[0], 'test@example.com');
@@ -93,6 +94,7 @@ function testAddressFields()
 	nodes = $X(expression, composeWindow.document);
 	assert.equals(2, nodes.length);
 	assert.equals(nodes, compose.addressFields);
+	assert.equals(nodes[0], compose.firstAddressField);
 	assert.equals(nodes[1], compose.lastAddressField);
 
 	compose.tearDown();
@@ -102,6 +104,43 @@ function testAddressFields()
 	});
 	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.lastAddressField;
+	});
+	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+		compose.firstAddressField;
+	});
+}
+
+function testBlankAddressFields()
+{
+	var field = compose.firstAddressField;
+	var blank = compose.blankAddressFields;
+	assert.equals(1, blank.length);
+	assert.equals(field, compose.firstBlankAddressField);
+	assert.equals(field, compose.lastBlankAddressField);
+
+	action.inputTextToField(field, 'test@example.com');
+	yield 500;
+	action.fireKeyEventOnElement(field, { keyCode : Ci.nsIDOMKeyEvent.DOM_VK_RETURN });
+	yield 200;
+
+	var fields = compose.addressFields;
+	assert.equals(2, fields.length);
+	blank = compose.blankAddressFields;
+	assert.equals(1, blank.length);
+	assert.equals([fields[1]], blank);
+	assert.equals(fields[1], compose.firstBlankAddressField);
+	assert.equals(fields[1], compose.lastBlankAddressField);
+
+	compose.tearDown();
+	assert.isNull(compose.window);
+	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+		compose.blankAddressFields;
+	});
+	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+		compose.firstBlankAddressField;
+	});
+	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+		compose.lastBlankAddressField;
 	});
 }
 
@@ -129,6 +168,9 @@ function testAddressTypes()
 	assert.isNull(compose.window);
 	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.addressTypes;
+	});
+	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+		compose.firstAddressType;
 	});
 	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.lastAddressType;
