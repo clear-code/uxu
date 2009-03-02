@@ -1,0 +1,44 @@
+// <!-- <mdb:mork:z v="1.4"/> -->
+< <(a=c)> // (f=iso-8859-1)
+  (8A=charset)(8B=folderName)(80=ns:msg:db:row:scope:folders:all)
+  (81=ns:msg:db:table:kind:folders)(82=key)(83=flags)(84=totalMsgs)
+  (85=totalUnreadMsgs)(86=pendingUnreadMsgs)(87=pendingMsgs)
+  (88=expungedBytes)(89=folderSize)>
+
+<(80
+    =C:\\Documents and Settings\\All Users\\Documents\\thunderbird-support\\mi\
+tsubishi\\tests\\fixtures\\profile\\Mail\\Local Folders\\Inbox.msf)
+  (93=80001004)(81=0)(82=ISO-8859-1)(83=Inbox)(85
+    =C:\\Documents and Settings\\All Users\\Documents\\thunderbird-support\\mi\
+tsubishi\\tests\\fixtures\\profile\\Mail\\Local Folders\\Trash.msf)
+  (87=104)(86=Trash)(88
+    =C:\\Documents and Settings\\All Users\\Documents\\thunderbird-support\\mi\
+tsubishi\\tests\\fixtures\\profile\\Mail\\Local Folders\\Unsent Messages.msf)
+  (8A=804)(8B=Outbox)(8C
+    =C:\\Documents and Settings\\All Users\\Documents\\thunderbird-support\\mi\
+tsubishi\\tests\\fixtures\\profile\\Mail\\pop.example.com\\Inbox.msf)
+  (84=1004)(8D
+    =C:\\Documents and Settings\\All Users\\Documents\\thunderbird-support\\mi\
+tsubishi\\tests\\fixtures\\profile\\Mail\\pop.example.com\\Trash.msf)
+  (8E
+    =C:\\Documents and Settings\\All Users\\Documents\\thunderbird-support\\mi\
+tsubishi\\tests\\fixtures\\profile\\Mail\\Local Folders)(8F=1c)(90
+    =ffffffff)(91=)(92=Local Folders)(94
+    =C:\\Documents and Settings\\All Users\\Documents\\thunderbird-support\\mi\
+tsubishi\\tests\\fixtures\\profile\\Mail\\pop.example.com)(95
+    =who@example.com)>
+{1:^80 {(k^81:c)(s=9)} 
+  [1(^82^80)(^83^93)(^84=0)(^85=0)(^86=0)(^87=0)(^88=0)(^89=0)(^8A^82)
+    (^8B^83)]
+  [2(^82^85)(^83^87)(^84=0)(^85=0)(^86=0)(^87=0)(^88=0)(^89=0)(^8A^82)
+    (^8B^86)]
+  [3(^82^88)(^83^8A)(^84=0)(^85=0)(^86=0)(^87=0)(^88=0)(^89=0)(^8A^82)
+    (^8B^8B)]
+  [4(^82^8C)(^83^84)(^84=0)(^85=0)(^86=0)(^87=0)(^88=0)(^89=0)(^8A^82)
+    (^8B^83)]
+  [5(^82^8D)(^83^87)(^84=0)(^85=0)(^86=0)(^87=0)(^88=0)(^89=0)(^8A^82)
+    (^8B^86)]
+  [6(^82^8E)(^83=1c)(^84^90)(^85^90)(^86=0)(^87=0)(^88=0)(^89=0)(^8A=)
+    (^8B^92)]
+  [7(^82^94)(^83=1c)(^84^90)(^85^90)(^86=0)(^87=0)(^88=0)(^89=0)(^8A=)
+    (^8B^95)]}

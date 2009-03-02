@@ -1,9 +1,5 @@
 var targetProduct = 'Thunderbird';
-
-var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
-var ObserverClass = lib_module.require('class', 'observer');
-
-var observer;
+var profile = '../fixtures/thuderbird-profile/';
 
 function setUp()
 {
