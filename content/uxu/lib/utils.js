@@ -109,6 +109,23 @@ function $X()
 	return null;
 }
   
+// タイマー操作 
+	
+// http://d.hatena.ne.jp/fls/20090224/p1
+function sleep(aWait) 
+{
+	var timer = { timeup: false };
+	var interval = window.setInterval(function() {
+			timer.timeup = true;
+		}, aWait);
+	var thread = Cc['@mozilla.org/thread-manager;1'].getService().mainThread;
+	while (!timer.timeup)
+	{
+		thread.processNextEvent(true);
+	}
+	window.clearInterval(interval);
+}
+  
 // ファイル操作 
 	
 function normalizeToFile(aFile) 

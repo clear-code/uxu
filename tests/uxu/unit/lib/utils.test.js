@@ -167,6 +167,13 @@ function test$X()
 }
 
 
+function test_sleep()
+{
+	var before = Date.now();
+	utilsModule.sleep(500);
+	assert.inDelta(500, Date.now() - before, 200);
+}
+
 function test_makeURIFromSpec()
 {
 	var uri;
