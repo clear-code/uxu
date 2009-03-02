@@ -21,53 +21,31 @@ var gLog;
  
 /* UTILITIES */ 
 	 
-function x() 
-{
-	var contextNode, path;
-	if (arguments[0] instanceof XULElement) {
-		contextNode = arguments[0];
-		path = arguments[1];
-	}
-	else {
-		path = arguments[0];
-		contextNode = document;
-	}
-
-	function resolver(prefix)
-	{
-		switch (prefix)
-		{
-			case 'xul':
-				return 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
-				break;
-			case 'hy':
-				return 'http://hyperstruct.net/';
-				break;
-			default:
-				return null;
-		}
-	}
-
-	return document.evaluate(
-		path, contextNode, resolver,
-		XPathResult.ANY_UNORDERED_NODE_TYPE, null).
-		singleNodeValue;
-}
- 
 function _(idOrElement, subCriteria) 
 {
-	var element = (idOrElement instanceof XULElement) ?
-		idOrElement : document.getElementById(idOrElement);
-
-	if (subCriteria)
+	var element = utils.$(idOrElement);
+	if (subCriteria) {
 		if (typeof(subCriteria) == 'object') {
-			for(var attributeName in subCriteria)
-				return x(element, './/*[@' + attributeName + '=' +
-						 '"' + subCriteria[attributeName] + '"]');
-		} else
-			return x(element, './/*[@role="' + subCriteria + '"]');
-	else
+			for (var attributeName in subCriteria)
+			{
+				return utils.$X(
+						'.//*[@'+attributeName+'="'+subCriteria[attributeName]+'"]',
+						element,
+						XPathResult.ANY_UNORDERED_NODE_TYPE
+					);
+			}
+		}
+		else {
+			return utils.$X(
+					'.//*[@role="'+subCriteria+'"]',
+					element,
+					XPathResult.ANY_UNORDERED_NODE_TYPE
+				);
+		}
+	}
+	else {
 		return element;
+	}
 }
  
 function clone(aBlueprintName) 
@@ -414,13 +392,11 @@ function getFocusedFile()
 	var info = { path : null, line : 0 };
 	var node = document.popupNode;
 	if (node) {
-		node = document.evaluate(
+		node = utils.$X(
 				'ancestor-or-self::*[(@role="testcase-report" or local-name()="listitem") and starts-with(@source, "file:")][1]',
 				node,
-				null,
-				XPathResult.FIRST_ORDERED_NODE_TYPE,
-				null
-			).singleNodeValue;
+				XPathResult.FIRST_ORDERED_NODE_TYPE
+			);
 	}
 	if (node) {
 		info.path = utils.getFilePathFromURLSpec(node.getAttribute('source'));
@@ -1028,17 +1004,12 @@ function updateContextMenu()
  
 function stopAllProgressMeters() 
 {
-	var nodes = document.evaluate(
-			'/descendant::*[local-name()="progressmeter" and @mode="undetermined" and not(ancestor::*[@id="blueprints"])]',
-			document,
-			null,
-			XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
-			null
-		);
-	for (var i = 0, maxi = nodes.snapshotLength; i < maxi; i++)
-	{
-		nodes.snapshotItem(i).setAttribute('mode', 'determined');
-	}
+	utils.$X(
+		'/descendant::*[local-name()="progressmeter" and @mode="undetermined" and not(ancestor::*[@id="blueprints"])]',
+		document
+	).forEach(function(aNode) {
+		aNode.setAttribute('mode', 'determined');
+	}, this);
 }
   
 /* commands */ 

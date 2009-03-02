@@ -75,6 +75,98 @@ function tearDown()
 }
 
 
+test$.setUp = function()
+{
+	yield Do(utils.loadURI('../../fixtures/html.html'));
+}
+function test$()
+{
+	var node = utilsModule.$('content');
+	var expected = document.getElementById('content');
+	assert.equals(expected, node);
+	assert.equals(expected, utilsModule.$(node));
+
+	expected = content.document.getElementById('paragraph1');
+	assert.equals(expected, utilsModule.$('paragraph1', content));
+	assert.equals(expected, utilsModule.$('paragraph1', content.document));
+	assert.equals(expected, utilsModule.$('paragraph1', content.document.documentElement));
+	assert.equals(expected, utilsModule.$(expected, content));
+	assert.equals(expected, utilsModule.$(expected, content.document));
+	assert.equals(expected, utilsModule.$(expected, content.document.documentElement));
+}
+
+test$X.setUp = function()
+{
+	yield Do(utils.loadURI('../../fixtures/html.xml'));
+}
+function test$X()
+{
+	var expectedNode = document.getElementById('content');
+
+	var nodesExpression = '//*[@id="content"]';
+	var booleanExpression = '//*[@id="content"]/@id = "content"';
+	var numberExpression = 'count(//*[@id="content"])';
+
+	// arg1 = expression
+	assert.equals([expectedNode], utilsModule.$X(nodesExpression));
+	assert.strictlyEquals(true, utilsModule.$X(booleanExpression));
+	assert.strictlyEquals(1, utilsModule.$X(numberExpression));
+
+	// arg1 = expression, arg1 = context
+	assert.equals([expectedNode], utilsModule.$X(nodesExpression, document));
+	assert.equals([expectedNode], utilsModule.$X(nodesExpression, document.documentElement));
+	assert.strictlyEquals(true, utilsModule.$X(booleanExpression, document.documentElement));
+	assert.strictlyEquals(1, utilsModule.$X(numberExpression, document.documentElement));
+
+	// arg1 = expression, arg2 = context, arg3 = type
+	assert.equals(
+		expectedNode,
+		utilsModule.$X(nodesExpression, document, XPathResult.FIRST_ORDERED_NODE_TYPE)
+	);
+	assert.equals(
+		expectedNode,
+		utilsModule.$X(nodesExpression, document, XPathResult.ANY_UNORDERED_NODE_TYPE)
+	);
+	assert.strictlyEquals(
+		true,
+		utilsModule.$X(nodesExpression, document, XPathResult.BOOLEAN_TYPE)
+	);
+	assert.strictlyEquals(
+		'',
+		utilsModule.$X(nodesExpression, document, XPathResult.STRING_TYPE)
+	);
+	assert.strictlyEquals(
+		'1',
+		utilsModule.$X(numberExpression, document, XPathResult.STRING_TYPE)
+	);
+	assert.strictlyEquals(
+		1,
+		utilsModule.$X(numberExpression, document, XPathResult.NUMBER_TYPE)
+	);
+
+	// arg1 = expression, arg2 = context, arg3 = resolver, arg4 = type
+	var resolver = function(aPrefix)
+		{
+			switch (aPrefix)
+			{
+				case 'html':
+					return 'http://www.w3.org/1999/xhtml';
+				case 'xul':
+					return 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
+				default:
+					return '';
+			}
+		}
+	assert.equals(
+		content.document.documentElement,
+		utilsModule.$X('/descendant::html:html', content.document, resolver, XPathResult.FIRST_ORDERED_NODE_TYPE)
+	);
+	assert.isNull(
+		utilsModule.$X('/descendant::xul:html', content.document, resolver, XPathResult.FIRST_ORDERED_NODE_TYPE)
+	);
+}
+
+
 function test_makeURIFromSpec()
 {
 	var uri;

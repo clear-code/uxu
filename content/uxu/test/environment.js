@@ -469,19 +469,7 @@ function getTabs(aOptions)
 	if (utils.product != 'Firefox') return [];
 	var win = this.getTestWindow(aOptions);
 	if (!win) return [];
-	var tabs = win.document.evaluate(
-			'descendant::*[local-name()="tab"]',
-			win.gBrowser.mTabContainer,
-			null,
-			XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
-			null
-		);
-	var array = [];
-	for (var i = 0, maxi = tabs.snapshotLength; i < maxi; i++)
-	{
-		array.push(tabs.snapshotItem(i));
-	}
-	return array;
+	return utils.$X('descendant::*[local-name()="tab"]', win.gBrowser.mTabContainer);
 };
   
 // file operations 
