@@ -34,6 +34,12 @@ function _defineProperties()
 
 	this.__defineGetter__('attachments', _getAttachments);
 	this.__defineSetter__('attachments', _setAttachments);
+
+	this.__defineGetter__('lastAddressField', _getLastAddressField);
+	this.__defineGetter__('addressFields',    _getAddressFields);
+	this.__defineGetter__('lastAddressType',  _getLastAddressType);
+	this.__defineGetter__('addressTypes',     _getAddressTypes);
+	this.__defineGetter__('dummyRow',         _getDummyRow);
 }
   
 function destroy() 
@@ -64,15 +70,15 @@ function _getWindow()
   
 function _isWindowReady(aComposeWindow) 
 {
-	var textboxes = getAddressTextboxes(aComposeWindow);
+	var textboxes = _getAddressFieldsInternal(aComposeWindow);
 	return (
 			!aComposeWindow.closed &&
 			(
 				textboxes.snapshotLength > 1 ||
 				(
 					textboxes.snapshotLength > 0 &&
-					getLastAddressTextbox(aComposeWindow) &&
-					getDummyRow(aComposeWindow)
+					_getLastAddressField(aComposeWindow) &&
+					_getDummyRow(aComposeWindow)
 				)
 			)
 		);
@@ -140,20 +146,20 @@ function tearDownAll()
 	
 function _closeAll() 
 {
-	var closedInverted = true;
+	var closed = true;
 	var composeWindows = this._getWindows();
 	for (let i in composeWindows)
 	{
 		if (!this._close(composeWindows[i])) {
-			closedInverted = false;
+			closed = false;
 		}
 	}
-	return !closedInverted;
+	return closed;
 }
    
 // get input fields 
 	
-function getLastAddressTextbox(aComposeWindow) 
+function _getLastAddressField(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 	return aComposeWindow.document.evaluate(
@@ -166,7 +172,17 @@ function getLastAddressTextbox(aComposeWindow)
 		).singleNodeValue;
 }
  
-function getAddressTextboxes(aComposeWindow) 
+function _getAddressFields(aComposeWindow) 
+{
+	var result = this._getAddressFieldsInternal(aComposeWindow);
+	var nodes = [];
+	for (var i = 0, maxi = result.snapshotLength; i < maxi; i++)
+	{
+		nodes.push(result.snapshotItem(i));
+	}
+	return nodes;
+}
+function _getAddressFieldsInternal(aComposeWindow)
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 	return aComposeWindow.document.evaluate(
@@ -179,7 +195,7 @@ function getAddressTextboxes(aComposeWindow)
 		);
 }
  
-function getLastAddressType(aComposeWindow) 
+function _getLastAddressType(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 	return aComposeWindow.document.evaluate(
@@ -191,7 +207,17 @@ function getLastAddressType(aComposeWindow)
 		).singleNodeValue;
 }
  
-function getAddressTypes(aComposeWindow) 
+function _getAddressTypes(aComposeWindow) 
+{
+	var result = this._getAddressTypesInternal(aComposeWindow);
+	var nodes = [];
+	for (var i = 0, maxi = result.snapshotLength; i < maxi; i++)
+	{
+		nodes.push(result.snapshotItem(i));
+	}
+	return nodes;
+}
+function _getAddressTypesInternal(aComposeWindow)
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 	return aComposeWindow.document.evaluate(
@@ -203,7 +229,7 @@ function getAddressTypes(aComposeWindow)
 		);
 }
  
-function getDummyRow(aComposeWindow) 
+function _getDummyRow(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 	return aComposeWindow.document.evaluate(
@@ -215,7 +241,7 @@ function getDummyRow(aComposeWindow)
 		).singleNodeValue;
 }
  
-function getBodyFrame(aComposeWindow) 
+function _getBodyFrame(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 	return aComposeWindow.document.getElementById('content-frame');
@@ -227,7 +253,7 @@ function setBodyContents(aContents, aAppend, aComposeWindow)
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 
-	var frame = this.getBodyFrame(aComposeWindow);
+	var frame = this._getBodyFrame(aComposeWindow);
 	var doc = frame.contentDocument;
 
 	var range = doc.createRange();
@@ -322,8 +348,8 @@ function _getRecipients(aComposeWindow)
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 
-	var types = getAddressTypes(aComposeWindow);
-	var textboxes = getAddressTextboxes(aComposeWindow);
+	var types = _getAddressTypesInternal(aComposeWindow);
+	var textboxes = _getAddressFieldsInternal(aComposeWindow);
 	var array = [];
 	for (let i = 0, maxi = textboxes.snapshotLength; i < maxi; i++)
 	{
@@ -346,9 +372,9 @@ function _setRecipients(aAddresses, aComposeWindow)
 		let type = aAddresses[i].type,
 			address = aAddresses[i].address;
 
-		getLastAddressType(aComposeWindow).value = 'addr_'+type.toLowerCase();
+		_getLastAddressType(aComposeWindow).value = 'addr_'+type.toLowerCase();
 
-		let textbox = getLastAddressTextbox(aComposeWindow);
+		let textbox = _getLastAddressField(aComposeWindow);
 
 		textbox.focus();
 		action.inputTextToField(textbox, address);
@@ -361,7 +387,7 @@ function _setRecipients(aAddresses, aComposeWindow)
 function _getBodyContents(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return this.getBodyFrame(aComposeWindow).contentDocument.body;
+	return this._getBodyFrame(aComposeWindow).contentDocument.body;
 }
  
 function _setBodyContents(aContents) 
