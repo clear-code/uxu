@@ -13,6 +13,8 @@ var TestCase    = test_module.require('class', 'test_case');
 var TestLog     = test_module.require('class', 'test_log');
 var assertions  = test_module.require('package', 'assertions');
 var Environment = test_module.require('class', 'environment');
+
+const RUNNING = 'extensions.uxu.running';
 	 
 function constructor(aBrowser/*, aFile, ...*/) 
 {
@@ -27,7 +29,7 @@ function constructor(aBrowser/*, aFile, ...*/)
  
 function run(aReporter, aMasterPriority) 
 {
-	utils.setPref('extensions.uxu.running', true);
+	utils.setPref(RUNNING, true);
 
 	if (aReporter) this.addListener(aReporter);
 
@@ -243,7 +245,7 @@ function handleEvent(aEvent)
 			aEvent.target.removeListener(this);
 		case 'Error':
 			this._onTestCaseEvent(aEvent);
-			utils.setPref('extensions.uxu.running', false);
+			utils.setPref(RUNNING, false);
 			this.fireEvent(aEvent.type, aEvent.data);
 			break;
 	}
