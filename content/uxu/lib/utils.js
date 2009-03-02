@@ -952,7 +952,19 @@ function inspect(aObject)
 		if (!aTarget.__proto__)
 			return aTarget.toString();
 
-		if (aTarget instanceof eval('Array', aTarget)) {
+		var ArrayClass, StringClass, toStringMethod;
+		if (aTarget instanceof Ci.nsIDOMWindow) {
+			ArrayClass     = aTarget.Array;
+			StringClass    = aTarget.String;
+			toStringMethod = aTarget.Object.prototype.toString;
+		}
+		else {
+			ArrayClass     = eval('Array', aTarget);
+			StringClass    = eval('String', aTarget);
+			toStringMethod = eval('Object.prototype.toString', aTarget);
+		}
+
+		if (aTarget instanceof ArrayClass) {
 			index = inspectedObjects.length;
 			inspectedObjects.push(aTarget);
 			inspectedResults[index] = aTarget.toString();
@@ -960,10 +972,12 @@ function inspect(aObject)
 			var values = aTarget.map(arguments.callee);
 			inspectedResults[index] = "[" + values.join(", ") + "]";
 			return inspectedResults[index];
-		} else if (typeof aTarget == 'string' ||
-		           aTarget instanceof eval('String', aTarget)) {
+		}
+		else if (typeof aTarget == 'string' ||
+		           aTarget instanceof StringClass) {
 			return '"' + aTarget.replace(/\"/g, '\\"') + '"';
-		} else if (aTarget.__proto__.toString == eval('Object.prototype.toString', aTarget)) {
+		}
+		else if (aTarget.__proto__.toString == toStringMethod) {
 			index = inspectedObjects.length;
 			inspectedObjects.push(aTarget);
 			inspectedResults[index] = aTarget.toString();
@@ -1000,7 +1014,8 @@ function inspect(aObject)
 				}, arguments.callee);
 			inspectedResults[index] = "{" + values.join(", ") + "}";
 			return inspectedResults[index];
-		} else {
+		}
+		else {
 			return aTarget.toString();
 		}
 	})(aObject);
