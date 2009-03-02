@@ -1,5 +1,5 @@
 var targetProduct = 'Thunderbird';
-var profile = '../fixtures/thuderbird-profile/';
+var profile = '../fixtures/tbprofile/';
 
 function setUp()
 {
