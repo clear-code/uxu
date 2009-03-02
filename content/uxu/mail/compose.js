@@ -362,7 +362,7 @@ function _send(aCommand, aAsync, aComposeWindow)
 	if (aAsync) {
 		// このタイミングでダイアログ等が開かれるとメインスレッドの
 		// 処理が止まってしまうため、タイマーを使って非同期で開く。
-		aComposeWindow.setTimeout(aCommand);
+		aComposeWindow.setTimeout(aCommand, 0);
 	}
 	else {
 		aCommand();
