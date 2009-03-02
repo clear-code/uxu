@@ -234,21 +234,31 @@ function testBody()
 	assert.equals('<BR/>', utils.inspectDOMNode(body.childNodes[1]));
 	assert.equals('last', utils.inspectDOMNode(body.childNodes[2]));
 
+	// set
+	compose.setBodyContents('line');
+	body = compose.body;
+	assert.equals(1, body.childNodes.length);
+	assert.equals('line', utils.inspectDOMNode(body.childNodes[0]));
+
 	// append
 	compose.appendBodyContents('foobar\nhoge');
 	body = compose.body;
-	assert.equals(6, body.childNodes.length);
-	assert.equals('first', utils.inspectDOMNode(body.childNodes[0]));
-	assert.equals('<BR/>', utils.inspectDOMNode(body.childNodes[1]));
-	assert.equals('last', utils.inspectDOMNode(body.childNodes[2]));
-	assert.equals('foobar', utils.inspectDOMNode(body.childNodes[3]));
-	assert.equals('<BR/>', utils.inspectDOMNode(body.childNodes[4]));
-	assert.equals('hoge', utils.inspectDOMNode(body.childNodes[5]));
+	assert.equals(4, body.childNodes.length);
+	assert.equals('line', utils.inspectDOMNode(body.childNodes[0]));
+	assert.equals('foobar', utils.inspectDOMNode(body.childNodes[1]));
+	assert.equals('<BR/>', utils.inspectDOMNode(body.childNodes[2]));
+	assert.equals('hoge', utils.inspectDOMNode(body.childNodes[3]));
 
 	compose.tearDown();
 	assert.isNull(compose.window);
 	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.body;
+	});
+	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+		compose.setBodyContents('foo');
+	});
+	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+		compose.appendBodyContents('foo');
 	});
 }
 
@@ -262,9 +272,19 @@ function testAttachments()
 	assert.equals(utils.getFilePathFromURLSpec(baseURL+'compose.test.js'), attachments[0].path);
 	assert.equals(utils.getFilePathFromURLSpec(baseURL+'utils.test.js'), attachments[1].path);
 
+	compose.attachFile('overlay.test.js');
+	attachments = compose.attachments;
+	assert.equals(3, attachments.length);
+	assert.equals(utils.getFilePathFromURLSpec(baseURL+'compose.test.js'), attachments[0].path);
+	assert.equals(utils.getFilePathFromURLSpec(baseURL+'utils.test.js'), attachments[1].path);
+	assert.equals(utils.getFilePathFromURLSpec(baseURL+'overlay.test.js'), attachments[2].path);
+
 	compose.tearDown();
 	assert.isNull(compose.window);
 	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.attachments;
+	});
+	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+		compose.attachFile('compose.test.js');
 	});
 }
