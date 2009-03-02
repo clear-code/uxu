@@ -20,7 +20,7 @@ function constructor(aMailUtils, aEnvironment)
 	this.__defineGetter__('windows', getWindows);
 
 	this.__defineGetter__('recipients', getRecipients);
-//	this.__defineSetter__('recipients', setRecipients);
+	this.__defineSetter__('recipients', setRecipients);
 
 	this.__defineGetter__('subject', getSubject);
 	this.__defineSetter__('subject', setSubject);
@@ -229,33 +229,21 @@ function getRecipients(aComposeWindow)
 function setRecipients(aAddresses, aComposeWindow)
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return utils.doIteration((function(aSelf) {
-		for (let i in aAddresses)
-		{
-			let type = aAddresses[i].type,
-				address = aAddresses[i].address;
+	for (let i in aAddresses)
+	{
+		let type = aAddresses[i].type,
+			address = aAddresses[i].address;
 
-			getLastAddressType(aComposeWindow).value = 'addr_'+type.toLowerCase();
+		getLastAddressType(aComposeWindow).value = 'addr_'+type.toLowerCase();
 
-			let textbox = getLastAddressTextbox(aComposeWindow);
+		let textbox = getLastAddressTextbox(aComposeWindow);
 
-			textbox.focus();
-			action.inputTextToField(textbox, address);
+		textbox.focus();
+		action.inputTextToField(textbox, address);
 
-			// 少し待ってからEnterキーのイベントを送出しないと
-			// 正常に処理されない（オートコンプリートのタイムアウト待ち）
-			while (textbox.value)
-			{
-				textbox = getLastAddressTextbox(aComposeWindow);
-				textbox.focus();
-				action.fireKeyEventOnElement(textbox, {
-					type    : 'keypress',
-					keyCode : Ci.nsIDOMKeyEvent.DOM_VK_RETURN
-				});
-				yield 100;
-			}
-		}
-	})(this));
+		aComposeWindow.awReturnHit(textbox);
+	}
+	return aAddresses;
 }
 
 
