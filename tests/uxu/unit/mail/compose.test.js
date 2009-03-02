@@ -26,6 +26,7 @@ function setUp()
 	compose = new ComposeClass(utils.mail, utils);
 	yield Do(compose.setUp());
 	composeWindow = compose.window;
+	mail.clear();
 }
 
 function tearDown()
@@ -177,6 +178,40 @@ function testRecipients()
 
 	assert.equals(addresses, compose.recipients);
 
+	// string type
+	compose.recipients = ['test1@example.com', 'test2@example.com'];
+	assert.equals(
+		[
+			{ type : 'to', address : 'test1@example.com' },
+			{ type : 'to', address : 'test2@example.com' }
+		],
+		compose.recipients
+	);
+
+	// single string type
+	compose.recipients = 'test@example.com';
+	assert.equals([{ type : 'to', address : 'test@example.com' }], compose.recipients);
+
+	// method type
+	compose.setRecipients(['foo@example.com', 'bar@example.com']);
+	assert.equals(
+		[
+			{ type : 'to', address : 'foo@example.com' },
+			{ type : 'to', address : 'bar@example.com' }
+		],
+		compose.recipients
+	);
+	compose.appendRecipients(['baz@example.com', 'hoge@example.com']);
+	assert.equals(
+		[
+			{ type : 'to', address : 'foo@example.com' },
+			{ type : 'to', address : 'bar@example.com' },
+			{ type : 'to', address : 'baz@example.com' },
+			{ type : 'to', address : 'hoge@example.com' }
+		],
+		compose.recipients
+	);
+
 	compose.tearDown();
 	assert.isNull(compose.window);
 	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
@@ -287,4 +322,48 @@ function testAttachments()
 	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.attachFile('compose.test.js');
 	});
+}
+
+function testSend()
+{
+	compose.recipients = ['test@example.com'];
+	compose.subject = 'foo';
+	compose.body = 'bar';
+	assert.equals(0, mail.deliveries.length);
+	compose.send();
+	assert.equals(1, mail.deliveries.length);
+}
+
+function testSendAsync()
+{
+	compose.recipients = ['test@example.com'];
+	compose.subject = 'foo';
+	compose.body = 'bar';
+	assert.equals(0, mail.deliveries.length);
+	compose.send(true);
+	assert.equals(0, mail.deliveries.length);
+	yield 100;
+	assert.equals(1, mail.deliveries.length);
+}
+
+function testSendByButtonClick()
+{
+	compose.recipients = ['test@example.com'];
+	compose.subject = 'foo';
+	compose.body = 'bar';
+	assert.equals(0, mail.deliveries.length);
+	compose.sendByButtonClick();
+	assert.equals(1, mail.deliveries.length);
+}
+
+function testSendByButtonClickAsync()
+{
+	compose.recipients = ['test@example.com'];
+	compose.subject = 'foo';
+	compose.body = 'bar';
+	assert.equals(0, mail.deliveries.length);
+	compose.sendByButtonClick(true);
+	assert.equals(0, mail.deliveries.length);
+	yield 100;
+	assert.equals(1, mail.deliveries.length);
 }

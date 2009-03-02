@@ -35,12 +35,14 @@ function _defineProperties()
 	this.__defineGetter__('attachments', _getAttachments);
 	this.__defineSetter__('attachments', _setAttachments);
 
-	this.__defineGetter__('lastAddressField', _getLastAddressField);
 	this.__defineGetter__('addressFields',    _getAddressFields);
-	this.__defineGetter__('lastAddressType',  _getLastAddressType);
+	this.__defineGetter__('lastAddressField', _getLastAddressField);
+
 	this.__defineGetter__('addressTypes',     _getAddressTypes);
-	this.__defineGetter__('firstDummyRow',    _getFirstDummyRow);
+	this.__defineGetter__('lastAddressType',  _getLastAddressType);
+
 	this.__defineGetter__('dummyRows',        _getDummyRows);
+	this.__defineGetter__('firstDummyRow',    _getFirstDummyRow);
 }
   
 function destroy() 
@@ -163,22 +165,45 @@ const ADDRESS_TYPE = '//*[@id="addressingWidget"]/descendant::*[local-name()="me
 const ADDRESS_FIELD = ADDRESS_TYPE+'/ancestor::*[local-name()="listitem"]/descendant::*[local-name()="textbox"]';
 const DUMMY_ROW = '//*[@id="addressingWidget"]/descendant::*[@class="dummy-row"]';
 	
-function _getLastAddressField(aComposeWindow) 
-{
-	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return utils.$X('('+ADDRESS_FIELD+')[last()]', aComposeWindow.document, XPathResult.FIRST_ORDERED_NODE_TYPE);
-}
- 
 function _getAddressFields(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 	return utils.$X(ADDRESS_FIELD, aComposeWindow.document);
 }
  
-function _getLastAddressType(aComposeWindow) 
+function _getFirstAddressField(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return utils.$X('('+ADDRESS_TYPE+')[last()]', aComposeWindow.document, XPathResult.FIRST_ORDERED_NODE_TYPE);
+	return utils.$X(ADDRESS_FIELD, aComposeWindow.document, XPathResult.FIRST_ORDERED_NODE_TYPE);
+}
+function _getLastAddressField(aComposeWindow)
+{
+	aComposeWindow = this._ensureWindowReady(aComposeWindow);
+	return utils.$X('('+ADDRESS_FIELD+')[last()]', aComposeWindow.document, XPathResult.FIRST_ORDERED_NODE_TYPE);
+}
+ 
+function _getBlankAddressFields(aComposeWindow) 
+{
+	aComposeWindow = this._ensureWindowReady(aComposeWindow);
+	var fields = _getAddressFields(aComposeWindow);
+	var blank = [];
+	for (let i in fields)
+	{
+		if (!fields[i].value) blank.push(fields[i]);
+	}
+	return blank;
+}
+function _getFirstBlankAddressField(aComposeWindow) 
+{
+	aComposeWindow = this._ensureWindowReady(aComposeWindow);
+	var blank = _getBlankAddressFields(aComposeWindow);
+	return blank.length ? blank[0] : null ;
+}
+ 
+function _getNextAddressField(aField, aComposeWindow) 
+{
+	aComposeWindow = this._ensureWindowReady(aComposeWindow);
+	return utils.$X('following::*[local-name()="menulist" and starts-with(@value, "addr_")]ancestor::*[local-name()="listitem"]/descendant::*[local-name()="textbox"]', aField, XPathResult.FIRST_ORDERED_NODE_TYPE);
 }
  
 function _getAddressTypes(aComposeWindow) 
@@ -187,16 +212,33 @@ function _getAddressTypes(aComposeWindow)
 	return utils.$X(ADDRESS_TYPE, aComposeWindow.document);
 }
  
-function _getFirstDummyRow(aComposeWindow) 
+function _getFirstAddressType(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return utils.$X(DUMMY_ROW, aComposeWindow.document, XPathResult.FIRST_ORDERED_NODE_TYPE);
+	return utils.$X(ADDRESS_TYPE, aComposeWindow.document, XPathResult.FIRST_ORDERED_NODE_TYPE);
+}
+function _getLastAddressType(aComposeWindow)
+{
+	aComposeWindow = this._ensureWindowReady(aComposeWindow);
+	return utils.$X('('+ADDRESS_TYPE+')[last()]', aComposeWindow.document, XPathResult.FIRST_ORDERED_NODE_TYPE);
+}
+ 
+function getAddressTypeForField(aField, aComposeWindow) 
+{
+	aComposeWindow = this._ensureWindowReady(aComposeWindow);
+	return utils.$X('ancestor::*[local-name()="listitem"]/descendant::*[local-name()="menulist"]', aField, XPathResult.FIRST_ORDERED_NODE_TYPE);
 }
  
 function _getDummyRows(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 	return utils.$X(DUMMY_ROW, aComposeWindow.document);
+}
+ 
+function _getFirstDummyRow(aComposeWindow) 
+{
+	aComposeWindow = this._ensureWindowReady(aComposeWindow);
+	return utils.$X(DUMMY_ROW, aComposeWindow.document, XPathResult.FIRST_ORDERED_NODE_TYPE);
 }
  
 function _getBodyFrame(aComposeWindow) 
@@ -207,40 +249,22 @@ function _getBodyFrame(aComposeWindow)
   
 // commands 
 	
-function setBodyContents(aContents, aAppend, aComposeWindow) 
+function setRecipients(aAddresses, aComposeWindow)
 {
-	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-
-	var frame = this._getBodyFrame(aComposeWindow);
-	var doc = frame.contentDocument;
-
-	var range = doc.createRange();
-	range.selectNodeContents(doc.body);
-	if (!aAppend) {
-		range.deleteContents();
-	}
-	range.collapse(false);
-	if (aContents instanceof Ci.nsIDOMDocumentFragment ||
-		aContents instanceof Ci.nsIDOMNode) {
-		aContents = doc.importNode(aContents, true);
-		range.insertNode(aContents);
-	}
-	else {
-		var fragment = doc.createDocumentFragment();
-		var lines = String(aContents).split(/[\r\n]+/);
-		lines.forEach(function(aLine, aIndex) {
-			fragment.appendChild(doc.createTextNode(aLine));
-			if (aIndex < lines.length-1) {
-				fragment.appendChild(doc.createElement('br'));
-			}
-		});
-		range.insertNode(fragment);
-	}
-	range.detach();
+	return this._setRecipients(aAddresses, false, aComposeWindow)
+}
+function appendRecipients(aAddresses, aComposeWindow)
+{
+	return this._setRecipients(aAddresses, true, aComposeWindow)
+}
+ 
+function setBodyContents(aContents, aComposeWindow) 
+{
+	return this._setBodyContents(aContents, false, aComposeWindow);
 }
 function appendBodyContents(aContents, aComposeWindow) 
 {
-	this.setBodyContents(aContents, true, aComposeWindow);
+	return this._setBodyContents(aContents, true, aComposeWindow);
 }
  
 function attachFile(aFile, aComposeWindow) 
@@ -296,13 +320,13 @@ function sendByButtonClick(aAsync, aComposeWindow)
 function _getSubject(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return aComposeWindow.document.getElementById('msgSubject').value;
+	return utils.$('msgSubject', aComposeWindow).value;
 }
  
 function _setSubject(aSubject, aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	action.inputTextToField(aComposeWindow.document.getElementById('msgSubject'), aSubject);
+	action.inputTextToField(utils.$('msgSubject', aComposeWindow), aSubject);
 }
  
 function _getRecipients(aComposeWindow) 
@@ -333,14 +357,31 @@ function _getRecipients(aComposeWindow)
 	return array;
 }
  
-function _setRecipients(aAddresses, aComposeWindow) 
+function _setRecipients(aAddresses, aAppend, aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 
-	var enterKey = { type : 'keypress', keyCode : Ci.nsIDOMKeyEvent.DOM_VK_RETURN };
+	const ENTER_KEY = { type : 'keypress', keyCode : Ci.nsIDOMKeyEvent.DOM_VK_RETURN };
 
+	if (!aAppend) {
+		var types = _getAddressTypes(aComposeWindow)
+		_getAddressFields(aComposeWindow).forEach(function(aField, aIndex) {
+			types[aIndex].value = 'addr_to';
+			aField.focus();
+			aField.value = '';
+		}, this);
+	}
+
+	if (!utils.isArray(aAddresses)) aAddresses = [aAddresses];
+
+	var listbox = utils.$('addressingWidget', aComposeWindow);
 	aAddresses.forEach(function(aAddress) {
+		if (typeof aAddress == 'string') {
+			aAddress = { address : aAddress, type : 'to' };
+		}
 		if (!aAddress.address) return;
+
+		let field = _getFirstBlankAddressField(aComposeWindow);
 
 		let type = aAddress.type.toLowerCase();
 		switch (type)
@@ -352,20 +393,22 @@ function _setRecipients(aAddresses, aComposeWindow)
 				type = 'followup';
 				break;
 		}
-		_getLastAddressType(aComposeWindow).value = 'addr_'+type;
+		getAddressTypeForField(field, aComposeWindow).value = 'addr_'+type;
 
-		let textbox = _getLastAddressField(aComposeWindow);
-		textbox.focus();
-		action.inputTextToField(textbox, aAddress.address);
+		listbox.ensureElementIsVisible(utils.$X('ancestor::*[local-name()="listitem"]', field, XPathResult.FIRST_ORDERED_NODE_TYPE));
+		field.focus();
+		action.inputTextToField(field, aAddress.address);
 
 		utils.sleep(100);
+		let next;
 		do {
-			textbox = _getLastAddressField(aComposeWindow)
-			textbox.focus();
-			action.fireKeyEventOnElement(textbox, enterKey);
+			field = _getLastAddressField(aComposeWindow);
+			field.focus();
+			action.fireKeyEventOnElement(field, ENTER_KEY);
 			utils.sleep(100);
+			next = _getFirstBlankAddressField(aComposeWindow);
 		}
-		while (textbox.value);
+		while (!next);
 	}, this);
 	return aAddresses;
 }
@@ -376,9 +419,37 @@ function _getBodyContents(aComposeWindow)
 	return this._getBodyFrame(aComposeWindow).contentDocument.body;
 }
  
-function _setBodyContents(aContents) 
+function _setBodyContents(aContents, aAppend, aComposeWindow) 
 {
-	this.setBodyContents(aContents);
+	aComposeWindow = this._ensureWindowReady(aComposeWindow);
+
+	var frame = this._getBodyFrame(aComposeWindow);
+	var doc = frame.contentDocument;
+
+	var range = doc.createRange();
+	range.selectNodeContents(doc.body);
+	if (!aAppend) {
+		range.deleteContents();
+	}
+	range.collapse(false);
+	if (aContents instanceof Ci.nsIDOMDocumentFragment ||
+		aContents instanceof Ci.nsIDOMNode) {
+		aContents = doc.importNode(aContents, true);
+		range.insertNode(aContents);
+	}
+	else {
+		var fragment = doc.createDocumentFragment();
+		var lines = String(aContents).split(/[\r\n]+/);
+		lines.forEach(function(aLine, aIndex) {
+			fragment.appendChild(doc.createTextNode(aLine));
+			if (aIndex < lines.length-1) {
+				fragment.appendChild(doc.createElement('br'));
+			}
+		});
+		range.insertNode(fragment);
+	}
+	range.detach();
+
 	return aContents;
 }
  
