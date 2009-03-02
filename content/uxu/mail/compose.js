@@ -159,70 +159,44 @@ function _closeAll()
 }
    
 // get input fields 
+const ADDRESS_TYPE = '//*[@id="addressingWidget"]/descendant::*[local-name()="menulist" and starts-with(@value, "addr_")]';
+const ADDRESS_FIELD = ADDRESS_TYPE+'/ancestor::*[local-name()="listitem"]/descendant::*[local-name()="textbox"]';
+const DUMMY_ROW = '//*[@id="addressingWidget"]/descendant::*[@class="dummy-row"]';
 	
 function _getLastAddressField(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return utils.$X(
-			'//*[@id="addressingWidget"]/'+
-			'/descendant::*[local-name()="menulist" and starts-with(@value, "addr_")][last()]'+
-			'/ancestor::*[local-name()="listitem"]/descendant::*[local-name()="textbox"]',
-			aComposeWindow.document,
-			XPathResult.FIRST_ORDERED_NODE_TYPE
-		);
+	return utils.$X('('+ADDRESS_FIELD+')[last()]', aComposeWindow.document, XPathResult.FIRST_ORDERED_NODE_TYPE);
 }
  
 function _getAddressFields(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return utils.$X(
-			'//*[@id="addressingWidget"]/'+
-			'/descendant::*[local-name()="menulist" and starts-with(@value, "addr_")]'+
-			'/ancestor::*[local-name()="listitem"]/descendant::*[local-name()="textbox"]',
-			aComposeWindow.document
-		);
+	return utils.$X(ADDRESS_FIELD, aComposeWindow.document);
 }
  
 function _getLastAddressType(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return utils.$X(
-			'//*[@id="addressingWidget"]/'+
-			'/descendant::*[local-name()="menulist" and starts-with(@value, "addr_")][last()]',
-			aComposeWindow.document,
-			XPathResult.FIRST_ORDERED_NODE_TYPE
-		);
+	return utils.$X('('+ADDRESS_TYPE+')[last()]', aComposeWindow.document, XPathResult.FIRST_ORDERED_NODE_TYPE);
 }
  
 function _getAddressTypes(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return utils.$X(
-			'//*[@id="addressingWidget"]/'+
-			'/descendant::*[local-name()="menulist" and starts-with(@value, "addr_")]',
-			aComposeWindow.document
-		);
+	return utils.$X(ADDRESS_TYPE, aComposeWindow.document);
 }
  
 function _getFirstDummyRow(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return utils.$X(
-			'//*[@id="addressingWidget"]/'+
-			'/descendant::*[@class="dummy-row"]',
-			aComposeWindow.document,
-			XPathResult.FIRST_ORDERED_NODE_TYPE
-		);
+	return utils.$X(DUMMY_ROW, aComposeWindow.document, XPathResult.FIRST_ORDERED_NODE_TYPE);
 }
  
 function _getDummyRows(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return utils.$X(
-			'//*[@id="addressingWidget"]/'+
-			'/descendant::*[@class="dummy-row"]',
-			aComposeWindow.document
-		);
+	return utils.$X(DUMMY_ROW, aComposeWindow.document);
 }
  
 function _getBodyFrame(aComposeWindow) 
@@ -337,12 +311,21 @@ function _getRecipients(aComposeWindow)
 	var array = [];
 	textboxes.forEach(function(aTextbox, aIndex) {
 		let value = aTextbox.value;
-		if (value) {
-			array.push({
-				type    : types[aIndex].value.replace('addr_', ''),
-				address : value
-			});
+		if (!value) return;
+		let type = types[aIndex].value.replace('addr_', '');
+		switch (type)
+		{
+			case 'reply':
+				type = 'reply-to';
+				break;
+			case 'followup':
+				type = 'followup-to';
+				break;
 		}
+		array.push({
+			type    : type,
+			address : value
+		});
 	}, this);
 	return array;
 }
@@ -350,20 +333,37 @@ function _getRecipients(aComposeWindow)
 function _setRecipients(aAddresses, aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	for (let i in aAddresses)
-	{
-		let type = aAddresses[i].type,
-			address = aAddresses[i].address;
 
-		_getLastAddressType(aComposeWindow).value = 'addr_'+type.toLowerCase();
+	var enterKey = { type : 'keypress', keyCode : Ci.nsIDOMKeyEvent.DOM_VK_RETURN };
+
+	aAddresses.forEach(function(aAddress) {
+		if (!aAddress.address) return;
+
+		let type = aAddress.type.toLowerCase();
+		switch (type)
+		{
+			case 'reply-to':
+				type = 'reply';
+				break;
+			case 'followup-to':
+				type = 'followup';
+				break;
+		}
+		_getLastAddressType(aComposeWindow).value = 'addr_'+type;
 
 		let textbox = _getLastAddressField(aComposeWindow);
-
 		textbox.focus();
-		action.inputTextToField(textbox, address);
+		action.inputTextToField(textbox, aAddress.address);
 
-		aComposeWindow.awReturnHit(textbox);
-	}
+		utils.sleep(100);
+		do {
+			textbox = _getLastAddressField(aComposeWindow)
+			textbox.focus();
+			action.fireKeyEventOnElement(textbox, enterKey);
+			utils.sleep(100);
+		}
+		while (textbox.value);
+	}, this);
 	return aAddresses;
 }
  
