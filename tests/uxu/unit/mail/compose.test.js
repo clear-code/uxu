@@ -24,6 +24,8 @@ function setUp()
 
 	ComposeClass = mail_module.require('class', 'compose');
 	compose = new ComposeClass(utils.mail, utils);
+	yield Do(compose.setUp());
+	composeWindow = compose.window;
 }
 
 function tearDown()
@@ -36,6 +38,10 @@ function tearDown()
 	closeAllComposeWindows();
 }
 
+testWindowOperations.setUp = function()
+{
+	compose.tearDown();
+}
 function testWindowOperations()
 {
 	assert.isNull(compose.window);
@@ -52,7 +58,7 @@ function testWindowOperations()
 	assert.equals(composeWindow, compose.windows[0]);
 
 	assert.isFunction(compose.tearDown);
-	yield Do(compose.tearDown());
+	compose.tearDown();
 
 	assert.isNull(utils.getTestWindow());
 	assert.isNull(compose.window);
@@ -64,23 +70,13 @@ function testWindowOperations()
 	assert.isNotNull(compose.window);
 
 	assert.isFunction(compose.tearDownAll);
-	yield Do(compose.tearDownAll());
+	compose.tearDownAll();
 
 	assert.isNull(utils.getTestWindow());
 	assert.isNull(compose.window);
 }
 
-testGetInputFields.setUp = function()
-{
-	yield compose.setUp();
-	composeWindow = compose.window;
-	assert.isNotNull(composeWindow);
-}
-testGetInputFields.tearDown = function()
-{
-	yield compose.tearDown();
-}
-function testGetInputFields()
+function testGetFields()
 {
 	var nodes;
 
@@ -98,4 +94,36 @@ function testGetInputFields()
 	assert.equals(3, nodes.length);
 	assert.equals(nodes, compose.dummyRows);
 	assert.equals(nodes[0], compose.firstDummyRow);
+
+	assert.equals($('content-frame', composeWindow.document).contentDocument.body, compose.body);
+
+	assert.equals([], compose.attachments);
+
+
+	compose.tearDown();
+	assert.isNull(compose.window);
+	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+		compose.addressFields;
+	});
+	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+		compose.lastAddressField;
+	});
+	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+		compose.addressTypes;
+	});
+	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+		compose.lastAddressType;
+	});
+	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+		compose.dummyRows;
+	});
+	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+		compose.firstDummyRow;
+	});
+	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+		compose.body;
+	});
+	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+		compose.attachments;
+	});
 }

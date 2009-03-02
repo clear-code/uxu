@@ -379,7 +379,7 @@ function _setBodyContents(aContents)
 	return aContents;
 }
  
-function _getAttachments(aComposeWIndow) 
+function _getAttachments(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 
