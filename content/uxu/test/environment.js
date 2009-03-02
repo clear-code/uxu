@@ -556,6 +556,7 @@ function $(aNodeOrID, aOwner)
 var _this = this; 
 <><![CDATA[
 $X
+sleep
 makeURIFromSpec
 makeFileWithPath
 normalizeToFile
