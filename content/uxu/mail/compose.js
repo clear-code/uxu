@@ -35,14 +35,20 @@ function _defineProperties()
 	this.__defineGetter__('attachments', _getAttachments);
 	this.__defineSetter__('attachments', _setAttachments);
 
-	this.__defineGetter__('addressFields',    _getAddressFields);
-	this.__defineGetter__('lastAddressField', _getLastAddressField);
+	this.__defineGetter__('addressFields',     _getAddressFields);
+	this.__defineGetter__('firstAddressField', _getLastAddressField);
+	this.__defineGetter__('lastAddressField',  _getLastAddressField);
+
+	this.__defineGetter__('blankAddressFields',     _getBlankAddressFields);
+	this.__defineGetter__('firstBlankAddressField', _getFirstBlankAddressField);
+	this.__defineGetter__('lastBlankAddressField',  _getLastBlankAddressField);
 
 	this.__defineGetter__('addressTypes',     _getAddressTypes);
+	this.__defineGetter__('firstAddressType', _getLastAddressType);
 	this.__defineGetter__('lastAddressType',  _getLastAddressType);
 
-	this.__defineGetter__('dummyRows',        _getDummyRows);
-	this.__defineGetter__('firstDummyRow',    _getFirstDummyRow);
+	this.__defineGetter__('dummyRows',     _getDummyRows);
+	this.__defineGetter__('firstDummyRow', _getFirstDummyRow);
 }
   
 function destroy() 
@@ -192,6 +198,12 @@ function _getBlankAddressFields(aComposeWindow)
 		if (!fields[i].value) blank.push(fields[i]);
 	}
 	return blank;
+}
+function _getLastBlankAddressField(aComposeWindow) 
+{
+	aComposeWindow = this._ensureWindowReady(aComposeWindow);
+	var blank = _getBlankAddressFields(aComposeWindow);
+	return blank.length ? blank[blank.length-1] : null ;
 }
 function _getFirstBlankAddressField(aComposeWindow) 
 {
