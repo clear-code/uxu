@@ -203,12 +203,47 @@ function testSubject()
 function testBody()
 {
 	assert.equals($('content-frame', composeWindow.document).contentDocument.body, compose.body);
+
+	// text
 	compose.body = 'foobar\nhoge';
 	var body = compose.body;
 	assert.equals(3, body.childNodes.length);
 	assert.equals('foobar', utils.inspectDOMNode(body.childNodes[0]));
 	assert.equals('<BR/>', utils.inspectDOMNode(body.childNodes[1]));
 	assert.equals('hoge', utils.inspectDOMNode(body.childNodes[2]));
+
+	// node
+	var doc = compose.body.ownerDocument;
+	var text = doc.createTextNode('line');
+	compose.body = text;
+	body = compose.body;
+	assert.equals(1, body.childNodes.length);
+	assert.equals('line', utils.inspectDOMNode(body.childNodes[0]));
+
+	// document fragment
+	var fragment = doc.createDocumentFragment();
+	text = doc.createTextNode('first');
+	fragment.appendChild(text);
+	fragment.appendChild(doc.createElement('br'));
+	text = doc.createTextNode('last');
+	fragment.appendChild(text);
+	compose.body = fragment;
+	body = compose.body;
+	assert.equals(3, body.childNodes.length);
+	assert.equals('first', utils.inspectDOMNode(body.childNodes[0]));
+	assert.equals('<BR/>', utils.inspectDOMNode(body.childNodes[1]));
+	assert.equals('last', utils.inspectDOMNode(body.childNodes[2]));
+
+	// append
+	compose.appendBodyContents('foobar\nhoge');
+	body = compose.body;
+	assert.equals(6, body.childNodes.length);
+	assert.equals('first', utils.inspectDOMNode(body.childNodes[0]));
+	assert.equals('<BR/>', utils.inspectDOMNode(body.childNodes[1]));
+	assert.equals('last', utils.inspectDOMNode(body.childNodes[2]));
+	assert.equals('foobar', utils.inspectDOMNode(body.childNodes[3]));
+	assert.equals('<BR/>', utils.inspectDOMNode(body.childNodes[4]));
+	assert.equals('hoge', utils.inspectDOMNode(body.childNodes[5]));
 
 	compose.tearDown();
 	assert.isNull(compose.window);

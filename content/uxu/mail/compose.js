@@ -222,7 +222,7 @@ function setBodyContents(aContents, aAppend, aComposeWindow)
 	range.collapse(false);
 	if (aContents instanceof Ci.nsIDOMDocumentFragment ||
 		aContents instanceof Ci.nsIDOMNode) {
-		aContents = doc.importNode(aContents);
+		aContents = doc.importNode(aContents, true);
 		range.insertNode(aContents);
 	}
 	else {
@@ -238,7 +238,10 @@ function setBodyContents(aContents, aAppend, aComposeWindow)
 	}
 	range.detach();
 }
-
+function appendBodyContents(aContents, aComposeWindow) 
+{
+	this.setBodyContents(aContents, true, aComposeWindow);
+}
  
 function attachFile(aFile, aComposeWindow) 
 {
