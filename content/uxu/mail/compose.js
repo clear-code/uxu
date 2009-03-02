@@ -39,7 +39,8 @@ function _defineProperties()
 	this.__defineGetter__('addressFields',    _getAddressFields);
 	this.__defineGetter__('lastAddressType',  _getLastAddressType);
 	this.__defineGetter__('addressTypes',     _getAddressTypes);
-	this.__defineGetter__('dummyRow',         _getDummyRow);
+	this.__defineGetter__('firstDummyRow',    _getFirstDummyRow);
+	this.__defineGetter__('dummyRows',        _getDummyRows);
 }
   
 function destroy() 
@@ -70,15 +71,15 @@ function _getWindow()
   
 function _isWindowReady(aComposeWindow) 
 {
-	var textboxes = _getAddressFieldsInternal(aComposeWindow);
+	var textboxes = _getAddressFields(aComposeWindow);
 	return (
 			!aComposeWindow.closed &&
 			(
-				textboxes.snapshotLength > 1 ||
+				textboxes.length > 1 ||
 				(
-					textboxes.snapshotLength > 0 &&
+					textboxes.length > 0 &&
 					_getLastAddressField(aComposeWindow) &&
-					_getDummyRow(aComposeWindow)
+					_getFirstDummyRow(aComposeWindow)
 				)
 			)
 		);
@@ -162,83 +163,66 @@ function _closeAll()
 function _getLastAddressField(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return aComposeWindow.document.evaluate(
+	return utils.$X(
+			'//*[@id="addressingWidget"]/'+
 			'/descendant::*[local-name()="menulist" and starts-with(@value, "addr_")][last()]'+
 			'/ancestor::*[local-name()="listitem"]/descendant::*[local-name()="textbox"]',
 			aComposeWindow.document,
-			null,
-			XPathResult.FIRST_ORDERED_NODE_TYPE,
-			null
-		).singleNodeValue;
+			XPathResult.FIRST_ORDERED_NODE_TYPE
+		);
 }
  
 function _getAddressFields(aComposeWindow) 
 {
-	var result = this._getAddressFieldsInternal(aComposeWindow);
-	var nodes = [];
-	for (var i = 0, maxi = result.snapshotLength; i < maxi; i++)
-	{
-		nodes.push(result.snapshotItem(i));
-	}
-	return nodes;
-}
-function _getAddressFieldsInternal(aComposeWindow)
-{
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return aComposeWindow.document.evaluate(
+	return utils.$X(
+			'//*[@id="addressingWidget"]/'+
 			'/descendant::*[local-name()="menulist" and starts-with(@value, "addr_")]'+
 			'/ancestor::*[local-name()="listitem"]/descendant::*[local-name()="textbox"]',
-			aComposeWindow.document,
-			null,
-			XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
-			null
+			aComposeWindow.document
 		);
 }
  
 function _getLastAddressType(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return aComposeWindow.document.evaluate(
+	return utils.$X(
+			'//*[@id="addressingWidget"]/'+
 			'/descendant::*[local-name()="menulist" and starts-with(@value, "addr_")][last()]',
 			aComposeWindow.document,
-			null,
-			XPathResult.FIRST_ORDERED_NODE_TYPE,
-			null
-		).singleNodeValue;
+			XPathResult.FIRST_ORDERED_NODE_TYPE
+		);
 }
  
 function _getAddressTypes(aComposeWindow) 
 {
-	var result = this._getAddressTypesInternal(aComposeWindow);
-	var nodes = [];
-	for (var i = 0, maxi = result.snapshotLength; i < maxi; i++)
-	{
-		nodes.push(result.snapshotItem(i));
-	}
-	return nodes;
-}
-function _getAddressTypesInternal(aComposeWindow)
-{
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return aComposeWindow.document.evaluate(
+	return utils.$X(
+			'//*[@id="addressingWidget"]/'+
 			'/descendant::*[local-name()="menulist" and starts-with(@value, "addr_")]',
-			aComposeWindow.document,
-			null,
-			XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
-			null
+			aComposeWindow.document
 		);
 }
  
-function _getDummyRow(aComposeWindow) 
+function _getFirstDummyRow(aComposeWindow) 
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
-	return aComposeWindow.document.evaluate(
+	return utils.$X(
+			'//*[@id="addressingWidget"]/'+
 			'/descendant::*[@class="dummy-row"]',
 			aComposeWindow.document,
-			null,
-			XPathResult.FIRST_ORDERED_NODE_TYPE,
-			null
-		).singleNodeValue;
+			XPathResult.FIRST_ORDERED_NODE_TYPE
+		);
+}
+ 
+function _getDummyRows(aComposeWindow) 
+{
+	aComposeWindow = this._ensureWindowReady(aComposeWindow);
+	return utils.$X(
+			'//*[@id="addressingWidget"]/'+
+			'/descendant::*[@class="dummy-row"]',
+			aComposeWindow.document
+		);
 }
  
 function _getBodyFrame(aComposeWindow) 
@@ -348,19 +332,18 @@ function _getRecipients(aComposeWindow)
 {
 	aComposeWindow = this._ensureWindowReady(aComposeWindow);
 
-	var types = _getAddressTypesInternal(aComposeWindow);
-	var textboxes = _getAddressFieldsInternal(aComposeWindow);
+	var types = _getAddressTypes(aComposeWindow);
+	var textboxes = _getAddressFields(aComposeWindow);
 	var array = [];
-	for (let i = 0, maxi = textboxes.snapshotLength; i < maxi; i++)
-	{
-		let value = textboxes.snapshotItem(i).value;
+	textboxes.forEach(function(aTextbox, aIndex) {
+		let value = aTextbox.value;
 		if (value) {
 			array.push({
-				type    : types.snapshotItem(i).value.replace('addr_', ''),
+				type    : types[aIndex].value.replace('addr_', ''),
 				address : value
 			});
 		}
-	}
+	}, this);
 	return array;
 }
  
