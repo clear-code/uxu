@@ -114,16 +114,21 @@ function $X()
 // http://d.hatena.ne.jp/fls/20090224/p1
 function sleep(aWait) 
 {
-	var timer = { timeup: false };
-	var interval = window.setInterval(function() {
-			timer.timeup = true;
-		}, aWait);
-	var thread = Cc['@mozilla.org/thread-manager;1'].getService().mainThread;
-	while (!timer.timeup)
-	{
-		thread.processNextEvent(true);
+	if ('@mozilla.org/thread-manager;1' in Cc) {
+		var timer = { timeup: false };
+		var interval = window.setInterval(function() {
+				timer.timeup = true;
+			}, aWait);
+		var thread = Cc['@mozilla.org/thread-manager;1'].getService().mainThread;
+		while (!timer.timeup)
+		{
+			thread.processNextEvent(true);
+		}
+		window.clearInterval(interval);
 	}
-	window.clearInterval(interval);
+	else {
+		Packages.java.lang.Thread.sleep(aWait);
+	}
 }
   
 // ÉtÉ@ÉCÉãëÄçÏ 
