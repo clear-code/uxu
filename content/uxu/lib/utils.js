@@ -12,6 +12,7 @@ var IOService = Cc['@mozilla.org/network/io-service;1']
 
 const ERROR_INVALID_OWNER = new Error('invalid owner');
 const ERROR_INVALID_XPATH_EXPRESSION = new Error('invalid expression');
+const ERROR_SLEEP_IS_NOT_AVAILABLE = new Error('"speep()" is not available on Gecko 1.8.x');
 	
 // DOMノード取得 
 	
@@ -114,21 +115,19 @@ function $X()
 // http://d.hatena.ne.jp/fls/20090224/p1
 function sleep(aWait) 
 {
-	if ('@mozilla.org/thread-manager;1' in Cc) {
-		var timer = { timeup: false };
-		var interval = window.setInterval(function() {
-				timer.timeup = true;
-			}, aWait);
-		var thread = Cc['@mozilla.org/thread-manager;1'].getService().mainThread;
-		while (!timer.timeup)
-		{
-			thread.processNextEvent(true);
-		}
-		window.clearInterval(interval);
+	if (!('@mozilla.org/thread-manager;1' in Cc)) {
+		throw ERROR_SLEEP_IS_NOT_AVAILABLE;
 	}
-	else {
-		Packages.java.lang.Thread.sleep(aWait);
+	var timer = { timeup: false };
+	var interval = window.setInterval(function() {
+			timer.timeup = true;
+		}, aWait);
+	var thread = Cc['@mozilla.org/thread-manager;1'].getService().mainThread;
+	while (!timer.timeup)
+	{
+		thread.processNextEvent(true);
 	}
+	window.clearInterval(interval);
 }
   
 // ファイル操作 
