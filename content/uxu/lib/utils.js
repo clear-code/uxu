@@ -113,9 +113,10 @@ function $X()
 // タイマー操作 
 	
 // http://d.hatena.ne.jp/fls/20090224/p1
+const isSleepAvailable = '@mozilla.org/thread-manager;1' in Cc;
 function sleep(aWait) 
 {
-	if (!('@mozilla.org/thread-manager;1' in Cc)) {
+	if (!isSleepAvailable) {
 		throw ERROR_SLEEP_IS_NOT_AVAILABLE;
 	}
 	var timer = { timeup: false };

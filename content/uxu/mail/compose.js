@@ -380,42 +380,58 @@ function _setRecipients(aAddresses, aAppend, aComposeWindow)
 	}
 
 	if (!utils.isArray(aAddresses)) aAddresses = [aAddresses];
+	aAddresses = aAddresses
+					.map(function(aAddress) {
+						if (typeof aAddress == 'string') {
+							aAddress = { address : aAddress, type : 'to' };
+						}
+
+						let type = aAddress.type.toLowerCase();
+						switch (type)
+						{
+							case 'reply-to':
+								type = 'reply';
+								break;
+							case 'followup-to':
+								type = 'followup';
+								break;
+						}
+						return {
+							type      : aAddress.type,
+							typeValue : 'addr_'+type,
+							address   : aAddress.address
+						};
+					})
+					.filter(function(aAddress) {
+						return aAddress.address;
+					});
 
 	var listbox = utils.$('addressingWidget', aComposeWindow);
 	aAddresses.forEach(function(aAddress) {
-		if (typeof aAddress == 'string') {
-			aAddress = { address : aAddress, type : 'to' };
-		}
-		if (!aAddress.address) return;
-
 		let field = _getFirstBlankAddressField(aComposeWindow);
-
-		let type = aAddress.type.toLowerCase();
-		switch (type)
-		{
-			case 'reply-to':
-				type = 'reply';
-				break;
-			case 'followup-to':
-				type = 'followup';
-				break;
-		}
-		getAddressTypeForField(field, aComposeWindow).value = 'addr_'+type;
-
+		getAddressTypeForField(field, aComposeWindow).value = aAddress.typeValue;
 		listbox.ensureElementIsVisible(utils.$X('ancestor::*[local-name()="listitem"]', field, XPathResult.FIRST_ORDERED_NODE_TYPE));
 		field.focus();
 		action.inputTextToField(field, aAddress.address);
 
-		utils.sleep(100);
-		let next;
-		do {
-			field = _getLastAddressField(aComposeWindow);
-			field.focus();
-			action.fireKeyEventOnElement(field, ENTER_KEY);
+		if (utils.isSleepAvailable) {
 			utils.sleep(100);
-			next = _getFirstBlankAddressField(aComposeWindow);
+			let next;
+			do {
+				field = _getLastAddressField(aComposeWindow);
+				field.focus();
+				action.fireKeyEventOnElement(field, ENTER_KEY);
+				utils.sleep(100);
+				next = _getFirstBlankAddressField(aComposeWindow);
+			}
+			while (!next);
 		}
-		while (!next);
+		else {
+			next = _getFirstBlankAddressField(aComposeWindow);
+			if (!next) {
+				aComposeWindow.awAppendNewRow(true);
+			}
+		}
 	}, this);
 	return aAddresses;
 }
