@@ -871,27 +871,28 @@ function getWindowFromScreenPoint(aWindow, aScreenX, aScreenY)
 
 	var wins = this._flattenWindows(aWindow);
 	for (var i = wins.length - 1; i >= 0; i--) {
-		var win = wins[i];
-		var frameList = [];
-		var arr = win.document.getElementsByTagName('frame');
-		for (var j = 0; j < arr.length; j++)
+		let win = wins[i];
+		let doc = win.document;
+		let frameList = [];
+		let arr = doc.getElementsByTagName('frame');
+		for (let j = 0; j < arr.length; j++)
 			frameList.push(arr[j]);
-		var arr = win.document.getElementsByTagName('iframe');
-		for (var j = 0; j < arr.length; j++)
+		var arr = doc.getElementsByTagName('iframe');
+		for (let j = 0; j < arr.length; j++)
 			frameList.push(arr[j]);
-		var arr = win.document.getElementsByTagName('tabbrowser');
-		for (var j = 0; j < arr.length; j++)
+		var arr = doc.getElementsByTagName('tabbrowser');
+		for (let j = 0; j < arr.length; j++)
 			frameList.push(arr[j]);
-		var arr = win.document.getElementsByTagName('browser');
-		for (var j = 0; j < arr.length; j++)
+		var arr = doc.getElementsByTagName('browser');
+		for (let j = 0; j < arr.length; j++)
 			frameList.push(arr[j]);
-		for (var j = frameList.length - 1; j >= 0; j--) {
-			var box = win.document.getBoxObjectFor(frameList[j]);
+		for (let j = frameList.length - 1; j >= 0; j--) {
+			let box = doc.getBoxObjectFor(frameList[j]);
 			if (this._isInside(box, aScreenX, aScreenY))
 				return frameList[j].contentWindow;
 		}
-		if (this._isInside(box, aScreenX, aScreenY))
-			return frameList[j].contentWindow;
+		if (this._isInside(doc.getBoxObjectFor(doc.documentElement), aScreenX, aScreenY))
+			return win;
 	}
 	return null;
 };
