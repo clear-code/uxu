@@ -14,7 +14,12 @@ var shouldEmulateKeyEvent = Prefs.getBoolPref('extensions.uxu.action.fireKeyEven
 	 
 function isFullZoom() 
 {
-	return Prefs.getBoolPref('browser.zoom.full');
+	try {
+		return Prefs.getBoolPref('browser.zoom.full');
+	}
+	catch(e) {
+	}
+	return false;
 };
  
 function getZoom(aWindow) 
