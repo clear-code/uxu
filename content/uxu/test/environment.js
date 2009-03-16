@@ -243,11 +243,11 @@ function getTestWindow(aOptions)
 };
  
 // テスト用のFirefoxウィンドウを開き直す 
-function reopenTestWindow(aOptions, callback)
+function reopenTestWindow(aOptions, aCallback)
 {
 	var win = this.getTestWindow(aOptions);
 	if (win) win.close();
-	return this.openTestWindow(aOptions, callback);
+	return this.openTestWindow(aOptions, aCallback);
 };
  
 // テスト用のFirefoxウィンドウを開く 
