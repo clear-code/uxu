@@ -1,6 +1,6 @@
 function setUp()
 {
-	yield Do(utils.setUpTestWindow());
+	yield utils.setUpTestWindow();
 }
 
 function tearDown()
@@ -41,6 +41,7 @@ function test_contentFrames()
 
 test$.setUp = function()
 {
+	utils.tearDownTestWindow();
 	yield Do(utils.loadURI('../../fixtures/html.html'));
 }
 test$.tearDown = function()
@@ -50,6 +51,7 @@ test$.tearDown = function()
 function test$()
 {
 	var expected = content.document.getElementById('paragraph1');
+	assert.isNotNull(expected);
 	assert.equals(expected, $('paragraph1'));
 	assert.equals(expected, $(expected));
 	assert.equals(expected, $('paragraph1', content));
