@@ -45,7 +45,7 @@ function open(aURI, aOptions)
 		function(win) {
 			_this.testWindow = win;
 			loadedFlag.window = win;
-			window.setTimeout(function() {
+			win.setTimeout(function() {
 				var b = win.gBrowser;
 				if (!b) {
 					loadedFlag.value = true;
@@ -53,12 +53,13 @@ function open(aURI, aOptions)
 				}
 				var tab = b.addTab('about:blank');
 				b.removeAllTabsBut(tab);
-				b.addEventListener('load', function() {
-					b.removeEventListener('load', arguments.callee, true);
-					_this.frame = b;
-					loadedFlag.value = true;
-				}, true);
-				b.loadURI(aURI);
+				b.stop();
+				win.setTimeout(function() {
+					_this.utils._waitBrowserLoad(b, loadedFlag, function() {
+						_this.frame = b;
+					});
+					b.loadURI(aURI);
+				}, 0);
 			}, 0);
 		}
 	);

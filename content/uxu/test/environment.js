@@ -251,11 +251,12 @@ function reopenTestWindow(aOptions, callback)
 };
  
 // テスト用のFirefoxウィンドウを開く 
-function openTestWindow(aOptions, callback)
+function openTestWindow(aOptions, aCallback)
 {
+Application.console.log(aCallback);
 	var win = this.getTestWindow(aOptions);
 	if (win) {
-		if (callback) callback(win);
+		if (aCallback) aCallback(win);
 	}
 	else {
 		var info = this.normalizeTestWindowOption(aOptions);
@@ -265,16 +266,18 @@ function openTestWindow(aOptions, callback)
 		win.addEventListener('load', function() {
 			win.removeEventListener('load', arguments.callee, false);
 			win.document.documentElement.setAttribute(key, id);
-			if ('width' in aOptions || 'height' in aOptions) {
-				win.resizeTo(aOptions.width || 10, aOptions.height || 10);
+			if (aOptions) {
+				if ('width' in aOptions || 'height' in aOptions) {
+					win.resizeTo(aOptions.width || 10, aOptions.height || 10);
+				}
+				if ('screenX' in aOptions || 'x' in aOptions ||
+			    	'screenY' in aOptions || 'y' in aOptions) {
+					win.moveTo(aOptions.screenX || aOptions.x || 0,
+					           aOptions.screenY || aOptions.y || 0);
+				}
 			}
-			if ('screenX' in aOptions || 'x' in aOptions ||
-			    'screenY' in aOptions || 'y' in aOptions) {
-				win.moveTo(aOptions.screenX || aOptions.x || 0,
-				           aOptions.screenY || aOptions.y || 0);
-			}
-			if (callback) {
-				callback(win);
+			if (aCallback) {
+				aCallback(win);
 			}
 		}, false);
 	}
