@@ -901,3 +901,77 @@ function test_setAndGetClipBoard()
 	}
 	assert.equals(random, utilsModule.getClipBoard());
 }
+
+var isArrayTestWindow;
+test_isArray.setUp = function() {
+	isArrayTestWindow = window.openDialog('about:blank');
+	yield 100;
+};
+test_isArray.tearDown = function() {
+	isArrayTestWindow.close();
+};
+function test_isArray()
+{
+	assert.isTrue(utilsModule.isArray([]));
+	assert.isTrue(utilsModule.isArray(new Array()));
+	assert.isFalse(utilsModule.isArray(new Date()));
+	assert.isFalse(utilsModule.isArray('string'));
+	assert.isFalse(utilsModule.isArray(29));
+	assert.isFalse(utilsModule.isArray(null));
+	assert.isFalse(utilsModule.isArray(void(0)));
+	isArrayTestWindow.setTimeout(<![CDATA[
+		window.testArrayLiteral = [];
+		window.testArrayInstance = new Array();
+		window.testDate = new Date();
+		window.testString = 'string';
+		window.testNumber = 29;
+		window.testNull = null;
+		window.testUndefined = void(0);
+	]]>.toString(), 0);
+	yield 100;
+	assert.isDefined(isArrayTestWindow.testArrayLiteral);
+	assert.isTrue(utilsModule.isArray(isArrayTestWindow.testArrayLiteral));
+	assert.isTrue(utilsModule.isArray(isArrayTestWindow.testArrayInstance));
+	assert.isFalse(utilsModule.isArray(isArrayTestWindow.testDate));
+	assert.isFalse(utilsModule.isArray(isArrayTestWindow.testString));
+	assert.isFalse(utilsModule.isArray(isArrayTestWindow.testNumber));
+	assert.isFalse(utilsModule.isArray(isArrayTestWindow.testNull));
+	assert.isFalse(utilsModule.isArray(isArrayTestWindow.testUndefined));
+}
+
+var isDateTestWindow;
+test_isDate.setUp = function() {
+	isDateTestWindow = window.openDialog('about:blank');
+	yield 100;
+};
+test_isDate.tearDown = function() {
+	isDateTestWindow.close();
+};
+function test_isDate()
+{
+	assert.isFalse(utilsModule.isDate([]));
+	assert.isFalse(utilsModule.isDate(new Array()));
+	assert.isTrue(utilsModule.isDate(new Date()));
+	assert.isFalse(utilsModule.isDate('string'));
+	assert.isFalse(utilsModule.isDate(29));
+	assert.isFalse(utilsModule.isDate(null));
+	assert.isFalse(utilsModule.isDate(void(0)));
+	isDateTestWindow.setTimeout(<![CDATA[
+		window.testArrayLiteral = [];
+		window.testArrayInstance = new Array();
+		window.testDate = new Date();
+		window.testString = 'string';
+		window.testNumber = 29;
+		window.testNull = null;
+		window.testUndefined = void(0);
+	]]>.toString(), 0);
+	yield 100;
+	assert.isDefined(isDateTestWindow.testArrayLiteral);
+	assert.isFalse(utilsModule.isDate(isDateTestWindow.testArrayLiteral));
+	assert.isFalse(utilsModule.isDate(isDateTestWindow.testArrayInstance));
+	assert.isTrue(utilsModule.isDate(isDateTestWindow.testDate));
+	assert.isFalse(utilsModule.isDate(isDateTestWindow.testString));
+	assert.isFalse(utilsModule.isDate(isDateTestWindow.testNumber));
+	assert.isFalse(utilsModule.isDate(isDateTestWindow.testNull));
+	assert.isFalse(utilsModule.isDate(isDateTestWindow.testUndefined));
+}

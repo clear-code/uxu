@@ -1238,12 +1238,22 @@ function p()
  
 function isArray(aObject) 
 {
-    return aObject && aObject instanceof eval('Array', aObject);
+	var root = _getRootScope(aObject);
+	return aObject &&
+		(root && root.Array ?
+			(aObject instanceof root.Array) :
+			(aObject instanceof eval('Array', aObject))
+		);
 }
  
 function isDate(aObject) 
 {
-    return aObject && aObject instanceof eval('Date', aObject);
+	var root = _getRootScope(aObject);
+	return aObject &&
+		(root && root.Date ?
+			(aObject instanceof root.Date) :
+			(aObject instanceof eval('Date', aObject))
+		);
 }
  
 function isObject(aObject) 
@@ -1251,6 +1261,18 @@ function isObject(aObject)
 	return (aObject &&
 			typeof aObject == "object" &&
 			aObject == '[object Object]');
+}
+ 
+function _getRootScope(aObject) 
+{
+	if (aObject === null || aObject === void(0)) {
+		return aObject;
+	}
+	while (aObject.__parent__)
+	{
+		aObject = aObject.__parent__;
+	}
+	return aObject;
 }
   
 // î‰är 
