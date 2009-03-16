@@ -36,7 +36,10 @@ function testSendAndReceiveMessage()
 			response = aResponse;
 		}
 	);
-	yield 500;
+	var start = Date.now();
+	yield function() {
+			return response || (Date.now() - start > 5000);
+		};
 	assert.equals(message, received);
 	assert.equals(message, response);
 
