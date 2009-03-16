@@ -755,7 +755,12 @@ function _runByRemote(aStopper)
 		String(this._targetProduct).toLowerCase() != utils.product.toLowerCase() &&
 		!this._application) {
 		var application = utils.getInstalledLocationOfProduct(this._targetProduct);
-		if (application) this._application = application;
+		if (application) {
+			this._application = application;
+		}
+		else {
+			return false;
+		}
 	}
 
 	this.fireEvent('Start');
