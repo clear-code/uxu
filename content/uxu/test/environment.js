@@ -253,7 +253,6 @@ function reopenTestWindow(aOptions, aCallback)
 // テスト用のFirefoxウィンドウを開く 
 function openTestWindow(aOptions, aCallback)
 {
-Application.console.log(aCallback);
 	var win = this.getTestWindow(aOptions);
 	if (win) {
 		if (aCallback) aCallback(win);
