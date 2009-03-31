@@ -597,6 +597,7 @@ doIteration
 Do
 inspect
 inspectDOMNode
+getBoxObjectFor
 p
 product
 productExecutable
