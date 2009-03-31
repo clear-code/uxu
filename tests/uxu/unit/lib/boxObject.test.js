@@ -21,7 +21,7 @@ function test__getFrameOwnerFromFrame()
 
 	yield Do(utils.loadURI('../../fixtures/frameTest.html'));
 	assert.equals(gBrowser, sv._getFrameOwnerFromFrame(content));
-	assert.equals($('frame2'), sv._getFrameOwnerFromFrame(content.frames[1]));
+	assert.equals($('frame2'), sv._getFrameOwnerFromFrame($('frame2').contentWindow));
 }
 
 function test_getBoxObjectFromClientRectFor()

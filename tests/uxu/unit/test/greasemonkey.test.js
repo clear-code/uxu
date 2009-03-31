@@ -11,6 +11,12 @@ var GMUtils;
 
 function setUp()
 {
+	utils.setPref('browser.tabs.maxOpenBeforeWarn', false);
+	utils.setPref('browser.tabs.warnOnClose', false);
+	utils.setPref('browser.tabs.warnOnOpen', false);
+	utils.setPref('browser.warnOnQuit', false);
+	utils.setPref('browser.warnOnRestart', false);
+
 	yield Do(utils.loadURI('about:blank'));
 	assert.equals('about:blank', content.location.href);
 	GMUtils = new GMUtilsClass(utils);
