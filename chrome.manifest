@@ -9,3 +9,5 @@ locale	uxu	en-US	jar:chrome/uxu.jar!/locale/en-US/uxu/
 locale	uxu	ja	jar:chrome/uxu.jar!/locale/ja/uxu/
 
 skin	uxu	classic/1.0	jar:chrome/uxu.jar!/skin/classic/uxu/
+
+resource uxu-modules modules/

@@ -554,6 +554,24 @@ function $(aNodeOrID, aOwner)
 {
 	return utils.$(aNodeOrID, aOwner || this.getTestWindow() || this.content);
 }
+ 
+function getBoxObjectFor(aNode) 
+{
+	if ('getBoxObjectFor' in aNode.ownerDocument)
+		return aNode.ownerDocument.getBoxObjectFor(aNode);
+
+	if (!('window' in _boxObjectModule)) {
+		Components.utils.import(
+			'resource://uxu-modules/boxObject.js',
+			_boxObjectModule
+		);
+	}
+	return _boxObjectModule
+				.window['piro.sakura.ne.jp']
+				.boxObject
+				.getBoxObjectFor(aNode);
+},
+var _boxObjectModule = {};
   
 var _this = this; 
 <><![CDATA[
@@ -597,7 +615,6 @@ doIteration
 Do
 inspect
 inspectDOMNode
-getBoxObjectFor
 p
 product
 productExecutable

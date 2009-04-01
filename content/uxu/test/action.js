@@ -3,15 +3,30 @@
 const Cc = Components.classes; 
 const Ci = Components.interfaces;
 
-var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
-var boxObject = lib_module.require('package', 'boxObject');
-
 var Prefs = Components.classes['@mozilla.org/preferences;1']
 		.getService(Ci.nsIPrefBranch)
 		.QueryInterface(Ci.nsIPrefBranch2);
 
 var shouldEmulateMouseEvent = Prefs.getBoolPref('extensions.uxu.action.fireMouseEvent.useOldMethod');
 var shouldEmulateKeyEvent = Prefs.getBoolPref('extensions.uxu.action.fireKeyEvent.useOldMethod');
+
+function getBoxObjectFor(aNode)
+{
+	if ('getBoxObjectFor' in aNode.ownerDocument)
+		return aNode.ownerDocument.getBoxObjectFor(aNode);
+
+	if (!('window' in _boxObjectModule)) {
+		Components.utils.import(
+			'resource://uxu-modules/boxObject.js',
+			_boxObjectModule
+		);
+	}
+	return _boxObjectModule
+				.window['piro.sakura.ne.jp']
+				.boxObject
+				.getBoxObjectFor(aNode);
+},
+var _boxObjectModule = {};
  
 /* zoom */ 
 	 
@@ -47,7 +62,7 @@ function fireMouseEvent(aWindow, aOptions)
 	if (!aOptions) aOptions = {};
 
 	var zoom = this.isFullZoom() ? this.getZoom(aWindow) : 1 ;
-	var box = boxObject.getBoxObjectFor(aWindow.document.documentElement);
+	var box = getBoxObjectFor(aWindow.document.documentElement);
 	var x = ('x' in aOptions ?
 			aOptions.x :
 		'screenX' in aOptions ?
@@ -326,9 +341,9 @@ function _updateMouseEventOptionsOnElement(aOptions, aElement)
 
 	var doc = this._getDocumentFromEventTarget(aElement);
 	var frame = doc.defaultView;
-	var box = boxObject.getBoxObjectFor(aElement);
+	var box = getBoxObjectFor(aElement);
 	var root = doc.documentElement;
-	var rootBox = boxObject.getBoxObjectFor(root);
+	var rootBox = getBoxObjectFor(root);
 
 	var frameX = frame.scrollX + rootBox.screenX;
 	var frameY = frame.scrollY + rootBox.screenY;
@@ -465,8 +480,8 @@ function dragMove(aFromElement, aToElement, aOptions)
 
 	var doc = aFromElement.ownerDocument;
 	var win = doc.defaultView;
-	var fromBox = boxObject.getBoxObjectFor(aFromElement);
-	var toBox = boxObject.getBoxObjectFor(aToElement);
+	var fromBox = getBoxObjectFor(aFromElement);
+	var toBox = getBoxObjectFor(aToElement);
 	return this.dragMove(
 			win,
 			fromBox.screenX + parseInt(fromBox.width / 2),
@@ -508,8 +523,8 @@ function dragAndDropOnElement(aFromElement, aToElement, aOptions)
 
 	var doc = aFromElement.ownerDocument;
 	var win = doc.defaultView;
-	var fromBox = boxObject.getBoxObjectFor(aFromElement);
-	var toBox = boxObject.getBoxObjectFor(aToElement);
+	var fromBox = getBoxObjectFor(aFromElement);
+	var toBox = getBoxObjectFor(aToElement);
 	return this.dragAndDrop(
 			win,
 			fromBox.screenX + parseInt(fromBox.width / 2),
@@ -751,7 +766,7 @@ function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 	var walker = doc.createTreeWalker(startNode, NodeFilter.SHOW_ELEMENT, elementFilter, false);
 	for (var node = walker.firstChild(); node != null; node = walker.nextNode())
 	{
-		if (this._isInside(boxObject.getBoxObjectFor(node), aScreenX, aScreenY))
+		if (this._isInside(getBoxObjectFor(node), aScreenX, aScreenY))
 			nodes.push(node);
 	}
 
@@ -765,9 +780,9 @@ function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 			smallest.push(aNode);
 			return;
 		}
-		var box = boxObject.getBoxObjectFor(aNode);
+		var box = getBoxObjectFor(aNode);
 		var size = box.width * box.height;
-		var smallestBox = boxObject.getBoxObjectFor(smallest[0]);
+		var smallestBox = getBoxObjectFor(smallest[0]);
 		var smallestSize = smallestBox.width * smallestBox.height;
 		if (size == smallestSize) {
 			smallest.push(aNode);
@@ -826,7 +841,7 @@ function _getPopupElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 		var walker = doc.createTreeWalker(popup, NodeFilter.SHOW_ELEMENT, elementFilter, false);
 		for (var node = walker.firstChild(); node != null; node = walker.nextNode())
 		{
-			if (this._isInside(boxObject.getBoxObjectFor(node), aScreenX, aScreenY))
+			if (this._isInside(getBoxObjectFor(node), aScreenX, aScreenY))
 				nodes.push(node);
 		}
 		if (!nodes.length) continue;
@@ -849,7 +864,7 @@ function _getOriginalTargetFromScreenPointInternal(aElement, aScreenX, aScreenY)
 	for (var i = 0, maxi = nodes.length; i < maxi; i++)
 	{
 		if (nodes[i].nodeType != nodes[i].ELEMENT_NODE ||
-			!this._isInside(boxObject.getBoxObjectFor(nodes[i]), aScreenX, aScreenY))
+			!this._isInside(getBoxObjectFor(nodes[i]), aScreenX, aScreenY))
 			continue;
 		var node = this._getOriginalTargetFromScreenPointInternal(nodes[i], aScreenX, aScreenY);
 		if (node) return node;
@@ -890,11 +905,11 @@ function getWindowFromScreenPoint(aWindow, aScreenX, aScreenY)
 		for (let j = 0; j < arr.length; j++)
 			frameList.push(arr[j]);
 		for (let j = frameList.length - 1; j >= 0; j--) {
-			let box = boxObject.getBoxObjectFor(frameList[j]);
+			let box = getBoxObjectFor(frameList[j]);
 			if (this._isInside(box, aScreenX, aScreenY))
 				return frameList[j].contentWindow;
 		}
-		if (this._isInside(boxObject.getBoxObjectFor(doc.documentElement), aScreenX, aScreenY))
+		if (this._isInside(getBoxObjectFor(doc.documentElement), aScreenX, aScreenY))
 			return win;
 	}
 	return null;
@@ -918,7 +933,7 @@ function _getClientPointFromScreenPoint(aWindow, aScreenX, aScreenY)
 		!(aWindow instanceof Ci.nsIDOMWindow))
 		throw new Error('action._getClientPointFromScreenPoint::['+aWindow+'] is not a frame!');
 
-	var box = boxObject.getBoxObjectFor(aWindow.document.documentElement);
+	var box = getBoxObjectFor(aWindow.document.documentElement);
 	return {
 		x : aScreenX - box.screenX - aWindow.scrollX,
 		y : aScreenY - box.screenY - aWindow.scrollY

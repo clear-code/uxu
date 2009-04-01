@@ -5,7 +5,6 @@ const Ci = Components.interfaces;
 
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var bundle = lib_module.require('package', 'bundle');
-var boxObject = lib_module.require('package', 'boxObject');
 var prefread = lib_module.require('package', 'prefread');
 
 var IOService = Cc['@mozilla.org/network/io-service;1']
@@ -1434,11 +1433,6 @@ function isTargetInSubTree(aTarget, aNode)
 	catch(e) {
 	}
 	return false;
-}
- 
-function getBoxObjectFor(aNode) 
-{
-	return boxObject.getBoxObjectFor(aNode);
 }
   
 // アプリケーション 
