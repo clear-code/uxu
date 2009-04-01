@@ -1,12 +1,44 @@
-function getBoxObjectFor(aNode)
-{
-	if ('getBoxObjectFor' in aNode.ownerDocument)
-		return aNode.ownerDocument.getBoxObjectFor(aNode);
+/*
+ lisence: The MIT License, Copyright (c) 2009 SHIMODA "Piro" Hiroshi
+   http://www.cozmixng.org/repos/piro/fx3-compatibility-lib/trunk/license.txt
+ original:
+   https://www.cozmixng.org/repos/piro/fx3-compatibility-lib/trunk/boxObject.js
+*/
 
-	return this.getBoxObjectFromClientRectFor(aNode);
+function getBoxObjectFor(aNode, aUnify)
+{
+	return ('getBoxObjectFor' in aNode.ownerDocument) ?
+			getBoxObjectFromBoxObjectFor(aNode, aUnify) :
+			getBoxObjectFromClientRectFor(aNode, aUnify) ;
 }
 
-function getBoxObjectFromClientRectFor(aNode)
+function getBoxObjectFromBoxObjectFor(aNode, aUnify)
+{
+	var boxObject = aNode.ownerDocument.getBoxObjectFor(aNode);
+	var box = {
+			x       : boxObject.x,
+			y       : boxObject.y,
+			width   : boxObject.width,
+			height  : boxObject.height,
+			screenX : boxObject.screenX,
+			screenY : boxObject.screenY
+		};
+	if (!aUnify) return box;
+
+	var style = _getComputedStyle(aNode);
+	box.left = box.x - _getPropertyPixelValue(style, 'border-left-width');
+	box.top = box.y - _getPropertyPixelValue(style, 'border-top-width');
+	if (style.getPropertyValue('position') == 'fixed') {
+		box.left -= frame.scrollX;
+		box.top  -= frame.scrollY;
+	}
+	box.right  = box.left + box.width;
+	box.bottom = box.top + box.height;
+
+	return box;
+}
+
+function getBoxObjectFromClientRectFor(aNode, aUnify)
 {
 	var box = {
 			x       : 0,
@@ -18,6 +50,13 @@ function getBoxObjectFromClientRectFor(aNode)
 		};
 	try {
 		var rect = aNode.getBoundingClientRect();
+		if (aUnify) {
+			box.left   = rect.left;
+			box.top    = rect.top;
+			box.right  = rect.right;
+			box.bottom = rect.bottom;
+		}
+
 		var style = _getComputedStyle(aNode);
 		var frame = aNode.ownerDocument.defaultView;
 
@@ -68,7 +107,7 @@ function getBoxObjectFromClientRectFor(aNode)
 
 	for (let i in box)
 	{
-		box[i] = parseInt(box[i]);
+		box[i] = Math.round(box[i]);
 	}
 
 	return box;
@@ -123,4 +162,3 @@ function _getFrameOwnerFromFrame(aFrame)
 	}
 	return null;
 }
-
