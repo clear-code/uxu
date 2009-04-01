@@ -570,7 +570,7 @@ function getBoxObjectFor(aNode)
 				.window['piro.sakura.ne.jp']
 				.boxObject
 				.getBoxObjectFor(aNode);
-},
+}
 var _boxObjectModule = {};
   
 var _this = this; 
