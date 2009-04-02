@@ -64,8 +64,18 @@ function constructor(aEnvironment, aURI, aBrowser)
 			break;
 	}
 
-	this.tempFiles = [];
-	this.backupPrefs = {};
+	var tempFiles = [];
+	this.__defineGetter__('tempFiles', function() {
+		return tempFiles;
+	});
+	var backupPrefs = {};
+	this.__defineGetter__('backupPrefs', function() {
+		return backupPrefs;
+	});
+	var notifications = [];
+	this.__defineGetter__('notifications', function() {
+		return notifications;
+	});
 
 	this.initVariables();
 	this.attachFrames();
@@ -88,7 +98,7 @@ function onFinish()
  
 function onAssertionNotify(aEvent) 
 {
-//	alert(aEvent);
+	this.notifications.push(aEvent.data);
 }
   
 function initVariables() 
