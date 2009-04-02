@@ -209,8 +209,8 @@ function _createResultFromReport(aReport, aTimestamp)
 		detailedTime  : aReport.detailedTime,
 		notifications : aReport.notifications.map(function(aNotification) {
 			return {
-				message    : aNotification.message,
-				stackTrace : utils.formatStackTraceForDisplay(aNotification)
+				description : aNotification.message,
+				stackTrace  : utils.formatStackTraceForDisplay(aNotification)
 			};
 		})
 	};

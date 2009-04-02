@@ -146,41 +146,44 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 				</hbox>
 				<label role="result"/> 
 			</vbox>
-			<vbox flex="1">
+			<vbox role="test-report-parts" flex="1">
 				<hbox><label role="description" flex="1"/></hbox>
-				<hbox><description role="additionalInfo" flex="1"/></hbox>
-				<grid role="vs" hidden="true">
-					<columns>
-						<column pack="start"/>
-						<column pack="start"/>
-						<column pack="start" flex="1"/>
-					</columns>
-					<rows>
-						<row role="expected-row" hidden="true">
-							<vbox><label>&mozunit.expected.label;</label></vbox>
-							<vbox><label>&mozunit.expected.separator;</label></vbox>
-							<vbox><description role="expected-value" flex="1"/></vbox>
-						</row>
-						<row role="actual-row" hidden="true">
-							<vbox><label>&mozunit.actual.label;</label></vbox>
-							<vbox><label>&mozunit.actual.separator;</label></vbox>
-							<vbox><description role="actual-value" flex="1"/></vbox>
-						</row>
-						<row role="diff-row" hidden="true">
-							<vbox><label>&mozunit.diff.label;</label></vbox>
-							<vbox><label>&mozunit.diff.separator;</label></vbox>
-							<vbox><description role="diff-value" flex="1"/></vbox>
-						</row>
-					</rows>
-				</grid>
-
-				<listbox hidden="true" role="stack-trace"
-					flex="1" rows="5" class="inset"
-					style="font-size: 0.8em;"
-					onselect="showSource(this.selectedItem.label);"
-					onclick="if (event.button == 0 &amp;&amp; event.target == this.selectedItem) showSource(this.selectedItem.label);"/>
+				<!-- test-report-part(s) -->
 			</vbox>
 		</hbox>
+
+		<vbox role="test-report-part" flex="1">
+			<hbox><description role="additionalInfo" flex="1"/></hbox>
+			<grid role="vs" hidden="true">
+				<columns>
+					<column pack="start"/>
+					<column pack="start"/>
+					<column pack="start" flex="1"/>
+				</columns>
+				<rows>
+					<row role="expected-row" hidden="true">
+						<vbox><label>&mozunit.expected.label;</label></vbox>
+						<vbox><label>&mozunit.expected.separator;</label></vbox>
+						<vbox><description role="expected-value" flex="1"/></vbox>
+					</row>
+					<row role="actual-row" hidden="true">
+						<vbox><label>&mozunit.actual.label;</label></vbox>
+						<vbox><label>&mozunit.actual.separator;</label></vbox>
+						<vbox><description role="actual-value" flex="1"/></vbox>
+					</row>
+					<row role="diff-row" hidden="true">
+						<vbox><label>&mozunit.diff.label;</label></vbox>
+						<vbox><label>&mozunit.diff.separator;</label></vbox>
+						<vbox><description role="diff-value" flex="1"/></vbox>
+					</row>
+				</rows>
+			</grid>
+			<listbox hidden="true" role="stack-trace"
+				flex="1" rows="5" class="inset"
+				style="font-size: 0.8em;"
+				onselect="showSource(this.selectedItem.label);"
+				onclick="if (event.button == 0 &amp;&amp; event.target == this.selectedItem) showSource(this.selectedItem.label);"/>
+		</vbox>
 	</box>
 
 	<!-- MENUS -->

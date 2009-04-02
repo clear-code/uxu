@@ -269,7 +269,10 @@ function onAbort()
  
 function onNotify(aEvent) 
 {
-	this.notifications.push(aEvent.data);
+	this.notifications.push({
+		message : aEvent.data,
+		stack   : utils.getCurrentStacks()
+	});
 }
  
 /**

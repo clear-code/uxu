@@ -381,9 +381,8 @@ function inDelta(aExpected, aActual, aDelta, aMessage)
 	if (aExpected - aDelta == aActual || aExpected + aDelta == aActual) {
 		this.fireEvent(
 			'AssertionNotify',
-			{ message : bundle.getFormattedString('assert_in_delta_notification',
-			                                      [aActual, aExpected, aDelta]),
-			  stack   : utils.getCurrentStacks() }
+			bundle.getFormattedString('assert_in_delta_notification',
+			                          [aActual, aExpected, aDelta])
 		);
 		return;
 	}
