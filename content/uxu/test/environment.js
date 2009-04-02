@@ -126,10 +126,13 @@ function attachFrames()
  
 function attachAssertions() 
 {
-	this.assert = new Assertions(this);
-	for (var aMethod in this.assert)
+	var assert = new Assertions(this);
+	this.__defineGetter__('assert', function() {
+		return assert;
+	});
+	for (var aMethod in assert)
 	{
-		if (typeof this.assert[aMethod] != 'function') continue;
+		if (typeof assert[aMethod] != 'function') continue;
 		(function(aMethod, aSelf, aObj, aPrefix) {
 			var func = function() {
 					return aObj[aMethod].apply(aObj, arguments);
@@ -137,10 +140,10 @@ function attachAssertions()
 			aSelf[aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)] = func;
 			if (aMethod.indexOf('is') == 0 && aMethod.substring(2))
 				aSelf[aPrefix+aMethod.substring(2)] = func;
-		})(aMethod, this, this.assert, 'assert');
+		})(aMethod, this, assert, 'assert');
 	}
-	this.ok = function() { this.assert.ok.apply(this, arguments); };
-	this.is = function() { this.assert.is.apply(this, arguments); };
+	this.ok = function() { assert.ok.apply(this, arguments); };
+	this.is = function() { assert.is.apply(this, arguments); };
 }
  
 function attachActions() 
@@ -149,7 +152,7 @@ function attachActions()
 	this.action.__proto__ = action;
 	for (var aMethod in this.action)
 	{
-		if (typeof this.assert[aMethod] != 'function') continue;
+		if (typeof this.action[aMethod] != 'function') continue;
 		(function(aMethod, aSelf, aObj, aPrefix) {
 			var func = function() {
 					return aObj[aMethod].apply(aObj, arguments);

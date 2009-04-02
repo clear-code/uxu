@@ -11,7 +11,6 @@ var inherits = lib_module.require('class', 'event_target');
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var TestCase    = test_module.require('class', 'test_case');
 var TestLog     = test_module.require('class', 'test_log');
-var Assertions  = test_module.require('class', 'assertions');
 var Environment = test_module.require('class', 'environment');
 
 const RUNNING = 'extensions.uxu.running';
@@ -387,7 +386,7 @@ function _createTestSuite(aURL)
 		mozunit : {
 			TestCase      : TestCase,
 			Specification : TestCase,
-			assertions    : new Assertions(suite)
+			assertions    : suite.assert
 		}
 	};
 
