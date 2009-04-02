@@ -10,11 +10,9 @@ var utils      = lib_module.require('package', 'utils');
 var inherits = lib_module.require('class', 'event_target');
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
-var Assertions  = test_module.require('class', 'assertions');
 var action      = test_module.require('package', 'action');
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
-
 var mail_module = new ModuleManager(['chrome://uxu/content/mail']);
 	
 var key = 'uxu-test-window-id'; 
@@ -25,7 +23,9 @@ function constructor(aEnvironment, aURI, aBrowser)
 {
 	this.initListeners();
 
-	this.utils = this;
+	this.__defineGetter__('utils', function() {
+		return this;
+	});
 
 	this.__defineGetter__('fileURL', function() {
 		return aURI;
@@ -78,11 +78,17 @@ function destroy()
 {
 	this.fireEvent('Destroy', null);
 	this.removeAllListeners();
+	this.assert.removeListener(this);
 }
 	
 function onFinish() 
 {
 	this.destroy();
+}
+ 
+function onAssertionNotify(aEvent) 
+{
+//	alert(aEvent);
 }
   
 function initVariables() 
@@ -126,10 +132,13 @@ function attachFrames()
  
 function attachAssertions() 
 {
-	var assert = new Assertions(this);
+	var Assertions  = test_module.require('class', 'assertions');
+	var assert = {};
+	assert.__proto__ = new Assertions();
 	this.__defineGetter__('assert', function() {
 		return assert;
 	});
+	assert.addListener(this);
 	for (var aMethod in assert)
 	{
 		if (typeof assert[aMethod] != 'function') continue;
@@ -148,28 +157,34 @@ function attachAssertions()
  
 function attachActions() 
 {
-	this.action = {};
-	this.action.__proto__ = action;
-	for (var aMethod in this.action)
+	var actionInstance = {};
+	actionInstance.__proto__ = action;
+	this.__defineGetter__('action', function() {
+		return actionInstance;
+	});
+	for (var aMethod in actionInstance)
 	{
-		if (typeof this.action[aMethod] != 'function') continue;
+		if (typeof actionInstance[aMethod] != 'function') continue;
 		(function(aMethod, aSelf, aObj, aPrefix) {
 			var func = function() {
 					return aObj[aMethod].apply(aObj, arguments);
 				};
 			aSelf[aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)] = func;
-		})(aMethod, this, this.action, 'action');
+		})(aMethod, this, actionInstance, 'action');
 	}
 }
  
 function attachGMUtils() 
 {
 	var GMUtils = test_module.require('class', 'greasemonkey');
-	this.greasemonkey = {};
-	this.greasemonkey.__proto__ = new GMUtils(this);
-	for (var aMethod in this.greasemonkey)
+	var greasemonkey = {};
+	greasemonkey.__proto__ = new GMUtils(this);
+	this.__defineGetter__('greasemonkey', function() {
+		return greasemonkey;
+	});
+	for (var aMethod in greasemonkey)
 	{
-		if (typeof this.greasemonkey[aMethod] != 'function')
+		if (typeof greasemonkey[aMethod] != 'function')
 			continue;
 		(function(aMethod, aSelf, aObj, aPrefix) {
 			var func = function() {
@@ -180,15 +195,19 @@ function attachGMUtils()
 					aMethod :
 					aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)
 			] = func;
-		})(aMethod, this, this.greasemonkey, 'greasemonkey');
+		})(aMethod, this, greasemonkey, 'greasemonkey');
 	}
 }
  
 function attachMailUtils() 
 {
 	var MailUtils = mail_module.require('class', 'utils');
-	this.mail = new MailUtils(this);
-	this.addListener(this.mail);
+	var mail = {};
+	mail.__proto__ = new MailUtils(this);
+	this.__defineGetter__('mail', function() {
+		return mail;
+	});
+	this.addListener(mail);
 }
  
 function attachServerUtils() 

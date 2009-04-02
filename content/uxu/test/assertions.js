@@ -22,9 +22,12 @@ var bundle = lib_module.require('package', 'bundle');
 var utils = lib_module.require('package', 'utils');
 var diff = lib_module.require('package', 'diff');
 
-function constructor(aEnvironment)
+var inherits = lib_module.require('class', 'event_target');
+
+function constructor()
 {
-	this._environment = aEnvironment;
+	this.initListeners();
+	Application.console.log(this._listeners);
 }
 
 function equals(aExpected, aActual, aMessage)
@@ -376,7 +379,12 @@ function inDelta(aExpected, aActual, aDelta, aMessage)
 	if (aExpected - aDelta < aActual && aActual < aExpected + aDelta)
 		return;
 
-	if (aExpected - aDelta == aActual || aActual == aExpected + aDelta) {
+	if (aExpected - aDelta == aActual || aExpected + aDelta == aActual) {
+		this.fireEvent(
+			'AssertionNotify',
+			bundle.getFormattedString('assert_in_delta_notification',
+			                          [aActual, aExpected, aDelta])
+		);
 		return;
 	}
 
@@ -384,11 +392,11 @@ function inDelta(aExpected, aActual, aDelta, aMessage)
 	     	expectedRaw : (aExpected - aDelta)+' - '+(aExpected + aDelta),
 	     	actualRaw   : aActual,
 	     	expected    : bundle.getFormattedString('assert_in_delta_expected',
-	     							   [appendTypeString(aExpected - aDelta),
-	     								appendTypeString(aActual),
-	     								appendTypeString(aExpected + aDelta),
-	     								appendTypeString(aExpected),
-	     								appendTypeString(aDelta)]),
+	     							   [aExpected - aDelta,
+	     								aActual,
+	     								aExpected + aDelta,
+	     								aExpected,
+	     								aDelta]),
 	     	actual      : bundle.getFormattedString('assert_in_delta_actual',
 	     							   [appendTypeString(aActual)])
 	     },

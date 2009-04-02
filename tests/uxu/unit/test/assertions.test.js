@@ -12,7 +12,7 @@ var diff;
 
 function setUp()
 {
-	assertionsModule = new Assertions(utils);
+	assertionsModule = new Assertions();
 	diff = {};
 	utils.include(topDir+'content/uxu/lib/diff.js', diff);
 }
@@ -518,17 +518,39 @@ function testRaises()
 	);
 }
 
+var inDeltaListener;
+testInDelta.setUp = function()
+{
+	inDeltaListener = {
+		onAssertionNotify : function(aEvent)
+		{
+			this.events.push(aEvent);
+		},
+		events : []
+	};
+	assertionsModule.addListener(inDeltaListener);
+}
+testInDelta.tearDown = function()
+{
+	assertionsModule.removeListener(inDeltaListener);
+}
 function testInDelta()
 {
 	var message = Math.random() * 65000;
 
 	assert.assertSucceed(assertionsModule.inDelta, [1.0, 1.1, 0.11]);
+	assert.equals(0, inDeltaListener.events.length);
 	assert.assertSucceed(assertionsModule.inDelta, [1.0, 1.1, 0.1]);
+	assert.equals(1, inDeltaListener.events.length);
 	assert.assertFailed(assertionsModule.inDelta, [1.0, 1.2, 0.1, message]);
+	assert.equals(1, inDeltaListener.events.length);
 
 	assert.assertSucceed(assertionsModule.inDelta, [1.0, 0.9, 0.11]);
+	assert.equals(1, inDeltaListener.events.length);
 	assert.assertSucceed(assertionsModule.inDelta, [1.0, 0.9, 0.1]);
+	assert.equals(2, inDeltaListener.events.length);
 	assert.assertFailed(assertionsModule.inDelta, [1.0, 0.8, 0.1, message]);
+	assert.equals(2, inDeltaListener.events.length);
 }
 
 function testCompare()
