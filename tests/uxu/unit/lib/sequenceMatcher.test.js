@@ -256,5 +256,5 @@ function assertGroupedOperations(aExpected, aFrom, aTo)
 function assertRatio(aExpected, aFrom, aTo)
 {
     matcher = new SequenceMatcher(aFrom, aTo);
-    assertInDelta(aExpected, 0.001, matcher.ratio());
+    assertInDelta(aExpected, matcher.ratio(), 0.001);
 }
