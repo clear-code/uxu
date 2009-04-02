@@ -10,7 +10,7 @@ var utils      = lib_module.require('package', 'utils');
 var inherits = lib_module.require('class', 'event_target');
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
-var assertions  = test_module.require('package', 'assertions');
+var Assertions  = test_module.require('class', 'assertions');
 var action      = test_module.require('package', 'action');
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
@@ -126,8 +126,7 @@ function attachFrames()
  
 function attachAssertions() 
 {
-	this.assert = {};
-	this.assert.__proto__ = assertions;
+	this.assert = new Assertions(this);
 	for (var aMethod in this.assert)
 	{
 		if (typeof this.assert[aMethod] != 'function') continue;

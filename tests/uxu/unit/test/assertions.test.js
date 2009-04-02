@@ -2,13 +2,17 @@
 
 var topDir = baseURL+'../../../../';
 
+utils.include(topDir+'content/uxu/lib/module_manager.js');
+
+var test_module = new ModuleManager([topDir+'content/uxu/test']);
+var Assertions = test_module.require('class', 'assertions');
+
 var assertionsModule;
 var diff;
 
 function setUp()
 {
-	assertionsModule = {};
-	utils.include(topDir+'content/uxu/test/assertions.js', assertionsModule);
+	assertionsModule = new Assertions(utils);
 	diff = {};
 	utils.include(topDir+'content/uxu/lib/diff.js', diff);
 }
@@ -519,10 +523,12 @@ function testInDelta()
 	var message = Math.random() * 65000;
 
 	assert.assertSucceed(assertionsModule.inDelta, [1.0, 1.1, 0.11]);
-	assert.assertFailed(assertionsModule.inDelta, [1.0, 1.1, 0.1, message]);
+	assert.assertSucceed(assertionsModule.inDelta, [1.0, 1.1, 0.1]);
+	assert.assertFailed(assertionsModule.inDelta, [1.0, 1.2, 0.1, message]);
 
 	assert.assertSucceed(assertionsModule.inDelta, [1.0, 0.9, 0.11]);
-	assert.assertFailed(assertionsModule.inDelta, [1.0, 0.9, 0.1, message]);
+	assert.assertSucceed(assertionsModule.inDelta, [1.0, 0.9, 0.1]);
+	assert.assertFailed(assertionsModule.inDelta, [1.0, 0.8, 0.1, message]);
 }
 
 function testCompare()

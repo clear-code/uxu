@@ -22,6 +22,10 @@ var bundle = lib_module.require('package', 'bundle');
 var utils = lib_module.require('package', 'utils');
 var diff = lib_module.require('package', 'diff');
 
+function constructor(aEnvironment)
+{
+	this._environment = aEnvironment;
+}
 
 function equals(aExpected, aActual, aMessage)
 {
@@ -371,6 +375,10 @@ function inDelta(aExpected, aActual, aDelta, aMessage)
 {
 	if (aExpected - aDelta < aActual && aActual < aExpected + aDelta)
 		return;
+
+	if (aExpected - aDelta == aActual || aActual == aExpected + aDelta) {
+		return;
+	}
 
 	fail({
 	     	expectedRaw : (aExpected - aDelta)+' - '+(aExpected + aDelta),
