@@ -64,18 +64,8 @@ function constructor(aEnvironment, aURI, aBrowser)
 			break;
 	}
 
-	var tempFiles = [];
-	this.__defineGetter__('tempFiles', function() {
-		return tempFiles;
-	});
-	var backupPrefs = {};
-	this.__defineGetter__('backupPrefs', function() {
-		return backupPrefs;
-	});
-	var notifications = [];
-	this.__defineGetter__('notifications', function() {
-		return notifications;
-	});
+	this.tempFiles = [];
+	this.backupPrefs = {};
 
 	this.initVariables();
 	this.attachFrames();
@@ -98,7 +88,7 @@ function onFinish()
  
 function onAssertionNotify(aEvent) 
 {
-	this.notifications.push(aEvent.data);
+	this.fireEvent('Notify', aEvent.data);
 }
   
 function initVariables() 
@@ -148,6 +138,9 @@ function attachAssertions()
 	this.__defineGetter__('assert', function() {
 		return assert;
 	});
+	this.__defineSetter__('assert', function(aValue) {
+		return aValue;
+	});
 	assert.addListener(this);
 	for (var aMethod in assert)
 	{
@@ -172,6 +165,9 @@ function attachActions()
 	this.__defineGetter__('action', function() {
 		return actionInstance;
 	});
+	this.__defineSetter__('action', function(aValue) {
+		return aValue;
+	});
 	for (var aMethod in actionInstance)
 	{
 		if (typeof actionInstance[aMethod] != 'function') continue;
@@ -191,6 +187,9 @@ function attachGMUtils()
 	greasemonkey.__proto__ = new GMUtils(this);
 	this.__defineGetter__('greasemonkey', function() {
 		return greasemonkey;
+	});
+	this.__defineSetter__('greasemonkey', function(aValue) {
+		return aValue;
 	});
 	for (var aMethod in greasemonkey)
 	{
@@ -216,6 +215,9 @@ function attachMailUtils()
 	mail.__proto__ = new MailUtils(this);
 	this.__defineGetter__('mail', function() {
 		return mail;
+	});
+	this.__defineSetter__('mail', function(aValue) {
+		return aValue;
 	});
 	this.addListener(mail);
 }

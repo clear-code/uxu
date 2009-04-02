@@ -97,6 +97,11 @@ function _toText(aFormat)
 				result.push('');
 				result.push(aResult.stackTrace);
 			}
+			aResult.notifications.forEach(function(aNotification) {
+				result.push('');
+				result.push(aNotification.message);
+				result.push(aNotification.stackTrace);
+			});
 		});
 		result.push(bundle.getString('log_separator_testcase'));
 		result.push(bundle.getFormattedString(aLog.aborted ? 'log_abort' : 'log_finish', [new Date(aLog.finish)]));
@@ -178,7 +183,7 @@ function _createResultsFromReport(aReport)
 	var timestamp = Date.now();
 	var results = aReport.exceptions.map(function(aException, aIndex) {
 			var result = this._createResultFromReport(aReport, timestamp);
-			result.title = aReport.testDescriptions[aIndex] || result.title;
+			result.title = aReport.descriptions[aIndex] || result.title;
 			if (aException.expected)
 				result.expected = aException.expected;
 			if (aException.actual)
@@ -197,11 +202,17 @@ function _createResultsFromReport(aReport)
 function _createResultFromReport(aReport, aTimestamp)
 {
 	return {
-		type      : aReport.result,
-		title     : aReport.testDescription,
-		timestamp : (aTimestamp || Date.now()),
-		time      : aReport.time,
-		detailedTime : aReport.detailedTime
+		type          : aReport.result,
+		title         : aReport.description,
+		timestamp     : (aTimestamp || Date.now()),
+		time          : aReport.time,
+		detailedTime  : aReport.detailedTime,
+		notifications : aReport.notifications.map(function(aNotification) {
+			return {
+				message    : aNotification.message,
+				stackTrace : utils.formatStackTraceForDisplay(aNotification)
+			};
+		})
 	};
 }
 

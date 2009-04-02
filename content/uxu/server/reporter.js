@@ -111,9 +111,9 @@ function onError(aEvent)
 {
 	var error = aEvent.data;
 	var report = {
-		result: 'error',
-		testDescription: "unknown",
-		exception: error
+		result      : 'error',
+		description : "unknown",
+		exception   : error
 	};
 	this._handleError(report, true);
 }
@@ -136,7 +136,7 @@ function _reportBadResults()
 		formattedIndex = _this._formatIndex(aIndex + 1, _this.badResults.length);
 		formattedIndex = " " + formattedIndex + ") ";
 		detail = _this._colorize([aResult.result,
-								  aResult.testDescription].join(': '),
+								  aResult.description].join(': '),
 								 _this._statusColor(aResult.result));
 		detail = formattedIndex + detail + '\n';
 

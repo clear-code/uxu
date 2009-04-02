@@ -27,7 +27,6 @@ var inherits = lib_module.require('class', 'event_target');
 function constructor()
 {
 	this.initListeners();
-	Application.console.log(this._listeners);
 }
 
 function equals(aExpected, aActual, aMessage)
@@ -382,8 +381,9 @@ function inDelta(aExpected, aActual, aDelta, aMessage)
 	if (aExpected - aDelta == aActual || aExpected + aDelta == aActual) {
 		this.fireEvent(
 			'AssertionNotify',
-			bundle.getFormattedString('assert_in_delta_notification',
-			                          [aActual, aExpected, aDelta])
+			{ message : bundle.getFormattedString('assert_in_delta_notification',
+			                                      [aActual, aExpected, aDelta]),
+			  stack   : utils.getCurrentStacks() }
 		);
 		return;
 	}

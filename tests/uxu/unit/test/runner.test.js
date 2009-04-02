@@ -52,7 +52,7 @@ function test_createTestSuite()
 	assert.isDefined(suite.utils);
 	assert.isFunction(suite.utils.readFrom);
 	assert.isFunction(suite.utils.include);
-	assert.equals(suite.__proto__, suite.utils);
+	assert.equals(suite.__proto__, suite.utils.__proto__);
 }
 
 function test_getTestsFromSuite()

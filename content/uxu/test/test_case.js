@@ -153,6 +153,7 @@ function constructor(aTitle, aOptions)
 			return this._done;
 		});
 
+	this.notifications = [];
 	this.addListener(this);
 }
 	
@@ -251,17 +252,24 @@ function _initRemote(aOptions)
   	
 function onStart() 
 {
-	this.addListener(this.environment);
+	this.addListener(this.environment.__proto__);
+	this.environment.__proto__.addListener(this);
 }
  
 function onFinish() 
 {
+	this.environment.__proto__.removeListener(this);
 	this.removeAllListeners();
 }
  
 function onAbort() 
 {
 	this.onFinish();
+}
+ 
+function onNotify(aEvent) 
+{
+	this.notifications.push(aEvent.data);
 }
  
 /**
@@ -569,7 +577,7 @@ function run(aStopper)
 							if (aOptions.onError) aOptions.onError();
 							aOptions.report.report.result = 'error';
 							aOptions.report.report.exception = utils.normalizeError(e);
-							aOptions.report.report.testDescription = aOptions.errorDescription;
+							aOptions.report.report.description = aOptions.errorDescription;
 							aOptions.report.report.onFinish();
 							aContinuation('ko');
 						}
@@ -583,7 +591,7 @@ function run(aStopper)
 			catch(e) {
 				aOptions.report.report.result = 'error';
 				aOptions.report.report.exception = utils.normalizeError(e);
-				aOptions.report.report.testDescription = aOptions.errorDescription;
+				aOptions.report.report.description = aOptions.errorDescription;
 				aOptions.report.report.onFinish();
 				aContinuation('ko');
 			}
@@ -619,11 +627,12 @@ function run(aStopper)
 			}
 			testReport.report = new Report();
 			testReport.report.result = 'passover';
-			testReport.report.testDescription = test.description;
+			testReport.report.description = test.description;
 			aContinuation('ko');
 		},
 		doSetUp : function(aContinuation)
 		{
+			_this.notifications = [];
 			testReport.report = new Report();
 			doPreOrPostProcess(
 				aContinuation,
@@ -658,12 +667,12 @@ function run(aStopper)
 			var newReport = _this._exec(test, context, aContinuation, testReport);
 			if (newReport.result) {
 				testReport.report = newReport;
-				testReport.report.testDescription = test.description;
+				testReport.report.description = test.description;
 				testReport.report.onDetailedFinish();
 				aContinuation('ok');
 			}
 			else {
-				testReport.report.testDescription = test.description;
+				testReport.report.description = test.description;
 				testReport.report.onDetailedFinish();
 			}
 		},
@@ -673,6 +682,8 @@ function run(aStopper)
 			testReport.report.testOwner = _this;
 			testReport.report.testIndex = testIndex;
 			testReport.report.testID    = _this._tests[testIndex].name;
+			testReport.report.notifications = _this.notifications;
+			_this.notifications = [];
 			_this.fireEvent('TestFinish', testReport.report);
 			aContinuation('ok');
 		},
@@ -850,7 +861,7 @@ function _runByRemote(aStopper)
 			onError : function(e) {
 				report.result = 'error';
 				report.exception = e;
-				report.testDescription = bundle.getFormattedString('report_description_remote', [_this.title]);
+				report.description = bundle.getFormattedString('report_description_remote', [_this.title]);
 				report.onFinish();
 				_this._onFinishRemoteResult(report);
 

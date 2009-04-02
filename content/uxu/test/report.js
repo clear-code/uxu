@@ -17,18 +17,27 @@ function constructor()
 		return this._exceptions;
 	});
 
-	this._testDescriptions = [];
-	this.__defineGetter__('testDescription', function() {
-		var d = this._testDescriptions;
+	this._descriptions = [];
+	this.__defineGetter__('description', function() {
+		var d = this._descriptions;
 		return d.length == 0 ? void(0) : d[d.length-1];
 	});
-	this.__defineSetter__('testDescription', function(aDesc) {
-		if (aDesc)
-			this._testDescriptions.push(aDesc);
-		return aDesc;
+	this.__defineSetter__('description', function(aDescription) {
+		if (aDescription)
+			this._descriptions.push(aDescription);
+		return aDescription;
 	});
-	this.__defineGetter__('testDescriptions', function() {
-		return this._testDescriptions;
+	this.__defineGetter__('descriptions', function() {
+		return this._descriptions;
+	});
+
+	this._notifications = [];
+	this.__defineGetter__('notifications', function() {
+		return this._notifications;
+	});
+	this.__defineSetter__('notifications', function(aNotifications) {
+		this._notifications = aNotifications;
+		return aNotifications;
 	});
 
 	this._startAt = -1;

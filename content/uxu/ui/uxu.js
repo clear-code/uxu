@@ -148,7 +148,7 @@ var testRunnerlistener = {
 		node.setAttribute('class', 'test-finish');
 		node.appendChild(document.createElement('label'));
 		node.lastChild.setAttribute('style', color);
-		node.lastChild.setAttribute('value', report.testDescription);
+		node.lastChild.setAttribute('value', report.description);
 		parent.appendChild(node);
 		gLog.scrollBoxObject.ensureElementIsVisible(node);
 	},
