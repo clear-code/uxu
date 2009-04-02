@@ -820,7 +820,7 @@ function fillReportFromResult(aTestCase, aResult)
 
 	var wTestReport = clone('test-report');
 	wTestReport.setAttribute('id', id);
-	_(wTestReport, 'result').value = bundle.getString('report_result_'+aResult.type);
+	_(wTestReport, 'result').setAttribute('value', bundle.getString('report_result_'+aResult.type));
 	_(wTestReport, 'icon').setAttribute('class', 'test-' + aResult.type);
 	_(wTestReport, 'description').textContent = aResult.title;
 	_(wTestReport, 'description').setAttribute('tooltiptext', aResult.title);
