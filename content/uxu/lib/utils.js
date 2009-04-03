@@ -1441,10 +1441,10 @@ function isTargetInSubTree(aTarget, aNode)
 }
   
 // アプリケーション 
+var XULAppInfo = Cc['@mozilla.org/xre/app-info;1']
+		.getService(Ci.nsIXULAppInfo);
 	
 var product = (function() { 
-	var XULAppInfo = Cc['@mozilla.org/xre/app-info;1']
-			.getService(Ci.nsIXULAppInfo);
 	switch (XULAppInfo.ID)
 	{
 		case '{ec8030f7-c20a-464f-9b0e-13a3a9e97384}':
@@ -1578,13 +1578,32 @@ function _getInstalledLocationOfMozillaProduct(aProduct)
 	return null;
 }
    
+// バージョン比較 
+var _comparator = Cc['@mozilla.org/xpcom/version-comparator;1']
+					.getService(Ci.nsIVersionComparator);
+	
+function compareVersions(aA, aB) 
+{
+	return _comparator.compare(aA, aB);
+}
+ 
+function checkAppVersion(aVersion) 
+{
+	return compareVersions(XULAppInfo.version, aVersion);
+}
+function checkApplicationVersion(aVersion)
+{
+	return checkAppVersion(aVersion);
+}
+  
 // デバッグ 
 var _console = Cc['@mozilla.org/consoleservice;1']
 		.getService(Ci.nsIConsoleService);
 	
 function log() 
 {
-	_console.logStringMessage(Array.slice(arguments).join('\n'));
+	var message = Array.slice(arguments).join('\n');
+	_console.logStringMessage(message);
 }
  
 function dump() 
