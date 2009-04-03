@@ -367,7 +367,12 @@ function cosmeticClone(aOriginal, aDest, aName)
 	aOriginal = normalizeToFile(aOriginal);
 	aDest = normalizeToFile(aDest);
 
-	if (aOriginal.isHidden() || aOriginal.leafName.indexOf('.') == 0)
+	if (
+		!aOriginal ||
+		!aOriginal.exists() ||
+		aOriginal.isHidden() ||
+		aOriginal.leafName.indexOf('.') == 0
+		)
 		return null;
 
 	if (aOriginal.isDirectory()) {
