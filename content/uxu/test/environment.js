@@ -605,6 +605,13 @@ function getBoxObjectFor(aNode)
 				.getBoxObjectFor(aNode);
 }
 var _boxObjectModule = {};
+ 
+function log()
+{
+	var message = Array.slice(arguments).join('\n');
+	utils.log(message);
+	this.fireEvent('Notify', message);
+}
   
 var _this = this; 
 <><![CDATA[
@@ -634,7 +641,6 @@ getURLSpecFromFilePath
 inspect
 inspectDOMNode
 loadPrefs
-log
 makeFileWithPath
 makeURIFromSpec
 normalizeToFile
