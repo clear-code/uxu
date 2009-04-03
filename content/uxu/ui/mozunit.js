@@ -799,7 +799,7 @@ function fillReportFromResult(aTestCase, aResult)
 			var successes = parseInt(_(reportNode, 'success-counter').value);
 			_(reportNode, 'success-counter').value = successes + 1;
 			_(reportNode).appendChild(dummyTestReport);
-			if (!aResult.notifications.length)
+			if (!aResult.notifications || !aResult.notifications.length)
 				return;
 			break;
 		case 'passover':
@@ -855,17 +855,19 @@ function fillReportFromResult(aTestCase, aResult)
 		_(wTestReport, 'test-report-parts').appendChild(wTestReportPart);
 	}
 
-	aResult.notifications.forEach(function(aNotification) {
-		var wTestReportPart = clone('test-report-part');
-		if (aNotification.description) {
-			_(wTestReportPart, 'additionalInfo').textContent = aNotification.description;
-		}
-		if (aNotification.stackTrace && aNotification.stackTrace.length) {
-			displayStackTraceLines(aNotification.stackTrace, _(wTestReportPart, 'stack-trace'));
-			_(wTestReportPart, 'stack-trace').hidden = false;
-		}
-		_(wTestReport, 'test-report-parts').appendChild(wTestReportPart);
-	});
+	if (aResult.notifications && aResult.notifications.length) {
+		aResult.notifications.forEach(function(aNotification) {
+			var wTestReportPart = clone('test-report-part');
+			if (aNotification.description) {
+				_(wTestReportPart, 'additionalInfo').textContent = aNotification.description;
+			}
+			if (aNotification.stackTrace && aNotification.stackTrace.length) {
+				displayStackTraceLines(aNotification.stackTrace, _(wTestReportPart, 'stack-trace'));
+				_(wTestReportPart, 'stack-trace').hidden = false;
+			}
+			_(wTestReport, 'test-report-parts').appendChild(wTestReportPart);
+		});
+	}
 
 	_(reportNode, 'test-reports').appendChild(wTestReport);
 	scrollReportsTo(wTestReport);
