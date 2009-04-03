@@ -167,6 +167,7 @@ function test$X()
 }
 
 
+if (utils.checkAppVersion('3.0') < 0) test_sleep.priority = 'never';
 function test_sleep()
 {
 	var before = Date.now();
@@ -351,29 +352,33 @@ function test_setAndClearPref()
 {
 	var key = 'undefined.pref.'+parseInt(Math.random() * 65000);
 	var value;
-	utilsModule.clearPref(key);
-	assert.isNull(utils.getPref(key));
 
-	utilsModule.setPref(key, true);
-	value = utils.getPref(key);
+	utilsModule.clearPref(key+'.bool');
+	assert.isNull(utils.getPref(key+'.bool'));
+	utilsModule.setPref(key+'.bool', true);
+	value = utils.getPref(key+'.bool');
 	assert.isBoolean(value);
 	assert.isTrue(value);
-	utilsModule.clearPref(key);
-	assert.isNull(utils.getPref(key));
+	utilsModule.clearPref(key+'.bool');
+	assert.isNull(utils.getPref(key+'.bool'));
 
-	utilsModule.setPref(key, 30);
-	value = utils.getPref(key);
+	utilsModule.clearPref(key+'.int');
+	assert.isNull(utils.getPref(key+'.int'));
+	utilsModule.setPref(key+'.int', 30);
+	value = utils.getPref(key+'.int');
 	assert.isNumber(value);
 	assert.equals(30, value);
-	utilsModule.clearPref(key);
-	assert.isNull(utils.getPref(key));
+	utilsModule.clearPref(key+'.int');
+	assert.isNull(utils.getPref(key+'.int'));
 
-	utilsModule.setPref(key, 'string');
-	value = utils.getPref(key);
+	utilsModule.clearPref(key+'.string');
+	assert.isNull(utils.getPref(key+'.string'));
+	utilsModule.setPref(key+'.string', 'string');
+	value = utils.getPref(key+'.string');
 	assert.isString(value);
 	assert.equals('string', value);
-	utilsModule.clearPref(key);
-	assert.isNull(utils.getPref(key));
+	utilsModule.clearPref(key+'.string');
+	assert.isNull(utils.getPref(key+'.string'));
 }
 
 function test_loadPrefs()
@@ -872,11 +877,18 @@ function test_setAndGetClipBoard()
 	var selection = content.getSelection();
 	selection.removeAllRanges();
 
-	action.fireMouseEventOnElement(
-		content.document.getElementById('paragraph3'),
-		{ type : 'dblclick', button : 0 }
-	);
-	yield 100;
+	if (utils.checkAppVersion('3.0') < 0) {
+		let range = content.document.createRange();
+		range.selectNodeContents(content.document.getElementById('paragraph3'));
+		selection.addRange(range);
+	}
+	else {
+		action.fireMouseEventOnElement(
+			content.document.getElementById('paragraph3'),
+			{ type : 'dblclick', button : 0 }
+		);
+		yield 100;
+	}
 	assert.equals('paragraph3', selection.toString());
 	if (isLinux) {
 		assert.equals('paragraph3', utilsModule.getSelectionClipBoard());
@@ -887,11 +899,18 @@ function test_setAndGetClipBoard()
 	assert.equals(random, utilsModule.getClipBoard());
 	selection.removeAllRanges();
 
-	action.fireMouseEventOnElement(
-		content.document.getElementById('paragraph4'),
-		{ type : 'dblclick', button : 0 }
-	);
-	yield 100;
+	if (utils.checkAppVersion('3.0') < 0) {
+		let range = content.document.createRange();
+		range.selectNodeContents(content.document.getElementById('paragraph4'));
+		selection.addRange(range);
+	}
+	else {
+		action.fireMouseEventOnElement(
+			content.document.getElementById('paragraph4'),
+			{ type : 'dblclick', button : 0 }
+		);
+		yield 100;
+	}
 	assert.equals('paragraph4', selection.toString());
 	if (isLinux) {
 		assert.equals('paragraph4', utilsModule.getSelectionClipBoard());
