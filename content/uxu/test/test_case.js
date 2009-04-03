@@ -676,7 +676,6 @@ function run(aStopper)
 			}
 			else {
 				testReport.report.description = test.description;
-				testReport.report.onDetailedFinish();
 			}
 		},
 		doReport : function(aContinuation)
@@ -947,25 +946,30 @@ function _exec(aTest, aContext, aContinuation, aReport)
 		if (utils.isGeneratedIterator(result)) {
 			aReport.report = report;
 			var _this = this;
-			utils.doIteration(result, {
-				onEnd : function(e) {
-					aReport.report.result = 'success';
-					_this._onFinish(aTest, aReport.report.result);
-					aContinuation('ok');
-				},
-				onFail : function(e) {
-					aReport.report.result = 'failure';
-					aReport.report.exception = e;
-					_this._onFinish(aTest, aReport.report.result);
-					aContinuation('ok');
-				},
-				onError : function(e) {
-					aReport.report.result = 'error';
-					aReport.report.exception = e;
-					_this._onFinish(aTest, aReport.report.result);
-					aContinuation('ok');
-				}
-			});
+			window.setTimeout(function() {
+				utils.doIteration(result, {
+					onEnd : function(e) {
+						aReport.report.onDetailedFinish();
+						aReport.report.result = 'success';
+						_this._onFinish(aTest, aReport.report.result);
+						aContinuation('ok');
+					},
+					onFail : function(e) {
+						aReport.report.onDetailedFinish();
+						aReport.report.result = 'failure';
+						aReport.report.exception = e;
+						_this._onFinish(aTest, aReport.report.result);
+						aContinuation('ok');
+					},
+					onError : function(e) {
+						aReport.report.onDetailedFinish();
+						aReport.report.result = 'error';
+						aReport.report.exception = e;
+						_this._onFinish(aTest, aReport.report.result);
+						aContinuation('ok');
+					}
+				});
+			}, 0);
 			return report;
 		}
 
