@@ -410,7 +410,7 @@ function testStopper()
 	clearCount();
 	testcase.masterPriority = 'must';
 	testcase.run(stopper);
-	yield 1000;
+	yield 1500;
 	assert.testDone(3, 3, 3);
 
 	clearCount();
