@@ -125,6 +125,10 @@ function constructor(aTitle, aOptions)
 			return this._masterPriority;
 		});
 
+	this.__defineGetter__('neverRun', function() {
+		return this._equalsToNever(this._masterPriority);
+	});
+
 	this._context = aOptions.context || {};
 	this.__defineSetter__(
 		'context', function(aContext) {
@@ -560,7 +564,7 @@ function run(aStopper)
 
 	var doPreOrPostProcess = function(aContinuation, aFunction, aOptions)
 		{
-			if (!aFunction || _this._isNever(_this._masterPriority)) {
+			if (!aFunction || _this.neverRun) {
 				aOptions.report.report.onFinish();
 				aContinuation('ok');
 				return;
@@ -760,7 +764,7 @@ function _runByRemote(aStopper)
 	if (
 		!this._profile ||
 		!this._profile.exists() ||
-		this._isNever(this._masterPriority)
+		this.neverRun
 		)
 		return false;
 
@@ -992,7 +996,7 @@ function _exec(aTest, aContext, aContinuation, aReport)
  
 function _checkPriorityToExec(aTest) 
 {
-	var forceNever = _isNever(aTest.priority) || _isNever(this._masterPriority);
+	var forceNever = _equalsToNever(aTest.priority) || _equalsToNever(this._masterPriority);
 	var priority = forceNever ? 'never' :
 			(this._masterPriority !== null && this._masterPriority !== void(0)) ?
 				(this._masterPriority || aTest.priority) :
@@ -1056,7 +1060,7 @@ function _checkPriorityToExec(aTest)
 	}
 	return shouldDo;
 }
-function _isNever(aPriority)
+function _equalsToNever(aPriority)
 {
 	return (
 		(aPriority == 'never') ||

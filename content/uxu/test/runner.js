@@ -42,7 +42,8 @@ function run(aReporter, aMasterPriority)
 	var tests = this._collectTestCases(suites);
 	if (aMasterPriority) {
 		tests.forEach(function(aTest) {
-			aTest.masterPriority = aMasterPriority;
+			if (!aTest.neverRun)
+				aTest.masterPriority = aMasterPriority;
 		});
 	}
 
