@@ -165,6 +165,13 @@ const fileDNDObserver =
 		return aFile.isDirectory() || /\.js$/.test(aFile.leafName);
 	},
  
+	get browserWindow()
+	{
+		return Cc['@mozilla.org/appshell/window-mediator;1']
+				.getService(Ci.nsIWindowMediator)
+				.getMostRecentWindow('navigator:browser');
+	},
+ 
 	onDrop : function(aEvent, aTransferData, aSession) 
 	{
 		var file = aTransferData.data;
@@ -173,6 +180,9 @@ const fileDNDObserver =
 			setTestFile(file.path, true);
 			updateTestCommands();
 			reset();
+		}
+		else if (this.browserWindow) {
+			this.browserWindow.loadURI(utils.getURLSpecFromFile(file));
 		}
 	},
  
@@ -185,7 +195,7 @@ const fileDNDObserver =
 			if (!data.Count) return false;
 			data = data.GetElementAt(0);
 			data = utils.normalizeToFile(data);
-			return this.mayBeTestCase(data);
+			return this.mayBeTestCase(data) || this.browserWindow;
 		}
 		catch(e) {
 			return true;
