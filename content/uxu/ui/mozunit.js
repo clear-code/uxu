@@ -492,6 +492,9 @@ var runnerListener = {
 };
  
 var gRemoteRun = { 
+	messages : [],
+	finished : false,
+
 	onEvent : function(aType)
 	{
 		if (
@@ -500,27 +503,51 @@ var gRemoteRun = {
 			)
 			return;
 
-		var msg;
 		switch (aType)
 		{
 			case 'start':
-				msg = TestCase.prototype.TESTCASE_STARTED;
+				this.addMessage(TestCase.prototype.TESTCASE_STARTED);
 				break;
 			case 'finish':
-				msg = TestCase.prototype.TESTCASE_FINISED;
+				this.addMessage(gLog.toString(gLog.FORMAT_RAW));
+				this.addMessage(TestCase.prototype.TESTCASE_FINISED);
 				break;
+			case 'finish-all':
+				this.finished = true;
 			default:
-				msg = gLog.toString(gLog.FORMAT_RAW);
+				this.addMessage(gLog.toString(gLog.FORMAT_RAW));
 				break;
 		}
-		var message = new Message(msg, gOptions.outputHost, gOptions.outputPort, this);
-		message.send();
+		this.sendMessage();
 	},
+
+	addMessage : function(aMessage)
+	{
+		this.messages.push(new Message(aMessage, gOptions.outputHost, gOptions.outputPort, this));
+	},
+	sendMessage : function()
+	{
+		if (!this.sending && this.messages.length) {
+			this.sending = true;
+			this.messages[0].send();
+		}
+	},
+	sending : false,
 
 	onResponse : function(aResponseText)
 	{
-		if (aResponseText.indexOf(TestCase.prototype.TESTCASE_ABORTED) != 0)
+		this.messages.shift();
+		this.sending = false;
+
+		if (!this.messages.length && this.finished) {
+			this.onFinish();
 			return;
+		}
+
+		if (aResponseText.indexOf(TestCase.prototype.TESTCASE_ABORTED) != 0) {
+			this.sendMessage();
+			return;
+		}
 
 		if (gRunner) {
 			stop();
@@ -533,35 +560,34 @@ var gRemoteRun = {
 
 	onFinish : function()
 	{
-		if (gOptions) {
-			if (gOptions.log) {
-				utils.writeTo(
-					gLog.toString(),
-					gOptions.log,
-					'UTF-8'
-				);
-			}
-			if (gOptions.rawLog) {
-				utils.writeTo(
-					gLog.toString(gLog.FORMAT_RAW),
-					gOptions.rawLog,
-					'UTF-8'
-				);
-			}
-			if (
-				gOptions.autoQuit ||
+		if (!gOptions) return;
+		if (gOptions.log) {
+			utils.writeTo(
+				gLog.toString(),
+				gOptions.log,
+				'UTF-8'
+			);
+		}
+		if (gOptions.rawLog) {
+			utils.writeTo(
+				gLog.toString(gLog.FORMAT_RAW),
+				gOptions.rawLog,
+				'UTF-8'
+			);
+		}
+		if (
+			gOptions.autoQuit ||
+			(
+				gOptions.testcase &&
 				(
-					gOptions.testcase &&
-					(
-						gOptions.hidden ||
-						gOptions.log ||
-						gOptions.rawLog
-					)
+					gOptions.hidden ||
+					gOptions.log ||
+					gOptions.rawLog
 				)
-				) {
-				utils.quitApplication(true);
-				return;
-			}
+			)
+			) {
+			utils.quitApplication(true);
+			return;
 		}
 	},
 
@@ -592,8 +618,8 @@ function onAllTestsFinish()
 		'extensions.uxu.mozunit.lastResults',
 		gLog.toString(gLog.FORMAT_RAW)
 	);
+	gRemoteRun.onEvent('finish-all');
 	updateUIForAllTestsFinish();
-	gRemoteRun.onFinish();
 };
  
 function updateUIForAllTestsFinish() 

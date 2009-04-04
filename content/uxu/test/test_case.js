@@ -903,13 +903,16 @@ function onInput(aEvent)
 	}
 	if (input.indexOf(TESTCASE_STARTED) == 0) {
 		this._remoteReady = true;
+		this.fireEvent('OutputRequest', '\n');
 		return;
 	}
 	else if (input.indexOf(TESTCASE_FINISED) == 0) {
 		this._done = true;
+		this.fireEvent('OutputRequest', '\n');
 		return;
 	}
 	this._onReceiveRemoteResult(input);
+	this.fireEvent('OutputRequest', '\n');
 }
  
 function _onReceiveRemoteResult(aResult) 
