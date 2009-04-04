@@ -254,6 +254,16 @@ function normalizeTestWindowOption(aOptions)
 		aOptions.name  = aOptions.name || '_blank';;
 		aOptions.arguments = aOptions.arguments || [];
 	}
+
+	if (/(?:left|screenX)=([^,]+)/i.test(aOptions.flags))
+		aOptions.screenX = parseInt(RegExp.$1);
+	if (/(?:top|screenY)=([^,]+)/i.test(aOptions.flags))
+		aOptions.screenY = parseInt(RegExp.$1);
+	if (/width=([^,]+)/i.test(aOptions.flags))
+		aOptions.width = parseInt(RegExp.$1);
+	if (/height=([^,]+)/i.test(aOptions.flags))
+		aOptions.height = parseInt(RegExp.$1);
+
 	return aOptions;
 };
  
