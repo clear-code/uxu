@@ -295,7 +295,7 @@ function startup()
 				eval('lastResult = '+lastResult);
 				gLog.items = lastResult;
 				buildReportsFromResults(gLog.items);
-				onAllTestsFinish();
+				updateUIForAllTestsFinish();
 			}
 			catch(e) {
 				alert(e);
@@ -592,7 +592,12 @@ function onAllTestsFinish()
 		'extensions.uxu.mozunit.lastResults',
 		gLog.toString(gLog.FORMAT_RAW)
 	);
-
+	updateUIForAllTestsFinish();
+	gRemoteRun.onFinish();
+};
+ 
+function updateUIForAllTestsFinish() 
+{
 	if (!_('content').collapsed && contentAutoExpanded) {
 		toggleContent();
 	}
@@ -600,8 +605,6 @@ function onAllTestsFinish()
 	_('saveReport').removeAttribute('disabled');
 
 	stopAllProgressMeters();
-
-	gRemoteRun.onFinish();
 
 	if (gAborted) {
 		_('testResultStatus').setAttribute('label', bundle.getString('all_abort'));
