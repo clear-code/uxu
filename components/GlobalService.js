@@ -6,12 +6,15 @@ const kNAME = "UxU Global Service";
 const kUXU_DIR_NAME = 'uxu@clear-code.com';
 const kCATEGORY = 'm-uxu';
 
-const ObserverService = Components.classes['@mozilla.org/observer-service;1']
-			.getService(Components.interfaces.nsIObserverService);
+var Cc = Components.classes;
+var Ci = Components.interfaces;
 
-const Pref = Components.classes['@mozilla.org/preferences;1'] 
-			.getService(Components.interfaces.nsIPrefBranch)
-			.QueryInterface(Components.interfaces.nsIPrefBranch2);
+const ObserverService = Cc['@mozilla.org/observer-service;1']
+			.getService(Ci.nsIObserverService);
+
+const Pref = Cc['@mozilla.org/preferences;1'] 
+			.getService(Ci.nsIPrefBranch)
+			.QueryInterface(Ci.nsIPrefBranch2);
 	 
 function GlobalService() { 
 }
@@ -58,8 +61,8 @@ GlobalService.prototype = {
 	get installedLocation()
 	{
 		var id = 'uxu@clear-code.com';
-		var dir = Components.classes['@mozilla.org/extensions/manager;1']
-				.getService(Components.interfaces.nsIExtensionManager)
+		var dir = Cc['@mozilla.org/extensions/manager;1']
+				.getService(Ci.nsIExtensionManager)
 				.getInstallLocation(id)
 				.getItemLocation(id);
 		return dir;
@@ -67,9 +70,9 @@ GlobalService.prototype = {
 
 	get globalLocation()
 	{
-		var dir = Components.classes['@mozilla.org/file/directory_service;1']
-				.getService(Components.interfaces.nsIProperties)
-				.get('CurProcD', Components.interfaces.nsIFile);
+		var dir = Cc['@mozilla.org/file/directory_service;1']
+				.getService(Ci.nsIProperties)
+				.get('CurProcD', Ci.nsIFile);
 		dir.append('extensions');
 		dir.append(kUXU_DIR_NAME);
 		return dir;
@@ -110,9 +113,9 @@ GlobalService.prototype = {
 
 	getVersionFromManifest : function(aFile)
 	{
-		aFile = aFile.QueryInterface(Components.interfaces.nsILocalFile)
-		var stream = Components.classes['@mozilla.org/network/file-input-stream;1']
-					.createInstance(Components.interfaces.nsIFileInputStream);
+		aFile = aFile.QueryInterface(Ci.nsILocalFile)
+		var stream = Cc['@mozilla.org/network/file-input-stream;1']
+					.createInstance(Ci.nsIFileInputStream);
 		try {
 			stream.init(aFile, 1, 0, false); // open as "read only"
 		}
@@ -122,8 +125,8 @@ GlobalService.prototype = {
 
 		var fileContents = null;
 		try {
-			var scriptableStream = Components.classes['@mozilla.org/scriptableinputstream;1']
-					.createInstance(Components.interfaces.nsIScriptableInputStream);
+			var scriptableStream = Cc['@mozilla.org/scriptableinputstream;1']
+					.createInstance(Ci.nsIScriptableInputStream);
 			scriptableStream.init(stream);
 			fileContents = scriptableStream.read(scriptableStream.available());
 			scriptableStream.close();
@@ -174,8 +177,8 @@ GlobalService.prototype = {
 
 	restart : function()
 	{
-		const startup = Components.classes['@mozilla.org/toolkit/app-startup;1']
-						.getService(Components.interfaces.nsIAppStartup);
+		const startup = Cc['@mozilla.org/toolkit/app-startup;1']
+						.getService(Ci.nsIAppStartup);
 		startup.quit(startup.eRestart | startup.eAttemptQuit);
 	},
 
@@ -201,9 +204,9 @@ GlobalService.prototype = {
 			aCommandLine.preventDefault = true;
 			var WindowWatcher = Components
 					.classes['@mozilla.org/embedcomp/window-watcher;1']
-					.getService(Components.interfaces.nsIWindowWatcher);
-			var bag = Components.classes['@mozilla.org/hash-property-bag;1']
-					.createInstance(Components.interfaces.nsIWritablePropertyBag);
+					.getService(Ci.nsIWindowWatcher);
+			var bag = Cc['@mozilla.org/hash-property-bag;1']
+					.createInstance(Ci.nsIWritablePropertyBag);
 			for (var i in arg)
 			{
 				bag.setProperty(i, arg[i]);
@@ -296,10 +299,10 @@ GlobalService.prototype = {
 
 	QueryInterface : function(aIID) 
 	{
-		if(!aIID.equals(Components.interfaces.nsIObserver) &&
-			!aIID.equals(Components.interfaces.nsICommandLineHandler) &&
-			!aIID.equals(Components.interfaces.nsIFactory) &&
-			!aIID.equals(Components.interfaces.nsISupports)) {
+		if(!aIID.equals(Ci.nsIObserver) &&
+			!aIID.equals(Ci.nsICommandLineHandler) &&
+			!aIID.equals(Ci.nsIFactory) &&
+			!aIID.equals(Ci.nsISupports)) {
 			throw Components.results.NS_ERROR_NO_INTERFACE;
 		}
 		return this;
@@ -310,7 +313,7 @@ GlobalService.prototype = {
 var gModule = { 
 	registerSelf : function(aCompMgr, aFileSpec, aLocation, aType)
 	{
-		aCompMgr = aCompMgr.QueryInterface(Components.interfaces.nsIComponentRegistrar);
+		aCompMgr = aCompMgr.QueryInterface(Ci.nsIComponentRegistrar);
 		aCompMgr.registerFactoryLocation(
 			kCID,
 			kNAME,
@@ -320,8 +323,8 @@ var gModule = {
 			aType
 		);
 
-		var catMgr = Components.classes['@mozilla.org/categorymanager;1']
-					.getService(Components.interfaces.nsICategoryManager);
+		var catMgr = Cc['@mozilla.org/categorymanager;1']
+					.getService(Ci.nsICategoryManager);
 		catMgr.addCategoryEntry('app-startup', kNAME, kID, true, true);
 		catMgr.addCategoryEntry('command-line-handler', kCATEGORY, kID, true, true);
 	},
@@ -334,8 +337,8 @@ var gModule = {
 	factory : {
 		QueryInterface : function(aIID)
 		{
-			if (!aIID.equals(Components.interfaces.nsISupports) &&
-				!aIID.equals(Components.interfaces.nsIFactory)) {
+			if (!aIID.equals(Ci.nsISupports) &&
+				!aIID.equals(Ci.nsIFactory)) {
 				throw Components.results.NS_ERROR_NO_INTERFACE;
 			}
 			return this;
