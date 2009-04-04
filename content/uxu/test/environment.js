@@ -298,19 +298,21 @@ function openTestWindow(aOptions, aCallback)
 		win.addEventListener('load', function() {
 			win.removeEventListener('load', arguments.callee, false);
 			win.document.documentElement.setAttribute(key, id);
-			if (aOptions) {
-				if ('width' in aOptions || 'height' in aOptions) {
-					win.resizeTo(aOptions.width || 10, aOptions.height || 10);
+			win.setTimeout(function() {
+				if (aOptions) {
+					if ('width' in aOptions || 'height' in aOptions) {
+						win.resizeTo(aOptions.width || 10, aOptions.height || 10);
+					}
+					if ('screenX' in aOptions || 'x' in aOptions ||
+				    	'screenY' in aOptions || 'y' in aOptions) {
+						win.moveTo(aOptions.screenX || aOptions.x || 0,
+						           aOptions.screenY || aOptions.y || 0);
+					}
 				}
-				if ('screenX' in aOptions || 'x' in aOptions ||
-			    	'screenY' in aOptions || 'y' in aOptions) {
-					win.moveTo(aOptions.screenX || aOptions.x || 0,
-					           aOptions.screenY || aOptions.y || 0);
+				if (aCallback) {
+					aCallback(win);
 				}
-			}
-			if (aCallback) {
-				aCallback(win);
-			}
+			}, 0);
 		}, false);
 	}
 	return win;
