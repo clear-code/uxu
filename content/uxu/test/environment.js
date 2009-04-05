@@ -298,6 +298,7 @@ function openTestWindow(aOptions, aCallback)
 {
 	var win = this.getTestWindow(aOptions);
 	if (win) {
+		win.focus();
 		if (aCallback) aCallback(win);
 	}
 	else {
@@ -319,6 +320,7 @@ function openTestWindow(aOptions, aCallback)
 						           aOptions.screenY || aOptions.y || 0);
 					}
 				}
+				win.focus();
 				if (aCallback) {
 					aCallback(win);
 				}
