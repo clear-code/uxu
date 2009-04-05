@@ -492,8 +492,8 @@ var runnerListener = {
 };
  
 var gRemoteRun = { 
+	ALL_FINISH : '/*uxu-all-testcases-finish*/',
 	messages : [],
-	finished : false,
 
 	onEvent : function(aType)
 	{
@@ -513,7 +513,9 @@ var gRemoteRun = {
 				this.addMessage(TestCase.prototype.TESTCASE_FINISED);
 				break;
 			case 'finish-all':
-				this.finished = true;
+				this.addMessage(gLog.toString(gLog.FORMAT_RAW));
+				this.addMessage(this.ALL_FINISH);
+				break;
 			default:
 				this.addMessage(gLog.toString(gLog.FORMAT_RAW));
 				break;
@@ -536,10 +538,10 @@ var gRemoteRun = {
 
 	onResponse : function(aResponseText)
 	{
-		this.messages.shift();
+		var sent = this.messages.shift();
 		this.sending = false;
 
-		if (!this.messages.length && this.finished) {
+		if (sent.message.indexOf(this.ALL_FINISH) == 0) {
 			this.onFinish();
 			return;
 		}
@@ -561,6 +563,7 @@ var gRemoteRun = {
 	onFinish : function()
 	{
 		if (!gOptions) return;
+
 		if (gOptions.log) {
 			utils.writeTo(
 				gLog.toString(),

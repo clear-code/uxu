@@ -20,6 +20,10 @@ function constructor(aMessage, aHost, aPort, aListener)
 	this._scriptableInput.init(this._input);
 
 	this._output.write(this._message, this._message.length);
+
+	this.__defineGetter__('message', function() {
+		return this._message;
+	});
 }
 
 function send()
