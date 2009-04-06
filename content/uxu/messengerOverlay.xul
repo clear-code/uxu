@@ -11,9 +11,9 @@
 		insertbefore="devToolsSeparator"
 		label="&uxu.tools.menu.label;">
 		<menupopup>
-			<menuitem id="tools-uxu-menuitem-mozunit"
-				label="&uxu.tools.mozunit.label;"
-				oncommand="openUxUMozUnit()"/>
+			<menuitem id="tools-uxu-menuitem-runner"
+				label="&uxu.tools.runner.label;"
+				oncommand="openUxURunner()"/>
 			<menuitem id="tools-uxu-menuitem"
 				label="&uxu.tools.start.label;"
 				oncommand="startUxU()"/>

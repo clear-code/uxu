@@ -5,75 +5,75 @@
 
 <!ENTITY uxu.tools.menu.label   "UnitTest.XUL">
 <!ENTITY uxu.tools.start.label   "UxUサーバを起動">
-<!ENTITY uxu.tools.mozunit.label   "MozUnit テストランナー">
+<!ENTITY uxu.tools.runner.label   "テストランナー">
 
 
-<!ENTITY mozunit.title "MozUnit">
+<!ENTITY runner.title "UxUテストランナー">
 
-<!ENTITY mozunit.fileMenu.label     "ファイル">
-<!ENTITY mozunit.fileMenu.accesskey "F">
-<!ENTITY mozunit.run.label     "実行">
-<!ENTITY mozunit.run.accesskey "R">
-<!ENTITY mozunit.run.options   "方法を指定して実行">
-<!ENTITY mozunit.runPriority.label   "優先度に従って実行">
-<!ENTITY mozunit.runPriority.default "優先度に従って実行（通常の実行）">
-<!ENTITY mozunit.runAll.label        "優先度を無視してすべて実行">
-<!ENTITY mozunit.runAll.default      "優先度を無視してすべて実行（通常の実行）">
-<!ENTITY mozunit.runFailed.label   "失敗したテストだけ再実行">
-<!ENTITY mozunit.stop.label     "中止">
-<!ENTITY mozunit.stop.accesskey "S">
-<!ENTITY mozunit.open.label     "開く...">
-<!ENTITY mozunit.open.accesskey "O">
-<!ENTITY mozunit.openFolder.label     "フォルダを開く...">
-<!ENTITY mozunit.openFolder.accesskey "F">
-<!ENTITY mozunit.new.label     "新しいテスト...">
-<!ENTITY mozunit.new.accesskey "N">
-<!ENTITY mozunit.edit.label     "編集...">
-<!ENTITY mozunit.edit.accesskey "E">
-<!ENTITY mozunit.editThis.label     "このファイルを編集...">
-<!ENTITY mozunit.editThis.label.file "&quot;&#37;f&quot;を編集...">
-<!ENTITY mozunit.editThis.label.line "&quot;&#37;f&quot;の&#37;l行目を編集...">
-<!ENTITY mozunit.editThis.accesskey "E">
-<!ENTITY mozunit.saveReport.label     "結果を保存">
-<!ENTITY mozunit.saveReport.accesskey "V">
-<!ENTITY mozunit.restartApplication.label     "アプリケーションを再起動">
-<!ENTITY mozunit.restartApplication.accesskey "A">
-<!ENTITY mozunit.quit.label     "終了">
-<!ENTITY mozunit.quit.accesskey "Q">
+<!ENTITY runner.fileMenu.label     "ファイル">
+<!ENTITY runner.fileMenu.accesskey "F">
+<!ENTITY runner.run.label     "実行">
+<!ENTITY runner.run.accesskey "R">
+<!ENTITY runner.run.options   "方法を指定して実行">
+<!ENTITY runner.runPriority.label   "優先度に従って実行">
+<!ENTITY runner.runPriority.default "優先度に従って実行（通常の実行）">
+<!ENTITY runner.runAll.label        "優先度を無視してすべて実行">
+<!ENTITY runner.runAll.default      "優先度を無視してすべて実行（通常の実行）">
+<!ENTITY runner.runFailed.label   "失敗したテストだけ再実行">
+<!ENTITY runner.stop.label     "中止">
+<!ENTITY runner.stop.accesskey "S">
+<!ENTITY runner.open.label     "開く...">
+<!ENTITY runner.open.accesskey "O">
+<!ENTITY runner.openFolder.label     "フォルダを開く...">
+<!ENTITY runner.openFolder.accesskey "F">
+<!ENTITY runner.new.label     "新しいテスト...">
+<!ENTITY runner.new.accesskey "N">
+<!ENTITY runner.edit.label     "編集...">
+<!ENTITY runner.edit.accesskey "E">
+<!ENTITY runner.editThis.label     "このファイルを編集...">
+<!ENTITY runner.editThis.label.file "&quot;&#37;f&quot;を編集...">
+<!ENTITY runner.editThis.label.line "&quot;&#37;f&quot;の&#37;l行目を編集...">
+<!ENTITY runner.editThis.accesskey "E">
+<!ENTITY runner.saveReport.label     "結果を保存">
+<!ENTITY runner.saveReport.accesskey "V">
+<!ENTITY runner.restartApplication.label     "アプリケーションを再起動">
+<!ENTITY runner.restartApplication.accesskey "A">
+<!ENTITY runner.quit.label     "終了">
+<!ENTITY runner.quit.accesskey "Q">
 
-<!ENTITY mozunit.viewMenu.label     "表示">
-<!ENTITY mozunit.viewMenu.accesskey "V">
-<!ENTITY mozunit.toggleInternalStacks.label "スタックトレースにUxUの内部エラーも表示する">
-<!ENTITY mozunit.toggleInternalStacks.accesskey "I">
-<!ENTITY mozunit.alwaysRaised.label     "常に最前面に表示">
-<!ENTITY mozunit.alwaysRaised.accesskey "A">
-<!ENTITY mozunit.toggleContent.label     "テスト用フレームの内容を表示">
-<!ENTITY mozunit.toggleContent.accesskey "C">
+<!ENTITY runner.viewMenu.label     "表示">
+<!ENTITY runner.viewMenu.accesskey "V">
+<!ENTITY runner.toggleInternalStacks.label "スタックトレースにUxUの内部エラーも表示する">
+<!ENTITY runner.toggleInternalStacks.accesskey "I">
+<!ENTITY runner.alwaysRaised.label     "常に最前面に表示">
+<!ENTITY runner.alwaysRaised.accesskey "A">
+<!ENTITY runner.toggleContent.label     "テスト用フレームの内容を表示">
+<!ENTITY runner.toggleContent.accesskey "C">
 
-<!ENTITY mozunit.editMenu.label     "編集">
-<!ENTITY mozunit.editMenu.accesskey "E">
-<!ENTITY mozunit.copy.label     "コピー">
-<!ENTITY mozunit.copy.accesskey "C">
+<!ENTITY runner.editMenu.label     "編集">
+<!ENTITY runner.editMenu.accesskey "E">
+<!ENTITY runner.copy.label     "コピー">
+<!ENTITY runner.copy.accesskey "C">
 
-<!ENTITY mozunit.helpMenu.label     "ヘルプ">
-<!ENTITY mozunit.helpMenu.accesskey "H">
-<!ENTITY mozunit.help.label     "説明ページを表示">
-<!ENTITY mozunit.help.accesskey "M">
-<!ENTITY mozunit.help.uri       "http://www.clear-code.com/software/uxu/">
+<!ENTITY runner.helpMenu.label     "ヘルプ">
+<!ENTITY runner.helpMenu.accesskey "H">
+<!ENTITY runner.help.label     "説明ページを表示">
+<!ENTITY runner.help.accesskey "M">
+<!ENTITY runner.help.uri       "http://www.clear-code.com/software/uxu/">
 
-<!ENTITY mozunit.successes "成功したテスト:">
-<!ENTITY mozunit.passover "除外したテスト:">
+<!ENTITY runner.successes "成功したテスト:">
+<!ENTITY runner.passover "除外したテスト:">
 
-<!ENTITY mozunit.filePath "作業中のファイル:">
-<!ENTITY mozunit.source "ソース">
-<!ENTITY mozunit.close "閉じる">
+<!ENTITY runner.filePath "作業中のファイル:">
+<!ENTITY runner.source "ソース">
+<!ENTITY runner.close "閉じる">
 
-<!ENTITY mozunit.expected.label     "期待値">
-<!ENTITY mozunit.expected.separator ":">
-<!ENTITY mozunit.actual.label       "実際の値">
-<!ENTITY mozunit.actual.separator   ":">
-<!ENTITY mozunit.diff.label         "相違点">
-<!ENTITY mozunit.diff.separator     ":">
+<!ENTITY runner.expected.label     "期待値">
+<!ENTITY runner.expected.separator ":">
+<!ENTITY runner.actual.label       "実際の値">
+<!ENTITY runner.actual.separator   ":">
+<!ENTITY runner.diff.label         "相違点">
+<!ENTITY runner.diff.separator     ":">
 
 
 
@@ -93,21 +93,21 @@
 <!ENTITY config.installGlobalLocation.caption "UnitTest.XULのインストール先">
 <!ENTITY config.installGlobalLocation.check   "このコンピュータのすべてのユーザでUnitTest.XULを利用可能にする（※管理者権限が必要です）">
 
-<!ENTITY config.tabs.mozunit "MozUnitテストランナー">
+<!ENTITY config.tabs.runner "テストランナー">
 
-<!ENTITY config.mozunit.editor.caption "テストの編集に使用するエディタ">
-<!ENTITY config.mozunit.editor.label   "起動コマンド：">
-<!ENTITY config.mozunit.editor.desctiption "※空欄にすると次回編集時にファイル選択ダイアログを表示します">
-<!ENTITY config.mozunit.runParallel "複数テストの実行時">
-<!ENTITY config.mozunit.runParallel.true  "複数テストを平行して実行する">
-<!ENTITY config.mozunit.runParallel.false "テストを一つずつ実行する">
-<!ENTITY config.mozunit.runMode   "テストの実行ポリシー">
-<!ENTITY config.mozunit.runMode.0 "前回失敗したテストや未実行のテストは必ず実行し、それ以外は優先度を落とす（推奨）">
-<!ENTITY config.mozunit.runMode.1 "すべてのテストを必ず実行する">
-<!ENTITY config.mozunit.autoShowContent "テストの実行時にテスト用フレームを自動的に表示する">
-<!ENTITY config.mozunit.autoExpandWindow.sourceViewer "エラー箇所のソースを表示する時にウィンドウを自動的に広げる"><!ENTITY config.mozunit.autoStart "Firefoxの起動と同時にMozUnitテストランナーを起動する">
-<!ENTITY config.mozunit.autoStart.oneTime.enabled "Firefoxの再起動時にMozUnitテストランナーを自動的に復帰させる">
-<!ENTITY config.mozunit.autoExit  "Firefoxの終了と同時にMozUnitテストランナーを終了する">
+<!ENTITY config.runner.editor.caption "テストの編集に使用するエディタ">
+<!ENTITY config.runner.editor.label   "起動コマンド：">
+<!ENTITY config.runner.editor.desctiption "※空欄にすると次回編集時にファイル選択ダイアログを表示します">
+<!ENTITY config.runner.runParallel "複数テストの実行時">
+<!ENTITY config.runner.runParallel.true  "複数テストを平行して実行する">
+<!ENTITY config.runner.runParallel.false "テストを一つずつ実行する">
+<!ENTITY config.runner.runMode   "テストの実行ポリシー">
+<!ENTITY config.runner.runMode.0 "前回失敗したテストや未実行のテストは必ず実行し、それ以外は優先度を落とす（推奨）">
+<!ENTITY config.runner.runMode.1 "すべてのテストを必ず実行する">
+<!ENTITY config.runner.autoShowContent "テストの実行時にテスト用フレームを自動的に表示する">
+<!ENTITY config.runner.autoExpandWindow.sourceViewer "エラー箇所のソースを表示する時にウィンドウを自動的に広げる"><!ENTITY config.runner.autoStart "Firefoxの起動と同時にテストランナーを起動する">
+<!ENTITY config.runner.autoStart.oneTime.enabled "Firefoxの再起動時にテストランナーを自動的に復帰させる">
+<!ENTITY config.runner.autoExit  "Firefoxの終了と同時にテストランナーを終了する">
 
 
 <!ENTITY config.tabs.server "UxUサーバ">

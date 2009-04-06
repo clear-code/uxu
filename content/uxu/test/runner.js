@@ -174,7 +174,7 @@ function _runTests(aTests)
 			return _this._shouldAbort;
 		};
 
-	if (utils.getPref('extensions.uxu.mozunit.runParallel')) {
+	if (utils.getPref('extensions.uxu.runner.runParallel')) {
 		aTests.forEach(runTest);
 	}
 	else {
@@ -381,6 +381,7 @@ function _createTestSuite(aURL)
 	var suite = {};
 	suite.__proto__ = new Environment(suite, aURL, this._browser);
 
+	/* backward compatibility for MozLab/MozUnit testcases */
 	suite.TestCase      = TestCase;
 	suite.Specification = TestCase;
 	suite.mozlab = {

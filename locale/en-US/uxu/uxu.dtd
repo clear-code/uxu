@@ -5,75 +5,75 @@
 
 <!ENTITY uxu.tools.menu.label   "UnitTest.XUL">
 <!ENTITY uxu.tools.start.label   "Start UxU Server">
-<!ENTITY uxu.tools.mozunit.label   "MozUnit Test Runner">
+<!ENTITY uxu.tools.runner.label   "Test Runner">
 
 
-<!ENTITY mozunit.title "MozUnit">
+<!ENTITY runner.title "UxU Test Runner">
 
-<!ENTITY mozunit.fileMenu.label     "File">
-<!ENTITY mozunit.fileMenu.accesskey "F">
-<!ENTITY mozunit.run.label     "Run">
-<!ENTITY mozunit.run.accesskey "R">
-<!ENTITY mozunit.run.options   "Run with Options">
-<!ENTITY mozunit.runPriority.label   "Run tests by priorities">
-<!ENTITY mozunit.runPriority.default "Run tests by priorities (default)">
-<!ENTITY mozunit.runAll.label        "Run all tests ignoring priority">
-<!ENTITY mozunit.runAll.default      "Run all tests ignoring priority (default)">
-<!ENTITY mozunit.runFailed.label   "Run again only failed tests">
-<!ENTITY mozunit.stop.label     "Stop">
-<!ENTITY mozunit.stop.accesskey "S">
-<!ENTITY mozunit.open.label     "Open...">
-<!ENTITY mozunit.open.accesskey "O">
-<!ENTITY mozunit.openFolder.label     "Open Folder...">
-<!ENTITY mozunit.openFolder.accesskey "F">
-<!ENTITY mozunit.new.label     "New...">
-<!ENTITY mozunit.new.accesskey "N">
-<!ENTITY mozunit.edit.label     "Edit...">
-<!ENTITY mozunit.edit.accesskey "E">
-<!ENTITY mozunit.editThis.label     "Edit this file...">
-<!ENTITY mozunit.editThis.label.file "Edit &quot;&#37;f&quot;...">
-<!ENTITY mozunit.editThis.label.line "Edit &quot;&#37;f&quot;, line at &#37;l...">
-<!ENTITY mozunit.editThis.accesskey "E">
-<!ENTITY mozunit.saveReport.label     "Save Report">
-<!ENTITY mozunit.saveReport.accesskey "V">
-<!ENTITY mozunit.restartApplication.label     "Restart Application">
-<!ENTITY mozunit.restartApplication.accesskey "A">
-<!ENTITY mozunit.quit.label     "Quit">
-<!ENTITY mozunit.quit.accesskey "Q">
+<!ENTITY runner.fileMenu.label     "File">
+<!ENTITY runner.fileMenu.accesskey "F">
+<!ENTITY runner.run.label     "Run">
+<!ENTITY runner.run.accesskey "R">
+<!ENTITY runner.run.options   "Run with Options">
+<!ENTITY runner.runPriority.label   "Run tests by priorities">
+<!ENTITY runner.runPriority.default "Run tests by priorities (default)">
+<!ENTITY runner.runAll.label        "Run all tests ignoring priority">
+<!ENTITY runner.runAll.default      "Run all tests ignoring priority (default)">
+<!ENTITY runner.runFailed.label   "Run again only failed tests">
+<!ENTITY runner.stop.label     "Stop">
+<!ENTITY runner.stop.accesskey "S">
+<!ENTITY runner.open.label     "Open...">
+<!ENTITY runner.open.accesskey "O">
+<!ENTITY runner.openFolder.label     "Open Folder...">
+<!ENTITY runner.openFolder.accesskey "F">
+<!ENTITY runner.new.label     "New...">
+<!ENTITY runner.new.accesskey "N">
+<!ENTITY runner.edit.label     "Edit...">
+<!ENTITY runner.edit.accesskey "E">
+<!ENTITY runner.editThis.label     "Edit this file...">
+<!ENTITY runner.editThis.label.file "Edit &quot;&#37;f&quot;...">
+<!ENTITY runner.editThis.label.line "Edit &quot;&#37;f&quot;, line at &#37;l...">
+<!ENTITY runner.editThis.accesskey "E">
+<!ENTITY runner.saveReport.label     "Save Report">
+<!ENTITY runner.saveReport.accesskey "V">
+<!ENTITY runner.restartApplication.label     "Restart Application">
+<!ENTITY runner.restartApplication.accesskey "A">
+<!ENTITY runner.quit.label     "Quit">
+<!ENTITY runner.quit.accesskey "Q">
 
-<!ENTITY mozunit.viewMenu.label     "View">
-<!ENTITY mozunit.viewMenu.accesskey "V">
-<!ENTITY mozunit.toggleInternalStacks.label "Show internal errors in stack traces">
-<!ENTITY mozunit.toggleInternalStacks.accesskey "I">
-<!ENTITY mozunit.alwaysRaised.label     "Always raised on top">
-<!ENTITY mozunit.alwaysRaised.accesskey "A">
-<!ENTITY mozunit.toggleContent.label     "Show internal frame for testing">
-<!ENTITY mozunit.toggleContent.accesskey "C">
+<!ENTITY runner.viewMenu.label     "View">
+<!ENTITY runner.viewMenu.accesskey "V">
+<!ENTITY runner.toggleInternalStacks.label "Show internal errors in stack traces">
+<!ENTITY runner.toggleInternalStacks.accesskey "I">
+<!ENTITY runner.alwaysRaised.label     "Always raised on top">
+<!ENTITY runner.alwaysRaised.accesskey "A">
+<!ENTITY runner.toggleContent.label     "Show internal frame for testing">
+<!ENTITY runner.toggleContent.accesskey "C">
 
-<!ENTITY mozunit.editMenu.label     "Edit">
-<!ENTITY mozunit.editMenu.accesskey "E">
-<!ENTITY mozunit.copy.label     "Copy">
-<!ENTITY mozunit.copy.accesskey "C">
+<!ENTITY runner.editMenu.label     "Edit">
+<!ENTITY runner.editMenu.accesskey "E">
+<!ENTITY runner.copy.label     "Copy">
+<!ENTITY runner.copy.accesskey "C">
 
-<!ENTITY mozunit.helpMenu.label     "Help">
-<!ENTITY mozunit.helpMenu.accesskey "H">
-<!ENTITY mozunit.help.label     "Show manual">
-<!ENTITY mozunit.help.accesskey "m">
-<!ENTITY mozunit.help.uri       "http://www.clear-code.com/software/uxu/">
+<!ENTITY runner.helpMenu.label     "Help">
+<!ENTITY runner.helpMenu.accesskey "H">
+<!ENTITY runner.help.label     "Show manual">
+<!ENTITY runner.help.accesskey "m">
+<!ENTITY runner.help.uri       "http://www.clear-code.com/software/uxu/">
 
-<!ENTITY mozunit.successes "Successes:">
-<!ENTITY mozunit.passover "Passed over:">
+<!ENTITY runner.successes "Successes:">
+<!ENTITY runner.passover "Passed over:">
 
-<!ENTITY mozunit.filePath "Working on:">
-<!ENTITY mozunit.source "Source">
-<!ENTITY mozunit.close "Close">
+<!ENTITY runner.filePath "Working on:">
+<!ENTITY runner.source "Source">
+<!ENTITY runner.close "Close">
 
-<!ENTITY mozunit.expected.label     "Expected">
-<!ENTITY mozunit.expected.separator ":">
-<!ENTITY mozunit.actual.label       "But was">
-<!ENTITY mozunit.actual.separator   ":">
-<!ENTITY mozunit.diff.label         "Diff">
-<!ENTITY mozunit.diff.separator     ":">
+<!ENTITY runner.expected.label     "Expected">
+<!ENTITY runner.expected.separator ":">
+<!ENTITY runner.actual.label       "But was">
+<!ENTITY runner.actual.separator   ":">
+<!ENTITY runner.diff.label         "Diff">
+<!ENTITY runner.diff.separator     ":">
 
 
 
@@ -93,23 +93,23 @@
 <!ENTITY config.installGlobalLocation.caption "Install location of UnitTest.XUL">
 <!ENTITY config.installGlobalLocation.check   "Activate UnitTest.XUL for all users on this computer (*administrative privileges required)">
 
-<!ENTITY config.tabs.mozunit "MozUnit Test Runner">
+<!ENTITY config.tabs.runner "Test Runner">
 
-<!ENTITY config.mozunit.editor.caption "Text editor for testcases">
-<!ENTITY config.mozunit.editor.label   "Command line:">
-<!ENTITY config.mozunit.editor.desctiption "*If you set it blank, you can choose an editor when you edit a testcase.">
-<!ENTITY config.mozunit.runParallel "Running multiple tests">
-<!ENTITY config.mozunit.runParallel.true  "Parallelly">
-<!ENTITY config.mozunit.runParallel.false "Sequentially">
-<!ENTITY config.mozunit.runMode   "Policy to run tests">
-<!ENTITY config.mozunit.runMode.0 "Run tests by their priority, but regard failed or uncompleted tests as MUST to run (recommended)">
-<!ENTITY config.mozunit.runMode.1 "Run any test always">
-<!ENTITY config.mozunit.autoShowContent "Show internal frame while testing automatically">
-<!ENTITY config.mozunit.autoExpandWindow.sourceViewer "Expand window automatically when source viewer is open">
+<!ENTITY config.runner.editor.caption "Text editor for testcases">
+<!ENTITY config.runner.editor.label   "Command line:">
+<!ENTITY config.runner.editor.desctiption "*If you set it blank, you can choose an editor when you edit a testcase.">
+<!ENTITY config.runner.runParallel "Running multiple tests">
+<!ENTITY config.runner.runParallel.true  "Parallelly">
+<!ENTITY config.runner.runParallel.false "Sequentially">
+<!ENTITY config.runner.runMode   "Policy to run tests">
+<!ENTITY config.runner.runMode.0 "Run tests by their priority, but regard failed or uncompleted tests as MUST to run (recommended)">
+<!ENTITY config.runner.runMode.1 "Run any test always">
+<!ENTITY config.runner.autoShowContent "Show internal frame while testing automatically">
+<!ENTITY config.runner.autoExpandWindow.sourceViewer "Expand window automatically when source viewer is open">
 <!ENTITY config.tabs.server "UxU Server">
-<!ENTITY config.mozunit.autoStart "Start MozUnit Test Runner automatically on Firefox's startup">
-<!ENTITY config.mozunit.autoStart.oneTime.enabled "Restore MozUnit Test Runner automatically after Firefox's restart">
-<!ENTITY config.mozunit.autoExit  "Stop MozUnit Test Runner automatically on Firefox's shutdown">
+<!ENTITY config.runner.autoStart "Start Test Runner automatically on Firefox's startup">
+<!ENTITY config.runner.autoStart.oneTime.enabled "Restore Test Runner automatically after Firefox's restart">
+<!ENTITY config.runner.autoExit  "Stop Test Runner automatically on Firefox's shutdown">
 
 <!ENTITY config.auto.start "Start server automatically on Firefox's startup">
 <!ENTITY config.auto.exit  "Stop server automatically on Firefox's shutdown">

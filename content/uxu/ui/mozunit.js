@@ -228,12 +228,12 @@ function startup()
 
 	if (!isLinux()) {
 		ObserverService.addObserver(alwaysRaisedObserver, 'xul-window-registered', false);
-		if (utils.getPref('extensions.uxu.mozunit.alwaysRaised'))
+		if (utils.getPref('extensions.uxu.runner.alwaysRaised'))
 			toggleAlwaysRaised();
 	}
 	ObserverService.addObserver(restartObserver, 'quit-application-requested', false);
 
-	var defaultTestPath = utils.getPref('extensions.uxu.mozunit.lastPath');
+	var defaultTestPath = utils.getPref('extensions.uxu.runner.lastPath');
 
 	setTestFile(defaultTestPath);
 	updateTestCommands();
@@ -289,7 +289,7 @@ function startup()
 	}
 
 	if (!running) {
-		var lastResult = utils.getPref('extensions.uxu.mozunit.lastResults');
+		var lastResult = utils.getPref('extensions.uxu.runner.lastResults');
 		if (lastResult) {
 			try {
 				eval('lastResult = '+lastResult);
@@ -326,8 +326,8 @@ var restartObserver = {
 	{
 		if (aTopic != 'quit-application-requested') return;
 
-		if (utils.getPref('extensions.uxu.mozunit.autoStart.oneTime.enabled'))
-			utils.setPref('extensions.uxu.mozunit.autoStart.oneTime', true);
+		if (utils.getPref('extensions.uxu.runner.autoStart.oneTime.enabled'))
+			utils.setPref('extensions.uxu.runner.autoStart.oneTime', true);
 	}
 };
   
@@ -618,7 +618,7 @@ var gRemoteRun = {
 function onAllTestsFinish() 
 {
 	utils.setPref(
-		'extensions.uxu.mozunit.lastResults',
+		'extensions.uxu.runner.lastResults',
 		gLog.toString(gLog.FORMAT_RAW)
 	);
 	gRemoteRun.onEvent('finish-all');
@@ -746,7 +746,7 @@ function run(aMasterPriority)
 	
 function runByPref() 
 {
-	run(utils.getPref('extensions.uxu.mozunit.runMode') == 1 ? 'must' : null );
+	run(utils.getPref('extensions.uxu.runner.runMode') == 1 ? 'must' : null );
 }
  
 function runWithDelay(aMasterPriority) 
@@ -934,10 +934,10 @@ function isLinux()
 function setTestFile(aPath, aClear) 
 {
 	_('file').value = aPath;
-	utils.setPref('extensions.uxu.mozunit.lastPath', aPath);
+	utils.setPref('extensions.uxu.runner.lastPath', aPath);
 
 	if (aClear) {
-		utils.setPref('extensions.uxu.mozunit.lastResults', '');
+		utils.setPref('extensions.uxu.runner.lastResults', '');
 	}
 }
  
@@ -946,7 +946,7 @@ function updateRunMode()
 	var runPriority = _('runPriority');
 	var runAll = _('runAll');
 	var label;
-	switch (utils.getPref('extensions.uxu.mozunit.runMode'))
+	switch (utils.getPref('extensions.uxu.runner.runMode'))
 	{
 		default:
 		case 0:
@@ -1114,8 +1114,8 @@ function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine)
 	aLineNumber = aLineNumber || 1;
 	aColumnNumber = aColumnNumber || 1;
 	aCommandLine = aCommandLine ||
-		utils.getPref('extensions.uxu.mozunit.editor') ||
-		utils.getPref('extensions.mozlab.mozunit.editor') ||
+		utils.getPref('extensions.uxu.runner.editor') ||
+		utils.getPref('extensions.mozlab.runner.editor') ||
 		(utils.getPref('view_source.editor.path') ?
 			'"'+utils.getPref('view_source.editor.path')+'" "%f"' : '') ||
 		'/usr/bin/x-terminal-emulator -e /usr/bin/emacsclient -t +%l:%c %f';
@@ -1177,7 +1177,7 @@ function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine)
 				filter : Ci.nsIFilePicker.filterApps
 			});
 		if (!editor || !editor.path) return;
-		utils.setPref('extensions.uxu.mozunit.editor', '"'+editor.path+'" "%f"');
+		utils.setPref('extensions.uxu.runner.editor', '"'+editor.path+'" "%f"');
 		arguments.callee(aFilePath, aLineNumber, aColumnNumber);
 	}
 }
@@ -1192,7 +1192,7 @@ function toggleAlwaysRaised()
 	var win = getXULWindow();
 	win.zLevel = (win.zLevel == win.normalZ) ?
 			win.highestZ : win.normalZ;
-	utils.setPref('extensions.uxu.mozunit.alwaysRaised', win.zLevel != win.normalZ);
+	utils.setPref('extensions.uxu.runner.alwaysRaised', win.zLevel != win.normalZ);
 }
 	
 function getXULWindow() 
@@ -1216,7 +1216,7 @@ var contentAutoExpanded = false;
  
 function onContentLoad() 
 {
-	if (!utils.getPref('extensions.uxu.mozunit.autoShowContent')) return;
+	if (!utils.getPref('extensions.uxu.runner.autoShowContent')) return;
 	if (_('content').collapsed) {
 		contentAutoExpanded = true;
 		toggleContent();
@@ -1239,7 +1239,7 @@ function showSource(aTraceLine)
 	var opened = !_('source-splitter').collapsed;
 	_('source-splitter').collapsed = false;
 	_('source-viewer').collapsed = false;
-	if (!opened && utils.getPref('extensions.uxu.mozunit.autoExpandWindow.sourceViewer')) {
+	if (!opened && utils.getPref('extensions.uxu.runner.autoExpandWindow.sourceViewer')) {
 		window.resizeBy(
 			_('source-splitter').boxObject.width +
 			_('source-viewer').boxObject.width,
@@ -1325,7 +1325,7 @@ function stylizeSource(aSourceDocument, aLineCallback)
 function hideSource() 
 {
 	if (_('source-splitter').collapsed) return;
-	if (utils.getPref('extensions.uxu.mozunit.autoExpandWindow.sourceViewer')) {
+	if (utils.getPref('extensions.uxu.runner.autoExpandWindow.sourceViewer')) {
 		window.resizeBy(
 			-_('source-splitter').boxObject.width
 			-_('source-viewer').boxObject.width,

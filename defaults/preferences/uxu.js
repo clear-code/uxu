@@ -14,18 +14,18 @@ pref("extensions.uxu.priority.low",       "0.25");
 pref("extensions.uxu.action.fireMouseEvent.useOldMethod", false);
 pref("extensions.uxu.action.fireKeyEvent.useOldMethod", true);
 
-pref("extensions.uxu.mozunit.runMode", 0); // 0 = run by priority, 1 = run all
-pref("extensions.uxu.mozunit.runParallel", false);
-pref("extensions.uxu.mozunit.editor", "/usr/bin/gedit +%l %f");
-pref("extensions.uxu.mozunit.alwaysRaised", false);
-pref("extensions.uxu.mozunit.autoShowContent", true);
-pref("extensions.uxu.mozunit.autoExpandWindow.sourceViewer", true);
-pref("extensions.uxu.mozunit.autoStart", false);
-pref("extensions.uxu.mozunit.autoStart.oneTime.enabled", true);
-pref("extensions.uxu.mozunit.autoStart.oneTime", false);
-pref("extensions.uxu.mozunit.autoExit", false);
-pref("extensions.uxu.mozunit.lastPath", "");
-pref("extensions.uxu.mozunit.lastResults", "");
+pref("extensions.uxu.runner.runMode", 0); // 0 = run by priority, 1 = run all
+pref("extensions.uxu.runner.runParallel", false);
+pref("extensions.uxu.runner.editor", "/usr/bin/gedit +%l %f");
+pref("extensions.uxu.runner.alwaysRaised", false);
+pref("extensions.uxu.runner.autoShowContent", true);
+pref("extensions.uxu.runner.autoExpandWindow.sourceViewer", true);
+pref("extensions.uxu.runner.autoStart", false);
+pref("extensions.uxu.runner.autoStart.oneTime.enabled", true);
+pref("extensions.uxu.runner.autoStart.oneTime", false);
+pref("extensions.uxu.runner.autoExit", false);
+pref("extensions.uxu.runner.lastPath", "");
+pref("extensions.uxu.runner.lastResults", "");
 
 pref("extensions.uxu.auto.start", false);
 pref("extensions.uxu.auto.exit",  true);

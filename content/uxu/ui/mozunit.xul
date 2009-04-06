@@ -23,10 +23,10 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 -->
 
 <!DOCTYPE window SYSTEM "chrome://uxu/locale/uxu.dtd">
-<window id="mozunit"
-	title="&mozunit.title;"
+<window id="runner"
+	title="&runner.title;"
 	contenttitlesetting="false"
-	windowtype="uxu:mozunit"
+	windowtype="uxu:runner"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 	xmlns:hy="http://hyperstruct.net/"
 	xmlns:html="http://www.w3.org/1999/xhtml"
@@ -41,56 +41,56 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 	<script type="application/x-javascript" src="chrome://global/content/nsDragAndDrop.js"/>
 	<script type="application/x-javascript" src="chrome://global/content/nsTransferable.js"/>
 	<script type="application/x-javascript;version=1.7" src="chrome://uxu/content/lib/module_manager.js"/>
-	<script type="application/x-javascript;version=1.7" src="chrome://uxu/content/ui/mozunit.js"/>
+	<script type="application/x-javascript;version=1.7" src="chrome://uxu/content/ui/runner.js"/>
 
 	<!-- COMMANDS -->
 
 	<commandset>
-		<command id="run" label="&mozunit.run.label;" accesskey="&mozunit.run.accesskey;"
+		<command id="run" label="&runner.run.label;" accesskey="&runner.run.accesskey;"
 			oncommand="runByPref();"/>
 		<command id="runPriority"
-			label-normal="&mozunit.runPriority.label;"
-			label-default="&mozunit.runPriority.default;"
+			label-normal="&runner.runPriority.label;"
+			label-default="&runner.runPriority.default;"
 			oncommand="run();"
 			disabled="true"/>
 		<command id="runAll"
-			label-normal="&mozunit.runAll.label;"
-			label-default="&mozunit.runAll.default;"
+			label-normal="&runner.runAll.label;"
+			label-default="&runner.runAll.default;"
 			oncommand="run('must');"
 			disabled="true"/>
-		<command id="runFailed" label="&mozunit.runFailed.label;" oncommand="runFailed();"
+		<command id="runFailed" label="&runner.runFailed.label;" oncommand="runFailed();"
 			disabled="true"/>
-		<command id="stop" label="&mozunit.stop.label;" accesskey="&mozunit.stop.accesskey;"
+		<command id="stop" label="&runner.stop.label;" accesskey="&runner.stop.accesskey;"
 			oncommand="stop();"
 			disabled="true"/>
 		<command id="toggleInternalStacks" oncommand="toggleInternalStacks();"
-			label="&mozunit.toggleInternalStacks.label;" accesskey="&mozunit.toggleInternalStacks.accesskey;"/>
+			label="&runner.toggleInternalStacks.label;" accesskey="&runner.toggleInternalStacks.accesskey;"/>
 		<command id="alwaysRaised" oncommand="toggleAlwaysRaised();"
-			label="&mozunit.alwaysRaised.label;" accesskey="&mozunit.alwaysRaised.accesskey;"/>
+			label="&runner.alwaysRaised.label;" accesskey="&runner.alwaysRaised.accesskey;"/>
 		<command id="toggleContent" oncommand="toggleContent();"
-			label="&mozunit.toggleContent.label;" accesskey="&mozunit.toggleContent.accesskey;"/>
-		<command id="open" label="&mozunit.open.label;" accesskey="&mozunit.open.accesskey;"
+			label="&runner.toggleContent.label;" accesskey="&runner.toggleContent.accesskey;"/>
+		<command id="open" label="&runner.open.label;" accesskey="&runner.open.accesskey;"
 			oncommand="openTestCase();"/>
-		<command id="openFolder" label="&mozunit.openFolder.label;" accesskey="&mozunit.openFolder.accesskey;"
+		<command id="openFolder" label="&runner.openFolder.label;" accesskey="&runner.openFolder.accesskey;"
 			oncommand="openTestCase(true);"/>
-		<command id="new" label="&mozunit.new.label;" accesskey="&mozunit.new.accesskey;"
+		<command id="new" label="&runner.new.label;" accesskey="&runner.new.accesskey;"
 			oncommand="newTestCase();"/>
-		<command id="edit" label="&mozunit.edit.label;" accesskey="&mozunit.edit.accesskey;"
+		<command id="edit" label="&runner.edit.label;" accesskey="&runner.edit.accesskey;"
 			oncommand="openInEditor(_('file').value);"
 			disabled="true"/>
-		<command id="saveReport" label="&mozunit.saveReport.label;" accesskey="&mozunit.saveReport.accesskey;"
+		<command id="saveReport" label="&runner.saveReport.label;" accesskey="&runner.saveReport.accesskey;"
 			oncommand="saveReport();"
 			disabled="true"/>
-		<command id="quit" label="&mozunit.quit.label;" accesskey="&mozunit.quit.accesskey;"
+		<command id="quit" label="&runner.quit.label;" accesskey="&runner.quit.accesskey;"
 			oncommand="window.close();"/>
-		<command id="editThis" label="&mozunit.editThis.label;" accesskey="&mozunit.editThis.accesskey;"
-			label-normal="&mozunit.editThis.label;"
-			label-file="&mozunit.editThis.label.file;"
-			label-line="&mozunit.editThis.label.line;"
+		<command id="editThis" label="&runner.editThis.label;" accesskey="&runner.editThis.accesskey;"
+			label-normal="&runner.editThis.label;"
+			label-file="&runner.editThis.label.file;"
+			label-line="&runner.editThis.label.line;"
 			oncommand="var info = getFocusedFile(); openInEditor(info.path, info.line);"/>
-		<command id="cmd_copy" label="&mozunit.copy.label;" accesskey="&mozunit.copy.accesskey;"
+		<command id="cmd_copy" label="&runner.copy.label;" accesskey="&runner.copy.accesskey;"
 			oncommand="goDoCommand('cmd_copy')"/>
-		<command id="restartApplication" label="&mozunit.restartApplication.label;" accesskey="&mozunit.restartApplication.accesskey;"
+		<command id="restartApplication" label="&runner.restartApplication.label;" accesskey="&runner.restartApplication.accesskey;"
 			oncommand="restartApplication();"/>
 	</commandset>
 
@@ -128,9 +128,9 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 							<label role="running-status" flex="1"/>
 						</hbox>
 					</stack>
-					<label value="&mozunit.successes;"/>
+					<label value="&runner.successes;"/>
 					<label role="success-counter" value="0"/>
-					<label value="&mozunit.passover;"/>
+					<label value="&runner.passover;"/>
 					<label role="passover-counter" value="0"/>
 					<label value="/"/>
 					<label role="total-counter" value="0"/>
@@ -162,18 +162,18 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 				</columns>
 				<rows>
 					<row role="expected-row" hidden="true">
-						<vbox><label>&mozunit.expected.label;</label></vbox>
-						<vbox><label>&mozunit.expected.separator;</label></vbox>
+						<vbox><label>&runner.expected.label;</label></vbox>
+						<vbox><label>&runner.expected.separator;</label></vbox>
 						<vbox><description role="expected-value" flex="1"/></vbox>
 					</row>
 					<row role="actual-row" hidden="true">
-						<vbox><label>&mozunit.actual.label;</label></vbox>
-						<vbox><label>&mozunit.actual.separator;</label></vbox>
+						<vbox><label>&runner.actual.label;</label></vbox>
+						<vbox><label>&runner.actual.separator;</label></vbox>
 						<vbox><description role="actual-value" flex="1"/></vbox>
 					</row>
 					<row role="diff-row" hidden="true">
-						<vbox><label>&mozunit.diff.label;</label></vbox>
-						<vbox><label>&mozunit.diff.separator;</label></vbox>
+						<vbox><label>&runner.diff.label;</label></vbox>
+						<vbox><label>&runner.diff.separator;</label></vbox>
 						<vbox><description role="diff-value" flex="1"/></vbox>
 					</row>
 				</rows>
@@ -193,7 +193,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 <vbox id="mainBox" flex="1">
 	<toolbox>
 		<menubar>
-			<menu id="file-menu" label="&mozunit.fileMenu.label;" accesskey="&mozunit.fileMenu.accesskey;">
+			<menu id="file-menu" label="&runner.fileMenu.label;" accesskey="&runner.fileMenu.accesskey;">
 				<menupopup>
 					<menuitem command="new" key="key-new"/>
 					<menuitem command="open" key="key-open"/>
@@ -201,7 +201,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 					<menuitem command="edit"/>
 					<menuseparator/>
 					<menuitem command="run" key="key-run"/>
-					<menu label="&mozunit.run.options;"
+					<menu label="&runner.run.options;"
 						id="runOptions-menu">
 						<menupopup onpopupshowing="updateRunMode();">
 							<menuitem command="runPriority" observes="runPriority"/>
@@ -220,12 +220,12 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 					<menuitem command="quit"/>
 				</menupopup>
 			</menu>
-			<menu id="edit-menu" label="&mozunit.editMenu.label;" accesskey="&mozunit.editMenu.accesskey;">
+			<menu id="edit-menu" label="&runner.editMenu.label;" accesskey="&runner.editMenu.accesskey;">
 				<menupopup onpopupshowing="updateEditItems();">
 					<menuitem command="cmd_copy"/>
 				</menupopup>
 			</menu>
-			<menu id="view-menu" label="&mozunit.viewMenu.label;" accesskey="&mozunit.viewMenu.accesskey;">
+			<menu id="view-menu" label="&runner.viewMenu.label;" accesskey="&runner.viewMenu.accesskey;">
 				<menupopup onpopupshowing="updateViewItems();">
 					<menuitem type="checkbox" command="toggleInternalStacks"/>
 					<menuitem id="alwaysRaised-menuitem"
@@ -233,12 +233,12 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 					<menuitem type="checkbox" command="toggleContent"/>
 				</menupopup>
 			</menu>
-			<menu id="help-menu" label="&mozunit.helpMenu.label;" accesskey="&mozunit.helpMenu.accesskey;">
+			<menu id="help-menu" label="&runner.helpMenu.label;" accesskey="&runner.helpMenu.accesskey;">
 				<menupopup>
-					<menuitem label="&mozunit.help.label;"
-						accesskey="&mozunit.help.accesskey;"
+					<menuitem label="&runner.help.label;"
+						accesskey="&runner.help.accesskey;"
 						oncommand="showPage(this.getAttribute('help'));"
-						help="&mozunit.help.uri;"/>
+						help="&runner.help.uri;"/>
 				</menupopup>
 			</menu>
 		</menubar>
@@ -250,7 +250,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 		<vbox flex="1">
 			<toolbar>
 				<toolbaritem flex="1" align="center">
-					<label value="&mozunit.filePath;"/>
+					<label value="&runner.filePath;"/>
 					<label id="file"
 						flex="1"
 						value=""
@@ -261,7 +261,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 			</toolbar>
 			<hbox id="run-box">
 				<button command="run" flex="1" style="font-weight: bold;"/>
-				<toolbarbutton label="&mozunit.run.options;" type="menu"
+				<toolbarbutton label="&runner.run.options;" type="menu"
 					id="runOptions-button">
 					<menupopup onpopupshowing="updateRunMode();">
 						<menuitem command="runPriority" observes="runPriority"/>
@@ -321,9 +321,9 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 		persist="width">
 		<toolbar align="center">
 			<toolbaritem flex="1">
-				<label value="&mozunit.source;" class="header" flex="1"/>
+				<label value="&runner.source;" class="header" flex="1"/>
 			</toolbaritem>
-			<toolbarbutton label="&mozunit.close;" accesskey="l"
+			<toolbarbutton label="&runner.close;" accesskey="l"
 				oncommand="hideSource();"/>
 		</toolbar>
 		<iframe role="source" flex="1" persist="width"

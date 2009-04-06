@@ -13,17 +13,17 @@ function startUxU(aOptions) {
 	window.openDialog('chrome://uxu/content/ui/uxu.xul', '_blank', 'chrome,all,dialog=no', aOptions);
 }
 
-function openUxUMozUnit() {
+function openUxURunner() {
 	const WindowManager = Components.classes['@mozilla.org/appshell/window-mediator;1']
 			.getService(Components.interfaces.nsIWindowMediator);
 
-	var target = WindowManager.getMostRecentWindow('uxu:mozunit');
+	var target = WindowManager.getMostRecentWindow('uxu:runner');
 	if (target) {
 		target.focus();
 		return;
 	}
 
-	window.openDialog('chrome://uxu/content/ui/mozunit.xul', '_blank', 'chrome,all,dialog=no');
+	window.openDialog('chrome://uxu/content/ui/runner.xul', '_blank', 'chrome,all,dialog=no');
 }
 
 window.addEventListener('load', function() {
@@ -41,14 +41,14 @@ window.addEventListener('load', function() {
 	}
 
 	if (
-		nsPreferences.getBoolPref('extensions.uxu.mozunit.autoStart') ||
+		nsPreferences.getBoolPref('extensions.uxu.runner.autoStart') ||
 		(
-			nsPreferences.getBoolPref('extensions.uxu.mozunit.autoStart.oneTime.enabled') &&
-			nsPreferences.getBoolPref('extensions.uxu.mozunit.autoStart.oneTime')
+			nsPreferences.getBoolPref('extensions.uxu.runner.autoStart.oneTime.enabled') &&
+			nsPreferences.getBoolPref('extensions.uxu.runner.autoStart.oneTime')
 		)
 		) {
-		nsPreferences.setBoolPref('extensions.uxu.mozunit.autoStart.oneTime', false);
-		openUxUMozUnit();
+		nsPreferences.setBoolPref('extensions.uxu.runner.autoStart.oneTime', false);
+		openUxURunner();
 	}
 }, false);
 
@@ -65,10 +65,10 @@ window.addEventListener('unload', function() {
 			if (uxu)
 				uxu.close();
 		}
-		if (nsPreferences.getBoolPref('extensions.uxu.mozunit.autoExit')) {
-			var mozunit = WindowManager.getMostRecentWindow('uxu:mozunit');
-			if (mozunit)
-				mozunit.close();
+		if (nsPreferences.getBoolPref('extensions.uxu.runner.autoExit')) {
+			var runner = WindowManager.getMostRecentWindow('uxu:runner');
+			if (runner)
+				runner.close();
 		}
 	}
 

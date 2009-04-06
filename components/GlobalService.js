@@ -213,7 +213,7 @@ GlobalService.prototype = {
 			}
 			WindowWatcher.openWindow(
 				null,
-				arg.server ? 'chrome://uxu/content/ui/uxu.xul' : 'chrome://uxu/content/ui/mozunit.xul',
+				arg.server ? 'chrome://uxu/content/ui/uxu.xul' : 'chrome://uxu/content/ui/runner.xul',
 				'_blank',
 				'chrome,all,dialog=no',
 				bag

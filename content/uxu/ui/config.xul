@@ -70,79 +70,79 @@
 
 </prefpane>
 
-<prefpane id="prefpane-mozunit" label="&config.tabs.mozunit;">
+<prefpane id="prefpane-runner" label="&config.tabs.runner;">
 	<preferences>
-		<preference id="extensions.uxu.mozunit.autoStart"
-			name="extensions.uxu.mozunit.autoStart"
+		<preference id="extensions.uxu.runner.autoStart"
+			name="extensions.uxu.runner.autoStart"
 			type="bool"/>
-		<preference id="extensions.uxu.mozunit.autoStart.oneTime.enabled"
-			name="extensions.uxu.mozunit.autoStart.oneTime.enabled"
+		<preference id="extensions.uxu.runner.autoStart.oneTime.enabled"
+			name="extensions.uxu.runner.autoStart.oneTime.enabled"
 			type="bool"/>
-		<preference id="extensions.uxu.mozunit.autoExit"
-			name="extensions.uxu.mozunit.autoExit"
+		<preference id="extensions.uxu.runner.autoExit"
+			name="extensions.uxu.runner.autoExit"
 			type="bool"/>
-		<preference id="extensions.uxu.mozunit.autoShowContent"
-			name="extensions.uxu.mozunit.autoShowContent"
+		<preference id="extensions.uxu.runner.autoShowContent"
+			name="extensions.uxu.runner.autoShowContent"
 			type="bool"/>
-		<preference id="extensions.uxu.mozunit.autoExpandWindow.sourceViewer"
-			name="extensions.uxu.mozunit.autoExpandWindow.sourceViewer"
+		<preference id="extensions.uxu.runner.autoExpandWindow.sourceViewer"
+			name="extensions.uxu.runner.autoExpandWindow.sourceViewer"
 			type="bool"/>
-		<preference id="extensions.uxu.mozunit.editor"
-			name="extensions.uxu.mozunit.editor"
+		<preference id="extensions.uxu.runner.editor"
+			name="extensions.uxu.runner.editor"
 			type="string"/>
-		<preference id="extensions.uxu.mozunit.runParallel"
-			name="extensions.uxu.mozunit.runParallel"
+		<preference id="extensions.uxu.runner.runParallel"
+			name="extensions.uxu.runner.runParallel"
 			type="bool"/>
-		<preference id="extensions.uxu.mozunit.runMode"
-			name="extensions.uxu.mozunit.runMode"
+		<preference id="extensions.uxu.runner.runMode"
+			name="extensions.uxu.runner.runMode"
 			type="int"/>
 	</preferences>
 
-	<checkbox id="extensions.uxu.mozunit.autoStart-check"
-		preference="extensions.uxu.mozunit.autoStart"
-		label="&config.mozunit.autoStart;"/>
+	<checkbox id="extensions.uxu.runner.autoStart-check"
+		preference="extensions.uxu.runner.autoStart"
+		label="&config.runner.autoStart;"/>
 	<hbox>
 		<spacer style="width:1em;"/>
-		<checkbox id="extensions.uxu.mozunit.autoStart.oneTime.enabled-check"
-			preference="extensions.uxu.mozunit.autoStart.oneTime.enabled"
-			label="&config.mozunit.autoStart.oneTime.enabled;"/>
+		<checkbox id="extensions.uxu.runner.autoStart.oneTime.enabled-check"
+			preference="extensions.uxu.runner.autoStart.oneTime.enabled"
+			label="&config.runner.autoStart.oneTime.enabled;"/>
 	</hbox>
-	<checkbox id="extensions.uxu.mozunit.autoExit-check"
-		preference="extensions.uxu.mozunit.autoExit"
-		label="&config.mozunit.autoExit;"/>
-	<checkbox id="extensions.uxu.mozunit.autoShowContent-check"
-		preference="extensions.uxu.mozunit.autoShowContent"
-		label="&config.mozunit.autoShowContent;"/>
-	<checkbox id="extensions.uxu.mozunit.autoExpandWindow.sourceViewer-check"
-		preference="extensions.uxu.mozunit.autoExpandWindow.sourceViewer"
-		label="&config.mozunit.autoExpandWindow.sourceViewer;"/>
+	<checkbox id="extensions.uxu.runner.autoExit-check"
+		preference="extensions.uxu.runner.autoExit"
+		label="&config.runner.autoExit;"/>
+	<checkbox id="extensions.uxu.runner.autoShowContent-check"
+		preference="extensions.uxu.runner.autoShowContent"
+		label="&config.runner.autoShowContent;"/>
+	<checkbox id="extensions.uxu.runner.autoExpandWindow.sourceViewer-check"
+		preference="extensions.uxu.runner.autoExpandWindow.sourceViewer"
+		label="&config.runner.autoExpandWindow.sourceViewer;"/>
 	<groupbox orient="vertical">
-		<caption label="&config.mozunit.editor.caption;"/>
+		<caption label="&config.runner.editor.caption;"/>
 		<hbox align="center">
-			<label value="&config.mozunit.editor.label;"
-				control="extensions.uxu.mozunit.editor-textbox"/>
-			<textbox id="extensions.uxu.mozunit.editor-textbox"
-				preference="extensions.uxu.mozunit.editor"
+			<label value="&config.runner.editor.label;"
+				control="extensions.uxu.runner.editor-textbox"/>
+			<textbox id="extensions.uxu.runner.editor-textbox"
+				preference="extensions.uxu.runner.editor"
 				flex="1"/>
 		</hbox>
-		<description value="&config.mozunit.editor.desctiption;"/>
+		<description value="&config.runner.editor.desctiption;"/>
 	</groupbox>
 	<groupbox orient="vertical">
-		<caption label="&config.mozunit.runParallel;"/>
-		<radiogroup id="extensions.uxu.mozunit.runParallel-radio"
-			preference="extensions.uxu.mozunit.runParallel"
+		<caption label="&config.runner.runParallel;"/>
+		<radiogroup id="extensions.uxu.runner.runParallel-radio"
+			preference="extensions.uxu.runner.runParallel"
 			orient="horizontal">
-			<radio value="false" label="&config.mozunit.runParallel.false;"/>
-			<radio value="true"  label="&config.mozunit.runParallel.true;"/>
+			<radio value="false" label="&config.runner.runParallel.false;"/>
+			<radio value="true"  label="&config.runner.runParallel.true;"/>
 		</radiogroup>
 	</groupbox>
 	<groupbox orient="vertical">
-		<caption label="&config.mozunit.runMode;"/>
-		<radiogroup id="extensions.uxu.mozunit.runMode-radio"
-			preference="extensions.uxu.mozunit.runMode"
+		<caption label="&config.runner.runMode;"/>
+		<radiogroup id="extensions.uxu.runner.runMode-radio"
+			preference="extensions.uxu.runner.runMode"
 			orient="vertical">
-			<radio value="0" label="&config.mozunit.runMode.0;"/>
-			<radio value="1" label="&config.mozunit.runMode.1;"/>
+			<radio value="0" label="&config.runner.runMode.0;"/>
+			<radio value="1" label="&config.runner.runMode.1;"/>
 		</radiogroup>
 	</groupbox>
 
