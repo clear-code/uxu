@@ -25,7 +25,13 @@ GlobalService.prototype = {
 		switch (aTopic)
 		{
 			case 'app-startup':
+				ObserverService.addObserver(this, 'profile-after-change', false);
 				ObserverService.addObserver(this, 'final-ui-startup', false);
+				return;
+
+			case 'profile-after-change':
+				ObserverService.removeObserver(this, 'profile-after-change');
+				this.upgradePrefs();
 				return;
 
 			case 'final-ui-startup':
@@ -281,6 +287,35 @@ GlobalService.prototype = {
 		'                       in human readable format\n'+
 		'  -uxu-rawlog <url>    Output the result of the testcase\n'+
 		'                       in raw format\n',
+
+
+	upgradePrefs : function()
+	{
+		this.upgradePrefsInternal(
+			'extensions.uxu.mozunit.',
+			'extensions.uxu.runner.'
+		);
+	},
+
+	upgradePrefsInternal : function(aOldBase, aNewBase)
+	{
+		Pref.getChildList(aOldBase, {}).forEach(function(aPref) {
+			var newPref = aPref.replace(aOldBase, aNewBase);
+			switch (Pref.getPrefType(aPref))
+			{
+				case Pref.PREF_STRING:
+					Pref.setCharPref(newPref, Pref.getCharPref(aPref));
+					break;
+				case Pref.PREF_INT:
+					Pref.setIntPref(newPref, Pref.getIntPref(aPref));
+					break;
+				default:
+					Pref.setBoolPref(newPref, Pref.getBoolPref(aPref));
+					break;
+			}
+			Pref.clearUserPref(aPref);
+		}, this);
+	},
 
 
 	/* nsIFactory */
