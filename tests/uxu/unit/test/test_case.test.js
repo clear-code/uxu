@@ -36,16 +36,22 @@ function clearCount()
 
 assert.testDone = function(aSetUp, aTearDown, aTestCount)
 {
-	assert.isTrue(testcase.done);
-	assert.equals(aSetUp, setUpCount);
-	assert.equals(aTearDown, tearDownCount);
-	assert.equals(aTestCount, testCount);
+	assert.equals({ setUpCount    : aSetUp,
+	                tearDownCount : aTearDown,
+	                testCount     : aTestCount,
+	                done          : true },
+	              { setUpCount    : setUpCount,
+	                tearDownCount : tearDownCount,
+	                testCount     : testCount,
+	                done          : testcase.done });
 };
 
 assert.testInitialized = function(aTest, aDescription)
 {
-	assert.equals(aDescription, aTest.description);
-	assert.equals('normal', aTest.priority);
+	assert.equals({ description : aDescription,
+	                priority    : 'normal' },
+	              { description : aTest.description,
+	                priority    : aTest.priority });
 	assert.matches(/^test-\d+$/, aTest.id);
 };
 
