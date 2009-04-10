@@ -629,7 +629,7 @@ function testFinishesWithin()
 	var result = Do(assertionsModule.finishesWithin(
 		10,
 		function() {
-			yield 100;
+			yield 500;
 		},
 		{}
 	));
