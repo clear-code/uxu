@@ -254,6 +254,7 @@ function startup()
 			jsobj.rawLog     = gOptions.getProperty('rawLog');
 			jsobj.priority   = gOptions.getProperty('priority');
 			jsobj.autoQuit   = gOptions.getProperty('autoQuit');
+			jsobj.doNotQuit  = gOptions.getProperty('doNotQuit');
 			jsobj.hidden     = gOptions.getProperty('hidden');
 			gOptions = jsobj;
 		}
@@ -589,7 +590,8 @@ var gRemoteRun = {
 				)
 			)
 			) {
-			utils.quitApplication(true);
+			if (!gOptions.doNotQuit)
+				utils.quitApplication(true);
 			return;
 		}
 	},

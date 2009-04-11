@@ -203,6 +203,7 @@ GlobalService.prototype = {
 				log        : this._getFullPathFromCommandLine('uxu-log', aCommandLine, ''),
 				rawLog     : this._getFullPathFromCommandLine('uxu-rawlog', aCommandLine, ''),
 				autoQuit   : this._getBooleanValueFromCommandLine('uxu-autoquit', aCommandLine),
+				doNotQuit  : this._getBooleanValueFromCommandLine('uxu-do-not-quit', aCommandLine),
 				hidden     : this._getBooleanValueFromCommandLine('uxu-hidden', aCommandLine)
 			};
 
