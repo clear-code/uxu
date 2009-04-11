@@ -1,4 +1,4 @@
-var description = '「特定のプロファイルを使用して実行するテスト」のテスト';
+var description = '「特定のプロファイルを使用して実行するテスト」のテスト（処理待ちを含む）';
 var profile = '../fixtures/profile/';
 //var options = ['-console', '-jsconsole'];
 

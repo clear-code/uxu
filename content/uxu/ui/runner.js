@@ -540,6 +540,7 @@ var gRemoteRun = {
 	onResponse : function(aResponseText)
 	{
 		var sent = this.messages.shift();
+		sent.destroy();
 		this.sending = false;
 
 		if (sent.message.indexOf(this.ALL_FINISH) == 0) {
