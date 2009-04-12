@@ -539,27 +539,29 @@ var gRemoteRun = {
 
 	onResponse : function(aResponseText)
 	{
-		var sent = this.messages.shift();
-		if (sent) sent.destroy();
 		this.sending = false;
 
-		if (sent && sent.message.indexOf(this.ALL_FINISH) == 0) {
-			this.onFinish();
+		if (aResponseText.indexOf(TestCase.prototype.TESTCASE_ABORTED) == 0) {
+			if (gRunner) {
+				stop();
+			}
+			else {
+				cancelDelayedRun();
+				this.onFinish();
+			}
 			return;
 		}
 
-		if (aResponseText.indexOf(TestCase.prototype.TESTCASE_ABORTED) != 0) {
-			this.sendMessage();
+		if (this.lastResponse == aResponseText) return;
+		this.lastResponse = aResponseText;
+
+		var sent = this.messages.shift();
+		sent.destroy();
+		if (sent.message.indexOf(this.ALL_FINISH) == 0) {
+			this.onFinish();
 			return;
 		}
-
-		if (gRunner) {
-			stop();
-		}
-		else {
-			cancelDelayedRun();
-			this.onFinish();
-		}
+		this.sendMessage();
 	},
 
 	onFinish : function()

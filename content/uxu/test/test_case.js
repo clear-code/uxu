@@ -885,6 +885,7 @@ function onInput(aEvent)
 {
 	this._lastRemoteResponse = Date.now();
 	var input = aEvent.data;
+	var responseId = '/* '+parseInt(Math.random() * 65000)+' */';
 	if (/[\r\n]+$/.test(input)) {
 		if (this._remoteResultBuffer) {
 			input = this._remoteResultBuffer + input;
@@ -897,22 +898,22 @@ function onInput(aEvent)
 		return;
 	}
 	if (this._aborted) {
-		this.fireEvent('OutputRequest', TESTCASE_ABORTED+'\n');
+		this.fireEvent('OutputRequest', TESTCASE_ABORTED+responseId+'\n');
 		this.fireEvent('Abort');
 		return;
 	}
 	if (input.indexOf(TESTCASE_STARTED) == 0) {
 		this._remoteReady = true;
-		this.fireEvent('OutputRequest', '\n');
+		this.fireEvent('OutputRequest', responseId+'\n');
 		return;
 	}
-	else if (input.indexOf(TESTCASE_FINISED) == 0) {
+	if (input.indexOf(TESTCASE_FINISED) == 0) {
 		this._done = true;
-		this.fireEvent('OutputRequest', '\n');
+		this.fireEvent('OutputRequest', responseId+'\n');
 		return;
 	}
 	this._onReceiveRemoteResult(input);
-	this.fireEvent('OutputRequest', '\n');
+	this.fireEvent('OutputRequest', responseId+'\n');
 }
  
 function _onReceiveRemoteResult(aResult) 
