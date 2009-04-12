@@ -69,10 +69,11 @@ catch(e) {
 }
  
 const REMOTE_PROFILE_PREFIX = 'uxu-test-profile'; 
-const TESTCASE_STARTED = '/*uxu-testcase-started*/';
-const TESTCASE_FINISED = '/*uxu-testcase-finished*/';
-const TESTCASE_ABORTED = '/*uxu-testcase-aborted*/';
-const PING_INTERVAL = 3000;
+const TESTCASE_STARTED      = '/* uxu-testcase-started */';
+const TESTCASE_FINISED      = '/* uxu-testcase-finished */';
+const TESTCASE_ABORTED      = '/* uxu-testcase-aborted */';
+const PING                  = ' ';
+const PING_INTERVAL         = 3000;
  
 /**
  * Invocation: 
@@ -439,7 +440,7 @@ function registerTest(aFunction)
 				aFunction.priority :
 				(String(aFunction.priority || '').toLowerCase() || 'normal')
 		),
-		id       : 'test-'+parseInt(Math.random() * 65000),
+		id       : 'test-'+Date.now()+'-'+parseInt(Math.random() * 65000),
 		setUp    : privSetUp,
 		tearDown : privTearDown
 	});
@@ -885,7 +886,7 @@ function onInput(aEvent)
 {
 	this._lastRemoteResponse = Date.now();
 	var input = aEvent.data;
-	var responseId = '/* '+parseInt(Math.random() * 65000)+' */';
+	var responseId = '/* '+Date.now()+'-'+parseInt(Math.random() * 65000)+' */';
 	if (/[\r\n]+$/.test(input)) {
 		if (this._remoteResultBuffer) {
 			input = this._remoteResultBuffer + input;
