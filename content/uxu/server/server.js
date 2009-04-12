@@ -41,6 +41,15 @@ function start()
 
 function stop()
 {
+	this._handlers.forEach(function (aHandler) {
+			this._listeners.forEach(function(aListener) {
+				aHandler.removeListener(aListener);
+				if ('removeListener' in aListener)
+					aListener.removeListener(aHandler);
+			});
+			aHandler.destroy();
+		}, this);
+	this._handlers = [];
 	this.removeAllListeners();
 	if (!this.socket) return;
 	this.socket.close();
@@ -73,7 +82,8 @@ function onSocketAccepted(aSocket, aTransport)
 		var handler = new Handler(input, output, this);
 		this._listeners.forEach(function(aListener) {
 			handler.addListener(aListener);
-			aListener.addListener(handler);
+			if ('addListener' in aListener)
+				aListener.addListener(handler);
 		});
 		this._handlers.push(handler);
 	}
@@ -85,12 +95,5 @@ function onSocketAccepted(aSocket, aTransport)
 
 function onStopListening(aSocket, aStatus)
 {
-	this._handlers.forEach(function (aHandler) {
-			this._listeners.forEach(function(aListener) {
-				handler.removeListener(aListener);
-				aListener.removeListener(handler);
-			});
-			aHandler.destroy();
-		}, this);
-	this._handlers = [];
+	this.stop();
 }
