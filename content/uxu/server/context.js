@@ -21,6 +21,8 @@ var WindowManager = Cc['@mozilla.org/appshell/window-mediator;1']
 
 function constructor(aBrowser)
 {
+	this.initListeners();
+
 	this._browser = aBrowser;
 	this._runnerListeners = [];
 
