@@ -23,7 +23,6 @@ function constructor(aBrowser/*, aFile, ...*/)
 	this._browser = aBrowser;
 	this._filters = [];
 	this._log = new TestLog();
-	this.initListeners();
 }
  
 function run(aReporter, aMasterPriority) 

@@ -9,8 +9,6 @@ var inherits = lib_module.require('class', 'event_target');
 
 function constructor(aInput, aOutput)
 {
-	this.initListeners();
-
 	var scriptableInput = Cc['@mozilla.org/scriptableinputstream;1']
 			.createInstance(Ci.nsIScriptableInputStream);
 	var pump = Cc['@mozilla.org/network/input-stream-pump;1']

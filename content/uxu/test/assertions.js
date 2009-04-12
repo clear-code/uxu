@@ -26,7 +26,6 @@ var inherits = lib_module.require('class', 'event_target');
 
 function constructor()
 {
-	this.initListeners();
 }
 
 function equals(aExpected, aActual, aMessage)

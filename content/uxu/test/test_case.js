@@ -72,6 +72,7 @@ const REMOTE_PROFILE_PREFIX = 'uxu-test-profile';
 const TESTCASE_STARTED      = '/* uxu-testcase-started */';
 const TESTCASE_FINISED      = '/* uxu-testcase-finished */';
 const TESTCASE_ABORTED      = '/* uxu-testcase-aborted */';
+const ALL_TESTS_FINISHED    = '/* uxu-all-testcases-finished */';
 const PING                  = ' ';
 const PING_INTERVAL         = 3000;
  
@@ -86,8 +87,6 @@ const PING_INTERVAL         = 3000;
  
 function constructor(aTitle, aOptions) 
 {
-	this.initListeners();
-
 	if (!aOptions) aOptions = {};
 
 	this._initSource(aOptions);

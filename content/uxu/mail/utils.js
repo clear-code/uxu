@@ -14,7 +14,6 @@ var Compose = mail_module.require('class', 'compose');
 
 function constructor(aEnvironment)
 {
-	this.initListeners();
 	this._observer = new MailObserver();
 	this.__defineGetter__('deliveries', function() {
 		return this._observer.data;

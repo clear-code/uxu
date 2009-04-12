@@ -21,8 +21,6 @@ var defaultURI, defaultType, defaultFlags, defaultName;
  
 function constructor(aEnvironment, aURI, aBrowser) 
 {
-	this.initListeners();
-
 	this.__defineGetter__('utils', function() {
 		return this;
 	});

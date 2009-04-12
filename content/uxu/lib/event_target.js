@@ -8,14 +8,22 @@ function initListeners()
 	this._listeners = [];
 }
 
+function _ensureHasOwnListeners()
+{
+	if (this.hasOwnProperty('_listeners')) return;
+	this.initListeners();
+}
+
 function addListener(aListener) 
 {
+	this._ensureHasOwnListeners();
 	if (this._listeners.indexOf(aListener) < 0)
 		this._listeners.push(aListener);
 }
  
 function removeListener(aListener) 
 {
+	this._ensureHasOwnListeners();
 	var index = this._listeners.indexOf(aListener);
 	if (index > -1)
 		this._listeners.splice(index, 1);
@@ -23,11 +31,13 @@ function removeListener(aListener)
  
 function removeAllListeners() 
 {
+	this._ensureHasOwnListeners();
 	this._listeners = [];
 }
  
 function fireEvent(aType, aData) 
 {
+	this._ensureHasOwnListeners();
 	var event = {
 			type   : aType,
 			target : this,

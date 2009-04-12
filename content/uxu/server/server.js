@@ -13,8 +13,6 @@ var Handler = server_module.require('class', 'handler');
 
 function constructor(aPort)
 {
-	this.initListeners();
-
 	this._port  = (typeof aPort == 'number') ? aPort : -1 ;
 	this.__defineGetter__('port', function() {
 		return this.socket ? this.socket.port : this._port ;
