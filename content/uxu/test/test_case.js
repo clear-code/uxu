@@ -805,6 +805,7 @@ function _runByRemote(aStopper)
 
 	var server = new Server();
 	server.addListener(this);
+	this.addListener(server);
 	server.start();
 
 	var args = [
@@ -860,7 +861,7 @@ function _runByRemote(aStopper)
 				report.onFinish();
 				_this._onFinishRemoteResult(report);
 
-				server.stop();
+				server.destroy();
 				server = null;
 				utils.scheduleToRemove(profile);
 			},
@@ -871,7 +872,7 @@ function _runByRemote(aStopper)
 				report.onFinish();
 				_this._onFinishRemoteResult(report);
 
-				server.stop();
+				server.destroy();
 				server = null;
 				utils.scheduleToRemove(profile);
 			}
@@ -881,7 +882,7 @@ function _runByRemote(aStopper)
 	return true;
 }
 	 
-function onInput(aEvent) 
+function onServerInput(aEvent) 
 {
 	this._lastRemoteResponse = Date.now();
 	var input = aEvent.data;
@@ -898,22 +899,22 @@ function onInput(aEvent)
 		return;
 	}
 	if (this._aborted) {
-		this.fireEvent('OutputRequest', TESTCASE_ABORTED+responseId+'\n');
+		this.fireEvent('ResponseRequest', TESTCASE_ABORTED+responseId+'\n');
 		this.fireEvent('Abort');
 		return;
 	}
 	if (input.indexOf(TESTCASE_STARTED) == 0) {
 		this._remoteReady = true;
-		this.fireEvent('OutputRequest', responseId+'\n');
+		this.fireEvent('ResponseRequest', responseId+'\n');
 		return;
 	}
 	if (input.indexOf(TESTCASE_FINISED) == 0) {
 		this._done = true;
-		this.fireEvent('OutputRequest', responseId+'\n');
+		this.fireEvent('ResponseRequest', responseId+'\n');
 		return;
 	}
 	this._onReceiveRemoteResult(input);
-	this.fireEvent('OutputRequest', responseId+'\n');
+	this.fireEvent('ResponseRequest', responseId+'\n');
 }
  
 function _onReceiveRemoteResult(aResult) 

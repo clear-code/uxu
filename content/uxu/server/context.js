@@ -85,14 +85,14 @@ function inspectDOMNode(aNode)
 function print()
 {
 	var message = Array.slice(arguments).join('');
-	this.fireEvent('OutputRequest', message);
+	this.fireEvent('ResponseRequest', message);
 }
 
 function puts()
 {
 	var message = Array.slice(arguments).join('\n');
 	if (!/\n$/.test(message)) message += '\n';
-	this.fireEvent('OutputRequest', message);
+	this.fireEvent('ResponseRequest', message);
 }
 
 function p()

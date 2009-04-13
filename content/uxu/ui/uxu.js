@@ -50,6 +50,7 @@ function Startup() {
 
 	gServer = new Server(gOptions.serverPort || utils.getPref('extensions.uxu.port'));
 	gServer.addListener(context);
+	context.addListener(gServer);
 	gServer.start();
 
 	gLog = document.getElementById('log');

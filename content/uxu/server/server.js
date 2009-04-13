@@ -13,8 +13,6 @@ var Handler = server_module.require('class', 'handler');
 
 function constructor(aPort)
 {
-	this.initListeners();
-
 	this._port  = (typeof aPort == 'number') ? aPort : -1 ;
 	this.__defineGetter__('port', function() {
 		return this.socket ? this.socket.port : this._port ;
@@ -44,13 +42,34 @@ function start()
 function stop()
 {
 	this._handlers.forEach(function (aHandler) {
+		this.removeListener(aHandler);
+		aHandler.removeListener(this);
 		aHandler.destroy();
 	}, this);
 	this._handlers = [];
 	this.removeAllListeners();
-	if (!this.socket) return;
-	this.socket.close();
-	this.socket = null;
+	if (this.socket) {
+		this.socket.close();
+		this.socket = null;
+	}
+}
+
+function destroy()
+{
+	this.stop();
+}
+
+
+// from listener to handler
+function onResponseRequest(aEvent)
+{
+	this.fireEvent('OutputRequest', aEvent.data);
+}
+
+// from handler to listener
+function onHandlerInput(aEvent)
+{
+	this.fireEvent('ServerInput', aEvent.data);
 }
 
 
@@ -76,12 +95,9 @@ function onSocketAccepted(aSocket, aTransport)
 
 		var input  = aTransport.openInputStream(0, 0, 0);
 		var output = aTransport.openOutputStream(0, 0, 0);
-		var handler = new Handler(input, output, this);
-		handler.inheritListeners(this);
-		this._listeners.forEach(function(aListener) {
-			if ('addListener' in aListener)
-				aListener.addListener(handler);
-		});
+		var handler = new Handler(input, output);
+		handler.addListener(this);
+		this.addListener(handler);
 		this._handlers.push(handler);
 	}
 	catch (e) {

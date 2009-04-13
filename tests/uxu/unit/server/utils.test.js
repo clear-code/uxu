@@ -40,8 +40,10 @@ function testSendAndReceiveMessage()
 	yield function() {
 			return response || (Date.now() - start > 5000);
 		};
-	assert.equals(message, received);
-	assert.equals(message, response);
+	assert.equals({ received : message,
+	                response : message },
+	              { received : received,
+	                response : response });
 
 	listener.stop();
 }

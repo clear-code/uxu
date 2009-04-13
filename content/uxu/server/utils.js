@@ -38,10 +38,10 @@ function startListen(aPort, aListener)
 	var server = new Server(aPort);
 	var listener = new EventTarget();
 	listener.stop = function() {
-		server.stop();
+		server.destroy();
 	};
 	var buffer = '';
-	listener.onInput = function(aEvent) {
+	listener.onServerInput = function(aEvent) {
 		var data = aEvent.data;
 		if (/[\r\n]+$/.test(data)) {
 			if (buffer) {
@@ -58,9 +58,10 @@ function startListen(aPort, aListener)
 			aListener(data)
 		else
 			aListener.onListen(data);
-		this.fireEvent('OutputRequest', data+'\n');
+		this.fireEvent('ResponseRequest', data+'\n');
 	};
 	server.addListener(listener);
+	listener.addListener(server);
 	server.start();
 	listener.port = server.port;
 	return listener;
