@@ -52,7 +52,7 @@ assert.testInitialized = function(aTest, aDescription)
 	                priority    : 'normal' },
 	              { description : aTest.description,
 	                priority    : aTest.priority });
-	assert.matches(/^test-\d+$/, aTest.id);
+	assert.matches(/^test-\d+-\d+$/, aTest.id);
 };
 
 function testRegisterTestFunctions()
