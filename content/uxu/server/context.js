@@ -27,7 +27,7 @@ function constructor(aBrowser)
 	// bufferにコードからアクセスできないようにするため、クロージャを使用する
 	var buffer = '';
 	var _this = this;
-	this.onInput = function(aEvent) {
+	this.onServerInput = function(aEvent) {
 		var code = aEvent.data;
 		if (/[\r\n]+$/.test(code)) {
 			if (buffer) {
