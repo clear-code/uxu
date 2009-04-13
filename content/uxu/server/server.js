@@ -13,6 +13,8 @@ var Handler = server_module.require('class', 'handler');
 
 function constructor(aPort)
 {
+	this.initListeners();
+
 	this._port  = (typeof aPort == 'number') ? aPort : -1 ;
 	this.__defineGetter__('port', function() {
 		return this.socket ? this.socket.port : this._port ;
@@ -42,13 +44,8 @@ function start()
 function stop()
 {
 	this._handlers.forEach(function (aHandler) {
-			this._listeners.forEach(function(aListener) {
-				aHandler.removeListener(aListener);
-				if ('removeListener' in aListener)
-					aListener.removeListener(aHandler);
-			});
-			aHandler.destroy();
-		}, this);
+		aHandler.destroy();
+	}, this);
 	this._handlers = [];
 	this.removeAllListeners();
 	if (!this.socket) return;
@@ -80,8 +77,8 @@ function onSocketAccepted(aSocket, aTransport)
 		var input  = aTransport.openInputStream(0, 0, 0);
 		var output = aTransport.openOutputStream(0, 0, 0);
 		var handler = new Handler(input, output, this);
+		handler.inheritListeners(this);
 		this._listeners.forEach(function(aListener) {
-			handler.addListener(aListener);
 			if ('addListener' in aListener)
 				aListener.addListener(handler);
 		});

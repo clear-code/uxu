@@ -7,6 +7,18 @@ function initListeners()
 {
 	this._listeners = [];
 }
+ 
+function inheritListeners(aOriginal) 
+{
+	this._ensureHasOwnListeners();
+	aOriginal._ensureHasOwnListeners();
+	aOriginal._listeners.forEach(function(aListener) {
+		this.addListener(aListener);
+		if (aListener._listeners.indexOf(aOriginal) > -1 &&
+			'addListener' in aListener)
+			aListener.addListener(this);
+	}, this);
+}
 
 function _ensureHasOwnListeners()
 {
@@ -32,6 +44,10 @@ function removeListener(aListener)
 function removeAllListeners() 
 {
 	this._ensureHasOwnListeners();
+	this._listeners.forEach(function(aListener) {
+		if ('removeListener' in aListener)
+			aListener.removeListener(this);
+	}, this);
 	this._listeners = [];
 }
  

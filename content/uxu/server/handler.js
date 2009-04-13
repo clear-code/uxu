@@ -26,12 +26,16 @@ function constructor(aInput, aOutput)
 
 function destroy()
 {
-	this._input.close();
-	this._input = null;
-	this._buffer = '';
-
-	this._output.close();
-	this._output = null;
+	if (this._input) {
+		this._input.close();
+		this._input = null;
+		this._buffer = '';
+	}
+	if (this._output) {
+		this._output.close();
+		this._output = null;
+	}
+	this.removeAllListeners();
 }
 
 function onQuitRequest()
