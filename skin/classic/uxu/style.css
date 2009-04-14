@@ -91,36 +91,57 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 	white-space: pre;
 }
 
-*|*[class="tagged line inserted"] {
+html|span[class^="block"] {
+	margin: 0 0 0.2em 0;
+}
+
+html|span[class^="block"],
+html|span[class^="line"] {
+	display: block;
+}
+
+html|span[class="block inserted"] {
 	background: #e8ffe8;
+	border: 1px solid #009900;
 	color: #000000;
 }
-*|*[class="tagged line deleted"] {
+html|span[class="block deleted"] {
 	background: #ffe8e8;
+	border: 1px solid #cc0000;
+	color: #000000;
+}
+html|span[class="block replaced"] {
+	background: #fff6bf;
+	border: 1px solid #ffdd00;
 	color: #000000;
 }
 
-*|*[class="tagged phrase inserted"] {
+html|span[class="phrase inserted"] {
 	background: #93ff7f;
 	color: #000000;
 }
-*|*[class="tagged phrase deleted"] {
+html|span[class="phrase deleted"] {
 	background: #ffa685;
 	color: #000000;
 }
-*|*[class="tagged phrase replaced"] {
+html|span[class="phrase replaced"] {
 	background: #fff68d;
 	color: #000000;
 }
 
-*|*[class="tag"] {
-	background: #767676;
+html|span[class="tag"] {
 }
-*|*[class="tagged line inserted"] > *|*[class="tag"] {
-	color: #8cf68d;
+html|span[class="line inserted"] > *|*[class="tag"] {
+	background: #009900;
+	color: #e8ffe8;
 }
-*|*[class="tagged line deleted"] > *|*[class="tag"] {
-	color: #ffaa9a;
+html|span[class="line deleted"] > *|*[class="tag"] {
+	background: #cc0000;
+	color: #ffe8e8;
+}
+html|span[class="line replaced"] > *|*[class="tag"] {
+	background: #ffdd00;
+	color: #fff6bf;
 }
 
 *[role=result-box] {

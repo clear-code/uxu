@@ -6,14 +6,18 @@ var ReadableDiffer = lib.require('class', 'readableDiffer');
 function readable(aFrom, aTo, aEncoded)
 {
 	var differ = new ReadableDiffer(_splitWithLine(aFrom), _splitWithLine(aTo));
-	return differ.diff(aEncoded).join("\n");
+	return aEncoded ?
+		differ.encodedDiff() :
+		differ.diff(aEncoded).join("\n") ;
 }
 
 function foldedReadable(aFrom, aTo, aEncoded)
 {
 	var differ = new ReadableDiffer(_splitWithLine(_fold(aFrom)),
 									_splitWithLine(_fold(aTo)));
-	return differ.diff(aEncoded).join("\n");
+	return  aEncoded ?
+		differ.encodedDiff() :
+		differ.diff(aEncoded).join("\n") ;
 }
 
 function isInterested(aDiff)

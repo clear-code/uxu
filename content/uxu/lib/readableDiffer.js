@@ -9,12 +9,11 @@ function constructor(aFrom, aTo)
     this.to = aTo;
 }
 
-function diff(aEncoded)
+function diff()
 {
-    var result = [];
+    var lines = [];
     var matcher = new SequenceMatcher(this.from, this.to);
 
-    var _this = this;
     matcher.operations().forEach(function (aOperation) {
 		var tag = aOperation[0];
 		var fromStart = aOperation[1];
@@ -25,28 +24,81 @@ function diff(aEncoded)
 
 		switch (tag) {
 			case "replace":
-				target = _this._diffLines(fromStart, fromEnd, toStart, toEnd, aEncoded);
-				result = result.concat(target);
+				target = this._diffLines(fromStart, fromEnd, toStart, toEnd);
+				lines = lines.concat(target);
 				break;
 			case "delete":
-				target = _this.from.slice(fromStart, fromEnd);
-				result = result.concat(_this._tagDeleted(target, aEncoded));
+				target = this.from.slice(fromStart, fromEnd);
+				lines = lines.concat(this._tagDeleted(target));
 				break;
 			case "insert":
-				target = _this.to.slice(toStart, toEnd);
-				result = result.concat(_this._tagInserted(target, aEncoded));
+				target = this.to.slice(toStart, toEnd);
+				lines = lines.concat(this._tagInserted(target));
 				break;
 			case "equal":
-				target = _this.from.slice(fromStart, fromEnd);
-				result = result.concat(_this._tagEqual(target, aEncoded));
+				target = this.from.slice(fromStart, fromEnd);
+				lines = lines.concat(this._tagEqual(target));
 				break;
 			default:
 				throw "unknown tag: " + tag;
 				break;
 		}
-	});
+	}, this);
 
-	return result;
+	return lines;
+}
+
+function encodedDiff()
+{
+    var lines = [];
+    var matcher = new SequenceMatcher(this.from, this.to);
+
+    matcher.operations().forEach(function (aOperation) {
+		var tag = aOperation[0];
+		var fromStart = aOperation[1];
+		var fromEnd = aOperation[2];
+		var toStart = aOperation[3];
+		var toEnd = aOperation[4];
+		var target;
+
+		switch (tag) {
+			case "replace":
+				target = this._diffLines(fromStart, fromEnd, toStart, toEnd, true);
+				lines = lines.concat(target);
+				break;
+			case "delete":
+				target = this.from.slice(fromStart, fromEnd);
+				lines = lines.concat(this._tagDeleted(target, true));
+				break;
+			case "insert":
+				target = this.to.slice(toStart, toEnd);
+				lines = lines.concat(this._tagInserted(target, true));
+				break;
+			case "equal":
+				target = this.from.slice(fromStart, fromEnd);
+				lines = lines.concat(this._tagEqual(target, true));
+				break;
+			default:
+				throw "unknown tag: " + tag;
+				break;
+		}
+	}, this);
+
+	var blocks = [];
+	var lastBlock = '';
+	var lastLineType = '';
+	lines.forEach(function(aLine) {
+		var lineType = aLine.match(/^<span class="line ([^"]+)">/)[1];
+		if (lineType != lastLineType) {
+			blocks.push(lastBlock + (lastBlock ? '</span>' : '' ));
+			lastBlock = '<span class="block '+lineType+'">';
+			lastLineType = lineType;
+		}
+		lastBlock += aLine;
+	}, this);
+	if (lastBlock) blocks.push(lastBlock + '</span>');
+
+	return blocks.join('');
 }
 
 function _tag(aMark, aContents, aEncodedClass)
@@ -54,7 +106,7 @@ function _tag(aMark, aContents, aEncodedClass)
 	if (aEncodedClass) {
 		aMark = '<span class="tag">'+aMark+'</span>';
 		return aContents.map(function (aContent) {
-			return '<span class="tagged line '+aEncodedClass+'">'+
+			return '<span class="line '+aEncodedClass+'">'+
 					aMark+
 					' '+
 					_escapeForEncoded(aContent)+
@@ -219,13 +271,13 @@ function _diffLineEncoded(aFromLine, aToLine)
 					switch(currentTag)
 					{
 						case '-':
-							taggedLine += '<span class="tagged phrase deleted">';
+							taggedLine += '<span class="phrase deleted">';
 							break;
 						case '+':
-							taggedLine += '<span class="tagged phrase inserted">';
+							taggedLine += '<span class="phrase inserted">';
 							break;
 						case '^':
-							taggedLine += '<span class="tagged phrase replaced">';
+							taggedLine += '<span class="phrase replaced">';
 							break;
 					}
 				}
@@ -238,7 +290,7 @@ function _diffLineEncoded(aFromLine, aToLine)
 			taggedLine += this._escapeForEncoded(line.substring(diff.length));
 		}
 		encoded.push(
-			'<span class="tagged line '+
+			'<span class="line '+
 			(lineTag == '-' ? 'deleted' :
 			 lineTag == '+' ? 'inserted' :
 			                  'equal')+
