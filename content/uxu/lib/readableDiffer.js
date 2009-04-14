@@ -149,8 +149,8 @@ function _tagInserted(aContents, aEncoded)
 function _tagEqual(aContents, aEncoded)
 {
 	return aEncoded ?
-			this._encodedTagLine('equal', '-', aContents) :
-			this._tagLine('+', aContents);
+			this._encodedTagLine('equal', ' ', aContents) :
+			this._tagLine(' ', aContents);
 }
 
 function _tagDifference(aContents, aEncoded)

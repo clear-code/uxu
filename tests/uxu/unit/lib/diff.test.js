@@ -69,6 +69,7 @@ function testIsInterested()
 function testReadableEmpty()
 {
     assertEquals("", diff.readable("", ""));
+    assertEquals("", diff.readable("", "", true));
 }
 
 function testNeedFold()
@@ -194,4 +195,47 @@ function testFoldedReadable()
                                      "6123456789" +
                                      "7123456789" +
                                      "8123456789"));
+    assertEquals('<span class="block replaced">'+
+                   '<span class="line replaced">'+
+                     '<span class="tag">?</span> '+
+                     '0'+
+                     '<span class="phrase deleted">123456789</span>'+
+                     '<span class="phrase inserted">000000000</span>'+
+                     '1123456789'+
+                     '2123456789'+
+                     '3123456789'+
+                     '4123456789'+
+                     '5123456789'+
+                     '6123456789'+
+                     '71234567'+
+                   '</span>'+
+                 '</span>'+
+                 '<span class="block equal">'+
+                   '<span class="line equal">'+
+                     '<span class="tag"> </span> '+
+                     '89'+
+                     '8123456789'+
+                   '</span>'+
+                 '</span>',
+                 diff.foldedReadable("0123456789" +
+                                     "1123456789" +
+                                     "2123456789" +
+                                     "3123456789" +
+                                     "4123456789" +
+                                     "5123456789" +
+                                     "6123456789" +
+                                     "7123456789" +
+                                     "8123456789",
+
+                                     "0000000000" +
+                                     "1123456789" +
+                                     "2123456789" +
+                                     "3123456789" +
+                                     "4123456789" +
+                                     "5123456789" +
+                                     "6123456789" +
+                                     "7123456789" +
+                                     "8123456789",
+
+                                     true));
 }

@@ -18,6 +18,15 @@ function testDiffLines()
                      "- efg",
                      "?  -",
                      "+ eg"],
+                    ['<span class="line deleted">'+
+                       '<span class="tag">-</span> ddd'+
+                     '</span>',
+                     '<span class="line replaced">'+
+                       '<span class="tag">?</span> '+
+                       'e'+
+                       '<span class="phrase deleted">f</span>'+
+                       'g'+
+                     '</span>'],
                     ["aaa", "bbb", "ccc", "ddd", "efg"],
                     ["aaa", "BbB", "ccc", "eg"],
                     3, 5, 3, 4);
@@ -29,6 +38,19 @@ function testDiffLine()
                     "?    ^  ^  ^",
                     "+ abcdefGhijkl",
                     "?    ^  ^  ^"],
+                   ['<span class="line replaced">'+
+                      '<span class="tag">?</span> '+
+                      'abc'+
+                      '<span class="phrase deleted">D</span>'+
+                      '<span class="phrase inserted">d</span>'+
+                      'ef'+
+                      '<span class="phrase deleted">g</span>'+
+                      '<span class="phrase inserted">G</span>'+
+                      'hi'+
+                      '<span class="phrase deleted">J</span>'+
+                      '<span class="phrase inserted">j</span>'+
+                      'kl'+
+                    '</span>'],
                    "abcDefghiJkl",
                    "abcdefGhijkl");
 
@@ -36,6 +58,21 @@ function testDiffLine()
                     "?   ^  ^  ^  -",
                     "+ abcdefGhijkl",
                     "? +  ^  ^  ^"],
+                   ['<span class="line replaced">'+
+                      '<span class="tag">?</span> '+
+                      '<span class="phrase inserted">a</span>'+
+                      'bc'+
+                      '<span class="phrase deleted">D</span>'+
+                      '<span class="phrase inserted">d</span>'+
+                      'ef'+
+                      '<span class="phrase deleted">g</span>'+
+                      '<span class="phrase inserted">G</span>'+
+                      'hi'+
+                      '<span class="phrase deleted">J</span>'+
+                      '<span class="phrase inserted">j</span>'+
+                      'kl'+
+                      '<span class="phrase deleted">x</span>'+
+                    '</span>'],
                    "bcDefghiJklx",
                    "abcdefGhijkl");
 }
@@ -44,6 +81,9 @@ function testEmptyDiffLine()
 {
     assertDiffLine(["- ",
                     "+ "],
+                   ['<span class="line replaced">'+
+                      '<span class="tag">?</span> '+
+                    '</span>'],
                    "", "");
 }
 
@@ -69,21 +109,63 @@ function testFormatDiffPointe()
 
 function testSameContents()
 {
-    assertReadableDiff("  aaa", ["aaa"], ["aaa"]);
+    assertReadableDiff("  aaa",
+                       '<span class="block equal">'+
+                         '<span class="line equal">'+
+                           '<span class="tag"> </span> aaa'+
+                         '</span>'+
+                       '</span>',
+                       ["aaa"],
+                       ["aaa"]);
     assertReadableDiff("  aaa\n" +
                        "  bbb",
-                       ["aaa", "bbb"], ["aaa", "bbb"]);
+                       '<span class="block equal">'+
+                         '<span class="line equal">'+
+                           '<span class="tag"> </span> aaa'+
+                         '</span>'+
+                         '<span class="line equal">'+
+                           '<span class="tag"> </span> bbb'+
+                         '</span>'+
+                       '</span>',
+                       ["aaa", "bbb"],
+                       ["aaa", "bbb"]);
 }
 
 function testDeleted()
 {
     assertReadableDiff("  aaa\n" +
                        "- bbb",
+                       '<span class="block equal">'+
+                         '<span class="line equal">'+
+                           '<span class="tag"> </span> aaa'+
+                         '</span>'+
+                       '</span>'+
+                       '<span class="block deleted">'+
+                         '<span class="line deleted">'+
+                           '<span class="tag">-</span> bbb'+
+                         '</span>'+
+                       '</span>',
                        ["aaa", "bbb"], ["aaa"]);
     assertReadableDiff("  aaa\n" +
                        "- bbb\n" +
                        "- ccc\n" +
                        "- ddd",
+                       '<span class="block equal">'+
+                         '<span class="line equal">'+
+                           '<span class="tag"> </span> aaa'+
+                         '</span>'+
+                       '</span>'+
+                       '<span class="block deleted">'+
+                         '<span class="line deleted">'+
+                           '<span class="tag">-</span> bbb'+
+                         '</span>'+
+                         '<span class="line deleted">'+
+                           '<span class="tag">-</span> ccc'+
+                         '</span>'+
+                         '<span class="line deleted">'+
+                           '<span class="tag">-</span> ddd'+
+                         '</span>'+
+                       '</span>',
                        ["aaa", "bbb", "ccc", "ddd"], ["aaa"]);
 }
 
@@ -93,6 +175,22 @@ function testInserted()
                        "+ bbb\n" +
                        "+ ccc\n" +
                        "+ ddd",
+                       '<span class="block equal">'+
+                         '<span class="line equal">'+
+                           '<span class="tag"> </span> aaa'+
+                         '</span>'+
+                       '</span>'+
+                       '<span class="block inserted">'+
+                         '<span class="line inserted">'+
+                           '<span class="tag">+</span> bbb'+
+                         '</span>'+
+                         '<span class="line inserted">'+
+                           '<span class="tag">+</span> ccc'+
+                         '</span>'+
+                         '<span class="line inserted">'+
+                           '<span class="tag">+</span> ddd'+
+                         '</span>'+
+                       '</span>',
                        ["aaa"], ["aaa", "bbb", "ccc", "ddd"]);
 }
 
@@ -106,6 +204,39 @@ function testReplace()
                        "- efg\n" +
                        "?  -\n" +
                        "+ eg",
+                       '<span class="block equal">'+
+                         '<span class="line equal">'+
+                           '<span class="tag"> </span> aaa'+
+                         '</span>'+
+                       '</span>'+
+                       '<span class="block deleted">'+
+                         '<span class="line deleted">'+
+                           '<span class="tag">-</span> bbb'+
+                         '</span>'+
+                       '</span>'+
+                       '<span class="block inserted">'+
+                         '<span class="line inserted">'+
+                           '<span class="tag">+</span> BbB'+
+                         '</span>'+
+                       '</span>'+
+                       '<span class="block equal">'+
+                         '<span class="line equal">'+
+                           '<span class="tag"> </span> ccc'+
+                         '</span>'+
+                       '</span>'+
+                       '<span class="block deleted">'+
+                         '<span class="line deleted">'+
+                           '<span class="tag">-</span> ddd'+
+                         '</span>'+
+                       '</span>'+
+                       '<span class="block replaced">'+
+                         '<span class="line replaced">'+
+                           '<span class="tag">?</span> '+
+                           'e'+
+                           '<span class="phrase deleted">f</span>'+
+                           'g'+
+                         '</span>'+
+                       '</span>',
                        ["aaa", "bbb", "ccc", "ddd", "efg"],
                        ["aaa", "BbB", "ccc", "eg"]);
 
@@ -113,6 +244,15 @@ function testReplace()
                        "? -\n" +
                        "+ abcd abcd xyz abc\n" +
                        "?      +++++",
+                       '<span class="block replaced">'+
+                         '<span class="line replaced">'+
+                           '<span class="tag">?</span> '+
+                           '<span class="phrase deleted"> </span>'+
+                           'abcd '+
+                           '<span class="phrase inserted">abcd </span>'+
+                           'xyz abc'+
+                         '</span>'+
+                       '</span>',
                        [" abcd xyz abc"],
                        ["abcd abcd xyz abc"]);
 }
@@ -123,6 +263,18 @@ function testDifference()
                        "?                        ^           ^\n" +
                        "+ 1 tests, 0 assertions, 0 failures, 1 pendings\n" +
                        "?                        ^           ^",
+                       '<span class="block replaced">'+
+                         '<span class="line replaced">'+
+                           '<span class="tag">?</span> '+
+                           '1 tests, 0 assertions, '+
+                           '<span class="phrase deleted">1</span>'+
+                           '<span class="phrase inserted">0</span>'+
+                           ' failures, '+
+                           '<span class="phrase deleted">0</span>'+
+                           '<span class="phrase inserted">1</span>'+
+                           ' pendings'+
+                         '</span>'+
+                       '</span>',
                        ["1 tests, 0 assertions, 1 failures, 0 pendings"],
                        ["1 tests, 0 assertions, 0 failures, 1 pendings"]);
 }
@@ -135,6 +287,32 @@ function testComplex()
                        "+ \n" +
                        "+   # \n" +
                        "  ddd",
+                       '<span class="block equal">'+
+                         '<span class="line equal">'+
+                           '<span class="tag"> </span> aaa'+
+                         '</span>'+
+                       '</span>'+
+                       '<span class="block deleted">'+
+                         '<span class="line deleted">'+
+                           '<span class="tag">-</span> bbb'+
+                         '</span>'+
+                         '<span class="line deleted">'+
+                           '<span class="tag">-</span> ccc'+
+                         '</span>'+
+                       '</span>'+
+                       '<span class="block inserted">'+
+                         '<span class="line inserted">'+
+                           '<span class="tag">+</span> '+
+                         '</span>'+
+                         '<span class="line inserted">'+
+                           '<span class="tag">+</span>   # '+
+                         '</span>'+
+                       '</span>'+
+                       '<span class="block equal">'+
+                         '<span class="line equal">'+
+                           '<span class="tag"> </span> ddd'+
+                         '</span>'+
+                       '</span>',
                        ["aaa", "bbb", "ccc", "ddd"],
                        ["aaa", "", "  # ", "ddd"]);
 
@@ -147,28 +325,60 @@ function testComplex()
                        "?  -   -\n" +
                        "+ tree\n" +
                        "+ emu",
+                       '<span class="block replaced">'+
+                         '<span class="line replaced">'+
+                           '<span class="tag">?</span> '+
+                           'o'+
+                           '<span class="phrase deleted">n</span>'+
+                           '<span class="phrase inserted">r</span>'+
+                           'e1'+
+                         '</span>'+
+                       '</span>'+
+                       '<span class="block deleted">'+
+                         '<span class="line deleted">'+
+                           '<span class="tag">-</span> two2'+
+                         '</span>'+
+                       '</span>'+
+                       '<span class="block replaced">'+
+                         '<span class="line replaced">'+
+                           '<span class="tag">?</span> '+
+                           't'+
+                           '<span class="phrase deleted">h</span>'+
+                           'ree'+
+                           '<span class="phrase deleted">3</span>'+
+                         '</span>'+
+                       '</span>'+
+                       '<span class="block inserted">'+
+                         '<span class="line inserted">'+
+                           '<span class="tag">+</span> emu'+
+                         '</span>'+
+                       '</span>',
                        ["one1", "two2", "three3"],
                        ["ore1", "tree", "emu"]);
 }
 
 function testEmpty()
 {
-    assertReadableDiff("", [], []);
+    assertReadableDiff("", "", [], []);
 }
 
-function assertDiffLines(aExpected, aFrom, aTo,
+function assertDiffLines(aExpected, aExpectedEncoded,
+                         aFrom, aTo,
                          aFromStart, aFromEnd,
                          aToStart, aToEnd)
 {
     var differ = new ReadableDiffer(aFrom, aTo);
     assertEquals(aExpected,
                  differ._diffLines(aFromStart, aFromEnd, aToStart, aToEnd));
+    assertEquals(aExpectedEncoded,
+                 differ._diffLines(aFromStart, aFromEnd, aToStart, aToEnd, true));
 }
 
-function assertDiffLine(aExpected, aFromLine, aToLine)
+function assertDiffLine(aExpected, aExpectedEncoded, aFromLine, aToLine)
 {
     var differ = new ReadableDiffer([""], [""]);
     assertEquals(aExpected, differ._diffLine(aFromLine, aToLine));
+    assertEquals(aExpectedEncoded, differ._diffLineEncoded(aFromLine, aToLine));
 }
 
 function assertFormatDiffPoint(aExpected, aFromLine, aToLine, aFromTags, aToTags)
@@ -178,8 +388,10 @@ function assertFormatDiffPoint(aExpected, aFromLine, aToLine, aFromTags, aToTags
                                                     aFromTags, aToTags));
 }
 
-function assertReadableDiff(aExpected, aFrom, aTo)
+function assertReadableDiff(aExpected, aExpectedEncoded, aFrom, aTo)
 {
     assertEquals(aExpected,
                  new ReadableDiffer(aFrom, aTo).diff().join("\n"));
+    assertEquals(aExpectedEncoded,
+                 new ReadableDiffer(aFrom, aTo).encodedDiff());
 }
