@@ -261,10 +261,10 @@ function _diffLineEncoded(aFromLine, aToLine)
 				'">');
 		switch (tag) {
 			case "insert":
-				phrases = phrases.concat(toChars.slice(toStart, toEnd));
+				phrases = phrases.concat(toChars.slice(toStart, toEnd).map(_escapeForEncoded));
 				break;
 			default:
-				phrases = phrases.concat(fromChars.slice(fromStart, fromEnd));
+				phrases = phrases.concat(fromChars.slice(fromStart, fromEnd).map(_escapeForEncoded));
 				break;
 		}
 		phrases.push('</span>');
