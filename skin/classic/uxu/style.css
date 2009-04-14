@@ -126,11 +126,6 @@ html|span[class="phrase deleted"] {
 	border: 1px solid #cc0000;
 	color: #000000;
 }
-html|span[class="phrase replaced"] {
-	background: #bdeaff;
-	border: 1px solid #5578c4;
-	color: #000000;
-}
 
 html|span[class="tag"] {
 }

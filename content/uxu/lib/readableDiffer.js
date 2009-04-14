@@ -101,23 +101,27 @@ function encodedDiff()
 	return blocks.join('');
 }
 
-function _tag(aMark, aContents, aEncodedClass)
+function _tagLine(aMark, aContents)
 {
-	if (aEncodedClass) {
-		aMark = '<span class="tag">'+aMark+'</span>';
-		return aContents.map(function (aContent) {
-			return '<span class="line '+aEncodedClass+'">'+
-					aMark+
-					' '+
-					_escapeForEncoded(aContent)+
-					'</span>';
-		});
-	}
-	else {
-		return aContents.map(function (aContent) {
-			return aMark + ' ' + aContent;
-		});
-	}
+	return aContents.map(function (aContent) {
+		return aMark + ' ' + aContent;
+	});
+}
+
+function _encodedTagLine(aEncodedClass, aMark, aContents)
+{
+	aMark = '<span class="tag">'+aMark+'</span>';
+	return aContents.map(function (aContent) {
+		return '<span class="line '+aEncodedClass+'">'+
+				aMark+' '+
+				_escapeForEncoded(aContent)+
+				'</span>';
+	});
+}
+
+function _encodedTagPhrase(aEncodedClass, aContent)
+{
+	return '<span class="phrase '+aEncodedClass+'">'+_escapeForEncoded(aContent)+'</span>';
 }
 
 function _escapeForEncoded(aString)
@@ -130,22 +134,30 @@ function _escapeForEncoded(aString)
 
 function _tagDeleted(aContents, aEncoded)
 {
-	return this._tag('-', aContents, (aEncoded ? 'deleted' : '' ));
+	return aEncoded ?
+			this._encodedTagLine('deleted', '-', aContents) :
+			this._tagLine('-', aContents);
 }
 
 function _tagInserted(aContents, aEncoded)
 {
-	return this._tag('+', aContents, (aEncoded ? 'inserted' : '' ));
+	return aEncoded ?
+			this._encodedTagLine('inserted', '+', aContents) :
+			this._tagLine('+', aContents);
 }
 
 function _tagEqual(aContents, aEncoded)
 {
-	return this._tag(' ', aContents, (aEncoded ? 'equal' : '' ));
+	return aEncoded ?
+			this._encodedTagLine('equal', '-', aContents) :
+			this._tagLine('+', aContents);
 }
 
 function _tagDifference(aContents, aEncoded)
 {
-	return this._tag('?', aContents, (aEncoded ? 'difference' : '' ));
+	return aEncoded ?
+			this._encodedTagLine('difference', '?', aContents) :
+			this._tagLine('?', aContents);
 }
 
 function _findDiffLineInfo(aFromStart, aFromEnd, aToStart, aToEnd)
@@ -253,21 +265,26 @@ function _diffLineEncoded(aFromLine, aToLine)
 		var fromEnd = aOperation[2];
 		var toStart = aOperation[3];
 		var toEnd = aOperation[4];
-		phrases.push('<span class="phrase '+
-				(tag == 'insert' ? 'inserted' :
-				 tag == 'delete' ? 'deleted' :
-				 tag == 'replace' ? 'replaced' :
-				                        'equal')+
-				'">');
+		var fromPhrase = fromChars.slice(fromStart, fromEnd).join('');
+		var toPhrase = toChars.slice(toStart, toEnd).join('');
 		switch (tag) {
+			case "replace":
+				phrases.push(_encodedTagPhrase('deleted', fromPhrase));
+				phrases.push(_encodedTagPhrase('inserted', toPhrase));
+				break;
+			case "delete":
+				phrases.push(_encodedTagPhrase('deleted', fromPhrase));
+				break;
 			case "insert":
-				phrases = phrases.concat(toChars.slice(toStart, toEnd).map(_escapeForEncoded));
+				phrases.push(_encodedTagPhrase('inserted', toPhrase));
+				break;
+			case "equal":
+				phrases.push(_escapeForEncoded(fromPhrase));
 				break;
 			default:
-				phrases = phrases.concat(fromChars.slice(fromStart, fromEnd).map(_escapeForEncoded));
+				throw "unknown tag: " + tag;
 				break;
 		}
-		phrases.push('</span>');
 	}, this);
 	return [
 		'<span class="line replaced"><span class="tag">?</span> '+
