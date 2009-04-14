@@ -26,6 +26,7 @@ pref("extensions.uxu.runner.autoStart.oneTime", false);
 pref("extensions.uxu.runner.autoExit", false);
 pref("extensions.uxu.runner.lastPath", "");
 pref("extensions.uxu.runner.lastResults", "");
+pref("extensions.uxu.runner.coloredDiff", true);
 
 pref("extensions.uxu.auto.start", false);
 pref("extensions.uxu.auto.exit",  true);

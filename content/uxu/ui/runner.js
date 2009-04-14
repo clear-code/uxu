@@ -889,7 +889,19 @@ function fillReportFromResult(aTestCase, aResult)
 		if (aResult.expected || aResult.actual) {
 			_(wTestReportPart, 'vs').removeAttribute('hidden');
 		}
-		if (aResult.diff) {
+		if (aResult.encodedDiff && utils.getPref('extensions.uxu.runner.coloredDiff')) {
+			var pre = document.createElementNS('http://www.w3.org/1999/xhtml', 'pre');
+			pre.innerHTML = aResult.encodedDiff;
+			_(wTestReportPart, 'diff-value').appendChild(pre);
+			var range = document.createRange();
+			range.selectNodeContents(pre);
+			var encodedDiff = range.extractContents();
+			range.selectNode(pre);
+			range.deleteContents();
+			range.insertNode(encodedDiff);
+			_(wTestReportPart, 'diff-row').removeAttribute('hidden');
+		}
+		else if (aResult.diff) {
 			_(wTestReportPart, 'diff-value').textContent = aResult.diff;
 			_(wTestReportPart, 'diff-row').removeAttribute('hidden');
 		}

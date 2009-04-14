@@ -1,3 +1,6 @@
+@namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
+@namespace html url("http://www.w3.org/1999/xhtml");
+
 .test-failure {
 	list-style-image: url("bug.png");
 	-moz-image-region: rect(0px 35px 45px 0px);
@@ -81,6 +84,43 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 	white-space: pre-wrap; /* Firefox 3.0 or later */
 	white-space: -moz-pre-wrap; /* Firefox 2.0.0.* */
 	font-family: monospace;
+	line-height: 1;
+}
+
+*[role=vs] description[role="diff-value"] {
+	white-space: pre;
+}
+
+*|*[class="tagged line inserted"] {
+	background: #e8ffe8;
+	color: #000000;
+}
+*|*[class="tagged line deleted"] {
+	background: #ffe8e8;
+	color: #000000;
+}
+
+*|*[class="tagged phrase inserted"] {
+	background: #93ff7f;
+	color: #000000;
+}
+*|*[class="tagged phrase deleted"] {
+	background: #ffa685;
+	color: #000000;
+}
+*|*[class="tagged phrase replaced"] {
+	background: #fff68d;
+	color: #000000;
+}
+
+*|*[class="tag"] {
+	background: #767676;
+}
+*|*[class="tagged line inserted"] > *|*[class="tag"] {
+	color: #8cf68d;
+}
+*|*[class="tagged line deleted"] > *|*[class="tag"] {
+	color: #ffaa9a;
 }
 
 *[role=result-box] {

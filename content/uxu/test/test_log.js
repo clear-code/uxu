@@ -190,6 +190,8 @@ function _createResultsFromReport(aReport)
 				result.actual = aException.actual;
 			if (aException.diff)
 				result.diff = aException.foldedDiff || aException.diff;
+			if (aException.encodedDiff)
+				result.encodedDiff = aException.encodedDiff;
 			result.description = aException.message.replace(/^\s+/, '');
 			if (utils.hasStackTrace(aException))
 				result.stackTrace = utils.formatStackTraceForDisplay(aException);

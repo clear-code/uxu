@@ -605,6 +605,14 @@ function fail()
 			if (diff.needFold(_diff)) {
 				error.foldedDiff = diff.foldedReadable(error.expectedRaw,
 													   error.actualRaw);
+				error.encodedDiff = diff.foldedReadable(error.expectedRaw,
+														error.actualRaw,
+														true);
+			}
+			else {
+				error.encodedDiff = diff.readable(error.expectedRaw,
+												  error.actualRaw,
+												  true);
 			}
 		}
 	}
