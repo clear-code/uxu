@@ -117,15 +117,18 @@ html|span[class="block replaced"] {
 }
 
 html|span[class="phrase inserted"] {
-	background: #93ff7f;
+	background: #a5ffa5;
+	border: 1px solid #009900;
 	color: #000000;
 }
 html|span[class="phrase deleted"] {
-	background: #ffa685;
+	background: #ffc3c3;
+	border: 1px solid #cc0000;
 	color: #000000;
 }
 html|span[class="phrase replaced"] {
-	background: #fff68d;
+	background: #bdeaff;
+	border: 1px solid #5578c4;
 	color: #000000;
 }
 

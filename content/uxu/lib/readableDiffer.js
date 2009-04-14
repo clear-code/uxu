@@ -242,64 +242,38 @@ function __diffLines(aFromStart, aFromEnd, aToStart, aToEnd, aEncoded)
 
 function _diffLineEncoded(aFromLine, aToLine)
 {
-	var diffLines = this._diffLine(aFromLine, aToLine);
-	var encoded = [];
-	var line,
-		diff,
-		taggedLine,
-		currentTag,
-		lastTag,
-		lineTag,
-		i, maxi,
-		j, maxj;
-	for (i = 0, maxi = diffLines.length; i < maxi; i += 2)
-	{
-		line = diffLines[i];
-		diff = diffLines[i+1];
-		lineTag = line.charAt(0);
-		if (!diff) {
-			taggedLine = this._escapeForEncoded(line.substring(2));
+	var fromChars = aFromLine.split('');
+	var toChars = aToLine.split('');
+	var matcher = new SequenceMatcher(aFromLine, aToLine,
+									  this._isSpaceCharacter);
+	var phrases = [];
+	matcher.operations().forEach(function (aOperation) {
+		var tag = aOperation[0];
+		var fromStart = aOperation[1];
+		var fromEnd = aOperation[2];
+		var toStart = aOperation[3];
+		var toEnd = aOperation[4];
+		phrases.push('<span class="phrase '+
+				(tag == 'insert' ? 'inserted' :
+				 tag == 'delete' ? 'deleted' :
+				 tag == 'replace' ? 'replaced' :
+				                        'equal')+
+				'">');
+		switch (tag) {
+			case "insert":
+				phrases = phrases.concat(toChars.slice(toStart, toEnd));
+				break;
+			default:
+				phrases = phrases.concat(fromChars.slice(fromStart, fromEnd));
+				break;
 		}
-		else {
-			taggedLine = '';
-			lastTag = ' ';
-			for (j = 2, maxj = diff.length; j < maxj; j++)
-			{
-				currentTag = diff.charAt(j);
-				if (lastTag != currentTag) {
-					if (lastTag != ' ') taggedLine += '</span>';
-					switch(currentTag)
-					{
-						case '-':
-							taggedLine += '<span class="phrase deleted">';
-							break;
-						case '+':
-							taggedLine += '<span class="phrase inserted">';
-							break;
-						case '^':
-							taggedLine += '<span class="phrase replaced">';
-							break;
-					}
-				}
-				taggedLine += this._escapeForEncoded(line.charAt(j));
-				lastTag = currentTag;
-			}
-			if (lastTag != ' ') {
-				taggedLine += '</span>';
-			}
-			taggedLine += this._escapeForEncoded(line.substring(diff.length));
-		}
-		encoded.push(
-			'<span class="line '+
-			(lineTag == '-' ? 'deleted' :
-			 lineTag == '+' ? 'inserted' :
-			                  'equal')+
-			'">'+
-			'<span class="tag">'+lineTag+'</span> '+taggedLine+
-			'</span>'
-		);
-	}
-	return encoded;
+		phrases.push('</span>');
+	}, this);
+	return [
+		'<span class="line replaced"><span class="tag">?</span> '+
+		phrases.join('')+
+		'</span>'
+	];
 }
 
 function _diffLine(aFromLine, aToLine)
@@ -309,7 +283,6 @@ function _diffLine(aFromLine, aToLine)
 	var matcher = new SequenceMatcher(aFromLine, aToLine,
 									  this._isSpaceCharacter);
 
-	var _this = this;
 	matcher.operations().forEach(function (aOperation) {
 		var tag = aOperation[0];
 		var fromStart = aOperation[1];
@@ -322,24 +295,24 @@ function _diffLine(aFromLine, aToLine)
 		toLength = toEnd - toStart;
 		switch (tag) {
 			case "replace":
-				fromTags += _this._repeat("^", fromLength);
-				toTags += _this._repeat("^", toLength);
+				fromTags += this._repeat("^", fromLength);
+				toTags += this._repeat("^", toLength);
 				break;
 			case "delete":
-            	fromTags += _this._repeat("-", fromLength);
+            	fromTags += this._repeat("-", fromLength);
 				break;
 			case "insert":
-            	toTags += _this._repeat("+", toLength);
+            	toTags += this._repeat("+", toLength);
 				break;
 			case "equal":
-				fromTags += _this._repeat(" ", fromLength);
-				toTags += _this._repeat(" ", toLength);
+				fromTags += this._repeat(" ", fromLength);
+				toTags += this._repeat(" ", toLength);
 				break;
             default:
 				throw "unknown tag: " + tag;
 				break;
 		}
-	});
+	}, this);
 
 	return this._formatDiffPoint(aFromLine, aToLine, fromTags, toTags);
 }
