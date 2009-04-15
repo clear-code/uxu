@@ -46,7 +46,7 @@ function testDiffLine()
                       '<span class="phrase inserted">d</span>'+
                       '</span>'+
                       'ef'+
-                      '<span class="phrase modified">'+
+                      '<span class="phrase edited">'+
                       '<span class="phrase deleted">g</span>'+
                       '<span class="phrase inserted">G</span>'+
                       '</span>'+
