@@ -19,10 +19,9 @@ function testDiffLines()
                      "?  -",
                      "+ eg"],
                     ['<span class="line deleted">'+
-                       '<span class="tag">-</span> ddd'+
+                       'ddd'+
                      '</span>',
                      '<span class="line replaced">'+
-                       '<span class="tag">?</span> '+
                        'e'+
                        '<span class="phrase deleted">f</span>'+
                        'g'+
@@ -39,7 +38,6 @@ function testDiffLine()
                     "+ abcdefGhijkl",
                     "?    ^  ^  ^"],
                    ['<span class="line replaced">'+
-                      '<span class="tag">?</span> '+
                       'abc'+
                       '<span class="phrase deleted">D</span>'+
                       '<span class="phrase inserted">d</span>'+
@@ -59,7 +57,6 @@ function testDiffLine()
                     "+ abcdefGhijkl",
                     "? +  ^  ^  ^"],
                    ['<span class="line replaced">'+
-                      '<span class="tag">?</span> '+
                       '<span class="phrase inserted">a</span>'+
                       'bc'+
                       '<span class="phrase deleted">D</span>'+
@@ -82,7 +79,6 @@ function testEmptyDiffLine()
     assertDiffLine(["- ",
                     "+ "],
                    ['<span class="line replaced">'+
-                      '<span class="tag">?</span> '+
                     '</span>'],
                    "", "");
 }
@@ -112,7 +108,7 @@ function testSameContents()
     assertReadableDiff("  aaa",
                        '<span class="block equal">'+
                          '<span class="line equal">'+
-                           '<span class="tag"> </span> aaa'+
+                           'aaa'+
                          '</span>'+
                        '</span>',
                        ["aaa"],
@@ -121,10 +117,10 @@ function testSameContents()
                        "  bbb",
                        '<span class="block equal">'+
                          '<span class="line equal">'+
-                           '<span class="tag"> </span> aaa'+
+                           'aaa'+
                          '</span>'+
                          '<span class="line equal">'+
-                           '<span class="tag"> </span> bbb'+
+                           'bbb'+
                          '</span>'+
                        '</span>',
                        ["aaa", "bbb"],
@@ -137,12 +133,12 @@ function testDeleted()
                        "- bbb",
                        '<span class="block equal">'+
                          '<span class="line equal">'+
-                           '<span class="tag"> </span> aaa'+
+                           'aaa'+
                          '</span>'+
                        '</span>'+
                        '<span class="block deleted">'+
                          '<span class="line deleted">'+
-                           '<span class="tag">-</span> bbb'+
+                           'bbb'+
                          '</span>'+
                        '</span>',
                        ["aaa", "bbb"], ["aaa"]);
@@ -152,18 +148,18 @@ function testDeleted()
                        "- ddd",
                        '<span class="block equal">'+
                          '<span class="line equal">'+
-                           '<span class="tag"> </span> aaa'+
+                           'aaa'+
                          '</span>'+
                        '</span>'+
                        '<span class="block deleted">'+
                          '<span class="line deleted">'+
-                           '<span class="tag">-</span> bbb'+
+                           'bbb'+
                          '</span>'+
                          '<span class="line deleted">'+
-                           '<span class="tag">-</span> ccc'+
+                           'ccc'+
                          '</span>'+
                          '<span class="line deleted">'+
-                           '<span class="tag">-</span> ddd'+
+                           'ddd'+
                          '</span>'+
                        '</span>',
                        ["aaa", "bbb", "ccc", "ddd"], ["aaa"]);
@@ -177,18 +173,18 @@ function testInserted()
                        "+ ddd",
                        '<span class="block equal">'+
                          '<span class="line equal">'+
-                           '<span class="tag"> </span> aaa'+
+                           'aaa'+
                          '</span>'+
                        '</span>'+
                        '<span class="block inserted">'+
                          '<span class="line inserted">'+
-                           '<span class="tag">+</span> bbb'+
+                           'bbb'+
                          '</span>'+
                          '<span class="line inserted">'+
-                           '<span class="tag">+</span> ccc'+
+                           'ccc'+
                          '</span>'+
                          '<span class="line inserted">'+
-                           '<span class="tag">+</span> ddd'+
+                           'ddd'+
                          '</span>'+
                        '</span>',
                        ["aaa"], ["aaa", "bbb", "ccc", "ddd"]);
@@ -206,32 +202,31 @@ function testReplace()
                        "+ eg",
                        '<span class="block equal">'+
                          '<span class="line equal">'+
-                           '<span class="tag"> </span> aaa'+
+                           'aaa'+
                          '</span>'+
                        '</span>'+
                        '<span class="block deleted">'+
                          '<span class="line deleted">'+
-                           '<span class="tag">-</span> bbb'+
+                           'bbb'+
                          '</span>'+
                        '</span>'+
                        '<span class="block inserted">'+
                          '<span class="line inserted">'+
-                           '<span class="tag">+</span> BbB'+
+                           'BbB'+
                          '</span>'+
                        '</span>'+
                        '<span class="block equal">'+
                          '<span class="line equal">'+
-                           '<span class="tag"> </span> ccc'+
+                           'ccc'+
                          '</span>'+
                        '</span>'+
                        '<span class="block deleted">'+
                          '<span class="line deleted">'+
-                           '<span class="tag">-</span> ddd'+
+                           'ddd'+
                          '</span>'+
                        '</span>'+
                        '<span class="block replaced">'+
                          '<span class="line replaced">'+
-                           '<span class="tag">?</span> '+
                            'e'+
                            '<span class="phrase deleted">f</span>'+
                            'g'+
@@ -246,7 +241,6 @@ function testReplace()
                        "?      +++++",
                        '<span class="block replaced">'+
                          '<span class="line replaced">'+
-                           '<span class="tag">?</span> '+
                            '<span class="phrase deleted"> </span>'+
                            'abcd '+
                            '<span class="phrase inserted">abcd </span>'+
@@ -265,7 +259,6 @@ function testDifference()
                        "?                        ^           ^",
                        '<span class="block replaced">'+
                          '<span class="line replaced">'+
-                           '<span class="tag">?</span> '+
                            '1 tests, 0 assertions, '+
                            '<span class="phrase deleted">1</span>'+
                            '<span class="phrase inserted">0</span>'+
@@ -289,28 +282,28 @@ function testComplex()
                        "  ddd",
                        '<span class="block equal">'+
                          '<span class="line equal">'+
-                           '<span class="tag"> </span> aaa'+
+                           'aaa'+
                          '</span>'+
                        '</span>'+
                        '<span class="block deleted">'+
                          '<span class="line deleted">'+
-                           '<span class="tag">-</span> bbb'+
+                           'bbb'+
                          '</span>'+
                          '<span class="line deleted">'+
-                           '<span class="tag">-</span> ccc'+
+                           'ccc'+
                          '</span>'+
                        '</span>'+
                        '<span class="block inserted">'+
                          '<span class="line inserted">'+
-                           '<span class="tag">+</span> '+
+                           ''+
                          '</span>'+
                          '<span class="line inserted">'+
-                           '<span class="tag">+</span>   # '+
+                           '  # '+
                          '</span>'+
                        '</span>'+
                        '<span class="block equal">'+
                          '<span class="line equal">'+
-                           '<span class="tag"> </span> ddd'+
+                           'ddd'+
                          '</span>'+
                        '</span>',
                        ["aaa", "bbb", "ccc", "ddd"],
@@ -327,7 +320,6 @@ function testComplex()
                        "+ emu",
                        '<span class="block replaced">'+
                          '<span class="line replaced">'+
-                           '<span class="tag">?</span> '+
                            'o'+
                            '<span class="phrase deleted">n</span>'+
                            '<span class="phrase inserted">r</span>'+
@@ -336,12 +328,11 @@ function testComplex()
                        '</span>'+
                        '<span class="block deleted">'+
                          '<span class="line deleted">'+
-                           '<span class="tag">-</span> two2'+
+                           'two2'+
                          '</span>'+
                        '</span>'+
                        '<span class="block replaced">'+
                          '<span class="line replaced">'+
-                           '<span class="tag">?</span> '+
                            't'+
                            '<span class="phrase deleted">h</span>'+
                            'ree'+
@@ -350,7 +341,7 @@ function testComplex()
                        '</span>'+
                        '<span class="block inserted">'+
                          '<span class="line inserted">'+
-                           '<span class="tag">+</span> emu'+
+                           'emu'+
                          '</span>'+
                        '</span>',
                        ["one1", "two2", "three3"],

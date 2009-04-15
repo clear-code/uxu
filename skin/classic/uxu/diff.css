@@ -1,0 +1,96 @@
+@namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
+@namespace html url("http://www.w3.org/1999/xhtml");
+
+html|span[class~="block"] {
+	-moz-user-focus: normal;
+	-moz-user-select: text;
+	cursor : text;
+	white-space: pre-wrap; /* Firefox 3.0 or later */
+	white-space: -moz-pre-wrap; /* Firefox 2.0.0.* */
+	font-family: monospace;
+	line-height: 1;
+}
+
+html|span[class~="block"],
+html|span[class~="line"] {
+	display: block;
+}
+
+html|span[class~="block"] {
+	margin: 0 0 0.2em 0;
+	border: 1px solid;
+	border-left-width: 11px;
+}
+html|span[class~="block"][class~="inserted"] {
+	background: #e8ffe8;
+	border-color: #009900;
+	color: #000000;
+}
+html|span[class~="block"][class~="deleted"] {
+	background: #ffe8e8;
+	border-color: #cc0000;
+	color: #000000;
+}
+html|span[class~="block"][class~="replaced"] {
+	background: #fff6bf;
+	border-color: #ffdd00;
+	color: #000000;
+}
+
+html|span[class~="line"] {
+	margin-left: -11px;
+	padding-left: 16px;
+	background: transparent none no-repeat top left;
+}
+html|span[class~="line"][class~="inserted"] {
+	background-image: url("inserted.png");
+}
+html|span[class~="line"][class~="deleted"] {
+	background-image: url("deleted.png");
+}
+html|span[class~="line"][class~="replaced"] {
+	background-image: url("replaced.png");
+}
+
+html|span[class~="phrase"][class~="inserted"] {
+	background: #a5ffa5;
+	border: 1px solid #009900;
+	color: #000000;
+}
+html|span[class~="phrase"][class~="deleted"] {
+	background: #ffc3c3;
+	border: 1px solid #cc0000;
+	color: #000000;
+}
+
+html|span[class~="line"][class~="includes-both-modification"] > html|span[class~="phrase"][class~="inserted"] {
+	-moz-binding: url("diff.xml#inserted-section");
+	border: none;
+	background: transparent;
+}
+html|span[class~="line"][class~="includes-both-modification"] > html|span[class~="phrase"][class~="deleted"] {
+	-moz-binding: url("diff.xml#deleted-section");
+	border: none;
+	background: transparent;
+}
+
+html|span[class~="line"] html|span[class="pseudo-table-row"] {
+	display: table-row;
+}
+html|span[class~="line"] html|span[class="pseudo-table-row"] > html|span {
+	display: table-cell;
+}
+html|span[class~="line"] html|span[class="pseudo-table-row"] > html|span[class="placeholder-cell"] {
+	background: #c0c0c0;
+	border: 1px solid #c0c0c0;
+	opacity: 0.45;
+	-moz-opacity: 0.45;
+}
+
+html|span[class~="phrase"][class~="replaced"] {
+	display: inline-table;
+}
+html|span[class~="phrase"][class~="replaced"] > html|span:not([pseudo-table-element="true"]) {
+	display: table-row-group;
+	-moz-binding: url("diff.xml#replaced-row");
+}

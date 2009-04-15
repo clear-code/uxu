@@ -1,3 +1,5 @@
+@import url("diff.css");
+
 @namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 @namespace html url("http://www.w3.org/1999/xhtml");
 
@@ -91,56 +93,6 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 	white-space: pre;
 }
 
-html|span[class^="block"] {
-	margin: 0 0 0.2em 0;
-}
-
-html|span[class^="block"],
-html|span[class^="line"] {
-	display: block;
-}
-
-html|span[class="block inserted"] {
-	background: #e8ffe8;
-	border: 1px solid #009900;
-	color: #000000;
-}
-html|span[class="block deleted"] {
-	background: #ffe8e8;
-	border: 1px solid #cc0000;
-	color: #000000;
-}
-html|span[class="block replaced"] {
-	background: #fff6bf;
-	border: 1px solid #ffdd00;
-	color: #000000;
-}
-
-html|span[class="phrase inserted"] {
-	background: #a5ffa5;
-	border: 1px solid #009900;
-	color: #000000;
-}
-html|span[class="phrase deleted"] {
-	background: #ffc3c3;
-	border: 1px solid #cc0000;
-	color: #000000;
-}
-
-html|span[class="tag"] {
-}
-html|span[class="line inserted"] > *|*[class="tag"] {
-	background: #009900;
-	color: #e8ffe8;
-}
-html|span[class="line deleted"] > *|*[class="tag"] {
-	background: #cc0000;
-	color: #ffe8e8;
-}
-html|span[class="line replaced"] > *|*[class="tag"] {
-	background: #ffdd00;
-	color: #fff6bf;
-}
 
 *[role=result-box] {
 	width: 72px;

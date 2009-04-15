@@ -88,7 +88,7 @@ function encodedDiff()
 	var lastBlock = '';
 	var lastLineType = '';
 	lines.forEach(function(aLine) {
-		var lineType = aLine.match(/^<span class="line ([^"]+)">/)[1];
+		var lineType = aLine.match(/^<span class="line ([^" ]+)/)[1];
 		if (lineType != lastLineType) {
 			blocks.push(lastBlock + (lastBlock ? '</span>' : '' ));
 			lastBlock = '<span class="block '+lineType+'">';
@@ -108,12 +108,10 @@ function _tagLine(aMark, aContents)
 	});
 }
 
-function _encodedTagLine(aEncodedClass, aMark, aContents)
+function _encodedTagLine(aEncodedClass, aContents)
 {
-	aMark = '<span class="tag">'+aMark+'</span>';
 	return aContents.map(function (aContent) {
 		return '<span class="line '+aEncodedClass+'">'+
-				aMark+' '+
 				_escapeForEncoded(aContent)+
 				'</span>';
 	});
@@ -135,28 +133,28 @@ function _escapeForEncoded(aString)
 function _tagDeleted(aContents, aEncoded)
 {
 	return aEncoded ?
-			this._encodedTagLine('deleted', '-', aContents) :
+			this._encodedTagLine('deleted', aContents) :
 			this._tagLine('-', aContents);
 }
 
 function _tagInserted(aContents, aEncoded)
 {
 	return aEncoded ?
-			this._encodedTagLine('inserted', '+', aContents) :
+			this._encodedTagLine('inserted', aContents) :
 			this._tagLine('+', aContents);
 }
 
 function _tagEqual(aContents, aEncoded)
 {
 	return aEncoded ?
-			this._encodedTagLine('equal', ' ', aContents) :
+			this._encodedTagLine('equal', aContents) :
 			this._tagLine(' ', aContents);
 }
 
 function _tagDifference(aContents, aEncoded)
 {
 	return aEncoded ?
-			this._encodedTagLine('difference', '?', aContents) :
+			this._encodedTagLine('difference', aContents) :
 			this._tagLine('?', aContents);
 }
 
@@ -259,6 +257,9 @@ function _diffLineEncoded(aFromLine, aToLine)
 	var matcher = new SequenceMatcher(aFromLine, aToLine,
 									  this._isSpaceCharacter);
 	var phrases = [];
+	var replaced = 0;
+	var inserted = 0;
+	var deleted = 0;
 	matcher.operations().forEach(function (aOperation) {
 		var tag = aOperation[0];
 		var fromStart = aOperation[1];
@@ -269,14 +270,19 @@ function _diffLineEncoded(aFromLine, aToLine)
 		var toPhrase = toChars.slice(toStart, toEnd).join('');
 		switch (tag) {
 			case "replace":
+				phrases.push('<span class="phrase replaced">');
 				phrases.push(_encodedTagPhrase('deleted', fromPhrase));
 				phrases.push(_encodedTagPhrase('inserted', toPhrase));
+				phrases.push('</span>');
+				replaced++;
 				break;
 			case "delete":
 				phrases.push(_encodedTagPhrase('deleted', fromPhrase));
+				deleted++;
 				break;
 			case "insert":
 				phrases.push(_encodedTagPhrase('inserted', toPhrase));
+				inserted++;
 				break;
 			case "equal":
 				phrases.push(_escapeForEncoded(fromPhrase));
@@ -286,8 +292,13 @@ function _diffLineEncoded(aFromLine, aToLine)
 				break;
 		}
 	}, this);
+
+	var extraClass = (replaced || (deleted && inserted)) ?
+			' includes-both-modification' :
+			'' ;
+
 	return [
-		'<span class="line replaced"><span class="tag">?</span> '+
+		'<span class="line replaced'+extraClass+'">'+
 		phrases.join('')+
 		'</span>'
 	];

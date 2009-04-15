@@ -197,7 +197,6 @@ function testFoldedReadable()
                                      "8123456789"));
     assertEquals('<span class="block replaced">'+
                    '<span class="line replaced">'+
-                     '<span class="tag">?</span> '+
                      '0'+
                      '<span class="phrase deleted">123456789</span>'+
                      '<span class="phrase inserted">000000000</span>'+
@@ -212,7 +211,6 @@ function testFoldedReadable()
                  '</span>'+
                  '<span class="block equal">'+
                    '<span class="line equal">'+
-                     '<span class="tag"> </span> '+
                      '89'+
                      '8123456789'+
                    '</span>'+
