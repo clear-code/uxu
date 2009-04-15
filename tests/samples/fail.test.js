@@ -1,6 +1,6 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
-// 差分表示のテスト用。必ず失敗する。
+// 絶対に失敗するテスト。エラーや失敗そのもの、あるいは失敗時の差分表示のテスト用。
 
 var topDir = baseURL+'../../';
 
@@ -395,4 +395,26 @@ function assertReadableDiff(aExpected, aExpectedEncoded, aFrom, aTo)
                  new ReadableDiffer(aFrom, aTo).diff().join("\n"));
     assertEquals(aExpectedEncoded,
                  new ReadableDiffer(aFrom, aTo).encodedDiff());
+}
+
+
+testSuccessCountSuccess.assertions = 2;
+function testSuccessCountSuccess()
+{
+	assert.isTrue(true);
+	assert.isTrue(true);
+}
+
+testSuccessCountFailTooLess.assertions = 2;
+function testSuccessCountFailTooLess()
+{
+	assert.isTrue(true);
+	// assert.isTrue(true);
+}
+
+testSuccessCountFailTooMany.assertions = 1;
+function testSuccessCountFailTooMany()
+{
+	assert.isTrue(true);
+	assert.isTrue(true);
 }

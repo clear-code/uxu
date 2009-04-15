@@ -508,12 +508,14 @@ function testAssertionsCount()
 	testcase.registerTest((function() {
 		var f = function() {
 			testcase.environment.assert.isTrue(true);
+			testcase.environment.assert.isTrue(true);
 		};
-		f.assertions = 1;
+		f.assertions = 2;
 		return f;
 	})());
 	testcase.registerTest((function() {
 		var f = function() {
+			testcase.environment.assert.isTrue(true);
 			testcase.environment.assert.isTrue(true);
 			testcase.environment.assert.isTrue(true);
 		};
@@ -531,7 +533,7 @@ function testAssertionsCount()
 	testcase.run();
 	yield (function() { return testcase.done; });
 	assert.equals(
-		['success', 'success', 'failure'],
+		['success', 'failure', 'failure'],
 		testcase.tests.map(function(aTest) {
 			return aTest.report.result;
 		})

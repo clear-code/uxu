@@ -709,17 +709,30 @@ function run(aStopper)
 		},
 		checkSuccessCount : function(aContinuation)
 		{
-			var expectedCount = _this._tests[testIndex].assertions;
+			var test = _this._tests[testIndex];
+			var expectedCount = test.assertions;
 			if (expectedCount > -1) {
 				var actualCount = _this.environment.assert.successCount;
 				try {
-					Assertions.prototype.equals.call(
-						_this.environment.assert,
-						expectedCount,
-						actualCount
-					);
+					if (!utils.equals(expectedCount, actualCount)) {
+						Assertions.prototype.fail.call(
+							_this.environment.assert,
+							{
+								expectedRaw : expectedCount,
+								actualRaw   : actualCount,
+								expected    : expectedCount,
+								actual      : actualCount
+							},
+							bundle.getString(
+								expectedCount < actualCount ?
+									'assertion_failed_too_many_assertions' :
+									'assertion_failed_too_less_assertions'
+							)
+						);
+					}
 				}
 				catch(e) {
+					testReport.report = new Report();
 					testReport.report.result = 'failure';
 					testReport.report.exception = utils.normalizeError(e);
 					testReport.report.description = bundle.getFormattedString('report_description_check_success_count', [test.description]);
