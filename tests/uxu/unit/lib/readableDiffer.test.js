@@ -37,16 +37,22 @@ function testDiffLine()
                     "?    ^  ^  ^",
                     "+ abcdefGhijkl",
                     "?    ^  ^  ^"],
-                   ['<span class="line replaced">'+
+                   ['<span class="line replaced includes-both-modification">'+
                       'abc'+
+                      '<span class="phrase replaced">'+
                       '<span class="phrase deleted">D</span>'+
                       '<span class="phrase inserted">d</span>'+
+                      '</span>'+
                       'ef'+
+                      '<span class="phrase replaced">'+
                       '<span class="phrase deleted">g</span>'+
                       '<span class="phrase inserted">G</span>'+
+                      '</span>'+
                       'hi'+
+                      '<span class="phrase replaced">'+
                       '<span class="phrase deleted">J</span>'+
                       '<span class="phrase inserted">j</span>'+
+                      '</span>'+
                       'kl'+
                     '</span>'],
                    "abcDefghiJkl",
@@ -56,17 +62,23 @@ function testDiffLine()
                     "?   ^  ^  ^  -",
                     "+ abcdefGhijkl",
                     "? +  ^  ^  ^"],
-                   ['<span class="line replaced">'+
+                   ['<span class="line replaced includes-both-modification">'+
                       '<span class="phrase inserted">a</span>'+
                       'bc'+
+                      '<span class="phrase replaced">'+
                       '<span class="phrase deleted">D</span>'+
                       '<span class="phrase inserted">d</span>'+
+                      '</span>'+
                       'ef'+
+                      '<span class="phrase replaced">'+
                       '<span class="phrase deleted">g</span>'+
                       '<span class="phrase inserted">G</span>'+
+                      '</span>'+
                       'hi'+
+                      '<span class="phrase replaced">'+
                       '<span class="phrase deleted">J</span>'+
                       '<span class="phrase inserted">j</span>'+
+                      '</span>'+
                       'kl'+
                       '<span class="phrase deleted">x</span>'+
                     '</span>'],
@@ -240,7 +252,7 @@ function testReplace()
                        "+ abcd abcd xyz abc\n" +
                        "?      +++++",
                        '<span class="block replaced">'+
-                         '<span class="line replaced">'+
+                         '<span class="line replaced includes-both-modification">'+
                            '<span class="phrase deleted"> </span>'+
                            'abcd '+
                            '<span class="phrase inserted">abcd </span>'+
@@ -258,13 +270,17 @@ function testDifference()
                        "+ 1 tests, 0 assertions, 0 failures, 1 pendings\n" +
                        "?                        ^           ^",
                        '<span class="block replaced">'+
-                         '<span class="line replaced">'+
+                         '<span class="line replaced includes-both-modification">'+
                            '1 tests, 0 assertions, '+
+                           '<span class="phrase replaced">'+
                            '<span class="phrase deleted">1</span>'+
                            '<span class="phrase inserted">0</span>'+
+                           '</span>'+
                            ' failures, '+
+                           '<span class="phrase replaced">'+
                            '<span class="phrase deleted">0</span>'+
                            '<span class="phrase inserted">1</span>'+
+                           '</span>'+
                            ' pendings'+
                          '</span>'+
                        '</span>',
@@ -319,10 +335,12 @@ function testComplex()
                        "+ tree\n" +
                        "+ emu",
                        '<span class="block replaced">'+
-                         '<span class="line replaced">'+
+                         '<span class="line replaced includes-both-modification">'+
                            'o'+
+                           '<span class="phrase replaced">'+
                            '<span class="phrase deleted">n</span>'+
                            '<span class="phrase inserted">r</span>'+
+                           '</span>'+
                            'e1'+
                          '</span>'+
                        '</span>'+

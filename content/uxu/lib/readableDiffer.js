@@ -119,7 +119,7 @@ function _encodedTagLine(aEncodedClass, aContents)
 
 function _encodedTagPhrase(aEncodedClass, aContent)
 {
-	return '<span class="phrase '+aEncodedClass+'">'+_escapeForEncoded(aContent)+'</span>';
+	return '<span class="phrase '+aEncodedClass+'">'+aContent+'</span>';
 }
 
 function _escapeForEncoded(aString)
@@ -257,9 +257,6 @@ function _diffLineEncoded(aFromLine, aToLine)
 	var matcher = new SequenceMatcher(aFromLine, aToLine,
 									  this._isSpaceCharacter);
 	var phrases = [];
-	var replaced = 0;
-	var inserted = 0;
-	var deleted = 0;
 	matcher.operations().forEach(function (aOperation) {
 		var tag = aOperation[0];
 		var fromStart = aOperation[1];
@@ -270,28 +267,62 @@ function _diffLineEncoded(aFromLine, aToLine)
 		var toPhrase = toChars.slice(toStart, toEnd).join('');
 		switch (tag) {
 			case "replace":
-				phrases.push('<span class="phrase replaced">');
-				phrases.push(_encodedTagPhrase('deleted', fromPhrase));
-				phrases.push(_encodedTagPhrase('inserted', toPhrase));
-				phrases.push('</span>');
-				replaced++;
-				break;
 			case "delete":
-				phrases.push(_encodedTagPhrase('deleted', fromPhrase));
-				deleted++;
-				break;
 			case "insert":
-				phrases.push(_encodedTagPhrase('inserted', toPhrase));
-				inserted++;
-				break;
 			case "equal":
-				phrases.push(_escapeForEncoded(fromPhrase));
+				phrases.push({ tag         : tag,
+				               from        : fromPhrase,
+				               encodedFrom : _escapeForEncoded(fromPhrase),
+				               to          : toPhrase,
+				               encodedTo   : _escapeForEncoded(toPhrase), });
 				break;
 			default:
 				throw "unknown tag: " + tag;
-				break;
 		}
 	}, this);
+
+	var encodedPhrases = [];
+	var current;
+	var replaced = 0;
+	var inserted = 0;
+	var deleted = 0;
+	for (var i = 0, maxi = phrases.length; i < maxi; i++)
+	{
+		current = phrases[i];
+		switch (current.tag) {
+			case "replace":
+				encodedPhrases.push('<span class="phrase replaced">');
+				encodedPhrases.push(_encodedTagPhrase('deleted', current.encodedFrom));
+				encodedPhrases.push(_encodedTagPhrase('inserted', current.encodedTo));
+				encodedPhrases.push('</span>');
+				replaced++;
+				break;
+			case "delete":
+				encodedPhrases.push(_encodedTagPhrase('deleted', current.encodedFrom));
+				deleted++;
+				break;
+			case "insert":
+				encodedPhrases.push(_encodedTagPhrase('inserted', current.encodedTo));
+				inserted++;
+				break;
+			case "equal":
+				// •ÏX“_‚ÌŠÔ‚É‹²‚Ü‚ê‚½1•¶Žš‚¾‚¯‚Ì–³•ÏX•”•ª‚¾‚¯‚Í“Á•Êˆµ‚¢
+				if (
+					current.from.length == 1 &&
+					(i > 0 && phrases[i-1].tag != 'equal') &&
+					(i < maxi-1 && phrases[i+1].tag != 'equal')
+					) {
+					encodedPhrases.push('<span class="phrase duplicated">');
+					encodedPhrases.push(_encodedTagPhrase('equal', current.encodedFrom));
+					encodedPhrases.push(_encodedTagPhrase('equal', current.encodedTo));
+					encodedPhrases.push('</span>');
+				}
+				else {
+					encodedPhrases.push(current.encodedFrom);
+				}
+				break;
+		}
+	}
 
 	var extraClass = (replaced || (deleted && inserted)) ?
 			' includes-both-modification' :
@@ -299,7 +330,7 @@ function _diffLineEncoded(aFromLine, aToLine)
 
 	return [
 		'<span class="line replaced'+extraClass+'">'+
-		phrases.join('')+
+		encodedPhrases.join('')+
 		'</span>'
 	];
 }
