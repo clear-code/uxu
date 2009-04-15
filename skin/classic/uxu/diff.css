@@ -54,6 +54,7 @@ html|span[class~="line"][class~="replaced"] {
 }
 
 
+/*
 html|span[class="line-inner-box"] {
 	border-top: 1px solid;
 }
@@ -66,6 +67,7 @@ html|span[class~="line"][class~="deleted"] > html|span[class="line-inner-box"] {
 html|span[class~="line"][class~="replaced"] > html|span[class="line-inner-box"] {
 	border-top-color: #ffe67f;
 }
+*/
 
 
 html|span[class~="phrase"][class~="inserted"] {
