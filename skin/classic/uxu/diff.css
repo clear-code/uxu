@@ -41,6 +41,7 @@ html|span[class~="line"] {
 	margin-left: -11px;
 	padding-left: 16px;
 	background: transparent none no-repeat top left;
+	-moz-binding: url("diff.xml#line");
 }
 html|span[class~="line"][class~="inserted"] {
 	background-image: url("inserted.png");
@@ -51,6 +52,21 @@ html|span[class~="line"][class~="deleted"] {
 html|span[class~="line"][class~="replaced"] {
 	background-image: url("replaced.png");
 }
+
+
+html|span[class="line-inner-box"] {
+	border-bottom: 1px solid;
+}
+html|span[class~="line"][class~="inserted"] > html|span[class="line-inner-box"] {
+	border-bottom-color: #78ff88;
+}
+html|span[class~="line"][class~="deleted"] > html|span[class="line-inner-box"] {
+	border-bottom-color: #ffa8a8;
+}
+html|span[class~="line"][class~="replaced"] > html|span[class="line-inner-box"] {
+	border-bottom-color: #ffe67f;
+}
+
 
 html|span[class~="phrase"][class~="inserted"] {
 	background: #a5ffa5;

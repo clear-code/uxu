@@ -4,6 +4,10 @@
 	xmlns:xbl="http://www.mozilla.org/xbl"
 	xmlns:html="http://www.w3.org/1999/xhtml">
 
+	<binding id="line" includes="*">
+		<content><html:span class="line-inner-box"><children/></html:span></content>
+	</binding>
+
 	<binding id="inserted-section" includes="*">
 		<content pseudo-table-element="true"><html:span class="pseudo-table-row"><html:span class="placeholder-cell"> </html:span></html:span><html:span class="pseudo-table-row"><html:span xbl:inherits="class"><children/></html:span></html:span></content>
 	</binding>
