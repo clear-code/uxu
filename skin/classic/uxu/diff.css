@@ -55,16 +55,16 @@ html|span[class~="line"][class~="replaced"] {
 
 
 html|span[class="line-inner-box"] {
-	border-bottom: 1px solid;
+	border-top: 1px solid;
 }
 html|span[class~="line"][class~="inserted"] > html|span[class="line-inner-box"] {
-	border-bottom-color: #78ff88;
+	border-top-color: #78ff88;
 }
 html|span[class~="line"][class~="deleted"] > html|span[class="line-inner-box"] {
-	border-bottom-color: #ffa8a8;
+	border-top-color: #ffa8a8;
 }
 html|span[class~="line"][class~="replaced"] > html|span[class="line-inner-box"] {
-	border-bottom-color: #ffe67f;
+	border-top-color: #ffe67f;
 }
 
 
