@@ -8,7 +8,7 @@ html|span[class~="block"] {
 	white-space: pre-wrap; /* Firefox 3.0 or later */
 	white-space: -moz-pre-wrap; /* Firefox 2.0.0.* */
 	font-family: monospace;
-	line-height: 1;
+	line-height: 1.2;
 }
 
 html|span[class~="block"],
