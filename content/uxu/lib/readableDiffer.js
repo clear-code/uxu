@@ -117,11 +117,6 @@ function _encodedTagLine(aEncodedClass, aContents)
 	});
 }
 
-function _encodedTagPhrase(aEncodedClass, aContent)
-{
-	return '<span class="phrase '+aEncodedClass+'">'+aContent+'</span>';
-}
-
 function _escapeForEncoded(aString)
 {
 	return aString
@@ -333,6 +328,11 @@ function _diffLineEncoded(aFromLine, aToLine)
 		encodedPhrases.join('')+
 		'</span>'
 	];
+}
+
+function _encodedTagPhrase(aEncodedClass, aContent)
+{
+	return '<span class="phrase '+aEncodedClass+'">'+aContent+'</span>';
 }
 
 function _diffLine(aFromLine, aToLine)
