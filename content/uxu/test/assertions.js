@@ -26,17 +26,20 @@ var inherits = lib_module.require('class', 'event_target');
 
 function constructor()
 {
-	this.resetCount();
+	this.resetSuccessCount();
+	this.__defineGetter__('successCount', function() {
+		return this._successCount;
+	});
 }
 
-function resetCount()
+function resetSuccessCount()
 {
-	this.successCount = 0;
+	this._successCount = 0;
 }
 
 function _onSuccess()
 {
-	this.successCount++;
+	this._successCount++;
 }
 
 function equals(aExpected, aActual, aMessage)

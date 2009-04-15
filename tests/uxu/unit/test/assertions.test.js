@@ -835,3 +835,14 @@ function test_appendTypeString()
 	assert.equals('undefined',      assertionsModule.appendTypeString(void(0)));
 	assert.equals('function () {\n} (function)', assertionsModule.appendTypeString(function() {}));
 }
+
+function testSuccessCount()
+{
+	assert.equals(0, assertionsModule.successCount);
+	assertionsModule.isTrue(true);
+	assertionsModule.isTrue(true);
+	assertionsModule.isTrue(true);
+	assert.equals(3, assertionsModule.successCount);
+	assertionsModule.resetSuccessCount();
+	assert.equals(0, assertionsModule.successCount);
+}
