@@ -857,6 +857,7 @@ function _getOriginalTargetFromScreenPoint(aElement, aScreenX, aScreenY)
 	 
 function _getOriginalTargetFromScreenPointInternal(aElement, aScreenX, aScreenY) 
 {
+	if (!aElement) return null;
 	var doc = aElement.ownerDocument;
 	var nodes = 'getAnonymousNodes' in doc ? doc.getAnonymousNodes(aElement) : null ;
 	if (!nodes || !nodes.length) nodes = aElement.childNodes;
