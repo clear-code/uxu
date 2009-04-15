@@ -84,6 +84,30 @@ function testDiffLine()
                     '</span>'],
                    "bcDefghiJklx",
                    "abcdefGhijkl");
+
+    assertDiffLine(["- abcDefghijkl",
+                    "?    ^ ^",
+                    "+ abcdeFghijkl",
+                    "?    ^ ^"],
+                   ['<span class="line replaced includes-both-modification">'+
+                      'abc'+
+                      '<span class="phrase replaced">'+
+                      '<span class="phrase deleted">D</span>'+
+                      '<span class="phrase inserted">d</span>'+
+                      '</span>'+
+                      '<span class="phrase equal">'+
+                      '<span class="phrase duplicated">e</span>'+
+                      '<span class="phrase duplicated">e</span>'+
+                      '</span>'+
+                      '<span class="phrase replaced">'+
+                      '<span class="phrase deleted">f</span>'+
+                      '<span class="phrase inserted">F</span>'+
+                      '</span>'+
+                      'ghijkl'+
+                    '</span>'],
+                   "abcDefghijkl",
+                   "abcdeFghijkl");
+
 }
 
 function testEmptyDiffLine()

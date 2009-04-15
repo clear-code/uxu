@@ -88,15 +88,15 @@ html|span[class~="line"] html|span[class="pseudo-table-row"] > html|span[class="
 }
 
 html|span[class~="phrase"][class~="replaced"],
-html|span[class~="phrase"][class~="duplicated"] {
+html|span[class~="phrase"][class~="equal"] {
 	display: inline-table;
 }
 html|span[class~="phrase"][class~="replaced"] > html|span:not([pseudo-table-element="true"]),
-html|span[class~="phrase"][class~="duplicated"] > html|span:not([pseudo-table-element="true"]) {
+html|span[class~="phrase"][class~="equal"] > html|span:not([pseudo-table-element="true"]) {
 	display: table-row-group;
 	-moz-binding: url("diff.xml#replaced-row");
 }
 
-html|span[class~="phrase"][class~="duplicated"] html|span[class~="phrase"][class~="equal"] {
+html|span[class~="phrase"][class~="equal"] html|span[class~="phrase"][class~="duplicated"] {
 	border: 1px solid transparent;
 }

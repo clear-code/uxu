@@ -312,9 +312,9 @@ function _diffLineEncoded(aFromLine, aToLine)
 					(i > 0 && phrases[i-1].tag != 'equal') &&
 					(i < maxi-1 && phrases[i+1].tag != 'equal')
 					) {
-					encodedPhrases.push('<span class="phrase duplicated">');
-					encodedPhrases.push(_encodedTagPhrase('equal', current.encodedFrom));
-					encodedPhrases.push(_encodedTagPhrase('equal', current.encodedTo));
+					encodedPhrases.push('<span class="phrase equal">');
+					encodedPhrases.push(_encodedTagPhrase('duplicated', current.encodedFrom));
+					encodedPhrases.push(_encodedTagPhrase('duplicated', current.encodedTo));
 					encodedPhrases.push('</span>');
 				}
 				else {
