@@ -109,8 +109,8 @@ html|span[class~="phrase"][class~="replaced"],
 html|span[class~="phrase"][class~="equal"] {
 	display: inline-table;
 }
-html|span[class~="phrase"][class~="replaced"] > html|span:not([pseudo-table-element="true"]),
-html|span[class~="phrase"][class~="equal"] > html|span:not([pseudo-table-element="true"]) {
+html|span[class~="phrase"][class~="replaced"] > html|span,
+html|span[class~="phrase"][class~="equal"] > html|span {
 	display: table-row-group;
 	-moz-binding: url("diff.xml#replaced-row");
 }

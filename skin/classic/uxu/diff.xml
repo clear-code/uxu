@@ -9,15 +9,15 @@
 	</binding>
 
 	<binding id="inserted-section" includes="*">
-		<content pseudo-table-element="true"><html:span class="pseudo-table-row"><html:span class="placeholder-cell"> </html:span></html:span><html:span class="pseudo-table-row"><html:span xbl:inherits="class"><children/></html:span></html:span></content>
+		<content><html:span class="pseudo-table-row"><html:span class="placeholder-cell"> </html:span></html:span><html:span class="pseudo-table-row"><html:span xbl:inherits="class"><children/></html:span></html:span></content>
 	</binding>
 
 	<binding id="deleted-section" includes="*">
-		<content pseudo-table-element="true"><html:span class="pseudo-table-row"><html:span xbl:inherits="class"><children/></html:span></html:span><html:span class="pseudo-table-row"><html:span class="placeholder-cell"> </html:span></html:span></content>
+		<content><html:span class="pseudo-table-row"><html:span xbl:inherits="class"><children/></html:span></html:span><html:span class="pseudo-table-row"><html:span class="placeholder-cell"> </html:span></html:span></content>
 	</binding>
 
 	<binding id="replaced-row" includes="*">
-		<content pseudo-table-element="true"><html:span class="pseudo-table-row"><html:span xbl:inherits="class"><children/></html:span></html:span></content>
+		<content><html:span class="pseudo-table-row"><html:span xbl:inherits="class"><children/></html:span></html:span></content>
 	</binding>
 
 </bindings>
