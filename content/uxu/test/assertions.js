@@ -26,6 +26,17 @@ var inherits = lib_module.require('class', 'event_target');
 
 function constructor()
 {
+	this.resetCount();
+}
+
+function resetCount()
+{
+	this.successCount = 0;
+}
+
+function _onSuccess()
+{
+	this.successCount++;
 }
 
 function equals(aExpected, aActual, aMessage)
@@ -39,6 +50,7 @@ function equals(aExpected, aActual, aMessage)
 		     },
 		     bundle.getString('assert_equals'),
 		     aMessage);
+	this._onSuccess();
 }
 function equal(aExpected, aActual, aMessage) { this.equals(aExpected, aActual, aMessage); }
 
@@ -53,6 +65,7 @@ function notEquals(aExpected, aActual, aMessage)
 		     },
 		     bundle.getString('assert_not_equals'),
 		     aMessage);
+	this._onSuccess();
 }
 function notEqual(aExpected, aActual, aMessage) { this.notEquals(aExpected, aActual, aMessage); }
 
@@ -67,6 +80,7 @@ function strictlyEquals(aExpected, aActual, aMessage)
 		     },
 		     bundle.getString('assert_strictly_equals'),
 		     aMessage);
+	this._onSuccess();
 }
 function strictlyEqual(aExpected, aActual, aMessage) { this.strictlyEquals(aExpected, aActual, aMessage); }
 
@@ -81,6 +95,7 @@ function notStrictlyEquals(aExpected, aActual, aMessage)
 		     },
 		     bundle.getString('assert_not_strictly_equals'),
 		     aMessage);
+	this._onSuccess();
 }
 function notStrictlyEqual(aExpected, aActual, aMessage) { this.notStrictlyEquals(aExpected, aActual, aMessage); }
 
@@ -92,6 +107,7 @@ function isTrue(aActual, aMessage)
 		     	actual      : bundle.getFormattedString('assert_is_true_actual', [appendTypeString(aActual)])
 		     },
 		     bundle.getString('assert_is_true'), aMessage);
+	this._onSuccess();
 }
 
 function isFalse(aActual, aMessage)
@@ -102,6 +118,7 @@ function isFalse(aActual, aMessage)
 		     	actual      : bundle.getFormattedString('assert_is_false_actual', [appendTypeString(aActual)])
 		     },
 		     bundle.getString('assert_is_false'), aMessage);
+	this._onSuccess();
 }
 
 function isBoolean(aActual, aMessage)
@@ -112,6 +129,7 @@ function isBoolean(aActual, aMessage)
 		     	actual      : bundle.getFormattedString('assert_is_boolean_actual', [appendTypeString(aActual)])
 		     },
 		     bundle.getString('assert_is_boolean'), aMessage);
+	this._onSuccess();
 }
 
 function isNotBoolean(aActual, aMessage)
@@ -122,6 +140,7 @@ function isNotBoolean(aActual, aMessage)
 		     	actual      : bundle.getFormattedString('assert_is_not_boolean_actual', [appendTypeString(aActual)])
 		     },
 		     bundle.getString('assert_is_not_boolean'), aMessage);
+	this._onSuccess();
 }
 
 function isString(aActual, aMessage)
@@ -132,6 +151,7 @@ function isString(aActual, aMessage)
 		     	actual      : bundle.getFormattedString('assert_is_string_actual', [appendTypeString(aActual)])
 		     },
 		     bundle.getString('assert_is_string'), aMessage);
+	this._onSuccess();
 }
 
 function isNotString(aActual, aMessage)
@@ -142,6 +162,7 @@ function isNotString(aActual, aMessage)
 		     	actual      : bundle.getFormattedString('assert_is_not_string_actual', [appendTypeString(aActual)])
 		     },
 		     bundle.getString('assert_is_not_string'), aMessage);
+	this._onSuccess();
 }
 
 function isNumber(aActual, aMessage)
@@ -152,6 +173,7 @@ function isNumber(aActual, aMessage)
 		     	actual      : bundle.getFormattedString('assert_is_number_actual', [appendTypeString(aActual)])
 		     },
 		     bundle.getString('assert_is_number'), aMessage);
+	this._onSuccess();
 }
 
 function isNotNumber(aActual, aMessage)
@@ -162,6 +184,7 @@ function isNotNumber(aActual, aMessage)
 		     	actual      : bundle.getFormattedString('assert_is_not_number_actual', [appendTypeString(aActual)])
 		     },
 		     bundle.getString('assert_is_not_number'), aMessage);
+	this._onSuccess();
 }
 
 function isFunction(aActual, aMessage)
@@ -172,6 +195,7 @@ function isFunction(aActual, aMessage)
 		     	actual      : bundle.getFormattedString('assert_is_function_actual', [appendTypeString(aActual)])
 		     },
 		     bundle.getString('assert_is_function'), aMessage);
+	this._onSuccess();
 }
 
 function isNotFunction(aActual, aMessage)
@@ -182,6 +206,7 @@ function isNotFunction(aActual, aMessage)
 		     	actual      : bundle.getFormattedString('assert_is_not_function_actual', [appendTypeString(aActual)])
 		     },
 		     bundle.getString('assert_is_not_function'), aMessage);
+	this._onSuccess();
 }
 
 function isDefined(aActual, aMessage)
@@ -192,6 +217,7 @@ function isDefined(aActual, aMessage)
 		     	actual      : bundle.getFormattedString('assert_is_defined_actual', [appendTypeString(aActual)])
 		     },
 		     bundle.getString('assert_is_defined'), aMessage);
+	this._onSuccess();
 }
 
 function isUndefined(aActual, aMessage)
@@ -202,6 +228,7 @@ function isUndefined(aActual, aMessage)
 		     	actual      : bundle.getFormattedString('assert_is_undefined_actual', [appendTypeString(aActual)])
 		     },
 		     bundle.getString('assert_is_undefined'), aMessage);
+	this._onSuccess();
 }
 
 function isNull(aActual, aMessage)
@@ -212,6 +239,7 @@ function isNull(aActual, aMessage)
 		     	actual      : bundle.getFormattedString('assert_is_null_actual', [appendTypeString(aActual)])
 		     },
 		     bundle.getString('assert_is_null'), aMessage);
+	this._onSuccess();
 }
 
 function isNotNull(aActual, aMessage)
@@ -222,6 +250,7 @@ function isNotNull(aActual, aMessage)
 		     	actual      : bundle.getFormattedString('assert_is_not_null_actual', [appendTypeString(aActual)])
 		     },
 		     bundle.getString('assert_is_not_null'), aMessage);
+	this._onSuccess();
 }
 
 function raises(aExpectedException, aTask, aContext, aMessage)
@@ -239,6 +268,7 @@ function raises(aExpectedException, aTask, aContext, aMessage)
 		}
 	}
 	if (aTask && utils.isGeneratedIterator(aTask)) {
+		var _this = this;
 		return utils.doIteration(aTask, {
 			onEnd : function(e)
 			{
@@ -248,14 +278,17 @@ function raises(aExpectedException, aTask, aContext, aMessage)
 						e != aExpectedException &&
 						e.name != aExpectedException
 					)
-					)
+					) {
 					_onRaisesFinish(aExpectedException, aMessage);
+				}
+				_this._onSuccess();
 			}
 		});
 	}
 	else if (!raised) {
 		_onRaisesFinish(aExpectedException, aMessage);
 	}
+	this._onSuccess();
 }
 function raise(aExpectedException, aTask, aContext, aMessage) { this.raises(aExpectedException, aTask, aContext, aMessage); }
 function _onRaisesFinish(aExpectedException, aMessage)
@@ -290,6 +323,7 @@ function notRaises(aUnexpectedException, aTask, aContext, aMessage)
 			_onNotRaisesFinish(aUnexpectedException, exception, aMessage);
 	}
 	if (aTask && utils.isGeneratedIterator(aTask)) {
+		var _this = this;
 		return utils.doIteration(aTask, {
 			onEnd : function(e)
 			{
@@ -299,13 +333,16 @@ function notRaises(aUnexpectedException, aTask, aContext, aMessage)
 						e != aUnexpectedException &&
 						e.name != aUnexpectedException
 					)
-					)
+					) {
+					_this._onSuccess();
 					return;
+				}
 				exception = e;
 				_onNotRaisesFinish(aUnexpectedException, exception, aMessage);
 			}
 		});
 	}
+	this._onSuccess();
 }
 function notRaise(aUnexpectedException, aTask, aContext, aMessage) { this.notRaises(aUnexpectedException, aTask, aContext, aMessage); }
 function _onNotRaisesFinish(aUnexpectedException, aActualException, aMessage)
@@ -329,6 +366,7 @@ function matches(aExpectedPattern, aActualString, aMessage)
 		     	actual      : bundle.getFormattedString('assert_matches_actual', [aActualString])
 		     },
 		     bundle.getString('assert_matches'), aMessage);
+	this._onSuccess();
 }
 function match(aExpectedPattern, aActualString, aMessage) { this.matches(aExpectedPattern, aActualString, aMessage); }
 
@@ -342,6 +380,7 @@ function notMatches(aUnexpectedPattern, aActualString, aMessage)
 		     	actual      : bundle.getFormattedString('assert_not_matches_actual', [aActualString])
 		     },
 		     bundle.getString('assert_not_matches'), aMessage);
+	this._onSuccess();
 }
 function notMatch(aUnexpectedPattern, aActualString, aMessage) { this.notMatches(aUnexpectedPattern, aActualString, aMessage); }
 
@@ -355,6 +394,7 @@ function pattern(aExpectedString, aActualPattern, aMessage)
 		     	actual      : bundle.getFormattedString('assert_pattern_actual', [aActualPattern])
 		     },
 		     bundle.getString('assert_pattern'), aMessage);
+	this._onSuccess();
 }
 
 function notPattern(aUnexpectedString, aActualPattern, aMessage)
@@ -367,6 +407,7 @@ function notPattern(aUnexpectedString, aActualPattern, aMessage)
 		     	actual      : bundle.getFormattedString('assert_not_pattern_actual', [aActualPattern])
 		     },
 		     bundle.getString('assert_not_pattern'), aMessage);
+	this._onSuccess();
 }
 
 function arrayEquals(aExpected, aActual, aMessage) { this.equals(aExpected, aActual, aMessage); }
@@ -374,94 +415,95 @@ function arrayEqual(aExpected, aActual, aMessage) { this.arrayEquals(aExpected, 
 
 function inDelta(aExpected, aActual, aDelta, aMessage)
 {
-	if (aExpected - aDelta < aActual && aActual < aExpected + aDelta)
-		return;
-
-	if (aExpected - aDelta == aActual || aExpected + aDelta == aActual) {
+	if (aExpected - aDelta == aActual || aExpected + aDelta == aActual)
 		this.fireEvent(
 			'AssertionNotify',
 			bundle.getFormattedString('assert_in_delta_notification',
 			                          [aActual, aExpected, aDelta])
 		);
-		return;
-	}
 
-	fail({
-	     	expectedRaw : (aExpected - aDelta)+' - '+(aExpected + aDelta),
-	     	actualRaw   : aActual,
-	     	expected    : bundle.getFormattedString('assert_in_delta_expected',
-	     							   [aExpected - aDelta,
-	     								aActual,
-	     								aExpected + aDelta,
-	     								aExpected,
-	     								aDelta]),
-	     	actual      : bundle.getFormattedString('assert_in_delta_actual',
-	     							   [appendTypeString(aActual)])
-	     },
-		 bundle.getString('assert_in_delta'),
-		 aMessage);
+	if (aExpected - aDelta > aActual || aActual > aExpected + aDelta) {
+		fail({
+		     	expectedRaw : (aExpected - aDelta)+' - '+(aExpected + aDelta),
+		     	actualRaw   : aActual,
+		     	expected    : bundle.getFormattedString('assert_in_delta_expected',
+		     							   [aExpected - aDelta,
+		     								aActual,
+		     								aExpected + aDelta,
+		     								aExpected,
+		     								aDelta]),
+		     	actual      : bundle.getFormattedString('assert_in_delta_actual',
+		     							   [appendTypeString(aActual)])
+		     },
+			 bundle.getString('assert_in_delta'),
+			 aMessage);
+	this._onSuccess();
 }
 
 function _greaterThan(aExpected, aActual, aMessage)
 {
-	if (aExpected < aActual) return;
-	fail({
-	     	expectedRaw : aExpected,
-	     	actualRaw   : aActual,
-	     	expected    : bundle.getFormattedString('assert_greater_than_expected',
-	     							   [appendTypeString(aExpected)]),
-	     	actual      : bundle.getFormattedString('assert_greater_than_actual',
-	     							   [appendTypeString(aActual)])
-	     },
-		 bundle.getString('assert_greater_than'),
-		 aMessage);
+	if (aExpected >= aActual)
+		fail({
+		     	expectedRaw : aExpected,
+		     	actualRaw   : aActual,
+		     	expected    : bundle.getFormattedString('assert_greater_than_expected',
+		     							   [appendTypeString(aExpected)]),
+		     	actual      : bundle.getFormattedString('assert_greater_than_actual',
+		     							   [appendTypeString(aActual)])
+		     },
+			 bundle.getString('assert_greater_than'),
+			 aMessage);
+	this._onSuccess();
 }
 function _greater(aExpected, aActual, aMessage) { this._greaterThan(aExpected, aActual, aMessage); }
 
 function _greaterOrEqual(aExpected, aActual, aMessage)
 {
-	if (aExpected <= aActual) return;
-	fail({
-	     	expectedRaw : aExpected,
-	     	actualRaw   : aActual,
-	     	expected    : bundle.getFormattedString('assert_greater_or_equal_expected',
-	     							   [appendTypeString(aExpected)]),
-	     	actual      : bundle.getFormattedString('assert_greater_or_equal_actual',
-	     							   [appendTypeString(aActual)])
-	     },
-		 bundle.getString('assert_greater_or_equal'),
-		 aMessage);
+	if (aExpected > aActual)
+		fail({
+		     	expectedRaw : aExpected,
+		     	actualRaw   : aActual,
+		     	expected    : bundle.getFormattedString('assert_greater_or_equal_expected',
+		     							   [appendTypeString(aExpected)]),
+		     	actual      : bundle.getFormattedString('assert_greater_or_equal_actual',
+		     							   [appendTypeString(aActual)])
+		     },
+			 bundle.getString('assert_greater_or_equal'),
+			 aMessage);
+	this._onSuccess();
 }
 
 function _lessThan(aExpected, aActual, aMessage)
 {
-	if (aExpected > aActual) return;
-	fail({
-	     	expectedRaw : aExpected,
-	     	actualRaw   : aActual,
-	     	expected    : bundle.getFormattedString('assert_less_than_expected',
-	     							   [appendTypeString(aExpected)]),
-	     	actual      : bundle.getFormattedString('assert_less_than_actual',
-	     							   [appendTypeString(aActual)])
-	     },
-		 bundle.getString('assert_less_than'),
-		 aMessage);
+	if (aExpected <= aActual)
+		fail({
+		     	expectedRaw : aExpected,
+		     	actualRaw   : aActual,
+		     	expected    : bundle.getFormattedString('assert_less_than_expected',
+		     							   [appendTypeString(aExpected)]),
+		     	actual      : bundle.getFormattedString('assert_less_than_actual',
+		     							   [appendTypeString(aActual)])
+		     },
+			 bundle.getString('assert_less_than'),
+			 aMessage);
+	this._onSuccess();
 }
 function _less(aExpected, aActual, aMessage) { this._lessThan(aExpected, aActual, aMessage); }
 
 function _lessOrEqual(aExpected, aActual, aMessage)
 {
-	if (aExpected >= aActual) return;
-	fail({
-	     	expectedRaw : aExpected,
-	     	actualRaw   : aActual,
-	     	expected    : bundle.getFormattedString('assert_less_or_equal_expected',
-	     							   [appendTypeString(aExpected)]),
-	     	actual      : bundle.getFormattedString('assert_less_or_equal_actual',
-	     							   [appendTypeString(aActual)])
-	     },
-		 bundle.getString('assert_less_or_equal'),
-		 aMessage);
+	if (aExpected < aActual)
+		fail({
+		     	expectedRaw : aExpected,
+		     	actualRaw   : aActual,
+		     	expected    : bundle.getFormattedString('assert_less_or_equal_expected',
+		     							   [appendTypeString(aExpected)]),
+		     	actual      : bundle.getFormattedString('assert_less_or_equal_actual',
+		     							   [appendTypeString(aActual)])
+		     },
+			 bundle.getString('assert_less_or_equal'),
+			 aMessage);
+	this._onSuccess();
 }
 
 function compare(aExpected, aOperator, aActual, aMessage)
@@ -502,7 +544,7 @@ function contains(aExpected, aActual, aMessage)
 		(aActual instanceof Ci.nsIDOMNode) ?
 			!utils.isTargetInSubTree(aExpected, aActual) :
 			(utils.isArray(aActual) ? aActual : String(aActual) ).indexOf(aExpected) < 0
-		) {
+		)
 		fail({
 		     	expectedRaw : appendTypeString(aExpected),
 		     	actualRaw   : appendTypeString(aActual),
@@ -511,7 +553,7 @@ function contains(aExpected, aActual, aMessage)
 		     },
 		     bundle.getString('assert_contains'),
 		     aMessage);
-	}
+	this._onSuccess();
 }
 function contain(aExpected, aActual, aMessage) { this.contains(aExpected, aActual, aMessage); }
 
@@ -525,7 +567,7 @@ function notContains(aExpected, aActual, aMessage)
 		(aActual instanceof Ci.nsIDOMNode) ?
 			utils.isTargetInSubTree(aExpected, aActual) :
 			(utils.isArray(aActual) ? aActual : String(aActual) ).indexOf(aExpected) > -1
-		) {
+		)
 		fail({
 		     	expectedRaw : appendTypeString(aExpected),
 		     	actualRaw   : appendTypeString(aActual),
@@ -534,7 +576,7 @@ function notContains(aExpected, aActual, aMessage)
 		     },
 		     bundle.getString('assert_not_contains'),
 		     aMessage);
-	}
+	this._onSuccess();
 }
 function notContain(aExpected, aActual, aMessage) { this.notContains(aExpected, aActual, aMessage); }
 
@@ -562,20 +604,21 @@ function finishWithin(aExpectedTime, aTask, aContext, aMessage) { this.finishesW
 function _onFinishesWithinFinish(aExpectedTime, aStartAt, aMessage)
 {
 	var actualTime = Date.now() - aStartAt;
-	if (actualTime <= aExpectedTime) return;
-
-	var longExpectedTime = aExpectedTime < 1000 ?
-			'' :
-			bundle.getFormattedString('assert_finishes_within_expected_long', [Math.round(aExpectedTime / 1000)]) ;
-	var longActualTime = actualTime < 1000 ?
-			'' :
-			bundle.getFormattedString('assert_finishes_within_actual_long', [Math.round(actualTime / 1000)]) ;
-	fail({
-	     	expected : bundle.getFormattedString('assert_finishes_within_expected', [aExpectedTime, longExpectedTime]),
-	     	actual   : bundle.getFormattedString('assert_finishes_within_actual', [actualTime, longActualTime])
-	     },
-	     bundle.getString('assert_finishes_within'),
-	     aMessage);
+	if (actualTime > aExpectedTime) {
+		var longExpectedTime = aExpectedTime < 1000 ?
+				'' :
+				bundle.getFormattedString('assert_finishes_within_expected_long', [Math.round(aExpectedTime / 1000)]) ;
+		var longActualTime = actualTime < 1000 ?
+				'' :
+				bundle.getFormattedString('assert_finishes_within_actual_long', [Math.round(actualTime / 1000)]) ;
+		fail({
+		     	expected : bundle.getFormattedString('assert_finishes_within_expected', [aExpectedTime, longExpectedTime]),
+		     	actual   : bundle.getFormattedString('assert_finishes_within_actual', [actualTime, longActualTime])
+		     },
+		     bundle.getString('assert_finishes_within'),
+		     aMessage);
+	}
+	this._onSuccess();
 }
 
 function ok(aExpression, aMessage)
