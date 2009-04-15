@@ -23,6 +23,7 @@ function tearDown()
 
 function assertSucceeded(aAssertion, aArgs)
 {
+	var beforeCount = assertionsModule.successCount;
 	assert.notRaises(
 		'AssertionFailed',
 		function() {
@@ -30,10 +31,12 @@ function assertSucceeded(aAssertion, aArgs)
 		},
 		null
 	);
+	assert.equals(beforeCount+1, assertionsModule.successCount);
 }
 
 function assertFailed(aAssertion, aArgs)
 {
+	var beforeCount = assertionsModule.successCount;
 	assert.raises(
 		'AssertionFailed',
 		function() {
@@ -50,6 +53,42 @@ function assertFailed(aAssertion, aArgs)
 		exception = e;
 	}
 	assert.notEquals(-1, exception.message.indexOf(aArgs[aArgs.length-1]));
+	assert.equals(beforeCount, assertionsModule.successCount);
+}
+
+function assertSucceededWithDelay(aAssertion, aArgs)
+{
+	var beforeCount = assertionsModule.successCount;
+	yield Do(assert.notRaises(
+		'AssertionFailed',
+		function() {
+			yield Do(aAssertion.apply(assertionsModule, aArgs));
+		},
+		null
+	));
+	assert.equals(beforeCount+1, assertionsModule.successCount);
+}
+
+function assertFailedWithDelay(aAssertion, aArgs)
+{
+	var beforeCount = assertionsModule.successCount;
+	yield Do(assert.raises(
+		'AssertionFailed',
+		function() {
+			yield Do(aAssertion.apply(assertionsModule, aArgs));
+		},
+		null
+	));
+
+	var exception;
+	try {
+		aAssertion.apply(assertionsModule, aArgs);
+	}
+	catch(e) {
+		exception = e;
+	}
+	assert.notEquals(-1, exception.message.indexOf(aArgs[aArgs.length-1]));
+	assert.equals(beforeCount, assertionsModule.successCount);
 }
 
 function testEquals()
@@ -102,6 +141,8 @@ function testEquals()
 	assertFailed(assertionsModule.notEquals, [1, 1, message]);
 	assertSucceeded(assertionsModule.notEqual, [0, 1]);
 	assertFailed(assertionsModule.notEqual, [1, 1, message]);
+
+	assert.equal(8, assertionsModule.successCount);
 }
 
 function testStrictlyEquals()
@@ -136,13 +177,13 @@ function testStrictlyEquals()
                  [{my: 1, name: "is", Nakano: "NO!", additional: 0},
                   {my: 1, name: "is", Nakano: "NO!"},
                   message]);
+
+	assert.equal(4, assertionsModule.successCount);
 }
 
-function testContains()
+function testContainsString()
 {
 	var message = Math.random() * 65000;
-
-	// simple string
 	assertSucceeded(assertionsModule.contains,
                     ['text', 'long text']);
 	assertFailed(assertionsModule.contains,
@@ -151,8 +192,12 @@ function testContains()
                  ['text', 'long text', message]);
 	assertSucceeded(assertionsModule.notContains,
                     ['outside', 'long text']);
+	assert.equal(2, assertionsModule.successCount);
+}
 
-	// array
+function testContainsArray()
+{
+	var message = Math.random() * 65000;
 	var item = { value : true };
 	var array = ['string', 29, true, item];
 	assertSucceeded(assertionsModule.contains,
@@ -175,7 +220,12 @@ function testContains()
                  [item, array, message]);
 	assertSucceeded(assertionsModule.notContains,
                     ['outside', array]);
+	assert.equal(5, assertionsModule.successCount);
+}
 
+function testContainsRange()
+{
+	var message = Math.random() * 65000;
 
 	yield Do(utils.loadURI('../../fixtures/links.html'));
 
@@ -184,9 +234,6 @@ function testContains()
 		return content.document.getElementById(aId);
 	}
 
-	var targetRange;
-
-	// range
 	var range = content.document.createRange();
 	range.setStartBefore($('item4'));
 	range.setEndAfter($('item9'));
@@ -209,7 +256,7 @@ function testContains()
 	assertSucceeded(assertionsModule.notContains,
                     ['リンク10', range]);
 
-	targetRange = content.document.createRange();
+	var targetRange = content.document.createRange();
 	targetRange.selectNode($('em5'));
 	targetRange.setEnd($('em5').lastChild, 3);
 	assertSucceeded(assertionsModule.contains,
@@ -226,7 +273,13 @@ function testContains()
 	range.detach();
 	targetRange.detach();
 
-	// selection
+	assert.equal(6, assertionsModule.successCount);
+}
+
+function testContainsSelection()
+{
+	var message = Math.random() * 65000;
+
 	var selection = content.getSelection();
 	selection.removeAllRanges();
 
@@ -266,7 +319,7 @@ function testContains()
 	assertFailed(assertionsModule.notContains,
                  ['リンク13', selection, message]);
 
-	targetRange = content.document.createRange();
+	var targetRange = content.document.createRange();
 	targetRange.selectNode($('em5'));
 	targetRange.setEnd($('em5').lastChild, 3);
 	assertSucceeded(assertionsModule.contains,
@@ -289,7 +342,13 @@ function testContains()
 	targetRange.detach();
 	selection.removeAllRanges();
 
-	// sub tree
+	assert.equal(9, assertionsModule.successCount);
+}
+
+function testContainsDOMNodeTree()
+{
+	var message = Math.random() * 65000;
+
 	var root = $('item5');
 
 	assertSucceeded(assertionsModule.contains,
@@ -310,7 +369,7 @@ function testContains()
 	assertSucceeded(assertionsModule.notContains,
                     ['リンク10', root]);
 
-	targetRange = content.document.createRange();
+	var targetRange = content.document.createRange();
 	targetRange.selectNode($('em5'));
 	targetRange.setEnd($('em5').lastChild, 3);
 	assertSucceeded(assertionsModule.contains,
@@ -325,6 +384,8 @@ function testContains()
                     [targetRange, root]);
 
 	targetRange.detach();
+
+	assert.equal(6, assertionsModule.successCount);
 }
 
 function testBoolean()
@@ -344,6 +405,8 @@ function testBoolean()
 	assertSucceeded(assertionsModule.isFalse, [null]);
 	assertFailed(assertionsModule.isFalse, [true, message]);
 	assertFailed(assertionsModule.isFalse, [{}, message]);
+
+	assert.equal(6, assertionsModule.successCount);
 }
 
 function testType()
@@ -383,6 +446,8 @@ function testType()
 	assertSucceeded(assertionsModule.isNotFunction, [null]);
 	assertFailed(assertionsModule.isNotFunction, [(function() {}), message]);
 	assertFailed(assertionsModule.isNotFunction, [(new Function('foo', 'return foo')), message]);
+
+	assert.equal(13, assertionsModule.successCount);
 }
 
 function testNullAndUndefined()
@@ -416,6 +481,8 @@ function testNullAndUndefined()
 	assertSucceeded(assertionsModule.isNotNull, ['']);
 	assertSucceeded(assertionsModule.isNotNull, [void(0)]);
 	assertFailed(assertionsModule.isNotNull, [null, message]);
+
+	assert.equal(12, assertionsModule.successCount);
 }
 
 function testRegExp()
@@ -461,6 +528,8 @@ function testRegExp()
 	assertFailed(assertionsModule.notPattern,
 		['test', /te[sx]t/, message]
 	);
+
+	assert.equal(6, assertionsModule.successCount);
 }
 
 function testArray()
@@ -479,6 +548,8 @@ function testArray()
 	assertFailed(assertionsModule.arrayEqual,
 		[[0, 1, 2], [3, 4, 5], message]
 	);
+
+	assert.equal(2, assertionsModule.successCount);
 }
 
 function testRaises()
@@ -516,6 +587,8 @@ function testRaises()
 	assertFailed(assertionsModule.notRaise,
 		['test', function() { throw 'test'; }, {}, message]
 	);
+
+	assert.equal(6, assertionsModule.successCount);
 }
 
 var inDeltaListener;
@@ -551,6 +624,8 @@ function testInDelta()
 	assert.equals(2, inDeltaListener.events.length);
 	assertFailed(assertionsModule.inDelta, [1.0, 0.8, 0.1, message]);
 	assert.equals(2, inDeltaListener.events.length);
+
+	assert.equal(4, assertionsModule.successCount);
 }
 
 function testCompare()
@@ -578,6 +653,8 @@ function testCompare()
 	assertSucceeded(assertionsModule.compare, [10, '=>', 5]);
 	assertFailed(assertionsModule.compare, [10, '=>', 20, message]);
 	assertSucceeded(assertionsModule.compare, [10, '=>', 10]);
+
+	assert.equal(10, assertionsModule.successCount);
 }
 
 function testFinishesWithin()
@@ -637,6 +714,8 @@ function testFinishesWithin()
 	assert.isDefined(result.error);
 	assert.isNotNull(result.error);
 	assert.equals('AssertionFailed', result.error.name);
+
+	assert.equal(2, assertionsModule.successCount);
 }
 
 function test_fail()
