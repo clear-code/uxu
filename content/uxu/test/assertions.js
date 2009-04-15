@@ -422,7 +422,7 @@ function inDelta(aExpected, aActual, aDelta, aMessage)
 			                          [aActual, aExpected, aDelta])
 		);
 
-	if (aExpected - aDelta > aActual || aActual > aExpected + aDelta) {
+	if (aExpected - aDelta > aActual || aActual > aExpected + aDelta)
 		fail({
 		     	expectedRaw : (aExpected - aDelta)+' - '+(aExpected + aDelta),
 		     	actualRaw   : aActual,
