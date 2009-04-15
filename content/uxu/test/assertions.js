@@ -57,7 +57,7 @@ function equal(aExpected, aActual, aMessage) { this.equals(aExpected, aActual, a
 function notEquals(aExpected, aActual, aMessage)
 {
 	if (utils.equals(aExpected, aActual))
-		fail({
+		this.fail({
 		     	expectedRaw : appendTypeString(aExpected),
 		     	actualRaw   : appendTypeString(aActual),
 		     	expected    : bundle.getFormattedString('assert_not_equals_expected', [appendTypeString(aExpected)]),
@@ -279,14 +279,14 @@ function raises(aExpectedException, aTask, aContext, aMessage)
 						e.name != aExpectedException
 					)
 					) {
-					_onRaisesFinish(aExpectedException, aMessage);
+					_this._onRaisesFinish(aExpectedException, aMessage);
 				}
 				_this._onSuccess();
 			}
 		});
 	}
 	else if (!raised) {
-		_onRaisesFinish(aExpectedException, aMessage);
+		this._onRaisesFinish(aExpectedException, aMessage);
 	}
 	this._onSuccess();
 }
@@ -320,7 +320,7 @@ function notRaises(aUnexpectedException, aTask, aContext, aMessage)
 			exception = e;
 		}
 		if (raised)
-			_onNotRaisesFinish(aUnexpectedException, exception, aMessage);
+			this._onNotRaisesFinish(aUnexpectedException, exception, aMessage);
 	}
 	if (aTask && utils.isGeneratedIterator(aTask)) {
 		var _this = this;
@@ -338,7 +338,7 @@ function notRaises(aUnexpectedException, aTask, aContext, aMessage)
 					return;
 				}
 				exception = e;
-				_onNotRaisesFinish(aUnexpectedException, exception, aMessage);
+				_this._onNotRaisesFinish(aUnexpectedException, exception, aMessage);
 			}
 		});
 	}
@@ -585,10 +585,11 @@ function finishesWithin(aExpectedTime, aTask, aContext, aMessage)
 	var startAt = Date.now();
 	if (typeof aTask == 'function') aTask = aTask.call(aContext);
 	if (aTask && utils.isGeneratedIterator(aTask)) {
+		var _this = this;
 		return utils.doIteration(aTask, {
 			onEnd : function(e)
 			{
-				_onFinishesWithinFinish(aExpectedTime, startAt, aMessage);
+				_this._onFinishesWithinFinish(aExpectedTime, startAt, aMessage);
 			},
 			onError : function(e)
 			{
@@ -597,7 +598,7 @@ function finishesWithin(aExpectedTime, aTask, aContext, aMessage)
 		});
 	}
 	else {
-		_onFinishesWithinFinish(aExpectedTime, startAt, aMessage);
+		this._onFinishesWithinFinish(aExpectedTime, startAt, aMessage);
 	}
 }
 function finishWithin(aExpectedTime, aTask, aContext, aMessage) { this.finishesWithin(aExpectedTime, aTask, aContext, aMessage); }
