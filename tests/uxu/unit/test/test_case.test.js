@@ -4,12 +4,14 @@ utils.include(topDir+'content/uxu/lib/module_manager.js');
 
 var test_module = new ModuleManager([topDir+'content/uxu/test']);
 var TestCaseClass = test_module.require('class', 'test_case');
+var EnvironmentClass = test_module.require('class', 'environment');
 
 var testcase;
 
 function setUp()
 {
 	testcase = new TestCaseClass('description');
+	testcase.environment = new EnvironmentClass({}, baseURL, gBrowser);
 	yield 0; // to run tests progressively
 }
 
@@ -499,5 +501,40 @@ function testStopper()
 	testcase.run();
 	yield (function() { return testcase.done; });
 	assert.equals('w,s0,s1,t1,d1,d0,s0,d2,d0,s0,s3,d3,d0,s0,s4,t4,d0,c', steps.join(','));
+}
+
+function testAssertionsCount()
+{
+	testcase.registerTest((function() {
+		var f = function() {
+			testcase.environment.assert.isTrue(true);
+		};
+		f.assertions = 1;
+		return f;
+	})());
+	testcase.registerTest((function() {
+		var f = function() {
+			testcase.environment.assert.isTrue(true);
+			testcase.environment.assert.isTrue(true);
+		};
+		f.assertions = 2;
+		return f;
+	})());
+	testcase.registerTest((function() {
+		var f = function() {
+			testcase.environment.assert.isTrue(true);
+		};
+		f.assertions = 2;
+		return f;
+	})());
+	testcase.masterPriority = 'must';
+	testcase.run();
+	yield (function() { return testcase.done; });
+	assert.equals(
+		['success', 'success', 'failure'],
+		testcase.tests.map(function(aTest) {
+			return aTest.report.result;
+		})
+	);
 }
 

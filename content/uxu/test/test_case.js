@@ -30,10 +30,12 @@ utils.__proto__ = lib_module.require('package', 'utils');
 var inherits = lib_module.require('class', 'event_target');
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
-var Server = server_module.require('class', 'server');
+var Server        = server_module.require('class', 'server');
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
-var Report = test_module.require('class', 'report');
+var Report      = test_module.require('class', 'report');
+var Environment = test_module.require('class', 'environment');
+var Assertions  = test_module.require('class', 'assertions');
  
 function _initDB() 
 {
@@ -75,6 +77,9 @@ const TESTCASE_ABORTED      = '/* uxu-testcase-aborted */';
 const ALL_TESTS_FINISHED    = '/* uxu-all-testcases-finished */';
 const PING                  = ' ';
 const PING_INTERVAL         = 3000;
+ 
+const ERROR_NOT_INITIALIZED     = new Error('environment is not specified.');
+const ERROR_INVALID_ENVIRONMENT = new Error('environment must be an Environment.');
  
 /**
  * Invocation: 
@@ -149,6 +154,18 @@ function constructor(aTitle, aOptions)
 	this.__defineGetter__(
 		'targetProduct', function() {
 			return this._targetProduct;
+		});
+
+	this._environment = null;
+	this.__defineSetter__(
+		'environment', function(aEnvironment) {
+			if (!aEnvironment) throw ERROR_INVALID_ENVIRONMENT;
+			this._environment = aEnvironment;
+			return aEnvironment;
+		});
+	this.__defineGetter__(
+		'environment', function() {
+			return this._environment;
 		});
 
 	this._done = false;
@@ -428,20 +445,24 @@ function registerTest(aFunction)
 		}
 	}
 
+	var assertionsCount = 'assertions' in aFunction ? aFunction.assertions : -1 ;
+
 	this._tests.push({
-		name     : (this._source + '::' + this.title + '::' + key),
+		name        : (this._source + '::' + this.title + '::' + key),
 		description : desc,
-		title    : desc,
-		code     : aFunction,
-		hash     : hash,
-		priority : (
+		title       : desc,
+		code        : aFunction,
+		hash        : hash,
+		priority    : (
 			typeof aFunction.priority == 'number' ?
 				aFunction.priority :
 				(String(aFunction.priority || '').toLowerCase() || 'normal')
 		),
-		id       : 'test-'+Date.now()+'-'+parseInt(Math.random() * 65000),
-		setUp    : privSetUp,
-		tearDown : privTearDown
+		id          : 'test-'+Date.now()+'-'+parseInt(Math.random() * 65000),
+		setUp       : privSetUp,
+		tearDown    : privTearDown,
+		assertions  : assertionsCount,
+		report      : null
 	});
 }
 function _getHashFromString(aString)
@@ -530,6 +551,8 @@ function verify(aStopper)
  */
 function run(aStopper)
 {
+	if (!this.environment) throw ERROR_NOT_INITIALIZED;
+
 	this._stopper = aStopper;
 
 	this._done = false;
@@ -548,18 +571,19 @@ function run(aStopper)
 	var testCaseReport = { report : null };
 
 	var stateTransitions = {
-		start :          { ok : 'doWarmUp' },
-		doWarmUp :       { ok : 'checkPriority', ko: 'doCoolDown' },
-		checkPriority :  { ok : 'doSetUp', ko: 'doReport' },
-		doSetUp :        { ok : 'doPrivSetUp', ko: 'doPrivTearDown' },
-		doPrivSetUp :    { ok : 'doTest', ko: 'doPrivTearDown' },
-		doTest :         { ok : 'doPrivTearDown' },
-		doPrivTearDown : { ok : 'doTearDown', ko: 'doTearDown' },
-		doTearDown :     { ok : 'doReport', ko: 'doReport' },
-		doReport :       { ok : 'nextTest' },
-		nextTest :       { ok : 'checkPriority', ko: 'doCoolDown' },
-		doCoolDown :     { ok : 'finished', ko: 'finished' },
-		finished :       { }
+		start             : { ok : 'doWarmUp' },
+		doWarmUp          : { ok : 'checkPriority', ko: 'doCoolDown' },
+		checkPriority     : { ok : 'doSetUp', ko: 'doReport' },
+		doSetUp           : { ok : 'doPrivSetUp', ko: 'doPrivTearDown' },
+		doPrivSetUp       : { ok : 'doTest', ko: 'doPrivTearDown' },
+		doTest            : { ok : 'checkSuccessCount' },
+		checkSuccessCount : { ok : 'doPrivTearDown', ko: 'doPrivTearDown' },
+		doPrivTearDown    : { ok : 'doTearDown', ko: 'doTearDown' },
+		doTearDown        : { ok : 'doReport', ko: 'doReport' },
+		doReport          : { ok : 'nextTest' },
+		nextTest          : { ok : 'checkPriority', ko: 'doCoolDown' },
+		doCoolDown        : { ok : 'finished', ko: 'finished' },
+		finished          : { }
 	};
 
 	var doPreOrPostProcess = function(aContinuation, aFunction, aOptions)
@@ -669,6 +693,7 @@ function run(aStopper)
 		},
 		doTest : function(aContinuation)
 		{
+			Assertions.prototype.resetSuccessCount.call(_this.environment.assert);
 			testReport.report.onDetailedStart();
 			var test = _this._tests[testIndex];
 			var newReport = _this._exec(test, context, aContinuation, testReport);
@@ -682,15 +707,26 @@ function run(aStopper)
 				testReport.report.description = test.description;
 			}
 		},
-		doReport : function(aContinuation)
+		checkSuccessCount : function(aContinuation)
 		{
-			_this._onFinish(_this._tests[testIndex], testReport.report.result);
-			testReport.report.testOwner = _this;
-			testReport.report.testIndex = testIndex;
-			testReport.report.testID    = _this._tests[testIndex].name;
-			testReport.report.notifications = _this.notifications;
-			_this.notifications = [];
-			_this.fireEvent('TestFinish', testReport.report);
+			var expectedCount = _this._tests[testIndex].assertions;
+			if (expectedCount > -1) {
+				var actualCount = _this.environment.assert.successCount;
+				try {
+					Assertions.prototype.equals.call(
+						_this.environment.assert,
+						expectedCount,
+						actualCount
+					);
+				}
+				catch(e) {
+					testReport.report.result = 'failure';
+					testReport.report.exception = utils.normalizeError(e);
+					testReport.report.description = bundle.getFormattedString('report_description_check_success_count', [test.description]);
+					aContinuation('ko');
+					return;
+				}
+			}
 			aContinuation('ok');
 		},
 		doPrivTearDown : function(aContinuation)
@@ -725,6 +761,18 @@ function run(aStopper)
 					}
 				}
 			);
+		},
+		doReport : function(aContinuation)
+		{
+			_this._tests[testIndex].report = testReport.report;
+			_this._onFinish(_this._tests[testIndex], testReport.report.result);
+			testReport.report.testOwner = _this;
+			testReport.report.testIndex = testIndex;
+			testReport.report.testID    = _this._tests[testIndex].name;
+			testReport.report.notifications = _this.notifications;
+			_this.notifications = [];
+			_this.fireEvent('TestFinish', testReport.report);
+			aContinuation('ok');
 		},
 		nextTest : function(aContinuation)
 		{
