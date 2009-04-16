@@ -94,7 +94,7 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 }
 
 *[role=vs] row {
-	border-top: 1px solid ThreeDShadow;
+	border-top: 1px solid ThreeDLightShadow;
 	padding-top: 0.2em;
 }
 
