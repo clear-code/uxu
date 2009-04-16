@@ -13,6 +13,7 @@
 }
 
 .test-success {
+	list-style-image: url("jar:resource:///chrome/classic.jar!/skin/classic/global/icons/information-32.png");
 }
 
 .report-notification {
