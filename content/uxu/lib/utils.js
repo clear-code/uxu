@@ -488,14 +488,14 @@ function normalizeError(e)
 				break;
 			}
 			e = new Error(msg);
-			e.stack = getCurrentStacks();
+			e.stack = getStackTrace();
 			break;
 
 		case 'string':
 		case 'boolean':
 			var msg = bundle.getFormattedString('unknown_exception', [e]);
 			e = new Error(msg);
-			e.stack = getCurrentStacks();
+			e.stack = getStackTrace();
 			break;
 	}
 	return e;
@@ -612,7 +612,7 @@ function makeStackLine(aStack)
 	return '()@' + aStack.filename + ':' + aStack.lineNumber + '\n';
 }
  
-function getCurrentStacks() 
+function getStackTrace() 
 {
 	var callerStack = '';
 	var caller = Components.stack;
@@ -891,7 +891,7 @@ function doIteration(aGenerator, aCallbacks)
 	if (!isGeneratedIterator(iterator))
 		throw new Error('doIteration:: ['+aGenerator+'] is not a generator!');
 
-	var callerStack = getCurrentStacks();
+	var callerStack = getStackTrace();
 
 	var retVal = { value : false };
 	var lastRun = Date.now();

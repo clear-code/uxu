@@ -646,6 +646,7 @@ getFilePathFromURL
 getFilePathFromURLSpec
 getInstalledLocationOfProduct
 getPref
+getStackTrace
 getURLFromFile
 getURLFromFilePath
 getURLSpecFromFile

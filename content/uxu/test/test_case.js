@@ -298,7 +298,7 @@ function onNotify(aEvent)
 	this.notifications.push({
 		type    : 'notification',
 		message : aEvent.data,
-		stack   : utils.getCurrentStacks()
+		stack   : utils.getStackTrace()
 	});
 }
 function onWarning(aEvent) 
@@ -306,7 +306,7 @@ function onWarning(aEvent)
 	this.notifications.push({
 		type    : 'warning',
 		message : aEvent.data,
-		stack   : utils.getCurrentStacks()
+		stack   : utils.getStackTrace()
 	});
 }
  
