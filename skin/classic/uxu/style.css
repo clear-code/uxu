@@ -15,6 +15,10 @@
 .test-success {
 }
 
+.report-notification {
+	list-style-image: url("jar:resource:///chrome/classic.jar!/skin/classic/global/icons/information-16.png");
+}
+
 progressmeter[testcase-results] > .progress-bar {
 	-moz-appearance: none;
 }
@@ -98,6 +102,11 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 	width: 72px;
 }
 
+
+[role=additionalInfo] {
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
 
 
 .server-report {

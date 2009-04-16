@@ -419,7 +419,14 @@ function testSuccessCountFailTooMany()
 	assert.isTrue(true);
 }
 
+testSuccessCountNoAssertion.priority = 'must';
 function testSuccessCountNoAssertion()
 {
+}
+
+testAssertInDelta.priority = 'must';
+function testAssertInDelta()
+{
+	assert.inDelta(10, 0, 10);
 }
 

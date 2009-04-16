@@ -153,7 +153,10 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 		</hbox>
 
 		<vbox role="test-report-part" flex="1">
-			<hbox><description role="additionalInfo" flex="1"/></hbox>
+			<hbox align="center">
+				<image role="icon"/>
+				<description role="additionalInfo" flex="1"/>
+			</hbox>
 			<grid role="vs" hidden="true">
 				<columns>
 					<column pack="start"/>
