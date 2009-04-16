@@ -93,14 +93,19 @@ function _toText(aFormat)
 				result.push(bundle.getFormattedString('log_test_actual', [aResult.actual]));
 			if (aResult.diff)
 				result.push(bundle.getFormattedString('log_test_diff', [aResult.diff]));
-			if (aResult.stackTrace) {
+			if (aResult.stackTrace && aResult.stackTrace.length) {
 				result.push('');
 				result.push(aResult.stackTrace);
 			}
 			aResult.notifications.forEach(function(aNotification) {
+				if (!aNotification.description &&
+					(!aNotification.stackTrace || !aNotification.stackTrace.length))
+					return;
 				result.push('');
-				result.push(aNotification.message);
-				result.push(aNotification.stackTrace);
+				if (aNotification.description)
+					result.push(aNotification.description);
+				if (aNotification.stackTrace && aNotification.stackTrace.length)
+					result.push(aNotification.stackTrace);
 			});
 		});
 		result.push(bundle.getString('log_separator_testcase'));
