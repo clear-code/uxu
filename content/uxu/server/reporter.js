@@ -83,6 +83,7 @@ function onTestFinish(aEvent)
 	var report = aEvent.data.data;
 	switch (report.result)
 	{
+	    case 'skip':
 	    case 'passover':
 			return;
 		case 'success':

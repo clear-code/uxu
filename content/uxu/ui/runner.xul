@@ -130,8 +130,8 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 					</stack>
 					<label value="&runner.successes;"/>
 					<label role="success-counter" value="0"/>
-					<label value="&runner.passover;"/>
-					<label role="passover-counter" value="0"/>
+					<label value="&runner.skip;"/>
+					<label role="skip-counter" value="0"/>
 					<label value="/"/>
 					<label role="total-counter" value="0"/>
 				</hbox>

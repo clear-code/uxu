@@ -655,14 +655,14 @@ function updateUIForAllTestsFinish()
 	else {
 		scrollReportsTo(_('testcase-reports').firstChild);
 		_('testResultStatus').setAttribute('label',
-			bundle.getString(gPassOverCount ? 'all_result_done' : 'all_result_success' )
+			bundle.getString(gSkipCount ? 'all_result_done' : 'all_result_success' )
 		);
 	}
 	_('testResultStatistical').hidden = false;
 	_('testResultStatistical').setAttribute('label',
 		bundle.getFormattedString(
 			'all_result_statistical',
-			[gTotalCount, gSuccessCount, gFailureCount, gErrorCount, gPassOverCount]
+			[gTotalCount, gSuccessCount, gFailureCount, gErrorCount, gSkipCount]
 		)
 	);
 };
@@ -690,7 +690,7 @@ function reset()
 	gAborted = false;
 	gTotalCount    = 0;
 	gSuccessCount  = 0;
-	gPassOverCount = 0;
+	gSkipCount = 0;
 	gErrorCount    = 0;
 	gFailureCount  = 0;
 	_('runFailed').setAttribute('disabled', true);
@@ -708,7 +708,7 @@ function reset()
 var gAborted = false;
 var gTotalCount    = 0;
 var gSuccessCount  = 0;
-var gPassOverCount = 0;
+var gSkipCount = 0;
 var gErrorCount    = 0;
 var gFailureCount  = 0;
  
@@ -850,10 +850,10 @@ function fillReportFromResult(aTestCase, aResult)
 			if (!aResult.notifications || !aResult.notifications.length)
 				return;
 			break;
-		case 'passover':
-			gPassOverCount++;
-			var passover = parseInt(_(reportNode, 'passover-counter').value);
-			_(reportNode, 'passover-counter').value = passover + 1;
+		case 'skip':
+			gSkipCount++;
+			var skip = parseInt(_(reportNode, 'skip-counter').value);
+			_(reportNode, 'skip-counter').value = skip + 1;
 			_(reportNode).appendChild(dummyTestReport);
 			return;
 		case 'failure':

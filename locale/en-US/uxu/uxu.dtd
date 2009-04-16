@@ -61,8 +61,8 @@
 <!ENTITY runner.help.accesskey "m">
 <!ENTITY runner.help.uri       "http://www.clear-code.com/software/uxu/">
 
-<!ENTITY runner.successes "Successes:">
-<!ENTITY runner.passover "Passed over:">
+<!ENTITY runner.successes "Succeeded:">
+<!ENTITY runner.skip      "Skipped:">
 
 <!ENTITY runner.filePath "Working on:">
 <!ENTITY runner.source "Source">

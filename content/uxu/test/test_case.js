@@ -414,8 +414,9 @@ function registerTest(aFunction)
 		}))
 		return;
 
-	var privSetUp = null;
+	var privSetUp    = null;
 	var privTearDown = null;
+	var shouldSkip   = null;
 	for (let i in aFunction)
 	{
 		if (
@@ -432,7 +433,13 @@ function registerTest(aFunction)
 			) {
 			privTearDown = aFunction[i];
 		}
-		if (privSetUp && privTearDown) break;
+		else if (
+			!shouldSkip &&
+			/^should[sS]kip/.test(i)
+			) {
+			shouldSkip = aFunction[i];
+		}
+		if (privSetUp && privTearDown && shouldSkip) break;
 	}
 
 	var desc = aFunction.description;
@@ -461,6 +468,7 @@ function registerTest(aFunction)
 				aFunction.priority :
 				(String(aFunction.priority || '').toLowerCase() || 'normal')
 		),
+		shouldSkip : shouldSkip,
 
 		setUp    : privSetUp,
 		tearDown : privTearDown,
@@ -592,8 +600,9 @@ function run(aStopper)
 
 	var stateTransitions = {
 		start             : { ok : 'doWarmUp' },
-		doWarmUp          : { ok : 'checkPriority', ko: 'doCoolDown' },
-		checkPriority     : { ok : 'doSetUp', ko: 'doReport' },
+		doWarmUp          : { ok : 'checkDoOrSkip', ko: 'doCoolDown' },
+		checkDoOrSkip     : { ok : 'doSetUp', ko: 'skip' },
+		skip              : { ok : 'doReport' },
 		doSetUp           : { ok : 'doPrivSetUp', ko: 'doPrivTearDown' },
 		doPrivSetUp       : { ok : 'doTest', ko: 'doPrivTearDown' },
 		doTest            : { ok : 'checkSuccessCount' },
@@ -601,7 +610,7 @@ function run(aStopper)
 		doPrivTearDown    : { ok : 'doTearDown', ko: 'doTearDown' },
 		doTearDown        : { ok : 'doReport', ko: 'doReport' },
 		doReport          : { ok : 'nextTest' },
-		nextTest          : { ok : 'checkPriority', ko: 'doCoolDown' },
+		nextTest          : { ok : 'checkDoOrSkip', ko: 'doCoolDown' },
 		doCoolDown        : { ok : 'finished', ko: 'finished' },
 		finished          : { }
 	};
@@ -668,18 +677,42 @@ function run(aStopper)
 				}
 			);
 		},
-		checkPriority : function(aContinuation)
+		checkDoOrSkip : function(aContinuation)
 		{
+			testReport.report = new Report();
 			var test = _this._tests[testIndex];
 			_this.fireEvent('TestStart', test);
-			if (_this._checkPriorityToExec(test)) {
-				aContinuation('ok');
+			if (!_this._checkPriorityToExec(test)) {
+				aContinuation('ko');
 				return;
 			}
-			testReport.report = new Report();
-			testReport.report.result = 'passover';
-			testReport.report.description = test.description;
-			aContinuation('ko');
+			var shouldSkip = test.shouldSkip;
+			if (shouldSkip !== void(0)) {
+				if (typeof shouldSkip == 'function') {
+					try {
+						shouldSkip = shouldSkip.call(context);
+					}
+					catch(e) {
+						testReport.report.result = 'error';
+						testReport.report.exception = utils.normalizeError(e);
+						testReport.report.description =  bundle.getFormattedString('report_description_check_to_skip', [test.description]);
+						shouldSkip = true;
+					}
+				}
+				if (shouldSkip) {
+					aContinuation('ko');
+					return;
+				}
+			}
+			aContinuation('ok');
+		},
+		skip : function(aContinuation)
+		{
+			if (!testReport.report.result) {
+				testReport.report.result = 'skip';
+				testReport.report.description = _this._tests[testIndex].description;
+			}
+			aContinuation('ok');
 		},
 		doSetUp : function(aContinuation)
 		{
@@ -701,7 +734,6 @@ function run(aStopper)
 				aContinuation('ok');
 				return;
 			}
-			testReport.report = new Report();
 			doPreOrPostProcess(
 				aContinuation,
 				test.setUp,
@@ -1013,7 +1045,7 @@ function _exec(aTest, aContext, aContinuation, aReport)
 	var report = new Report();
 
 	if (this._stopper && this._stopper()) {
-		report.result = 'passover';
+		report.result = 'skip';
 		return report;
 	}
 
@@ -1127,7 +1159,7 @@ function _checkPriorityToExec(aTest)
 			statement.reset();
 		}
 		if ((lastHash != aTest.hash) ||
-                    (lastResult != 'success' && lastResult != 'passover')) {
+                    (lastResult != 'success' && lastResult != 'skip')) {
 			shouldDo = true;
 		}
 	}

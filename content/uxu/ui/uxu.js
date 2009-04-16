@@ -101,7 +101,7 @@ var testRunnerlistener = {
 			success  : 0,
 			failure  : 0,
 			error    : 0,
-			passover : 0
+			skip : 0
 		};
 		gLog.scrollBoxObject.ensureElementIsVisible(this.getReport(aEvent.data.testCase));
 	},
@@ -114,11 +114,11 @@ var testRunnerlistener = {
 		node.lastChild.setAttribute('value', bundle.getFormattedString(
 			'all_result_statistical',
 			[
-				this.count.success+this.count.failure+this.count.error+this.count.passover,
+				this.count.success+this.count.failure+this.count.error+this.count.skip,
 				this.count.success,
 				this.count.failure,
 				this.count.error,
-				this.count.passover
+				this.count.skip
 			]
 		));
 		parent.appendChild(node);
@@ -139,7 +139,7 @@ var testRunnerlistener = {
 			case 'error':
 				color = 'background: yellow; color: black;';
 				break;
-			case 'passover':
+			case 'skip':
 				color = 'background: gray; color: white;';
 				break;
 		}

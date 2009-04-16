@@ -62,7 +62,7 @@
 <!ENTITY runner.help.uri       "http://www.clear-code.com/software/uxu/">
 
 <!ENTITY runner.successes "成功したテスト:">
-<!ENTITY runner.passover "除外したテスト:">
+<!ENTITY runner.skip      "除外したテスト:">
 
 <!ENTITY runner.filePath "作業中のファイル:">
 <!ENTITY runner.source "ソース">

@@ -12,10 +12,10 @@ var FORMAT_TEXT = 2;
 //var FORMAT_CSV  = 8;
 //var FORMAT_TSV  = 16;
 
-var IGNORE_PASSOVER = 1024;
-var IGNORE_SUCCESS  = 2048;
+var IGNORE_SKIP    = 1024;
+var IGNORE_SUCCESS = 2048;
 
-var FORMAT_DEFUALT = FORMAT_TEXT | IGNORE_PASSOVER;// | IGNORE_SUCCESS;
+var FORMAT_DEFUALT = FORMAT_TEXT | IGNORE_SKIP;// | IGNORE_SUCCESS;
 
 
 function constructor()
@@ -51,7 +51,7 @@ function _toText(aFormat)
 	var allCount = {
 			total    : 0,
 			success  : 0,
-			passover : 0,
+			skip     : 0,
 			failure  : 0,
 			error    : 0
 		};
@@ -64,7 +64,7 @@ function _toText(aFormat)
 		var count = {
 				total    : 0,
 				success  : 0,
-				passover : 0,
+				skip     : 0,
 				failure  : 0,
 				error    : 0
 			};
@@ -72,7 +72,7 @@ function _toText(aFormat)
 		aLog.results.forEach(function(aResult, aIndex) {
 			count[aResult.type]++;
 			count.total++;
-			if (aFormat & IGNORE_PASSOVER && aResult.type == 'passover') return;
+			if (aFormat & IGNORE_SKIP && aResult.type == 'skip') return;
 			if (aFormat & IGNORE_SUCCESS && aResult.type == 'success') return;
 
 			if (outputCount) result.push(bundle.getString('log_separator_test'));
@@ -111,7 +111,7 @@ function _toText(aFormat)
 		result.push(bundle.getString('log_separator_testcase'));
 		result.push(bundle.getFormattedString(aLog.aborted ? 'log_abort' : 'log_finish', [new Date(aLog.finish)]));
 		result.push(_getLogTimeStr(aLog.time));
-		result.push(bundle.getFormattedString('log_result', [count.success, count.failure, count.error, count.passover]));
+		result.push(bundle.getFormattedString('log_result', [count.success, count.failure, count.error, count.skip]));
 		result.push(bundle.getString('log_separator_testcase'));
 		result.push('');
 		for (var i in count) allCount[i] += count[i];
@@ -120,7 +120,7 @@ function _toText(aFormat)
 	if (result.length) {
 		result.unshift('');
 		result.unshift(_getLogTimeStr(totalTime));
-		result.unshift(bundle.getFormattedString('all_result_statistical', [allCount.total, allCount.success, allCount.failure, allCount.error, allCount.passover]));
+		result.unshift(bundle.getFormattedString('all_result_statistical', [allCount.total, allCount.success, allCount.failure, allCount.error, allCount.skip]));
 		result.push('');
 	}
 	return result.join('\n');

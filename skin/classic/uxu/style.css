@@ -31,11 +31,11 @@ progressmeter[testcase-results~="success"] > .progress-bar {
 	background-color: green;
 }
 
-progressmeter[testcase-results~="passover"] > .progress-bar {
+progressmeter[testcase-results~="skip"] > .progress-bar {
 	background-color: gray;
 }
 
-progressmeter[testcase-results~="success"][testcase-results~="passover"] > .progress-bar {
+progressmeter[testcase-results~="success"][testcase-results~="skip"] > .progress-bar {
 	background-color: #408040;
 }
 
