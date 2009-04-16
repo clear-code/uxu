@@ -503,6 +503,16 @@ function testStopper()
 	assert.equals('w,s0,s1,t1,d1,d0,s0,d2,d0,s0,s3,d3,d0,s0,s4,t4,d0,c', steps.join(','));
 }
 
+function assertTestResult()
+{
+	assert.equals(
+		Array.slice(arguments),
+		testcase.tests.map(function(aTest) {
+			return aTest.report.result;
+		})
+	);
+}
+
 function testAssertionsCount()
 {
 	testcase.registerTest((function() {
@@ -532,12 +542,7 @@ function testAssertionsCount()
 	testcase.masterPriority = 'must';
 	testcase.run();
 	yield (function() { return testcase.done; });
-	assert.equals(
-		['success', 'failure', 'failure'],
-		testcase.tests.map(function(aTest) {
-			return aTest.report.result;
-		})
-	);
+	assertTestResult('success', 'failure', 'failure');
 }
 
 function testMinAssertionsCount()
@@ -566,12 +571,7 @@ function testMinAssertionsCount()
 	testcase.masterPriority = 'must';
 	testcase.run();
 	yield (function() { return testcase.done; });
-	assert.equals(
-		['failure', 'success', 'success'],
-		testcase.tests.map(function(aTest) {
-			return aTest.report.result;
-		})
-	);
+	assertTestResult('failure', 'success', 'success');
 }
 
 function testMaxAssertionsCount()
@@ -601,12 +601,7 @@ function testMaxAssertionsCount()
 	testcase.masterPriority = 'must';
 	testcase.run();
 	yield (function() { return testcase.done; });
-	assert.equals(
-		['success', 'success', 'failure'],
-		testcase.tests.map(function(aTest) {
-			return aTest.report.result;
-		})
-	);
+	assertTestResult('success', 'success', 'failure');
 }
 
 function testShouldSkip()
@@ -639,11 +634,6 @@ function testShouldSkip()
 	testcase.masterPriority = 'must';
 	testcase.run();
 	yield (function() { return testcase.done; });
-	assert.equals(
-		['skip', 'success', 'skip', 'success'],
-		testcase.tests.map(function(aTest) {
-			return aTest.report.result;
-		})
-	);
+	assertTestResult('skip', 'success', 'skip', 'success');
 }
 
