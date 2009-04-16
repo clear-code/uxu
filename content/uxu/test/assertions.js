@@ -420,8 +420,8 @@ function inDelta(aExpected, aActual, aDelta, aMessage)
 {
 	if (aExpected - aDelta == aActual || aExpected + aDelta == aActual)
 		this.fireEvent(
-			'AssertionNotify',
-			bundle.getFormattedString('assert_in_delta_notification',
+			'AssertionWarning',
+			bundle.getFormattedString('assert_in_delta_boundary_warning',
 			                          [aActual, aExpected, aDelta])
 		);
 
@@ -675,8 +675,8 @@ function validSuccessCount(aExpected, aMin, aMax)
 		!this.successCount &&
 		utils.getPref('extensions.uxu.warnOnNoAssertion'))
 		this.fireEvent(
-			'AssertionNotify',
-			bundle.getString('assert_success_count_no_assertion_notification')
+			'AssertionWarning',
+			bundle.getString('assert_success_count_no_assertion_warning')
 		);
 }
 

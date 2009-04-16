@@ -291,6 +291,15 @@ function onAbort()
 function onNotify(aEvent) 
 {
 	this.notifications.push({
+		type    : 'notification',
+		message : aEvent.data,
+		stack   : utils.getCurrentStacks()
+	});
+}
+function onWarning(aEvent) 
+{
+	this.notifications.push({
+		type    : 'warning',
 		message : aEvent.data,
 		stack   : utils.getCurrentStacks()
 	});

@@ -19,6 +19,10 @@
 	list-style-image: url("jar:resource:///chrome/classic.jar!/skin/classic/global/icons/information-16.png");
 }
 
+.report-warning {
+	list-style-image: url("jar:resource:///chrome/classic.jar!/skin/classic/global/icons/warning-16.png");
+}
+
 progressmeter[testcase-results] > .progress-bar {
 	-moz-appearance: none;
 }

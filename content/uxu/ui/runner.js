@@ -918,7 +918,7 @@ function fillReportFromResult(aTestCase, aResult)
 	if (aResult.notifications && aResult.notifications.length) {
 		aResult.notifications.forEach(function(aNotification) {
 			var wTestReportPart = clone('test-report-part');
-			_(wTestReportPart, 'icon').setAttribute('class', 'report-notification');
+			_(wTestReportPart, 'icon').setAttribute('class', 'report-'+aNotification.type);
 			if (aNotification.description) {
 				_(wTestReportPart, 'additionalInfo').textContent = aNotification.description;
 			}

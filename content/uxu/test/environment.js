@@ -84,9 +84,9 @@ function onFinish()
 	this.destroy();
 }
  
-function onAssertionNotify(aEvent) 
+function onAssertionWarning(aEvent) 
 {
-	this.fireEvent('Notify', aEvent.data);
+	this.fireEvent('Warning', aEvent.data);
 }
   
 function initVariables() 

@@ -215,8 +215,12 @@ function _createResultFromReport(aReport, aTimestamp)
 		time          : aReport.time,
 		detailedTime  : aReport.detailedTime,
 		notifications : aReport.notifications.map(function(aNotification) {
+			var type = aNotification.type || 'notification';
+			var description = bundle.getFormattedString('notification_message_'+type, [aNotification.message]) ||
+						aNotification.message;
 			return {
-				description : aNotification.message,
+				type        : type,
+				description : description,
 				stackTrace  : utils.formatStackTraceForDisplay(aNotification)
 			};
 		})

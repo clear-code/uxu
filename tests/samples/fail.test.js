@@ -447,3 +447,9 @@ function testError()
 	throw 'error';
 }
 
+function testNotification()
+{
+	assert.isTrue(true);
+	utils.log('message');
+}
+
