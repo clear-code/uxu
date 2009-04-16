@@ -36,7 +36,7 @@ function clearCount()
 	testCount     = 0;
 }
 
-assert.testDone = function(aSetUp, aTearDown, aTestCount)
+function assertDoneProcessCount(aSetUp, aTearDown, aTestCount)
 {
 	assert.equals({ setUpCount    : aSetUp,
 	                tearDownCount : aTearDown,
@@ -46,16 +46,16 @@ assert.testDone = function(aSetUp, aTearDown, aTestCount)
 	                tearDownCount : tearDownCount,
 	                testCount     : testCount,
 	                done          : testcase.done });
-};
+}
 
-assert.testInitialized = function(aTest, aDescription)
+function assertInitialized(aTest, aDescription)
 {
 	assert.equals({ description : aDescription,
 	                priority    : 'normal' },
 	              { description : aTest.description,
 	                priority    : aTest.priority });
 	assert.matches(/^test-\d+-\d+$/, aTest.id);
-};
+}
 
 function testRegisterTestFunctions()
 {
@@ -123,11 +123,11 @@ function testNormalStyle1()
 	testcase.test(2, function() { testCount++; });
 	testcase.test(3, function() { testCount++; });
 	assert.equals(3, testcase.tests.length);
-	assert.testInitialized(testcase.tests[0], '1');
+	assertInitialized(testcase.tests[0], '1');
 	testcase.masterPriority = 'must';
 	assert.isFalse(testcase.done);
 	testcase.run();
-	assert.testDone(3, 3, 3);
+	assertDoneProcessCount(3, 3, 3);
 }
 
 function testNormalStyle2()
@@ -139,11 +139,11 @@ function testNormalStyle2()
 	testcase.registerTest(function test2() { testCount++; });
 	testcase.registerTest(function test3() { testCount++; });
 	assert.equals(3, testcase.tests.length);
-	assert.testInitialized(testcase.tests[0], 'test1');
+	assertInitialized(testcase.tests[0], 'test1');
 	testcase.masterPriority = 'must';
 	assert.isFalse(testcase.done);
 	testcase.run();
-	assert.testDone(3, 3, 3);
+	assertDoneProcessCount(3, 3, 3);
 }
 
 function testNormalStyle3()
@@ -157,11 +157,11 @@ function testNormalStyle3()
 		'3' : function() { testCount++; }
 	};
 	assert.equals(3, testcase.tests.length);
-	assert.testInitialized(testcase.tests[0], '1');
+	assertInitialized(testcase.tests[0], '1');
 	testcase.masterPriority = 'must';
 	assert.isFalse(testcase.done);
 	testcase.run();
-	assert.testDone(3, 3, 3);
+	assertDoneProcessCount(3, 3, 3);
 }
 
 function testBDDStyle1()
@@ -172,11 +172,11 @@ function testBDDStyle1()
 	testcase.states(2, function() { testCount++; });
 	testcase.states(3, function() { testCount++; });
 	assert.equals(3, testcase.tests.length);
-	assert.testInitialized(testcase.tests[0], '1');
+	assertInitialized(testcase.tests[0], '1');
 	testcase.masterPriority = 'must';
 	assert.isFalse(testcase.done);
 	testcase.verify();
-	assert.testDone(3, 0, 3);
+	assertDoneProcessCount(3, 0, 3);
 }
 
 function testBDDStyle2()
@@ -189,11 +189,11 @@ function testBDDStyle2()
 		'3' : function() { testCount++; }
 	};
 	assert.equals(3, testcase.tests.length);
-	assert.testInitialized(testcase.tests[0], '1');
+	assertInitialized(testcase.tests[0], '1');
 	testcase.masterPriority = 'must';
 	assert.isFalse(testcase.done);
 	testcase.verify();
-	assert.testDone(3, 0, 3);
+	assertDoneProcessCount(3, 0, 3);
 }
 
 function testAsync()
@@ -233,7 +233,7 @@ function testAsync()
 	testcase.run();
 	yield (function() { return testcase.done; });
 	assert.compare(Date.now() - start, '>=', (100 * 3) * 3);
-	assert.testDone(3, 3, 3);
+	assertDoneProcessCount(3, 3, 3);
 }
 
 function testPriority()
@@ -282,12 +282,12 @@ function testMasterPriority()
 	clearCount();
 	testcase.masterPriority = 'must';
 	testcase.run();
-	assert.testDone(2, 2, 2);
+	assertDoneProcessCount(2, 2, 2);
 
 	clearCount();
 	testcase.masterPriority = 'never';
 	testcase.run();
-	assert.testDone(0, 0, 0);
+	assertDoneProcessCount(0, 0, 0);
 
 	clearCount();
 	testcase.masterPriority = 'must';
@@ -297,7 +297,7 @@ function testMasterPriority()
 	testcase.tests = tests;
 	assert.equals(4, testcase.tests.length);
 	testcase.run();
-	assert.testDone(3, 3, 3);
+	assertDoneProcessCount(3, 3, 3);
 }
 
 function testForceRetry()
@@ -313,12 +313,12 @@ function testForceRetry()
 	clearCount();
 	testcase.masterPriority = 'must';
 	testcase.run();
-	assert.testDone(2, 2, 1);
+	assertDoneProcessCount(2, 2, 1);
 
 	clearCount();
 	testcase.masterPriority = 'never';
 	testcase.run();
-	assert.testDone(0, 0, 0);
+	assertDoneProcessCount(0, 0, 0);
 }
 
 function testContext()
@@ -337,7 +337,7 @@ function testContext()
 	testcase.masterPriority = 'must';
 	assert.equals(0, tests.count);
 	testcase.run();
-	assert.testDone(2, 2, 0);
+	assertDoneProcessCount(2, 2, 0);
 	assert.equals(2, tests.count);
 
 	clearCount();
@@ -345,7 +345,7 @@ function testContext()
 	testcase.context = context;
 	assert.equals(0, context.count);
 	testcase.run();
-	assert.testDone(2, 2, 0);
+	assertDoneProcessCount(2, 2, 0);
 	assert.equals(2, context.count);
 }
 
@@ -382,7 +382,7 @@ function testListener()
 	clearCount();
 	testcase.masterPriority = 'must';
 	testcase.run();
-	assert.testDone(3, 3, 1);
+	assertDoneProcessCount(3, 3, 1);
 	assert.equals(1, failCount);
 	assert.equals(1, errorCount);
 
@@ -394,7 +394,7 @@ function testListener()
 	testcase.masterPriority = 'must';
 	testcase.run();
 	assert.isTrue(testcase.done);
-	assert.testDone(3, 3, 1);
+	assertDoneProcessCount(3, 3, 1);
 	assert.equals(1, failCount);
 	assert.equals(1, errorCount);
 }
@@ -419,14 +419,14 @@ function testStopper()
 	testcase.masterPriority = 'must';
 	testcase.run(stopper);
 	yield 1500;
-	assert.testDone(3, 3, 3);
+	assertDoneProcessCount(3, 3, 3);
 
 	clearCount();
 	testcase.run(stopper);
 	yield 100;
 	shouldStop = true;
 	yield 500;
-	assert.testDone(1, 1, 1);
+	assertDoneProcessCount(1, 1, 1);
 }
 function testPrivSetUpTearDown()
 {
@@ -603,6 +603,44 @@ function testMaxAssertionsCount()
 	yield (function() { return testcase.done; });
 	assert.equals(
 		['success', 'success', 'failure'],
+		testcase.tests.map(function(aTest) {
+			return aTest.report.result;
+		})
+	);
+}
+
+function testShouldSkip()
+{
+	testcase.registerTest((function() {
+		var f = function() {};
+		f.shouldSkip = true;
+		return f;
+	})());
+	testcase.registerTest((function() {
+		var f = function() {};
+		f.shouldSkip = false;
+		return f;
+	})());
+	testcase.registerTest((function() {
+		var f = function() {};
+		f.shouldSkip = function() {
+			return true;
+		};
+		return f;
+	})());
+	testcase.registerTest((function() {
+		var f = function() {};
+		f.shouldSkip = function() {
+			return false;
+		};
+		return f;
+	})());
+
+	testcase.masterPriority = 'must';
+	testcase.run();
+	yield (function() { return testcase.done; });
+	assert.equals(
+		['skip', 'success', 'skip', 'success'],
 		testcase.tests.map(function(aTest) {
 			return aTest.report.result;
 		})

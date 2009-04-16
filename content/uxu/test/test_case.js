@@ -594,13 +594,15 @@ function run(aStopper)
 	}
 
 	var testIndex = 0;
+	var current;
 	var context;
 	var testReport = { report : null };
 	var testCaseReport = { report : null };
 
 	var stateTransitions = {
 		start             : { ok : 'doWarmUp' },
-		doWarmUp          : { ok : 'checkDoOrSkip', ko: 'doCoolDown' },
+		doWarmUp          : { ok : 'prepareTest', ko: 'doCoolDown' },
+		prepareTest       : { ok : 'checkDoOrSkip' },
 		checkDoOrSkip     : { ok : 'doSetUp', ko: 'skip' },
 		skip              : { ok : 'doReport' },
 		doSetUp           : { ok : 'doPrivSetUp', ko: 'doPrivTearDown' },
@@ -610,7 +612,7 @@ function run(aStopper)
 		doPrivTearDown    : { ok : 'doTearDown', ko: 'doTearDown' },
 		doTearDown        : { ok : 'doReport', ko: 'doReport' },
 		doReport          : { ok : 'nextTest' },
-		nextTest          : { ok : 'checkDoOrSkip', ko: 'doCoolDown' },
+		nextTest          : { ok : 'prepareTest', ko: 'doCoolDown' },
 		doCoolDown        : { ok : 'finished', ko: 'finished' },
 		finished          : { }
 	};
@@ -677,16 +679,20 @@ function run(aStopper)
 				}
 			);
 		},
-		checkDoOrSkip : function(aContinuation)
+		prepareTest : function(aContinuation)
 		{
 			testReport.report = new Report();
-			var test = _this._tests[testIndex];
-			_this.fireEvent('TestStart', test);
-			if (!_this._checkPriorityToExec(test)) {
+			current = _this._tests[testIndex];
+			_this.fireEvent('TestStart', current);
+			aContinuation('ok');
+		},
+		checkDoOrSkip : function(aContinuation)
+		{
+			if (!_this._checkPriorityToExec(current)) {
 				aContinuation('ko');
 				return;
 			}
-			var shouldSkip = test.shouldSkip;
+			var shouldSkip = current.shouldSkip;
 			if (shouldSkip !== void(0)) {
 				if (typeof shouldSkip == 'function') {
 					try {
@@ -695,7 +701,7 @@ function run(aStopper)
 					catch(e) {
 						testReport.report.result = 'error';
 						testReport.report.exception = utils.normalizeError(e);
-						testReport.report.description =  bundle.getFormattedString('report_description_check_to_skip', [test.description]);
+						testReport.report.description =  bundle.getFormattedString('report_description_check_to_skip', [current.description]);
 						shouldSkip = true;
 					}
 				}
@@ -710,7 +716,7 @@ function run(aStopper)
 		{
 			if (!testReport.report.result) {
 				testReport.report.result = 'skip';
-				testReport.report.description = _this._tests[testIndex].description;
+				testReport.report.description = current.description;
 			}
 			aContinuation('ok');
 		},
@@ -722,23 +728,22 @@ function run(aStopper)
 				aContinuation,
 				_this._setUp,
 				{
-					errorDescription : bundle.getFormattedString('report_description_setup', [_this._tests[testIndex].description]),
+					errorDescription : bundle.getFormattedString('report_description_setup', [current.description]),
 					report : testReport
 				}
 			);
 		},
 		doPrivSetUp : function(aContinuation)
 		{
-			var test = _this._tests[testIndex];
-			if (!test.setUp) {
+			if (!current.setUp) {
 				aContinuation('ok');
 				return;
 			}
 			doPreOrPostProcess(
 				aContinuation,
-				test.setUp,
+				current.setUp,
 				{
-					errorDescription : bundle.getFormattedString('report_description_priv_setup', [test.description]),
+					errorDescription : bundle.getFormattedString('report_description_priv_setup', [current.description]),
 					report : testReport
 				}
 			);
@@ -747,28 +752,26 @@ function run(aStopper)
 		{
 			Assertions.prototype.resetSuccessCount.call(_this.environment.assert);
 			testReport.report.onDetailedStart();
-			var test = _this._tests[testIndex];
-			var newReport = _this._exec(test, context, aContinuation, testReport);
+			var newReport = _this._exec(current, context, aContinuation, testReport);
 			if (newReport.result) {
 				testReport.report = newReport;
-				testReport.report.description = test.description;
+				testReport.report.description = current.description;
 				testReport.report.onDetailedFinish();
 				aContinuation('ok');
 			}
 			else {
-				testReport.report.description = test.description;
+				testReport.report.description = current.description;
 			}
 		},
 		checkSuccessCount : function(aContinuation)
 		{
-			var test = _this._tests[testIndex];
 			try {
 				if (testReport.report.result == 'success') {
 					Assertions.prototype.validSuccessCount.call(
 						_this.environment.assert,
-						test.assertions,
-						test.minAssertions,
-						test.maxAssertions
+						current.assertions,
+						current.minAssertions,
+						current.maxAssertions
 					);
 				}
 				aContinuation('ok');
@@ -777,25 +780,24 @@ function run(aStopper)
 				testReport.report = new Report();
 				testReport.report.result = 'failure';
 				testReport.report.exception = utils.normalizeError(e);
-				testReport.report.description = bundle.getFormattedString('report_description_check_success_count', [test.description]);
+				testReport.report.description = bundle.getFormattedString('report_description_check_success_count', [current.description]);
 				aContinuation('ko');
 			}
 		},
 		doPrivTearDown : function(aContinuation)
 		{
-			var test = _this._tests[testIndex];
-			if (!test.tearDown) {
+			if (!current.tearDown) {
 				aContinuation('ok');
 				return;
 			}
 			doPreOrPostProcess(
 				aContinuation,
-				test.tearDown,
+				current.tearDown,
 				{
-					errorDescription : bundle.getFormattedString('report_description_priv_teardown', [test.description]),
+					errorDescription : bundle.getFormattedString('report_description_priv_teardown', [current.description]),
 					report : testReport,
 					onError : function() {
-						_this._onFinish(test, 'error');
+						_this._onFinish(current, 'error');
 					}
 				}
 			);
@@ -806,21 +808,21 @@ function run(aStopper)
 				aContinuation,
 				_this._tearDown,
 				{
-					errorDescription : bundle.getFormattedString('report_description_teardown', [_this._tests[testIndex].description]),
+					errorDescription : bundle.getFormattedString('report_description_teardown', [current.description]),
 					report : testReport,
 					onError : function() {
-						_this._onFinish(_this._tests[testIndex], 'error');
+						_this._onFinish(current, 'error');
 					}
 				}
 			);
 		},
 		doReport : function(aContinuation)
 		{
-			_this._tests[testIndex].report = testReport.report;
-			_this._onFinish(_this._tests[testIndex], testReport.report.result);
+			current.report = testReport.report;
+			_this._onFinish(current, testReport.report.result);
 			testReport.report.testOwner = _this;
 			testReport.report.testIndex = testIndex;
-			testReport.report.testID    = _this._tests[testIndex].name;
+			testReport.report.testID    = current.name;
 			testReport.report.notifications = _this.notifications;
 			_this.notifications = [];
 			_this.fireEvent('TestFinish', testReport.report);
