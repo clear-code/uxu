@@ -12,10 +12,10 @@ var FORMAT_TEXT = 2;
 //var FORMAT_CSV  = 8;
 //var FORMAT_TSV  = 16;
 
-var IGNORE_SKIP    = 1024;
+var IGNORE_SKIPPED = 1024;
 var IGNORE_SUCCESS = 2048;
 
-var FORMAT_DEFUALT = FORMAT_TEXT | IGNORE_SKIP;// | IGNORE_SUCCESS;
+var FORMAT_DEFUALT = FORMAT_TEXT | IGNORE_SKIPPED;// | IGNORE_SUCCESS;
 
 
 function constructor()
@@ -72,7 +72,7 @@ function _toText(aFormat)
 		aLog.results.forEach(function(aResult, aIndex) {
 			count[aResult.type]++;
 			count.total++;
-			if (aFormat & IGNORE_SKIP && aResult.type == 'skip') return;
+			if (aFormat & IGNORE_SKIPPED && aResult.type == 'skip') return;
 			if (aFormat & IGNORE_SUCCESS && aResult.type == 'success') return;
 
 			if (outputCount) result.push(bundle.getString('log_separator_test'));
