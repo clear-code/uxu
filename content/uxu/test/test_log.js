@@ -5,6 +5,9 @@ var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var utils = lib_module.require('package', 'utils');
 var bundle = lib_module.require('package', 'bundle');
 
+var test_module = new ModuleManager(['chrome://uxu/content/test']);
+var TestCase = test_module.require('class', 'test_case');
+
 
 var FORMAT_RAW  = 1;
 var FORMAT_TEXT = 2;
@@ -72,8 +75,12 @@ function _toText(aFormat)
 		aLog.results.forEach(function(aResult, aIndex) {
 			count[aResult.type]++;
 			count.total++;
-			if (aFormat & IGNORE_SKIPPED && aResult.type == 'skip') return;
-			if (aFormat & IGNORE_SUCCESS && aResult.type == 'success') return;
+			if (aFormat & IGNORE_SKIPPED &&
+				aResult.type == TestCase.prototype.RESULT_SKIPPED)
+				return;
+			if (aFormat & IGNORE_SUCCESS &&
+				aResult.type == TestCase.prototype.RESULT_SUCCESS)
+				return;
 
 			if (outputCount) result.push(bundle.getString('log_separator_test'));
 			outputCount++;
@@ -229,7 +236,7 @@ function _createResultFromReport(aReport, aTimestamp)
 
 function onFinish(aEvent)
 {
-	if (aEvent.data.result == 'error') {
+	if (aEvent.data.result == TestCase.prototype.RESULT_ERROR) {
 		var results = this._createResultsFromReport(aEvent.data);
 		results.forEach(function(aResult) {
 			aResult.index = -1;

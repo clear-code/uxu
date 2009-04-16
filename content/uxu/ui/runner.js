@@ -87,13 +87,13 @@ function scrollReportsTo(aTarget)
 function getFailureReports() 
 {
 	var reports = _('testcase-reports');
-	return Array.slice(reports.getElementsByAttribute('report-type', 'failure'));
+	return Array.slice(reports.getElementsByAttribute('report-type', TestCase.prototype.RESULT_FAILURE));
 }
  
 function getErrorReports() 
 {
 	var reports = _('testcase-reports');
-	return Array.slice(reports.getElementsByAttribute('report-type', 'error'));
+	return Array.slice(reports.getElementsByAttribute('report-type', TestCase.prototype.RESULT_ERROR));
 }
   
 /* file picker */ 
@@ -842,7 +842,7 @@ function fillReportFromResult(aTestCase, aResult)
 	gTotalCount++;
 	switch (aResult.type)
 	{
-		case 'success':
+		case TestCase.prototype.RESULT_SUCCESS:
 			gSuccessCount++;
 			var successes = parseInt(_(reportNode, 'success-counter').value);
 			_(reportNode, 'success-counter').value = successes + 1;
@@ -850,16 +850,16 @@ function fillReportFromResult(aTestCase, aResult)
 			if (!aResult.notifications || !aResult.notifications.length)
 				return;
 			break;
-		case 'skip':
+		case TestCase.prototype.RESULT_SKIPPED:
 			gSkipCount++;
 			var skip = parseInt(_(reportNode, 'skip-counter').value);
 			_(reportNode, 'skip-counter').value = skip + 1;
 			_(reportNode).appendChild(dummyTestReport);
 			return;
-		case 'failure':
+		case TestCase.prototype.RESULT_FAILURE:
 			gFailureCount++;
 			break;
-		case 'error':
+		case TestCase.prototype.RESULT_ERROR:
 			gErrorCount++;
 			break;
 		default:
@@ -874,7 +874,8 @@ function fillReportFromResult(aTestCase, aResult)
 	_(wTestReport, 'description').textContent = aResult.title;
 	_(wTestReport, 'description').setAttribute('tooltiptext', aResult.title);
 
-	if (aResult.type == 'error' || aResult.type == 'failure') {
+	if (aResult.type == TestCase.prototype.RESULT_ERROR ||
+		aResult.type == TestCase.prototype.RESULT_FAILURE) {
 		_(reportNode, 'bar').setAttribute('class', 'testcase-problems');
 
 		var wTestReportPart = clone('test-report-part');

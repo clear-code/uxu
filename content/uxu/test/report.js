@@ -3,6 +3,8 @@ const Ci = Components.interfaces;
 
 function constructor()
 {
+	this.result = null;
+
 	this._exceptions = [];
 	this.__defineGetter__('exception', function() {
 		var e = this._exceptions;

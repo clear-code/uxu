@@ -8,7 +8,14 @@ var utils = lib_module.require('package', 'utils');
 var color = lib_module.require('package', 'color');
 const Color = color.Color;
 
-var statusOrder = ["success", "failure", "error"];
+var test_module = new ModuleManager(['chrome://uxu/content/test']);
+var TestCase = test_module.require('class', 'test_case');
+
+var statusOrder = [
+		TestCase.prototype.RESULT_SUCCESS,
+		TestCase.prototype.RESULT_FAILURE,
+		TestCase.prototype.RESULT_ERROR
+	];
 
 function constructor(aOptions)
 {
@@ -18,7 +25,7 @@ function constructor(aOptions)
 	this.nErrors = 0;
 	this.finished   = false;
 	this.result     = '';
-	this.resultStatus = "success";
+	this.resultStatus = TestCase.prototype.RESULT_SUCCESS;
 	this.badResults = [];
 
 	if (!aOptions)
@@ -83,17 +90,16 @@ function onTestFinish(aEvent)
 	var report = aEvent.data.data;
 	switch (report.result)
 	{
-	    case 'skip':
-	    case 'passover':
+	    case TestCase.prototype.RESULT_SKIPPED:
 			return;
-		case 'success':
+		case TestCase.prototype.RESULT_SUCCESS:
 			this.result += this._colorize('.', this.successColor);
 			break;
-		case 'failure':
+		case TestCase.prototype.RESULT_FAILURE:
 			this.result += this._colorize('F', this.failureColor);
 			this.nFailures++;
 			break;
-		case 'error':
+		case TestCase.prototype.RESULT_ERROR:
 			this._handleError(report, false);
 			break;
 		default:
@@ -112,7 +118,7 @@ function onError(aEvent)
 {
 	var error = aEvent.data;
 	var report = {
-		result      : 'error',
+		result      : TestCase.prototype.RESULT_ERROR,
 		description : "unknown",
 		exception   : error
 	};
@@ -142,7 +148,7 @@ function _reportBadResults()
 		detail = formattedIndex + detail + '\n';
 
 		exception = aResult.exception;
-		if (aResult.result == "failure") {
+		if (aResult.result == TestCase.prototype.RESULT_FAILURE) {
 			if (exception.message) {
 				detail += exception.message.replace(/(^[\s\n]+|[\s\n]+$)/, '');
 				detail += "\n";

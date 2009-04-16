@@ -78,6 +78,11 @@ const ALL_TESTS_FINISHED    = '/* uxu-all-testcases-finished */';
 const PING                  = ' ';
 const PING_INTERVAL         = 3000;
  
+const RESULT_SUCCESS = 'success';
+const RESULT_FAILURE = 'failure';
+const RESULT_ERROR   = 'error';
+const RESULT_SKIPPED = 'skip';
+ 
 const ERROR_NOT_INITIALIZED     = new Error('environment is not specified.');
 const ERROR_INVALID_ENVIRONMENT = new Error('environment must be an Environment.');
  
@@ -637,7 +642,7 @@ function run(aStopper)
 						},
 						onError : function(e) {
 							if (aOptions.onError) aOptions.onError();
-							aOptions.report.report.result = 'error';
+							aOptions.report.report.result = RESULT_ERROR;
 							aOptions.report.report.exception = utils.normalizeError(e);
 							aOptions.report.report.description = aOptions.errorDescription;
 							aOptions.report.report.onFinish();
@@ -651,7 +656,7 @@ function run(aStopper)
 				}
 			}
 			catch(e) {
-				aOptions.report.report.result = 'error';
+				aOptions.report.report.result = RESULT_ERROR;
 				aOptions.report.report.exception = utils.normalizeError(e);
 				aOptions.report.report.description = aOptions.errorDescription;
 				aOptions.report.report.onFinish();
@@ -699,7 +704,7 @@ function run(aStopper)
 						shouldSkip = shouldSkip.call(context);
 					}
 					catch(e) {
-						testReport.report.result = 'error';
+						testReport.report.result = RESULT_ERROR;
 						testReport.report.exception = utils.normalizeError(e);
 						testReport.report.description =  bundle.getFormattedString('report_description_check_to_skip', [current.description]);
 						shouldSkip = true;
@@ -715,7 +720,7 @@ function run(aStopper)
 		skip : function(aContinuation)
 		{
 			if (!testReport.report.result) {
-				testReport.report.result = 'skip';
+				testReport.report.result = RESULT_SKIPPED;
 				testReport.report.description = current.description;
 			}
 			aContinuation('ok');
@@ -766,7 +771,7 @@ function run(aStopper)
 		checkSuccessCount : function(aContinuation)
 		{
 			try {
-				if (testReport.report.result == 'success') {
+				if (testReport.report.result == RESULT_SUCCESS) {
 					Assertions.prototype.validSuccessCount.call(
 						_this.environment.assert,
 						current.assertions,
@@ -778,7 +783,7 @@ function run(aStopper)
 			}
 			catch(e) {
 				testReport.report = new Report();
-				testReport.report.result = 'failure';
+				testReport.report.result = RESULT_FAILURE;
 				testReport.report.exception = utils.normalizeError(e);
 				testReport.report.description = bundle.getFormattedString('report_description_check_success_count', [current.description]);
 				aContinuation('ko');
@@ -797,7 +802,7 @@ function run(aStopper)
 					errorDescription : bundle.getFormattedString('report_description_priv_teardown', [current.description]),
 					report : testReport,
 					onError : function() {
-						_this._onFinish(current, 'error');
+						_this._onFinish(current, RESULT_ERROR);
 					}
 				}
 			);
@@ -811,7 +816,7 @@ function run(aStopper)
 					errorDescription : bundle.getFormattedString('report_description_teardown', [current.description]),
 					report : testReport,
 					onError : function() {
-						_this._onFinish(current, 'error');
+						_this._onFinish(current, RESULT_ERROR);
 					}
 				}
 			);
@@ -959,7 +964,7 @@ function _runByRemote(aStopper)
 		},
 		{
 			onEnd : function(e) {
-				report.result = 'success';
+				report.result = RESULT_SUCCESS;
 				report.onFinish();
 				_this._onFinishRemoteResult(report);
 
@@ -968,7 +973,7 @@ function _runByRemote(aStopper)
 				utils.scheduleToRemove(profile);
 			},
 			onError : function(e) {
-				report.result = 'error';
+				report.result = RESULT_ERROR;
 				report.exception = e;
 				report.description = bundle.getFormattedString('report_description_remote', [_this.title]);
 				report.onFinish();
@@ -1047,7 +1052,7 @@ function _exec(aTest, aContext, aContinuation, aReport)
 	var report = new Report();
 
 	if (this._stopper && this._stopper()) {
-		report.result = 'skip';
+		report.result = RESULT_SKIPPED;
 		return report;
 	}
 
@@ -1061,20 +1066,20 @@ function _exec(aTest, aContext, aContinuation, aReport)
 				utils.doIteration(result, {
 					onEnd : function(e) {
 						aReport.report.onDetailedFinish();
-						aReport.report.result = 'success';
+						aReport.report.result = RESULT_SUCCESS;
 						_this._onFinish(aTest, aReport.report.result);
 						aContinuation('ok');
 					},
 					onFail : function(e) {
 						aReport.report.onDetailedFinish();
-						aReport.report.result = 'failure';
+						aReport.report.result = RESULT_FAILURE;
 						aReport.report.exception = e;
 						_this._onFinish(aTest, aReport.report.result);
 						aContinuation('ok');
 					},
 					onError : function(e) {
 						aReport.report.onDetailedFinish();
-						aReport.report.result = 'error';
+						aReport.report.result = RESULT_ERROR;
 						aReport.report.exception = e;
 						_this._onFinish(aTest, aReport.report.result);
 						aContinuation('ok');
@@ -1084,16 +1089,16 @@ function _exec(aTest, aContext, aContinuation, aReport)
 			return report;
 		}
 
-		report.result = 'success';
+		report.result = RESULT_SUCCESS;
 		this._onFinish(aTest, report.result);
 	}
 	catch(exception if exception.name == 'AssertionFailed') {
-		report.result = 'failure';
+		report.result = RESULT_FAILURE;
 		report.exception = exception;
 		this._onFinish(aTest, report.result);
 	}
 	catch(exception) {
-		report.result = 'error';
+		report.result = RESULT_ERROR;
 		report.exception = utils.normalizeError(exception);;
 		this._onFinish(aTest, report.result);
 	}
@@ -1161,7 +1166,7 @@ function _checkPriorityToExec(aTest)
 			statement.reset();
 		}
 		if ((lastHash != aTest.hash) ||
-                    (lastResult != 'success' && lastResult != 'skip')) {
+                    (lastResult != RESULT_SUCCESS && lastResult != RESULT_SKIPPED)) {
 			shouldDo = true;
 		}
 	}

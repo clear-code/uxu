@@ -11,6 +11,9 @@ var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var Server = server_module.require('class', 'server');
 var Context = server_module.require('class', 'context');
 
+var test_module = new ModuleManager(['chrome://uxu/content/test']);
+var TestCase = test_module.require('class', 'test_case');
+
 var gServer;
 var gLog;
 var gAutoStart;
@@ -130,16 +133,16 @@ var testRunnerlistener = {
 		var color;
 		switch (report.result)
 		{
-			case 'success':
+			case TestCase.prototype.RESULT_SUCCESS:
 				color = 'background: green; color: white; ';
 				break;
-			case 'failure':
+			case TestCase.prototype.RESULT_FAILURE:
 				color = 'background: red; color: white;';
 				break;
-			case 'error':
+			case TestCase.prototype.RESULT_ERROR:
 				color = 'background: yellow; color: black;';
 				break;
-			case 'skip':
+			case TestCase.prototype.RESULT_SKIPPED:
 				color = 'background: gray; color: white;';
 				break;
 		}

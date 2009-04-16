@@ -73,3 +73,8 @@ function testDetailedTime()
 	report.onDetailedFinish();
 	assert.compare(500, '<=', report.detailedTime);
 }
+
+function testResult()
+{
+	assert.isNull(report.result);
+}
