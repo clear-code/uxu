@@ -420,6 +420,19 @@ function testSuccessCountFailTooMany()
 	assert.isTrue(true);
 }
 
+testSuccessCountFailMin.minAssertions = 2;
+function testSuccessCountFailMin()
+{
+	assert.isTrue(true);
+}
+
+testSuccessCountFailMax.maxAssertions = 1;
+function testSuccessCountFailMax()
+{
+	assert.isTrue(true);
+	assert.isTrue(true);
+}
+
 function testSuccessCountNoAssertion()
 {
 }
