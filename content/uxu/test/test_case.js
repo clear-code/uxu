@@ -722,12 +722,14 @@ function run(aStopper)
 		{
 			var test = _this._tests[testIndex];
 			try {
-				Assertions.prototype.validSuccessCount.call(
-					_this.environment.assert,
-					test.assertions,
-					test.minAssertions,
-					test.maxAssertions
-				);
+				if (testReport.report.result == 'success') {
+					Assertions.prototype.validSuccessCount.call(
+						_this.environment.assert,
+						test.assertions,
+						test.minAssertions,
+						test.maxAssertions
+					);
+				}
 				aContinuation('ok');
 			}
 			catch(e) {
