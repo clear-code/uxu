@@ -894,17 +894,21 @@ function doIteration(aGenerator, aCallbacks)
 	var callerStack = getCurrentStacks();
 
 	var retVal = { value : false };
-	var lastRun = (new Date()).getTime();
+	var lastRun = Date.now();
 	var timeout = Math.max(0, getPref('extensions.uxu.run.timeout'));
 	(function(aObject) {
 		try {
-			if ((new Date()).getTime() - lastRun >= timeout)
+			if (Date.now() - lastRun >= timeout)
 				throw new Error(bundle.getFormattedString('error_generator_timeout', [parseInt(timeout / 1000)]));
 
-			if (aObject) {
+			if (aObject !== void(0)) {
 				var continueAfterDelay = false;
 				if (aObject instanceof Error) {
 					throw returnedValue;
+				}
+				else if (typeof aObject == 'number') {
+					// TraceMonkeyのバグなのかなんなのか、指定時間経つ前にタイマーが発動することがあるようだ……
+					continueAfterDelay = (Date.now() - lastRun < aObject);
 				}
 				else if (typeof aObject == 'object') {
 					if (isGeneratedIterator(aObject))
@@ -935,7 +939,7 @@ function doIteration(aGenerator, aCallbacks)
 			}
 
 			var returnedValue = iterator.next();
-			lastRun = (new Date()).getTime();
+			lastRun = Date.now();
 
 			if (!returnedValue ? false :
 				typeof returnedValue == 'object' ?
@@ -947,7 +951,7 @@ function doIteration(aGenerator, aCallbacks)
 			else {
 				var wait = returnedValue;
 				if (isNaN(wait)) wait = 0;
-				window.setTimeout(arguments.callee, wait, null);
+				window.setTimeout(arguments.callee, wait, wait);
 			}
 		}
 		catch(e if e instanceof StopIteration) {
@@ -1011,7 +1015,7 @@ function doIteration(aGenerator, aCallbacks)
 				retVal.error = e;
 			}
 		}
-	})(null);
+	})();
 
 	return retVal;
 }
