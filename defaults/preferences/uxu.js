@@ -11,6 +11,7 @@ pref("extensions.uxu.priority.important", "0.9");
 pref("extensions.uxu.priority.high",      "0.7");
 pref("extensions.uxu.priority.normal",    "0.5");
 pref("extensions.uxu.priority.low",       "0.25");
+pref("extensions.uxu.warnOnNoAssertion",  true);
 pref("extensions.uxu.action.fireMouseEvent.useOldMethod", false);
 pref("extensions.uxu.action.fireKeyEvent.useOldMethod", true);
 

@@ -671,7 +671,9 @@ function validSuccessCount(aExpected, aMin, aMax)
 			bundle.getString('assert_max_success_count')
 		);
 
-	if (aExpected < 0 && aMin < 0 && aMax < 0 && !this.successCount)
+	if (aExpected < 0 && aMin < 0 && aMax < 0 &&
+		!this.successCount &&
+		utils.getPref('extensions.uxu.warnOnNoAssertion'))
 		this.fireEvent(
 			'AssertionNotify',
 			bundle.getString('assert_success_count_no_assertion_notification')
