@@ -638,9 +638,12 @@ function is(aExpected, aActual, aMessage)
 
 function validSuccessCount(aExpected, aMin, aMax)
 {
-	if (aExpected !== void(0) &&
-		aExpected > -1 &&
-		!utils.equals(aExpected, this.successCount))
+	if (aExpected === void(0)) aExpected = -1;
+	if (aMin === void(0)) aMin = -1;
+	if (aMax === void(0)) aMax = -1;
+
+
+	if (aExpected > -1 && !utils.equals(aExpected, this.successCount))
 		fail({
 				expected    : bundle.getFormattedString('assert_success_count_expected', [aExpected]),
 				actual      : bundle.getFormattedString('assert_success_count_actual', [this.successCount])
@@ -652,9 +655,7 @@ function validSuccessCount(aExpected, aMin, aMax)
 			)
 		);
 
-	if (aMin !== void(0) &&
-		aMin > -1 &&
-		this.successCount < aMin)
+	if (aMin > -1 && this.successCount < aMin)
 		fail({
 				expected    : bundle.getFormattedString('assert_min_success_count_expected', [aMin]),
 				actual      : bundle.getFormattedString('assert_min_success_count_actual', [this.successCount])
@@ -662,14 +663,18 @@ function validSuccessCount(aExpected, aMin, aMax)
 			bundle.getString('assert_min_success_count')
 		);
 
-	if (aMax !== void(0) &&
-		aMax > -1 &&
-		this.successCount > aMax)
+	if (aMax > -1 && this.successCount > aMax)
 		fail({
 				expected    : bundle.getFormattedString('assert_max_success_count_expected', [aMax]),
 				actual      : bundle.getFormattedString('assert_max_success_count_actual', [this.successCount])
 			},
 			bundle.getString('assert_max_success_count')
+		);
+
+	if (aExpected < 0 && aMin < 0 && aMax < 0 && !this.successCount)
+		this.fireEvent(
+			'AssertionNotify',
+			bundle.getString('assert_success_count_no_assertion_notification')
 		);
 }
 

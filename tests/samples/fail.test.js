@@ -418,3 +418,8 @@ function testSuccessCountFailTooMany()
 	assert.isTrue(true);
 	assert.isTrue(true);
 }
+
+function testSuccessCountNoAssertion()
+{
+}
+
