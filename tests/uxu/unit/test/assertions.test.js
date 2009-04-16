@@ -21,7 +21,7 @@ function tearDown()
 {
 }
 
-function assertSuccess(aAssertion, aArgs)
+function assertSuccess(aAssertion, aArgs, aAssertionsCount)
 {
 	var beforeCount = assertionsModule.successCount;
 	assert.notRaises(
@@ -31,12 +31,14 @@ function assertSuccess(aAssertion, aArgs)
 		},
 		null
 	);
-	assert.equals(beforeCount+1, assertionsModule.successCount);
+	assert.equals(
+		beforeCount+(aAssertionsCount === void(0) ? 1 : aAssertionsCount ),
+		assertionsModule.successCount
+	);
 }
 
-function assertFailure(aAssertion, aArgs)
+function assertFailure(aAssertion, aArgs, aAssertionsCount)
 {
-	var beforeCount = assertionsModule.successCount;
 	assert.raises(
 		'AssertionFailed',
 		function() {
@@ -45,6 +47,7 @@ function assertFailure(aAssertion, aArgs)
 		null
 	);
 
+	var beforeCount = assertionsModule.successCount;
 	var exception;
 	try {
 		aAssertion.apply(assertionsModule, aArgs);
@@ -53,10 +56,13 @@ function assertFailure(aAssertion, aArgs)
 		exception = e;
 	}
 	assert.notEquals(-1, exception.message.indexOf(aArgs[aArgs.length-1]));
-	assert.equals(beforeCount, assertionsModule.successCount);
+	assert.equals(
+		beforeCount+(aAssertionsCount === void(0) ? 0 : aAssertionsCount ),
+		assertionsModule.successCount
+	);
 }
 
-function assertSuccessWithDelay(aAssertion, aArgs)
+function assertSuccessWithDelay(aAssertion, aArgs, aAssertionsCount)
 {
 	var beforeCount = assertionsModule.successCount;
 	yield Do(assert.notRaises(
@@ -66,12 +72,14 @@ function assertSuccessWithDelay(aAssertion, aArgs)
 		},
 		null
 	));
-	assert.equals(beforeCount+1, assertionsModule.successCount);
+	assert.equals(
+		beforeCount+(aAssertionsCount === void(0) ? 1 : aAssertionsCount ),
+		assertionsModule.successCount
+	);
 }
 
-function assertFailureWithDelay(aAssertion, aArgs)
+function assertFailureWithDelay(aAssertion, aArgs, aAssertionsCount)
 {
-	var beforeCount = assertionsModule.successCount;
 	yield Do(assert.raises(
 		'AssertionFailed',
 		function() {
@@ -80,6 +88,7 @@ function assertFailureWithDelay(aAssertion, aArgs)
 		null
 	));
 
+	var beforeCount = assertionsModule.successCount;
 	var exception;
 	try {
 		aAssertion.apply(assertionsModule, aArgs);
@@ -88,7 +97,10 @@ function assertFailureWithDelay(aAssertion, aArgs)
 		exception = e;
 	}
 	assert.notEquals(-1, exception.message.indexOf(aArgs[aArgs.length-1]));
-	assert.equals(beforeCount, assertionsModule.successCount);
+	assert.equals(
+		beforeCount+(aAssertionsCount === void(0) ? 0 : aAssertionsCount ),
+		assertionsModule.successCount
+	);
 }
 
 function testEquals()
@@ -716,6 +728,81 @@ function testFinishesWithin()
 	assert.equals('AssertionFailed', result.error.name);
 
 	assert.equal(2, assertionsModule.successCount);
+}
+
+function testAssertionsCount()
+{
+	var message = Math.random() * 65000;
+
+	assertFailure(assertionsModule.assertionsCountEquals, [
+		1,
+		function() {
+		},
+		{},
+		message
+	], 0);
+	assertSuccess(assertionsModule.assertionsCountEquals, [
+		1,
+		function() {
+			assertionsModule.isTrue(true);
+		},
+		{}
+	], 2);
+	assertFailure(assertionsModule.assertionsCountEquals, [
+		1,
+		function() {
+			assertionsModule.isTrue(true);
+			assertionsModule.isTrue(true);
+		},
+		{},
+		message
+	], 2);
+
+	assertFailure(assertionsModule.assertionsMinCount, [
+		1,
+		function() {
+		},
+		{},
+		message
+	], 0);
+	assertSuccess(assertionsModule.assertionsMinCount, [
+		1,
+		function() {
+			assertionsModule.isTrue(true);
+		},
+		{}
+	], 2);
+	assertSuccess(assertionsModule.assertionsMinCount, [
+		1,
+		function() {
+			assertionsModule.isTrue(true);
+			assertionsModule.isTrue(true);
+		},
+		{}
+	], 3);
+
+	assertSuccess(assertionsModule.assertionsMaxCount, [
+		1,
+		function() {
+		},
+		{}
+	], 1);
+	assertSuccess(assertionsModule.assertionsMaxCount, [
+		1,
+		function() {
+			assertionsModule.isTrue(true);
+		},
+		{}
+	], 2);
+	assertFailure(assertionsModule.assertionsMaxCount, [
+		1,
+		function() {
+			assertionsModule.isTrue(true);
+			assertionsModule.isTrue(true);
+		},
+		{},
+		message
+	], 2);
 }
 
 function test_fail()

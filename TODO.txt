@@ -1,9 +1,1 @@
-■canRun? canDo? excutionCondition? isExecutable? isRunnable?
-testFoo.canRun = function() {
-	return utils.product == 'Firefox';
-}
-みたいに書いておくと、checkPriorityの前もしくは後に関数として実行して、返り値に応じてそのテストをスキップするという機能。
-
-■assert.assertionsCountEquals()? assert.assertionsCountCompare()?
-testFoo.assertions = 10; の、アサーション版。
 
