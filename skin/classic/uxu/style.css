@@ -93,6 +93,11 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 	line-height: 1;
 }
 
+*[role=vs] row {
+	border-top: 1px solid ThreeDShadow;
+	padding-top: 0.2em;
+}
+
 *[role=vs] description[role="diff-value"] {
 	white-space: pre;
 }

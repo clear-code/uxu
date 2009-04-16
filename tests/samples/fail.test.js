@@ -1,6 +1,7 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
 // 絶対に失敗するテスト。エラーや失敗そのもの、あるいは失敗時の差分表示のテスト用。
+var priority = 'must';
 
 var topDir = baseURL+'../../';
 
@@ -419,14 +420,17 @@ function testSuccessCountFailTooMany()
 	assert.isTrue(true);
 }
 
-testSuccessCountNoAssertion.priority = 'must';
 function testSuccessCountNoAssertion()
 {
 }
 
-testAssertInDelta.priority = 'must';
 function testAssertInDelta()
 {
 	assert.inDelta(10, 0, 10);
+}
+
+function testError()
+{
+	throw 'error';
 }
 
