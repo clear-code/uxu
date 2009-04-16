@@ -846,3 +846,48 @@ function testSuccessCount()
 	assertionsModule.resetSuccessCount();
 	assert.equals(0, assertionsModule.successCount);
 }
+
+function testAssertValidSuccessCount()
+{
+	assertionsModule.isTrue(true);
+	assertionsModule.isTrue(true);
+	assert.equals(2, assertionsModule.successCount);
+
+	function assertAssertValidSuccessCountSucceeded(aExpected, aMin, aMax)
+	{
+		assert.notRaises(
+			'AssertionFailed',
+			function() {
+				assertionsModule.validSuccessCount(aExpected, aMin, aMax);
+			},
+			null
+		);
+	}
+	function assertAssertValidSuccessCountFailed(aExpected, aMin, aMax)
+	{
+		assert.raises(
+			'AssertionFailed',
+			function() {
+				assertionsModule.validSuccessCount(aExpected, aMin, aMax);
+			},
+			null
+		);
+	}
+
+	assertAssertValidSuccessCountSucceeded(-1, -1, -1);
+
+	// expected
+	assertAssertValidSuccessCountFailed(1, -1, -1);
+	assertAssertValidSuccessCountSucceeded(2, -1, -1);
+	assertAssertValidSuccessCountFailed(3, -1, -1);
+
+	// min
+	assertAssertValidSuccessCountSucceeded(-1, 1, -1);
+	assertAssertValidSuccessCountSucceeded(-1, 2, -1);
+	assertAssertValidSuccessCountFailed(-1, 3, -1);
+
+	// max
+	assertAssertValidSuccessCountFailed(-1, -1, 1);
+	assertAssertValidSuccessCountSucceeded(-1, -1, 2);
+	assertAssertValidSuccessCountSucceeded(-1, -1, 3);
+}

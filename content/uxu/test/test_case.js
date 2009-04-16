@@ -428,12 +428,7 @@ function registerTest(aFunction)
 
 	var desc = aFunction.description;
 	var key = desc;
-	var source = [];
-	if (privSetUp) source.push(privSetUp.toSource());
-	source.push(aFunction.toSource());
-	if (privTearDown) source.push(privTearDown.toSource());
-	source = source.join('\n');
-	var hash = this._getHashFromString(source);
+	var source = aFunction.toSource();
 	if (!desc) {
 		if (source.match(/\(?function ([^\(]+)\s*\(/)) {
 			desc = RegExp.$1;
@@ -441,29 +436,45 @@ function registerTest(aFunction)
 		}
 		else {
 			desc = source.substring(0, 30);
-			key = hash;
+			key = null;
 		}
 	}
 
-	var assertionsCount = 'assertions' in aFunction ? aFunction.assertions : -1 ;
-
-	this._tests.push({
-		name        : (this._source + '::' + this.title + '::' + key),
+	var test = {
+		id          : 'test-'+Date.now()+'-'+parseInt(Math.random() * 65000),
 		description : desc,
 		title       : desc,
-		code        : aFunction,
-		hash        : hash,
-		priority    : (
+
+		code : aFunction,
+
+		priority : (
 			typeof aFunction.priority == 'number' ?
 				aFunction.priority :
 				(String(aFunction.priority || '').toLowerCase() || 'normal')
 		),
-		id          : 'test-'+Date.now()+'-'+parseInt(Math.random() * 65000),
-		setUp       : privSetUp,
-		tearDown    : privTearDown,
-		assertions  : assertionsCount,
-		report      : null
-	});
+
+		setUp    : privSetUp,
+		tearDown : privTearDown,
+
+		assertions    : aFunction.assertions,
+		minAssertions : aFunction.minAssertions,
+		maxAssertions : aFunction.maxAssertions,
+
+		report : null
+	};
+
+	var sources = [];
+	if (test.setUp) sources.push(test.setUp.toSource());
+	sources.push(source);
+	if (test.tearDown) sources.push(test.tearDown.toSource());
+	sources.push('assertions:'+test.assertions);
+	sources.push('minAssertions:'+test.minAssertions);
+	sources.push('maxAssertions:'+test.maxAssertions);
+
+	test.hash = this._getHashFromString(sources.join('\n'));
+	test.name = this._source + '::' + this.title + '::' + (key || test.hash);
+
+	this._tests.push(test);
 }
 function _getHashFromString(aString)
 {
@@ -710,37 +721,22 @@ function run(aStopper)
 		checkSuccessCount : function(aContinuation)
 		{
 			var test = _this._tests[testIndex];
-			var expectedCount = test.assertions;
-			if (expectedCount > -1) {
-				var actualCount = _this.environment.assert.successCount;
-				try {
-					if (!utils.equals(expectedCount, actualCount)) {
-						Assertions.prototype.fail.call(
-							_this.environment.assert,
-							{
-								expectedRaw : expectedCount,
-								actualRaw   : actualCount,
-								expected    : expectedCount,
-								actual      : actualCount
-							},
-							bundle.getString(
-								expectedCount < actualCount ?
-									'assertion_failed_too_many_assertions' :
-									'assertion_failed_too_less_assertions'
-							)
-						);
-					}
-				}
-				catch(e) {
-					testReport.report = new Report();
-					testReport.report.result = 'failure';
-					testReport.report.exception = utils.normalizeError(e);
-					testReport.report.description = bundle.getFormattedString('report_description_check_success_count', [test.description]);
-					aContinuation('ko');
-					return;
-				}
+			try {
+				Assertions.prototype.validSuccessCount.call(
+					_this.environment.assert,
+					test.assertions,
+					test.minAssertions,
+					test.maxAssertions
+				);
+				aContinuation('ok');
 			}
-			aContinuation('ok');
+			catch(e) {
+				testReport.report = new Report();
+				testReport.report.result = 'failure';
+				testReport.report.exception = utils.normalizeError(e);
+				testReport.report.description = bundle.getFormattedString('report_description_check_success_count', [test.description]);
+				aContinuation('ko');
+			}
 		},
 		doPrivTearDown : function(aContinuation)
 		{

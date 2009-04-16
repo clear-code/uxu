@@ -540,3 +540,72 @@ function testAssertionsCount()
 	);
 }
 
+function testMinAssertionsCount()
+{
+	testcase.registerTest((function() {
+		var f = function() {
+		};
+		f.minAssertions = 1;
+		return f;
+	})());
+	testcase.registerTest((function() {
+		var f = function() {
+			testcase.environment.assert.isTrue(true);
+		};
+		f.minAssertions = 1;
+		return f;
+	})());
+	testcase.registerTest((function() {
+		var f = function() {
+			testcase.environment.assert.isTrue(true);
+			testcase.environment.assert.isTrue(true);
+		};
+		f.minAssertions = 1;
+		return f;
+	})());
+	testcase.masterPriority = 'must';
+	testcase.run();
+	yield (function() { return testcase.done; });
+	assert.equals(
+		['failure', 'success', 'success'],
+		testcase.tests.map(function(aTest) {
+			return aTest.report.result;
+		})
+	);
+}
+
+function testMaxAssertionsCount()
+{
+	testcase.registerTest((function() {
+		var f = function() {
+		};
+		f.maxAssertions = 1;
+		return f;
+	})());
+	testcase.registerTest((function() {
+		var f = function() {
+			testcase.environment.assert.isTrue(true);
+		};
+		f.maxAssertions = 1;
+		return f;
+	})());
+	testcase.registerTest((function() {
+		var f = function() {
+			testcase.environment.assert.isTrue(true);
+			testcase.environment.assert.isTrue(true);
+		};
+		f.maxAssertions = 1;
+		return f;
+	})());
+
+	testcase.masterPriority = 'must';
+	testcase.run();
+	yield (function() { return testcase.done; });
+	assert.equals(
+		['success', 'success', 'failure'],
+		testcase.tests.map(function(aTest) {
+			return aTest.report.result;
+		})
+	);
+}
+

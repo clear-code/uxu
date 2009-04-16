@@ -635,6 +635,45 @@ function is(aExpected, aActual, aMessage)
 	this.equals(aExpected, aActual, aMessage);
 }
 
+
+function validSuccessCount(aExpected, aMin, aMax)
+{
+	if (aExpected !== void(0) &&
+		aExpected > -1 &&
+		!utils.equals(aExpected, this.successCount))
+		fail({
+				expected    : bundle.getFormattedString('assert_success_count_expected', [aExpected]),
+				actual      : bundle.getFormattedString('assert_success_count_actual', [this.successCount])
+			},
+			bundle.getString(
+				aExpected < this.successCount ?
+					'assert_success_count_too_many' :
+					'assert_success_count_too_less'
+			)
+		);
+
+	if (aMin !== void(0) &&
+		aMin > -1 &&
+		this.successCount < aMin)
+		fail({
+				expected    : bundle.getFormattedString('assert_min_success_count_expected', [aMin]),
+				actual      : bundle.getFormattedString('assert_min_success_count_actual', [this.successCount])
+			},
+			bundle.getString('assert_min_success_count')
+		);
+
+	if (aMax !== void(0) &&
+		aMax > -1 &&
+		this.successCount > aMax)
+		fail({
+				expected    : bundle.getFormattedString('assert_max_success_count_expected', [aMax]),
+				actual      : bundle.getFormattedString('assert_max_success_count_actual', [this.successCount])
+			},
+			bundle.getString('assert_max_success_count')
+		);
+}
+
+
 function fail()
 {
 	var args = Array.slice(arguments);
