@@ -53,7 +53,7 @@ function removeAllListeners()
  
 function fireEvent(aType, aData) 
 {
-	this._ensureHasOwnListeners();
+//	this._ensureHasOwnListeners();
 	var event = {
 			type   : aType,
 			target : this,

@@ -595,7 +595,7 @@ var inDeltaListener;
 testInDelta.setUp = function()
 {
 	inDeltaListener = {
-		onAssertionNotify : function(aEvent)
+		onAssertionWarning : function(aEvent)
 		{
 			this.events.push(aEvent);
 		},
