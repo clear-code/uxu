@@ -62,3 +62,15 @@ function testAssertFinishesWithin()
 	    {}
 	  ));
 }
+
+
+function test$X()
+{
+	var disabledItems = $X(
+	      '/descendant::*[local-name()="menuitem" and @disabled="true"]',
+	      document
+	    );
+	disabledItems.forEach(function(aItem) {
+	  assert.isTrue(aItem.disabled);
+	});
+}
