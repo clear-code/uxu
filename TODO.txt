@@ -1,1 +1,5 @@
-
+■test_logのテストを書く
+■actionのテストを書く
+■greasemonkeyのテストを書く
+■ログのHTML形式での出力
+■MochiTestに対応できるか？
