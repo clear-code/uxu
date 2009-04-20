@@ -716,7 +716,7 @@ function run(aStopper)
 		checkDoOrSkip : function(aContinuation)
 		{
 			if (current.targetProduct &&
-				String(this._targetProduct).toLowerCase() != utils.product.toLowerCase()) {
+				String(current.targetProduct).toLowerCase() != utils.product.toLowerCase()) {
 				aContinuation('ko');
 				return;
 			}
