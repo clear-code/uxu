@@ -6,6 +6,7 @@
 <!ENTITY uxu.tools.menu.label   "UnitTest.XUL">
 <!ENTITY uxu.tools.start.label   "UxUサーバを起動">
 <!ENTITY uxu.tools.runner.label   "テストランナー">
+<!ENTITY uxu.tools.config.label   "設定...">
 
 
 <!ENTITY runner.title "UxUテストランナー">
@@ -124,7 +125,7 @@
 
 <!ENTITY config.tabs.products "外部アプリケーション">
 
-<!ENTITY config.products.description "アプリケーションのパスが明示されていない場合、Windowsのレジストリからインストール先を自動的に識別します。Windows以外のプラットフォームではパスを明示的に設定してください。">
+<!ENTITY config.products.description "アプリケーションのインストール先が明示されていない場合、Windowsのレジストリからインストール先を自動的に識別します。Windows以外のプラットフォームではパスを明示的に設定してください。">
 <!ENTITY config.products.choose "参照...">
 <!ENTITY config.products.clear  "クリア">
 

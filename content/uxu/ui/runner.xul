@@ -43,6 +43,9 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 	<script type="application/x-javascript;version=1.7" src="chrome://uxu/content/lib/module_manager.js"/>
 	<script type="application/x-javascript;version=1.7" src="chrome://uxu/content/ui/runner.js"/>
 
+	<script type="application/x-javascript" src="chrome://global/content/nsUserSettings.js"/>
+	<script type="application/x-javascript" src="chrome://uxu/content/commands.js"/>
+
 	<!-- COMMANDS -->
 
 	<commandset>
@@ -92,6 +95,8 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 			oncommand="goDoCommand('cmd_copy')"/>
 		<command id="restartApplication" label="&runner.restartApplication.label;" accesskey="&runner.restartApplication.accesskey;"
 			oncommand="restartApplication();"/>
+		<command id="config" label="&uxu.tools.config.label;"
+			oncommand="openUXUConfig();"/>
 	</commandset>
 
 	<!-- KEYBINDINGS -->
@@ -213,10 +218,11 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 							<menuitem command="runFailed"/>
 						</menupopup>
 					</menu>
-					<menuseparator/>
 					<menuitem command="stop" key="key-stop"/>
 					<menuseparator/>
 					<menuitem command="saveReport" key="key-saveReport"/>
+					<menuseparator/>
+					<menuitem command="config"/>
 					<menuseparator/>
 					<menuitem command="restartApplication"/>
 					<menuseparator/>

@@ -17,6 +17,10 @@
 			<menuitem id="tools-uxu-menuitem"
 				label="&uxu.tools.start.label;"
 				oncommand="startUxU()"/>
+			<menuseparator/>
+			<menuitem id="tools-uxu-menuitem-config"
+				label="&uxu.tools.config.label;"
+				oncommand="openUXUConfig()"/>
 		</menupopup>
 	</menu>
 </menupopup>

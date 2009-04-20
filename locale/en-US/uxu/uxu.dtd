@@ -6,6 +6,7 @@
 <!ENTITY uxu.tools.menu.label   "UnitTest.XUL">
 <!ENTITY uxu.tools.start.label   "Start UxU Server">
 <!ENTITY uxu.tools.runner.label   "Test Runner">
+<!ENTITY uxu.tools.config.label   "Config...">
 
 
 <!ENTITY runner.title "UxU Test Runner">
@@ -123,7 +124,7 @@
 
 <!ENTITY config.tabs.products "External Applications">
 
-<!ENTITY config.products.description "UxU detects installed location of the application from the registory of Windows, if the file is not specified. Please specify the path of each application manually on non-Windows platform.">
+<!ENTITY config.products.description "UxU detects the installed location of the application from the registory of Windows, if it is not specified. Please specify the location of each application manually on non-Windows platform.">
 <!ENTITY config.products.choose "Choose...">
 <!ENTITY config.products.clear  "Clear">
 

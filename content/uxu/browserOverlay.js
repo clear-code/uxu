@@ -1,31 +1,3 @@
-function startUxU(aOptions) {
-	if (!aOptions) aOptions = {};
-
-	const WindowManager = Components.classes['@mozilla.org/appshell/window-mediator;1']
-			.getService(Components.interfaces.nsIWindowMediator);
-
-	var target = WindowManager.getMostRecentWindow('uxu:server');
-	if (target) {
-		target.focus();
-		return;
-
-	}
-	window.openDialog('chrome://uxu/content/ui/uxu.xul', '_blank', 'chrome,all,dialog=no', aOptions);
-}
-
-function openUxURunner() {
-	const WindowManager = Components.classes['@mozilla.org/appshell/window-mediator;1']
-			.getService(Components.interfaces.nsIWindowMediator);
-
-	var target = WindowManager.getMostRecentWindow('uxu:runner');
-	if (target) {
-		target.focus();
-		return;
-	}
-
-	window.openDialog('chrome://uxu/content/ui/runner.xul', '_blank', 'chrome,all,dialog=no');
-}
-
 window.addEventListener('load', function() {
 	window.removeEventListener('load', arguments.callee, false);
 
