@@ -1570,6 +1570,8 @@ function _getInstalledLocationOfMozillaProduct(aProduct)
 			key = 'mozilla.org\\SeaMonkey';
 			break;
 		case 'sunbird':
+			key = 'Mozilla\\Mozilla Sunbird';
+			break;
 		case 'fennec':
 		default:
 			return null;
