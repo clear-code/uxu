@@ -896,13 +896,13 @@ function getWindowFromScreenPoint(aWindow, aScreenX, aScreenY)
 		let arr = doc.getElementsByTagName('frame');
 		for (let j = 0; j < arr.length; j++)
 			frameList.push(arr[j]);
-		var arr = doc.getElementsByTagName('iframe');
+		arr = doc.getElementsByTagName('iframe');
 		for (let j = 0; j < arr.length; j++)
 			frameList.push(arr[j]);
-		var arr = doc.getElementsByTagName('tabbrowser');
+		arr = doc.getElementsByTagName('tabbrowser');
 		for (let j = 0; j < arr.length; j++)
 			frameList.push(arr[j]);
-		var arr = doc.getElementsByTagName('browser');
+		arr = doc.getElementsByTagName('browser');
 		for (let j = 0; j < arr.length; j++)
 			frameList.push(arr[j]);
 		for (let j = frameList.length - 1; j >= 0; j--) {
