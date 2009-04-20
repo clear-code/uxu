@@ -1527,7 +1527,15 @@ function getInstalledLocationOfProduct(aProduct)
 		)
 		return null;
 
-	switch (String(aProduct).toLowerCase())
+	aProduct = String(aProduct).toLowerCase();
+
+	var file = this.getPref('extensions.uxu.product.'+aProduct);
+	if (file) {
+		file = getFileFromPath(file);
+		if (file.exists()) return file;
+	}
+
+	switch (aProduct)
 	{
 		case 'firefox':
 			return _getInstalledLocationOfMozillaProduct('Firefox') ||

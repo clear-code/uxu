@@ -1,9 +1,12 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/"?>
+<?xml-stylesheet href="chrome://mozapps/content/preferences/preferences.css"?>
+<?xml-stylesheet href="chrome://browser/skin/preferences/preferences.css"?>
 <!DOCTYPE prefwindow SYSTEM "chrome://uxu/locale/uxu.dtd">
 <prefwindow id="uxu-config"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-	title="&config.title;">
+	title="&config.title;"
+	style="&config.size;">
 
 <prefpane id="prefpane-general" label="&config.tabs.general;">
 	<preferences>
@@ -208,5 +211,104 @@
 
 </prefpane>
 
-</prefwindow>
+<prefpane id="prefpane-products" label="&config.tabs.products;">
+	<preferences>
+		<preference id="extensions.uxu.product.firefox"
+			name="extensions.uxu.product.firefox"
+			type="file"/>
+		<preference id="extensions.uxu.product.thunderbird"
+			name="extensions.uxu.product.thunderbird"
+			type="file"/>
+		<preference id="extensions.uxu.product.sunbird"
+			name="extensions.uxu.product.sunbird"
+			type="file"/>
+		<preference id="extensions.uxu.product.mozilla"
+			name="extensions.uxu.product.mozilla"
+			type="file"/>
+		<preference id="extensions.uxu.product.seamonkey"
+			name="extensions.uxu.product.seamonkey"
+			type="file"/>
+		<preference id="extensions.uxu.product.fennec"
+			name="extensions.uxu.product.fennec"
+			type="file"/>
+	</preferences>
 
+	<hbox>
+		<description flex="1">&config.products.description;</description>
+	</hbox>
+	<grid flex="1">
+		<columns>
+			<column/>
+			<column flex="1"/>
+			<column/>
+			<column/>
+		</columns>
+		<rows>
+			<row align="center">
+				<label value="&config.products.firefox.label;"/>
+				<filefield id="extensions.uxu.product.firefox-filefield"
+					preference="extensions.uxu.product.firefox"/>
+				<button label="&config.products.choose;"
+					picker-title="&config.products.firefox.picker;"
+					oncommand="showFilePicker('extensions.uxu.product.firefox-filefield', this.getAttribute('picker-title'));"/>
+				<button label="&config.products.clear;"
+					oncommand="resetFilePicker('extensions.uxu.product.firefox-filefield');"/>
+			</row>
+			<row align="center">
+				<label value="&config.products.thunderbird.label;"/>
+				<filefield id="extensions.uxu.product.thunderbird-filefield"
+					preference="extensions.uxu.product.thunderbird"/>
+				<button label="&config.products.choose;"
+					picker-title="&config.products.thunderbird.picker;"
+					oncommand="showFilePicker('extensions.uxu.product.thunderbird-filefield', this.getAttribute('picker-title'));"/>
+				<button label="&config.products.clear;"
+					oncommand="resetFilePicker('extensions.uxu.product.thunderbird-filefield');"/>
+			</row>
+			<row align="center">
+				<label value="&config.products.sunbird.label;"/>
+				<filefield id="extensions.uxu.product.sunbird-filefield"
+					preference="extensions.uxu.product.sunbird"/>
+				<button label="&config.products.choose;"
+					picker-title="&config.products.sunbird.picker;"
+					oncommand="showFilePicker('extensions.uxu.product.sunbird-filefield', this.getAttribute('picker-title'));"/>
+				<button label="&config.products.clear;"
+					oncommand="resetFilePicker('extensions.uxu.product.sunbird-filefield');"/>
+			</row>
+			<row align="center">
+				<label value="&config.products.mozilla.label;"/>
+				<filefield id="extensions.uxu.product.mozilla-filefield"
+					preference="extensions.uxu.product.mozilla"/>
+				<button label="&config.products.choose;"
+					picker-title="&config.products.mozilla.picker;"
+					oncommand="showFilePicker('extensions.uxu.product.mozilla-filefield', this.getAttribute('picker-title'));"/>
+				<button label="&config.products.clear;"
+					oncommand="resetFilePicker('extensions.uxu.product.mozilla-filefield');"/>
+			</row>
+			<row align="center">
+				<label value="&config.products.seamonkey.label;"/>
+				<filefield id="extensions.uxu.product.seamonkey-filefield"
+					preference="extensions.uxu.product.seamonkey"/>
+				<button label="&config.products.choose;"
+					picker-title="&config.products.seamonkey.picker;"
+					oncommand="showFilePicker('extensions.uxu.product.seamonkey-filefield', this.getAttribute('picker-title'));"/>
+				<button label="&config.products.clear;"
+					oncommand="resetFilePicker('extensions.uxu.product.seamonkey-filefield');"/>
+			</row>
+			<row align="center">
+				<label value="&config.products.fennec.label;"/>
+				<filefield id="extensions.uxu.product.fennec-filefield"
+					preference="extensions.uxu.product.fennec"/>
+				<button label="&config.products.choose;"
+					picker-title="&config.products.fennec.picker;"
+					oncommand="showFilePicker('extensions.uxu.product.fennec-filefield', this.getAttribute('picker-title'));"/>
+				<button label="&config.products.clear;"
+					oncommand="resetFilePicker('extensions.uxu.product.fennec-filefield');"/>
+			</row>
+		</rows>
+	</grid>
+
+</prefpane>
+
+<script src="config.js" type="application/x-javascript"/>
+
+</prefwindow>

@@ -80,6 +80,7 @@
 
 
 <!ENTITY config.title  "UnitTest.XUL Configuration">
+<!ENTITY config.size   "max-width: 40em;">
 
 <!ENTITY config.tabs.general "General">
 
@@ -118,3 +119,23 @@
 
 <!ENTITY config.allowAccessesFromRemote "Allow to connect from foreign hosts">
 <!ENTITY config.allowAccessesFromRemote.allowedList "Allowed hosts:">
+
+
+<!ENTITY config.tabs.products "External Applications">
+
+<!ENTITY config.products.description "UxU detects installed location of the application from the registory of Windows, if the file is not specified. Please specify the path of each application manually on non-Windows platform.">
+<!ENTITY config.products.choose "Choose...">
+<!ENTITY config.products.clear  "Clear">
+
+<!ENTITY config.products.firefox.label      "Firefox">
+<!ENTITY config.products.firefox.picker     "Choose the executive file of Firefox">
+<!ENTITY config.products.thunderbird.label  "Thunderbird">
+<!ENTITY config.products.thunderbird.picker "Choose the executive file of Thunderbird">
+<!ENTITY config.products.sunbird.label      "Sunbird">
+<!ENTITY config.products.sunbird.picker     "Choose the executive file of Sunbird">
+<!ENTITY config.products.mozilla.label      "Mozilla Application Suite">
+<!ENTITY config.products.mozilla.picker     "Choose the executive file of Mozilla Application Suite">
+<!ENTITY config.products.seamonkey.label    "SeaMonkey">
+<!ENTITY config.products.seamonkey.picker   "Choose the executive file of SeaMonkey">
+<!ENTITY config.products.fennec.label       "Fennec">
+<!ENTITY config.products.fennec.picker      "Choose the executive file of Fennec">

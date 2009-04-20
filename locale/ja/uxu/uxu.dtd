@@ -80,6 +80,7 @@
 
 
 <!ENTITY config.title  "UnitTest.XULの設定">
+<!ENTITY config.size   "max-width: 40em;">
 
 <!ENTITY config.tabs.general "全般">
 
@@ -119,3 +120,23 @@
 
 <!ENTITY config.allowAccessesFromRemote "ローカル以外からの接続を受け付ける">
 <!ENTITY config.allowAccessesFromRemote.allowedList "接続を受け付けるホスト：">
+
+
+<!ENTITY config.tabs.products "外部アプリケーション">
+
+<!ENTITY config.products.description "アプリケーションのパスが明示されていない場合、Windowsのレジストリからインストール先を自動的に識別します。Windows以外のプラットフォームではパスを明示的に設定してください。">
+<!ENTITY config.products.choose "参照...">
+<!ENTITY config.products.clear  "クリア">
+
+<!ENTITY config.products.firefox.label      "Firefox">
+<!ENTITY config.products.firefox.picker     "Firefoxの実行ファイルを選択してください">
+<!ENTITY config.products.thunderbird.label  "Thunderbird">
+<!ENTITY config.products.thunderbird.picker "Thunderbirdの実行ファイルを選択してください">
+<!ENTITY config.products.sunbird.label      "Sunbird">
+<!ENTITY config.products.sunbird.picker     "Sunbirdの実行ファイルを選択してください">
+<!ENTITY config.products.mozilla.label      "Mozilla Application Suite">
+<!ENTITY config.products.mozilla.picker     "Mozilla Application Suiteの実行ファイルを選択してください">
+<!ENTITY config.products.seamonkey.label    "SeaMonkey">
+<!ENTITY config.products.seamonkey.picker   "SeaMonkeyの実行ファイルを選択してください">
+<!ENTITY config.products.fennec.label       "Fennec">
+<!ENTITY config.products.fennec.picker      "Fennecの実行ファイルを選択してください">
