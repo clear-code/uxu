@@ -51,7 +51,7 @@ function assertDoneProcessCount(aSetUp, aTearDown, aTestCount)
 function assertInitialized(aTest, aDescription)
 {
 	assert.equals({ description : aDescription,
-	                priority    : 'normal' },
+	                priority    : void(0) },
 	              { description : aTest.description,
 	                priority    : aTest.priority });
 	assert.matches(/^test-\d+-\d+$/, aTest.id);
