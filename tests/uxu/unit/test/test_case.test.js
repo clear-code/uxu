@@ -637,3 +637,51 @@ function testShouldSkip()
 	assertTestResult('skip', 'success', 'skip', 'success');
 }
 
+function testShouldSkipForAll_boolean_skip()
+{
+	testcase.registerTest(function() {});
+	testcase.registerTest(function() {});
+	testcase.registerTest(function() {});
+	testcase.masterPriority = 'must';
+	testcase.shouldSkip = true;
+	testcase.run();
+	yield (function() { return testcase.done; });
+	assertTestResult('skip', 'skip', 'skip');
+}
+
+function testShouldSkipForAll_boolean_success()
+{
+	testcase.registerTest(function() {});
+	testcase.registerTest(function() {});
+	testcase.registerTest(function() {});
+	testcase.masterPriority = 'must';
+	testcase.shouldSkip = false;
+	testcase.run();
+	yield (function() { return testcase.done; });
+	assertTestResult('success', 'success', 'success');
+}
+
+function testShouldSkipForAll_function_skip()
+{
+	testcase.registerTest(function() {});
+	testcase.registerTest(function() {});
+	testcase.registerTest(function() {});
+	testcase.masterPriority = 'must';
+	testcase.shouldSkip = function() { return true; };
+	testcase.run();
+	yield (function() { return testcase.done; });
+	assertTestResult('skip', 'skip', 'skip');
+}
+
+function testShouldSkipForAll_function_success()
+{
+	testcase.registerTest(function() {});
+	testcase.registerTest(function() {});
+	testcase.registerTest(function() {});
+	testcase.masterPriority = 'must';
+	testcase.shouldSkip = function() { return false; };
+	testcase.run();
+	yield (function() { return testcase.done; });
+	assertTestResult('success', 'success', 'success');
+}
+
