@@ -480,9 +480,11 @@ function registerTest(aFunction)
 		code : aFunction,
 
 		priority : (
-			typeof aFunction.priority == 'number' ?
+			(aFunction.priority === null ||
+			 aFunction.priority === void(0) ||
+			 typeof aFunction.priority == 'number') ?
 				aFunction.priority :
-				(String(aFunction.priority || '').toLowerCase() || 'normal')
+				(String(aFunction.priority || '').toLowerCase() || null)
 		),
 		shouldSkip : shouldSkip,
 		targetProduct : aFunction.targetProduct,
