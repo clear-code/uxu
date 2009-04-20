@@ -120,6 +120,7 @@ function _getTestsFromSuite(aSuite)
 					application   : aSuite.application,
 					options       : aSuite.options,
 					priority      : aSuite.priority,
+					shouldSkip    : aSuite.shouldSkip,
 					context       : aSuite.testContext,
 					targetProduct : aSuite.targetProduct
 				}

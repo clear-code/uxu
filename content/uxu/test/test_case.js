@@ -135,6 +135,17 @@ function constructor(aTitle, aOptions)
 			return this._masterPriority;
 		});
 
+	this._shouldSkip = aOptions.shouldSkip || false;
+	this.__defineSetter__(
+		'shouldSkip', function(aSkip) {
+			this._shouldSkip = aSkip;
+			return aSkip;
+		});
+	this.__defineGetter__(
+		'shouldSkip', function() {
+			return this._shouldSkip;
+		});
+
 	this.__defineGetter__('neverRun', function() {
 		return this._equalsToNever(this._masterPriority);
 	});
@@ -593,14 +604,25 @@ function run(aStopper)
 
 	if (this.shouldRunInRemote && this._runByRemote()) return;
 
-	if (this._targetProduct &&
-		String(this._targetProduct).toLowerCase() != utils.product.toLowerCase()) {
+	var context = this.context || {};
+	if (
+		(
+			this._targetProduct &&
+			String(this._targetProduct).toLowerCase() != utils.product.toLowerCase()
+		) ||
+		(
+			this._shouldSkip &&
+			(
+				(typeof this._shouldSkip != 'function') ||
+				this._shouldSkip.call(context)
+			)
+		)
+		) {
 		this._masterPriority = 'never';
 	}
 
 	var testIndex = 0;
 	var current;
-	var context;
 	var testReport = { report : null };
 	var testCaseReport = { report : null };
 
@@ -673,7 +695,6 @@ function run(aStopper)
 		},
 		doWarmUp : function(aContinuation)
 		{
-			context = _this.context || {};
  			testCaseReport.report = new Report();
 			doPreOrPostProcess(
 				aContinuation,
