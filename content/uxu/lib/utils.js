@@ -1456,7 +1456,13 @@ var product = (function() {
 		case '{3550f703-e582-4d05-9a08-453d09bdfdc6}':
 			return 'Thunderbird';
 		case '{86c18b42-e466-45a9-ae7a-9b95ba6f5640}':
+			return 'Mozilla'; // Application Suite
+		case '{92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}':
 			return 'Seamonkey';
+		case '{718e30fb-e89b-41dd-9da7-e25a45638b28}':
+			return 'Sunbird';
+		case '{a23983c0-fd0e-11dc-95ff-0800200c9a66}':
+			return 'Fennec';
 		default:
 			return '';
 	}
@@ -1530,7 +1536,7 @@ function getInstalledLocationOfProduct(aProduct)
 			return _getInstalledLocationOfMozillaProduct('Thunderbird') ||
 					_getInstalledLocationOfMozillaProduct('Shredder');
 		default:
-			return null;
+			return _getInstalledLocationOfMozillaProduct(aProduct);
 	}
 }
 	
@@ -1557,6 +1563,14 @@ function _getInstalledLocationOfMozillaProduct(aProduct)
 		case 'shredder':
 			key = 'Mozilla\\Shredder';
 			break;
+		case 'mozilla':
+			key = 'mozilla.org\\Mozilla';
+			break;
+		case 'seamonkey':
+			key = 'mozilla.org\\SeaMonkey';
+			break;
+		case 'sunbird':
+		case 'fennec':
 		default:
 			return null;
 	}
