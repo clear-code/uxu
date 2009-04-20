@@ -485,6 +485,7 @@ function registerTest(aFunction)
 				(String(aFunction.priority || '').toLowerCase() || 'normal')
 		),
 		shouldSkip : shouldSkip,
+		targetProduct : aFunction.targetProduct,
 
 		setUp    : privSetUp,
 		tearDown : privTearDown,
@@ -714,6 +715,11 @@ function run(aStopper)
 		},
 		checkDoOrSkip : function(aContinuation)
 		{
+			if (current.targetProduct &&
+				String(this._targetProduct).toLowerCase() != utils.product.toLowerCase()) {
+				aContinuation('ko');
+				return;
+			}
 			if (!_this._checkPriorityToExec(current)) {
 				aContinuation('ko');
 				return;
