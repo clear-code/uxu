@@ -1135,11 +1135,17 @@ function _exec(aTest, aContext, aContinuation, aReport)
  
 function _checkPriorityToExec(aTest) 
 {
+	var priority = 0.5;
 	var forceNever = _equalsToNever(aTest.priority) || _equalsToNever(this._masterPriority);
-	var priority = forceNever ? 'never' :
-			(this._masterPriority !== null && this._masterPriority !== void(0)) ?
-				(this._masterPriority || aTest.priority) :
-				aTest.priority;
+	if (forceNever) {
+		priority = 'never';
+	}
+	else {
+		if (this._masterPriority !== null && this._masterPriority !== void(0))
+			priority = this._masterPriority;
+		if (aTest.priority !== null && aTest.priority !== void(0))
+			priority = aTest.priority;
+	}
 
 	if (typeof priority == 'number') {
 		priority = Math.min(1, Math.max(0, priority));
