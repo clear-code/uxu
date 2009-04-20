@@ -197,13 +197,27 @@ function testContainsString()
 {
 	var message = Math.random() * 65000;
 	assertSuccess(assertionsModule.contains,
-                    ['text', 'long text']);
+                  ['text', 'long text']);
 	assertFailure(assertionsModule.contains,
-                 ['outside', 'long text', message]);
+                  ['outside', 'long text', message]);
 	assertFailure(assertionsModule.notContains,
-                 ['text', 'long text', message]);
+                  ['text', 'long text', message]);
 	assertSuccess(assertionsModule.notContains,
-                    ['outside', 'long text']);
+                  ['outside', 'long text']);
+	assert.equal(2, assertionsModule.successCount);
+}
+
+function testContainedString()
+{
+	var message = Math.random() * 65000;
+	assertSuccess(assertionsModule.contained,
+                  ['long text', 'text']);
+	assertFailure(assertionsModule.contained,
+                  ['long text', 'outside', message]);
+	assertFailure(assertionsModule.notContained,
+                  ['long text', 'text', message]);
+	assertSuccess(assertionsModule.notContained,
+                  ['long text', 'outside']);
 	assert.equal(2, assertionsModule.successCount);
 }
 
@@ -213,29 +227,57 @@ function testContainsArray()
 	var item = { value : true };
 	var array = ['string', 29, true, item];
 	assertSuccess(assertionsModule.contains,
-                    ['string', array]);
+                  ['string', array]);
 	assertSuccess(assertionsModule.contains,
-                    [29, array]);
+                  [29, array]);
 	assertSuccess(assertionsModule.contains,
-                    [true, array]);
+                  [true, array]);
 	assertSuccess(assertionsModule.contains,
-                    [item, array]);
+                  [item, array]);
 	assertFailure(assertionsModule.contains,
-                 ['outside', array, message]);
+                  ['outside', array, message]);
 	assertFailure(assertionsModule.notContains,
-                 ['string', array, message]);
+                  ['string', array, message]);
 	assertFailure(assertionsModule.notContains,
-                 [29, array, message]);
+                  [29, array, message]);
 	assertFailure(assertionsModule.notContains,
-                 [true, array, message]);
+                  [true, array, message]);
 	assertFailure(assertionsModule.notContains,
-                 [item, array, message]);
+                  [item, array, message]);
 	assertSuccess(assertionsModule.notContains,
-                    ['outside', array]);
+                  ['outside', array]);
 	assert.equal(5, assertionsModule.successCount);
 }
 
-function testContainsRange()
+function testContainedArray()
+{
+	var message = Math.random() * 65000;
+	var item = { value : true };
+	var array = ['string', 29, true, item];
+	assertSuccess(assertionsModule.contained,
+                  [array, 'string']);
+	assertSuccess(assertionsModule.contained,
+                  [array, 29]);
+	assertSuccess(assertionsModule.contained,
+                  [array, true]);
+	assertSuccess(assertionsModule.contained,
+                  [array, item]);
+	assertFailure(assertionsModule.contained,
+                  [array, 'outside', message]);
+	assertFailure(assertionsModule.notContained,
+                  [array, 'string', message]);
+	assertFailure(assertionsModule.notContained,
+                  [array, 29, message]);
+	assertFailure(assertionsModule.notContained,
+                  [array, true, message]);
+	assertFailure(assertionsModule.notContained,
+                  [array, item, message]);
+	assertSuccess(assertionsModule.notContained,
+                  [array, 'outside']);
+	assert.equal(5, assertionsModule.successCount);
+}
+
+function testContainsAndContainedRange()
 {
 	var message = Math.random() * 65000;
 
@@ -251,41 +293,65 @@ function testContainsRange()
 	range.setEndAfter($('item9'));
 
 	assertSuccess(assertionsModule.contains,
-                    [$('link5'), range]);
+                  [$('link5'), range]);
 	assertFailure(assertionsModule.contains,
-                 [$('link10'), range, message]);
+                  [$('link10'), range, message]);
 	assertFailure(assertionsModule.notContains,
-                 [$('link5'), range, message]);
+                  [$('link5'), range, message]);
 	assertSuccess(assertionsModule.notContains,
-                    [$('link10'), range]);
+                  [$('link10'), range]);
+	assertSuccess(assertionsModule.contained,
+                  [range, $('link5')]);
+	assertFailure(assertionsModule.contained,
+                  [range, $('link10'), message]);
+	assertFailure(assertionsModule.notContained,
+                  [range, $('link5'), message]);
+	assertSuccess(assertionsModule.notContained,
+                  [range, $('link10')]);
 
 	assertSuccess(assertionsModule.contains,
-                    ['リンク5', range]);
+                  ['リンク5', range]);
 	assertFailure(assertionsModule.contains,
-                 ['リンク10', range, message]);
+                  ['リンク10', range, message]);
 	assertFailure(assertionsModule.notContains,
-                 ['リンク5', range, message]);
+                  ['リンク5', range, message]);
 	assertSuccess(assertionsModule.notContains,
-                    ['リンク10', range]);
+                  ['リンク10', range]);
+	assertSuccess(assertionsModule.contained,
+                  [range, 'リンク5']);
+	assertFailure(assertionsModule.contained,
+                  [range, 'リンク10', message]);
+	assertFailure(assertionsModule.notContained,
+                  [range, 'リンク5', message]);
+	assertSuccess(assertionsModule.notContained,
+                  [range, 'リンク10']);
 
 	var targetRange = content.document.createRange();
 	targetRange.selectNode($('em5'));
 	targetRange.setEnd($('em5').lastChild, 3);
 	assertSuccess(assertionsModule.contains,
-                    [targetRange, range]);
+                  [targetRange, range]);
 	assertFailure(assertionsModule.notContains,
-                 [targetRange, range, message]);
+                  [targetRange, range, message]);
+	assertSuccess(assertionsModule.contained,
+                  [range, targetRange]);
+	assertFailure(assertionsModule.notContained,
+                  [range, targetRange, message]);
 	targetRange.selectNode($('em10'));
 	targetRange.setEnd($('em10').lastChild, 3);
 	assertFailure(assertionsModule.contains,
-                 [targetRange, range, message]);
+                  [targetRange, range, message]);
 	assertSuccess(assertionsModule.notContains,
-                    [targetRange, range]);
+                  [targetRange, range]);
+	assertFailure(assertionsModule.contained,
+                  [range, targetRange, message]);
+	assertSuccess(assertionsModule.notContained,
+                  [range, targetRange]);
 
 	range.detach();
 	targetRange.detach();
 
-	assert.equal(6, assertionsModule.successCount);
+	assert.equal(12, assertionsModule.successCount);
 }
 
 function testContainsSelection()
@@ -306,55 +372,91 @@ function testContainsSelection()
 	selection.addRange(range2);
 
 	assertSuccess(assertionsModule.contains,
-                    [$('link5'), selection]);
+                  [$('link5'), selection]);
 	assertFailure(assertionsModule.contains,
-                 [$('link10'), selection, message]);
+                  [$('link10'), selection, message]);
 	assertSuccess(assertionsModule.contains,
-                    [$('link13'), selection]);
+                  [$('link13'), selection]);
 	assertFailure(assertionsModule.notContains,
-                 [$('link5'), selection, message]);
+                  [$('link5'), selection, message]);
 	assertSuccess(assertionsModule.notContains,
-                    [$('link10'), selection]);
+                  [$('link10'), selection]);
 	assertFailure(assertionsModule.notContains,
-                 [$('link13'), selection, message]);
+                  [$('link13'), selection, message]);
+	assertSuccess(assertionsModule.contained,
+                  [selection, $('link5')]);
+	assertFailure(assertionsModule.contained,
+                  [selection, $('link10'), message]);
+	assertSuccess(assertionsModule.contained,
+                  [selection, $('link13')]);
+	assertFailure(assertionsModule.notContained,
+                  [selection, $('link5'), message]);
+	assertSuccess(assertionsModule.notContained,
+                  [selection, $('link10')]);
+	assertFailure(assertionsModule.notContained,
+                  [selection, $('link13'), message]);
 
 	assertSuccess(assertionsModule.contains,
-                    ['リンク5', selection]);
+                  ['リンク5', selection]);
 	assertFailure(assertionsModule.contains,
-                 ['リンク10', selection, message]);
+                  ['リンク10', selection, message]);
 	assertSuccess(assertionsModule.contains,
-                    ['リンク13', selection]);
+                  ['リンク13', selection]);
 	assertFailure(assertionsModule.notContains,
-                 ['リンク5', selection, message]);
+                  ['リンク5', selection, message]);
 	assertSuccess(assertionsModule.notContains,
-                    ['リンク10', selection]);
+                  ['リンク10', selection]);
 	assertFailure(assertionsModule.notContains,
-                 ['リンク13', selection, message]);
+                  ['リンク13', selection, message]);
+	assertSuccess(assertionsModule.contained,
+                  [selection, 'リンク5']);
+	assertFailure(assertionsModule.contained,
+                  [selection, 'リンク10', message]);
+	assertSuccess(assertionsModule.contained,
+                  [selection, 'リンク13']);
+	assertFailure(assertionsModule.notContained,
+                  [selection, 'リンク5', message]);
+	assertSuccess(assertionsModule.notContained,
+                  [selection, 'リンク10']);
+	assertFailure(assertionsModule.notContained,
+                  [selection, 'リンク13', message]);
 
 	var targetRange = content.document.createRange();
 	targetRange.selectNode($('em5'));
 	targetRange.setEnd($('em5').lastChild, 3);
 	assertSuccess(assertionsModule.contains,
-                    [targetRange, selection]);
+                  [targetRange, selection]);
 	assertFailure(assertionsModule.notContains,
-                 [targetRange, selection, message]);
+                  [targetRange, selection, message]);
+	assertSuccess(assertionsModule.contained,
+                  [selection, targetRange]);
+	assertFailure(assertionsModule.notContained,
+                  [selection, targetRange, message]);
 	targetRange.selectNode($('em10'));
 	targetRange.setEnd($('em10').lastChild, 3);
 	assertFailure(assertionsModule.contains,
-                 [targetRange, selection, message]);
+                  [targetRange, selection, message]);
 	assertSuccess(assertionsModule.notContains,
-                    [targetRange, selection]);
+                  [targetRange, selection]);
+	assertFailure(assertionsModule.contained,
+                  [selection, targetRange, message]);
+	assertSuccess(assertionsModule.notContained,
+                  [selection, targetRange]);
 	targetRange.selectNode($('em13'));
 	targetRange.setEnd($('em13').lastChild, 3);
 	assertSuccess(assertionsModule.contains,
-                    [targetRange, selection]);
+                  [targetRange, selection]);
 	assertFailure(assertionsModule.notContains,
-                 [targetRange, selection, message]);
+                  [targetRange, selection, message]);
+	assertSuccess(assertionsModule.contained,
+                  [selection, targetRange]);
+	assertFailure(assertionsModule.notContained,
+                  [selection, targetRange, message]);
 
 	targetRange.detach();
 	selection.removeAllRanges();
 
-	assert.equal(9, assertionsModule.successCount);
+	assert.equal(18, assertionsModule.successCount);
 }
 
 function testContainsDOMNodeTree()
@@ -364,40 +466,64 @@ function testContainsDOMNodeTree()
 	var root = $('item5');
 
 	assertSuccess(assertionsModule.contains,
-                    [$('link5'), root]);
+                  [$('link5'), root]);
 	assertFailure(assertionsModule.contains,
-                 [$('link10'), root, message]);
+                  [$('link10'), root, message]);
 	assertFailure(assertionsModule.notContains,
-                 [$('link5'), root, message]);
+                  [$('link5'), root, message]);
 	assertSuccess(assertionsModule.notContains,
-                    [$('link10'), root]);
+                  [$('link10'), root]);
+	assertSuccess(assertionsModule.contained,
+                  [root, $('link5')]);
+	assertFailure(assertionsModule.contained,
+                  [root, $('link10'), message]);
+	assertFailure(assertionsModule.notContained,
+                  [root, $('link5'), message]);
+	assertSuccess(assertionsModule.notContained,
+                  [root, $('link10')]);
 
 	assertSuccess(assertionsModule.contains,
-                    ['リンク5', root]);
+                  ['リンク5', root]);
 	assertFailure(assertionsModule.contains,
-                 ['リンク10', root, message]);
+                  ['リンク10', root, message]);
 	assertFailure(assertionsModule.notContains,
-                 ['リンク5', root, message]);
+                  ['リンク5', root, message]);
 	assertSuccess(assertionsModule.notContains,
-                    ['リンク10', root]);
+                  ['リンク10', root]);
+	assertSuccess(assertionsModule.contained,
+                  [root, 'リンク5']);
+	assertFailure(assertionsModule.contained,
+                  [root, 'リンク10', message]);
+	assertFailure(assertionsModule.notContained,
+                  [root, 'リンク5', message]);
+	assertSuccess(assertionsModule.notContained,
+                  [root, 'リンク10']);
 
 	var targetRange = content.document.createRange();
 	targetRange.selectNode($('em5'));
 	targetRange.setEnd($('em5').lastChild, 3);
 	assertSuccess(assertionsModule.contains,
-                    [targetRange, root]);
+                  [targetRange, root]);
 	assertFailure(assertionsModule.notContains,
-                 [targetRange, root, message]);
+                  [targetRange, root, message]);
+	assertSuccess(assertionsModule.contained,
+                  [root, targetRange]);
+	assertFailure(assertionsModule.notContained,
+                  [root, targetRange, message]);
 	targetRange.selectNode($('em10'));
 	targetRange.setEnd($('em10').lastChild, 3);
 	assertFailure(assertionsModule.contains,
-                 [targetRange, root, message]);
+                  [targetRange, root, message]);
 	assertSuccess(assertionsModule.notContains,
-                    [targetRange, root]);
+                  [targetRange, root]);
+	assertFailure(assertionsModule.contained,
+                  [root, targetRange, message]);
+	assertSuccess(assertionsModule.notContained,
+                  [root, targetRange]);
 
 	targetRange.detach();
 
-	assert.equal(6, assertionsModule.successCount);
+	assert.equal(12, assertionsModule.successCount);
 }
 
 function testBoolean()

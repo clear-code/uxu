@@ -583,6 +583,50 @@ function notContains(aExpected, aActual, aMessage)
 }
 function notContain(aExpected, aActual, aMessage) { this.notContains.apply(this, arguments); }
 
+function contained(aExpected, aActual, aMessage)
+{
+	if (
+		(aExpected instanceof Ci.nsIDOMRange) ?
+			!utils.isTargetInRange(aActual, aExpected) :
+		(aExpected instanceof Ci.nsISelection) ?
+			!utils.isTargetInSelection(aActual, aExpected) :
+		(aExpected instanceof Ci.nsIDOMNode) ?
+			!utils.isTargetInSubTree(aActual, aExpected) :
+			(utils.isArray(aExpected) ? aExpected : String(aExpected) ).indexOf(aActual) < 0
+		)
+		fail({
+		     	expectedRaw : appendTypeString(aExpected),
+		     	actualRaw   : appendTypeString(aActual),
+		     	expected    : bundle.getFormattedString('assert_contained_expected', [appendTypeString(aExpected)]),
+		     	actual      : bundle.getFormattedString('assert_contained_actual', [appendTypeString(aActual)])
+		     },
+		     bundle.getString('assert_contained'),
+		     aMessage);
+	this._onSuccess();
+}
+
+function notContained(aExpected, aActual, aMessage)
+{
+	if (
+		(aExpected instanceof Ci.nsIDOMRange) ?
+			utils.isTargetInRange(aActual, aExpected) :
+		(aExpected instanceof Ci.nsISelection) ?
+			utils.isTargetInSelection(aActual, aExpected) :
+		(aExpected instanceof Ci.nsIDOMNode) ?
+			utils.isTargetInSubTree(aActual, aExpected) :
+			(utils.isArray(aExpected) ? aExpected : String(aExpected) ).indexOf(aActual) > -1
+		)
+		fail({
+		     	expectedRaw : appendTypeString(aExpected),
+		     	actualRaw   : appendTypeString(aActual),
+		     	expected    : bundle.getFormattedString('assert_not_contained_expected', [appendTypeString(aExpected)]),
+		     	actual      : bundle.getFormattedString('assert_not_contained_actual', [appendTypeString(aActual)])
+		     },
+		     bundle.getString('assert_not_contained'),
+		     aMessage);
+	this._onSuccess();
+}
+
 function finishesWithin(aExpectedTime, aTask, aContext, aMessage)
 {
 	var startAt = Date.now();
