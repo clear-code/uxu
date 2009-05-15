@@ -261,8 +261,8 @@ function _onTestCaseEvent(aEvent)
 	 
 function _cleanUpModifications(aTestCase) 
 {
-	aTestCase.environment.utils.cleanUpTempFiles();
 	aTestCase.environment.utils.cleanUpModifiedPrefs();
+	aTestCase.environment.utils.cleanUpTempFiles(true);
 }
   	
 function addTestFilter(aFilter) 

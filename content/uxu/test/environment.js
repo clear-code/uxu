@@ -561,17 +561,27 @@ function makeTempFile(aOriginal, aCosmetic)
 	}
 };
  
-function cleanUpTempFiles() 
+function cleanUpTempFiles(aDelayed, aTempFiles) 
 {
-	this.tempFiles.forEach(function(aFile) {
+	if (!aTempFiles) {
+		aTempFiles = this.tempFiles;
+		this.tempFiles = [];
+	}
+	if (aDelayed) {
+		window.setTimeout(arguments.callee, 1000, false, aTempFiles);
+		return;
+	}
+	aTempFiles.forEach(function(aFile) {
 		try {
 			aFile.remove(true);
+			return false;
 		}
 		catch(e) {
-			dump(e+'\n');
+			window.dump('failed to remove temporary file:\n'+aFile.path+'\n'+e+'\n');
+			utils.scheduleToRemove(aFile);
 		}
+		return true;
 	});
-	this.tempFiles = [];
 };
   
 // prefs 
