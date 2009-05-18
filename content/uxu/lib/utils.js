@@ -1125,17 +1125,24 @@ function openDatabase(aFile)
 	return StorageService.openDatabase(aFile);
 }
  
-function createDatabaseFromSQL(aSQL) 
+function createDatabase() 
 {
 	var file = this.makeTempFile();
-	var connection = this.openDatabase(file);
-	if (connection.transactionInProgress)
-		connection.commitTransaction();
-	if (!connection.transactionInProgress)
-		connection.beginTransaction();
-	connection.executeSimpleSQL(aSQL);
-	if (connection.transactionInProgress)
-		connection.commitTransaction();
+	return this.openDatabase(file);
+}
+ 
+function createDatabaseFromSQL(aSQL) 
+{
+	var connection = this.createDatabase();
+	if (aSQL) {
+		if (connection.transactionInProgress)
+			connection.commitTransaction();
+		if (!connection.transactionInProgress)
+			connection.beginTransaction();
+		connection.executeSimpleSQL(aSQL);
+		if (connection.transactionInProgress)
+			connection.commitTransaction();
+	}
 	return connection;
 }
  

@@ -581,6 +581,7 @@ cleanUpTempFiles
 clearPref
 compareVersions
 cosmeticClone
+createDatabase
 createDatabaseFromSQL
 createDatabaseFromSQLFile
 Do
