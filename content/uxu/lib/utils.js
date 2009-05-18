@@ -516,27 +516,32 @@ function makeTempFile(aOriginal, aCosmetic)
 	}
 };
  
-function cleanUpTempFiles(aDelayed, aTempFiles) 
+function cleanUpTempFiles(aDelayed, aTempFiles, aSelf) 
 {
 	if (!aTempFiles) {
-		aTempFiles = this.tempFiles;
-		this.tempFiles = [];
+		aTempFiles = Array.slice(this.tempFiles);
+		this.tempFiles.splice(0, this.tempFiles.length);
 	}
+	if (!aSelf) aSelf = this;
 	if (aDelayed) {
-		window.setTimeout(arguments.callee, 1000, false, aTempFiles);
+		window.setTimeout(arguments.callee, 1000, false, aTempFiles, aSelf);
 		return;
 	}
 	aTempFiles.forEach(function(aFile) {
 		try {
-			aFile.remove(true);
+			if (aFile.exists()) aFile.remove(true);
 			return false;
 		}
 		catch(e) {
-			window.dump('failed to remove temporary file:\n'+aFile.path+'\n'+e+'\n');
+			var message = 'failed to remove temporary file:\n'+aFile.path+'\n'+e;
+			if ('Application' in window)
+				Application.console.log(message);
+			else
+				window.dump(message+'\n');
 			this.scheduleToRemove(aFile);
 		}
 		return true;
-	});
+	}, aSelf);
 };
    
 // エラー・スタックトレース整形 

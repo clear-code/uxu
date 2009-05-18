@@ -90,7 +90,7 @@ function test_cleanUpModifications()
 	assert.equals(1, tests.length);
 
 	var file = suite.utils.makeTempFile();
-	tempFiles.push(file);
+	suite.utils.writeTo('foo', file);
 	assert.isTrue(file.exists());
 
 	var key = 'uxu.temp.'+parseInt(Math.random() * 65000);
@@ -99,6 +99,10 @@ function test_cleanUpModifications()
 	assert.isTrue(utils.getPref(key));
 
 	runner._cleanUpModifications(tests[0]);
+	// wait for delayed remove
+	yield function() {
+			return !file.exists();
+		};
 	assert.isFalse(file.exists());
 	assert.isNull(utils.getPref(key));
 }
