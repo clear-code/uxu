@@ -543,16 +543,10 @@ function include(aSource, aEnvironment, aEncoding)
 	return utils.include.call(this, aSource, (aEnvironment || this.environment), aEncoding);
 };
  
-function readFrom(aFile, aEncoding) 
+function createDatabaseFromSQLFile(aFile, aEncoding) 
 {
 	if (aEncoding === void(0)) aEncoding = utils.getPref('extensions.uxu.defaultEncoding');
-	return utils.readFrom.call(this, aFile, aEncoding);
-};
- 
-function writeTo(aContent, aTarget, aEncoding) 
-{
-	if (aEncoding === void(0)) aEncoding = utils.getPref('extensions.uxu.defaultEncoding');
-	return utils.writeTo.call(this, aContent, aTarget, aEncoding);
+	return utils.createDatabaseFromSQLFile.call(this, aFile, aEncoding);
 };
  
 function $(aNodeOrID, aOwner) 
@@ -596,7 +590,6 @@ compareVersions
 cosmeticClone
 createDatabase
 createDatabaseFromSQL
-createDatabaseFromSQLFile
 Do
 doIteration
 dump
@@ -627,6 +620,7 @@ openDatabase
 p
 product
 productExecutable
+readFrom
 scheduleToRemove
 setClipBoard
 setPref
@@ -639,6 +633,7 @@ UnicodeToUTF8
 UnicodeToX
 UTF8ToUCS2
 UTF8ToUnicode
+writeTo
 XToUCS2
 XToUnicode
 ]]></>.toString()
