@@ -472,7 +472,73 @@ function include(aSource, aEnvironment, aEncoding)
 	);
 	return script;
 };
-  
+ 
+// テンポラリファイル 
+var tempFiles = [];
+	
+function makeTempFile(aOriginal, aCosmetic) 
+{
+	var temp = this.getFileFromKeyword('TmpD');
+	if (aOriginal) {
+		if (typeof aOriginal == 'string') {
+			aOriginal = this.fixupIncompleteURI(aOriginal);
+			if (aOriginal.match(/^\w+:\/\//))
+				aOriginal = this.makeURIFromSpec(aOriginal);
+			else
+				aOriginal = this.makeFileWithPath(aOriginal);
+		}
+		try {
+			aOriginal = aOriginal.QueryInterface(Ci.nsILocalFile)
+		}
+		catch(e) {
+			aOriginal = this.getFileFromURLSpec(aOriginal.spec);
+		}
+		temp.append(aOriginal.leafName + '.tmp');
+		temp.createUnique(
+			(aOriginal.isDirectory() ? temp.DIRECTORY_TYPE : temp.NORMAL_FILE_TYPE ),
+			(aOriginal.isDirectory() ? 0777 : 0666)
+		);
+		temp.remove(true);
+
+		if (aCosmetic)
+			this.cosmeticClone(aOriginal, temp.parent, temp.leafName);
+		else
+			aOriginal.copyTo(temp.parent, temp.leafName);
+
+		this.tempFiles.push(temp);
+		return temp;
+	}
+	else {
+		temp.append('uxu.tmp');
+		temp.createUnique(temp.NORMAL_FILE_TYPE, 0666);
+		this.tempFiles.push(temp);
+		return temp;
+	}
+};
+ 
+function cleanUpTempFiles(aDelayed, aTempFiles) 
+{
+	if (!aTempFiles) {
+		aTempFiles = this.tempFiles;
+		this.tempFiles = [];
+	}
+	if (aDelayed) {
+		window.setTimeout(arguments.callee, 1000, false, aTempFiles);
+		return;
+	}
+	aTempFiles.forEach(function(aFile) {
+		try {
+			aFile.remove(true);
+			return false;
+		}
+		catch(e) {
+			window.dump('failed to remove temporary file:\n'+aFile.path+'\n'+e+'\n');
+			this.scheduleToRemove(aFile);
+		}
+		return true;
+	});
+};
+   
 // エラー・スタックトレース整形 
 	
 function normalizeError(e) 
@@ -1047,12 +1113,37 @@ var dbFile = (function() {
 function getDB() 
 {
 	if (_db) return _db;
-
+	_db = this.openDatabase(dbFile);
+	return _db;
+}
+ 
+function openDatabase(aFile) 
+{
+	aFile = this.normalizeToFile(aFile);
 	const StorageService = Cc['@mozilla.org/storage/service;1']
 		.getService(Ci.mozIStorageService);
-	_db = StorageService.openDatabase(dbFile);
-
-	return _db;
+	return StorageService.openDatabase(aFile);
+}
+ 
+function createDatabaseFromSQL(aSQL) 
+{
+	var file = this.makeTempFile();
+	var connection = this.openDatabase(file);
+	if (connection.transactionInProgress)
+		connection.commitTransaction();
+	if (!connection.transactionInProgress)
+		connection.beginTransaction();
+	connection.executeSimpleSQL(aSQL);
+	if (connection.transactionInProgress)
+		connection.commitTransaction();
+	return connection;
+}
+ 
+function createDatabaseFromSQLFile(aSQLFile, aEncoding) 
+{
+	aSQLFile = this.normalizeToFile(aSQLFile);
+	var sql = readFrom(aSQLFile, aEncoding);
+	return this.createDatabaseFromSQL(sql);
 }
   
 // 解析 

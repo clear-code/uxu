@@ -21,6 +21,8 @@ var defaultURI, defaultType, defaultFlags, defaultName;
  
 function constructor(aEnvironment, aURI, aBrowser) 
 {
+	this.tempFiles = [];
+
 	this.__defineGetter__('utils', function() {
 		return this;
 	});
@@ -519,71 +521,6 @@ function getTabs(aOptions)
 	return utils.$X('descendant::*[local-name()="tab"]', win.gBrowser.mTabContainer);
 };
   
-// file operations 
-	
-function makeTempFile(aOriginal, aCosmetic) 
-{
-	var temp = utils.getFileFromKeyword('TmpD');
-	if (aOriginal) {
-		if (typeof aOriginal == 'string') {
-			aOriginal = this.fixupIncompleteURI(aOriginal);
-			if (aOriginal.match(/^\w+:\/\//))
-				aOriginal = this.makeURIFromSpec(aOriginal);
-			else
-				aOriginal = this.makeFileWithPath(aOriginal);
-		}
-		try {
-			aOriginal = aOriginal.QueryInterface(Ci.nsILocalFile)
-		}
-		catch(e) {
-			aOriginal = this.getFileFromURLSpec(aOriginal.spec);
-		}
-		temp.append(aOriginal.leafName + '.tmp');
-		temp.createUnique(
-			(aOriginal.isDirectory() ? temp.DIRECTORY_TYPE : temp.NORMAL_FILE_TYPE ),
-			(aOriginal.isDirectory() ? 0777 : 0666)
-		);
-		temp.remove(true);
-
-		if (aCosmetic)
-			utils.cosmeticClone(aOriginal, temp.parent, temp.leafName);
-		else
-			aOriginal.copyTo(temp.parent, temp.leafName);
-
-		this.tempFiles.push(temp);
-		return temp;
-	}
-	else {
-		temp.append('uxu.tmp');
-		temp.createUnique(temp.NORMAL_FILE_TYPE, 0666);
-		this.tempFiles.push(temp);
-		return temp;
-	}
-};
- 
-function cleanUpTempFiles(aDelayed, aTempFiles) 
-{
-	if (!aTempFiles) {
-		aTempFiles = this.tempFiles;
-		this.tempFiles = [];
-	}
-	if (aDelayed) {
-		window.setTimeout(arguments.callee, 1000, false, aTempFiles);
-		return;
-	}
-	aTempFiles.forEach(function(aFile) {
-		try {
-			aFile.remove(true);
-			return false;
-		}
-		catch(e) {
-			window.dump('failed to remove temporary file:\n'+aFile.path+'\n'+e+'\n');
-			utils.scheduleToRemove(aFile);
-		}
-		return true;
-	});
-};
-  
 // prefs 
 	
 function cleanUpModifiedPrefs() 
@@ -628,7 +565,7 @@ function getBoxObjectFor(aNode)
 }
 var _boxObjectModule = {};
  
-function log()
+function log() 
 {
 	var message = Array.slice(arguments).join('\n');
 	utils.log(message);
@@ -640,9 +577,12 @@ var _this = this;
 $X
 checkApplicationVersion
 checkAppVersion
+cleanUpTempFiles
 clearPref
 compareVersions
 cosmeticClone
+createDatabaseFromSQL
+createDatabaseFromSQLFile
 Do
 doIteration
 dump
@@ -665,9 +605,11 @@ inspect
 inspectDOMNode
 loadPrefs
 makeFileWithPath
+makeTempFile
 makeURIFromSpec
 normalizeToFile
 notify
+openDatabase
 p
 product
 productExecutable
