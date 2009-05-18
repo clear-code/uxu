@@ -516,13 +516,17 @@ function makeTempFile(aOriginal, aCosmetic)
 	}
 };
  
-function cleanUpTempFiles(aDelayed, aTempFiles, aSelf) 
+function cleanUpTempFiles(aDelayed) 
 {
-	if (!aTempFiles) {
-		aTempFiles = Array.slice(this.tempFiles);
-		this.tempFiles.splice(0, this.tempFiles.length);
-	}
+	_cleanUpTempFiles(aDelayed, null, this);
+};
+function _cleanUpTempFiles(aDelayed, aTempFiles, aSelf) 
+{
 	if (!aSelf) aSelf = this;
+	if (!aTempFiles) {
+		aTempFiles = Array.slice(aSelf.tempFiles);
+		aSelf.tempFiles.splice(0, aSelf.tempFiles.length);
+	}
 	if (aDelayed) {
 		window.setTimeout(arguments.callee, 1000, false, aTempFiles, aSelf);
 		return;
@@ -530,7 +534,7 @@ function cleanUpTempFiles(aDelayed, aTempFiles, aSelf)
 	aTempFiles.forEach(function(aFile) {
 		try {
 			if (aFile.exists()) aFile.remove(true);
-			return false;
+			return;
 		}
 		catch(e) {
 			var message = 'failed to remove temporary file:\n'+aFile.path+'\n'+e;
@@ -538,10 +542,9 @@ function cleanUpTempFiles(aDelayed, aTempFiles, aSelf)
 				Application.console.log(message);
 			else
 				window.dump(message+'\n');
-			this.scheduleToRemove(aFile);
+			aSelf.scheduleToRemove(aFile);
 		}
-		return true;
-	}, aSelf);
+	});
 };
    
 // エラー・スタックトレース整形 
