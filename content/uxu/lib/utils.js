@@ -1157,7 +1157,7 @@ function createDatabaseFromSQL(aSQL)
 function createDatabaseFromSQLFile(aSQLFile, aEncoding) 
 {
 	aSQLFile = this.normalizeToFile(aSQLFile);
-	var sql = readFrom(aSQLFile, aEncoding);
+	var sql = this.readFrom(aSQLFile, aEncoding);
 	return this.createDatabaseFromSQL(sql);
 }
   

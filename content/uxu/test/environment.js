@@ -539,7 +539,20 @@ function cleanUpModifiedPrefs()
 	
 function include(aSource, aEnvironment, aEncoding) 
 {
+	if (aEncoding === void(0)) aEncoding = utils.getPref('extensions.uxu.defaultEncoding');
 	return utils.include.call(this, aSource, (aEnvironment || this.environment), aEncoding);
+};
+ 
+function readFrom(aFile, aEncoding) 
+{
+	if (aEncoding === void(0)) aEncoding = utils.getPref('extensions.uxu.defaultEncoding');
+	return utils.readFrom.call(this, aFile, aEncoding);
+};
+ 
+function writeTo(aContent, aTarget, aEncoding) 
+{
+	if (aEncoding === void(0)) aEncoding = utils.getPref('extensions.uxu.defaultEncoding');
+	return utils.writeTo.call(this, aContent, aTarget, aEncoding);
 };
  
 function $(aNodeOrID, aOwner) 
@@ -614,7 +627,6 @@ openDatabase
 p
 product
 productExecutable
-readFrom
 scheduleToRemove
 setClipBoard
 setPref
@@ -627,7 +639,6 @@ UnicodeToUTF8
 UnicodeToX
 UTF8ToUCS2
 UTF8ToUnicode
-writeTo
 XToUCS2
 XToUnicode
 ]]></>.toString()
