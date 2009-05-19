@@ -1550,9 +1550,9 @@ function isTargetInSubTree(aTarget, aNode)
 	return false;
 }
   
-// テンプレート適用 
+// 文字列処理 
 	
-function parseTemplate(aCode, aParameters) 
+function parseTemplate(aCode, aContext) 
 {
 	var __parseTemplate__codes = [];
 	aCode.split('%>').forEach(function(aPart) {
@@ -1573,16 +1573,21 @@ function parseTemplate(aCode, aParameters)
 	});
 
 	try {
-		if (aParameters && typeof aParameters == 'object') {
-			for (var prop in aParameters)
+		if (aContext && typeof aContext == 'object') {
+			var identifierRegExp = /^[^0-9]/i;
+			for (var prop in aContext)
 			{
-				if (aParameters.hasOwnProperty(prop))
-					__parseTemplate__codes.unshift('var '+prop+' = aParameters['+prop.toSource()+'];');
+				if (!aContext.hasOwnProperty(prop)) continue;
+				__parseTemplate__codes.unshift('var '+prop+' = aContext.'+prop+';');
 			}
 		}
 
 		var __parseTemplate__results = [];
-		eval(__parseTemplate__codes.join('\n'));
+		eval(
+			'(function() { '+
+				__parseTemplate__codes.join('\n')+
+			'}).call(aContext || {})'
+		);
 		return __parseTemplate__results.join('');
 	}
 	catch(e) {
