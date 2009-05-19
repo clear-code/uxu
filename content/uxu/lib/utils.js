@@ -1552,18 +1552,19 @@ function isTargetInSubTree(aTarget, aNode)
   
 // テンプレート適用 
 	
-function parseTemplate(aCode, aContext) 
+function parseTemplate(aCode, aParameters) 
 {
 	var __parseTemplate__codes = [];
 	aCode.split('%>').forEach(function(aPart) {
-		aPart = aPart.split('<%');
-		__parseTemplate__codes.push('__parseTemplate__result.push('+aPart[0].toSource()+');');
-		if (aPart.length == 1) return;
-		aPart = aPart[1];
-		if (aPart.charAt(0) == '=') {
-			aPart = aPart.substring(1);
-			__parseTemplate__codes.push('__parseTemplate__result.push((');
-			__parseTemplate__codes.push(aPart);
+		var strPart, codePart;
+		[strPart, codePart] = aPart.split('<%');
+		__parseTemplate__codes.push('__parseTemplate__results.push(');
+		__parseTemplate__codes.push(strPart.toSource());
+		__parseTemplate__codes.push(');');
+		if (!codePart) return;
+		if (codePart.charAt(0) == '=') {
+			__parseTemplate__codes.push('__parseTemplate__results.push((');
+			__parseTemplate__codes.push(codePart.substring(1));
 			__parseTemplate__codes.push(') || "");');
 		}
 		else {
@@ -1572,17 +1573,17 @@ function parseTemplate(aCode, aContext)
 	});
 
 	try {
-		if (aContext && typeof aContext == 'object') {
-			for (var prop in aContext)
+		if (aParameters && typeof aParameters == 'object') {
+			for (var prop in aParameters)
 			{
-				if (aContext.hasOwnProperty(prop))
-					__parseTemplate__codes.unshift('var '+prop+' = aContext['+prop.toSource()+'];');
+				if (aParameters.hasOwnProperty(prop))
+					__parseTemplate__codes.unshift('var '+prop+' = aParameters['+prop.toSource()+'];');
 			}
 		}
 
-		var __parseTemplate__result = [];
+		var __parseTemplate__results = [];
 		eval(__parseTemplate__codes.join('\n'));
-		return __parseTemplate__result.join('');
+		return __parseTemplate__results.join('');
 	}
 	catch(e) {
 	}
