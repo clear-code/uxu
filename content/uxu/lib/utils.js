@@ -1583,7 +1583,7 @@ function parseTemplate(aCode, aContext)
 			{
 				if (!aContext.hasOwnProperty(prop)) continue;
 				prop = prop.replace(/./g, escaper);
-				__parseTemplate__codes.unshift('var '+prop+' = aContext.'+prop+';');
+				__parseTemplate__codes.unshift('var '+prop+' = aContext["'+prop+'"];');
 			}
 		}
 
