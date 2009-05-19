@@ -618,6 +618,7 @@ normalizeToFile
 notify
 openDatabase
 p
+parseTemplate
 product
 productExecutable
 readFrom
