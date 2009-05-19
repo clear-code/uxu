@@ -1048,3 +1048,29 @@ function test_createDatabaseFromSQLFile()
 
 	utils.scheduleToRemove(db.databaseFile);
 }
+
+
+function test_parseTemplate()
+{
+	var str = <![CDATA[
+			<% for (var i = 0; i < 3; i++) { %>
+			256の16進数表現は<%= (256).toString(16) %>です。
+			<% } %>
+			<%= foo %>
+		]]>.toString();
+	var params = { foo : 'bar' };
+
+	assert.equals(
+		<![CDATA[
+			
+			256の16進数表現は100です。
+			
+			256の16進数表現は100です。
+			
+			256の16進数表現は100です。
+			
+			bar
+		]]>.toString(),
+		utilsModule.parseTemplate(str, params)
+	);
+}
