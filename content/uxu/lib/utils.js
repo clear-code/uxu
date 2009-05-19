@@ -520,7 +520,7 @@ function cleanUpTempFiles(aDelayed)
 {
 	_cleanUpTempFiles(aDelayed, null, this);
 };
-function _cleanUpTempFiles(aDelayed, aTempFiles, aSelf) 
+function _cleanUpTempFiles(aDelayed, aTempFiles, aSelf)
 {
 	if (!aSelf) aSelf = this;
 	if (!aTempFiles) {
@@ -1548,6 +1548,45 @@ function isTargetInSubTree(aTarget, aNode)
 	catch(e) {
 	}
 	return false;
+}
+  
+// テンプレート適用 
+	
+function parseTemplate(aCode, aContext) 
+{
+	var __parseTemplate__codes = [];
+	aCode.split('%>').forEach(function(aPart) {
+		aPart = aPart.split('<%');
+		__parseTemplate__codes.push('__parseTemplate__result.push('+aPart[0].toSource()+');');
+		if (aPart.length == 1) return;
+		aPart = aPart[1];
+		if (aPart.charAt(0) == '=') {
+			aPart = aPart.substring(1);
+			__parseTemplate__codes.push('__parseTemplate__result.push((');
+			__parseTemplate__codes.push(aPart);
+			__parseTemplate__codes.push(') || "");');
+		}
+		else {
+			__parseTemplate__codes.push(aPart);
+		}
+	});
+
+	try {
+		if (aContext && typeof aContext == 'object') {
+			for (var prop in aContext)
+			{
+				if (aContext.hasOwnProperty(prop))
+					__parseTemplate__codes.unshift('var '+prop+' = aContext['+prop.toSource()+'];');
+			}
+		}
+
+		var __parseTemplate__result = [];
+		eval(__parseTemplate__codes.join('\n'));
+		return __parseTemplate__result.join('');
+	}
+	catch(e) {
+	}
+	return aCode;
 }
   
 // アプリケーション 
