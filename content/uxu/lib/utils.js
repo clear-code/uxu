@@ -1572,32 +1572,27 @@ function parseTemplate(aCode, aContext)
 		}
 	});
 
-	try {
-		if (aContext && typeof aContext == 'object') {
-			var escaper = function(aChar) {
-					aChar = aChar.charCodeAt(0).toString(16);
-					while (aChar.length < 4) aChar = '0'+aChar;
-					return '\\u'+aChar;
-				};
-			for (var prop in aContext)
-			{
-				if (!aContext.hasOwnProperty(prop)) continue;
-				prop = prop.replace(/./g, escaper);
-				__parseTemplate__codes.unshift('var '+prop+' = aContext["'+prop+'"];');
-			}
+	if (aContext && typeof aContext == 'object') {
+		var escaper = function(aChar) {
+				aChar = aChar.charCodeAt(0).toString(16);
+				while (aChar.length < 4) aChar = '0'+aChar;
+				return '\\u'+aChar;
+			};
+		for (var prop in aContext)
+		{
+			if (!aContext.hasOwnProperty(prop)) continue;
+			prop = prop.replace(/./g, escaper);
+			__parseTemplate__codes.unshift('var '+prop+' = aContext["'+prop+'"];');
 		}
+	}
 
-		var __parseTemplate__results = [];
-		eval(
-			'(function() { '+
-				__parseTemplate__codes.join('\n')+
-			'}).call(aContext || {})'
-		);
-		return __parseTemplate__results.join('');
-	}
-	catch(e) {
-	}
-	return aCode;
+	var __parseTemplate__results = [];
+	eval(
+		'(function() { '+
+			__parseTemplate__codes.join('\n')+
+		'}).call(aContext || {})'
+	);
+	return __parseTemplate__results.join('');
 }
   
 // アプリケーション 
