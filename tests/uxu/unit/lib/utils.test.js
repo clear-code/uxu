@@ -1056,9 +1056,10 @@ function test_parseTemplate()
 			<% for (var i = 0; i < 3; i++) { %>
 			256の16進数表現は<%= (256).toString(16) %>です。
 			<% } %>
-			<%= foo %>
+			<%= foo %><%= this.foo %><%= \u65e5\u672c\u8a9e %>
 		]]>.toString();
 	var params = { foo : 'bar' };
+	params["日本語"] = true;
 
 	assert.equals(
 		<![CDATA[
@@ -1069,7 +1070,7 @@ function test_parseTemplate()
 			
 			256の16進数表現は100です。
 			
-			bar
+			barbartrue
 		]]>.toString(),
 		utilsModule.parseTemplate(str, params)
 	);
