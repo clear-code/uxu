@@ -1558,14 +1558,14 @@ function parseTemplate(aCode, aContext)
 	aCode.split('%>').forEach(function(aPart) {
 		let strPart, codePart;
 		[strPart, codePart] = aPart.split('<%');
-		__parseTemplate__codes.push('__parseTemplate__results.push(');
-		__parseTemplate__codes.push(strPart.toSource());
-		__parseTemplate__codes.push(');');
+		__parseTemplate__codes.push('__parseTemplate__results.push('+
+		                            strPart.toSource()+
+		                            ');');
 		if (!codePart) return;
 		if (codePart.charAt(0) == '=') {
-			__parseTemplate__codes.push('__parseTemplate__results.push((');
-			__parseTemplate__codes.push(codePart.substring(1));
-			__parseTemplate__codes.push(') || "");');
+			__parseTemplate__codes.push('__parseTemplate__results.push(('+
+			                            codePart.substring(1)+
+			                            ') || "");');
 		}
 		else {
 			__parseTemplate__codes.push(codePart);
