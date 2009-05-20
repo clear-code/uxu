@@ -1058,7 +1058,11 @@ function test_parseTemplate()
 			<% } %>
 			<%= foo %><%= this.foo %><%= \u65e5\u672c\u8a9e %>
 		]]>.toString();
-	var params = { foo : 'bar' };
+	var params = {
+			foo : 'bar',
+			__parseTemplate__results : null,
+			aContext : null
+		};
 	params["日本語"] = true;
 
 	assert.equals(

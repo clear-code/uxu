@@ -1556,7 +1556,7 @@ function parseTemplate(aCode, aContext)
 {
 	var __parseTemplate__codes = [];
 	aCode.split('%>').forEach(function(aPart) {
-		var strPart, codePart;
+		let strPart, codePart;
 		[strPart, codePart] = aPart.split('<%');
 		__parseTemplate__codes.push('__parseTemplate__results.push(');
 		__parseTemplate__codes.push(strPart.toSource());
@@ -1571,28 +1571,11 @@ function parseTemplate(aCode, aContext)
 			__parseTemplate__codes.push(codePart);
 		}
 	});
-
-	if (aContext && typeof aContext == 'object') {
-		var escaper = function(aChar) {
-				aChar = aChar.charCodeAt(0).toString(16);
-				while (aChar.length < 4) aChar = '0'+aChar;
-				return '\\u'+aChar;
-			};
-		for (var prop in aContext)
-		{
-			if (!aContext.hasOwnProperty(prop)) continue;
-			prop = prop.replace(/./g, escaper);
-			__parseTemplate__codes.unshift('var '+prop+' = aContext["'+prop+'"];');
-		}
-	}
-
-	var __parseTemplate__results = [];
-	eval(
-		'(function() { '+
-			__parseTemplate__codes.join('\n')+
-		'}).call(aContext || {})'
-	);
-	return __parseTemplate__results.join('');
+	var sandbox = new Components.utils.Sandbox(window);
+	sandbox.__proto__ = { __parseTemplate__results : [] };
+	if (aContext) sandbox.__proto__.__proto__ = aContext;
+	Components.utils.evalInSandbox(__parseTemplate__codes.join('\n'), sandbox);
+	return sandbox.__parseTemplate__results.join('');
 }
   
 // アプリケーション 
