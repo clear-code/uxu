@@ -551,7 +551,19 @@ function createDatabaseFromSQLFile(aFile, aEncoding)
  
 function parseTemplate(aCode, aContext) 
 {
-	return utils.parseTemplate(aCode, aContext, this.environment);
+	var env = {};
+	if (aContext) {
+		for (var i in aContext)
+		{
+			if (aContext.hasOwnProperty(i))
+				env[i] = aContext[i];
+		}
+	}
+	env.__proto__ = this.environment;
+	var result = utils.parseTemplate(aCode, env);
+	env.__proto__ = void(0);
+	env = null;
+	return result;
 }
  
 function $(aNodeOrID, aOwner) 

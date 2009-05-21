@@ -1552,7 +1552,7 @@ function isTargetInSubTree(aTarget, aNode)
   
 // •¶Žš—ñˆ— 
 	
-function parseTemplate(aCode, aContext, aGlobalContext) 
+function parseTemplate(aCode, aContext) 
 {
 	var __parseTemplate__codes = [];
 	aCode.split('%>').forEach(function(aPart) {
@@ -1571,13 +1571,11 @@ function parseTemplate(aCode, aContext, aGlobalContext)
 			__parseTemplate__codes.push(codePart);
 		}
 	});
-	var __parseTemplate__results = [];
-	with (aGlobalContext || {}) {
-		with (aContext || {}) {
-			eval('(function() { '+__parseTemplate__codes.join('\n')+' }).call(aContext || {})');
-		}
-	}
-	return __parseTemplate__results.join('');
+	var sandbox = new Components.utils.Sandbox(window);
+	sandbox.__proto__ = { __parseTemplate__results : [] };
+	if (aContext) sandbox.__proto__.__proto__ = aContext;
+	Components.utils.evalInSandbox(__parseTemplate__codes.join('\n'), sandbox);
+	return sandbox.__parseTemplate__results.join('');
 }
  
 var hasher = Components

@@ -173,3 +173,17 @@ function test_setUpTearDownTestWindow()
 	yield 100;
 	assert.isTrue(win.closed);
 }
+
+
+var globalVariable1 = 'global1';
+var localVariable1 = 'global2';
+
+function test_parseTemplate()
+{
+	var localVariable1 = 'local';
+	assert.equals(
+		'global1global2',
+		utils.parseTemplate('<%= globalVariable1 %><%= localVariable1 %>')
+	);
+}
+
