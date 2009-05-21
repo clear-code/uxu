@@ -549,6 +549,11 @@ function createDatabaseFromSQLFile(aFile, aEncoding)
 	return utils.createDatabaseFromSQLFile.call(this, aFile, aEncoding);
 };
  
+function parseTemplate(aCode, aContext) 
+{
+	return utils.parseTemplate(aCode, aContext, this.environment);
+}
+ 
 function $(aNodeOrID, aOwner) 
 {
 	return utils.$(aNodeOrID, aOwner || this.getTestWindow() || this.content);
@@ -619,7 +624,6 @@ normalizeToFile
 notify
 openDatabase
 p
-parseTemplate
 product
 productExecutable
 readFrom

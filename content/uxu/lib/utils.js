@@ -1552,7 +1552,7 @@ function isTargetInSubTree(aTarget, aNode)
   
 // •¶Žš—ñˆ— 
 	
-function parseTemplate(aCode, aContext) 
+function parseTemplate(aCode, aContext, aGlobalContext) 
 {
 	var __parseTemplate__codes = [];
 	aCode.split('%>').forEach(function(aPart) {
@@ -1571,11 +1571,13 @@ function parseTemplate(aCode, aContext)
 			__parseTemplate__codes.push(codePart);
 		}
 	});
-	var sandbox = new Components.utils.Sandbox(window);
-	sandbox.__proto__ = { __parseTemplate__results : [] };
-	if (aContext) sandbox.__proto__.__proto__ = aContext;
-	Components.utils.evalInSandbox(__parseTemplate__codes.join('\n'), sandbox);
-	return sandbox.__parseTemplate__results.join('');
+	var __parseTemplate__results = [];
+	with (aGlobalContext || {}) {
+		with (aContext || {}) {
+			eval('(function() { '+__parseTemplate__codes.join('\n')+' }).call(aContext || {})');
+		}
+	}
+	return __parseTemplate__results.join('');
 }
  
 var hasher = Components
@@ -1585,19 +1587,11 @@ function getHash(aData, aHashAlgorithm)
 {
 	var string = aData;
 	var algorithm = String(aHashAlgorithm).toUpperCase().replace('-', '');
-	switch (algorithm)
-	{
-		case 'MD2':
-		case 'MD5':
-		case 'SHA1':
-		case 'SHA256':
-		case 'SHA384':
-		case 'SHA512':
-			hasher.init(hasher[algorithm])
-			break;
-		default:
-			throw new Error('unknown hash algorithm: '+aHashAlgorithm);
-			break;
+	if (algorithm in hasher) {
+		hasher.init(hasher[algorithm])
+	}
+	else {
+		throw new Error('unknown hash algorithm: '+aHashAlgorithm);
 	}
 	var array = string.split('').map(function(aChar) {
 					return aChar.charCodeAt(0);
