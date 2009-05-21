@@ -601,6 +601,7 @@ getFileFromURLSpec
 getFilePathFromKeyword
 getFilePathFromURL
 getFilePathFromURLSpec
+getHash
 getInstalledLocationOfProduct
 getPref
 getStackTrace

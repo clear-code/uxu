@@ -1577,6 +1577,42 @@ function parseTemplate(aCode, aContext)
 	Components.utils.evalInSandbox(__parseTemplate__codes.join('\n'), sandbox);
 	return sandbox.__parseTemplate__results.join('');
 }
+ 
+var hasher = Components
+		.classes['@mozilla.org/security/hash;1']
+		.createInstance(Components.interfaces.nsICryptoHash);
+function getHash(aData, aHashAlgorithm) 
+{
+	var string = aData;
+	var algorithm = String(aHashAlgorithm).toUpperCase().replace('-', '');
+	switch (algorithm)
+	{
+		case 'MD2':
+		case 'MD5':
+		case 'SHA1':
+		case 'SHA256':
+		case 'SHA384':
+		case 'SHA512':
+			hasher.init(hasher[algorithm])
+			break;
+		default:
+			throw new Error('unknown hash algorithm: '+aHashAlgorithm);
+			break;
+	}
+	var array = string.split('').map(function(aChar) {
+					return aChar.charCodeAt(0);
+				});
+	hasher.update(array, array.length);
+	var hash = hasher.finish(false);
+
+	var hexchars = '0123456789ABCDEF';
+	var hexrep = new Array(hash.length * 2);
+	hash.split('').forEach(function(aChar, aIndex) {
+		hexrep[aIndex * 2] = hexchars.charAt((aChar.charCodeAt(0) >> 4) & 15);
+		hexrep[aIndex * 2 + 1] = hexchars.charAt(aChar.charCodeAt(0) & 15);
+	});
+	return hexrep.join('');
+}
   
 // アプリケーション 
 var XULAppInfo = Cc['@mozilla.org/xre/app-info;1']

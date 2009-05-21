@@ -507,30 +507,10 @@ function registerTest(aFunction)
 	sources.push('minAssertions:'+test.minAssertions);
 	sources.push('maxAssertions:'+test.maxAssertions);
 
-	test.hash = this._getHashFromString(sources.join('\n'));
+	test.hash = utils.getHash(sources.join('\n'), 'MD5');
 	test.name = this._source + '::' + this.title + '::' + (key || test.hash);
 
 	this._tests.push(test);
-}
-function _getHashFromString(aString)
-{
-	var hasher = Components
-			.classes['@mozilla.org/security/hash;1']
-			.createInstance(Components.interfaces.nsICryptoHash);
-	hasher.init(hasher.MD5)
-	var array = aString.split('').map(function(aChar) {
-					return aChar.charCodeAt(0);
-				});
-	hasher.update(array, array.length);
-	var hash = hasher.finish(false);
-
-	var hexchars = '0123456789ABCDEF';
-	var hexrep = new Array(hash.length * 2);
-	hash.split('').forEach(function(aChar, aIndex) {
-		hexrep[aIndex * 2] = hexchars.charAt((aChar.charCodeAt(0) >> 4) & 15);
-		hexrep[aIndex * 2 + 1] = hexchars.charAt(aChar.charCodeAt(0) & 15);
-	});
-	return hexrep.join('');
 }
   
 /**
