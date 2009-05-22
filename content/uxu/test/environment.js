@@ -604,7 +604,6 @@ checkAppVersion
 cleanUpTempFiles
 clearPref
 compareVersions
-computeHash
 cosmeticClone
 createDatabase
 createDatabaseFromSQL
@@ -633,7 +632,9 @@ makeFileWithPath
 makeTempFile
 makeURIFromSpec
 md2
+md2FromFile
 md5
+md5FromFile
 normalizeToFile
 notify
 openDatabase
@@ -645,9 +646,13 @@ scheduleToRemove
 setClipBoard
 setPref
 sha1
+sha1FromFile
 sha256
+sha256FromFile
 sha384
+sha384FromFile
 sha512
+sha512FromFile
 sleep
 startScheduledRemove
 stopScheduledRemove
