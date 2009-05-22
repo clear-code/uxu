@@ -26,7 +26,7 @@ function testSendAndReceiveMessage()
 	});
 	assert.isNotNull(listener);
 
-	var message = parseInt(Math.random() * 65000);
+	var message = String(parseInt(Math.random() * 65000));
 	var response;
 	utilsModule.sendMessage(
 		message,
