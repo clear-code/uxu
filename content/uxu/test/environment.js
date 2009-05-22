@@ -604,6 +604,8 @@ checkAppVersion
 cleanUpTempFiles
 clearPref
 compareVersions
+computeHash
+computeHashFromFile
 cosmeticClone
 createDatabase
 createDatabaseFromSQL

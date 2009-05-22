@@ -1620,6 +1620,7 @@ function sha512(aData) { return computeHash(aData, 'sha512'); }
  
 function computeHashFromFile(aFile, aHashAlgorithm) 
 {
+	aFile = this.normalizeToFile(aFile);
 	if (!aFile || !aFile.exists() || aFile.isDirectory())
 		throw new Error('this is not a legal file');
 	return computeHash(aFile, aHashAlgorithm);
