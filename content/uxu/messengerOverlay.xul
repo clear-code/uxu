@@ -4,6 +4,7 @@
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
 <script src="chrome://global/content/nsUserSettings.js"/>
+<script src="chrome://uxu/content/commands.js"/>
 <script src="chrome://uxu/content/browserOverlay.js"/>
 
 <menupopup id="taskPopup">
