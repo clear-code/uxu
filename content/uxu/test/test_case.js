@@ -507,7 +507,7 @@ function registerTest(aFunction)
 	sources.push('minAssertions:'+test.minAssertions);
 	sources.push('maxAssertions:'+test.maxAssertions);
 
-	test.hash = utils.getHash(sources.join('\n'), 'MD5');
+	test.hash = utils.computeHash(sources.join('\n'), 'MD5');
 	test.name = this._source + '::' + this.title + '::' + (key || test.hash);
 
 	this._tests.push(test);

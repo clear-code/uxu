@@ -1581,7 +1581,7 @@ function parseTemplate(aCode, aContext)
 var hasher = Components
 		.classes['@mozilla.org/security/hash;1']
 		.createInstance(Components.interfaces.nsICryptoHash);
-function getHash(aData, aHashAlgorithm) 
+function computeHash(aData, aHashAlgorithm) 
 {
 	var string = aData;
 	var algorithm = String(aHashAlgorithm).toUpperCase().replace('-', '');
@@ -1605,6 +1605,13 @@ function getHash(aData, aHashAlgorithm)
 	});
 	return hexrep.join('');
 }
+ 
+function md2(aData) { return computeHash(aData, 'md2'); }
+function md5(aData) { return computeHash(aData, 'md5'); }
+function sha1(aData) { return computeHash(aData, 'sha1'); }
+function sha256(aData) { return computeHash(aData, 'sha256'); }
+function sha384(aData) { return computeHash(aData, 'sha384'); }
+function sha512(aData) { return computeHash(aData, 'sha512'); }
   
 // アプリケーション 
 var XULAppInfo = Cc['@mozilla.org/xre/app-info;1']

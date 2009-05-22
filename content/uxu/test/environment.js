@@ -604,6 +604,7 @@ checkAppVersion
 cleanUpTempFiles
 clearPref
 compareVersions
+computeHash
 cosmeticClone
 createDatabase
 createDatabaseFromSQL
@@ -618,7 +619,6 @@ getFileFromURLSpec
 getFilePathFromKeyword
 getFilePathFromURL
 getFilePathFromURLSpec
-getHash
 getInstalledLocationOfProduct
 getPref
 getStackTrace
@@ -632,6 +632,8 @@ loadPrefs
 makeFileWithPath
 makeTempFile
 makeURIFromSpec
+md2
+md5
 normalizeToFile
 notify
 openDatabase
@@ -642,6 +644,10 @@ readFrom
 scheduleToRemove
 setClipBoard
 setPref
+sha1
+sha256
+sha384
+sha512
 sleep
 startScheduledRemove
 stopScheduledRemove
