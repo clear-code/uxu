@@ -9,7 +9,7 @@
 	title="&config.title;"
 	style="&config.size;">
 
-<prefpane id="prefpane-general" label="&config.tabs.general;">
+<prefpane id="prefpane-general" label="&config.tabs.general;" flex="1">
 	<preferences>
 		<preference id="extensions.uxu.run.ignoreHiddenFiles"
 			name="extensions.uxu.run.ignoreHiddenFiles"
@@ -74,7 +74,7 @@
 
 </prefpane>
 
-<prefpane id="prefpane-runner" label="&config.tabs.runner;">
+<prefpane id="prefpane-runner" label="&config.tabs.runner;" flex="1">
 	<preferences>
 		<preference id="extensions.uxu.runner.autoStart"
 			name="extensions.uxu.runner.autoStart"
@@ -152,7 +152,7 @@
 
 </prefpane>
 
-<prefpane id="prefpane-server" label="&config.tabs.server;">
+<prefpane id="prefpane-server" label="&config.tabs.server;" flex="1">
 	<preferences>
 		<preference id="extensions.uxu.auto.start"
 			name="extensions.uxu.auto.start"
@@ -212,7 +212,7 @@
 
 </prefpane>
 
-<prefpane id="prefpane-products" label="&config.tabs.products;">
+<prefpane id="prefpane-products" label="&config.tabs.products;" flex="1">
 	<preferences>
 		<preference id="extensions.uxu.product.firefox"
 			name="extensions.uxu.product.firefox"
