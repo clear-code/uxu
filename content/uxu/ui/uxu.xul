@@ -10,32 +10,32 @@
 	onunload="Shutdown()"
 	persist="width height screenX screenY">
 
-<script type="application/javascript;version=1.7" src="chrome://uxu/content/lib/module_manager.js"/>
-<script type="application/javascript;version=1.7" src="chrome://uxu/content/ui/uxu.js"/>
+	<script type="application/javascript;version=1.7" src="chrome://uxu/content/lib/module_manager.js"/>
+	<script type="application/javascript;version=1.7" src="chrome://uxu/content/ui/uxu.js"/>
 
-<scrollbox id="log" orient="vertical" flex="1"
-	style="min-height: 10em; min-width: 20em; overflow: auto; border: thin -moz-bg-inset;">
-</scrollbox>
-<splitter id="content-splitter" hidden="true"
-	collapse="after" resizeafter="closest"/>
-<browser id="content"
-	type="content-primary"
-	flex="1"
-	src="about:blank" class="inset"
-	style="background-color: white;"
-	collapsed="true"/>
-<hbox>
-	<hbox align="center" flex="1">
-		<button id="throbber"/>
-		<description value="&uxu.server.running;"/>
-		<button label="&uxu.server.close.label;"
-			oncommand="window.close()"/>
-		<spacer flex="1"/>
-		<checkbox id="autostart"
-			label="&uxu.server.autostart.label;"
-			oncommand="utils.setPref('extensions.uxu.auto.start', this.checked)"/>
+	<scrollbox id="log" orient="vertical" flex="1"
+		style="min-height: 10em; min-width: 20em; overflow: auto; border: thin -moz-bg-inset;">
+	</scrollbox>
+	<splitter id="content-splitter" hidden="true"
+		collapse="after" resizeafter="closest"/>
+	<browser id="content"
+		type="content-primary"
+		flex="1"
+		src="about:blank" class="inset"
+		style="background-color: white;"
+		collapsed="true"/>
+	<hbox class="uxu-bottom-toolbox">
+		<hbox class="uxu-bottom-toolbar" align="center" flex="1">
+			<button id="throbber"/>
+			<description value="&uxu.server.running;"/>
+			<button label="&uxu.server.close.label;"
+				oncommand="window.close()"/>
+			<spacer flex="1"/>
+			<checkbox id="autostart"
+				label="&uxu.server.autostart.label;"
+				oncommand="utils.setPref('extensions.uxu.auto.start', this.checked)"/>
+			<resizer dir="bottomright"/>
+		</hbox>
 	</hbox>
-	<resizer dir="bottomright"/>
-</hbox>
 </window>
 

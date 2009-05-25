@@ -130,6 +130,15 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 
 
 
+.uxu-bottom-toolbox {
+	-moz-appearance: toolbox;
+}
+.uxu-bottom-toolbox .uxu-bottom-toolbar {
+/*	-moz-appearance: toolbar; */
+	border-top: 2px solid;
+	-moz-border-top-colors: threedshadow threedhighlight;
+}
+
 #throbber {
 	-moz-appearance: none;
 	-moz-user-focus: ignore;
