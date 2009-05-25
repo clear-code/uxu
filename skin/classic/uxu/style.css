@@ -127,3 +127,27 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 	padding: 0.5em;
 	-moz-box-flex: 1;
 }
+
+
+
+#throbber {
+	-moz-appearance: none;
+	-moz-user-focus: ignore;
+	background: none;
+	border: 0 none;
+	list-style-image: url("jar:resource:///chrome/classic.jar!/skin/classic/global/throbber/Throbber-small.png");
+	margin: 0;
+	min-width: 0;
+	min-height: 0;
+	outline: 0 none;
+	padding: 0;
+}
+
+#throbber image {
+	max-width: 16px;
+	max-height: 16px;
+}
+
+:root[running="true"] #throbber {
+	list-style-image: url("jar:resource:///chrome/classic.jar!/skin/classic/global/throbber/Throbber-small.gif");
+}

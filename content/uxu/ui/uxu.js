@@ -107,6 +107,7 @@ var testRunnerlistener = {
 			skip : 0
 		};
 		gLog.scrollBoxObject.ensureElementIsVisible(this.getReport(aEvent.data.testCase));
+		document.documentElement.setAttribute('running', true);
 	},
 
 	onTestCaseFinish: function(aEvent) {
@@ -126,6 +127,7 @@ var testRunnerlistener = {
 		));
 		parent.appendChild(node);
 		gLog.scrollBoxObject.ensureElementIsVisible(node);
+		document.documentElement.removeAttribute('running');
 	},
 
 	onTestCaseTestFinish: function(aEvent) {

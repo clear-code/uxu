@@ -633,6 +633,8 @@ function onAllTestsFinish()
  
 function updateUIForAllTestsFinish() 
 {
+	document.documentElement.removeAttribute('running');
+
 	if (!_('content').collapsed && contentAutoExpanded) {
 		toggleContent();
 	}
@@ -748,6 +750,8 @@ function run(aMasterPriority)
 	gRunner.addListener(runnerListener);
 
 	gRunner.run(null, aMasterPriority);
+
+	document.documentElement.setAttribute('running', true);
 }
 	
 function runByPref() 

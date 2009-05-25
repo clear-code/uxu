@@ -200,57 +200,65 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 <hbox id="wholeBox" flex="1">
 <vbox id="mainBox" flex="1">
 	<toolbox>
-		<menubar>
-			<menu id="file-menu" label="&runner.fileMenu.label;" accesskey="&runner.fileMenu.accesskey;">
-				<menupopup>
-					<menuitem command="new" key="key-new"/>
-					<menuitem command="open" key="key-open"/>
-					<menuitem command="openFolder" key="key-openFolder"/>
-					<menuitem command="edit"/>
-					<menuseparator/>
-					<menuitem command="run" key="key-run"/>
-					<menu label="&runner.run.options;"
-						id="runOptions-menu">
-						<menupopup onpopupshowing="updateRunMode();">
-							<menuitem command="runPriority" observes="runPriority"/>
-							<menuitem command="runAll" observes="runAll"/>
+		<toolbar>
+			<toolbaritem>
+				<menubar>
+					<menu id="file-menu" label="&runner.fileMenu.label;" accesskey="&runner.fileMenu.accesskey;">
+						<menupopup>
+							<menuitem command="new" key="key-new"/>
+							<menuitem command="open" key="key-open"/>
+							<menuitem command="openFolder" key="key-openFolder"/>
+							<menuitem command="edit"/>
 							<menuseparator/>
-							<menuitem command="runFailed"/>
+							<menuitem command="run" key="key-run"/>
+							<menu label="&runner.run.options;"
+								id="runOptions-menu">
+								<menupopup onpopupshowing="updateRunMode();">
+									<menuitem command="runPriority" observes="runPriority"/>
+									<menuitem command="runAll" observes="runAll"/>
+									<menuseparator/>
+									<menuitem command="runFailed"/>
+								</menupopup>
+							</menu>
+							<menuitem command="stop" key="key-stop"/>
+							<menuseparator/>
+							<menuitem command="saveReport" key="key-saveReport"/>
+							<menuseparator/>
+							<menuitem command="config"/>
+							<menuseparator/>
+							<menuitem command="restartApplication"/>
+							<menuseparator/>
+							<menuitem command="quit"/>
 						</menupopup>
 					</menu>
-					<menuitem command="stop" key="key-stop"/>
-					<menuseparator/>
-					<menuitem command="saveReport" key="key-saveReport"/>
-					<menuseparator/>
-					<menuitem command="config"/>
-					<menuseparator/>
-					<menuitem command="restartApplication"/>
-					<menuseparator/>
-					<menuitem command="quit"/>
-				</menupopup>
-			</menu>
-			<menu id="edit-menu" label="&runner.editMenu.label;" accesskey="&runner.editMenu.accesskey;">
-				<menupopup onpopupshowing="updateEditItems();">
-					<menuitem command="cmd_copy"/>
-				</menupopup>
-			</menu>
-			<menu id="view-menu" label="&runner.viewMenu.label;" accesskey="&runner.viewMenu.accesskey;">
-				<menupopup onpopupshowing="updateViewItems();">
-					<menuitem type="checkbox" command="toggleInternalStacks"/>
-					<menuitem id="alwaysRaised-menuitem"
-						type="checkbox" command="alwaysRaised"/>
-					<menuitem type="checkbox" command="toggleContent"/>
-				</menupopup>
-			</menu>
-			<menu id="help-menu" label="&runner.helpMenu.label;" accesskey="&runner.helpMenu.accesskey;">
-				<menupopup>
-					<menuitem label="&runner.help.label;"
-						accesskey="&runner.help.accesskey;"
-						oncommand="showPage(this.getAttribute('help'));"
-						help="&runner.help.uri;"/>
-				</menupopup>
-			</menu>
-		</menubar>
+					<menu id="edit-menu" label="&runner.editMenu.label;" accesskey="&runner.editMenu.accesskey;">
+						<menupopup onpopupshowing="updateEditItems();">
+							<menuitem command="cmd_copy"/>
+						</menupopup>
+					</menu>
+					<menu id="view-menu" label="&runner.viewMenu.label;" accesskey="&runner.viewMenu.accesskey;">
+						<menupopup onpopupshowing="updateViewItems();">
+							<menuitem type="checkbox" command="toggleInternalStacks"/>
+							<menuitem id="alwaysRaised-menuitem"
+								type="checkbox" command="alwaysRaised"/>
+							<menuitem type="checkbox" command="toggleContent"/>
+						</menupopup>
+					</menu>
+					<menu id="help-menu" label="&runner.helpMenu.label;" accesskey="&runner.helpMenu.accesskey;">
+						<menupopup>
+							<menuitem label="&runner.help.label;"
+								accesskey="&runner.help.accesskey;"
+								oncommand="showPage(this.getAttribute('help'));"
+								help="&runner.help.uri;"/>
+						</menupopup>
+					</menu>
+				</menubar>
+			</toolbaritem>
+			<spacer flex="1"/>
+			<toolbaritem>
+				<button id="throbber"/>
+			</toolbaritem>
+		</toolbar>
 	</toolbox>
 
 	<!-- MAIN -->
