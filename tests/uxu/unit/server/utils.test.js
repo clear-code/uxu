@@ -5,13 +5,14 @@ utils.include(topDir+'content/uxu/lib/module_manager.js');
 var lib_module = new ModuleManager([topDir+'content/uxu/lib']);
 
 var server_module = new ModuleManager([topDir+'content/uxu/server']);
+var ServerUtils = server_module.require('class', 'utils');;
 var utilsModule;
 
 var observer;
 
 function setUp()
 {
-	utilsModule = server_module.require('package', 'utils');
+	utilsModule = new ServerUtils();
 }
 
 function tearDown()
@@ -46,4 +47,15 @@ function testSendAndReceiveMessage()
 	                response : response });
 
 	listener.stop();
+}
+
+testHttpServer.tearDown = function() {
+	yield Do(utilsModule.tearDownAllHttpServers());
+};
+function testHttpServer()
+{
+	var port = 4445;
+	yield Do(utilsModule.setUpHttpServer(port, baseURL+'../../fixtures/'));
+	yield Do(utils.loadURI('http://localhost:'+port+'/html.html'));
+	assert.equals('test', content.document.title);
 }
