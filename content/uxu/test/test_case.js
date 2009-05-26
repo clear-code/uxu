@@ -31,6 +31,7 @@ var inherits = lib_module.require('class', 'event_target');
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var Server        = server_module.require('class', 'server');
+var ServerUtils   = server_module.require('class', 'utils');
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var Report      = test_module.require('class', 'report');
@@ -610,7 +611,8 @@ function run(aStopper)
 	var testCaseReport = { report : null };
 
 	var stateTransitions = {
-		start             : { ok : 'doWarmUp' },
+		start             : { ok : 'setUpDaemons' },
+		setUpDaemons      : { ok : 'doWarmUp' },
 		doWarmUp          : { ok : 'prepareTest', ko: 'doCoolDown' },
 		prepareTest       : { ok : 'checkDoOrSkip' },
 		checkDoOrSkip     : { ok : 'doSetUp', ko: 'skip' },
@@ -623,7 +625,8 @@ function run(aStopper)
 		doTearDown        : { ok : 'doReport', ko: 'doReport' },
 		doReport          : { ok : 'nextTest' },
 		nextTest          : { ok : 'prepareTest', ko: 'doCoolDown' },
-		doCoolDown        : { ok : 'finished', ko: 'finished' },
+		doCoolDown        : { ok : 'tearDownDaemons', ko: 'tearDownDaemons' },
+		tearDownDaemons   : { ok : 'finished' },
 		finished          : { }
 	};
 
@@ -675,6 +678,10 @@ function run(aStopper)
 		{
 			_this.fireEvent('Start');
 			aContinuation('ok')
+		},
+		setUpDaemons : function(aContinuation)
+		{
+			aContinuation('ok');
 		},
 		doWarmUp : function(aContinuation)
 		{
@@ -861,6 +868,19 @@ function run(aStopper)
 				{
 					errorDescription : bundle.getFormattedString('report_description_cooldown', [_this.title]),
 					report : testCaseReport
+				}
+			);
+		},
+		tearDownDaemons : function(aContinuation)
+		{
+			utils.doIteration(
+				function() {
+					yield ServerUtils.prototype.tearDownAllHttpServers.call(_this.environment.serverUtils);
+				},
+				{
+					onEnd : function(e) {
+						aContinuation('ok');
+					}
 				}
 			);
 		},

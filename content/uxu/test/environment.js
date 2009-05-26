@@ -14,6 +14,7 @@ var action      = test_module.require('package', 'action');
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var mail_module = new ModuleManager(['chrome://uxu/content/mail']);
+var ServerUtils = server_module.require('class', 'utils');
 	
 var key = 'uxu-test-window-id'; 
  
@@ -224,12 +225,27 @@ function attachMailUtils()
  
 function attachServerUtils() 
 {
-	var serverUtils = server_module.require('package', 'utils');
+	var serverUtils = {};
+	serverUtils.__proto__ = new ServerUtils();
+	this.__defineGetter__('serverUtils', function() {
+		return serverUtils;
+	});
+	this.__defineSetter__('serverUtils', function(aValue) {
+		return aValue;
+	});
+
 	this.sendMessage = function() {
 		return serverUtils.sendMessage.apply(serverUtils, arguments);
 	};
 	this.startListen = function() {
 		return serverUtils.startListen.apply(serverUtils, arguments);
+	};
+
+	this.setUpHttpServer = function(aPort, aBasePath) {
+		return serverUtils.setUpHttpServer(aPort, this.normalizeToFile(aBasePath));
+	};
+	this.tearDownHttpServer = function(aPort) {
+		return serverUtils.tearDownHttpServer(aPort);
 	};
 }
   

@@ -5,6 +5,12 @@ var EventTarget = lib_module.require('class', 'event_target');
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var Server = server_module.require('class', 'server');
 var Message = server_module.require('class', 'message');
+var HTTPServer = server_module.require('class', 'httpd');
+
+function constructor()
+{
+	this._HTTPServerInstances = [];
+}
 
 function sendMessage(aMessage, aHost, aPort, aListener) 
 {
@@ -65,4 +71,54 @@ function startListen(aPort, aListener)
 	server.start();
 	listener.port = server.port;
 	return listener;
+}
+
+
+var ERROR_INVALID_PORT = new Error('Invalid port is specified for HTTP daemon!');
+var ERROR_USED_PORT    = new Error('The port is already used by another HTTP daemon!');
+
+function setUpHttpServer(aPort, aBasePath)
+{
+	if (!aPort) throw ERROR_INVALID_PORT;
+	if (this._HTTPServerInstances.some(function(aServer) {
+			return aServer.port == aPort;
+		}))
+		throw ERROR_USED_PORT;
+
+	var server = new HTTPServer(aPort, aBasePath);
+	this._HTTPServerInstances.push(server);
+	return function() {
+			return !server.isStopped();
+		};
+}
+
+function tearDownHttpServer(aPort)
+{
+	var server;
+	if (aPort) {
+		this._HTTPServerInstances.slice().some(function(aServer, aIndex) {
+			if (aServer.port != aPort) return false;
+			server = aServer;
+			this._HTTPServerInstances.splice(aIndex, 1);
+			return true;
+		});
+	}
+	else {
+		server = this._HTTPServerInstances.pop();
+	}
+	return server ? server.stop() : { value : true } ;
+}
+
+function tearDownAllHttpServers()
+{
+	var stopped = [];
+	while (this._HTTPServerInstances.length)
+	{
+		stopped.push(this.tearDownHttpServer());
+	}
+	return function() {
+			return stopped.every(function(aStopped) {
+					return aStopped.value;
+				});
+		};
 }
