@@ -21,6 +21,9 @@
 
 // Modified by SHIMODA Hiroshi <shimoda@clear-code.com>
  
+const Cc = Components.classes;
+const Ci = Components.interfaces;
+
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']); 
 var fsm    = lib_module.require('package', 'fsm');
 var bundle = lib_module.require('package', 'bundle');
@@ -37,6 +40,9 @@ var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var Report      = test_module.require('class', 'report');
 var Environment = test_module.require('class', 'environment');
 var Assertions  = test_module.require('class', 'assertions');
+
+var ObserverService = Cc['@mozilla.org/observer-service;1']
+					.getService(Ci.nsIObserverService);
  
 function _initDB() 
 {
@@ -79,13 +85,14 @@ const ALL_TESTS_FINISHED    = '/* uxu-all-testcases-finished */';
 const PING                  = ' ';
 const PING_INTERVAL         = 3000;
  
-const RESULT_SUCCESS = 'success';
+const RESULT_SUCCESS = 'success'; 
 const RESULT_FAILURE = 'failure';
 const RESULT_ERROR   = 'error';
 const RESULT_SKIPPED = 'skip';
  
-const ERROR_NOT_INITIALIZED     = new Error('environment is not specified.');
+const ERROR_NOT_INITIALIZED     = new Error('environment is not specified.'); 
 const ERROR_INVALID_ENVIRONMENT = new Error('environment must be an Environment.');
+const ERROR_INVALID_REDIRECT_DEFINITION_ARRAY = new Error('definition array of redirection is invalid.');
  
 /**
  * Invocation: 
@@ -191,6 +198,17 @@ function constructor(aTitle, aOptions)
 			return this._done;
 		});
 
+	this._redirect = aOptions.redirect || null;
+	this.__defineSetter__(
+		'redirect', function(aRedirect) {
+			this._redirect = aRedirect;
+			return aRedirect;
+		});
+	this.__defineGetter__(
+		'redirect', function() {
+			return this._redirect;
+		});
+
 	this.notifications = [];
 	this.addListener(this);
 }
@@ -287,15 +305,17 @@ function _initRemote(aOptions)
 	this.application = aOptions.application;
 	this.options = aOptions.options;
 }
-  	
+  
 function onStart() 
 {
+	ObserverService.addObserver(this , 'http-on-modify-request', false);
 	this.addListener(this.environment.__proto__);
 	this.environment.__proto__.addListener(this);
 }
  
 function onFinish() 
 {
+	ObserverService.removeObserver(this , 'http-on-modify-request');
 	this.environment.__proto__.removeListener(this);
 	this.removeAllListeners();
 }
@@ -313,13 +333,76 @@ function onNotify(aEvent)
 		stack   : utils.getStackTrace()
 	});
 }
-function onWarning(aEvent) 
+function onWarning(aEvent)
 {
 	this.notifications.push({
 		type    : 'warning',
 		message : aEvent.data,
 		stack   : utils.getStackTrace()
 	});
+}
+ 
+// nsIObserver 
+function observe(aSubject, aTopic, aData)
+{
+	if (
+		aTopic != 'http-on-modify-request' ||
+		!this._redirect
+		)
+		return;
+
+	var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
+	var currentURI = httpChannel.URI;
+	var currentURISpec = currentURI.spec;
+	var newURI;
+
+	switch (typeof this._redirect)
+	{
+		case 'function':
+			newURI = this._redirect(currentURI);
+			break;
+
+		default:
+			var matchers = [];
+			var targets  = [];
+			if (utils.isArray(this._redirect)) {
+				if (this._redirect.length % 2)
+					throw ERROR_INVALID_REDIRECT_DEFINITION_ARRAY;
+				for (var i = 0, maxi = this._redirect.length; i < maxi; i = i+2)
+				{
+					matchers.push(this._redirect[i]);
+					targets.push(this._redirect[i+1]);
+				}
+			}
+			else {
+				for (var prop in this._redirect)
+				{
+					matchers.push(prop);
+					targets.push(this._redirect[prop]);
+				}
+			}
+			var regexp = new RegExp();
+			matchers.some(function(aMatcher, aIndex) {
+				var matcher = aMatcher instanceof RegExp ?
+						aMatcher :
+						regexp.compile(
+							'^'+
+							String(aMatcher).replace(/([^*?\w])/g, '\\$1')
+								.replace(/\?/g, '(.)')
+								.replace(/\*/g, '(.*)')+
+							'$'
+						);
+				if (matcher.test(currentURISpec)) {
+					newURI = currentURISpec.replace(matcher, targets[aIndex]);
+					return true;
+				}
+				return false;
+			});
+			break;
+	}
+
+	if (newURI && newURI != currentURISpec)
+		currentURI.spec = newURI;
 }
  
 /**
@@ -1017,7 +1100,7 @@ function _runByRemote(aStopper)
 
 	return true;
 }
-	 
+	
 function onServerInput(aEvent) 
 {
 	this._lastRemoteResponse = Date.now();

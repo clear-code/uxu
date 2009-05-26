@@ -122,7 +122,8 @@ function _getTestsFromSuite(aSuite)
 					priority      : aSuite.priority,
 					shouldSkip    : aSuite.shouldSkip,
 					context       : aSuite.testContext,
-					targetProduct : aSuite.targetProduct
+					targetProduct : aSuite.targetProduct,
+					redirect      : aSuite.redirect
 				}
 			);
 
