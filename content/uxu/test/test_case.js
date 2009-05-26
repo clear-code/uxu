@@ -392,6 +392,7 @@ function observe(aSubject, aTopic, aData)
 								.replace(/\*/g, '(.*)')+
 							'$'
 						);
+// Application.console.log(matcher+'\n'+currentURISpec+'\n'+matcher.test(currentURISpec)+'\n'+currentURISpec.replace(matcher, targets[aIndex]));
 				if (matcher.test(currentURISpec)) {
 					newURI = currentURISpec.replace(matcher, targets[aIndex]);
 					return true;
@@ -401,8 +402,14 @@ function observe(aSubject, aTopic, aData)
 			break;
 	}
 
-	if (newURI && newURI != currentURISpec)
+	if (newURI && newURI != currentURISpec) {
 		currentURI.spec = newURI;
+//		httpChannel.loadFlags = Ci.nsICachingChannel.LOAD_ONLY_FROM_CACHE;
+//		httpChannel.cancel(Components.results.NS_ERROR_FAILURE);
+//		var webNav = httpChannel.notificationCallbacks
+//				.getInterface(Ci.nsIWebNavigation);
+//		webNav.loadURI(newURI, Ci.nsIWebNavigation.LOAD_FLAGS_NONE, null, null, null);
+	}
 }
  
 /**
