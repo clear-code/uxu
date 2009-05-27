@@ -333,11 +333,63 @@ GlobalService.prototype = {
 	},
 
 
+	// nsIContentPolicy
+
+	TYPE_OTHER       : Ci.nsIContentPolicy.TYPE_OTHER,
+	TYPE_SCRIPT      : Ci.nsIContentPolicy.TYPE_SCRIPT,
+	TYPE_IMAGE       : Ci.nsIContentPolicy.TYPE_IMAGE,
+	TYPE_STYLESHEET  : Ci.nsIContentPolicy.TYPE_STYLESHEET,
+	TYPE_OBJECT      : Ci.nsIContentPolicy.TYPE_OBJECT,
+	TYPE_DOCUMENT    : Ci.nsIContentPolicy.TYPE_DOCUMENT,
+	TYPE_SUBDOCUMENT : Ci.nsIContentPolicy.TYPE_SUBDOCUMENT,
+	TYPE_REFRESH     : Ci.nsIContentPolicy.TYPE_REFRESH,
+	ACCEPT           : Ci.nsIContentPolicy.ACCEPT,
+	REJECT_REQUEST   : Ci.nsIContentPolicy.REJECT_REQUEST,
+	REJECT_TYPE      : Ci.nsIContentPolicy.REJECT_TYPE,
+	REJECT_SERVER    : Ci.nsIContentPolicy.REJECT_SERVER,
+	REJECT_OTHER     : Ci.nsIContentPolicy.REJECT_OTHER,
+
+	shouldLoad : function(aContentType, aContentLocation, aRequestOrigin, aContext, aMimeTypeGuess, aExtra)
+	{
+		if (!Pref.getBoolPref('extensions.uxu.running')) return this.ACCEPT;
+dump('*****shouldLoad*****\n');
+dump([aContentType, aContentLocation.spec, aRequestOrigin, aContext, aMimeTypeGuess, aExtra].join('\n'+'\n');
+
+		var uri = Cc['@mozilla.org/supports-string;1']
+					.createInstance(Ci.nsISupportsString);
+		uri.data = aContentLocation.spec;
+		ObserverService.notifyObservers(uri, 'uxu-redirect-check', null);
+
+		if (!uri.data || uri.data == aContentLocation.spec)
+			return this.ACCEPT;
+
+		try {
+			if (aContext instanceof Ci.nsIDOMNode)
+				aContext.loadURI(uri.data, null, null);
+			else if (aContext instanceof Ci.nsIDOMDocument)
+				aContext.location = uri.data;
+
+			return this.REJECT_REQUEST;
+		}
+		catch(e) {
+			return this.ACCEPT;
+		}
+	},
+
+	shouldProcess : function(aContentType, aContentLocation, aRequestOrigin, aContext, aMimeTypeGuess, aExtra)
+	{
+		return this.ACCEPT;
+	},
+
+
+
 	QueryInterface : function(aIID) 
 	{
 		if(!aIID.equals(Ci.nsIObserver) &&
 			!aIID.equals(Ci.nsICommandLineHandler) &&
 			!aIID.equals(Ci.nsIFactory) &&
+			!aIID.equals(Ci.nsIContentPolicy) &&
+			!aIID.equals(Ci.nsISupportsWeakReference) &&
 			!aIID.equals(Ci.nsISupports)) {
 			throw Components.results.NS_ERROR_NO_INTERFACE;
 		}
@@ -363,6 +415,7 @@ var gModule = {
 					.getService(Ci.nsICategoryManager);
 		catMgr.addCategoryEntry('app-startup', kNAME, kID, true, true);
 		catMgr.addCategoryEntry('command-line-handler', kCATEGORY, kID, true, true);
+		catMgr.addCategoryEntry('content-policy', kCATEGORY, kID, true, true);
 	},
 
 	getClassObject : function(aCompMgr, aCID, aIID)
