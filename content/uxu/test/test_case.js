@@ -242,8 +242,6 @@ function _initSource(aOptions)
  
 function _initRemote(aOptions) 
 {
-	this.id = Date.now();
-
 	var runningProfile = utils.getURLSpecFromFile(utils.getFileFromKeyword('ProfD'));
 	runningProfile = runningProfile.replace(/([^\/])$/, '$1/');
 	runningProfile = utils.getFileFromURLSpec(runningProfile);
@@ -310,14 +308,14 @@ function _initRemote(aOptions)
   
 function onStart() 
 {
-	ObserverService.addObserver(this, 'uxu-redirect-check', false);
+	ObserverService.addObserver(this , 'http-on-modify-request', false);
 	this.addListener(this.environment.__proto__);
 	this.environment.__proto__.addListener(this);
 }
  
 function onFinish() 
 {
-	ObserverService.removeObserver(this, 'uxu-redirect-check');
+	ObserverService.removeObserver(this , 'http-on-modify-request');
 	this.environment.__proto__.removeListener(this);
 	this.removeAllListeners();
 }
@@ -348,20 +346,24 @@ function onWarning(aEvent)
 function observe(aSubject, aTopic, aData)
 {
 	if (
-		aTopic != 'uxu-redirect-check' ||
+		aTopic != 'http-on-modify-request' ||
 		!this._redirect
 		)
 		return;
 
-	aSubject = aSubject.QueryInterface(Ci.nsISupportsString);
+	var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel)
+						.QueryInterface(Ci.nsIRequest);
+	if (!(httpChannel.loadFlags & Ci.nsIChannel.LOAD_DOCUMENT_URI))
+		return;
 
-	var currentURI = aSubject.data;
+	var currentURI = httpChannel.URI;
+	var currentURISpec = currentURI.spec;
 	var newURI;
 
 	switch (typeof this._redirect)
 	{
 		case 'function':
-			newURI = this._redirect(utils.makeURIFromSpec(currentURI));
+			newURI = this._redirect(currentURI);
 			break;
 
 		default:
@@ -394,8 +396,9 @@ function observe(aSubject, aTopic, aData)
 								.replace(/\*/g, '(.*)')+
 							'$'
 						);
-				if (matcher.test(currentURI)) {
-					newURI = currentURI.replace(matcher, targets[aIndex]);
+// Application.console.log(matcher+'\n'+currentURISpec+'\n'+matcher.test(currentURISpec)+'\n'+currentURISpec.replace(matcher, targets[aIndex]));
+				if (matcher.test(currentURISpec)) {
+					newURI = currentURISpec.replace(matcher, targets[aIndex]);
 					return true;
 				}
 				return false;
@@ -403,8 +406,13 @@ function observe(aSubject, aTopic, aData)
 			break;
 	}
 
-	if (newURI && newURI != currentURI)
-		aSubject.data = newURI;
+	if (newURI && newURI != currentURISpec) {
+//		currentURI.spec = newURI;
+		httpChannel.cancel(Components.results.NS_ERROR_FAILURE);
+		httpChannel.notificationCallbacks
+			.getInterface(Ci.nsIWebNavigation)
+			.loadURI(newURI, Ci.nsIWebNavigation.LOAD_FLAGS_NONE, null, null, null);
+	}
 }
  
 /**
