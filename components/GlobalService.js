@@ -353,27 +353,17 @@ GlobalService.prototype = {
 	{
 		if (!Pref.getBoolPref('extensions.uxu.running')) return this.ACCEPT;
 dump('*****shouldLoad*****\n');
-dump([aContentType, aContentLocation.spec, aRequestOrigin, aContext, aMimeTypeGuess, aExtra].join('\n'+'\n');
+dump([aContentType, aContentLocation.spec, aRequestOrigin, aContext, aMimeTypeGuess, aExtra].join('\n')+'\n');
 
 		var uri = Cc['@mozilla.org/supports-string;1']
 					.createInstance(Ci.nsISupportsString);
 		uri.data = aContentLocation.spec;
 		ObserverService.notifyObservers(uri, 'uxu-redirect-check', null);
 
-		if (!uri.data || uri.data == aContentLocation.spec)
-			return this.ACCEPT;
+		if (uri.data && uri.data != aContentLocation.spec)
+			aContentLocation.spec = uri.data;
 
-		try {
-			if (aContext instanceof Ci.nsIDOMNode)
-				aContext.loadURI(uri.data, null, null);
-			else if (aContext instanceof Ci.nsIDOMDocument)
-				aContext.location = uri.data;
-
-			return this.REJECT_REQUEST;
-		}
-		catch(e) {
-			return this.ACCEPT;
-		}
+		return this.ACCEPT;
 	},
 
 	shouldProcess : function(aContentType, aContentLocation, aRequestOrigin, aContext, aMimeTypeGuess, aExtra)
