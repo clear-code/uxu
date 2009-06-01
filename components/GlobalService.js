@@ -14,7 +14,7 @@ const Pref = Cc['@mozilla.org/preferences;1']
 function GlobalService() { 
 }
 GlobalService.prototype = {
-	
+	 
 	CID  : Components.ID('{dd385d40-9e6f-11dd-ad8b-0800200c9a66}'), 
 	ID   : '@clear-code.com/uxu/startup;1',
 	NAME : 'UxU Global Service',
@@ -59,10 +59,14 @@ GlobalService.prototype = {
 			}
 		}
 		else if (inGlobal) {
-			Pref.setBoolPref('extensions.uxu.global', true);
+			if (this.uninstallFromGlobal())
+				this.restart();
+		}
+		else if (this.globalLocation.exists()) {
+			this.globalLocation.remove(true);
 		}
 	},
-	
+	 
 	get installedLocation() 
 	{
 		var id = 'uxu@clear-code.com';
@@ -72,7 +76,7 @@ GlobalService.prototype = {
 				.getItemLocation(id);
 		return dir;
 	},
- 
+	 
 	get globalLocation() 
 	{
 		var dir = Cc['@mozilla.org/file/directory_service;1']
@@ -83,6 +87,16 @@ GlobalService.prototype = {
 		return dir;
 	},
  
+	get userLocation() 
+	{
+		var dir = Cc['@mozilla.org/file/directory_service;1']
+				.getService(Ci.nsIProperties)
+				.get('ProfD', Ci.nsIFile);
+		dir.append('extensions');
+		dir.append(kUXU_DIR_NAME);
+		return dir;
+	},
+ 	 
 	installToGlobal : function() 
 	{
 		try {
@@ -118,7 +132,7 @@ GlobalService.prototype = {
 		}
 		return true;
 	},
- 
+	
 	getVersionFromManifest : function(aFile) 
 	{
 		aFile = aFile.QueryInterface(Ci.nsILocalFile)
@@ -150,6 +164,20 @@ GlobalService.prototype = {
 			if (match) return match[1];
 		}
 		return '';
+	},
+  
+	uninstallFromGlobal : function() 
+	{
+		try {
+			var source = this.installedLocation;
+			var dest = this.userLocation;
+			source.copyTo(dest.parent, kUXU_DIR_NAME);
+		}
+		catch(e) {
+			dump(e);
+			return false;
+		}
+		return true;
 	},
  
 	restart : function() 
