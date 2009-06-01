@@ -1,25 +1,25 @@
 var redirect = {
-		'about:config'            : baseURL+'../uxu/fixtures/html.html',
-		'http://www.example.com/' : baseURL+'../uxu/fixtures/html.html',
-		'http://www.example.jp/*' : baseURL+'../uxu/fixtures/html.html'
+		'http://www.example.com/' : baseURL+'../fixtures/html.html',
+		'http://www.example.jp/*' : baseURL+'../fixtures/html.html',
+		'about:config'            : baseURL+'../fixtures/html.html'
 };
 
 function testRedirect()
 {
 	yield Do(utils.loadURI('http://www.example.com/'));
-	assert.contains('file://', content.location.href);
+	assert.equals('test', content.document.title);
 
 	yield Do(utils.loadURI('about:blank'));
 	assert.equals('about:blank', content.location.href);
 
 	yield Do(utils.loadURI('http://www.example.jp/test/foobar'));
-	assert.contains('file://', content.location.href);
+	assert.equals('test', content.document.title);
 
-	yield Do(utils.loadURI('about:blank'));
-	assert.equals('about:blank', content.location.href);
-
-	yield Do(utils.loadURI('about:config'));
-	assert.contains('file://', content.location.href);
+//	yield Do(utils.loadURI('about:blank'));
+//	assert.equals('about:blank', content.location.href);
+//
+//	yield Do(utils.loadURI('about:config'));
+//	assert.contains('file://', content.location.href);
 
 	var request = Cc['@mozilla.org/xmlextras/xmlhttprequest;1']
 				.createInstance(Ci.nsIXMLHttpRequest)

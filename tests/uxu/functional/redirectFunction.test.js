@@ -1,5 +1,5 @@
 var redirect = function(aURI) {
-		return aURI.spec.replace(/^.*google.*$/, baseURL+'../uxu/fixtures/html.html');
+		return aURI.spec.replace(/^.*google.*$/, baseURL+'../fixtures/html.html');
 	};
 
 function testRedirect()
@@ -11,8 +11,7 @@ function testRedirect()
 	assert.equals('about:blank', content.location.href);
 
 	yield Do(utils.loadURI('http://www.google.com/'));
-	assert.contains('file://', content.location.href);
-
+	assert.equals('test', content.document.title);
 
 	var request = Cc['@mozilla.org/xmlextras/xmlhttprequest;1']
 				.createInstance(Ci.nsIXMLHttpRequest)

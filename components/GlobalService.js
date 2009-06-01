@@ -373,7 +373,7 @@ GlobalService.prototype = {
   
 	QueryInterface : function(aIID) 
 	{
-		if(!aIID.equals(Ci.nsIObserver) &&
+		if (!aIID.equals(Ci.nsIObserver) &&
 			!aIID.equals(Ci.nsICommandLineHandler) &&
 			!aIID.equals(Ci.nsIFactory) &&
 			!aIID.equals(Ci.nsISupports)) {
