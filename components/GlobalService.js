@@ -48,6 +48,14 @@ GlobalService.prototype = {
  
 	checkInstallGlobal : function() 
 	{
+		var UpdateService = Cc['@mozilla.org/updates/update-service;1']
+							.getService(Ci.nsIApplicationUpdateService);
+		if (!UpdateService.canUpdate) {
+			if (Pref.getBoolPref('extensions.uxu.global'))
+				Pref.setBoolPref('extensions.uxu.global', false);
+			return;
+		}
+
 		var inGlobal = this.installedLocation.path == this.globalLocation.path;
 		if (Pref.getBoolPref('extensions.uxu.global')) {
 			if (inGlobal) return;

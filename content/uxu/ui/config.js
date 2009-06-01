@@ -1,3 +1,20 @@
+function init()
+{
+	var adminItems = [
+			document.getElementById('installGlobalLocation-caption'),
+			document.getElementById('installGlobalLocation-check')
+		];
+	var UpdateService = Cc['@mozilla.org/updates/update-service;1']
+						.getService(Ci.nsIApplicationUpdateService);
+	var canUpdate = UpdateService.canUpdate;
+	adminItems.forEach(function(aItem) {
+		if (canUpdate)
+			aItem.removeAttribute('disabled');
+		else
+			aItem.setAttribute('disabled', true);
+	});
+}
+
 function showFilePicker(aTarget, aTitle)
 {
 	var target = document.getElementById(aTarget);

@@ -7,7 +7,8 @@
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 	windowtype="uxu:config"
 	title="&config.title;"
-	style="&config.size;">
+	style="&config.size;"
+	onload="init()">
 
 <prefpane id="prefpane-general" label="&config.tabs.general;" flex="1">
 	<preferences>
@@ -66,8 +67,9 @@
 		preference="extensions.uxu.showInternalStacks"
 		label="&config.showInternalStacks;"/>
 	<groupbox orient="vertical">
-		<caption label="&config.installGlobalLocation.caption;"/>
-		<checkbox id="extensions.uxu.global-check"
+		<caption label="&config.installGlobalLocation.caption;"
+			id="installGlobalLocation-caption"/>
+		<checkbox id="installGlobalLocation-check"
 			preference="extensions.uxu.global"
 			label="&config.installGlobalLocation.check;"/>
 	</groupbox>
