@@ -98,8 +98,11 @@ GlobalService.prototype = {
 				destManifest.append('install.rdf');
 				var destVersion = this.getVersionFromManifest(destManifest);
 
+				var comparator = Cc['@mozilla.org/xpcom/version-comparator;1']
+									.getService(Ci.nsIVersionComparator);
 				if (
-					this.isFirstLargerThanSecond(destVersion, sourceVersion) &&
+					sourceVersion && destVersion &&
+					comparator.compare(destVersion, sourceVersion) > 0 &&
 					source.lastModifiedTime < dest.lastModifiedTime
 					) {
 					source.remove(true);
@@ -125,7 +128,7 @@ GlobalService.prototype = {
 			stream.init(aFile, 1, 0, false); // open as "read only"
 		}
 		catch(ex) {
-			return [];
+			return '';
 		}
 
 		var fileContents = null;
@@ -142,42 +145,11 @@ GlobalService.prototype = {
 
 		if (fileContents) {
 			var match = fileContents.match(/<em:version>([^<]+)<\/em:version>/);
-			if (match) return match[1].split('.');
+			if (match) return match[1];
 			match = fileContents.match(/em:version=['"]([^'"]+)['"]/);
-			if (match) return match[1].split('.');
+			if (match) return match[1];
 		}
-		return [];
-	},
- 
-	isFirstLargerThanSecond : function(aVersion1, aVersion2) 
-	{
-		while (aVersion1.length < aVersion2.length)
-		{
-			aVersion1.push(0);
-		}
-		while (aVersion2.length < aVersion1.length)
-		{
-			aVersion2.push(0);
-		}
-		aVersion1 = aVersion1.map(function(part1, aIndex) {
-			var part2 = aVersion2[aIndex];
-			part1 = String(parseInt(part1));
-			part2 = String(parseInt(part2));
-			while (part1.length < part2.length)
-			{
-				part1 = '0'+part1;
-			}
-			while (part2.length < part1.length)
-			{
-				part2 = '0'+part2;
-			}
-			aVersion2[aIndex] = part2;
-			return part1;
-		});
-
-		aVersion1 = parseInt('1'+aVersion1.join(''));
-		aVersion2 = parseInt('1'+aVersion2.join(''));
-		return aVersion1 > aVersion2;
+		return '';
 	},
  
 	restart : function() 
