@@ -28,33 +28,6 @@ ProtocolHandlerProxy.prototype = {
 				.QueryInterface(Ci.nsISupportsWeakReference);
 	},
  
-	// nsIHttpProtocolHandler 
-	get userAgent() { return this._original.userAgent; },
-	get appName() { return this._original.appName; },
-	get appVersion() { return this._original.appVersion; },
-	get vendor() { return this._original.vendor; },
-	set vendor(aValue) { return this._original.vendor = aValue; },
-	get vendorSub() { return this._original.vendorSub; },
-	set vendorSub(aValue) { return this._original.vendorSub = aValue; },
-	get vendorComment() { return this._original.vendorComment; },
-	set vendorComment(aValue) { return this._original.vendorComment = aValue; },
-	get product() { return this._original.product; },
-	set product(aValue) { return this._original.product = aValue; },
-	get productSub() { return this._original.productSub; },
-	set productSub(aValue) { return this._original.productSub = aValue; },
-	get productComment() { return this._original.productComment; },
-	set productComment(aValue) { return this._original.productComment = aValue; },
-	get platform() { return this._original.platform; },
-	get oscpu() { return this._original.oscpu; },
-	get language() { return this._original.language; },
-	set language(aValue) { return this._original.language = aValue; },
-	get misc() { return this._original.misc; },
-	set misc(aValue) { return this._original.misc = aValue; },
-
-	// nsIProtocolHandler
-	get scheme() { return this._original.scheme; },
-	get defaultPort() { return this._original.defaultPort; },
-	get protocolFlags() { return this._original.protocolFlags; },
 	allowPort : function(aPort, aScheme) { return this._original.allowPort(aPort, aScheme); },
 	newURI : function(aSpec, aCharset, aBaseURI) { return this._original.newURI(aSpec, aCharset, aBaseURI); },
 	newChannel: function(aURI)
@@ -157,6 +130,33 @@ ProtocolHandlerProxy.prototype = {
 	}
  
 }; 
+
+[
+	// nsIHttpProtocolHandler 
+	'userAgent',
+	'appName',
+	'appVersion',
+	'vendor',
+	'vendorSub',
+	'vendorComment',
+	'product',
+	'productSub',
+	'productComment',
+	'platform',
+	'oscpu',
+	'language',
+	'misc',
+
+	// nsIProtocolHandler
+	'scheme',
+	'defaultPort',
+	'protocolFlags',
+].forEach(function(aProperty) {
+	this[aProperty] = DEFAULT_HTTP_PROTOCOL_HANDLER
+				.getService(Ci.nsIHttpProtocolHandler)
+				.QueryInterface(Ci.nsIProtocolHandler)
+				[aProperty];
+}, ProtocolHandlerProxy.prototype);
   	
 function HttpProtocolHandlerProxy() { 
 	this.init();
