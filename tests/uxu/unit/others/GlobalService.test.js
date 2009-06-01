@@ -31,21 +31,10 @@ function testGetVersion()
 	var file = utils.getFileFromURLSpec(baseURL+'../../fixtures/element.install.rdf');
 	assert.isNotNull(file);
 	var version = service.getVersionFromManifest(file);
-	assert.equals([0, 12, 3, 45], version);
+	assert.equals('0.12.3.45', version);
 
 	file = utils.getFileFromURLSpec(baseURL+'../../fixtures/attribute.install.rdf');
 	assert.isNotNull(file);
 	version = service.getVersionFromManifest(file);
-	assert.equals([0, 12, 3, 45], version);
-}
-
-function testCompareVersions()
-{
-	assert.isTrue(service.isFirstLargerThanSecond([3,0,0], [1,5,0]));
-	assert.isTrue(service.isFirstLargerThanSecond([3,0,0], [1,5,0,0]));
-	assert.isTrue(service.isFirstLargerThanSecond([3,1,0], [3,0,1]));
-	assert.isFalse(service.isFirstLargerThanSecond([3,0,0], [3,0,0]));
-	assert.isFalse(service.isFirstLargerThanSecond([3,0,0], [3,0]));
-	assert.isFalse(service.isFirstLargerThanSecond([2,0,0], [3,0,0]));
-	assert.isFalse(service.isFirstLargerThanSecond([1,5,0], [3,0]));
+	assert.equals('0.12.3.45', version);
 }

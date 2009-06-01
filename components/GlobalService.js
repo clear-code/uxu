@@ -1,6 +1,6 @@
 // -*- indent-tabs-mode: t -*- 
-const Cc = Components.classes;
-const Ci = Components.interfaces;
+var Cc = Components.classes;
+var Ci = Components.interfaces;
 
 const kUXU_GLOBAL_PREF = 'extensions.uxu.global';
 const kUXU_DIR_NAME = 'uxu@clear-code.com';
