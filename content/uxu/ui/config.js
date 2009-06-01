@@ -1,3 +1,6 @@
+var Cc = Components.classes;
+var Ci = Components.interfaces;
+
 function init()
 {
 	var adminItems = [
@@ -19,9 +22,8 @@ function showFilePicker(aTarget, aTitle)
 {
 	var target = document.getElementById(aTarget);
 
-	var filePicker = Components
-			.classes['@mozilla.org/filepicker;1']
-			.createInstance(Components.interfaces.nsIFilePicker);
+	var filePicker = Cc['@mozilla.org/filepicker;1']
+			.createInstance(Ci.nsIFilePicker);
 
 	if (target.file) {
 		filePicker.displayDirectory = target.file.parent;

@@ -2,6 +2,7 @@
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
+const kUXU_GLOBAL_PREF = 'extensions.uxu.global';
 const kUXU_DIR_NAME = 'uxu@clear-code.com';
 const kCATEGORY = 'm-uxu';
 
@@ -35,7 +36,12 @@ GlobalService.prototype = {
 
 			case 'final-ui-startup':
 				ObserverService.removeObserver(this, 'final-ui-startup');
+				Pref.addObserver(kUXU_GLOBAL_PREF, this, false);
 				this.init();
+				return;
+
+			case 'nsPref:changed':
+				this.onPrefChange(aData)
 				return;
 		}
 	},
@@ -46,24 +52,47 @@ GlobalService.prototype = {
 		this.checkInstallGlobal();
 	},
  
+	onPrefChange : function(aPrefName)
+	{
+		switch (aPrefName)
+		{
+			case kUXU_GLOBAL_PREF:
+				var bundle = Cc['@mozilla.org/intl/stringbundle;1']
+							.getService(Ci.nsIStringBundleService)
+							.createBundle('chrome://uxu/locale/uxu.properties');
+				if (Cc['@mozilla.org/embedcomp/prompt-service;1']
+					.getService(Ci.nsIPromptService)
+					.confirmEx(
+						null,
+						bundle.GetStringFromName('confirm_installToGlobal_restart_title'),
+						bundle.GetStringFromName('confirm_installToGlobal_restart_text'),
+						Ci.nsIPromptService.BUTTON_TITLE_YES * Ci.nsIPromptService.BUTTON_POS_0 +
+						Ci.nsIPromptService.BUTTON_TITLE_NO * Ci.nsIPromptService.BUTTON_POS_1,
+						null, null, null, null, {}
+					) == 0)
+					this.restart();
+				break;
+		}
+	},
+ 
 	checkInstallGlobal : function() 
 	{
 		var UpdateService = Cc['@mozilla.org/updates/update-service;1']
 							.getService(Ci.nsIApplicationUpdateService);
 		if (!UpdateService.canUpdate) {
-			if (Pref.getBoolPref('extensions.uxu.global'))
-				Pref.setBoolPref('extensions.uxu.global', false);
+			if (Pref.getBoolPref(kUXU_GLOBAL_PREF))
+				Pref.setBoolPref(kUXU_GLOBAL_PREF, false);
 			return;
 		}
 
 		var inGlobal = this.installedLocation.path == this.globalLocation.path;
-		if (Pref.getBoolPref('extensions.uxu.global')) {
+		if (Pref.getBoolPref(kUXU_GLOBAL_PREF)) {
 			if (inGlobal) return;
 			if (this.installToGlobal()) {
 				this.restart();
 			}
 			else {
-				Pref.setBoolPref('extensions.uxu.global', false);
+				Pref.setBoolPref(kUXU_GLOBAL_PREF, false);
 			}
 		}
 		else if (inGlobal) {
