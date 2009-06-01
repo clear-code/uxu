@@ -1,25 +1,24 @@
 // -*- indent-tabs-mode: t -*- 
-const kCID  = Components.ID('{dd385d40-9e6f-11dd-ad8b-0800200c9a66}'); 
-const kID   = '@clear-code.com/uxu/startup;1';
-const kNAME = "UxU Global Service";
+const Cc = Components.classes;
+const Ci = Components.interfaces;
 
 const kUXU_DIR_NAME = 'uxu@clear-code.com';
 const kCATEGORY = 'm-uxu';
 
-var Cc = Components.classes;
-var Ci = Components.interfaces;
-
 const ObserverService = Cc['@mozilla.org/observer-service;1']
 			.getService(Ci.nsIObserverService);
-
-const Pref = Cc['@mozilla.org/preferences;1'] 
+const Pref = Cc['@mozilla.org/preferences;1']
 			.getService(Ci.nsIPrefBranch)
 			.QueryInterface(Ci.nsIPrefBranch2);
-	 
+ 
 function GlobalService() { 
 }
 GlobalService.prototype = {
 	
+	CID  : Components.ID('{dd385d40-9e6f-11dd-ad8b-0800200c9a66}'), 
+	ID   : '@clear-code.com/uxu/startup;1',
+	NAME : 'UxU Global Service',
+ 
 	observe : function(aSubject, aTopic, aData) 
 	{
 		switch (aTopic)
@@ -46,8 +45,8 @@ GlobalService.prototype = {
 		Pref.setBoolPref('extensions.uxu.running', false);
 		this.checkInstallGlobal();
 	},
-
-	checkInstallGlobal : function()
+ 
+	checkInstallGlobal : function() 
 	{
 		var inGlobal = this.installedLocation.path == this.globalLocation.path;
 		if (Pref.getBoolPref('extensions.uxu.global')) {
@@ -63,8 +62,8 @@ GlobalService.prototype = {
 			Pref.setBoolPref('extensions.uxu.global', true);
 		}
 	},
-
-	get installedLocation()
+	
+	get installedLocation() 
 	{
 		var id = 'uxu@clear-code.com';
 		var dir = Cc['@mozilla.org/extensions/manager;1']
@@ -73,8 +72,8 @@ GlobalService.prototype = {
 				.getItemLocation(id);
 		return dir;
 	},
-
-	get globalLocation()
+ 
+	get globalLocation() 
 	{
 		var dir = Cc['@mozilla.org/file/directory_service;1']
 				.getService(Ci.nsIProperties)
@@ -83,8 +82,8 @@ GlobalService.prototype = {
 		dir.append(kUXU_DIR_NAME);
 		return dir;
 	},
-
-	installToGlobal : function()
+ 
+	installToGlobal : function() 
 	{
 		try {
 			var source = this.installedLocation;
@@ -116,8 +115,8 @@ GlobalService.prototype = {
 		}
 		return true;
 	},
-
-	getVersionFromManifest : function(aFile)
+ 
+	getVersionFromManifest : function(aFile) 
 	{
 		aFile = aFile.QueryInterface(Ci.nsILocalFile)
 		var stream = Cc['@mozilla.org/network/file-input-stream;1']
@@ -149,8 +148,8 @@ GlobalService.prototype = {
 		}
 		return [];
 	},
-
-	isFirstLargerThanSecond : function(aVersion1, aVersion2)
+ 
+	isFirstLargerThanSecond : function(aVersion1, aVersion2) 
 	{
 		while (aVersion1.length < aVersion2.length)
 		{
@@ -180,18 +179,17 @@ GlobalService.prototype = {
 		aVersion2 = parseInt('1'+aVersion2.join(''));
 		return aVersion1 > aVersion2;
 	},
-
-	restart : function()
+ 
+	restart : function() 
 	{
 		const startup = Cc['@mozilla.org/toolkit/app-startup;1']
 						.getService(Ci.nsIAppStartup);
 		startup.quit(startup.eRestart | startup.eAttemptQuit);
 	},
-
-
-
-	/* nsICommandLineHandler */
-	handle : function(aCommandLine)
+  
+	/* nsICommandLineHandler */ 
+	
+	handle : function(aCommandLine) 
 	{
 		var arg = {
 				server     : this._getBooleanValueFromCommandLine('uxu-start-server', aCommandLine),
@@ -227,7 +225,19 @@ GlobalService.prototype = {
 			);
 		}
 	},
-	_getFullPathFromCommandLine : function(aOption, aCommandLine, aDefaultValue)
+ 
+	_getValueFromCommandLine : function(aOption, aCommandLine, aDefaultValue) 
+	{
+		if (aDefaultValue === void(0)) aDefaultValue = '';
+		try {
+			return aCommandLine.handleFlagWithParam(aOption, false);
+		}
+		catch(e) {
+		}
+		return aDefaultValue;
+	},
+	
+	_getFullPathFromCommandLine : function(aOption, aCommandLine, aDefaultValue) 
 	{
 		if (!aDefaultValue) aDefaultValue = '';
 		var value = this._getValueFromCommandLine(aOption, aCommandLine, aDefaultValue);
@@ -241,7 +251,8 @@ GlobalService.prototype = {
 			return value.spec;
 		}
 	},
-	_getNumericValueFromCommandLine : function(aOption, aCommandLine, aDefaultValue)
+ 
+	_getNumericValueFromCommandLine : function(aOption, aCommandLine, aDefaultValue) 
 	{
 		if (!aDefaultValue) aDefaultValue = 0;
 		var value = this._getValueFromCommandLine(aOption, aCommandLine, aDefaultValue);
@@ -249,17 +260,8 @@ GlobalService.prototype = {
 		value = parseInt(value);
 		return isNaN(value) ? aDefaultValue : value ;
 	},
-	_getValueFromCommandLine : function(aOption, aCommandLine, aDefaultValue)
-	{
-		if (aDefaultValue === void(0)) aDefaultValue = '';
-		try {
-			return aCommandLine.handleFlagWithParam(aOption, false);
-		}
-		catch(e) {
-		}
-		return aDefaultValue;
-	},
-	_getBooleanValueFromCommandLine : function(aOption, aCommandLine)
+ 
+	_getBooleanValueFromCommandLine : function(aOption, aCommandLine) 
 	{
 		try {
 			if (aCommandLine.handleFlag(aOption, false)) {
@@ -270,8 +272,8 @@ GlobalService.prototype = {
 		}
 		return false;
 	},
-
-	helpInfo :
+  
+	helpInfo : 
 		'  -uxu-start-server    Starts UnitTest.XUL Server instead of Firefox\n'+
 		'  -uxu-listen-port <port>\n'+
 		'                       Listening port of UnitTest.XUL Server\n'+
@@ -288,17 +290,18 @@ GlobalService.prototype = {
 		'                       in human readable format\n'+
 		'  -uxu-rawlog <url>    Output the result of the testcase\n'+
 		'                       in raw format\n',
-
-
-	upgradePrefs : function()
+  
+	/* backward compatibility */ 
+	
+	upgradePrefs : function() 
 	{
 		this.upgradePrefsInternal(
 			'extensions.uxu.mozunit.',
 			'extensions.uxu.runner.'
 		);
 	},
-
-	upgradePrefsInternal : function(aOldBase, aNewBase)
+ 
+	upgradePrefsInternal : function(aOldBase, aNewBase) 
 	{
 		Pref.getChildList(aOldBase, {}).forEach(function(aPref) {
 			var newPref = aPref.replace(aOldBase, aNewBase);
@@ -317,22 +320,20 @@ GlobalService.prototype = {
 			Pref.clearUserPref(aPref);
 		}, this);
 	},
-
-
-	/* nsIFactory */
-
-	createInstance : function(aOuter, aIID)
+  
+	/* nsIFactory */ 
+	
+	createInstance : function(aOuter, aIID) 
 	{
 		if (aOuter != null)
 			throw Components.results.NS_ERROR_NO_AGGREGATION;
 		return this.QueryInterface(aIID);
 	},
-
-	lockFactory : function(aLock)
+ 
+	lockFactory : function(aLock) 
 	{
 	},
-
-
+  
 	QueryInterface : function(aIID) 
 	{
 		if(!aIID.equals(Ci.nsIObserver) &&
@@ -345,15 +346,15 @@ GlobalService.prototype = {
 	}
  
 }; 
-
+  
 var gModule = { 
 	registerSelf : function(aCompMgr, aFileSpec, aLocation, aType)
 	{
 		aCompMgr = aCompMgr.QueryInterface(Ci.nsIComponentRegistrar);
 		aCompMgr.registerFactoryLocation(
-			kCID,
-			kNAME,
-			kID,
+			GlobalService.prototype.CID,
+			GlobalService.prototype.NAME,
+			GlobalService.prototype.ID,
 			aFileSpec,
 			aLocation,
 			aType
@@ -361,8 +362,8 @@ var gModule = {
 
 		var catMgr = Cc['@mozilla.org/categorymanager;1']
 					.getService(Ci.nsICategoryManager);
-		catMgr.addCategoryEntry('app-startup', kNAME, kID, true, true);
-		catMgr.addCategoryEntry('command-line-handler', kCATEGORY, kID, true, true);
+		catMgr.addCategoryEntry('app-startup', GlobalService.prototype.NAME, GlobalService.prototype.ID, true, true);
+		catMgr.addCategoryEntry('command-line-handler', kCATEGORY, GlobalService.prototype.ID, true, true);
 	},
 
 	getClassObject : function(aCompMgr, aCID, aIID)
@@ -394,4 +395,4 @@ var gModule = {
 function NSGetModule(aCompMgr, aFileSpec) {
 	return gModule;
 }
- 	
+ 
