@@ -1,5 +1,7 @@
 var redirect = function(aURI) {
-		return aURI.spec.replace(/^.*google.*$/, baseURL+'../../fixtures/html.html');
+		return aURI.spec
+				.replace(/^.*google.*$/, baseURL+'../../fixtures/html.html')
+				.replace(/^.*www.example.jp.*\.jpg$/, baseURL+'../../../../skin/classic/uxu/bomb.png');
 	};
 
 function testRedirect()
@@ -31,5 +33,14 @@ function testRedirect()
 		'<title>test</title>',
 		request.responseText
 	);
+
+	var loaded = { value : false };
+	var image = new Image();
+	image.src = 'http://www.example.jp/test.jpg'
+	image.onload = function() {
+		loaded.value = true;
+	};
+	yield loaded;
+	assert.equals([48, 48], [image.width, image.height]);
 }
 

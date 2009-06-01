@@ -1,5 +1,6 @@
 var redirect = {
 		'http://www.example.com/'      : baseURL+'../../fixtures/html.html',
+		'http://www.example.jp/*.jpg'  : baseURL+'../../../../skin/classic/uxu/bomb.png',
 		'http://www.example.jp/*'      : baseURL+'../../fixtures/html.html',
 		'https://addons.mozilla.org/*' : baseURL+'../../fixtures/html.html',
 		'about:config'                 : baseURL+'../../fixtures/html.html'
@@ -38,5 +39,14 @@ function testRedirect()
 		'<title>test</title>',
 		request.responseText
 	);
+
+	var loaded = { value : false };
+	var image = new Image();
+	image.src = 'http://www.example.jp/test.jpg'
+	image.onload = function() {
+		loaded.value = true;
+	};
+	yield loaded;
+	assert.equals([48, 48], [image.width, image.height]);
 }
 
