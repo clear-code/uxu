@@ -21,7 +21,7 @@ ProtocolHandlerProxy.prototype = {
 	init : function() 
 	{
 		this._original = DEFAULT_HTTP_PROTOCOL_HANDLER
-				.createInstance(Ci.nsIHttpProtocolHandler)
+				.getService(Ci.nsIHttpProtocolHandler)
 				.QueryInterface(Ci.nsIProtocolHandler)
 				.QueryInterface(Ci.nsIProxiedProtocolHandler)
 				.QueryInterface(Ci.nsIObserver)
