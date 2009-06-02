@@ -8,7 +8,6 @@ function setUp()
 	actionModule = {};
 	utils.include(topDir+'content/uxu/test/action.js', actionModule);
 	yield Do(utils.loadURI(topDir+'tests/uxu/fixtures/action.html'));
-	yield 600;
 }
 
 function tearDown()
@@ -71,12 +70,170 @@ function test_getZoom()
 
 /* public */
 
+function getMouseEventLogFromParams(aParam, aBox)
+{
+	var event = {
+		type     : aParam.type || 'click',
+		button   : aParam.button || 0,
+		detail   : aParam.detail || 0,
+		altKey   : aParam.altKey || false,
+		ctrlKey  : aParam.ctrlKey || false,
+		metaKey  : aParam.metaKey || false,
+		shiftKey : aParam.shiftKey || false,
+		screenX  : aParam.screenX || 0,
+		screenY  : aParam.screenY || 0
+	};
+	var rootBoxObject = utils.getBoxObjectFor(content.document.body);
+	event.clientX = event.screenX - rootBoxObject.screenX;
+	event.clientY = event.screenY - rootBoxObject.screenY;
+	if (aBox) {
+		event.screenX = aBox.screenX + (aBox.width / 2);
+		event.screenY = aBox.screenY + (aBox.height / 2);
+		event.clientX = aBox.x + (aBox.width / 2);
+		event.clientY = aBox.y + (aBox.height / 2);
+	}
+	return event;
+}
+
 function test_fireMouseEvent()
 {
+	var box = $('clickable-box');
+	var boxObject = utils.getBoxObjectFor(box);
+	var log = $('log');
+	var events, event, param;
+	var lastCount;
+
+
+	param = {
+		type     : 'mousedown',
+		button   : 2,
+		detail   : 1,
+		ctrlKey  : true,
+		screenX  : boxObject.screenX+10,
+		screenY  : boxObject.screenY+10
+	}
+	actionModule.fireMouseEvent(content, param);
+	eval('events = '+log.textContent);
+	assert.equals(1, events.length);
+
+	event = getMouseEventLogFromParams(param);
+	event.target = 'clickable-box';
+	assert.equals(event, events[events.length-1]);
+	lastCount = events.length;
+
+
+	param = {
+		type     : 'mouseup',
+		button   : 1,
+		detail   : 0,
+		altKey   : true,
+		screenX  : boxObject.screenX+20,
+		screenY  : boxObject.screenY+20
+	}
+	actionModule.fireMouseEvent(content, param);
+	eval('events = '+log.textContent);
+	assert.equals(lastCount+1, events.length);
+
+	event = getMouseEventLogFromParams(param);
+	event.target = 'clickable-box';
+	assert.equals(event, events[events.length-1]);
+	lastCount = events.length;
+
+
+	param = {
+		type     : 'click',
+		button   : 0,
+		detail   : 1,
+		shiftKey : true,
+		screenX  : boxObject.screenX+30,
+		screenY  : boxObject.screenY+30
+	}
+	actionModule.fireMouseEvent(content, param);
+	yield 100;
+	eval('events = '+log.textContent);
+	assert.equals(lastCount+3, events.length);
+
+	event = getMouseEventLogFromParams(param);
+	event.target = 'clickable-box';
+	event.type = 'mousedown';
+	assert.equals(event, events[events.length-3]);
+
+	event = getMouseEventLogFromParams(param);
+	event.target = 'clickable-box';
+	event.type = 'mouseup';
+	assert.equals(event, events[events.length-2]);
+
+	event = getMouseEventLogFromParams(param);
+	event.target = 'clickable-box';
+	assert.equals(event, events[events.length-1]);
 }
 
 function test_fireMouseEventOnElement()
 {
+	var box = $('clickable-box');
+	var boxObject = utils.getBoxObjectFor(box);
+	var rootBoxObject = utils.getBoxObjectFor(content.document.body);
+	var log = $('log');
+	var events, event, param;
+	var lastCount;
+
+
+	param = {
+		type     : 'mousedown',
+		button   : 2,
+		detail   : 1,
+		ctrlKey  : true
+	}
+	actionModule.fireMouseEventOnElement(box, param);
+	eval('events = '+log.textContent);
+	assert.equals(1, events.length);
+
+	event = getMouseEventLogFromParams(param, boxObject);
+	event.target = 'clickable-box';
+	assert.equals(event, events[events.length-1]);
+	lastCount = events.length;
+
+
+	param = {
+		type     : 'mouseup',
+		button   : 1,
+		detail   : 0,
+		altKey   : true
+	}
+	actionModule.fireMouseEventOnElement(box, param);
+	eval('events = '+log.textContent);
+	assert.equals(lastCount+1, events.length);
+
+	event = getMouseEventLogFromParams(param, boxObject);
+	event.target = 'clickable-box';
+	assert.equals(event, events[events.length-1]);
+	lastCount = events.length;
+
+
+	param = {
+		type     : 'click',
+		button   : 0,
+		detail   : 1,
+		shiftKey : true
+	}
+	actionModule.fireMouseEventOnElement(box, param);
+	yield 100;
+	eval('events = '+log.textContent);
+	assert.equals(lastCount+3, events.length);
+
+	event = getMouseEventLogFromParams(param, boxObject);
+	event.target = 'clickable-box';
+	event.type = 'mousedown';
+	assert.equals(event, events[events.length-3]);
+
+	event = getMouseEventLogFromParams(param, boxObject);
+	event.target = 'clickable-box';
+	event.type = 'mouseup';
+	assert.equals(event, events[events.length-2]);
+
+	event = getMouseEventLogFromParams(param, boxObject);
+	event.target = 'clickable-box';
+	assert.equals(event, events[events.length-1]);
 }
 
 function test_fireKeyEventOnElement()

@@ -5,46 +5,62 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<title>test</title>
 </head>
-<body>
+<body style="margin:0;padding:0;">
 <script type="text/javascript">
+	var events = [];
+
 	function onMouseEvent(aEvent, aNode)
 	{
-		aNode.setAttribute(aEvent.type+'-date', Date.now());
-		aNode.setAttribute(aEvent.type+'-button', aEvent.button);
-		aNode.setAttribute(aEvent.type+'-detail', aEvent.detail);
-		aNode.setAttribute(aEvent.type+'-screenX', aEvent.screenX);
-		aNode.setAttribute(aEvent.type+'-screenY', aEvent.screenY);
-		aNode.setAttribute(aEvent.type+'-clientX', aEvent.clientX);
-		aNode.setAttribute(aEvent.type+'-clientY', aEvent.clientY);
-		aNode.setAttribute(aEvent.type+'-altKey', aEvent.altKey);
-		aNode.setAttribute(aEvent.type+'-ctrlKey', aEvent.ctrlKey);
-		aNode.setAttribute(aEvent.type+'-metaKey', aEvent.metaKey);
-		aNode.setAttribute(aEvent.type+'-shiftKey', aEvent.shiftKey);
+		events.push({
+			target   : aNode.id,
+			type     : aEvent.type,
+			button   : aEvent.button,
+			detail   : aEvent.detail,
+			screenX  : aEvent.screenX,
+			screenY  : aEvent.screenY,
+			clientX  : aEvent.clientX,
+			clientY  : aEvent.clientY,
+			altKey   : aEvent.altKey,
+			ctrlKey  : aEvent.ctrlKey,
+			metaKey  : aEvent.metaKey,
+			shiftKey : aEvent.shiftKey
+		});
+		events = events.slice(-30);
+		document.getElementById('log').textContent = events.toSource();
 	}
 
 	function onKeyEvent(aEvent, aNode)
 	{
-		aNode.setAttribute(aEvent.type+'-date', Date.now());
-		aNode.setAttribute(aEvent.type+'-keyCode', aEvent.keyCode);
-		aNode.setAttribute(aEvent.type+'-charCode', aEvent.charCode);
-		aNode.setAttribute(aEvent.type+'-altKey', aEvent.altKey);
-		aNode.setAttribute(aEvent.type+'-ctrlKey', aEvent.ctrlKey);
-		aNode.setAttribute(aEvent.type+'-metaKey', aEvent.metaKey);
-		aNode.setAttribute(aEvent.type+'-shiftKey', aEvent.shiftKey);
+		events.push({
+			target   : aNode.id,
+			type     : aEvent.type,
+			keyCode  : aEvent.keyCode,
+			charCode : aEvent.charCode,
+			altKey   : aEvent.altKey,
+			ctrlKey  : aEvent.ctrlKey,
+			metaKey  : aEvent.metaKey,
+			shiftKey : aEvent.shiftKey
+		});
+		events = events.slice(-30);
+		document.getElementById('log').textContent = events.toSource();
 	}
 </script>
 <div id="clickable-box"
 	ondblclick="onMouseEvent(event, this)"
 	onclick="onMouseEvent(event, this)"
+	onmousedown="onMouseEvent(event, this)"
+	onmouseup="onMouseEvent(event, this)"
 	style="
 		width: 100px !important;
 		height:100px !important;
 		background: black !important;
-	">0123</div>
+	"></div>
 
 <button id="clickable-button"
 	ondblclick="onMouseEvent(event, this)"
 	onclick="onMouseEvent(event, this)"
+	onmousedown="onMouseEvent(event, this)"
+	onmouseup="onMouseEvent(event, this)"
 	onkeydown="onKeyEvent(event,this);"
 	onkeyup="onKeyEvent(event,this);"
 	onkeypress="onKeyEvent(event,this);">button</button>
@@ -52,10 +68,14 @@
 <input type="text" id="input" value=""
 	ondblclick="onMouseEvent(event, this)"
 	onclick="onMouseEvent(event, this)"
+	onmousedown="onMouseEvent(event, this)"
+	onmouseup="onMouseEvent(event, this)"
 	onkeydown="onKeyEvent(event,this);"
 	onkeyup="onKeyEvent(event,this);"
 	onkeypress="onKeyEvent(event,this);"
 	oninput="onKeyEvent(event,this);"/>
+
+<p id="log" style="overflow:auto;height:100px;"></p>
 
 </body>
 </html>
