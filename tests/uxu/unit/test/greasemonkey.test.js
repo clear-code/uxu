@@ -24,6 +24,7 @@ function setUp()
 
 function tearDown()
 {
+	GMUtils.destroy();
 	yield Do(utils.loadURI('about:blank'));
 	yield Do(GMUtils.close());
 }
@@ -173,6 +174,29 @@ function test_GM_setValue()
 
 function test_GM_registerMenuCommand()
 {
+	var sandbox = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_registerMenuCommand.user.js');
+	assert.equals(0, sandbox.activeItem);
+	assert.equals(2, GMUtils.commands.length);
+
+	var item = GMUtils.commands[0];
+	assert.equals('item1', item.getAttribute('label'));
+	assert.equals('i', item.getAttribute('accesskey'));
+	if (navigator.platform.toLowerCase().indexOf('mac') > -1)
+		assert.equals('Command+A', item.getAttribute('acceltext'));
+	else
+		assert.equals('Ctrl+A', item.getAttribute('acceltext'));
+	item.oncommand();
+	assert.equals(1, sandbox.activeItem);
+
+	item = GMUtils.commands[1];
+	assert.equals('item2', item.getAttribute('label'));
+	assert.equals('i', item.getAttribute('accesskey'));
+	if (navigator.platform.toLowerCase().indexOf('mac') > -1)
+		assert.equals('Control+Shift+A', item.getAttribute('acceltext'));
+	else
+		assert.equals('Ctrl+Shift+B', item.getAttribute('acceltext'));
+	item.oncommand();
+	assert.equals(2, sandbox.activeItem);
 }
 
 test_GM_xmlhttpRequest.setUp = function() {
