@@ -475,15 +475,17 @@ function loadURI(aURI, aOptions)
 	b.stop();
 	window.setTimeout(function() {
 		_waitBrowserLoad(b, loadedFlag);
-		b.loadURI(aURI);
+		b.loadURI(aURI, aOptions.referrer || null);
 	}, 0);
 
 	return loadedFlag;
 };
  
-function loadURIInTestFrame(aURI) 
+function loadURIInTestFrame(aURI, aOptions) 
 {
-	return this.loadURI(aURI, { inFrame : true });
+	if (!aOptions) aOptions = {};
+	aOptions.inFrame = true;
+	return this.loadURI(aURI, aOptions);
 }
  
 // テスト用のFirefoxウィンドウで新しいタブを開く 
@@ -510,7 +512,7 @@ function addTab(aURI, aOptions)
 				win.gBrowser.selectedTab = tab;
 			}
 		});
-		tab.linkedBrowser.loadURI(aURI);
+		tab.linkedBrowser.loadURI(aURI, aOptions.referrer || null);
 	}, 0);
 
 	return loadedFlag;
