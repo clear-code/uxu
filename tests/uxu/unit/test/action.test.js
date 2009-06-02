@@ -338,71 +338,90 @@ function test_fireMouseEventOnElement()
 	assert.equals(event, events[events.length-1]);
 }
 
+function generateKeyEventLogFromParams(aParam)
+{
+	var event = {
+		type     : aParam.type || 'keypress',
+		keyCode  : aParam.keyCode || 0,
+		charCode : aParam.charCode || 0,
+		altKey   : aParam.altKey || false,
+		ctrlKey  : aParam.ctrlKey || false,
+		metaKey  : aParam.metaKey || false,
+		shiftKey : aParam.shiftKey || false
+	};
+	if (event.type != 'keypress' &&
+		event.charCode &&
+		!event.keyCode) {
+		event.keyCode = Ci.nsIDOMKeyEvent['DOM_VK_'+String.fromCharCode(event.charCode).toUpperCase()];
+		event.charCode = 0;
+	}
+	return event;
+}
+
 function test_fireKeyEventOnElement()
 {
-	var box = $('clickable-box');
-	var boxObject = utils.getBoxObjectFor(box);
-	var rootBoxObject = utils.getBoxObjectFor(content.document.body);
+	var button = $('clickable-button');
+	button.focus();
+	var boxObject = utils.getBoxObjectFor(button);
 	var log = $('log');
 	var events, event, param;
 	var lastCount;
 
 
 	param = {
-		type     : 'mousedown',
-		button   : 2,
-		detail   : 1,
-		ctrlKey  : true
+		type    : 'keydown',
+		keyCode : Ci.nsIDOMKeyEvent.DOM_VK_DELETE,
+		ctrlKey : true
 	}
-	actionModule.fireMouseEventOnElement(box, param);
+	actionModule.fireKeyEventOnElement(button, param);
 	eval('events = '+log.textContent);
 	assert.equals(1, events.length);
 
-	event = generateMouseEventLogFromParams(param, boxObject);
-	event.target = 'clickable-box';
+	event = generateKeyEventLogFromParams(param);
+	event.target = 'clickable-button';
 	assert.equals(event, events[events.length-1]);
 	lastCount = events.length;
 
 
 	param = {
-		type     : 'mouseup',
-		button   : 1,
-		detail   : 0,
-		altKey   : true
+		type     : 'keyup',
+		charCode : 'f'.charCodeAt(0),
+		shiftKey : true
 	}
-	actionModule.fireMouseEventOnElement(box, param);
+	actionModule.fireKeyEventOnElement(button, param);
 	eval('events = '+log.textContent);
 	assert.equals(lastCount+1, events.length);
 
-	event = generateMouseEventLogFromParams(param, boxObject);
-	event.target = 'clickable-box';
+	event = generateKeyEventLogFromParams(param);
+	event.target = 'clickable-button';
 	assert.equals(event, events[events.length-1]);
 	lastCount = events.length;
 
 
 	param = {
-		type     : 'click',
-		button   : 0,
-		detail   : 1,
+		type     : 'keypress',
+		charCode : 'c'.charCodeAt(0),
+		ctrlKey  : true,
 		shiftKey : true
 	}
-	actionModule.fireMouseEventOnElement(box, param);
+	actionModule.fireKeyEventOnElement(button, param);
 	yield 100;
 	eval('events = '+log.textContent);
 	assert.equals(lastCount+3, events.length);
 
-	event = generateMouseEventLogFromParams(param, boxObject);
-	event.target = 'clickable-box';
-	event.type = 'mousedown';
+	param.type = 'keydown';
+	event = generateKeyEventLogFromParams(param);
+	event.target = 'clickable-button';
 	assert.equals(event, events[events.length-3]);
 
-	event = generateMouseEventLogFromParams(param, boxObject);
-	event.target = 'clickable-box';
-	event.type = 'mouseup';
+	param.type = 'keyup';
+	event = generateKeyEventLogFromParams(param);
+	event.target = 'clickable-button';
 	assert.equals(event, events[events.length-2]);
 
-	event = generateMouseEventLogFromParams(param, boxObject);
-	event.target = 'clickable-box';
+	param.type = 'keypress';
+	event = generateKeyEventLogFromParams(param);
+	event.target = 'clickable-button';
 	assert.equals(event, events[events.length-1]);
 }
 

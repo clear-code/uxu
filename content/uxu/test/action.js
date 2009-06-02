@@ -566,8 +566,7 @@ function fireKeyEventOnElement(aElement, aOptions)
 
 		var keyCode = ('keyCode' in aOptions ? aOptions.keyCode : 0 );
 		var charCode = ('charCode' in aOptions ? aOptions.charCode : 0 );
-		if (doc.commandDispatcher.focusedElement != aElement)
-			utils.focus(aElement);
+		utils.focus(aElement);
 		utils.sendKeyEvent((aOptions.type || 'keypress'), keyCode, charCode, flags);
 		return;
 	}
@@ -579,7 +578,7 @@ function fireKeyEventOnElement(aElement, aOptions)
 			break;
 		case 'keypress':
 		default:
-			var options = { type : 'keydown', detail : 1 };
+			var options = { type : 'keydown' };
 			options.__proto__ = aOptions;
 			this.fireKeyEventOnElement(aElement, options);
 			options.type = 'keyup';
@@ -598,6 +597,14 @@ function _createKeyEventOnElement(aElement, aOptions)
 		throw new Error('action._createKeyEventOnElement::['+aElement+'] is not an element!');
 
 	if (!aOptions) aOptions = {};
+
+	if (aOptions.type != 'keypress' &&
+		aOptions.charCode &&
+		!aOptions.keyCode) {
+		aOptions.keyCode = Ci.nsIDOMKeyEvent['DOM_VK_'+String.fromCharCode(aOptions.charCode).toUpperCase()];
+		aOptions.charCode = 0;
+	}
+
 	var node = aElement;
 	var doc = this._getDocumentFromEventTarget(node);
 	var event = doc.createEvent('KeyEvents');
