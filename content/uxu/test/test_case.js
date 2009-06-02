@@ -956,6 +956,10 @@ function run(aStopper)
 		},
 		tearDownDaemons : function(aContinuation)
 		{
+			if (!ServerUtils.prototype.isHttpServerRunning.call(_this.environment.serverUtils)) {
+				aContinuation('ok');
+				return;
+			}
 			utils.doIteration(
 				function() {
 					yield ServerUtils.prototype.tearDownAllHttpServers.call(_this.environment.serverUtils);

@@ -122,3 +122,8 @@ function tearDownAllHttpServers()
 				});
 		};
 }
+
+function isHttpServerRunning()
+{
+	return this._HTTPServerInstances.length > 0;
+}
