@@ -277,20 +277,22 @@ function fireMouseEventOnElement(aElement, aOptions)
 		return;
 	}
 
+	var detail = 1;
 	switch (aOptions.type)
 	{
 		case 'mousedown':
 		case 'mouseup':
 			break;
 		case 'dblclick':
-			var options = { type : 'mousedown', detail : 1 };
+			var options = { type : 'mousedown', detail : detail };
 			options.__proto__ = aOptions;
 			this.fireMouseEventOnElement(aElement, options);
 			options.type = 'mouseup';
 			this.fireMouseEventOnElement(aElement, options);
+			detail++;
 		case 'click':
 		default:
-			var options = { type : 'mousedown', detail : 1 };
+			var options = { type : 'mousedown', detail : detail };
 			options.__proto__ = aOptions;
 			this.fireMouseEventOnElement(aElement, options);
 			options.type = 'mouseup';
