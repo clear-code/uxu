@@ -152,6 +152,9 @@ function test_loadScript()
 
 function test_GM_log()
 {
+	assert.equals([], GMUtils.logs);
+	sandbox = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_log.user.js');
+	assert.equals([navigator.userAgent.toString()], GMUtils.logs);
 }
 
 function test_GM_getValue()
