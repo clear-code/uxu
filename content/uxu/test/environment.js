@@ -77,6 +77,7 @@ function constructor(aEnvironment, aURI, aBrowser)
 	
 function destroy() 
 {
+	if (this.greasemonkey) this.greasemonkey.destroy();
 	this.fireEvent('Destroy', null);
 	this.removeAllListeners();
 	this.assert.removeListener(this);

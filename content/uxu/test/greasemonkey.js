@@ -13,10 +13,20 @@ function constructor(aUtils)
 		return frame;
 	});
 	this.testWindow = null;
+	this.commands = [];
 	this.storage = {};
 	this.listeners = [];
 	this.sandboxes = {};
 	this.emulateXMLHTTPRequest = true;
+}
+
+function destroy()
+{
+	this.testWindow = null;
+	this.commands = null;
+	this.storage = null;
+	this.listeners = null;
+	this.sandboxes = null;
 }
 
 function load(aURI)
@@ -251,6 +261,35 @@ function GM_registerMenuCommand(aName, aFunction, aAccelKey, aAccelModifiers, aA
 		accelModifiers : aAccelModifiers,
 		accessKey : aAccessKey
 	});
+	var command = document.createElement('menuitem');
+	command.setAttribute('label', aName);
+	command.oncommand = aFunction;
+	if (aAccelKey) {
+		var modifiers = '';
+		if (aAccelModifiers) {
+			modifiers = [];
+			var isMac = navigator.platform.toLowerCase().indexOf('mac') > -1;
+			if (!isMac && /ctrl|control|accel/i.test(aAccelModifiers))
+				modifiers.push('Ctrl');
+			if (isMac && /ctrl|control/i.test(aAccelModifiers))
+				modifiers.push('Control');
+			if (/alt/i.test(aAccelModifiers))
+				modifiers.push('Alt');
+			if (!isMac && /meta/i.test(aAccelModifiers))
+				modifiers.push('Meta');
+			if (isMac && /meta|accel/i.test(aAccelModifiers))
+				modifiers.push('Command');
+			if (/shift/i.test(aAccelModifiers))
+				modifiers.push('Shift');
+			modifiers = modifiers.join('+');
+			if (modifiers) modifiers += '+';
+		}
+		command.setAttribute('acceltext', modifiers+aAccelKey.toUpperCase());
+	}
+	if (aAccessKey) {
+		command.setAttribute('accesskey', aAccessKey);
+	}
+	this.commands.push(command);
 }
 
 
