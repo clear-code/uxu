@@ -54,8 +54,10 @@ testHttpServer.tearDown = function() {
 };
 function testHttpServer()
 {
+	assert.isFalse(utilsModule.isHttpServerRunning());
 	var port = 4445;
 	yield Do(utilsModule.setUpHttpServer(port, baseURL+'../../fixtures/'));
 	yield Do(utils.loadURI('http://localhost:'+port+'/html.html'));
 	assert.equals('test', content.document.title);
+	assert.isTrue(utilsModule.isHttpServerRunning());
 }
