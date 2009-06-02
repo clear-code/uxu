@@ -576,9 +576,9 @@ function registerTest(aFunction)
 		setUp    : privSetUp,
 		tearDown : privTearDown,
 
-		assertions    : aFunction.assertions,
-		minAssertions : aFunction.minAssertions,
-		maxAssertions : aFunction.maxAssertions,
+		assertions    : aFunction.assertions || aFunction.assertionsCount,
+		minAssertions : aFunction.minAssertions || aFunction.minAssertionsCount,
+		maxAssertions : aFunction.maxAssertions || aFunction.maxAssertionsCount,
 
 		report : null
 	};
