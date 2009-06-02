@@ -14,6 +14,7 @@ function constructor(aUtils)
 	});
 	this.testWindow = null;
 	this.commands = [];
+	this.logs = [];
 	this.storage = {};
 	this.listeners = [];
 	this.sandboxes = {};
@@ -24,6 +25,7 @@ function destroy()
 {
 	this.testWindow = null;
 	this.commands = null;
+	this.logs = null;
 	this.storage = null;
 	this.listeners = null;
 	this.sandboxes = null;
@@ -234,8 +236,10 @@ var ConsoleService = Cc['@mozilla.org/consoleservice;1']
 
 function GM_log(aMessage)
 {
+	aMessage = String(aMessage);
 	this.fireEvent({ type : 'GM_logCall', message : aMessage });
 	ConsoleService.logStringMessage(aMessage);
+	this.logs.push(aMessage);
 }
 
 
