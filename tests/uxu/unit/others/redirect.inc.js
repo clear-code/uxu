@@ -1,20 +1,31 @@
 function setUp()
 {
 	utils.clearPref('general.useragent.security');
+	yield Do(utils.setUpHttpServer(4445, baseURL+'../../fixtures/'));
 	yield 300;
 }
 
 function tearDown()
 {
+	yield Do(utils.tearDownAllHttpServers());
 	utils.clearPref('general.useragent.security');
 	yield 300;
 }
 
-function assertRedirected(aURI)
+function assertRedirected(aURI, aRedirectToFile)
 {
-	yield Do(utils.loadURI(aURI));
+	var referrer = aURI.indexOf('about:') > -1 ?
+				null :
+				utils.makeURIFromSpec('http://www.example.com/referer?'+Date.now());
+	yield Do(utils.loadURI(aURI, { referrer : referrer }));
 	assert.equals(aURI, content.location.href);
 	assert.equals('test', content.document.title);
+	if (referrer) {
+		if (aRedirectToFile)
+			assert.equals('', content.document.referrer);
+		else
+			assert.equals(referrer.spec, content.document.referrer);
+	}
 
 	// for example:
 	// Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.9.0.10) Gecko/2009042316 Firefox/3.0.10 (.NET CLR 3.5.30729)
@@ -36,9 +47,13 @@ function assertRedirected(aURI)
 
 function assertNotRedirected(aURI)
 {
-	yield Do(utils.loadURI(aURI));
+	var referrer = aURI.indexOf('about:') > -1 ?
+				null :
+				utils.makeURIFromSpec('http://www.example.com/referer?'+Date.now());
+	yield Do(utils.loadURI(aURI, { referrer : referrer }));
 	assert.equals(aURI, content.location.href);
 	assert.notEquals('test', content.document.title);
+	if (referrer) assert.equals(referrer.spec, content.document.referrer);
 }
 
 function assertRedirectedXMLHttpRequest(aURI)
