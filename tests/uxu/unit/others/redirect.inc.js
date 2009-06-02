@@ -29,12 +29,12 @@ function assertRedirected(aURI, aRedirectToFile)
 
 	// for example:
 	// Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.9.0.10) Gecko/2009042316 Firefox/3.0.10 (.NET CLR 3.5.30729)
-	var regexp = /Mozilla\/([\.0-9]+) \(([^;]*); ([^;]*); ([^;]*); ([^;]*); rv:([\.0-9]+)\) Gecko\/([\.0-9]+)\s+(.+)/;
-	assert.match(regexp, $('script').textContent)
+	var regexp = /Mozilla\/([\.0-9]+) \(([^;]*); ([^;]*); ([^;]*); ([^;]*); rv:([^\)]+)\) Gecko\/([\.0-9]+)\s+(.+)/;
+	assert.match(regexp, $('script').textContent);
 
 	var match = $('script').textContent.match(regexp);
 	assert.equals('5.0', match[1]);
-	assert.match(/^1\.[89]\.[01](\.[0-9]+)$/, match[6]);
+	assert.match(/^1\.[89]\.[01]/, match[6]);
 	assert.equals(utils.getPref('general.useragent.security'), match[3]);
 	utils.setPref('general.useragent.security', 'foobar');
 	yield 300;
