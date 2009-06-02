@@ -1,6 +1,4 @@
 // -*- indent-tabs-mode: t -*- 
-var ENABLE_PROXY_ANYTIME = false;
-
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
@@ -474,7 +472,8 @@ ProtocolHandlerProxy.prototype = {
 	newURI : function(aSpec, aCharset, aBaseURI) { return this.mProtocolHandler.newURI(aSpec, aCharset, aBaseURI); },
 	newChannel: function(aURI)
 	{
-		if (ENABLE_PROXY_ANYTIME || Pref.getBoolPref('extensions.uxu.running')) {
+		if (Pref.getBoolPref('extensions.uxu.enableInternalProxy') ||
+			Pref.getBoolPref('extensions.uxu.running')) {
 			var uri = this.redirectURI(aURI);
 			if (uri)
 				return this.getNativeProtocolHandler(uri.scheme).newChannel(uri);
@@ -485,7 +484,8 @@ ProtocolHandlerProxy.prototype = {
 	// nsIProxiedProtocolHandler
 	newProxiedChannel : function(aURI, aProxyInfo)
 	{
-		if (ENABLE_PROXY_ANYTIME || Pref.getBoolPref('extensions.uxu.running')) {
+		if (Pref.getBoolPref('extensions.uxu.enableInternalProxy') ||
+			Pref.getBoolPref('extensions.uxu.running')) {
 			var uri = this.redirectURI(aURI);
 			if (uri) {
 				var handler = this.getNativeProtocolHandler(uri.scheme);
@@ -515,7 +515,8 @@ ProtocolHandlerProxy.prototype = {
  
 	redirectURI : function(aURI) 
 	{
-		if (ENABLE_PROXY_ANYTIME || Pref.getBoolPref('extensions.uxu.running')) {
+		if (Pref.getBoolPref('extensions.uxu.enableInternalProxy') ||
+			Pref.getBoolPref('extensions.uxu.running')) {
 			var uri = Cc['@mozilla.org/supports-string;1']
 						.createInstance(Ci.nsISupportsString);
 			uri.data = aURI.spec;
@@ -564,12 +565,14 @@ ProtocolHandlerProxy.prototype = {
  
 	QueryInterface : function(aIID) 
 	{
-		if (aIID.equals(Ci.nsIHttpProtocolHandler) ||
-			aIID.equals(Ci.nsIProtocolHandler) ||
-			aIID.equals(Ci.nsIProxiedProtocolHandler) ||
-			aIID.equals(Ci.nsIObserver) ||
-			aIID.equals(Ci.nsISupports) ||
-			aIID.equals(Ci.nsISupportsWeakReference))
+		if ((Pref.getBoolPref('extensions.uxu.enableInternalProxy') ||
+			 Pref.getBoolPref('extensions.uxu.running')) &&
+			(aIID.equals(Ci.nsIHttpProtocolHandler) ||
+			 aIID.equals(Ci.nsIProtocolHandler) ||
+			 aIID.equals(Ci.nsIProxiedProtocolHandler) ||
+			 aIID.equals(Ci.nsIObserver) ||
+			 aIID.equals(Ci.nsISupports) ||
+			 aIID.equals(Ci.nsISupportsWeakReference)))
 			return this;
 		else
 			return this.mProtocolHandler.QueryInterface(aIID);
