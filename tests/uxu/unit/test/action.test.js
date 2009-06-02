@@ -7,10 +7,12 @@ function setUp()
 {
 	actionModule = {};
 	utils.include(topDir+'content/uxu/test/action.js', actionModule);
+	yield Do(utils.loadURI(topDir+'tests/uxu/fixtures/action.html'));
 }
 
 function tearDown()
 {
+	yield Do(utils.loadURI('about:blank'));
 }
 
 /* internal */
@@ -54,7 +56,7 @@ function test_getZoom()
 	win.FullZoom.enlarge();
 	assert.equals(
 		Math.floor(zoom[index+2] * 100),
-		Math.floor(actionModule.getZoom(content) * 100)
+		Math.floor(actionModule.getZoom(win.content) * 100)
 	);
 
 	win.FullZoom.reset();
@@ -62,7 +64,7 @@ function test_getZoom()
 	win.FullZoom.reduce();
 	assert.equals(
 		Math.floor(zoom[index-2] * 100),
-		Math.floor(actionModule.getZoom(content) * 100)
+		Math.floor(actionModule.getZoom(win.content) * 100)
 	);
 }
 
