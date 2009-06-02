@@ -303,17 +303,23 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 								style="font-size: 0.8em;"
 								onselect="showSource(this.selectedItem.label);"/>
 						</vbox>
-						<scrollbox id="testcase-reports" flex="1" orient="vertical" style="overflow: auto;"
+						<scrollbox id="testcase-reports"
+							flex="1"
+							orient="vertical"
+							style="overflow: auto;"
 							context="contextMenu"/>
 					</vbox>
 
-					<splitter id="content-splitter" collapsed="true"
-						collapse="after" resizeafter="closest"/>
+					<splitter id="content-splitter"
+						collapsed="true"
+						collapse="after"
+						resizeafter="closest"/>
 
 					<browser id="content"
+						class="inset"
 						type="content-primary"
 						flex="1"
-						src="about:blank" class="inset"
+						src="about:blank"
 						style="background-color: white;"
 						collapsed="true"/>
 				</vbox>
