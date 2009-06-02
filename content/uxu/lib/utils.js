@@ -266,20 +266,21 @@ function getURLSpecFromFilePath(aPath)
 // ファイルまたはURIで示された先のリソースを読み込み、文字列として返す 
 function readFrom(aTarget, aEncoding)
 {
-	aTarget = this.normalizeToFile(aTarget);
+	var target = this.normalizeToFile(aTarget);
+	if (!target) throw new Error('Error: readFrom() requires a file path or a File URL. '+aTarget+' is invalid!');
 
 	var stream;
 	try {
-		aTarget = aTarget.QueryInterface(Ci.nsIURI);
-		var channel = IOService.newChannelFromURI(aTarget);
+		target = target.QueryInterface(Ci.nsIURI);
+		var channel = IOService.newChannelFromURI(target);
 		stream = channel.open();
 	}
 	catch(e) {
-		aTarget = aTarget.QueryInterface(Ci.nsILocalFile)
+		target = target.QueryInterface(Ci.nsILocalFile)
 		stream = Cc['@mozilla.org/network/file-input-stream;1']
 					.createInstance(Ci.nsIFileInputStream);
 		try {
-			stream.init(aTarget, 1, 0, false); // open as "read only"
+			stream.init(target, 1, 0, false); // open as "read only"
 		}
 		catch(ex) {
 			return null;
@@ -317,10 +318,11 @@ function readFrom(aTarget, aEncoding)
 // ファイルパスまたはURLで示された先のテキストファイルに文字列を書き出す 
 function writeTo(aContent, aTarget, aEncoding)
 {
-	aTarget = this.normalizeToFile(aTarget);
+	target = this.normalizeToFile(aTarget);
+	if (!target) throw new Error('Error: writeTo() requires a file path or a File URL. '+aTarget+' is invalid!');
 
 	// create directories
-	var current = aTarget;
+	var current = target;
 	var dirs    = [];
 	while (current.parent && !current.parent.exists())
 	{
@@ -334,7 +336,7 @@ function writeTo(aContent, aTarget, aEncoding)
 	}
 
 	var tempFile = getFileFromKeyword('TmpD');
-	tempFile.append(aTarget.localName+'.writing');
+	tempFile.append(target.localName+'.writing');
 	tempFile.createUnique(tempFile.NORMAL_FILE_TYPE, 0666);
 
 	var stream = Cc['@mozilla.org/network/file-output-stream;1']
@@ -355,10 +357,10 @@ function writeTo(aContent, aTarget, aEncoding)
 
 	stream.close();
 
-	if (aTarget.exists()) aTarget.remove(true);
-	tempFile.moveTo(aTarget.parent, aTarget.leafName);
+	if (target.exists()) target.remove(true);
+	tempFile.moveTo(target.parent, target.leafName);
 
-	return aTarget;
+	return target;
 }
  
 // Subversionが作る不可視のファイルなどを除外して、普通に目に見えるファイルだけを複製する 
@@ -640,7 +642,7 @@ function formatStackTrace(aException, aOptions)
 	}
 
 	if (aException.stack) {
-		stackLines = stackLines.concat(aException.stack.split('\n'));
+		stackLines = stackLines.concat(String(aException.stack).split('\n'));
 	}
 	if (aException.location && JSFrameLocationRegExp.test(aException.location)) {
 		stackLines = stackLines.concat(['()@' + RegExp.$1 + ':' + RegExp.$2]);
