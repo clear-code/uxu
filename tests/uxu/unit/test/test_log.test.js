@@ -215,42 +215,37 @@ function test_toString()
 	var start = Date.now();
 	var now = start + 500;
 	var finish = now + 500;
+	var params = {
+			now : new Date(now),
+			start : new Date(start),
+			finish : new Date(finish),
+			baseURL : baseURL
+		};
+
 	log.lastItem.start = start;
 	log.lastItem.finish = finish;
+	log.lastItem.results.forEach(function(aResult, aIndex) {
+		aResult.timestamp = now;
+	});
 
 	var textVersion;
 
 	textVersion = utils.parseTemplate(
 			utils.readFrom('../../fixtures/log.txt', 'UTF-8'),
-			{
-				now : new Date(now),
-				start : new Date(start),
-				finish : new Date(finish),
-				baseURL : baseURL
-			}
+			params
 		);
 	assert.equals(textVersion, log.toString(log.FORMAT_TEXT));
 
 	textVersion = utils.parseTemplate(
 			utils.readFrom('../../fixtures/log_ignore_skipped.txt', 'UTF-8'),
-			{
-				now : new Date(now),
-				start : new Date(start),
-				finish : new Date(finish),
-				baseURL : baseURL
-			}
+			params
 		);
 	assert.equals(textVersion, log.toString());
 	assert.equals(textVersion, log.toString(log.FORMAT_TEXT | log.IGNORE_SKIPPED));
 
 	textVersion = utils.parseTemplate(
 			utils.readFrom('../../fixtures/log_ignore_skipped_and_success.txt', 'UTF-8'),
-			{
-				now : new Date(now),
-				start : new Date(start),
-				finish : new Date(finish),
-				baseURL : baseURL
-			}
+			params
 		);
 	assert.equals(textVersion, log.toString(log.FORMAT_TEXT | log.IGNORE_SKIPPED | log.IGNORE_SUCCESS));
 }
