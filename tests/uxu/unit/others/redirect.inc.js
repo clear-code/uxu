@@ -34,7 +34,7 @@ function assertRedirected(aURI, aRedirectToFile)
 
 	var match = $('script').textContent.match(regexp);
 	assert.equals('5.0', match[1]);
-	assert.match(/^1\.[89]\.[01]/, match[6]);
+	assert.match(/^1\.[89]\.[0-9]/, match[6]);
 	assert.equals(utils.getPref('general.useragent.security'), match[3]);
 	utils.setPref('general.useragent.security', 'foobar');
 	yield 300;
