@@ -175,8 +175,18 @@ function test_GM_registerMenuCommand()
 {
 }
 
+test_GM_xmlhttpRequest.setUp = function() {
+	yield Do(utils.setUpHttpServer(4445, topDir+'tests/uxu/fixtures/'));
+};
+test_GM_xmlhttpRequest.tearDown = function() {
+	yield Do(utils.tearDownAllHttpServers());
+};
 function test_GM_xmlhttpRequest()
 {
+	var sandbox = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_xmlHttpRequest.user.js');
+	sandbox.loadAsciiFile();
+	yield 500;
+	assert.equals('ASCII', sandbox.data);
 }
 
 function test_GM_addStyle()
