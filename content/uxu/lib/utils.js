@@ -267,7 +267,7 @@ function getURLSpecFromFilePath(aPath)
 function readFrom(aTarget, aEncoding)
 {
 	var target = this.normalizeToFile(aTarget);
-	if (!target) throw new Error('Error: readFrom() requires a file path or a File URL. '+aTarget+' is invalid!');
+	if (!target) throw new Error('Error: Utils::readFrom() requires a file path or a File URL. '+aTarget+' is invalid!');
 
 	var stream;
 	try {
@@ -319,7 +319,7 @@ function readFrom(aTarget, aEncoding)
 function writeTo(aContent, aTarget, aEncoding)
 {
 	target = this.normalizeToFile(aTarget);
-	if (!target) throw new Error('Error: writeTo() requires a file path or a File URL. '+aTarget+' is invalid!');
+	if (!target) throw new Error('Error: Utils::writeTo() requires a file path or a File URL. '+aTarget+' is invalid!');
 
 	// create directories
 	var current = target;
@@ -462,8 +462,14 @@ var loader = Cc['@mozilla.org/moz/jssubscript-loader;1']
 function include(aSource, aEnvironment, aEncoding)
 {
 	aSource = this.fixupIncompleteURI(aSource);
-	var encoding = aEncoding || this.getPref('extensions.uxu.defaultEncoding')
-	var script = this.readFrom(aSource, encoding) || '';
+	var encoding = aEncoding || this.getPref('extensions.uxu.defaultEncoding');
+	var script;
+	try {
+		script = this.readFrom(aSource, encoding) || '';
+	}
+	catch(e) {
+		throw new Error('Error: Utils::include() failed to read specified script.\n'+e);
+	}
 	var env = aEnvironment || {};
 	env._lastEvaluatedScript = script;
 	loader.loadSubScript(
@@ -1159,7 +1165,13 @@ function createDatabaseFromSQL(aSQL)
 function createDatabaseFromSQLFile(aSQLFile, aEncoding) 
 {
 	aSQLFile = this.normalizeToFile(aSQLFile);
-	var sql = this.readFrom(aSQLFile, aEncoding);
+	var sql;
+	try {
+		sql = this.readFrom(aSQLFile, aEncoding);
+	}
+	catch(e) {
+		throw new Error('Error: Utils::createDatabaseFromSQLFile() failed to read specified file.\n'+e);
+	}
 	return this.createDatabaseFromSQL(sql);
 }
   

@@ -146,7 +146,13 @@ const kHEADER_LINE  = /^[^\@]*(\@[^\s]+)\s+(.*)$/;
 function loadScript(aURI, aEncoding)
 {
 	var sandbox = this.getSandboxFor(aURI);
-	var script = this.utils.include(aURI, sandbox, aEncoding);
+	var script;
+	try {
+		script = this.utils.include(aURI, sandbox, aEncoding);
+	}
+	catch(e) {
+		throw new Error('Error: GMUtils::loadScript() failed to read specified script.\n'+e);
+	}
 	var headers = sandbox.GM_headers;
 	if (kHEADER_START.test(script) && kHEADER_END.test(script)) {
 		script.split(kHEADER_START)[1].split(kHEADER_END)[0]
