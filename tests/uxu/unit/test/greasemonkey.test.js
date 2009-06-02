@@ -153,14 +153,22 @@ function test_GM_log()
 {
 }
 
-function test_GM_setValue()
-{
-}
-
 function test_GM_getValue()
 {
-    assert.equals(null, GMUtils.GM_getValue('nonexistence'));
-    assert.equals(100, GMUtils.GM_getValue('nonexistence', 100));
+	assert.isUndefined(GMUtils.GM_getValue('nonexistence'));
+	assert.equals(100, GMUtils.GM_getValue('nonexistence', 100));
+
+	var sandboxGet = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_getValue.user.js');
+	assert.isUndefined(sandboxGet.userAgent);
+	assert.equals(100, sandboxGet.nonExistance);
+}
+
+function test_GM_setValue()
+{
+	yield Do(GMUtils.load('about:blank'));
+	var sandboxSet = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_setValue.user.js');
+	var sandboxGet = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_getValue.user.js');
+	assert.equals(navigator.userAgent, sandboxGet.userAgent);
 }
 
 function test_GM_registerMenuCommand()
@@ -177,8 +185,7 @@ function test_GM_addStyle()
 
 function test_GM_getResourceText()
 {
-	var url = topDir+'tests/samples/greasemonkey/greasemonkey.user.js';
-	var sandbox = GMUtils.loadScript(url);
+	var sandbox = GMUtils.loadScript(topDir+'tests/samples/greasemonkey/greasemonkey.user.js');
 	var text = sandbox.GM_getResourceText('about');
 	assert.notEquals('about:', text);
 	assert.equals('<?xml version="1.0" encoding="UTF-8"?>', text.substring(0, 38));
