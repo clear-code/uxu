@@ -37,7 +37,7 @@ function test_testCaseWithHttpDaemons()
 	testcase.masterPriority = 'must';
 	assert.isFalse(testcase.done);
 	testcase.run();
-	yield 500;
+	yield 1500;
 	assert.isTrue(testcase.done);
 	assert.isFalse(testcase.environment.serverUtils.isHttpServerRunning());
 }

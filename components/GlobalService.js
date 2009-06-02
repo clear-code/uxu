@@ -1,4 +1,6 @@
 // -*- indent-tabs-mode: t -*- 
+var ENABLE_PROXY_ANYTIME = false;
+
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
@@ -8,6 +10,7 @@ const kCATEGORY = 'm-uxu';
 
 // default "@mozilla.org/network/protocol;1?name=http" class id
 const DEFAULT_HTTP_PROTOCOL_HANDLER = Components.classesByID['{4f47e42e-4d23-4dd3-bfda-eb29255e9ea3}'];
+// const DEFAULT_HTTPS_PROTOCOL_HANDLER = Components.classesByID['{dccbe7e4-7750-466b-a557-5ea36c8ff24e}'];
 
 const ObserverService = Cc['@mozilla.org/observer-service;1']
 			.getService(Ci.nsIObserverService);
@@ -406,18 +409,34 @@ GlobalService.prototype = {
 }; 
   
 function ProtocolHandlerProxy() { 
-	this.init();
+	this.initNonSecure();
 }
 ProtocolHandlerProxy.prototype = {
 	
 	init : function() 
 	{
-		this._original = DEFAULT_HTTP_PROTOCOL_HANDLER
+		this.mDefaultHttpProtocolHandler = DEFAULT_HTTP_PROTOCOL_HANDLER
 				.getService(Ci.nsIHttpProtocolHandler)
 				.QueryInterface(Ci.nsIProtocolHandler)
 				.QueryInterface(Ci.nsIProxiedProtocolHandler)
 				.QueryInterface(Ci.nsIObserver)
 				.QueryInterface(Ci.nsISupportsWeakReference);
+//		this.mDefaultHttpsProtocolHandler = DEFAULT_HTTPS_PROTOCOL_HANDLER
+//				.getService(Ci.nsIHttpProtocolHandler)
+//				.QueryInterface(Ci.nsIProtocolHandler)
+//				.QueryInterface(Ci.nsIProxiedProtocolHandler)
+//				.QueryInterface(Ci.nsIObserver)
+//				.QueryInterface(Ci.nsISupportsWeakReference);
+		this.mProtocolHandler = this.mDefaultHttpProtocolHandler;
+	},
+	initNonSecure : function()
+	{
+		this.init();
+	},
+	initSecure : function()
+	{
+		this.init();
+//		this.mProtocolHandler = this.mDefaultHttpsProtocolHandler;
 	},
  
 	initProperties : function() 
@@ -451,22 +470,22 @@ ProtocolHandlerProxy.prototype = {
 	},
  
 	// nsIProtocolHandler 
-	allowPort : function(aPort, aScheme) { return this._original.allowPort(aPort, aScheme); },
-	newURI : function(aSpec, aCharset, aBaseURI) { return this._original.newURI(aSpec, aCharset, aBaseURI); },
+	allowPort : function(aPort, aScheme) { return this.mProtocolHandler.allowPort(aPort, aScheme); },
+	newURI : function(aSpec, aCharset, aBaseURI) { return this.mProtocolHandler.newURI(aSpec, aCharset, aBaseURI); },
 	newChannel: function(aURI)
 	{
-		if (Pref.getBoolPref('extensions.uxu.running')) {
+		if (ENABLE_PROXY_ANYTIME || Pref.getBoolPref('extensions.uxu.running')) {
 			var uri = this.redirectURI(aURI);
 			if (uri)
 				return this.getNativeProtocolHandler(uri.scheme).newChannel(uri);
 		}
-		return this._original.newChannel(aURI);
+		return this.mProtocolHandler.newChannel(aURI);
 	},
 
 	// nsIProxiedProtocolHandler
 	newProxiedChannel : function(aURI, aProxyInfo)
 	{
-		if (Pref.getBoolPref('extensions.uxu.running')) {
+		if (ENABLE_PROXY_ANYTIME || Pref.getBoolPref('extensions.uxu.running')) {
 			var uri = this.redirectURI(aURI);
 			if (uri) {
 				var handler = this.getNativeProtocolHandler(uri.scheme);
@@ -479,24 +498,24 @@ ProtocolHandlerProxy.prototype = {
 				}
 			}
 		}
-		return this._original.newProxiedChannel(aURI);
+		return this.mProtocolHandler.newProxiedChannel(aURI);
 	},
 
 	// nsIObserver
 	observe : function(aSubject, aTopic, aData)
 	{
-		return this._original.observe(aSubject, aTopic, aData);
+		return this.mProtocolHandler.observe(aSubject, aTopic, aData);
 	},
 
 	// nsISupportsWeakReaference
 	GetWeakReference : function()
 	{
-		return this._original.GetWeakReference();
+		return this.mProtocolHandler.GetWeakReference();
 	},
  
 	redirectURI : function(aURI) 
 	{
-		if (Pref.getBoolPref('extensions.uxu.running')) {
+		if (ENABLE_PROXY_ANYTIME || Pref.getBoolPref('extensions.uxu.running')) {
 			var uri = Cc['@mozilla.org/supports-string;1']
 						.createInstance(Ci.nsISupportsString);
 			uri.data = aURI.spec;
@@ -525,8 +544,12 @@ ProtocolHandlerProxy.prototype = {
 		switch (aSchemer)
 		{
 			case 'http':
+				return this.mDefaultHttpProtocolHandler
+						.QueryInterface(Ci.nsIHttpProtocolHandler);
+
 			case 'https':
-				return this._original
+//				return this.mDefaultHttpsProtocolHandler
+				return this.mDefaultHttpProtocolHandler
 						.QueryInterface(Ci.nsIHttpProtocolHandler);
 
 			case 'file':
@@ -534,7 +557,7 @@ ProtocolHandlerProxy.prototype = {
 						.QueryInterface(Ci.nsIFileProtocolHandler);
 
 			default:
-				return IOService.getProtocolHandler(schemer)
+				return IOService.getProtocolHandler(aSchemer)
 						.QueryInterface(Ci.nsIProtocolHandler);
 		}
 	},
@@ -549,14 +572,14 @@ ProtocolHandlerProxy.prototype = {
 			aIID.equals(Ci.nsISupportsWeakReference))
 			return this;
 		else
-			return this._original.QueryInterface(aIID);
+			return this.mProtocolHandler.QueryInterface(aIID);
 	}
  
 }; 
 ProtocolHandlerProxy.prototype.initProperties();
   
 function HttpProtocolHandlerProxy() { 
-	this.init();
+	this.initNonSecure();
 }
 HttpProtocolHandlerProxy.prototype = {
 	
@@ -568,7 +591,7 @@ HttpProtocolHandlerProxy.prototype = {
 HttpProtocolHandlerProxy.prototype.__proto__ = ProtocolHandlerProxy.prototype;
   
 function HttpsProtocolHandlerProxy() { 
-	this.init();
+	this.initSecure();
 }
 HttpsProtocolHandlerProxy.prototype = {
 	

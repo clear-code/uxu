@@ -1,3 +1,15 @@
+function setUp()
+{
+	utils.clearPref('general.useragent.security');
+	yield 300;
+}
+
+function tearDown()
+{
+	utils.clearPref('general.useragent.security');
+	yield 300;
+}
+
 function assertRedirected(aURI)
 {
 	yield Do(utils.loadURI(aURI));
@@ -20,8 +32,6 @@ function assertRedirected(aURI)
 	yield Do(utils.loadURI(aURI));
 	match = $('script').textContent.match(regexp);
 	assert.equals('foobar', match[3]);
-	utils.clearPref('general.useragent.security');
-	yield 300;
 }
 
 function assertNotRedirected(aURI)
