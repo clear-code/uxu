@@ -1,0 +1,72 @@
+成功:2, 失敗:2, エラー:2, 除外:1 / 全体:7
+所要時間：0 ミリ秒
+
+======================================================================
+<%= baseURL %>../../../../content/uxu/lib/module_manager.js
+テストケース「test1」実行開始（<%= start %>）
+======================================================================
+テスト名：Success
+進度：1/0
+時刻：<%= now %>
+結果：成功
+所要時間：0 ミリ秒
+----------------------------------------------------------------------
+テスト名：Success with notifications
+進度：2/0
+時刻：<%= now %>
+結果：成功
+所要時間：0 ミリ秒
+
+info
+
+警告：warning
+----------------------------------------------------------------------
+テスト名：Failure
+進度：3/0
+時刻：<%= now %>
+結果：失敗
+所要時間：0 ミリ秒
+Failure
+
+()@<%= baseURL %>test_log.test.js:45,createReports([object Object])@<%= baseURL %>test_log.test.js:41,setUp()@<%= baseURL %>test_log.test.js:137
+----------------------------------------------------------------------
+テスト名：Failure with notifications
+進度：4/0
+時刻：<%= now %>
+結果：失敗
+所要時間：0 ミリ秒
+Failure
+
+()@<%= baseURL %>test_log.test.js:55,createReports([object Object])@<%= baseURL %>test_log.test.js:51,setUp()@<%= baseURL %>test_log.test.js:137
+
+info
+
+警告：warning
+----------------------------------------------------------------------
+テスト名：Error
+進度：6/0
+時刻：<%= now %>
+結果：エラー
+所要時間：0 ミリ秒
+Error
+
+()@<%= baseURL %>test_log.test.js:75,createReports([object Object])@<%= baseURL %>test_log.test.js:71,setUp()@<%= baseURL %>test_log.test.js:137
+----------------------------------------------------------------------
+テスト名：Error with notifications
+進度：0/0
+時刻：<%= now %>
+結果：エラー
+所要時間：0 ミリ秒
+Error
+
+()@<%= baseURL %>test_log.test.js:85,createReports([object Object])@<%= baseURL %>test_log.test.js:81,setUp()@<%= baseURL %>test_log.test.js:137
+
+info
+
+警告：warning
+======================================================================
+終了（<%= finish %>）
+所要時間：0 ミリ秒
+成功:2, 失敗:2, エラー:2, 除外:1
+======================================================================
+

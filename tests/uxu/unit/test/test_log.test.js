@@ -61,12 +61,21 @@ function createReports(aTestCase)
 		})(),
 		(function() {
 			var r = new ReportClass();
+			r.result = TestCaseClass.prototype.RESULT_SKIPPED;
+			r.description = 'Skipped';
+			r.testOwner = aTestCase;
+			r.testID    = 'success';
+			r.testIndex = 4;
+			return r;
+		})(),
+		(function() {
+			var r = new ReportClass();
 			r.result = TestCaseClass.prototype.RESULT_ERROR;
 			r.description = 'Error';
 			r.exception = new Error('Error');
 			r.testOwner = aTestCase;
 			r.testID    = 'success';
-			r.testIndex = 4;
+			r.testIndex = 5;
 			return r;
 		})(),
 		(function() {
@@ -77,32 +86,171 @@ function createReports(aTestCase)
 			r.notifications = notifications;
 			r.testOwner = aTestCase;
 			r.testID    = 'success';
-			r.testIndex = 5;
-			return r;
-		})(),
-		(function() {
-			var r = new ReportClass();
-			r.result = TestCaseClass.prototype.RESULT_SKIPPED;
-			r.description = 'Skipped';
-			r.testOwner = aTestCase;
-			r.testID    = 'success';
 			r.testIndex = 6;
 			return r;
 		})()
 	];
 }
 
+function createStartEvent(aTestCase)
+{
+	return {
+			type   : 'Start',
+			target : aTestCase
+		};
+}
+
+function createTestFinishEvents(aTestCase, aReports)
+{
+	return aReports.slice(0, aReports.length-1).map(function(aReport) {
+			return {
+				type   : 'TestFinish',
+				target : aTestCase,
+				data   : aReport
+			};
+		});
+}
+
+function createFinishEvent(aTestCase, aReports)
+{
+	return {
+		type   : 'Finish',
+		target : aTestCase,
+		data   : aReports[aReports.length-1]
+	};
+}
+
+var log,
+	testcase1,
+	testcase2,
+	reports1,
+	reports2;
+var bundle;
 
 function setUp()
 {
-	var reports1 = createReports(new TestCaseClass('test1'));
-	var reports2 = createReports(new TestCaseClass('test2'));
+	bundle = {};
+	utils.include(topDir+'content/uxu/lib/bundle.js', bundle);
+
+	testcase1 = new TestCaseClass('test1');
+	testcase2 = new TestCaseClass('test2');
+	reports1 = createReports(testcase1);
+	reports2 = createReports(testcase2);
+	log = new TestLogClass();
 }
 
 function tearDown()
 {
 }
 
-function testFoo()
+function testOnEvents()
 {
+	log.onStart(createStartEvent(testcase1));
+	assert.equals(1, log.items.length);
+	assert.equals('test1', log.items[0].title);
+	assert.equals([], log.items[0].results);
+	assert.isFalse(log.items[0].aborted);
+
+	var events = createTestFinishEvents(testcase1, reports1);
+	events.forEach(function(aEvent) {
+		log.onTestFinish(aEvent);
+	});
+	assert.equals(1, log.items.length);
+	assert.equals('test1', log.items[0].title);
+	assert.equals(reports1.length-1, log.items[0].results.length);
+	assert.isFalse(log.items[0].aborted);
+
+	var results = log.items[0].results;
+	results.forEach(function(aResult, aIndex) {
+		var report = reports1[aIndex];
+		assert.equals(report.result, aResult.type, aIndex);
+		assert.equals(report.description, aResult.title, aIndex);
+		assert.isNumber(aResult.timestamp, aIndex);
+		assert.isNumber(aResult.time, aIndex);
+		assert.isNumber(aResult.detailedTime, aIndex);
+		assert.equals(report.notifications.length, aResult.notifications.length, aIndex);
+		aResult.notifications.forEach(function(aNotification, aIndex) {
+			var notification = report.notifications[aIndex];
+			var type = notification.type || 'notification';
+			var description = bundle.getFormattedString('notification_message_'+type, [notification.message]) ||
+						notification.message;
+			assert.equals(notification.type, aNotification.type, aIndex);
+			assert.equals(description, aNotification.description, aIndex);
+			assert.isDefined(aNotification.stackTrace, aIndex);
+		});
+	});
+
+	log.onFinish(createFinishEvent(testcase1, reports1));
+	assert.equals(1, log.items.length);
+	assert.equals(reports1.length, log.items[0].results.length);
+	assert.isFalse(log.items[0].aborted);
+
+	log.onAbort({ type : 'Abort' });
+	assert.equals(1, log.items.length);
+	assert.equals(reports1.length, log.items[0].results.length);
+	assert.isTrue(log.items[0].aborted);
+}
+
+function test_clear()
+{
+	log.onStart(createStartEvent(testcase1));
+	assert.equals(1, log.items.length);
+	assert.equals('test1', log.items[0].title);
+	assert.equals([], log.items[0].results);
+	assert.isFalse(log.items[0].aborted);
+
+	log.clear();
+	assert.equals([], log.items);
+}
+
+function test_toString()
+{
+	log.onStart(createStartEvent(testcase1));
+	var events = createTestFinishEvents(testcase1, reports1);
+	events.forEach(function(aEvent) {
+		log.onTestFinish(aEvent);
+	});
+	log.onFinish(createFinishEvent(testcase1, reports1));
+
+	var start = Date.now();
+	var now = start + 500;
+	var finish = now + 500;
+	log.lastItem.start = start;
+	log.lastItem.finish = finish;
+
+	var textVersion;
+
+	textVersion = utils.parseTemplate(
+			utils.readFrom('../../fixtures/log.txt', 'UTF-8'),
+			{
+				now : new Date(now),
+				start : new Date(start),
+				finish : new Date(finish),
+				baseURL : baseURL
+			}
+		);
+	assert.equals(textVersion, log.toString(log.FORMAT_TEXT));
+
+	textVersion = utils.parseTemplate(
+			utils.readFrom('../../fixtures/log_ignore_skipped.txt', 'UTF-8'),
+			{
+				now : new Date(now),
+				start : new Date(start),
+				finish : new Date(finish),
+				baseURL : baseURL
+			}
+		);
+	assert.equals(textVersion, log.toString());
+	assert.equals(textVersion, log.toString(log.FORMAT_TEXT | log.IGNORE_SKIPPED));
+
+	textVersion = utils.parseTemplate(
+			utils.readFrom('../../fixtures/log_ignore_skipped_and_success.txt', 'UTF-8'),
+			{
+				now : new Date(now),
+				start : new Date(start),
+				finish : new Date(finish),
+				baseURL : baseURL
+			}
+		);
+	assert.equals(textVersion, log.toString(log.FORMAT_TEXT | log.IGNORE_SKIPPED | log.IGNORE_SUCCESS));
 }
