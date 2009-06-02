@@ -388,6 +388,7 @@ function testSendAsync()
 	assert.equals(1, mail.deliveries.length);
 }
 
+testSendByButtonClick.shouldSkip = utils.checkAppVersion('3.0') < 0;
 function testSendByButtonClick()
 {
 	compose.recipients = ['test@example.com'];
@@ -398,6 +399,7 @@ function testSendByButtonClick()
 	assert.equals(1, mail.deliveries.length);
 }
 
+testSendByButtonClickAsync.shouldSkip = utils.checkAppVersion('3.0') < 0;
 function testSendByButtonClickAsync()
 {
 	compose.recipients = ['test@example.com'];

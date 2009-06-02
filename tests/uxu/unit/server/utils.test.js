@@ -49,6 +49,8 @@ function testSendAndReceiveMessage()
 	listener.stop();
 }
 
+
+testHttpServer.shouldSkip = utils.checkAppVersion('3.0') < 0;
 testHttpServer.tearDown = function() {
 	yield Do(utilsModule.tearDownAllHttpServers());
 };

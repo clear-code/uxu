@@ -1,3 +1,5 @@
+var shouldSkip = utils.checkAppVersion('3.0') < 0;
+
 function setUp()
 {
 	utils.clearPref('general.useragent.security');
