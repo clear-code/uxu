@@ -8,6 +8,7 @@ function setUp()
 	actionModule = {};
 	utils.include(topDir+'content/uxu/test/action.js', actionModule);
 	yield Do(utils.loadURI(topDir+'tests/uxu/fixtures/action.html'));
+	yield 600;
 }
 
 function tearDown()

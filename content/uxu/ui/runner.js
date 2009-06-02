@@ -818,6 +818,7 @@ function getReport(aTestCase)
 			_(wTestCaseReport, 'title').textContent = aTestCase.title;
 			_(wTestCaseReport, 'bar').setAttribute('class', 'testcase-fine');
 			_('testcase-reports').appendChild(wTestCaseReport);
+			setContentMinHeight();
 			scrollReportsTo(wTestCaseReport);
 			return wTestCaseReport;
 		})();
@@ -936,6 +937,7 @@ function fillReportFromResult(aTestCase, aResult)
 	}
 
 	_(reportNode, 'test-reports').appendChild(wTestReport);
+	setContentMinHeight();
 	scrollReportsTo(wTestReport);
 }
  
@@ -1234,6 +1236,7 @@ function toggleContent()
 {
 	_('content').collapsed = !_('content').collapsed;
 	_('content-splitter').collapsed = !_('content-splitter').collapsed;
+	setContentMinHeight();
 }
 	
 var contentAutoExpanded = false; 
@@ -1249,9 +1252,6 @@ function onContentLoad()
 		contentAutoExpanded = false;
 		toggleContent();
 	}
-//	var minHeight = parseInt(_('content').parentNode.boxObject.height / 2);
-//	_('content').previousSibling.previousSibling.height = minHeight;
-//	_('content').height = minHeight;
 }
   
 function showSource(aTraceLine) 
@@ -1396,6 +1396,16 @@ function showPage(aURI)
 					service.loadUrl(uri);
 		}
 	}
+}
+ 
+function setContentMinHeight() 
+{
+	var box = _('content')
+	if (box.collapsed) return;
+	var minHeight = parseInt(box.parentNode.boxObject.height / 2);
+	if (box.boxObject.height >= minHeight) return;
+	box.previousSibling.previousSibling.height = minHeight;
+	box.height = minHeight;
 }
  
 function restartApplication() 
