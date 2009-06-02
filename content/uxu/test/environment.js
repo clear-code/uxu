@@ -247,6 +247,9 @@ function attachServerUtils()
 	this.tearDownHttpServer = function(aPort) {
 		return serverUtils.tearDownHttpServer(aPort);
 	};
+	this.tearDownAllHttpServers = function(aPort) {
+		return serverUtils.tearDownAllHttpServers();
+	};
 }
   
 // window management 
