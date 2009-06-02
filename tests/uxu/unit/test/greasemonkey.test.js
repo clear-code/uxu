@@ -191,6 +191,16 @@ function test_GM_xmlhttpRequest()
 
 function test_GM_addStyle()
 {
+	yield Do(GMUtils.load('about:'));
+	var body = content.document.body;
+	assert.isTrue(body);
+	assert.isTrue(body instanceof Ci.nsIDOMNode);
+	var style = content.getComputedStyle(body, null);
+	assert.notEquals('red', style.getPropertyValue('color'));
+	GMUtils.GM_addStyle(content.document, '* { color: rgb(255, 0, 0) !important; }');
+	yield 100;
+	style = content.getComputedStyle(body, null);
+	assert.equals('rgb(255, 0, 0)', style.getPropertyValue('color'));
 }
 
 function test_GM_getResourceText()
