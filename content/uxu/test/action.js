@@ -104,8 +104,8 @@ function fireMouseEvent(aWindow, aOptions)
 
 		var button = (aOptions.button || 0);
 		var detail = (aOptions.detail || 1);
-		if (aOptions.type == 'dblclick') detail = 2;
 		if (aOptions.type == 'click' && detail == 2) aOptions.type = 'dblclick';
+		if (aOptions.type == 'dblclick') detail = 1;
 		switch (aOptions.type)
 		{
 			case 'mousemove':
@@ -119,6 +119,9 @@ function fireMouseEvent(aWindow, aOptions)
 				utils.sendMouseEvent('mouseup', x, y, button, detail, flags);
 				break;
 			case 'dblclick':
+				utils.sendMouseEvent('mousedown', x, y, button, detail, flags);
+				utils.sendMouseEvent('mouseup', x, y, button, detail, flags);
+				detail = 2;
 			case 'click':
 			default:
 				utils.sendMouseEvent('mousedown', x, y, button, detail, flags);

@@ -70,7 +70,7 @@ function test_getZoom()
 
 /* public */
 
-function getMouseEventLogFromParams(aParam, aBox)
+function generateMouseEventLogFromParams(aParam, aBox)
 {
 	var event = {
 		type     : aParam.type || 'click',
@@ -116,7 +116,7 @@ function test_fireMouseEvent()
 	eval('events = '+log.textContent);
 	assert.equals(1, events.length);
 
-	event = getMouseEventLogFromParams(param);
+	event = generateMouseEventLogFromParams(param);
 	event.target = 'clickable-box';
 	assert.equals(event, events[events.length-1]);
 	lastCount = events.length;
@@ -134,7 +134,7 @@ function test_fireMouseEvent()
 	eval('events = '+log.textContent);
 	assert.equals(lastCount+1, events.length);
 
-	event = getMouseEventLogFromParams(param);
+	event = generateMouseEventLogFromParams(param);
 	event.target = 'clickable-box';
 	assert.equals(event, events[events.length-1]);
 	lastCount = events.length;
@@ -153,17 +153,69 @@ function test_fireMouseEvent()
 	eval('events = '+log.textContent);
 	assert.equals(lastCount+3, events.length);
 
-	event = getMouseEventLogFromParams(param);
+	event = generateMouseEventLogFromParams(param);
 	event.target = 'clickable-box';
 	event.type = 'mousedown';
 	assert.equals(event, events[events.length-3]);
 
-	event = getMouseEventLogFromParams(param);
+	event = generateMouseEventLogFromParams(param);
 	event.target = 'clickable-box';
 	event.type = 'mouseup';
 	assert.equals(event, events[events.length-2]);
 
-	event = getMouseEventLogFromParams(param);
+	event = generateMouseEventLogFromParams(param);
+	event.target = 'clickable-box';
+	assert.equals(event, events[events.length-1]);
+	lastCount = events.length;
+
+
+	param = {
+		type     : 'dblclick',
+		button   : 0,
+		detail   : 2,
+		shiftKey : true,
+		screenX  : boxObject.screenX+40,
+		screenY  : boxObject.screenY+40
+	}
+	actionModule.fireMouseEvent(content, param);
+	yield 300;
+	eval('events = '+log.textContent);
+	assert.equals(lastCount+7, events.length);
+
+	event = generateMouseEventLogFromParams(param);
+	event.target = 'clickable-box';
+	event.type = 'mousedown';
+	event.detail = 1;
+	assert.equals(event, events[events.length-7]);
+
+	event = generateMouseEventLogFromParams(param);
+	event.target = 'clickable-box';
+	event.type = 'mouseup';
+	event.detail = 1;
+	assert.equals(event, events[events.length-6]);
+
+	event = generateMouseEventLogFromParams(param);
+	event.target = 'clickable-box';
+	event.type = 'click';
+	event.detail = 1;
+	assert.equals(event, events[events.length-5]);
+
+	event = generateMouseEventLogFromParams(param);
+	event.target = 'clickable-box';
+	event.type = 'mousedown';
+	assert.equals(event, events[events.length-4]);
+
+	event = generateMouseEventLogFromParams(param);
+	event.target = 'clickable-box';
+	event.type = 'mouseup';
+	assert.equals(event, events[events.length-3]);
+
+	event = generateMouseEventLogFromParams(param);
+	event.target = 'clickable-box';
+	event.type = 'click';
+	assert.equals(event, events[events.length-2]);
+
+	event = generateMouseEventLogFromParams(param);
 	event.target = 'clickable-box';
 	assert.equals(event, events[events.length-1]);
 }
@@ -188,7 +240,7 @@ function test_fireMouseEventOnElement()
 	eval('events = '+log.textContent);
 	assert.equals(1, events.length);
 
-	event = getMouseEventLogFromParams(param, boxObject);
+	event = generateMouseEventLogFromParams(param, boxObject);
 	event.target = 'clickable-box';
 	assert.equals(event, events[events.length-1]);
 	lastCount = events.length;
@@ -204,7 +256,7 @@ function test_fireMouseEventOnElement()
 	eval('events = '+log.textContent);
 	assert.equals(lastCount+1, events.length);
 
-	event = getMouseEventLogFromParams(param, boxObject);
+	event = generateMouseEventLogFromParams(param, boxObject);
 	event.target = 'clickable-box';
 	assert.equals(event, events[events.length-1]);
 	lastCount = events.length;
@@ -221,23 +273,137 @@ function test_fireMouseEventOnElement()
 	eval('events = '+log.textContent);
 	assert.equals(lastCount+3, events.length);
 
-	event = getMouseEventLogFromParams(param, boxObject);
+	event = generateMouseEventLogFromParams(param, boxObject);
 	event.target = 'clickable-box';
 	event.type = 'mousedown';
 	assert.equals(event, events[events.length-3]);
 
-	event = getMouseEventLogFromParams(param, boxObject);
+	event = generateMouseEventLogFromParams(param, boxObject);
 	event.target = 'clickable-box';
 	event.type = 'mouseup';
 	assert.equals(event, events[events.length-2]);
 
-	event = getMouseEventLogFromParams(param, boxObject);
+	event = generateMouseEventLogFromParams(param, boxObject);
+	event.target = 'clickable-box';
+	assert.equals(event, events[events.length-1]);
+	lastCount = events.length;
+
+
+	param = {
+		type     : 'dblclick',
+		button   : 0,
+		detail   : 2,
+		shiftKey : true
+	}
+	actionModule.fireMouseEventOnElement(box, param);
+	yield 100;
+	eval('events = '+log.textContent);
+	assert.equals(lastCount+7, events.length);
+
+	event = generateMouseEventLogFromParams(param, boxObject);
+	event.target = 'clickable-box';
+	event.type = 'mousedown';
+	event.detail = 1;
+	assert.equals(event, events[events.length-7]);
+
+	event = generateMouseEventLogFromParams(param, boxObject);
+	event.target = 'clickable-box';
+	event.type = 'mouseup';
+	event.detail = 1;
+	assert.equals(event, events[events.length-6]);
+
+	event = generateMouseEventLogFromParams(param, boxObject);
+	event.target = 'clickable-box';
+	event.type = 'click';
+	event.detail = 1;
+	assert.equals(event, events[events.length-5]);
+
+	event = generateMouseEventLogFromParams(param, boxObject);
+	event.target = 'clickable-box';
+	event.type = 'mousedown';
+	assert.equals(event, events[events.length-4]);
+
+	event = generateMouseEventLogFromParams(param, boxObject);
+	event.target = 'clickable-box';
+	event.type = 'mouseup';
+	assert.equals(event, events[events.length-3]);
+
+	event = generateMouseEventLogFromParams(param, boxObject);
+	event.target = 'clickable-box';
+	event.type = 'click';
+	assert.equals(event, events[events.length-2]);
+
+	event = generateMouseEventLogFromParams(param, boxObject);
 	event.target = 'clickable-box';
 	assert.equals(event, events[events.length-1]);
 }
 
 function test_fireKeyEventOnElement()
 {
+	var box = $('clickable-box');
+	var boxObject = utils.getBoxObjectFor(box);
+	var rootBoxObject = utils.getBoxObjectFor(content.document.body);
+	var log = $('log');
+	var events, event, param;
+	var lastCount;
+
+
+	param = {
+		type     : 'mousedown',
+		button   : 2,
+		detail   : 1,
+		ctrlKey  : true
+	}
+	actionModule.fireMouseEventOnElement(box, param);
+	eval('events = '+log.textContent);
+	assert.equals(1, events.length);
+
+	event = generateMouseEventLogFromParams(param, boxObject);
+	event.target = 'clickable-box';
+	assert.equals(event, events[events.length-1]);
+	lastCount = events.length;
+
+
+	param = {
+		type     : 'mouseup',
+		button   : 1,
+		detail   : 0,
+		altKey   : true
+	}
+	actionModule.fireMouseEventOnElement(box, param);
+	eval('events = '+log.textContent);
+	assert.equals(lastCount+1, events.length);
+
+	event = generateMouseEventLogFromParams(param, boxObject);
+	event.target = 'clickable-box';
+	assert.equals(event, events[events.length-1]);
+	lastCount = events.length;
+
+
+	param = {
+		type     : 'click',
+		button   : 0,
+		detail   : 1,
+		shiftKey : true
+	}
+	actionModule.fireMouseEventOnElement(box, param);
+	yield 100;
+	eval('events = '+log.textContent);
+	assert.equals(lastCount+3, events.length);
+
+	event = generateMouseEventLogFromParams(param, boxObject);
+	event.target = 'clickable-box';
+	event.type = 'mousedown';
+	assert.equals(event, events[events.length-3]);
+
+	event = generateMouseEventLogFromParams(param, boxObject);
+	event.target = 'clickable-box';
+	event.type = 'mouseup';
+	assert.equals(event, events[events.length-2]);
+
+	event = generateMouseEventLogFromParams(param, boxObject);
+	event.target = 'clickable-box';
+	assert.equals(event, events[events.length-1]);
 }
 
 function test_inputTextToField()
