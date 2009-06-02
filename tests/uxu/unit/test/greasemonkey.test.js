@@ -137,7 +137,7 @@ function test_getSandbox()
 
 function test_loadScript()
 {
-	var url = baseURL+'../../../samples/greasemonkey/greasemonkey.user.js';
+	var url = topDir+'tests/samples/greasemonkey/greasemonkey.user.js';
 	var sandbox1 = GMUtils.loadScript(url);
 	assert.isTrue(sandbox1);
 
@@ -148,12 +148,12 @@ function test_loadScript()
 }
 
 
-function test_doAndWaitLoad()
+
+function test_GM_log()
 {
 }
 
-
-function test_GM_log()
+function test_GM_setValue()
 {
 }
 
@@ -161,10 +161,6 @@ function test_GM_getValue()
 {
     assert.equals(null, GMUtils.GM_getValue('nonexistence'));
     assert.equals(100, GMUtils.GM_getValue('nonexistence', 100));
-}
-
-function test_GM_setValue()
-{
 }
 
 function test_GM_registerMenuCommand()
@@ -181,7 +177,7 @@ function test_GM_addStyle()
 
 function test_GM_getResourceText()
 {
-	var url = baseURL+'../../../samples/greasemonkey/greasemonkey.user.js';
+	var url = topDir+'tests/samples/greasemonkey/greasemonkey.user.js';
 	var sandbox = GMUtils.loadScript(url);
 	var text = sandbox.GM_getResourceText('about');
 	assert.notEquals('about:', text);
@@ -190,7 +186,7 @@ function test_GM_getResourceText()
 
 function test_GM_getResourceURL()
 {
-	var url = baseURL+'../../../samples/greasemonkey/greasemonkey.user.js';
+	var url = topDir+'tests/samples/greasemonkey/greasemonkey.user.js';
 	var sandbox = GMUtils.loadScript(url);
 	var resource = sandbox.GM_getResourceURL('page');
 	assert.notEquals('http://www.clear-code.com/', resource);
@@ -273,7 +269,7 @@ function test_listeningEvents()
 	yield Do(GMUtils.open('about:'));
 	GMUtils.addListener(listener);
 
-	var url = baseURL+'../../../samples/greasemonkey/greasemonkey.user.js';
+	var url = topDir+'tests/samples/greasemonkey/greasemonkey.user.js';
 	var sandbox = GMUtils.loadScript(url);
 
 	assertClear();
@@ -347,4 +343,21 @@ GM_xmlhttpRequestReadystatechange
 	GMUtils.removeListener(listener);
 
 //	GMUtils.fireEvent({});
+}
+
+
+
+test_doAndWaitLoad.setUp = function() {
+	yield Do(utils.setUpHttpServer(4445, topDir+'tests/uxu/fixtures/'));
+};
+test_doAndWaitLoad.tearDown = function() {
+	yield Do(utils.tearDownAllHttpServers());
+};
+function test_doAndWaitLoad()
+{
+	var sandbox = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_xmlHttpRequest.user.js');
+	yield Do(GMUtils.doAndWaitLoad(function() {
+			sandbox.loadAsciiFile();
+		}));
+	assert.equals('ASCII', sandbox.data);
 }
