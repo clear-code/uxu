@@ -1592,7 +1592,7 @@ function parseTemplate(aCode, aContext)
 	return sandbox.__parseTemplate__results.join('');
 }
  
-var hasher = Cc['@mozilla.org/security/hash;1']
+var hasher = Cc['@mozilla.org/security/hash;1'] 
 		.createInstance(Ci.nsICryptoHash);
  
 function computeHash(aData, aHashAlgorithm) 
@@ -1625,7 +1625,7 @@ function computeHash(aData, aHashAlgorithm)
 		}).join('').toUpperCase();
 }
  
-function md2(aData) { return computeHash(aData, 'md2'); }
+function md2(aData) { return computeHash(aData, 'md2'); } 
 function md5(aData) { return computeHash(aData, 'md5'); }
 function sha1(aData) { return computeHash(aData, 'sha1'); }
 function sha256(aData) { return computeHash(aData, 'sha256'); }
@@ -1640,12 +1640,61 @@ function computeHashFromFile(aFile, aHashAlgorithm)
 	return computeHash(aFile, aHashAlgorithm);
 }
  
-function md2FromFile(aFile) { return computeHashFromFile(this.normalizeToFile(aFile), 'md2'); }
+function md2FromFile(aFile) { return computeHashFromFile(this.normalizeToFile(aFile), 'md2'); } 
 function md5FromFile(aFile) { return computeHashFromFile(this.normalizeToFile(aFile), 'md5'); }
 function sha1FromFile(aFile) { return computeHashFromFile(this.normalizeToFile(aFile), 'sha1'); }
 function sha256FromFile(aFile) { return computeHashFromFile(this.normalizeToFile(aFile), 'sha256'); }
 function sha384FromFile(aFile) { return computeHashFromFile(this.normalizeToFile(aFile), 'sha384'); }
 function sha512FromFile(aFile) { return computeHashFromFile(this.normalizeToFile(aFile), 'sha512'); }
+ 
+const ERROR_INVALID_REDIRECT_DEFINITION_ARRAY = new Error('definition array of redirection is invalid.');
+
+function redirectURI(aURI, aRedirectDefinition) 
+{
+	if (!aRedirectDefinition) return aURI;
+
+	var newURI;
+
+	if (typeof aRedirectDefinition == 'function')
+		return aRedirectDefinition(makeURIFromSpec(aURI));
+
+	var matchers = [];
+	var targets  = [];
+	if (isArray(aRedirectDefinition)) {
+		if (aRedirectDefinition.length % 2)
+			throw ERROR_INVALID_REDIRECT_DEFINITION_ARRAY;
+		for (var i = 0, maxi = aRedirectDefinition.length; i < maxi; i = i+2)
+		{
+			matchers.push(aRedirectDefinition[i]);
+			targets.push(aRedirectDefinition[i+1]);
+		}
+	}
+	else {
+		for (var prop in aRedirectDefinition)
+		{
+			matchers.push(prop);
+			targets.push(aRedirectDefinition[prop]);
+		}
+	}
+	var regexp = new RegExp();
+	matchers.some(function(aMatcher, aIndex) {
+		var matcher = aMatcher instanceof RegExp ?
+				aMatcher :
+				regexp.compile(
+					'^'+
+					String(aMatcher).replace(/([^*?\w])/g, '\\$1')
+						.replace(/\?/g, '(.)')
+						.replace(/\*/g, '(.*)')+
+					'$'
+				);
+		if (matcher.test(aURI)) {
+			newURI = aURI.replace(matcher, targets[aIndex]);
+			return true;
+		}
+		return false;
+	});
+	return newURI || aURI;
+}
   
 // アプリケーション 
 var XULAppInfo = Cc['@mozilla.org/xre/app-info;1']

@@ -92,7 +92,6 @@ const RESULT_SKIPPED = 'skip';
  
 const ERROR_NOT_INITIALIZED     = new Error('environment is not specified.'); 
 const ERROR_INVALID_ENVIRONMENT = new Error('environment must be an Environment.');
-const ERROR_INVALID_REDIRECT_DEFINITION_ARRAY = new Error('definition array of redirection is invalid.');
  
 /**
  * Invocation: 
@@ -354,53 +353,7 @@ function observe(aSubject, aTopic, aData)
 	aSubject = aSubject.QueryInterface(Ci.nsISupportsString);
 
 	var currentURI = aSubject.data;
-	var newURI;
-
-	switch (typeof this._redirect)
-	{
-		case 'function':
-			newURI = this._redirect(utils.makeURIFromSpec(currentURI));
-			break;
-
-		default:
-			var matchers = [];
-			var targets  = [];
-			if (utils.isArray(this._redirect)) {
-				if (this._redirect.length % 2)
-					throw ERROR_INVALID_REDIRECT_DEFINITION_ARRAY;
-				for (var i = 0, maxi = this._redirect.length; i < maxi; i = i+2)
-				{
-					matchers.push(this._redirect[i]);
-					targets.push(this._redirect[i+1]);
-				}
-			}
-			else {
-				for (var prop in this._redirect)
-				{
-					matchers.push(prop);
-					targets.push(this._redirect[prop]);
-				}
-			}
-			var regexp = new RegExp();
-			matchers.some(function(aMatcher, aIndex) {
-				var matcher = aMatcher instanceof RegExp ?
-						aMatcher :
-						regexp.compile(
-							'^'+
-							String(aMatcher).replace(/([^*?\w])/g, '\\$1')
-								.replace(/\?/g, '(.)')
-								.replace(/\*/g, '(.*)')+
-							'$'
-						);
-				if (matcher.test(currentURI)) {
-					newURI = currentURI.replace(matcher, targets[aIndex]);
-					return true;
-				}
-				return false;
-			});
-			break;
-	}
-
+	var newURI = utils.redirectURI(currentURI, this._redirect);
 	if (newURI && newURI != currentURI)
 		aSubject.data = newURI;
 }
