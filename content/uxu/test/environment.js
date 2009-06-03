@@ -262,26 +262,26 @@ function normalizeTestWindowOption(aOptions)
 {
 	if (!aOptions) aOptions = {};
 	if (!aOptions.uri && !aOptions.type) {
-		aOptions.uri   = defaultURI;
-		aOptions.type  = defaultType;
-		aOptions.flags = defaultFlags;
-		aOptions.name  = defaultName;
+		aOptions.uri       = defaultURI;
+		aOptions.type      = defaultType;
+		aOptions.features  = defaultFeatures;
+		aOptions.name      = defaultName;
 		aOptions.arguments = [];
 	}
 	else {
-		aOptions.type  = aOptions.type || null;
-		aOptions.flags = aOptions.flags || 'chrome,all';
-		aOptions.name  = aOptions.name || '_blank';;
+		aOptions.type      = aOptions.type || null;
+		aOptions.features  = aOptions.features || aOptions.flags || 'chrome,all';
+		aOptions.name      = aOptions.name || '_blank';;
 		aOptions.arguments = aOptions.arguments || [];
 	}
 
-	if (/(?:left|screenX)=([^,]+)/i.test(aOptions.flags))
+	if (/(?:left|screenX)=([^,]+)/i.test(aOptions.features))
 		aOptions.screenX = parseInt(RegExp.$1);
-	if (/(?:top|screenY)=([^,]+)/i.test(aOptions.flags))
+	if (/(?:top|screenY)=([^,]+)/i.test(aOptions.features))
 		aOptions.screenY = parseInt(RegExp.$1);
-	if (/width=([^,]+)/i.test(aOptions.flags))
+	if (/width=([^,]+)/i.test(aOptions.features))
 		aOptions.width = parseInt(RegExp.$1);
-	if (/height=([^,]+)/i.test(aOptions.flags))
+	if (/height=([^,]+)/i.test(aOptions.features))
 		aOptions.height = parseInt(RegExp.$1);
 
 	return aOptions;
@@ -323,7 +323,7 @@ function openTestWindow(aOptions, aCallback)
 	}
 	else {
 		var info = this.normalizeTestWindowOption(aOptions);
-		win = window.openDialog.apply(window, [info.uri, info.name, info.flags].concat(info.arguments));
+		win = window.openDialog.apply(window, [info.uri, info.name, info.features].concat(info.arguments));
 		win[key] = this.uniqueID;
 		var id = info.uri+'?'+this.uniqueID;
 		win.addEventListener('load', function() {
