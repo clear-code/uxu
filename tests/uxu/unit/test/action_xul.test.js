@@ -427,12 +427,21 @@ function test_inputTextToField()
 	);
 }
 
-/* for XUL elements */
+
 
 function test_fireXULCommandEvent()
 {
 }
 
 function test_fireXULCommandEventOnElement()
+{
+}
+
+
+function test_fireXULCommandEventByMouseEvent()
+{
+}
+
+function test_fireXULCommandEventByKeyEvent()
 {
 }
