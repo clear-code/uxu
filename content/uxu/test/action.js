@@ -744,7 +744,7 @@ function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 		if (
 			elem &&
 			(
-				/^(i?frame|browser)$/.test(elem.localName) ||
+				/^(i?frame|browser)$/i.test(elem.localName) ||
 				(elem.localName == 'tabbrowser' &&
 				this._isInside(elem.mPanelContainer.boxObject, aScreenX, aScreenY))
 			)
