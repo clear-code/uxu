@@ -18,7 +18,7 @@ var ServerUtils = server_module.require('class', 'utils');
 	
 var key = 'uxu-test-window-id'; 
  
-var defaultURI, defaultType, defaultFlags, defaultName; 
+var defaultURI, defaultType, defaultFeatures, defaultName; 
  
 function constructor(aEnvironment, aURI, aBrowser) 
 {
@@ -46,18 +46,18 @@ function constructor(aEnvironment, aURI, aBrowser)
 	switch (utils.product)
 	{
 		case 'Firefox':
-			defaultURI = 'chrome://browser/content/browser.xul';
-			defaultType = 'navigator:browser';
-			defaultFlags = 'chrome,all,dialog=no';
-			defaultName = '_blank';
+			defaultURI      = 'chrome://browser/content/browser.xul';
+			defaultType     = 'navigator:browser';
+			defaultFeatures = 'chrome,all,dialog=no';
+			defaultName     = '_blank';
 			this.attachGMUtils();
 			break;
 
 		case 'Thunderbird':
-			defaultURI = 'chrome://messenger/content/messenger.xul';
-			defaultType = null;
-			defaultFlags = 'chrome,all,dialog=no';
-			defaultName = '_blank';
+			defaultURI      = 'chrome://messenger/content/messenger.xul';
+			defaultType     = null;
+			defaultFeatures = 'chrome,all,dialog=no';
+			defaultName     = '_blank';
 			this.attachMailUtils();
 			break;
 
