@@ -695,36 +695,37 @@ function inputTextToField(aElement, aValue, aAppend, aDontFireKeyEvents)
 
 	if (!aAppend) aElement.value = '';
 
-	if (aDontFireKeyEvents || aValue == '') {
+	if (!aDontFireKeyEvents && aValue) {
+		var input = aElement;
+		if (input.localName == 'textbox') input = input.inputField;
+
+		var self = this;
+		var array = String(aValue || '').match(kINPUT_ARRAY_PATTERN);
+		if (!array) array = String(aValue || '').split('');
+		array.forEach(function(aChar) {
+			if (kDIRECT_INPUT_PATTERN.test(aChar)) {
+				self.fireKeyEventOnElement(input, {
+					type     : 'keypress',
+					charCode : aChar.charCodeAt(0)
+				});
+			}
+			else {
+				self.fireKeyEventOnElement(input, {
+					type    : 'keypress',
+					keyCode : 0xE5
+				});
+				self.inputTextToField(input, aChar, true, true);
+			}
+		});
+	}
+	else {
 		aElement.value += (aValue || '');
-		var doc = this._getDocumentFromEventTarget(aElement);
-		var event = doc.createEvent('UIEvents');
-		event.initUIEvent('input', true, true, doc.defaultView, 0);
-		aElement.dispatchEvent(event);
-		return;
 	}
 
-	var input = aElement;
-	if (input.localName == 'textbox') input = input.inputField;
-
-	var self = this;
-	var array = String(aValue || '').match(kINPUT_ARRAY_PATTERN);
-	if (!array) array = String(aValue || '').split('');
-	array.forEach(function(aChar) {
-		if (kDIRECT_INPUT_PATTERN.test(aChar)) {
-			self.fireKeyEventOnElement(input, {
-				type     : 'keypress',
-				charCode : aChar.charCodeAt(0)
-			});
-		}
-		else {
-			self.fireKeyEventOnElement(input, {
-				type    : 'keypress',
-				keyCode : 0xE5
-			});
-			self.inputTextToField(input, aChar, true, true);
-		}
-	});
+	var doc = this._getDocumentFromEventTarget(aElement);
+	var event = doc.createEvent('UIEvents');
+	event.initUIEvent('input', true, true, doc.defaultView, 0);
+	aElement.dispatchEvent(event);
 };
   
 /* ç¿ïWëÄçÏ */ 
