@@ -435,6 +435,57 @@ function test_getElementFromScreenPoint()
 
 function test_getWindowFromScreenPoint()
 {
+	var rootBoxObject = gBrowser.boxObject;
+	assert.equals(
+		content,
+		actionModule.getWindowFromScreenPoint(
+			content,
+			rootBoxObject.screenX + 50,
+			rootBoxObject.screenY + 50
+		)
+	);
+	assert.equals(
+		content,
+		actionModule.getWindowFromScreenPoint(
+			gBrowser.ownerDocument.defaultView,
+			rootBoxObject.screenX + 50,
+			rootBoxObject.screenY + 50
+		)
+	);
+	assert.isNull(
+		actionModule.getWindowFromScreenPoint(
+			content,
+			rootBoxObject.screenX - 150,
+			rootBoxObject.screenY - 150
+		)
+	);
+
+	yield Do(utils.loadURI(topDir+'tests/uxu/fixtures/frameTest.html'));
+	rootBoxObject = utils.getBoxObjectFor($('frame2'));
+	assert.equals(
+		$('frame2').contentWindow,
+		actionModule.getWindowFromScreenPoint(
+			content,
+			rootBoxObject.screenX + 50,
+			rootBoxObject.screenY + 50
+		),
+		[
+			'expected: '+$('frame2').contentWindow.location.href,
+			'actual: '+actionModule.getWindowFromScreenPoint(
+				content,
+				rootBoxObject.screenX + 50,
+				rootBoxObject.screenY + 50
+			).location.href
+		].join('\n')
+	);
+	assert.equals(
+		$('frame2').contentWindow,
+		actionModule.getWindowFromScreenPoint(
+			gBrowser.ownerDocument.defaultView,
+			rootBoxObject.screenX + 50,
+			rootBoxObject.screenY + 50
+		)
+	);
 }
 
 function test_fireXULCommandEvent()
