@@ -51,6 +51,9 @@ function test_loadAndUnload()
 }
 
 
+test_openAndClose.tearDown = function() {
+	utils.tearDownTestWindow();
+};
 function test_openAndClose()
 {
 	var retVal = GMUtils.open('about:');
@@ -247,6 +250,9 @@ function test_GM_getResourceURL()
 	assert.equals('data:text/html;base64,', resource.substring(0, 22));
 }
 
+test_GM_openInTab.tearDown = function() {
+	utils.tearDownTestWindow();
+};
 function test_GM_openInTab()
 {
 	yield Do(GMUtils.open('about:'));
@@ -260,6 +266,9 @@ function test_GM_openInTab()
 }
 
 
+test_listeningEvents.tearDown = function() {
+	utils.tearDownTestWindow();
+};
 function test_listeningEvents()
 {
 	function defaultHandler(aEvent) { this.setResult(aEvent); };
