@@ -284,6 +284,8 @@ function normalizeTestWindowOption(aOptions)
 	if (/height=([^,]+)/i.test(aOptions.features))
 		aOptions.height = parseInt(RegExp.$1);
 
+	while (aOptions.uri != (aOptions.uri = aOptions.uri.replace(/[^\/]+\/\.\.\//, ''))) {}
+
 	return aOptions;
 };
  
