@@ -347,6 +347,8 @@ function test_fireKeyEventOnElement_onButton()
 		));
 }
 
+// menuitemはEnter以外のすべてのイベントを無視する模様
+test_fireKeyEventOnElement_onMenuItem.shouldSkip = true;
 function test_fireKeyEventOnElement_onMenuItem()
 {
 	var menu = $('menu', win);
@@ -361,8 +363,8 @@ function test_fireKeyEventOnElement_onMenuItem()
 
 function test_inputTextToField()
 {
-	var input = $('input');
-	var log = $('log');
+	var input = $('input', win);
+	var log = $('log', win);
 	var events,
 		lastCount = 0;
 	assert.equals('', input.value);
@@ -370,11 +372,15 @@ function test_inputTextToField()
 	actionModule.inputTextToField(input, 'string');
 	assert.equals('string', input.value);
 	eval('events = '+log.textContent);
-	assert.equals(lastCount + ('string'.length * 3), events.length);
+	assert.equals(lastCount + ('string'.length * 3) + 1, events.length);
 	assert.equals(
 		{ type : 'keypress', target : 'input',
 		  keyCode : 0, charCode : 'g'.charCodeAt(0),
 		  altKey : false, ctrlKey : false, metaKey : false, shiftKey : false },
+		events[events.length-2]
+	);
+	assert.equals(
+		{ type : 'input', target : 'input' },
 		events[events.length-1]
 	);
 	lastCount = events.length;
@@ -382,11 +388,15 @@ function test_inputTextToField()
 	actionModule.inputTextToField(input, 'moji');
 	assert.equals('moji', input.value);
 	eval('events = '+log.textContent);
-	assert.equals(lastCount + ('moji'.length * 3), events.length);
+	assert.equals(lastCount + ('moji'.length * 3) + 1, events.length);
 	assert.equals(
 		{ type : 'keypress', target : 'input',
 		  keyCode : 0, charCode : 'i'.charCodeAt(0),
 		  altKey : false, ctrlKey : false, metaKey : false, shiftKey : false },
+		events[events.length-2]
+	);
+	assert.equals(
+		{ type : 'input', target : 'input' },
 		events[events.length-1]
 	);
 	lastCount = events.length;
@@ -394,11 +404,15 @@ function test_inputTextToField()
 	actionModule.inputTextToField(input, 'retsu', true);
 	assert.equals('mojiretsu', input.value);
 	eval('events = '+log.textContent);
-	assert.equals(lastCount + ('retsu'.length * 3), events.length);
+	assert.equals(lastCount + ('retsu'.length * 3) + 1, events.length);
 	assert.equals(
 		{ type : 'keypress', target : 'input',
 		  keyCode : 0, charCode : 'u'.charCodeAt(0),
 		  altKey : false, ctrlKey : false, metaKey : false, shiftKey : false },
+		events[events.length-2]
+	);
+	assert.equals(
+		{ type : 'input', target : 'input' },
 		events[events.length-1]
 	);
 	lastCount = events.length;
