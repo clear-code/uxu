@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/"?>
+<window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<script type="text/javascript"><![CDATA[
+	var events = [];
+
+	function onMouseEvent(aEvent, aNode)
+	{
+		events.push({
+			target   : aNode.id,
+			type     : aEvent.type,
+			button   : aEvent.button,
+			detail   : aEvent.detail,
+			screenX  : aEvent.screenX,
+			screenY  : aEvent.screenY,
+			clientX  : aEvent.clientX,
+			clientY  : aEvent.clientY,
+			altKey   : aEvent.altKey,
+			ctrlKey  : aEvent.ctrlKey,
+			metaKey  : aEvent.metaKey,
+			shiftKey : aEvent.shiftKey
+		});
+//		events = events.slice(-30);
+		document.getElementById('log').textContent = events.toSource();
+	}
+
+	function onKeyEvent(aEvent, aNode)
+	{
+		events.push({
+			target   : aNode.id,
+			type     : aEvent.type,
+			keyCode  : aEvent.keyCode,
+			charCode : aEvent.charCode,
+			altKey   : aEvent.altKey,
+			ctrlKey  : aEvent.ctrlKey,
+			metaKey  : aEvent.metaKey,
+			shiftKey : aEvent.shiftKey
+		});
+//		events = events.slice(-30);
+		document.getElementById('log').textContent = events.toSource();
+	}
+
+	function onInputEvent(aEvent, aNode)
+	{
+		events.push({
+			target   : aNode.id,
+			type     : aEvent.type
+		});
+//		events = events.slice(-30);
+		document.getElementById('log').textContent = events.toSource();
+	}
+
+	function onCommandEvent(aEvent, aNode)
+	{
+		events.push({
+			target   : aNode.id,
+			type     : aEvent.type
+		});
+//		events = events.slice(-30);
+		document.getElementById('log').textContent = events.toSource();
+	}
+]]></script>
+<hbox>
+	<button id="button"
+		ondblclick="onMouseEvent(event, this)"
+		onclick="onMouseEvent(event, this)"
+		onmousedown="onMouseEvent(event, this)"
+		onmouseup="onMouseEvent(event, this)"
+		onkeydown="onKeyEvent(event,this);"
+		onkeyup="onKeyEvent(event,this);"
+		onkeypress="onKeyEvent(event,this);"
+		oncommand="onCommandEvent(event,this);"
+		label="button"/>
+	<textbox id="input" value=""
+		ondblclick="onMouseEvent(event, this)"
+		onclick="onMouseEvent(event, this)"
+		onmousedown="onMouseEvent(event, this)"
+		onmouseup="onMouseEvent(event, this)"
+		onkeydown="onKeyEvent(event,this);"
+		onkeyup="onKeyEvent(event,this);"
+		onkeypress="onKeyEvent(event,this);"
+		oninput="onInputEvent(event,this);"/>
+</hbox>
+<menubar>
+	<menu label="menu"
+		id="menu">
+		<menupopup>
+			<menuitem label="item"
+				id="menuitem"
+				ondblclick="onMouseEvent(event, this)"
+				onclick="onMouseEvent(event, this)"
+				onmousedown="onMouseEvent(event, this)"
+				onmouseup="onMouseEvent(event, this)"
+				onkeydown="onKeyEvent(event,this);"
+				onkeyup="onKeyEvent(event,this);"
+				onkeypress="onKeyEvent(event,this);"
+				oncommand="onCommandEvent(event,this);"/>
+		</menupopup>
+	</menu>
+</menubar>
+<vbox flex="1" style="overflow:auto">
+	<description id="log"/>
+</vbox>
+</window>
