@@ -25,7 +25,7 @@
 			metaKey  : aEvent.metaKey,
 			shiftKey : aEvent.shiftKey
 		});
-		events = events.slice(-30);
+//		events = events.slice(-30);
 		document.getElementById('log').textContent = events.toSource();
 	}
 
@@ -41,7 +41,17 @@
 			metaKey  : aEvent.metaKey,
 			shiftKey : aEvent.shiftKey
 		});
-		events = events.slice(-30);
+//		events = events.slice(-30);
+		document.getElementById('log').textContent = events.toSource();
+	}
+
+	function onInputEvent(aEvent, aNode)
+	{
+		events.push({
+			target   : aNode.id,
+			type     : aEvent.type
+		});
+//		events = events.slice(-30);
 		document.getElementById('log').textContent = events.toSource();
 	}
 </script>
@@ -73,7 +83,7 @@
 	onkeydown="onKeyEvent(event,this);"
 	onkeyup="onKeyEvent(event,this);"
 	onkeypress="onKeyEvent(event,this);"
-	oninput="onKeyEvent(event,this);"/>
+	oninput="onInputEvent(event,this);"/>
 
 <p id="log" style="overflow:auto;height:100px;"></p>
 

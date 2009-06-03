@@ -427,6 +427,56 @@ function test_fireKeyEventOnElement()
 
 function test_inputTextToField()
 {
+	var input = $('input');
+	var log = $('log');
+	var events,
+		lastCount = 0;
+	assert.equals('', input.value);
+
+	actionModule.inputTextToField(input, 'string');
+	assert.equals('string', input.value);
+	eval('events = '+log.textContent);
+	assert.equals(lastCount + ('string'.length * 3), events.length);
+	assert.equals(
+		{ type : 'keypress', target : 'input',
+		  keyCode : 0, charCode : 'g'.charCodeAt(0),
+		  altKey : false, ctrlKey : false, metaKey : false, shiftKey : false },
+		events[events.length-1]
+	);
+	lastCount = events.length;
+
+	actionModule.inputTextToField(input, 'moji');
+	assert.equals('moji', input.value);
+	eval('events = '+log.textContent);
+	assert.equals(lastCount + ('moji'.length * 3), events.length);
+	assert.equals(
+		{ type : 'keypress', target : 'input',
+		  keyCode : 0, charCode : 'i'.charCodeAt(0),
+		  altKey : false, ctrlKey : false, metaKey : false, shiftKey : false },
+		events[events.length-1]
+	);
+	lastCount = events.length;
+
+	actionModule.inputTextToField(input, 'retsu', true);
+	assert.equals('mojiretsu', input.value);
+	eval('events = '+log.textContent);
+	assert.equals(lastCount + ('retsu'.length * 3), events.length);
+	assert.equals(
+		{ type : 'keypress', target : 'input',
+		  keyCode : 0, charCode : 'u'.charCodeAt(0),
+		  altKey : false, ctrlKey : false, metaKey : false, shiftKey : false },
+		events[events.length-1]
+	);
+	lastCount = events.length;
+
+	actionModule.inputTextToField(input, 'foobar', false, true);
+	assert.equals('foobar', input.value);
+	eval('events = '+log.textContent);
+	assert.equals(lastCount+1, events.length);
+	assert.equals(
+		{ type : 'input', target : 'input' },
+		events[events.length-1]
+	);
 }
 
 function test_getElementFromScreenPoint()
@@ -566,6 +616,8 @@ function test_getWindowFromScreenPoint()
 		)
 	);
 }
+
+/* for XUL elements */
 
 function test_fireXULCommandEvent()
 {
