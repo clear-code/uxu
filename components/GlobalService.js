@@ -2,7 +2,10 @@
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
-const kUXU_GLOBAL_PREF = 'extensions.uxu.global';
+const kUXU_INSTALL_GLOBAL = 'extensions.uxu.global';
+const kUXU_TEST_RUNNING   = 'extensions.uxu.running';
+const kUXU_PROXY_ENABLED  = 'extensions.uxu.enableInternalProxy';
+
 const kUXU_DIR_NAME = 'uxu@clear-code.com';
 const kCATEGORY = 'm-uxu';
 
@@ -42,7 +45,7 @@ GlobalService.prototype = {
 
 			case 'final-ui-startup':
 				ObserverService.removeObserver(this, 'final-ui-startup');
-				Pref.addObserver(kUXU_GLOBAL_PREF, this, false);
+				Pref.addObserver(kUXU_INSTALL_GLOBAL, this, false);
 				Pref.addObserver('general.useragent', this, false);
 				this.init();
 				return;
@@ -55,7 +58,7 @@ GlobalService.prototype = {
  
 	init : function() 
 	{
-		Pref.setBoolPref('extensions.uxu.running', false);
+		Pref.setBoolPref(kUXU_TEST_RUNNING, false);
 		this.checkInstallGlobal();
 	},
  
@@ -63,7 +66,7 @@ GlobalService.prototype = {
 	{
 		switch (aPrefName)
 		{
-			case kUXU_GLOBAL_PREF:
+			case kUXU_INSTALL_GLOBAL:
 				var bundle = Cc['@mozilla.org/intl/stringbundle;1']
 							.getService(Ci.nsIStringBundleService)
 							.createBundle('chrome://uxu/locale/uxu.properties');
@@ -102,19 +105,19 @@ GlobalService.prototype = {
 		var UpdateService = Cc['@mozilla.org/updates/update-service;1']
 							.getService(Ci.nsIApplicationUpdateService);
 		if (!UpdateService.canUpdate) {
-			if (Pref.getBoolPref(kUXU_GLOBAL_PREF))
-				Pref.setBoolPref(kUXU_GLOBAL_PREF, false);
+			if (Pref.getBoolPref(kUXU_INSTALL_GLOBAL))
+				Pref.setBoolPref(kUXU_INSTALL_GLOBAL, false);
 			return;
 		}
 
 		var inGlobal = this.installedLocation.path == this.globalLocation.path;
-		if (Pref.getBoolPref(kUXU_GLOBAL_PREF)) {
+		if (Pref.getBoolPref(kUXU_INSTALL_GLOBAL)) {
 			if (inGlobal) return;
 			if (this.installToGlobal()) {
 				this.restart();
 			}
 			else {
-				Pref.setBoolPref(kUXU_GLOBAL_PREF, false);
+				Pref.setBoolPref(kUXU_INSTALL_GLOBAL, false);
 			}
 		}
 		else if (inGlobal) {
@@ -472,8 +475,8 @@ ProtocolHandlerProxy.prototype = {
 	newURI : function(aSpec, aCharset, aBaseURI) { return this.mProtocolHandler.newURI(aSpec, aCharset, aBaseURI); },
 	newChannel: function(aURI)
 	{
-		if (Pref.getBoolPref('extensions.uxu.enableInternalProxy') ||
-			Pref.getBoolPref('extensions.uxu.running')) {
+		if (Pref.getBoolPref(kUXU_PROXY_ENABLED) ||
+			Pref.getBoolPref(kUXU_TEST_RUNNING)) {
 			var uri = this.redirectURI(aURI);
 			if (uri)
 				return this.getNativeProtocolHandler(uri.scheme).newChannel(uri);
@@ -484,8 +487,8 @@ ProtocolHandlerProxy.prototype = {
 	// nsIProxiedProtocolHandler
 	newProxiedChannel : function(aURI, aProxyInfo)
 	{
-		if (Pref.getBoolPref('extensions.uxu.enableInternalProxy') ||
-			Pref.getBoolPref('extensions.uxu.running')) {
+		if (Pref.getBoolPref(kUXU_PROXY_ENABLED) ||
+			Pref.getBoolPref(kUXU_TEST_RUNNING)) {
 			var uri = this.redirectURI(aURI);
 			if (uri) {
 				var handler = this.getNativeProtocolHandler(uri.scheme);
@@ -515,8 +518,8 @@ ProtocolHandlerProxy.prototype = {
  
 	redirectURI : function(aURI) 
 	{
-		if (Pref.getBoolPref('extensions.uxu.enableInternalProxy') ||
-			Pref.getBoolPref('extensions.uxu.running')) {
+		if (Pref.getBoolPref(kUXU_PROXY_ENABLED) ||
+			Pref.getBoolPref(kUXU_TEST_RUNNING)) {
 			var uri = Cc['@mozilla.org/supports-string;1']
 						.createInstance(Ci.nsISupportsString);
 			uri.data = aURI.spec;
@@ -565,8 +568,8 @@ ProtocolHandlerProxy.prototype = {
  
 	QueryInterface : function(aIID) 
 	{
-		if ((Pref.getBoolPref('extensions.uxu.enableInternalProxy') ||
-			 Pref.getBoolPref('extensions.uxu.running')) &&
+		if ((Pref.getBoolPref(kUXU_PROXY_ENABLED) ||
+			 Pref.getBoolPref(kUXU_TEST_RUNNING)) &&
 			(aIID.equals(Ci.nsIHttpProtocolHandler) ||
 			 aIID.equals(Ci.nsIProtocolHandler) ||
 			 aIID.equals(Ci.nsIProxiedProtocolHandler) ||
