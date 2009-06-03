@@ -50,14 +50,14 @@ function generateMouseEventLogFromParams(aParam, aBox)
 	return event;
 }
 
-function assertMouseEvent(aTarget, aSetUpBeforeEvents)
+function assertMouseEvent(aTarget, aSetUpBeforeEvent)
 {
 	var log = $('log', win);
 	var events, event, param;
 	var lastCount;
 
-	if (aSetUpBeforeEvents)
-		yield Do(aSetUpBeforeEvents);
+	if (aSetUpBeforeEvent)
+		yield Do(aSetUpBeforeEvent);
 
 	boxObject = utils.getBoxObjectFor(aTarget);
 	param = {
@@ -67,7 +67,7 @@ function assertMouseEvent(aTarget, aSetUpBeforeEvents)
 		shiftKey : true,
 		screenX  : boxObject.screenX+10,
 		screenY  : boxObject.screenY+3
-	}
+	};
 	actionModule.fireMouseEvent(win, param);
 	eval('events = '+log.textContent);
 	assert.equals(1, events.length);
@@ -77,8 +77,8 @@ function assertMouseEvent(aTarget, aSetUpBeforeEvents)
 	assert.equals(event, events[events.length-1]);
 	lastCount = events.length;
 
-	if (aSetUpBeforeEvents)
-		yield Do(aSetUpBeforeEvents);
+	if (aSetUpBeforeEvent)
+		yield Do(aSetUpBeforeEvent);
 
 
 	boxObject = utils.getBoxObjectFor(aTarget);
@@ -99,8 +99,8 @@ function assertMouseEvent(aTarget, aSetUpBeforeEvents)
 	assert.equals(event, events[events.length-1]);
 	lastCount = events.length;
 
-	if (aSetUpBeforeEvents)
-		yield Do(aSetUpBeforeEvents);
+	if (aSetUpBeforeEvent)
+		yield Do(aSetUpBeforeEvent);
 
 	boxObject = utils.getBoxObjectFor(aTarget);
 	param = {
@@ -131,14 +131,14 @@ function assertMouseEvent(aTarget, aSetUpBeforeEvents)
 	assert.equals(event, events[events.length-1]);
 }
 
-function assertMouseEventOnElement(aTarget, aSetUpBeforeEvents)
+function assertMouseEventOnElement(aTarget, aSetUpBeforeEvent)
 {
 	var log = $('log', win);
 	var events, event, param;
 	var lastCount;
 
-	if (aSetUpBeforeEvents)
-		yield Do(aSetUpBeforeEvents);
+	if (aSetUpBeforeEvent)
+		yield Do(aSetUpBeforeEvent);
 
 	param = {
 		type     : 'mouseup',
@@ -155,9 +155,9 @@ function assertMouseEventOnElement(aTarget, aSetUpBeforeEvents)
 	assert.equals(event, events[events.length-1]);
 	lastCount = events.length;
 
-	if (aSetUpBeforeEvents)
-		yield Do(aSetUpBeforeEvents);
 
+	if (aSetUpBeforeEvent)
+		yield Do(aSetUpBeforeEvent);
 
 	param = {
 		type     : 'mousedown',
@@ -174,9 +174,9 @@ function assertMouseEventOnElement(aTarget, aSetUpBeforeEvents)
 	assert.equals(event, events[events.length-1]);
 	lastCount = events.length;
 
-	if (aSetUpBeforeEvents)
-		yield Do(aSetUpBeforeEvents);
 
+	if (aSetUpBeforeEvent)
+		yield Do(aSetUpBeforeEvent);
 
 	param = {
 		type    : 'click',
@@ -206,7 +206,6 @@ function assertMouseEventOnElement(aTarget, aSetUpBeforeEvents)
 }
 
 
-test_fireMouseEvent_onButton.minAssertions = 1;
 function test_fireMouseEvent_onButton()
 {
 	yield Do(assertMouseEvent(
@@ -214,7 +213,6 @@ function test_fireMouseEvent_onButton()
 		));
 }
 
-test_fireMouseEventOnElement_onButton.minAssertions = 1;
 function test_fireMouseEventOnElement_onButton()
 {
 	yield Do(assertMouseEventOnElement(
@@ -222,7 +220,6 @@ function test_fireMouseEventOnElement_onButton()
 		));
 }
 
-test_fireMouseEvent_onMenuItem.minAssertions = 1;
 function test_fireMouseEvent_onMenuItem()
 {
 	var menu = $('menu', win);
@@ -235,7 +232,6 @@ function test_fireMouseEvent_onMenuItem()
 		));
 }
 
-test_fireMouseEventOnElement_onMenuItem.minAssertions = 1;
 function test_fireMouseEventOnElement_onMenuItem()
 {
 	var menu = $('menu', win);
@@ -270,45 +266,52 @@ function generateKeyEventLogFromParams(aParam)
 	return event;
 }
 
-function test_fireKeyEventOnElement()
+function assertKeyEventOnElement(aTarget, aSetUpBeforeEvent)
 {
-	var button = $('clickable-button');
-	button.focus();
-	var boxObject = utils.getBoxObjectFor(button);
-	var log = $('log');
+	if ('focus' in aTarget) aTarget.focus();
+	var boxObject = utils.getBoxObjectFor(aTarget);
+	var log = $('log', win);
 	var events, event, param;
 	var lastCount;
 
+	if (aSetUpBeforeEvent)
+		yield Do(aSetUpBeforeEvent);
 
 	param = {
 		type    : 'keydown',
 		keyCode : Ci.nsIDOMKeyEvent.DOM_VK_DELETE,
 		ctrlKey : true
-	}
-	actionModule.fireKeyEventOnElement(button, param);
+	};
+	actionModule.fireKeyEventOnElement(aTarget, param);
 	eval('events = '+log.textContent);
 	assert.equals(1, events.length);
 
 	event = generateKeyEventLogFromParams(param);
-	event.target = 'clickable-button';
+	event.target = aTarget.id;
 	assert.equals(event, events[events.length-1]);
 	lastCount = events.length;
 
+
+	if (aSetUpBeforeEvent)
+		yield Do(aSetUpBeforeEvent);
 
 	param = {
 		type     : 'keyup',
 		charCode : 'f'.charCodeAt(0),
 		shiftKey : true
-	}
-	actionModule.fireKeyEventOnElement(button, param);
+	};
+	actionModule.fireKeyEventOnElement(aTarget, param);
 	eval('events = '+log.textContent);
 	assert.equals(lastCount+1, events.length);
 
 	event = generateKeyEventLogFromParams(param);
-	event.target = 'clickable-button';
+	event.target = aTarget.id;
 	assert.equals(event, events[events.length-1]);
 	lastCount = events.length;
 
+
+	if (aSetUpBeforeEvent)
+		yield Do(aSetUpBeforeEvent);
 
 	param = {
 		type     : 'keypress',
@@ -316,25 +319,44 @@ function test_fireKeyEventOnElement()
 		ctrlKey  : true,
 		shiftKey : true
 	}
-	actionModule.fireKeyEventOnElement(button, param);
+	actionModule.fireKeyEventOnElement(aTarget, param);
 	yield 100;
 	eval('events = '+log.textContent);
 	assert.equals(lastCount+3, events.length);
 
 	param.type = 'keydown';
 	event = generateKeyEventLogFromParams(param);
-	event.target = 'clickable-button';
+	event.target = aTarget.id;
 	assert.equals(event, events[events.length-3]);
 
 	param.type = 'keyup';
 	event = generateKeyEventLogFromParams(param);
-	event.target = 'clickable-button';
+	event.target = aTarget.id;
 	assert.equals(event, events[events.length-2]);
 
 	param.type = 'keypress';
 	event = generateKeyEventLogFromParams(param);
-	event.target = 'clickable-button';
+	event.target = aTarget.id;
 	assert.equals(event, events[events.length-1]);
+}
+
+function test_fireKeyEventOnElement_onButton()
+{
+	yield Do(assertKeyEventOnElement(
+			$('button', win)
+		));
+}
+
+function test_fireKeyEventOnElement_onMenuItem()
+{
+	var menu = $('menu', win);
+	yield Do(assertKeyEventOnElement(
+			$('menuitem', win),
+			function() {
+				menu.firstChild.showPopup();
+				yield 300;
+			}
+		));
 }
 
 function test_inputTextToField()
