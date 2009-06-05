@@ -568,8 +568,19 @@ function fireXULCommandEventOnElement(aElement, aOptions)
 		return;
 
 	var event = this._createMouseEventOnElement(aElement, aOptions);
-	if (event && aElement)
+	if (event) {
 		aElement.dispatchEvent(this._createXULCommandEvent(event));
+		if (aElement.localName == 'menuitem') {
+			aElement.ownerDocument.defaultView.setTimeout(function(aSelf) {
+				var popup = aElement;
+				while (popup = aSelf._getOwnerPopup(popup))
+				{
+					popup.hidePopup();
+					popup = popup.parentNode;
+				}
+			}, 1, this);
+		}
+	}
 };
 	
 function _createXULCommandEvent(aSourceEvent) 
