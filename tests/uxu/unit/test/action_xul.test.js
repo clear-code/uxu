@@ -54,7 +54,12 @@ function assertMouseEvent(aTarget, aSetUpBeforeEvent)
 {
 	var log = $('log', win);
 	var events, event, param;
-	var lastCount;
+	var lastCount = 0;
+
+	if (log.textContent) {
+		eval('events = '+log.textContent);
+		lastCount = events.length;
+	}
 
 	if (aSetUpBeforeEvent)
 		yield Do(aSetUpBeforeEvent);
@@ -70,7 +75,7 @@ function assertMouseEvent(aTarget, aSetUpBeforeEvent)
 	};
 	actionModule.fireMouseEvent(win, param);
 	eval('events = '+log.textContent);
-	assert.equals(1, events.length);
+	assert.equals(lastCount+1, events.length);
 
 	event = generateMouseEventLogFromParams(param);
 	event.target = aTarget.id;
@@ -135,7 +140,12 @@ function assertMouseEventOnElement(aTarget, aSetUpBeforeEvent)
 {
 	var log = $('log', win);
 	var events, event, param;
-	var lastCount;
+	var lastCount = 0;
+
+	if (log.textContent) {
+		eval('events = '+log.textContent);
+		lastCount = events.length;
+	}
 
 	if (aSetUpBeforeEvent)
 		yield Do(aSetUpBeforeEvent);
@@ -148,7 +158,7 @@ function assertMouseEventOnElement(aTarget, aSetUpBeforeEvent)
 	}
 	actionModule.fireMouseEventOnElement(aTarget, param);
 	eval('events = '+log.textContent);
-	assert.equals(1, events.length);
+	assert.equals(lastCount+1, events.length);
 
 	event = generateMouseEventLogFromParams(param);
 	event.target = aTarget.id;
@@ -206,22 +216,17 @@ function assertMouseEventOnElement(aTarget, aSetUpBeforeEvent)
 }
 
 
-function test_fireMouseEvent_onButton()
+function test_fireMouseEvent()
 {
 	yield Do(assertMouseEvent(
 			$('button', win)
 		));
-}
-
-function test_fireMouseEventOnElement_onButton()
-{
-	yield Do(assertMouseEventOnElement(
-			$('button', win)
+	yield Do(assertMouseEvent(
+			$('checkbox', win)
 		));
-}
-
-function test_fireMouseEvent_onMenuItem()
-{
+	yield Do(assertMouseEvent(
+			$('radio2', win)
+		));
 	var menu = $('menu', win);
 	yield Do(assertMouseEvent(
 			$('menuitem', win),
@@ -232,8 +237,17 @@ function test_fireMouseEvent_onMenuItem()
 		));
 }
 
-function test_fireMouseEventOnElement_onMenuItem()
+function test_fireMouseEventOnElement()
 {
+	yield Do(assertMouseEventOnElement(
+			$('button', win)
+		));
+	yield Do(assertMouseEventOnElement(
+			$('checkbox', win)
+		));
+	yield Do(assertMouseEventOnElement(
+			$('radio2', win)
+		));
 	var menu = $('menu', win);
 	yield Do(assertMouseEventOnElement(
 			$('menuitem', win),
