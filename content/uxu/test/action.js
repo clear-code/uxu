@@ -114,7 +114,7 @@ function fireMouseEvent(aWindow, aOptions)
 			default:
 				utils.sendMouseEvent('mousedown', x, y, button, detail, flags);
 				utils.sendMouseEvent('mouseup', x, y, button, detail, flags);
-				this._emulateClickOnXULElement(node, aOptions);
+//				this._emulateClickOnXULElement(node, aOptions);
 				break;
 		}
 		return;
