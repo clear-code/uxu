@@ -7,7 +7,7 @@
 	function onMouseEvent(aEvent, aNode)
 	{
 		events.push({
-			target   : aNode.id,
+			target   : aEvent.target.id || aNode.id,
 			type     : aEvent.type,
 			button   : aEvent.button,
 			detail   : aEvent.detail,
@@ -27,7 +27,7 @@
 	function onKeyEvent(aEvent, aNode)
 	{
 		events.push({
-			target   : aNode.id,
+			target   : aEvent.target.id || aNode.id,
 			type     : aEvent.type,
 			keyCode  : aEvent.keyCode,
 			charCode : aEvent.charCode,
@@ -43,7 +43,7 @@
 	function onInputEvent(aEvent, aNode)
 	{
 		events.push({
-			target   : aNode.id,
+			target   : aEvent.target.id || aNode.id,
 			type     : aEvent.type
 		});
 //		events = events.slice(-30);
@@ -53,7 +53,7 @@
 	function onCommandEvent(aEvent, aNode)
 	{
 		events.push({
-			target   : aNode.id,
+			target   : aEvent.target.id || aNode.id,
 			type     : aEvent.type
 		});
 //		events = events.slice(-30);
@@ -98,6 +98,28 @@
 		</menupopup>
 	</menu>
 </menubar>
+<checkbox id="checkbox"
+	ondblclick="onMouseEvent(event, this)"
+	onclick="onMouseEvent(event, this)"
+	onmousedown="onMouseEvent(event, this)"
+	onmouseup="onMouseEvent(event, this)"
+	onkeydown="onKeyEvent(event,this);"
+	onkeyup="onKeyEvent(event,this);"
+	onkeypress="onKeyEvent(event,this);"
+	oncommand="onCommandEvent(event,this);"
+	label="checkbox"/>
+<radiogroup id="radiogroup"
+	ondblclick="onMouseEvent(event, this)"
+	onclick="onMouseEvent(event, this)"
+	onmousedown="onMouseEvent(event, this)"
+	onmouseup="onMouseEvent(event, this)"
+	onkeydown="onKeyEvent(event,this);"
+	onkeyup="onKeyEvent(event,this);"
+	onkeypress="onKeyEvent(event,this);"
+	oncommand="onCommandEvent(event,this);">
+	<radio id="radio1" label="radio1" value="1"/>
+	<radio id="radio2" label="radio2" value="2"/>
+</radiogroup>
 <vbox flex="1" style="overflow:auto">
 	<description id="log"/>
 </vbox>

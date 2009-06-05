@@ -428,13 +428,65 @@ function test_inputTextToField()
 }
 
 
-
 function test_fireXULCommandEvent()
 {
+	function assertXULCommand(aTargetId)
+	{
+		var log = $('log', win);
+		var box = utils.getBoxObjectFor($(aTargetId, win));
+		var events;
+		if (log.textContent)
+			eval('events = '+log.textContent);
+		else
+			events = [];
+		var lastCount = events.length;
+		actionModule.fireXULCommandEvent(win, { screenX : box.screenX+5, screenY : box.screenY+5 });
+		eval('events = '+log.textContent);
+		assert.equals(lastCount+1, events.length);
+		assert.equals(
+			{ type : 'command', target : aTargetId },
+			events[events.length-1]
+		);
+	}
+
+	yield Do(assertXULCommand('button'));
+	yield Do(assertXULCommand('checkbox'));
+	yield Do(assertXULCommand('radio2'));
+
+	var menu = $('menu', win);
+	menu.firstChild.showPopup();
+	yield 300;
+	yield Do(assertXULCommand('menuitem'));
 }
 
 function test_fireXULCommandEventOnElement()
 {
+	function assertXULCommandOnElement(aTargetId)
+	{
+		var log = $('log', win);
+		var events;
+		if (log.textContent)
+			eval('events = '+log.textContent);
+		else
+			events = [];
+		var lastCount = events.length;
+		actionModule.fireXULCommandEventOnElement($(aTargetId, win));
+		eval('events = '+log.textContent);
+		assert.equals(lastCount+1, events.length);
+		assert.equals(
+			{ type : 'command', target : aTargetId },
+			events[events.length-1]
+		);
+	}
+
+	yield Do(assertXULCommandOnElement('button'));
+	yield Do(assertXULCommandOnElement('checkbox'));
+	yield Do(assertXULCommandOnElement('radio2'));
+
+	var menu = $('menu', win);
+	menu.firstChild.showPopup();
+	yield 300;
+	yield Do(assertXULCommandOnElement('menuitem'));
 }
 
 
