@@ -29,7 +29,7 @@ function getBoxObjectFor(aNode)
 var _boxObjectModule = {};
  
 /* zoom */ 
-	 
+	
 function isFullZoom() 
 {
 	try {
@@ -55,7 +55,7 @@ function getZoom(aWindow)
 };
   
 /* mouse event */ 
-	 
+	
 function fireMouseEvent(aWindow, aOptions) 
 {
 	if (!aWindow ||
@@ -127,115 +127,17 @@ function fireMouseEvent(aWindow, aOptions)
 	else
 		throw new Error('action.fireMouseEvent::there is no element at ['+x+','+y+']!');
 };
-	 
+	
 function _emulateClickOnXULElement(aElement, aOptions) 
 {
-	if (!aElement) return;
-
-	var target = this._getXULCommandEventDispatcher(aElement) || aElement ;
-	if (target.getAttribute('disabled') == 'true') return;
-
 	if (!aOptions) aOptions = {};
-	var isSimpleAction = !(
-			aOptions.altKey ||
-			aOptions.ctrlKey ||
-			aOptions.shiftKey ||
-			aOptions.metaKey
-		);
-	var isSimpleClick = !(
-			aOptions.type != 'click' ||
-			aOptions.button != 0 ||
-			!isSimpleAction
-		);
-	var shouldSendXULCommandEvent = false;
-
-	switch (target.localName)
-	{
-		case 'menuitem':
-			if (!isSimpleClick) return;
-			shouldSendXULCommandEvent = true;
-			target.ownerDocument.defaultView.setTimeout(function(aSelf) {
-				var popup = target;
-				while (popup = aSelf._getOwnerPopup(popup))
-				{
-					popup.hidePopup();
-					popup = popup.parentNode;
-				}
-			}, 1, this);
-			break;
-
-		case 'button':
-		case 'checkbox':
-		case 'radio':
-		case 'tab':
-			if (!isSimpleClick) return;
-			shouldSendXULCommandEvent = true;
-			break;
-
-		case 'toolbarbutton':
-			if (target.localName == 'toolbarbutton' &&
-				target.getAttribute('type') != 'menu') {
-				if (!isSimpleClick) return;
-				shouldSendXULCommandEvent = true;
-				break;
-			}
-		case 'colorpicker':
-			if (target.localName == 'colorpicker' &&
-				target.getAttribute('type') != 'button') {
-				break;
-			}
-		case 'menu':
-			var popupId;
-			var expression = '';
-			var isContext = false;
-			switch (aOptions.button)
-			{
-				case 0:
-					popupId = target.getAttribute('popup');
-					expression += 'child::*[local-name()="menupopup" or local-name()="popup"] |';
-					if (navigator.platform.toLowerCase().indexOf('mac') > -1 &&
-						!aOptions.altKey &&
-						aOptions.ctrlKey &&
-						!aOptions.shiftKey &&
-						!aOptions.metaKey) {
-					}
-					else {
-						if (!isSimpleAction) return;
-						break;
-					}
-				case 2:
-					if (!isSimpleAction) return;
-					popupId = target.getAttribute('context');
-					isContext = true;
-					break;
-				default:
-					return;
-			}
-			var popup = target.ownerDocument.evaluate(
-					expression+'/descendant::menupopup[@id="'+popupId+'"]',
-					target,
-					null,
-					XPathResult.FIRST_ORDERED_NODE_TYPE,
-					null
-				).singleNodeValue;
-
-			if (!popup) return;
-			if ('openPopup' in popup && isContext)
-				popup.openPopup(target, 'after_pointer', -1, -1, true, true);
-			else
-				popup.showPopup();
-			break;
-	}
-
-	if (!shouldSendXULCommandEvent) return;
-	try {
-		this.fireXULCommandEventOnElement(target, aOptions);
-	}
-	catch(e) {
-		dump(e+'\n');
-	}
+	this._emulateActionOnXULElement(
+		aElement,
+		aOptions,
+		aOptions.type == 'click' && aOptions.button == 0
+	);
 }
- 	
+ 
 function _getOwnerPopup(aElement) 
 {
 	return aElement.ownerDocument.evaluate(
@@ -295,7 +197,7 @@ function fireMouseEventOnElement(aElement, aOptions)
 		aOptions.type != 'dblclick')
 		this._emulateClickOnXULElement(aElement, aOptions);
 };
-	 
+	
 function _createMouseEventOnElement(aElement, aOptions) 
 {
 	if (!aElement ||
@@ -387,7 +289,7 @@ function dragStart(aWindow, aOptions)
 	aOptions.type = 'mousedown';
 	this.fireMouseEvent(aWindow, aOptions);
 };
-	 
+	
 function dragStartOnElement(aElement, aOptions) 
 {
 	if (!aOptions) aOptions = {};
@@ -401,7 +303,7 @@ function dragEnd(aWindow, aOptions)
 	aOptions.type = 'mouseup';
 	this.fireMouseEvent(aWindow, aOptions);
 };
-	 
+	
 function dragEndOnElement(aElement, aOptions) 
 {
 	if (!aOptions) aOptions = {};
@@ -463,7 +365,7 @@ function dragMove(aWindow, aFromX, aFromY, aToX, aToY, aOptions)
 	}, 0);
 	return dragEndFlag;
 };
-	 
+	
 function dragMove(aFromElement, aToElement, aOptions) 
 {
 	if (aFromElement.nodeType != aFromElement.ELEMENT_NODE)
@@ -506,7 +408,7 @@ function dragAndDrop(aWindow, aFromX, aFromY, aToX, aToY, aOptions)
 	}, 0);
 	return dragEndFlag;
 };
-	 
+	
 function dragAndDropOnElement(aFromElement, aToElement, aOptions) 
 {
 	if (aFromElement.nodeType != aFromElement.ELEMENT_NODE)
@@ -574,10 +476,14 @@ function fireKeyEventOnElement(aElement, aOptions)
 			break;
 	}
 	var event = this._createKeyEventOnElement(aElement, aOptions);
-	if (event && aElement)
+	if (event && aElement) {
 		aElement.dispatchEvent(event);
+		if (aOptions.type != 'keydown' &&
+			aOptions.type != 'keyup')
+			this._emulateEnterOnXULElement(aElement, aOptions);
+	}
 };
-	 
+	
 function _createKeyEventOnElement(aElement, aOptions) 
 {
 	if (!aElement ||
@@ -610,9 +516,23 @@ function _createKeyEventOnElement(aElement, aOptions)
 	);
 	return event;
 };
+ 
+function _emulateEnterOnXULElement(aElement, aOptions) 
+{
+	if (!aOptions) aOptions = {};
+	this._emulateActionOnXULElement(
+		aElement,
+		aOptions,
+		aOptions.type == 'keypress' &&
+		(
+			aOptions.keyCode == Ci.nsIDOMKeyEvent.DOM_VK_RETURN ||
+			aOptions.keyCode == Ci.nsIDOMKeyEvent.DOM_VK_ENTER
+		)
+	);
+}
    
 /* XULCommand event */ 
-	 
+	
 function fireXULCommandEvent(aWindow, aOptions) 
 {
 	if (!aWindow ||
@@ -638,7 +558,7 @@ function fireXULCommandEventOnElement(aElement, aOptions)
 	if (event && aElement)
 		aElement.dispatchEvent(this._createXULCommandEvent(event));
 };
-	 
+	
 function _createXULCommandEvent(aSourceEvent) 
 {
 	var event = aSourceEvent.view.document.createEvent('XULCommandEvents');
@@ -665,6 +585,110 @@ function _getXULCommandEventDispatcher(aElement)
 			XPathResult.FIRST_ORDERED_NODE_TYPE,
 			null
 		).singleNodeValue;
+}
+ 
+function _emulateActionOnXULElement(aElement, aOptions, aIsSimpleGesture) 
+{
+	if (!aElement) return;
+
+	var target = this._getXULCommandEventDispatcher(aElement) || aElement ;
+	if (target.getAttribute('disabled') == 'true') return;
+
+	if (!aOptions) aOptions = {};
+	var isSimpleAction = !(
+			aOptions.altKey ||
+			aOptions.ctrlKey ||
+			aOptions.shiftKey ||
+			aOptions.metaKey
+		);
+	var isSimpleGesture = aIsSimpleGesture && isSimpleAction;
+	var shouldSendXULCommandEvent = false;
+
+	switch (target.localName)
+	{
+		case 'menuitem':
+			if (!isSimpleGesture) return;
+			shouldSendXULCommandEvent = true;
+			target.ownerDocument.defaultView.setTimeout(function(aSelf) {
+				var popup = target;
+				while (popup = aSelf._getOwnerPopup(popup))
+				{
+					popup.hidePopup();
+					popup = popup.parentNode;
+				}
+			}, 1, this);
+			break;
+
+		case 'button':
+		case 'checkbox':
+		case 'radio':
+		case 'tab':
+			if (!isSimpleGesture) return;
+			shouldSendXULCommandEvent = true;
+			break;
+
+		case 'toolbarbutton':
+			if (target.localName == 'toolbarbutton' &&
+				target.getAttribute('type') != 'menu') {
+				if (!isSimpleGesture) return;
+				shouldSendXULCommandEvent = true;
+				break;
+			}
+		case 'colorpicker':
+			if (target.localName == 'colorpicker' &&
+				target.getAttribute('type') != 'button') {
+				break;
+			}
+		case 'menu':
+			var popupId;
+			var expression = '';
+			var isContext = false;
+			switch (aOptions.button)
+			{
+				case 0:
+					popupId = target.getAttribute('popup');
+					expression += 'child::*[local-name()="menupopup" or local-name()="popup"] |';
+					if (navigator.platform.toLowerCase().indexOf('mac') > -1 &&
+						!aOptions.altKey &&
+						aOptions.ctrlKey &&
+						!aOptions.shiftKey &&
+						!aOptions.metaKey) {
+					}
+					else {
+						if (!isSimpleAction) return;
+						break;
+					}
+				case 2:
+					if (!isSimpleAction) return;
+					popupId = target.getAttribute('context');
+					isContext = true;
+					break;
+				default:
+					return;
+			}
+			var popup = target.ownerDocument.evaluate(
+					expression+'/descendant::menupopup[@id="'+popupId+'"]',
+					target,
+					null,
+					XPathResult.FIRST_ORDERED_NODE_TYPE,
+					null
+				).singleNodeValue;
+
+			if (!popup) return;
+			if ('openPopup' in popup && isContext)
+				popup.openPopup(target, 'after_pointer', -1, -1, true, true);
+			else
+				popup.showPopup();
+			break;
+	}
+
+	if (!shouldSendXULCommandEvent) return;
+	try {
+		this.fireXULCommandEventOnElement(target, aOptions);
+	}
+	catch(e) {
+		dump(e+'\n');
+	}
 }
   
 /* text input */ 
@@ -723,7 +747,7 @@ function inputTextToField(aElement, aValue, aAppend, aDontFireKeyEvents)
 };
   
 /* ç¿ïWëÄçÏ */ 
-	 
+	
 function getElementFromScreenPoint(aWindow, aScreenX, aScreenY) 
 {
 	if (!aWindow ||
@@ -827,7 +851,7 @@ function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 	}
 	return this._getOriginalTargetFromScreenPoint(node, aScreenX, aScreenY);
 };
-	 
+	
 function _getPopupElementFromScreenPoint(aWindow, aScreenX, aScreenY) 
 {
 	var doc = aWindow.document;
@@ -861,7 +885,7 @@ function _getOriginalTargetFromScreenPoint(aElement, aScreenX, aScreenY)
 {
 	return this._getOriginalTargetFromScreenPointInternal(aElement, aScreenX, aScreenY) || aElement;
 }
-	 
+	
 function _getOriginalTargetFromScreenPointInternal(aElement, aScreenX, aScreenY) 
 {
 	if (!aElement) return null;
@@ -922,7 +946,7 @@ function getWindowFromScreenPoint(aWindow, aScreenX, aScreenY)
 	}
 	return null;
 };
-	 
+	
 function _flattenWindows(aWindow) 
 {
 	if (!aWindow ||
@@ -997,7 +1021,7 @@ function _isInside(aBox, aScreenX, aScreenY)
 }
   
 /* utils */ 
-	 
+	
 function _getWindowUtils(aWindow) 
 {
 	return aWindow
