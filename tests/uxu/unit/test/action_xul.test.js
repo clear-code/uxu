@@ -450,6 +450,7 @@ function test_inputTextToField()
 	);
 }
 
+test_fireXULCommandEvent.shouldSkip = isGecko18;
 function test_fireXULCommandEvent()
 {
 	function assertXULCommandEvent(aTargetId)
@@ -463,6 +464,7 @@ function test_fireXULCommandEvent()
 			events = [];
 		var lastCount = events.length;
 		actionModule.fireXULCommandEvent(win, { screenX : box.screenX+5, screenY : box.screenY+5 });
+		assert.notEquals('', log.textContent);
 		eval('events = '+log.textContent);
 		assert.equals(lastCount+1, events.length, inspect(events));
 		assert.equals(
@@ -488,6 +490,7 @@ function test_fireXULCommandEvent()
 	}
 }
 
+test_fireXULCommandEventOnElement.shouldSkip = isGecko18;
 function test_fireXULCommandEventOnElement()
 {
 	function assertXULCommandEventOnElement(aTargetId)
@@ -500,6 +503,7 @@ function test_fireXULCommandEventOnElement()
 			events = [];
 		var lastCount = events.length;
 		actionModule.fireXULCommandEventOnElement($(aTargetId, win));
+		assert.notEquals('', log.textContent);
 		eval('events = '+log.textContent);
 		assert.equals(lastCount+1, events.length, inspect(events));
 		assert.equals(
@@ -524,6 +528,7 @@ function test_fireXULCommandEventOnElement()
 	}
 }
 
+test_fireXULCommandEventByMouseEvent.shouldSkip = isGecko18;
 function test_fireXULCommandEventByMouseEvent()
 {
 	function assertXULCommandEventByMouseEvent(aTargetId)
@@ -584,6 +589,7 @@ function test_fireXULCommandEventByMouseEvent()
 	}
 }
 
+test_fireXULCommandEventByKeyEvent.shouldSkip = isGecko18;
 function test_fireXULCommandEventByKeyEvent()
 {
 	function assertXULCommandEventByKeyEvent(aTargetId, aKeyEventsShouldBeIgnored)
