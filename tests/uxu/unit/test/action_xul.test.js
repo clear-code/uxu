@@ -450,10 +450,65 @@ function test_inputTextToField()
 	);
 }
 
+function assertXULCommandEventFireOrNotFire(aFire, aNotFire)
+{
+	yield Do(aFire('button'));
+	yield Do(aNotFire('button-disabled'));
+	yield Do(aFire('toolbarbutton'));
+	yield Do(aNotFire('toolbarbutton-disabled'));
+	yield Do(aNotFire('toolbarbutton-menu'));
+	yield Do(aFire('toolbarbutton-menu-button'));
+	yield Do(aNotFire('toolbarbutton-menu-button-disabled'));
+	yield Do(aFire('checkbox'));
+	yield Do(aNotFire('checkbox-disabled'));
+	yield Do(aFire('radio2'));
+	yield Do(aNotFire('radio3'));
+
+	var popup = $('menu', win).firstChild;
+	popup.showPopup();
+	yield 300;
+	yield Do(aFire('menuitem', true));
+	yield 100;
+	if (popup.state)
+		assert.equals('closed', popup.state);
+	else
+		assert.equals([0, 0], [popup.boxObject.width, popup.boxObject.height]);
+
+	popup.showPopup();
+	yield 300;
+	yield Do(aNotFire('menuitem-disabled', true));
+	yield 100;
+	if (popup.state)
+		assert.equals('open', popup.state);
+	else
+		assert.notEquals([0, 0], [popup.boxObject.width, popup.boxObject.height]);
+	popup.hidePopup();
+
+	if (!isGecko18) {
+		popup = $('panel', win);
+		popup.openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
+		yield 300;
+		yield Do(aFire('button-in-panel'));
+//		if (popup.state)
+//			assert.equals('close', popup.state);
+//		else
+//			assert.equals([0, 0], [popup.boxObject.width, popup.boxObject.height]);
+
+		popup.openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
+		yield 300;
+		yield Do(aNotFire('button-in-panel-disabled'));
+//		if (popup.state)
+//			assert.equals('open', popup.state);
+//		else
+//			assert.notEquals([0, 0], [popup.boxObject.width, popup.boxObject.height]);
+		popup.hidePopup();
+	}
+}
+
 test_fireXULCommandEvent.shouldSkip = isGecko18;
 function test_fireXULCommandEvent()
 {
-	function assertXULCommandEvent(aTargetId)
+	function assertFire(aTargetId)
 	{
 		var log = $('log', win);
 		var box = utils.getBoxObjectFor($(aTargetId, win));
@@ -473,27 +528,22 @@ function test_fireXULCommandEvent()
 		);
 	}
 
-	yield Do(assertXULCommandEvent('button'));
-	yield Do(assertXULCommandEvent('toolbarbutton'));
-	yield Do(assertXULCommandEvent('toolbarbutton-menu-button'));
-	yield Do(assertXULCommandEvent('checkbox'));
-	yield Do(assertXULCommandEvent('radio2'));
-
-	$('menu', win).firstChild.showPopup();
-	yield 300;
-	yield Do(assertXULCommandEvent('menuitem'));
-
-	if (!isGecko18) {
-		$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
-		yield 300;
-		yield Do(assertXULCommandEvent('button-in-panel'));
+	function assertNotFire(aTargetId)
+	{
+		var log = $('log', win);
+		var box = utils.getBoxObjectFor($(aTargetId, win));
+		var lastResult = log.textContent;
+		actionModule.fireXULCommandEvent(win, { screenX : box.screenX+5, screenY : box.screenY+5 });
+		assert.equals(lastResult, log.textContent);
 	}
+
+	yield Do(assertXULCommandEventFireOrNotFire(assertFire, assertNotFire));
 }
 
 test_fireXULCommandEventOnElement.shouldSkip = isGecko18;
 function test_fireXULCommandEventOnElement()
 {
-	function assertXULCommandEventOnElement(aTargetId)
+	function assertFire(aTargetId)
 	{
 		var log = $('log', win);
 		var events;
@@ -512,26 +562,21 @@ function test_fireXULCommandEventOnElement()
 		);
 	}
 
-	yield Do(assertXULCommandEventOnElement('button'));
-	yield Do(assertXULCommandEventOnElement('toolbarbutton'));
-	yield Do(assertXULCommandEventOnElement('checkbox'));
-	yield Do(assertXULCommandEventOnElement('radio2'));
-
-	$('menu', win).firstChild.showPopup();
-	yield 300;
-	yield Do(assertXULCommandEventOnElement('menuitem'));
-
-	if (!isGecko18) {
-		$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
-		yield 300;
-		yield Do(assertXULCommandEventOnElement('button-in-panel'));
+	function assertNotFire(aTargetId)
+	{
+		var log = $('log', win);
+		var lastResult = log.textContent;
+		actionModule.fireXULCommandEventOnElement($(aTargetId, win));
+		assert.equals(lastResult, log.textContent);
 	}
+
+	yield Do(assertXULCommandEventFireOrNotFire(assertFire, assertNotFire));
 }
 
 test_fireXULCommandEventByMouseEvent.shouldSkip = isGecko18;
 function test_fireXULCommandEventByMouseEvent()
 {
-	function assertXULCommandEventByMouseEvent(aTargetId)
+	function assertFire(aTargetId)
 	{
 		var log = $('log', win);
 		var events, event, param;
@@ -572,31 +617,52 @@ function test_fireXULCommandEventByMouseEvent()
 		);
 	}
 
-	yield Do(assertXULCommandEventByMouseEvent('button'));
-	yield Do(assertXULCommandEventByMouseEvent('toolbarbutton'));
-	yield Do(assertXULCommandEventByMouseEvent('toolbarbutton-menu-button'));
-	yield Do(assertXULCommandEventByMouseEvent('checkbox'));
-	yield Do(assertXULCommandEventByMouseEvent('radio2'));
+	function assertNotFire(aTargetId)
+	{
+		var log = $('log', win);
+		var events, event, param;
+		var lastCount = 0;
 
-	$('menu', win).firstChild.showPopup();
-	yield 300;
-	yield Do(assertXULCommandEventByMouseEvent('menuitem'));
+		if (log.textContent) {
+			eval('events = '+log.textContent);
+			lastCount = events.length;
+		}
 
-	if (!isGecko18) {
-		$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
-		yield 300;
-		yield Do(assertXULCommandEventByMouseEvent('button-in-panel'));
+		param = {
+			type     : 'click',
+			button   : 0,
+			detail   : 1
+		}
+		actionModule.fireMouseEventOnElement($(aTargetId, win), param);
+		eval('events = '+log.textContent);
+		assert.equals(lastCount+3, events.length, inspect(events));
+
+		event = generateMouseEventLogFromParams(param);
+		event.target = aTargetId;
+		event.type = 'mousedown';
+		assert.equals(event, events[events.length-3]);
+
+		event = generateMouseEventLogFromParams(param);
+		event.target = aTargetId;
+		event.type = 'mouseup';
+		assert.equals(event, events[events.length-2]);
+
+		event = generateMouseEventLogFromParams(param);
+		event.target = aTargetId;
+		event.type = 'click';
+		assert.equals(event, events[events.length-1]);
 	}
+
+	yield Do(assertXULCommandEventFireOrNotFire(assertFire, assertNotFire));
 }
 
 test_fireXULCommandEventByKeyEvent.shouldSkip = isGecko18;
 function test_fireXULCommandEventByKeyEvent()
 {
-	function assertXULCommandEventByKeyEvent(aTargetId, aKeyEventsShouldBeIgnored)
+	function assertFire(aTargetId, aKeyEventsShouldBeIgnored)
 	{
 		var target = $(aTargetId, win);
 		if ('focus' in target) target.focus();
-		var boxObject = utils.getBoxObjectFor(target);
 		var log = $('log', win);
 		var events, event, param;
 		var lastCount = 0;
@@ -641,19 +707,34 @@ function test_fireXULCommandEventByKeyEvent()
 		);
 	}
 
-	yield Do(assertXULCommandEventByKeyEvent('button'));
-	yield Do(assertXULCommandEventByKeyEvent('toolbarbutton'));
-	yield Do(assertXULCommandEventByKeyEvent('toolbarbutton-menu-button'));
-	yield Do(assertXULCommandEventByKeyEvent('checkbox'));
-	yield Do(assertXULCommandEventByKeyEvent('radio2'));
+	function assertNotFire(aTargetId, aKeyEventsShouldBeIgnored)
+	{
+		var target = $(aTargetId, win);
+		if ('focus' in target) target.focus();
+		var log = $('log', win);
+		var events, event, param;
+		var lastCount = 0;
+		var lastResult = log.textContent;
 
-	$('menu', win).firstChild.showPopup();
-	yield 300;
-	yield Do(assertXULCommandEventByKeyEvent('menuitem', true));
+		if (log.textContent) {
+			eval('events = '+log.textContent);
+			lastCount = events.length;
+		}
 
-	if (!isGecko18) {
-		$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
-		yield 300;
-		yield Do(assertXULCommandEventByKeyEvent('button-in-panel'));
+		param = {
+			type     : 'keypress',
+			keyCode  : Ci.nsIDOMKeyEvent.DOM_VK_RETURN
+		}
+		actionModule.fireKeyEventOnElement(target, param);
+		yield 100;
+		if (log.textContent) {
+			eval('events = '+log.textContent);
+			assert.notEquals(
+				{ type : 'command', target : aTargetId },
+				events[events.length-1]
+			);
+		}
 	}
+
+	yield Do(assertXULCommandEventFireOrNotFire(assertFire, assertNotFire));
 }
