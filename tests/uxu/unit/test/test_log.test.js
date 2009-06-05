@@ -129,6 +129,8 @@ var bundle;
 
 function setUp()
 {
+	utils.setPref('general.useragent.locale', 'ja');
+
 	bundle = {};
 	utils.include(topDir+'content/uxu/lib/bundle.js', bundle);
 
