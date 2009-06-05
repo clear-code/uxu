@@ -554,7 +554,7 @@ function fireXULCommandEvent(aWindow, aOptions)
 	var node = this.getElementFromScreenPoint(aWindow, aOptions.screenX, aOptions.screenY);
 	if (!node)
 		throw new Error('action.fireXULCommandEvent::there is no element at ['+aOptions.screenX+','+aOptions.screenY+']!');
-	this.fireXULCommandEventOnElement(node, aOptions);
+	return this.fireXULCommandEventOnElement(node, aOptions);
 };
  
 function fireXULCommandEventOnElement(aElement, aOptions) 
@@ -565,7 +565,7 @@ function fireXULCommandEventOnElement(aElement, aOptions)
 
 	aElement = this._getXULCommandEventDispatcher(aElement);
 	if (!aElement || aElement.getAttribute('disabled') == 'true')
-		return;
+		return false;
 
 	var event = this._createMouseEventOnElement(aElement, aOptions);
 	if (event) {
@@ -580,7 +580,9 @@ function fireXULCommandEventOnElement(aElement, aOptions)
 				}
 			}, 1, this);
 		}
+		return true;
 	}
+	return false;
 };
 	
 function _createXULCommandEvent(aSourceEvent) 
