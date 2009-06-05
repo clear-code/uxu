@@ -168,28 +168,41 @@ function fireMouseEventOnElement(aElement, aOptions)
 	}
 
 	var detail = 1;
+	var options, event;
 	switch (aOptions.type)
 	{
 		case 'mousedown':
 		case 'mouseup':
 			break;
 		case 'dblclick':
-			var options = { type : 'mousedown', detail : detail };
+			options = { type : 'mousedown', detail : detail };
 			options.__proto__ = aOptions;
 			this.fireMouseEventOnElement(aElement, options);
 			options.type = 'mouseup';
 			this.fireMouseEventOnElement(aElement, options);
+			// on Gecko 1.8, we have to fire click event manually!
+			if (!('sendMouseEvent' in utils)) {
+				options.type = 'click';
+				event = this._createMouseEventOnElement(aElement, options);
+				if (event && aElement) aElement.dispatchEvent(event);
+			}
 			detail++;
 		case 'click':
 		default:
-			var options = { type : 'mousedown', detail : detail };
+			options = { type : 'mousedown', detail : detail };
 			options.__proto__ = aOptions;
 			this.fireMouseEventOnElement(aElement, options);
 			options.type = 'mouseup';
 			this.fireMouseEventOnElement(aElement, options);
+			// on Gecko 1.8, we have to fire click event manually!
+			if (!('sendMouseEvent' in utils) && aOptions.type == 'dblclick') {
+				options.type = 'click';
+				event = this._createMouseEventOnElement(aElement, options);
+				if (event && aElement) aElement.dispatchEvent(event);
+			}
 			break;
 	}
-	var event = this._createMouseEventOnElement(aElement, aOptions);
+	event = this._createMouseEventOnElement(aElement, aOptions);
 	if (event && aElement)
 		aElement.dispatchEvent(event);
 	if (aOptions.type != 'mousedown' &&

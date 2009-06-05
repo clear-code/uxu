@@ -114,7 +114,7 @@ function test_fireMouseEvent()
 	}
 	actionModule.fireMouseEvent(content, param);
 	eval('events = '+log.textContent);
-	assert.equals(1, events.length);
+	assert.equals(1, events.length, inspect(events));
 
 	event = generateMouseEventLogFromParams(param);
 	event.target = 'clickable-box';
@@ -132,7 +132,7 @@ function test_fireMouseEvent()
 	}
 	actionModule.fireMouseEvent(content, param);
 	eval('events = '+log.textContent);
-	assert.equals(lastCount+1, events.length);
+	assert.equals(lastCount+1, events.length, inspect(events));
 
 	event = generateMouseEventLogFromParams(param);
 	event.target = 'clickable-box';
@@ -151,7 +151,7 @@ function test_fireMouseEvent()
 	actionModule.fireMouseEvent(content, param);
 	yield 100;
 	eval('events = '+log.textContent);
-	assert.equals(lastCount+3, events.length);
+	assert.equals(lastCount+3, events.length, inspect(events));
 
 	event = generateMouseEventLogFromParams(param);
 	event.target = 'clickable-box';
@@ -180,7 +180,7 @@ function test_fireMouseEvent()
 	actionModule.fireMouseEvent(content, param);
 	yield 300;
 	eval('events = '+log.textContent);
-	assert.equals(lastCount+7, events.length);
+	assert.equals(lastCount+7, events.length, inspect(events));
 
 	event = generateMouseEventLogFromParams(param);
 	event.target = 'clickable-box';
@@ -238,7 +238,7 @@ function test_fireMouseEventOnElement()
 	}
 	actionModule.fireMouseEventOnElement(box, param);
 	eval('events = '+log.textContent);
-	assert.equals(1, events.length);
+	assert.equals(1, events.length, inspect(events));
 
 	event = generateMouseEventLogFromParams(param, boxObject);
 	event.target = 'clickable-box';
@@ -254,7 +254,7 @@ function test_fireMouseEventOnElement()
 	}
 	actionModule.fireMouseEventOnElement(box, param);
 	eval('events = '+log.textContent);
-	assert.equals(lastCount+1, events.length);
+	assert.equals(lastCount+1, events.length, inspect(events));
 
 	event = generateMouseEventLogFromParams(param, boxObject);
 	event.target = 'clickable-box';
@@ -271,7 +271,7 @@ function test_fireMouseEventOnElement()
 	actionModule.fireMouseEventOnElement(box, param);
 	yield 100;
 	eval('events = '+log.textContent);
-	assert.equals(lastCount+3, events.length);
+	assert.equals(lastCount+3, events.length, inspect(events));
 
 	event = generateMouseEventLogFromParams(param, boxObject);
 	event.target = 'clickable-box';
@@ -298,7 +298,7 @@ function test_fireMouseEventOnElement()
 	actionModule.fireMouseEventOnElement(box, param);
 	yield 100;
 	eval('events = '+log.textContent);
-	assert.equals(lastCount+7, events.length);
+	assert.equals(lastCount+7, events.length, inspect(events));
 
 	event = generateMouseEventLogFromParams(param, boxObject);
 	event.target = 'clickable-box';
@@ -375,7 +375,7 @@ function test_fireKeyEventOnElement()
 	}
 	actionModule.fireKeyEventOnElement(button, param);
 	eval('events = '+log.textContent);
-	assert.equals(1, events.length);
+	assert.equals(1, events.length, inspect(events));
 
 	event = generateKeyEventLogFromParams(param);
 	event.target = 'clickable-button';
@@ -390,7 +390,7 @@ function test_fireKeyEventOnElement()
 	}
 	actionModule.fireKeyEventOnElement(button, param);
 	eval('events = '+log.textContent);
-	assert.equals(lastCount+1, events.length);
+	assert.equals(lastCount+1, events.length, inspect(events));
 
 	event = generateKeyEventLogFromParams(param);
 	event.target = 'clickable-button';
@@ -407,7 +407,7 @@ function test_fireKeyEventOnElement()
 	actionModule.fireKeyEventOnElement(button, param);
 	yield 100;
 	eval('events = '+log.textContent);
-	assert.equals(lastCount+3, events.length);
+	assert.equals(lastCount+3, events.length, inspect(events));
 
 	param.type = 'keydown';
 	event = generateKeyEventLogFromParams(param);
@@ -436,7 +436,7 @@ function test_inputTextToField()
 	actionModule.inputTextToField(input, 'string');
 	assert.equals('string', input.value);
 	eval('events = '+log.textContent);
-	assert.equals(lastCount + ('string'.length * 3) + 1, events.length);
+	assert.equals(lastCount + ('string'.length * 3) + 1, events.length, inspect(events));
 	assert.equals(
 		{ type : 'keypress', target : 'input',
 		  keyCode : 0, charCode : 'g'.charCodeAt(0),
@@ -452,7 +452,7 @@ function test_inputTextToField()
 	actionModule.inputTextToField(input, 'moji');
 	assert.equals('moji', input.value);
 	eval('events = '+log.textContent);
-	assert.equals(lastCount + ('moji'.length * 3) + 1, events.length);
+	assert.equals(lastCount + ('moji'.length * 3) + 1, events.length, inspect(events));
 	assert.equals(
 		{ type : 'keypress', target : 'input',
 		  keyCode : 0, charCode : 'i'.charCodeAt(0),
@@ -468,7 +468,7 @@ function test_inputTextToField()
 	actionModule.inputTextToField(input, 'retsu', true);
 	assert.equals('mojiretsu', input.value);
 	eval('events = '+log.textContent);
-	assert.equals(lastCount + ('retsu'.length * 3) + 1, events.length);
+	assert.equals(lastCount + ('retsu'.length * 3) + 1, events.length, inspect(events));
 	assert.equals(
 		{ type : 'keypress', target : 'input',
 		  keyCode : 0, charCode : 'u'.charCodeAt(0),
@@ -484,7 +484,7 @@ function test_inputTextToField()
 	actionModule.inputTextToField(input, 'foobar', false, true);
 	assert.equals('foobar', input.value);
 	eval('events = '+log.textContent);
-	assert.equals(lastCount+1, events.length);
+	assert.equals(lastCount+1, events.length, inspect(events));
 	assert.equals(
 		{ type : 'input', target : 'input' },
 		events[events.length-1]
