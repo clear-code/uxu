@@ -307,14 +307,30 @@ function _initRemote(aOptions)
   
 function onStart() 
 {
-	ObserverService.addObserver(this , 'uxu-redirect-check', false);
 	this.addListener(this.environment.__proto__);
 	this.environment.__proto__.addListener(this);
+	if (this._redirect) {
+		if (
+			(Cc['@mozilla.org/network/protocol;1?name=http'] !=
+			 Components.classesByID['{3d04c1d0-4e6c-11de-8a39-0800200c9a66}']) ||
+			(Cc['@mozilla.org/network/protocol;1?name=https'] !=
+			 Components.classesByID['{b81efa50-4e7d-11de-8a39-0800200c9a66}'])
+			) {
+			this.fireEvent('Error', bundle.getString('error_protocol_handler_proxy_disabled'));
+		}
+		else {
+			ObserverService.addObserver(this , 'uxu-redirect-check', false);
+			this._redirectObserverRegistered = true;
+		}
+	}
 }
  
 function onFinish() 
 {
-	ObserverService.removeObserver(this , 'uxu-redirect-check');
+	if (this._redirectObserverRegistered) {
+		ObserverService.removeObserver(this , 'uxu-redirect-check');
+		this._redirectObserverRegistered = false;
+	}
 	this.environment.__proto__.removeListener(this);
 	this.removeAllListeners();
 }
