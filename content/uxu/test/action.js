@@ -451,6 +451,12 @@ function fireKeyEventOnElement(aElement, aOptions)
 		!(aElement instanceof Ci.nsIDOMElement))
 		throw new Error('action.fireKeyEventOnElement::['+aElement+'] is not an element!');
 
+	if (aElement instanceof Ci.nsIDOMXULElement) {
+		let dispatcher = this._getXULKeyEventDispatcher(aElement);
+		if (!dispatcher || dispatcher.getAttribute('disabled') == 'true')
+			return;
+	}
+
 	if (aElement.localName == 'textbox' &&
 		'inputField' in aElement &&
 		aElement.inputField instanceof Ci.nsIDOMElement)
@@ -608,7 +614,21 @@ function _getXULCommandEventDispatcher(aElement)
 			'ancestor-or-self::*['+
 				'contains(" button menuitem checkbox radio tab ", concat(" ", local-name(), " ")) or '+
 				'(local-name() = "toolbarbutton" and (not(@type) or @type != "menu"))'+
-			']',
+			'][1]',
+			aElement,
+			null,
+			XPathResult.FIRST_ORDERED_NODE_TYPE,
+			null
+		).singleNodeValue;
+}
+ 
+function _getXULKeyEventDispatcher(aElement) 
+{
+	return aElement.ownerDocument.evaluate(
+			'ancestor-or-self::*['+
+				'contains(" button menuitem checkbox radio tab textbox ", concat(" ", local-name(), " ")) or '+
+				'(local-name() = "toolbarbutton" and (not(@type) or @type != "menu"))'+
+			'][1]',
 			aElement,
 			null,
 			XPathResult.FIRST_ORDERED_NODE_TYPE,
@@ -620,8 +640,8 @@ function _emulateActionOnXULElement(aElement, aOptions, aIsSimpleGesture)
 {
 	if (!aElement) return;
 
-	var target = this._getXULCommandEventDispatcher(aElement) || aElement ;
-	if (target.getAttribute('disabled') == 'true') return;
+	var target = this._getXULCommandEventDispatcher(aElement);
+	if (!target || target.getAttribute('disabled') == 'true') return;
 
 	if (!aOptions) aOptions = {};
 	var isSimpleAction = !(

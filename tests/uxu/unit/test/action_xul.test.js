@@ -527,7 +527,8 @@ function test_fireXULCommandEvent()
 		else
 			events = [];
 		var lastCount = events.length;
-		actionModule.fireXULCommandEvent(win, { screenX : box.screenX+5, screenY : box.screenY+5 });
+		var retVal = actionModule.fireXULCommandEvent(win, { screenX : box.screenX+5, screenY : box.screenY+5 });
+		assert.isTrue(retVal);
 		assert.notEquals('', log.textContent);
 		eval('events = '+log.textContent);
 		assert.equals(lastCount+1, events.length, inspect(events));
@@ -542,7 +543,8 @@ function test_fireXULCommandEvent()
 		var log = $('log', win);
 		var box = utils.getBoxObjectFor($(aTargetId, win));
 		var lastResult = log.textContent;
-		actionModule.fireXULCommandEvent(win, { screenX : box.screenX+5, screenY : box.screenY+5 });
+		var retVal = actionModule.fireXULCommandEvent(win, { screenX : box.screenX+5, screenY : box.screenY+5 });
+		assert.isFalse(retVal);
 		assert.equals(lastResult, log.textContent);
 	}
 
@@ -561,7 +563,8 @@ function test_fireXULCommandEventOnElement()
 		else
 			events = [];
 		var lastCount = events.length;
-		actionModule.fireXULCommandEventOnElement($(aTargetId, win));
+		var retVal = actionModule.fireXULCommandEventOnElement($(aTargetId, win));
+		assert.isTrue(retVal);
 		assert.notEquals('', log.textContent);
 		eval('events = '+log.textContent);
 		assert.equals(lastCount+1, events.length, inspect(events));
@@ -575,7 +578,8 @@ function test_fireXULCommandEventOnElement()
 	{
 		var log = $('log', win);
 		var lastResult = log.textContent;
-		actionModule.fireXULCommandEventOnElement($(aTargetId, win));
+		var retVal = actionModule.fireXULCommandEventOnElement($(aTargetId, win));
+		assert.isFalse(retVal);
 		assert.equals(lastResult, log.textContent);
 	}
 
@@ -687,6 +691,7 @@ function test_fireXULCommandEventByKeyEvent()
 		}
 		actionModule.fireKeyEventOnElement(target, param);
 		yield 100;
+		assert.notEquals('', log.textContent);
 		eval('events = '+log.textContent);
 		if (aKeyEventsShouldBeIgnored) {
 			assert.equals(lastCount+1, events.length, inspect(events));
