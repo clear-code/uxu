@@ -96,6 +96,16 @@
 <!ENTITY config.installGlobalLocation.caption "UnitTest.XULのインストール先">
 <!ENTITY config.installGlobalLocation.check   "このコンピュータのすべてのユーザでUnitTest.XULを利用可能にする（※管理者権限が必要です）">
 
+
+<!ENTITY config.tabs.profile "テスト用プロファイル">
+
+<!ENTITY config.profile.caption                    "テスト用プロファイルでアプリケーションを起動する際の初期設定">
+<!ENTITY config.profile.enableDebugOptions         "デバッグ用オプションを有効にする">
+<!ENTITY config.profile.disableAutoUpdate          "アプリケーションとアドオンの自動アップデートを有効にする">
+<!ENTITY config.profile.disableExitWarning         "タブを開いたままFirefoxを終了する際に確認を表示する">
+<!ENTITY config.profile.disableCheckDefaultWarning "既定のブラウザやメールクライアントにするかどうかの確認を表示する">
+
+
 <!ENTITY config.tabs.runner "テストランナー">
 
 <!ENTITY config.runner.editor.caption "テストの編集に使用するエディタ">

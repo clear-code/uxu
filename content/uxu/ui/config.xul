@@ -82,6 +82,42 @@
 
 </prefpane>
 
+<prefpane id="prefpane-profile" label="&config.tabs.profile;" flex="1">
+	<preferences>
+		<preference id="extensions.uxu.profile.enableDebugOptions"
+			name="extensions.uxu.profile.enableDebugOptions"
+			type="bool"/>
+		<preference id="extensions.uxu.profile.disableAutoUpdate"
+			name="extensions.uxu.profile.disableAutoUpdate"
+			type="bool"
+			inverted="true"/>
+		<preference id="extensions.uxu.profile.disableExitWarning"
+			name="extensions.uxu.profile.disableExitWarning"
+			type="bool"
+			inverted="true"/>
+		<preference id="extensions.uxu.profile.disableCheckDefaultWarning"
+			name="extensions.uxu.profile.disableCheckDefaultWarning"
+			type="bool"
+			inverted="true"/>
+	</preferences>
+
+	<groupbox orient="vertical">
+		<caption label="&config.profile.caption;"/>
+		<checkbox id="extensions.uxu.profile.enableDebugOptions-check"
+			preference="extensions.uxu.profile.enableDebugOptions"
+			label="&config.profile.enableDebugOptions;"/>
+		<checkbox id="extensions.uxu.profile.disableAutoUpdate-check"
+			preference="extensions.uxu.profile.disableAutoUpdate"
+			label="&config.profile.disableAutoUpdate;"/>
+		<checkbox id="extensions.uxu.profile.disableExitWarning-check"
+			preference="extensions.uxu.profile.disableExitWarning"
+			label="&config.profile.disableExitWarning;"/>
+		<checkbox id="extensions.uxu.profile.disableCheckDefaultWarning-check"
+			preference="extensions.uxu.profile.disableCheckDefaultWarning"
+			label="&config.profile.disableCheckDefaultWarning;"/>
+	</groupbox>
+</prefpane>
+
 <prefpane id="prefpane-runner" label="&config.tabs.runner;" flex="1">
 	<preferences>
 		<preference id="extensions.uxu.runner.autoStart"

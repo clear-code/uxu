@@ -96,6 +96,16 @@
 <!ENTITY config.installGlobalLocation.caption "Install location of UnitTest.XUL">
 <!ENTITY config.installGlobalLocation.check   "Activate UnitTest.XUL for all users on this computer (*administrative privileges required)">
 
+
+<!ENTITY config.tabs.profile "Clean Profile Tests">
+
+<!ENTITY config.profile.caption                    "Default settings for clean profiles specified in testcases">
+<!ENTITY config.profile.enableDebugOptions         "Enable options for debugging">
+<!ENTITY config.profile.disableAutoUpdate          "Enable auto-update of application and addons">
+<!ENTITY config.profile.disableExitWarning         "Warn when browsers are closed with existing multiple tabs">
+<!ENTITY config.profile.disableCheckDefaultWarning "Confirm to set the application as the default browser (or E-mail client)">
+
+
 <!ENTITY config.tabs.runner "Test Runner">
 
 <!ENTITY config.runner.editor.caption "Text editor for testcases">

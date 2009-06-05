@@ -366,6 +366,10 @@ GlobalService.prototype = {
 		var lines = [];
 		var prefs = <![CDATA[
 				bool extensions.uxu.protocolHandlerProxy.enabled
+				bool extensions.uxu.profile.enableDebugOptions
+				bool extensions.uxu.profile.disableAutoUpdate
+				bool extensions.uxu.profile.disableExitWarning
+				bool extensions.uxu.profile.disableCheckDefaultWarning
 				int  extensions.uxu.run.timeout
 				int  extensions.uxu.run.timeout.application
 				int  extensions.uxu.run.history.expire.days
@@ -403,16 +407,28 @@ GlobalService.prototype = {
 					break;
 			}
 		}
-		lines.push('user_pref("browser.dom.window.dump.enabled", true);');
-		lines.push('user_pref("javascript.options.showInConsole", true);');
-		lines.push('user_pref("extensions.update.enabled", false);');
-		// Firefox
-		lines.push('user_pref("browser.warnOnQuit", false);');
-		lines.push('user_pref("browser.warnOnRestart", false);');
-		lines.push('user_pref("browser.shell.checkDefaultBrowser", false);');
-		// Thunderbird
-		lines.push('user_pref("mail.shell.checkDefaultClient", false);');
-		lines.push('user_pref("mail.shell.checkDefaultMail", false);');
+
+		if (Pref.getBoolPref('extensions.uxu.profile.enableDebugOptions')) {
+			lines.push('user_pref("browser.dom.window.dump.enabled", true);');
+			lines.push('user_pref("javascript.options.showInConsole", true);');
+		}
+		if (Pref.getBoolPref('extensions.uxu.profile.disableAutoUpdate')) {
+			lines.push('user_pref("app.update.enabled", false);');
+			lines.push('user_pref("extensions.update.enabled", false);');
+			lines.push('user_pref("browser.search.update", false);');
+		}
+		if (Pref.getBoolPref('extensions.uxu.profile.disableExitWarning')) {
+			// Firefox
+			lines.push('user_pref("browser.warnOnQuit", false);');
+			lines.push('user_pref("browser.warnOnRestart", false);');
+		}
+		if (Pref.getBoolPref('extensions.uxu.profile.disableCheckDefaultWarning')) {
+			// Firefox
+			lines.push('user_pref("browser.shell.checkDefaultBrowser", false);');
+			// Thunderbird
+			lines.push('user_pref("mail.shell.checkDefaultClient", false);');
+			lines.push('user_pref("mail.shell.checkDefaultMail", false);');
+		}
 
 		this.writeTo(userJSContents+'\n'+lines.join('\n')+'\n', userJSFile)
 	},

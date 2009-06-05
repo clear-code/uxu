@@ -2,6 +2,11 @@ pref("extensions.uxu.running", false);
 pref("extensions.uxu.global", false);
 pref("extensions.uxu.protocolHandlerProxy.enabled", false);
 
+pref("extensions.uxu.profile.enableDebugOptions", true);
+pref("extensions.uxu.profile.disableAutoUpdate", true);
+pref("extensions.uxu.profile.disableExitWarning", true);
+pref("extensions.uxu.profile.disableCheckDefaultWarning", true);
+
 pref("extensions.uxu.run.ignoreHiddenFiles", true);
 pref("extensions.uxu.run.timeout", 30000);
 pref("extensions.uxu.run.timeout.application", 300000);
