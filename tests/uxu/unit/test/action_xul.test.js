@@ -52,22 +52,41 @@ function generateMouseEventLogFromParams(aParam, aBox)
 	return event;
 }
 
-function assertMouseEventFire(aFire)
+function assertMouseEventFire(aFire, aToolbarButtonMenuShouldBeOpened)
 {
+	var popup;
+
 	yield Do(aFire('label'));
 	yield Do(aFire('button'));
 	yield Do(aFire('button-disabled'));
+
 	yield Do(aFire('toolbarbutton'));
 	yield Do(aFire('toolbarbutton-disabled'));
 	yield Do(aFire('toolbarbutton-menu'));
+	yield 300;
+	popup = $('toolbarbutton-menu', win).firstChild;
+	if (aToolbarButtonMenuShouldBeOpened) {
+		if (popup.state)
+			assert.equals('open', popup.state);
+		else
+			assert.notEquals([0, 0], [popup.boxObject.width, popup.boxObject.height]);
+		popup.hidePopup();
+	}
+	else {
+		if (popup.state)
+			assert.equals('closed', popup.state);
+		else
+			assert.equals([0, 0], [popup.boxObject.width, popup.boxObject.height]);
+	}
 	yield Do(aFire('toolbarbutton-menu-button'));
 	yield Do(aFire('toolbarbutton-menu-button-disabled'));
+
 	yield Do(aFire('checkbox'));
 	yield Do(aFire('checkbox-disabled'));
 	yield Do(aFire('radio2'));
 	yield Do(aFire('radio3'));
 
-	var popup = $('menu', win).firstChild;
+	popup = $('menu', win).firstChild;
 	yield Do(aFire(
 			'menuitem',
 			function() {
@@ -458,22 +477,41 @@ function test_inputTextToField()
 	);
 }
 
-function assertXULCommandEventFireOrNotFire(aFire, aNotFire)
+function assertXULCommandEventFireOrNotFire(aFire, aNotFire, aToolbarButtonMenuShouldBeOpened)
 {
+	var popup;
+
 	yield Do(aNotFire('label'));
 	yield Do(aFire('button'));
 	yield Do(aNotFire('button-disabled'));
+
 	yield Do(aFire('toolbarbutton'));
 	yield Do(aNotFire('toolbarbutton-disabled'));
 	yield Do(aNotFire('toolbarbutton-menu'));
+	yield 300;
+	popup = $('toolbarbutton-menu', win).firstChild;
+	if (aToolbarButtonMenuShouldBeOpened) {
+		if (popup.state)
+			assert.equals('open', popup.state);
+		else
+			assert.notEquals([0, 0], [popup.boxObject.width, popup.boxObject.height]);
+		popup.hidePopup();
+	}
+	else {
+		if (popup.state)
+			assert.equals('closed', popup.state);
+		else
+			assert.equals([0, 0], [popup.boxObject.width, popup.boxObject.height]);
+	}
 	yield Do(aFire('toolbarbutton-menu-button'));
 	yield Do(aNotFire('toolbarbutton-menu-button-disabled'));
+
 	yield Do(aFire('checkbox'));
 	yield Do(aNotFire('checkbox-disabled'));
 	yield Do(aFire('radio2'));
 	yield Do(aNotFire('radio3'));
 
-	var popup = $('menu', win).firstChild;
+	popup = $('menu', win).firstChild;
 	popup.showPopup();
 	yield 300;
 	yield Do(aFire('menuitem', true));
@@ -548,7 +586,7 @@ function test_fireXULCommandEvent()
 		assert.equals(lastResult, log.textContent);
 	}
 
-	yield Do(assertXULCommandEventFireOrNotFire(assertFire, assertNotFire));
+	yield Do(assertXULCommandEventFireOrNotFire(assertFire, assertNotFire, false));
 }
 
 test_fireXULCommandEventOnElement.shouldSkip = isGecko18;
@@ -583,7 +621,7 @@ function test_fireXULCommandEventOnElement()
 		assert.equals(lastResult, log.textContent);
 	}
 
-	yield Do(assertXULCommandEventFireOrNotFire(assertFire, assertNotFire));
+	yield Do(assertXULCommandEventFireOrNotFire(assertFire, assertNotFire, false));
 }
 
 test_fireXULCommandEventByMouseEvent.shouldSkip = isGecko18;
@@ -666,7 +704,7 @@ function test_fireXULCommandEventByMouseEvent()
 		assert.equals(event, events[events.length-1]);
 	}
 
-	yield Do(assertXULCommandEventFireOrNotFire(assertFire, assertNotFire));
+	yield Do(assertXULCommandEventFireOrNotFire(assertFire, assertNotFire, true));
 }
 
 test_fireXULCommandEventByKeyEvent.shouldSkip = isGecko18;
@@ -750,5 +788,5 @@ function test_fireXULCommandEventByKeyEvent()
 		}
 	}
 
-	yield Do(assertXULCommandEventFireOrNotFire(assertFire, assertNotFire));
+	yield Do(assertXULCommandEventFireOrNotFire(assertFire, assertNotFire, false));
 }
