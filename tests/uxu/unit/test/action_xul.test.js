@@ -1,5 +1,7 @@
 var topDir = baseURL+'../../../../';
 
+var isGecko18 = utils.checkAppVersion('3.0') < 0;
+
 var actionModule;
 var win;
 var options = {
@@ -151,13 +153,15 @@ function test_fireMouseEvent()
 				yield 300;
 			}
 		));
-	yield Do(assertMouseEvent(
-			'button-in-panel',
-			function() {
-				$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
-				yield 300;
-			}
-		));
+	if (!isGecko18) {
+		yield Do(assertMouseEvent(
+				'button-in-panel',
+				function() {
+					$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
+					yield 300;
+				}
+			));
+	}
 }
 
 function test_fireMouseEventOnElement()
@@ -253,13 +257,15 @@ function test_fireMouseEventOnElement()
 				yield 300;
 			}
 		));
-	yield Do(assertMouseEventOnElement(
-			'button-in-panel',
-			function() {
-				$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
-				yield 300;
-			}
-		));
+	if (!isGecko18) {
+		yield Do(assertMouseEventOnElement(
+				'button-in-panel',
+				function() {
+					$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
+					yield 300;
+				}
+			));
+	}
 }
 
 
@@ -475,9 +481,11 @@ function test_fireXULCommandEvent()
 	yield 300;
 	yield Do(assertXULCommandEvent('menuitem'));
 
-	$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
-	yield 300;
-	yield Do(assertXULCommandEvent('button-in-panel'));
+	if (!isGecko18) {
+		$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
+		yield 300;
+		yield Do(assertXULCommandEvent('button-in-panel'));
+	}
 }
 
 function test_fireXULCommandEventOnElement()
@@ -509,9 +517,11 @@ function test_fireXULCommandEventOnElement()
 	yield 300;
 	yield Do(assertXULCommandEventOnElement('menuitem'));
 
-	$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
-	yield 300;
-	yield Do(assertXULCommandEventOnElement('button-in-panel'));
+	if (!isGecko18) {
+		$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
+		yield 300;
+		yield Do(assertXULCommandEventOnElement('button-in-panel'));
+	}
 }
 
 function test_fireXULCommandEventByMouseEvent()
@@ -567,9 +577,11 @@ function test_fireXULCommandEventByMouseEvent()
 	yield 300;
 	yield Do(assertXULCommandEventByMouseEvent('menuitem'));
 
-	$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
-	yield 300;
-	yield Do(assertXULCommandEventByMouseEvent('button-in-panel'));
+	if (!isGecko18) {
+		$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
+		yield 300;
+		yield Do(assertXULCommandEventByMouseEvent('button-in-panel'));
+	}
 }
 
 function test_fireXULCommandEventByKeyEvent()
@@ -633,7 +645,9 @@ function test_fireXULCommandEventByKeyEvent()
 	yield 300;
 	yield Do(assertXULCommandEventByKeyEvent('menuitem', true));
 
-	$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
-	yield 300;
-	yield Do(assertXULCommandEventByKeyEvent('button-in-panel'));
+	if (!isGecko18) {
+		$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
+		yield 300;
+		yield Do(assertXULCommandEventByKeyEvent('button-in-panel'));
+	}
 }
