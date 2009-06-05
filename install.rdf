@@ -7,7 +7,7 @@
 
 		<em:id>uxu@clear-code.com</em:id>
 		<em:name>UxU - UnitTest.XUL</em:name>
-		<em:version>0.5.12</em:version>
+		<em:version>0.6.0</em:version>
 		<em:description>Provides features for unit tests and functional tests.</em:description>
 		<em:creator>ClearCode inc.</em:creator>
 		<em:optionsURL>chrome://uxu/content/ui/config.xul</em:optionsURL>
