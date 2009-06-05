@@ -2,6 +2,8 @@
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
+const kINTERNAL_PROXY_ENABLED = true;
+
 const kUXU_INSTALL_GLOBAL = 'extensions.uxu.global';
 const kUXU_TEST_RUNNING   = 'extensions.uxu.running';
 
@@ -612,6 +614,7 @@ var gModule = {
 		for (var key in this._objects)
 		{
 			var obj = this._objects[key];
+			if (!obj.enabled) return;
 			aComponentManager.registerFactoryLocation(
 				obj.CID,
 				obj.NAME,
@@ -663,7 +666,8 @@ var gModule = {
 						throw Components.results.NS_ERROR_NO_AGGREGATION;
 					return new GlobalService();
 				}
-			}
+			},
+			enabled : true
 		},
 		http : {
 			CID  : HttpProtocolHandlerProxy.prototype.CID,
@@ -684,7 +688,8 @@ var gModule = {
 						throw Components.results.NS_ERROR_NO_AGGREGATION;
 					return new HttpProtocolHandlerProxy();
 				}
-			}
+			},
+			enabled : kINTERNAL_PROXY_ENABLED
 		},
 		https : {
 			CID  : HttpsProtocolHandlerProxy.prototype.CID,
@@ -705,7 +710,8 @@ var gModule = {
 						throw Components.results.NS_ERROR_NO_AGGREGATION;
 					return new HttpsProtocolHandlerProxy();
 				}
-			}
+			},
+			enabled : kINTERNAL_PROXY_ENABLED
 		}
 	},
 
