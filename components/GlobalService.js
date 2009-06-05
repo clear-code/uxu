@@ -4,7 +4,6 @@ var Ci = Components.interfaces;
 
 const kUXU_INSTALL_GLOBAL = 'extensions.uxu.global';
 const kUXU_TEST_RUNNING   = 'extensions.uxu.running';
-const kUXU_PROXY_ENABLED  = 'extensions.uxu.enableInternalProxy';
 
 const kUXU_DIR_NAME = 'uxu@clear-code.com';
 const kCATEGORY = 'm-uxu';
@@ -47,7 +46,6 @@ GlobalService.prototype = {
 			case 'final-ui-startup':
 				ObserverService.removeObserver(this, 'final-ui-startup');
 				Pref.addObserver(kUXU_INSTALL_GLOBAL, this, false);
-				Pref.addObserver(kUXU_PROXY_ENABLED, this, false);
 				Pref.addObserver('general.useragent', this, false);
 				this.init();
 				return;
@@ -75,7 +73,6 @@ GlobalService.prototype = {
 		switch (aPrefName)
 		{
 			case kUXU_INSTALL_GLOBAL:
-			case kUXU_PROXY_ENABLED:
 				if (PromptService.confirmEx(
 						null,
 						bundle.GetStringFromName('confirm_changePref_restart_title'),
@@ -615,7 +612,6 @@ var gModule = {
 		for (var key in this._objects)
 		{
 			var obj = this._objects[key];
-			if (!obj.enabled) continue;
 			aComponentManager.registerFactoryLocation(
 				obj.CID,
 				obj.NAME,
@@ -667,8 +663,7 @@ var gModule = {
 						throw Components.results.NS_ERROR_NO_AGGREGATION;
 					return new GlobalService();
 				}
-			},
-			enabled : true
+			}
 		},
 		http : {
 			CID  : HttpProtocolHandlerProxy.prototype.CID,
@@ -689,9 +684,6 @@ var gModule = {
 						throw Components.results.NS_ERROR_NO_AGGREGATION;
 					return new HttpProtocolHandlerProxy();
 				}
-			},
-			get enabled() {
-				return Pref.getBoolPref(kUXU_PROXY_ENABLED);
 			}
 		},
 		https : {
@@ -713,9 +705,6 @@ var gModule = {
 						throw Components.results.NS_ERROR_NO_AGGREGATION;
 					return new HttpsProtocolHandlerProxy();
 				}
-			},
-			get enabled() {
-				return Pref.getBoolPref(kUXU_PROXY_ENABLED);
 			}
 		}
 	},

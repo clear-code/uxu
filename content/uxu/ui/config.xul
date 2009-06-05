@@ -28,9 +28,6 @@
 		<preference id="extensions.uxu.showInternalStacks"
 			name="extensions.uxu.showInternalStacks"
 			type="bool"/>
-		<preference id="extensions.uxu.enableInternalProxy"
-			name="extensions.uxu.enableInternalProxy"
-			type="bool"/>
 		<preference id="extensions.uxu.global"
 			name="extensions.uxu.global"
 			type="bool"/>
@@ -69,9 +66,6 @@
 	<checkbox id="extensions.uxu.showInternalStacks-check"
 		preference="extensions.uxu.showInternalStacks"
 		label="&config.showInternalStacks;"/>
-	<checkbox id="extensions.uxu.enableInternalProxy-check"
-		preference="extensions.uxu.enableInternalProxy"
-		label="&config.enableInternalProxy;"/>
 	<groupbox orient="vertical">
 		<caption label="&config.installGlobalLocation.caption;"
 			id="installGlobalLocation-caption"/>

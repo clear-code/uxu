@@ -318,10 +318,7 @@ function onStart()
 			(Cc['@mozilla.org/network/protocol;1?name=https'].getService() !=
 			 Components.classesByID['{b81efa50-4e7d-11de-8a39-0800200c9a66}'].getService())
 			) {
-			if (utils.getPref('extensions.uxu.enableInternalProxy'))
-				this.fireEvent('Error', bundle.getString('error_proxy_disabled_conflict'));
-			else
-				this.fireEvent('Error', bundle.getString('error_proxy_disabled_pref'));
+			this.fireEvent('Error', bundle.getString('error_proxy_disabled_conflict'));
 		}
 		else {
 			ObserverService.addObserver(this , 'uxu-redirect-check', false);
