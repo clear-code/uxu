@@ -549,7 +549,7 @@ function test_fireXULCommandEventByMouseEvent()
 
 function test_fireXULCommandEventByKeyEvent()
 {
-	function assertXULCommandEventByKeyEvent(aTargetId, aSetUpBeforeEvent)
+	function assertXULCommandEventByKeyEvent(aTargetId, aKeyEventsShouldBeIgnored)
 	{
 		var target = $(aTargetId, win);
 		if ('focus' in target) target.focus();
@@ -570,22 +570,27 @@ function test_fireXULCommandEventByKeyEvent()
 		actionModule.fireKeyEventOnElement(target, param);
 		yield 100;
 		eval('events = '+log.textContent);
-		assert.equals(lastCount+4, events.length, inspect(events));
+		if (aKeyEventsShouldBeIgnored) {
+			assert.equals(lastCount+1, events.length, inspect(events));
+		}
+		else {
+			assert.equals(lastCount+4, events.length, inspect(events));
 
-		param.type = 'keydown';
-		event = generateKeyEventLogFromParams(param);
-		event.target = aTargetId;
-		assert.equals(event, events[events.length-4]);
+			param.type = 'keydown';
+			event = generateKeyEventLogFromParams(param);
+			event.target = aTargetId;
+			assert.equals(event, events[events.length-4]);
 
-		param.type = 'keyup';
-		event = generateKeyEventLogFromParams(param);
-		event.target = aTargetId;
-		assert.equals(event, events[events.length-3]);
+			param.type = 'keyup';
+			event = generateKeyEventLogFromParams(param);
+			event.target = aTargetId;
+			assert.equals(event, events[events.length-3]);
 
-		param.type = 'keypress';
-		event = generateKeyEventLogFromParams(param);
-		event.target = aTargetId;
-		assert.equals(event, events[events.length-2]);
+			param.type = 'keypress';
+			event = generateKeyEventLogFromParams(param);
+			event.target = aTargetId;
+			assert.equals(event, events[events.length-2]);
+		}
 
 		assert.equals(
 			{ type : 'command', target : aTargetId },
@@ -600,5 +605,5 @@ function test_fireXULCommandEventByKeyEvent()
 	var menu = $('menu', win);
 	menu.firstChild.showPopup();
 	yield 300;
-	yield Do(assertXULCommandEventByKeyEvent('menuitem'));
+	yield Do(assertXULCommandEventByKeyEvent('menuitem', true));
 }
