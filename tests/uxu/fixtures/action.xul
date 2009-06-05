@@ -20,7 +20,6 @@
 			metaKey  : aEvent.metaKey,
 			shiftKey : aEvent.shiftKey
 		});
-//		events = events.slice(-30);
 		document.getElementById('log').textContent = events.toSource();
 	}
 
@@ -36,7 +35,6 @@
 			metaKey  : aEvent.metaKey,
 			shiftKey : aEvent.shiftKey
 		});
-//		events = events.slice(-30);
 		document.getElementById('log').textContent = events.toSource();
 	}
 
@@ -46,7 +44,6 @@
 			target   : aEvent.target.id || aNode.id,
 			type     : aEvent.type
 		});
-//		events = events.slice(-30);
 		document.getElementById('log').textContent = events.toSource();
 	}
 
@@ -56,10 +53,10 @@
 			target   : aEvent.target.id || aNode.id,
 			type     : aEvent.type
 		});
-//		events = events.slice(-30);
 		document.getElementById('log').textContent = events.toSource();
 	}
 ]]></script>
+
 <hbox>
 	<button id="button"
 		ondblclick="onMouseEvent(event, this)"
@@ -98,6 +95,50 @@
 		</menupopup>
 	</menu>
 </menubar>
+<toolbar>
+	<toolbarbutton id="toolbarbutton"
+		label="toolbarbutton"
+		ondblclick="onMouseEvent(event, this)"
+		onclick="onMouseEvent(event, this)"
+		onmousedown="onMouseEvent(event, this)"
+		onmouseup="onMouseEvent(event, this)"
+		onkeydown="onKeyEvent(event,this);"
+		onkeyup="onKeyEvent(event,this);"
+		onkeypress="onKeyEvent(event,this);"
+		oncommand="onCommandEvent(event,this);"/>
+	<toolbarbutton type="menu"
+		id="toolbarbutton-menu"
+		label="toolbarbutton-menu"
+		ondblclick="onMouseEvent(event, this)"
+		onclick="onMouseEvent(event, this)"
+		onmousedown="onMouseEvent(event, this)"
+		onmouseup="onMouseEvent(event, this)"
+		onkeydown="onKeyEvent(event,this);"
+		onkeyup="onKeyEvent(event,this);"
+		onkeypress="onKeyEvent(event,this);"
+		oncommand="onCommandEvent(event,this);">
+		<menupopup>
+			<menuitem id="menuitem-in-toolbarbutton-menu"
+				label="menuitem-in-toolbarbutton-menu"/>
+		</menupopup>
+	</toolbarbutton>
+	<toolbarbutton type="menu-button"
+		id="toolbarbutton-menu-button"
+		label="toolbarbutton-menu-button"
+		ondblclick="onMouseEvent(event, this)"
+		onclick="onMouseEvent(event, this)"
+		onmousedown="onMouseEvent(event, this)"
+		onmouseup="onMouseEvent(event, this)"
+		onkeydown="onKeyEvent(event,this);"
+		onkeyup="onKeyEvent(event,this);"
+		onkeypress="onKeyEvent(event,this);"
+		oncommand="onCommandEvent(event,this);">
+		<menupopup>
+			<menuitem id="menuitem-in-toolbarbutton-menu-button"
+				label="menuitem-in-toolbarbutton-menu-button"/>
+		</menupopup>
+	</toolbarbutton>
+</toolbar>
 <checkbox id="checkbox"
 	ondblclick="onMouseEvent(event, this)"
 	onclick="onMouseEvent(event, this)"
@@ -120,6 +161,18 @@
 	<radio id="radio1" label="radio1" value="1"/>
 	<radio id="radio2" label="radio2" value="2"/>
 </radiogroup>
+<panel id="panel">
+	<button id="button-in-panel"
+		label="button-in-panel"
+		ondblclick="onMouseEvent(event, this)"
+		onclick="onMouseEvent(event, this)"
+		onmousedown="onMouseEvent(event, this)"
+		onmouseup="onMouseEvent(event, this)"
+		onkeydown="onKeyEvent(event,this);"
+		onkeyup="onKeyEvent(event,this);"
+		onkeypress="onKeyEvent(event,this);"
+		oncommand="onCommandEvent(event,this);"/>
+</panel>
 <vbox flex="1" style="overflow:auto">
 	<description id="log"/>
 </vbox>

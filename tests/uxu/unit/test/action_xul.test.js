@@ -6,7 +6,7 @@ var options = {
 		uri      : topDir+'tests/uxu/fixtures/action.xul',
 		name     : '_blank',
 		features : 'chrome,all,dialog=no',
-		width    : 300,
+		width    : 500,
 		height   : 300
 	};
 
@@ -52,8 +52,9 @@ function generateMouseEventLogFromParams(aParam, aBox)
 
 function test_fireMouseEvent()
 {
-	function assertMouseEvent(aTarget, aSetUpBeforeEvent)
+	function assertMouseEvent(aTargetId, aSetUpBeforeEvent)
 	{
+		var target = $(aTargetId, win);
 		var log = $('log', win);
 		var events, event, param;
 		var lastCount = 0;
@@ -66,7 +67,7 @@ function test_fireMouseEvent()
 		if (aSetUpBeforeEvent)
 			yield Do(aSetUpBeforeEvent);
 
-		boxObject = utils.getBoxObjectFor(aTarget);
+		boxObject = utils.getBoxObjectFor(target);
 		param = {
 			type     : 'mouseup',
 			button   : 1,
@@ -80,7 +81,7 @@ function test_fireMouseEvent()
 		assert.equals(lastCount+1, events.length, inspect(events));
 
 		event = generateMouseEventLogFromParams(param);
-		event.target = aTarget.id;
+		event.target = aTargetId;
 		assert.equals(event, events[events.length-1]);
 		lastCount = events.length;
 
@@ -88,7 +89,7 @@ function test_fireMouseEvent()
 			yield Do(aSetUpBeforeEvent);
 
 
-		boxObject = utils.getBoxObjectFor(aTarget);
+		boxObject = utils.getBoxObjectFor(target);
 		param = {
 			type     : 'mousedown',
 			button   : 1,
@@ -102,14 +103,14 @@ function test_fireMouseEvent()
 		assert.equals(lastCount+1, events.length, inspect(events));
 
 		event = generateMouseEventLogFromParams(param);
-		event.target = aTarget.id;
+		event.target = aTargetId;
 		assert.equals(event, events[events.length-1]);
 		lastCount = events.length;
 
 		if (aSetUpBeforeEvent)
 			yield Do(aSetUpBeforeEvent);
 
-		boxObject = utils.getBoxObjectFor(aTarget);
+		boxObject = utils.getBoxObjectFor(target);
 		param = {
 			type    : 'click',
 			button  : 2,
@@ -124,34 +125,36 @@ function test_fireMouseEvent()
 		assert.equals(lastCount+3, events.length, inspect(events));
 
 		event = generateMouseEventLogFromParams(param);
-		event.target = aTarget.id;
+		event.target = aTargetId;
 		event.type = 'mousedown';
 		assert.equals(event, events[events.length-3]);
 
 		event = generateMouseEventLogFromParams(param);
-		event.target = aTarget.id;
+		event.target = aTargetId;
 		event.type = 'mouseup';
 		assert.equals(event, events[events.length-2]);
 
 		event = generateMouseEventLogFromParams(param);
-		event.target = aTarget.id;
+		event.target = aTargetId;
 		assert.equals(event, events[events.length-1]);
 	}
 
+	yield Do(assertMouseEvent('button'));
+	yield Do(assertMouseEvent('toolbarbutton'));
+	yield Do(assertMouseEvent('toolbarbutton-menu-button'));
+	yield Do(assertMouseEvent('checkbox'));
+	yield Do(assertMouseEvent('radio2'));
 	yield Do(assertMouseEvent(
-			$('button', win)
-		));
-	yield Do(assertMouseEvent(
-			$('checkbox', win)
-		));
-	yield Do(assertMouseEvent(
-			$('radio2', win)
-		));
-	var menu = $('menu', win);
-	yield Do(assertMouseEvent(
-			$('menuitem', win),
+			'menuitem',
 			function() {
-				menu.firstChild.showPopup();
+				$('menu', win).firstChild.showPopup();
+				yield 300;
+			}
+		));
+	yield Do(assertMouseEvent(
+			'button-in-panel',
+			function() {
+				$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
 				yield 300;
 			}
 		));
@@ -159,8 +162,9 @@ function test_fireMouseEvent()
 
 function test_fireMouseEventOnElement()
 {
-	function assertMouseEventOnElement(aTarget, aSetUpBeforeEvent)
+	function assertMouseEventOnElement(aTargetId, aSetUpBeforeEvent)
 	{
+		var target = $(aTargetId, win);
 		var log = $('log', win);
 		var events, event, param;
 		var lastCount = 0;
@@ -179,12 +183,12 @@ function test_fireMouseEventOnElement()
 			detail   : 0,
 			shiftKey : true
 		}
-		actionModule.fireMouseEventOnElement(aTarget, param);
+		actionModule.fireMouseEventOnElement(target, param);
 		eval('events = '+log.textContent);
 		assert.equals(lastCount+1, events.length, inspect(events));
 
 		event = generateMouseEventLogFromParams(param);
-		event.target = aTarget.id;
+		event.target = aTargetId;
 		assert.equals(event, events[events.length-1]);
 		lastCount = events.length;
 
@@ -198,12 +202,12 @@ function test_fireMouseEventOnElement()
 			detail   : 1,
 			ctrlKey  : true
 		};
-		actionModule.fireMouseEventOnElement(aTarget, param);
+		actionModule.fireMouseEventOnElement(target, param);
 		eval('events = '+log.textContent);
 		assert.equals(lastCount+1, events.length, inspect(events));
 
 		event = generateMouseEventLogFromParams(param);
-		event.target = aTarget.id;
+		event.target = aTargetId;
 		assert.equals(event, events[events.length-1]);
 		lastCount = events.length;
 
@@ -217,40 +221,42 @@ function test_fireMouseEventOnElement()
 			detail  : 1,
 			ctrlKey : true
 		}
-		actionModule.fireMouseEventOnElement(aTarget, param);
+		actionModule.fireMouseEventOnElement(target, param);
 		yield 100;
 		eval('events = '+log.textContent);
 		assert.equals(lastCount+3, events.length, inspect(events));
 
 		event = generateMouseEventLogFromParams(param);
-		event.target = aTarget.id;
+		event.target = aTargetId;
 		event.type = 'mousedown';
 		assert.equals(event, events[events.length-3]);
 
 		event = generateMouseEventLogFromParams(param);
-		event.target = aTarget.id;
+		event.target = aTargetId;
 		event.type = 'mouseup';
 		assert.equals(event, events[events.length-2]);
 
 		event = generateMouseEventLogFromParams(param);
-		event.target = aTarget.id;
+		event.target = aTargetId;
 		assert.equals(event, events[events.length-1]);
 	}
 
+	yield Do(assertMouseEventOnElement('button'));
+	yield Do(assertMouseEventOnElement('toolbarbutton'));
+	yield Do(assertMouseEventOnElement('toolbarbutton-menu-button'));
+	yield Do(assertMouseEventOnElement('checkbox'));
+	yield Do(assertMouseEventOnElement('radio2'));
 	yield Do(assertMouseEventOnElement(
-			$('button', win)
-		));
-	yield Do(assertMouseEventOnElement(
-			$('checkbox', win)
-		));
-	yield Do(assertMouseEventOnElement(
-			$('radio2', win)
-		));
-	var menu = $('menu', win);
-	yield Do(assertMouseEventOnElement(
-			$('menuitem', win),
+			'menuitem',
 			function() {
-				menu.firstChild.showPopup();
+				$('menu', win).firstChild.showPopup();
+				yield 300;
+			}
+		));
+	yield Do(assertMouseEventOnElement(
+			'button-in-panel',
+			function() {
+				$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
 				yield 300;
 			}
 		));
@@ -279,13 +285,19 @@ function generateKeyEventLogFromParams(aParam)
 
 function test_fireKeyEventOnElement()
 {
-	function assertKeyEventOnElement(aTarget, aSetUpBeforeEvent)
+	function assertKeyEventOnElement(aTargetId, aSetUpBeforeEvent)
 	{
-		if ('focus' in aTarget) aTarget.focus();
-		var boxObject = utils.getBoxObjectFor(aTarget);
+		var target = $(aTargetId, win);
+		if ('focus' in target) target.focus();
+		var boxObject = utils.getBoxObjectFor(target);
 		var log = $('log', win);
 		var events, event, param;
-		var lastCount;
+		var lastCount = 0;
+
+		if (log.textContent) {
+			eval('events = '+log.textContent);
+			lastCount = events.length;
+		}
 
 		if (aSetUpBeforeEvent)
 			yield Do(aSetUpBeforeEvent);
@@ -295,12 +307,12 @@ function test_fireKeyEventOnElement()
 			keyCode : Ci.nsIDOMKeyEvent.DOM_VK_DELETE,
 			ctrlKey : true
 		};
-		actionModule.fireKeyEventOnElement(aTarget, param);
+		actionModule.fireKeyEventOnElement(target, param);
 		eval('events = '+log.textContent);
-		assert.equals(1, events.length);
+		assert.equals(lastCount+1, events.length);
 
 		event = generateKeyEventLogFromParams(param);
-		event.target = aTarget.id;
+		event.target = aTargetId;
 		assert.equals(event, events[events.length-1]);
 		lastCount = events.length;
 
@@ -313,12 +325,12 @@ function test_fireKeyEventOnElement()
 			charCode : 'f'.charCodeAt(0),
 			shiftKey : true
 		};
-		actionModule.fireKeyEventOnElement(aTarget, param);
+		actionModule.fireKeyEventOnElement(target, param);
 		eval('events = '+log.textContent);
 		assert.equals(lastCount+1, events.length, inspect(events));
 
 		event = generateKeyEventLogFromParams(param);
-		event.target = aTarget.id;
+		event.target = aTargetId;
 		assert.equals(event, events[events.length-1]);
 		lastCount = events.length;
 
@@ -332,36 +344,35 @@ function test_fireKeyEventOnElement()
 			ctrlKey  : true,
 			shiftKey : true
 		}
-		actionModule.fireKeyEventOnElement(aTarget, param);
+		actionModule.fireKeyEventOnElement(target, param);
 		yield 100;
 		eval('events = '+log.textContent);
 		assert.equals(lastCount+3, events.length, inspect(events));
 
 		param.type = 'keydown';
 		event = generateKeyEventLogFromParams(param);
-		event.target = aTarget.id;
+		event.target = aTargetId;
 		assert.equals(event, events[events.length-3]);
 
 		param.type = 'keyup';
 		event = generateKeyEventLogFromParams(param);
-		event.target = aTarget.id;
+		event.target = aTargetId;
 		assert.equals(event, events[events.length-2]);
 
 		param.type = 'keypress';
 		event = generateKeyEventLogFromParams(param);
-		event.target = aTarget.id;
+		event.target = aTargetId;
 		assert.equals(event, events[events.length-1]);
 	}
 
-	yield Do(assertKeyEventOnElement(
-			$('button', win)
-		));
+	yield Do(assertKeyEventOnElement('button'));
+	yield Do(assertKeyEventOnElement('toolbarbutton'));
+	yield Do(assertKeyEventOnElement('toolbarbutton-menu-button'));
 // menuitemはEnter以外のすべてのイベントを無視する模様
-//	var menu = $('menu', win);
 //	yield Do(assertKeyEventOnElement(
-//			$('menuitem', win),
+//			'menuitem',
 //			function() {
-//				menu.firstChild.showPopup();
+//				$('menu', win).firstChild.showPopup();
 //				yield 300;
 //			}
 //		));
@@ -455,13 +466,18 @@ function test_fireXULCommandEvent()
 	}
 
 	yield Do(assertXULCommandEvent('button'));
+	yield Do(assertXULCommandEvent('toolbarbutton'));
+	yield Do(assertXULCommandEvent('toolbarbutton-menu-button'));
 	yield Do(assertXULCommandEvent('checkbox'));
 	yield Do(assertXULCommandEvent('radio2'));
 
-	var menu = $('menu', win);
-	menu.firstChild.showPopup();
+	$('menu', win).firstChild.showPopup();
 	yield 300;
 	yield Do(assertXULCommandEvent('menuitem'));
+
+	$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
+	yield 300;
+	yield Do(assertXULCommandEvent('button-in-panel'));
 }
 
 function test_fireXULCommandEventOnElement()
@@ -485,13 +501,17 @@ function test_fireXULCommandEventOnElement()
 	}
 
 	yield Do(assertXULCommandEventOnElement('button'));
+	yield Do(assertXULCommandEventOnElement('toolbarbutton'));
 	yield Do(assertXULCommandEventOnElement('checkbox'));
 	yield Do(assertXULCommandEventOnElement('radio2'));
 
-	var menu = $('menu', win);
-	menu.firstChild.showPopup();
+	$('menu', win).firstChild.showPopup();
 	yield 300;
 	yield Do(assertXULCommandEventOnElement('menuitem'));
+
+	$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
+	yield 300;
+	yield Do(assertXULCommandEventOnElement('button-in-panel'));
 }
 
 function test_fireXULCommandEventByMouseEvent()
@@ -538,13 +558,18 @@ function test_fireXULCommandEventByMouseEvent()
 	}
 
 	yield Do(assertXULCommandEventByMouseEvent('button'));
+	yield Do(assertXULCommandEventByMouseEvent('toolbarbutton'));
+	yield Do(assertXULCommandEventByMouseEvent('toolbarbutton-menu-button'));
 	yield Do(assertXULCommandEventByMouseEvent('checkbox'));
 	yield Do(assertXULCommandEventByMouseEvent('radio2'));
 
-	var menu = $('menu', win);
-	menu.firstChild.showPopup();
+	$('menu', win).firstChild.showPopup();
 	yield 300;
 	yield Do(assertXULCommandEventByMouseEvent('menuitem'));
+
+	$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
+	yield 300;
+	yield Do(assertXULCommandEventByMouseEvent('button-in-panel'));
 }
 
 function test_fireXULCommandEventByKeyEvent()
@@ -599,11 +624,16 @@ function test_fireXULCommandEventByKeyEvent()
 	}
 
 	yield Do(assertXULCommandEventByKeyEvent('button'));
+	yield Do(assertXULCommandEventByKeyEvent('toolbarbutton'));
+	yield Do(assertXULCommandEventByKeyEvent('toolbarbutton-menu-button'));
 	yield Do(assertXULCommandEventByKeyEvent('checkbox'));
 	yield Do(assertXULCommandEventByKeyEvent('radio2'));
 
-	var menu = $('menu', win);
-	menu.firstChild.showPopup();
+	$('menu', win).firstChild.showPopup();
 	yield 300;
 	yield Do(assertXULCommandEventByKeyEvent('menuitem', true));
+
+	$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
+	yield 300;
+	yield Do(assertXULCommandEventByKeyEvent('button-in-panel'));
 }
