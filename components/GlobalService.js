@@ -47,6 +47,7 @@ GlobalService.prototype = {
 			case 'final-ui-startup':
 				ObserverService.removeObserver(this, 'final-ui-startup');
 				Pref.addObserver(kUXU_INSTALL_GLOBAL, this, false);
+				Pref.addObserver(kUXU_PROXY_ENABLED, this, false);
 				Pref.addObserver('general.useragent', this, false);
 				this.init();
 				return;
@@ -74,10 +75,11 @@ GlobalService.prototype = {
 		switch (aPrefName)
 		{
 			case kUXU_INSTALL_GLOBAL:
+			case kUXU_PROXY_ENABLED:
 				if (PromptService.confirmEx(
 						null,
-						bundle.GetStringFromName('confirm_installToGlobal_restart_title'),
-						bundle.GetStringFromName('confirm_installToGlobal_restart_text'),
+						bundle.GetStringFromName('confirm_changePref_restart_title'),
+						bundle.GetStringFromName('confirm_changePref_restart_text'),
 						Ci.nsIPromptService.BUTTON_TITLE_YES * Ci.nsIPromptService.BUTTON_POS_0 +
 						Ci.nsIPromptService.BUTTON_TITLE_NO * Ci.nsIPromptService.BUTTON_POS_1,
 						null, null, null, null, {}
@@ -477,8 +479,7 @@ ProtocolHandlerProxy.prototype = {
 	newURI : function(aSpec, aCharset, aBaseURI) { return this.mProtocolHandler.newURI(aSpec, aCharset, aBaseURI); },
 	newChannel: function(aURI)
 	{
-		if (Pref.getBoolPref(kUXU_PROXY_ENABLED) ||
-			Pref.getBoolPref(kUXU_TEST_RUNNING)) {
+		if (Pref.getBoolPref(kUXU_TEST_RUNNING)) {
 			var uri = this.redirectURI(aURI);
 			if (uri)
 				return this.getNativeProtocolHandler(uri.scheme).newChannel(uri);
@@ -489,8 +490,7 @@ ProtocolHandlerProxy.prototype = {
 	// nsIProxiedProtocolHandler
 	newProxiedChannel : function(aURI, aProxyInfo)
 	{
-		if (Pref.getBoolPref(kUXU_PROXY_ENABLED) ||
-			Pref.getBoolPref(kUXU_TEST_RUNNING)) {
+		if (Pref.getBoolPref(kUXU_TEST_RUNNING)) {
 			var uri = this.redirectURI(aURI);
 			if (uri) {
 				var handler = this.getNativeProtocolHandler(uri.scheme);
@@ -520,8 +520,7 @@ ProtocolHandlerProxy.prototype = {
  
 	redirectURI : function(aURI) 
 	{
-		if (Pref.getBoolPref(kUXU_PROXY_ENABLED) ||
-			Pref.getBoolPref(kUXU_TEST_RUNNING)) {
+		if (Pref.getBoolPref(kUXU_TEST_RUNNING)) {
 			var uri = Cc['@mozilla.org/supports-string;1']
 						.createInstance(Ci.nsISupportsString);
 			uri.data = aURI.spec;
@@ -570,8 +569,7 @@ ProtocolHandlerProxy.prototype = {
  
 	QueryInterface : function(aIID) 
 	{
-		if ((Pref.getBoolPref(kUXU_PROXY_ENABLED) ||
-			 Pref.getBoolPref(kUXU_TEST_RUNNING)) &&
+		if (Pref.getBoolPref(kUXU_TEST_RUNNING) &&
 			(aIID.equals(Ci.nsIHttpProtocolHandler) ||
 			 aIID.equals(Ci.nsIProtocolHandler) ||
 			 aIID.equals(Ci.nsIProxiedProtocolHandler) ||
@@ -617,6 +615,7 @@ var gModule = {
 		for (var key in this._objects)
 		{
 			var obj = this._objects[key];
+			if (!obj.enabled) continue;
 			aComponentManager.registerFactoryLocation(
 				obj.CID,
 				obj.NAME,
@@ -668,7 +667,8 @@ var gModule = {
 						throw Components.results.NS_ERROR_NO_AGGREGATION;
 					return new GlobalService();
 				}
-			}
+			},
+			enabled : true
 		},
 		http : {
 			CID  : HttpProtocolHandlerProxy.prototype.CID,
@@ -689,6 +689,9 @@ var gModule = {
 						throw Components.results.NS_ERROR_NO_AGGREGATION;
 					return new HttpProtocolHandlerProxy();
 				}
+			},
+			get enabled() {
+				return Pref.getBoolPref(kUXU_PROXY_ENABLED);
 			}
 		},
 		https : {
@@ -710,6 +713,9 @@ var gModule = {
 						throw Components.results.NS_ERROR_NO_AGGREGATION;
 					return new HttpsProtocolHandlerProxy();
 				}
+			},
+			get enabled() {
+				return Pref.getBoolPref(kUXU_PROXY_ENABLED);
 			}
 		}
 	},
