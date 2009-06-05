@@ -42,6 +42,9 @@ function isFullZoom()
  
 function getZoom(aWindow) 
 {
+	if (!aWindow ||
+		!(aWindow instanceof Ci.nsIDOMWindow))
+		throw new Error('action.getZoom::['+aWindow+'] is not a frame!'');
 	var markupDocumentViewer = aWindow.top
 			.QueryInterface(Ci.nsIInterfaceRequestor)
 			.getInterface(Ci.nsIWebNavigation)
@@ -61,26 +64,11 @@ function fireMouseEvent(aWindow, aOptions)
 
 	if (!aOptions) aOptions = {};
 
-	var zoom = this.isFullZoom() ? this.getZoom(aWindow) : 1 ;
-	var box = getBoxObjectFor(aWindow.document.documentElement);
-	var x = ('x' in aOptions ?
-			aOptions.x :
-		'screenX' in aOptions ?
-			aOptions.screenX - box.screenX - aWindow.scrollX :
-			0
-		) * zoom;
-	var y = ('y' in aOptions ?
-			aOptions.y :
-		'screenY' in aOptions ?
-			aOptions.screenY - box.screenY - aWindow.scrollY :
-			0
-		) * zoom;
-	var screenX = ('screenX' in aOptions) ?
-			aOptions.screenX :
-			box.screenX + x + aWindow.scrollX;
-	var screenY = ('screenY' in aOptions) ?
-			aOptions.screenY :
-			box.screenY + y + aWindow.scrollY;
+	this._normalizeScreenAndClientPoint(aOptions, aWindow);
+	var x = aOptions.x;
+	var y = aOptions.y;
+	var screenX = aOptions.screenX;
+	var screenY = aOptions.screenY;
 
 	var win = this.getWindowFromScreenPoint(aWindow, screenX, screenY);
 	if (!win ||
@@ -137,7 +125,7 @@ function fireMouseEvent(aWindow, aOptions)
 		this._emulateClickOnXULElement(node, aOptions);
 	}
 	else
-		throw new Error('action.fireMouseEvent::there is no element at [')+x+','+y+']!';
+		throw new Error('action.fireMouseEvent::there is no element at ['+x+','+y+']!');
 };
 	 
 function _emulateClickOnXULElement(aElement, aOptions) 
@@ -627,19 +615,25 @@ function _createKeyEventOnElement(aElement, aOptions)
 	 
 function fireXULCommandEvent(aWindow, aOptions) 
 {
+	if (!aWindow ||
+		!(aWindow instanceof Ci.nsIDOMWindow))
+		throw new Error('action.fireXULCommandEvent::['+aWindow+'] is not a frame!'');
+
 	if (!aOptions) aOptions = {};
-	var node = this.getElementFromScreenPoint(
-				aWindow,
-				('x' in aOptions ? aOptions.x : 0),
-				('y' in aOptions ? aOptions.y : 0)
-			);
-	node = this._getXULCommandEventDispatcher(node);
-	if (node)
-		this.fireXULCommandEventOnElement(node, aOptions);
+	this._normalizeScreenAndClientPoint(aOptions, aWindow);
+	var node = this.getElementFromScreenPoint(aWindow, aOptions.screenX, aOptions.screenY);
+	if (!node ||
+		!(node = this._getXULCommandEventDispatcher(node)))
+		throw new Error('action.fireXULCommandEvent::there is no element at ['+aOptions.screenX+','+aOptions.screenY+']!');
+	this.fireXULCommandEventOnElement(node, aOptions);
 };
  
 function fireXULCommandEventOnElement(aElement, aOptions) 
 {
+	if (!aElement ||
+		!(aElement instanceof Ci.nsIDOMElement))
+		throw new Error('action.fireXULCommandEventOnElement:['+aElement+'] is not an element!');
+
 	var event = this._createMouseEventOnElement(aElement, aOptions);
 	if (event && aElement)
 		aElement.dispatchEvent(this._createXULCommandEvent(event));
@@ -952,6 +946,40 @@ function _getClientPointFromScreenPoint(aWindow, aScreenX, aScreenY)
 		x : aScreenX - box.screenX - aWindow.scrollX,
 		y : aScreenY - box.screenY - aWindow.scrollY
 	};
+}
+ 
+function _normalizeScreenAndClientPoint(aOptions, aWindow) 
+{
+	if (!aWindow ||
+		!(aWindow instanceof Ci.nsIDOMWindow))
+		throw new Error('action._normalizeScreenAndClientPoint::['+aWindow+'] is not a frame!'');
+
+	var zoom = this.isFullZoom() ? this.getZoom(aWindow) : 1 ;
+	var box = getBoxObjectFor(aWindow.document.documentElement);
+
+	var x = ('x' in aOptions ?
+			aOptions.x :
+		'screenX' in aOptions ?
+			aOptions.screenX - box.screenX - aWindow.scrollX :
+			0
+		) * zoom;
+	var y = ('y' in aOptions ?
+			aOptions.y :
+		'screenY' in aOptions ?
+			aOptions.screenY - box.screenY - aWindow.scrollY :
+			0
+		) * zoom;
+	var screenX = ('screenX' in aOptions) ?
+			aOptions.screenX :
+			box.screenX + x + aWindow.scrollX;
+	var screenY = ('screenY' in aOptions) ?
+			aOptions.screenY :
+			box.screenY + y + aWindow.scrollY;
+
+	aOptions.x = x;
+	aOptions.y = y;
+	aOptions.screenX = screenX;
+	aOptions.screenY = screenY;
 }
  
 function _isInside(aBox, aScreenX, aScreenY) 
