@@ -52,9 +52,57 @@ function generateMouseEventLogFromParams(aParam, aBox)
 	return event;
 }
 
+function assertMouseEventFire(aFire)
+{
+	yield Do(aFire('label'));
+	yield Do(aFire('button'));
+	yield Do(aFire('button-disabled'));
+	yield Do(aFire('toolbarbutton'));
+	yield Do(aFire('toolbarbutton-disabled'));
+	yield Do(aFire('toolbarbutton-menu'));
+	yield Do(aFire('toolbarbutton-menu-button'));
+	yield Do(aFire('toolbarbutton-menu-button-disabled'));
+	yield Do(aFire('checkbox'));
+	yield Do(aFire('checkbox-disabled'));
+	yield Do(aFire('radio2'));
+	yield Do(aFire('radio3'));
+
+	var popup = $('menu', win).firstChild;
+	yield Do(aFire(
+			'menuitem',
+			function() {
+				popup.showPopup();
+				yield 300;
+			}
+		));
+	yield Do(aFire(
+			'menuitem-disabled',
+			function() {
+				popup.showPopup();
+				yield 300;
+			}
+		));
+	if (!isGecko18) {
+		yield Do(aFire(
+				'button-in-panel',
+				function() {
+					$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
+					yield 300;
+				}
+			));
+		yield Do(aFire(
+				'button-in-panel-disabled',
+				function() {
+					$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
+					yield 300;
+				}
+			));
+	}
+}
+
 function test_fireMouseEvent()
 {
-	function assertMouseEvent(aTargetId, aSetUpBeforeEvent)
+	function assertFire(aTargetId, aSetUpBeforeEvent)
 	{
 		var target = $(aTargetId, win);
 		var log = $('log', win);
@@ -141,32 +189,12 @@ function test_fireMouseEvent()
 		assert.equals(event, events[events.length-1]);
 	}
 
-	yield Do(assertMouseEvent('button'));
-	yield Do(assertMouseEvent('toolbarbutton'));
-	yield Do(assertMouseEvent('toolbarbutton-menu-button'));
-	yield Do(assertMouseEvent('checkbox'));
-	yield Do(assertMouseEvent('radio2'));
-	yield Do(assertMouseEvent(
-			'menuitem',
-			function() {
-				$('menu', win).firstChild.showPopup();
-				yield 300;
-			}
-		));
-	if (!isGecko18) {
-		yield Do(assertMouseEvent(
-				'button-in-panel',
-				function() {
-					$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
-					yield 300;
-				}
-			));
-	}
+	yield Do(assertMouseEventFire(assertFire));
 }
 
 function test_fireMouseEventOnElement()
 {
-	function assertMouseEventOnElement(aTargetId, aSetUpBeforeEvent)
+	function assertFire(aTargetId, aSetUpBeforeEvent)
 	{
 		var target = $(aTargetId, win);
 		var log = $('log', win);
@@ -245,27 +273,7 @@ function test_fireMouseEventOnElement()
 		assert.equals(event, events[events.length-1]);
 	}
 
-	yield Do(assertMouseEventOnElement('button'));
-	yield Do(assertMouseEventOnElement('toolbarbutton'));
-	yield Do(assertMouseEventOnElement('toolbarbutton-menu-button'));
-	yield Do(assertMouseEventOnElement('checkbox'));
-	yield Do(assertMouseEventOnElement('radio2'));
-	yield Do(assertMouseEventOnElement(
-			'menuitem',
-			function() {
-				$('menu', win).firstChild.showPopup();
-				yield 300;
-			}
-		));
-	if (!isGecko18) {
-		yield Do(assertMouseEventOnElement(
-				'button-in-panel',
-				function() {
-					$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
-					yield 300;
-				}
-			));
-	}
+	yield Do(assertMouseEventFire(assertFire));
 }
 
 
@@ -291,7 +299,7 @@ function generateKeyEventLogFromParams(aParam)
 
 function test_fireKeyEventOnElement()
 {
-	function assertKeyEventOnElement(aTargetId, aSetUpBeforeEvent)
+	function assertFire(aTargetId, aSetUpBeforeEvent)
 	{
 		var target = $(aTargetId, win);
 		if ('focus' in target) target.focus();
@@ -371,11 +379,11 @@ function test_fireKeyEventOnElement()
 		assert.equals(event, events[events.length-1]);
 	}
 
-	yield Do(assertKeyEventOnElement('button'));
-	yield Do(assertKeyEventOnElement('toolbarbutton'));
-	yield Do(assertKeyEventOnElement('toolbarbutton-menu-button'));
+	yield Do(assertFire('button'));
+	yield Do(assertFire('toolbarbutton'));
+	yield Do(assertFire('toolbarbutton-menu-button'));
 // menuitemはEnter以外のすべてのイベントを無視する模様
-//	yield Do(assertKeyEventOnElement(
+//	yield Do(assertFire(
 //			'menuitem',
 //			function() {
 //				$('menu', win).firstChild.showPopup();
@@ -452,6 +460,7 @@ function test_inputTextToField()
 
 function assertXULCommandEventFireOrNotFire(aFire, aNotFire)
 {
+	yield Do(aNotFire('label'));
 	yield Do(aFire('button'));
 	yield Do(aNotFire('button-disabled'));
 	yield Do(aFire('toolbarbutton'));

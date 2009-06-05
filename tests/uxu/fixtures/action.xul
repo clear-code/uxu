@@ -57,6 +57,16 @@
 	}
 ]]></script>
 
+<label id="label"
+	ondblclick="onMouseEvent(event, this)"
+	onclick="onMouseEvent(event, this)"
+	onmousedown="onMouseEvent(event, this)"
+	onmouseup="onMouseEvent(event, this)"
+	onkeydown="onKeyEvent(event,this);"
+	onkeyup="onKeyEvent(event,this);"
+	onkeypress="onKeyEvent(event,this);"
+	oncommand="onCommandEvent(event,this);"
+	value="label"/>
 <hbox>
 	<button id="button"
 		ondblclick="onMouseEvent(event, this)"
@@ -87,6 +97,30 @@
 		onkeyup="onKeyEvent(event,this);"
 		onkeypress="onKeyEvent(event,this);"
 		oninput="onInputEvent(event,this);"/>
+	<button popup="panel" label="panel"/>
+	<panel id="panel">
+		<button id="button-in-panel"
+			label="button-in-panel"
+			ondblclick="onMouseEvent(event, this)"
+			onclick="onMouseEvent(event, this)"
+			onmousedown="onMouseEvent(event, this)"
+			onmouseup="onMouseEvent(event, this)"
+			onkeydown="onKeyEvent(event,this);"
+			onkeyup="onKeyEvent(event,this);"
+			onkeypress="onKeyEvent(event,this);"
+			oncommand="onCommandEvent(event,this);"/>
+		<button id="button-in-panel-disabled"
+			disabled="true"
+			label="disabled"
+			ondblclick="onMouseEvent(event, this)"
+			onclick="onMouseEvent(event, this)"
+			onmousedown="onMouseEvent(event, this)"
+			onmouseup="onMouseEvent(event, this)"
+			onkeydown="onKeyEvent(event,this);"
+			onkeyup="onKeyEvent(event,this);"
+			onkeypress="onKeyEvent(event,this);"
+			oncommand="onCommandEvent(event,this);"/>
+	</panel>
 </hbox>
 <menubar>
 	<menu label="menu"
@@ -224,29 +258,6 @@
 	<radio id="radio2" label="radio2" value="2"/>
 	<radio id="radio3" label="radio3" value="3" disabled="true"/>
 </radiogroup>
-<panel id="panel">
-	<button id="button-in-panel"
-		label="button-in-panel"
-		ondblclick="onMouseEvent(event, this)"
-		onclick="onMouseEvent(event, this)"
-		onmousedown="onMouseEvent(event, this)"
-		onmouseup="onMouseEvent(event, this)"
-		onkeydown="onKeyEvent(event,this);"
-		onkeyup="onKeyEvent(event,this);"
-		onkeypress="onKeyEvent(event,this);"
-		oncommand="onCommandEvent(event,this);"/>
-	<button id="button-in-panel-disabled"
-		disabled="true"
-		label="disabled"
-		ondblclick="onMouseEvent(event, this)"
-		onclick="onMouseEvent(event, this)"
-		onmousedown="onMouseEvent(event, this)"
-		onmouseup="onMouseEvent(event, this)"
-		onkeydown="onKeyEvent(event,this);"
-		onkeyup="onKeyEvent(event,this);"
-		onkeypress="onKeyEvent(event,this);"
-		oncommand="onCommandEvent(event,this);"/>
-</panel>
 <vbox flex="1" style="overflow:auto">
 	<description id="log"/>
 </vbox>
