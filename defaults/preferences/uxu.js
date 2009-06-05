@@ -1,5 +1,6 @@
 pref("extensions.uxu.running", false);
 pref("extensions.uxu.global", false);
+pref("extensions.uxu.protocolHandlerProxy.enabled", false);
 
 pref("extensions.uxu.run.ignoreHiddenFiles", true);
 pref("extensions.uxu.run.timeout", 30000);

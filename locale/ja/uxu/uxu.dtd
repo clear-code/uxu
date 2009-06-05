@@ -92,6 +92,7 @@
 <!ENTITY config.run.history.expire.days.after  "日前の分まで保存する">
 <!ENTITY config.defaultEncoding        "読み込むファイルの文字エンコーディングの初期値：">
 <!ENTITY config.showInternalStacks "スタックトレースにUxUの内部エラーも表示する">
+<!ENTITY config.protocolHandlerProxy.enabled "テストケースのためのURIリダイレクト機能を有効にする">
 <!ENTITY config.installGlobalLocation.caption "UnitTest.XULのインストール先">
 <!ENTITY config.installGlobalLocation.check   "このコンピュータのすべてのユーザでUnitTest.XULを利用可能にする（※管理者権限が必要です）">
 

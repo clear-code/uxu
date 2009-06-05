@@ -2,13 +2,14 @@
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
-const kINTERNAL_PROXY_ENABLED = true;
-
 const kUXU_INSTALL_GLOBAL = 'extensions.uxu.global';
 const kUXU_TEST_RUNNING   = 'extensions.uxu.running';
+const kUXU_PROXY_ENABLED  = 'extensions.uxu.protocolHandlerProxy.enabled';
 
 const kUXU_DIR_NAME = 'uxu@clear-code.com';
 const kCATEGORY = 'm-uxu';
+
+const kPROXY_ENABLED_FILE_NAME = '.uxu-protocol-handler-proxy-enabled';
 
 // default "@mozilla.org/network/protocol;1?name=http" class id
 const DEFAULT_HTTP_PROTOCOL_HANDLER = Components.classesByID['{4f47e42e-4d23-4dd3-bfda-eb29255e9ea3}'];
@@ -47,8 +48,6 @@ GlobalService.prototype = {
 
 			case 'final-ui-startup':
 				ObserverService.removeObserver(this, 'final-ui-startup');
-				Pref.addObserver(kUXU_INSTALL_GLOBAL, this, false);
-				Pref.addObserver('general.useragent', this, false);
 				this.init();
 				return;
 
@@ -68,22 +67,30 @@ GlobalService.prototype = {
 
 		Pref.setBoolPref(kUXU_TEST_RUNNING, false);
 		this.checkInstallGlobal();
+		this.checkProxyEnabled();
+
+		Pref.addObserver(kUXU_INSTALL_GLOBAL, this, false);
+		Pref.addObserver(kUXU_PROXY_ENABLED, this, false);
+		Pref.addObserver('general.useragent', this, false);
 	},
  
 	onPrefChange : function(aPrefName) 
 	{
 		switch (aPrefName)
 		{
+			case kUXU_PROXY_ENABLED:
+				this.proxyEnabled = Pref.getBoolPref(aPrefName);
 			case kUXU_INSTALL_GLOBAL:
-				if (PromptService.confirmEx(
-						null,
-						bundle.GetStringFromName('confirm_changePref_restart_title'),
-						bundle.GetStringFromName('confirm_changePref_restart_text'),
-						Ci.nsIPromptService.BUTTON_TITLE_YES * Ci.nsIPromptService.BUTTON_POS_0 +
-						Ci.nsIPromptService.BUTTON_TITLE_NO * Ci.nsIPromptService.BUTTON_POS_1,
-						null, null, null, null, {}
-					) == 0)
-					this.restart();
+				this.timer = Cc['@mozilla.org/timer;1']
+								.createInstance(Ci.nsITimer);
+				this.timer.init({
+					self : this,
+					observe : function() {
+						this.self.timer.cancel();
+						this.self.timer = null;
+						GlobalService.prototype.confirmRestartToApplyChange();
+					}
+				}, 100, Ci.nsITimer.TYPE_ONE_SHOT);
 				break;
 
 			default:
@@ -102,6 +109,16 @@ GlobalService.prototype = {
 				break;
 		}
 	},
+ 
+	get profileDirectory() 
+	{
+		if (!this._profileDirectory)
+			this._profileDirectory = Cc['@mozilla.org/file/directory_service;1']
+				.getService(Ci.nsIProperties)
+				.get('ProfDS', Ci.nsIFile);
+		return this._profileDirectory;
+	},
+	_profileDirectory : null,
  
 	checkInstallGlobal : function() 
 	{
@@ -134,33 +151,43 @@ GlobalService.prototype = {
 	
 	get installedLocation() 
 	{
-		var id = 'uxu@clear-code.com';
-		var dir = Cc['@mozilla.org/extensions/manager;1']
-				.getService(Ci.nsIExtensionManager)
-				.getInstallLocation(id)
-				.getItemLocation(id);
-		return dir;
+		if (!this._installedLocation) {
+			var id = 'uxu@clear-code.com';
+			var dir = Cc['@mozilla.org/extensions/manager;1']
+					.getService(Ci.nsIExtensionManager)
+					.getInstallLocation(id)
+					.getItemLocation(id);
+			this._installedLocation = dir;
+		}
+		return this._installedLocation;
 	},
+	_installedLocation : null,
 	
 	get globalLocation() 
 	{
-		var dir = Cc['@mozilla.org/file/directory_service;1']
-				.getService(Ci.nsIProperties)
-				.get('CurProcD', Ci.nsIFile);
-		dir.append('extensions');
-		dir.append(kUXU_DIR_NAME);
-		return dir;
+		if (!this._globalLocation) {
+			var dir = Cc['@mozilla.org/file/directory_service;1']
+					.getService(Ci.nsIProperties)
+					.get('CurProcD', Ci.nsIFile);
+			dir.append('extensions');
+			dir.append(kUXU_DIR_NAME);
+			this._globalLocation = dir;
+		}
+		return this._globalLocation;
 	},
+	_globalLocation : null,
  
 	get userLocation() 
 	{
-		var dir = Cc['@mozilla.org/file/directory_service;1']
-				.getService(Ci.nsIProperties)
-				.get('ProfD', Ci.nsIFile);
-		dir.append('extensions');
-		dir.append(kUXU_DIR_NAME);
-		return dir;
+		if (!this._userLocation) {
+			var dir = this.profileDirectory.clone(true);
+			dir.append('extensions');
+			dir.append(kUXU_DIR_NAME);
+			this._userLocation = dir;
+		}
+		return this._userLocation;
 	},
+	_userLocation : null,
   
 	installToGlobal : function() 
 	{
@@ -251,6 +278,64 @@ GlobalService.prototype = {
 						.getService(Ci.nsIAppStartup);
 		startup.quit(startup.eRestart | startup.eAttemptQuit);
 	},
+ 
+	confirmRestartToApplyChange : function()
+	{
+		if (PromptService.confirmEx(
+				null,
+				bundle.GetStringFromName('confirm_changePref_restart_title'),
+				bundle.GetStringFromName('confirm_changePref_restart_text'),
+				Ci.nsIPromptService.BUTTON_TITLE_YES * Ci.nsIPromptService.BUTTON_POS_0 +
+				Ci.nsIPromptService.BUTTON_TITLE_NO * Ci.nsIPromptService.BUTTON_POS_1,
+				null, null, null, null, {}
+			) == 0)
+			this.restart();
+	},
+  
+	checkProxyEnabled : function() 
+	{
+		var proxyEnabled = Pref.getBoolPref(kUXU_PROXY_ENABLED);
+		if (proxyEnabled != this.proxyEnabled) {
+			this.proxyEnabled = proxyEnabled;
+			this.restart();
+		}
+	},
+	
+	get proxyEnabled() 
+	{
+		return this.proxyEnabledFile.exists();
+	},
+ 
+	set proxyEnabled(aValue) 
+	{
+		var modified = false;
+		var proxyEnabled = this.proxyEnabledFile;
+		if (proxyEnabled.exists() && !aValue) {
+			proxyEnabled.remove(true);
+			modified = true;
+		}
+		else if (!proxyEnabled.exists() && aValue) {
+			proxyEnabled.create(proxyEnabled.NORMAL_FILE_TYPE, 0644);
+			modified = true;
+		}
+		if (modified) {
+			var autoreg = this.profileDirectory.clone(true);
+			autoreg.append('.autoreg');
+			if (!autoreg.exists())
+				autoreg.create(autoreg.NORMAL_FILE_TYPE, 0644);
+		}
+		return aValue;
+	},
+ 
+	get proxyEnabledFile() 
+	{
+		if (!this._proxyEnabledFile) {
+			this._proxyEnabledFile = this.profileDirectory.clone(true);
+			this._proxyEnabledFile.append(kPROXY_ENABLED_FILE_NAME);
+		}
+		return this._proxyEnabledFile;
+	},
+	_proxyEnabledFile : null,
   
 	/* nsICommandLineHandler */ 
 	
@@ -614,7 +699,7 @@ var gModule = {
 		for (var key in this._objects)
 		{
 			var obj = this._objects[key];
-			if (!obj.enabled) return;
+			if (!obj.enabled) continue;
 			aComponentManager.registerFactoryLocation(
 				obj.CID,
 				obj.NAME,
@@ -689,7 +774,9 @@ var gModule = {
 					return new HttpProtocolHandlerProxy();
 				}
 			},
-			enabled : kINTERNAL_PROXY_ENABLED
+			get enabled() {
+				return GlobalService.prototype.proxyEnabled;
+			}
 		},
 		https : {
 			CID  : HttpsProtocolHandlerProxy.prototype.CID,
@@ -711,7 +798,9 @@ var gModule = {
 					return new HttpsProtocolHandlerProxy();
 				}
 			},
-			enabled : kINTERNAL_PROXY_ENABLED
+			get enabled() {
+				return GlobalService.prototype.proxyEnabled;
+			}
 		}
 	},
 

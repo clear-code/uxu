@@ -28,6 +28,9 @@
 		<preference id="extensions.uxu.showInternalStacks"
 			name="extensions.uxu.showInternalStacks"
 			type="bool"/>
+		<preference id="extensions.uxu.protocolHandlerProxy.enabled"
+			name="extensions.uxu.protocolHandlerProxy.enabled"
+			type="bool"/>
 		<preference id="extensions.uxu.global"
 			name="extensions.uxu.global"
 			type="bool"/>
@@ -66,6 +69,9 @@
 	<checkbox id="extensions.uxu.showInternalStacks-check"
 		preference="extensions.uxu.showInternalStacks"
 		label="&config.showInternalStacks;"/>
+	<checkbox id="extensions.uxu.protocolHandlerProxy.enabled-check"
+		preference="extensions.uxu.protocolHandlerProxy.enabled"
+		label="&config.protocolHandlerProxy.enabled;"/>
 	<groupbox orient="vertical">
 		<caption label="&config.installGlobalLocation.caption;"
 			id="installGlobalLocation-caption"/>
