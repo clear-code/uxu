@@ -44,7 +44,7 @@ function getZoom(aWindow)
 {
 	if (!aWindow ||
 		!(aWindow instanceof Ci.nsIDOMWindow))
-		throw new Error('action.getZoom::['+aWindow+'] is not a frame!'');
+		throw new Error('action.getZoom::['+aWindow+'] is not a frame!');
 	var markupDocumentViewer = aWindow.top
 			.QueryInterface(Ci.nsIInterfaceRequestor)
 			.getInterface(Ci.nsIWebNavigation)
@@ -617,7 +617,7 @@ function fireXULCommandEvent(aWindow, aOptions)
 {
 	if (!aWindow ||
 		!(aWindow instanceof Ci.nsIDOMWindow))
-		throw new Error('action.fireXULCommandEvent::['+aWindow+'] is not a frame!'');
+		throw new Error('action.fireXULCommandEvent::['+aWindow+'] is not a frame!');
 
 	if (!aOptions) aOptions = {};
 	this._normalizeScreenAndClientPoint(aOptions, aWindow);
@@ -952,7 +952,7 @@ function _normalizeScreenAndClientPoint(aOptions, aWindow)
 {
 	if (!aWindow ||
 		!(aWindow instanceof Ci.nsIDOMWindow))
-		throw new Error('action._normalizeScreenAndClientPoint::['+aWindow+'] is not a frame!'');
+		throw new Error('action._normalizeScreenAndClientPoint::['+aWindow+'] is not a frame!');
 
 	var zoom = this.isFullZoom() ? this.getZoom(aWindow) : 1 ;
 	var box = getBoxObjectFor(aWindow.document.documentElement);
