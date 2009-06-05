@@ -425,15 +425,12 @@ var runnerListener = {
 	onError : function(aEvent)
 	{
 		var e = aEvent.data;
-		if (_('prerun-report', 'error').textContent)
-			_('prerun-report', 'error').textContent += '\n';
-		_('prerun-report', 'error').textContent += bundle.getFormattedString('error_failed', [e.toString()]);
-		_('prerun-report', 'error').hidden = false;
-
+		var report = clone('prerun-report');
+		_('testcase-reports').appendChild(report);
+		_(report, 'error').textContent = bundle.getFormattedString('error_failed', [e.toString()]);
 		if (utils.hasStackTrace(e)) {
-			displayStackTrace(e, _('prerun-report', 'stack-trace'));
-			_('prerun-report', 'stack-trace').hidden = false;
-			_('prerun-report').hidden = false;
+			displayStackTrace(e, _(report, 'stack-trace'));
+			_(report, 'stack-trace').hidden = false;
 		}
 	},
 	onProgress : function(aEvent)
@@ -698,13 +695,9 @@ function reset()
 	gErrorCount    = 0;
 	gFailureCount  = 0;
 	_('runFailed').setAttribute('disabled', true);
-	_('prerun-report', 'error').textContent = '';
-	_('prerun-report', 'error').hidden = true;
-	_('prerun-report', 'stack-trace').hidden = true;
 	_('testResultStatus').setAttribute('label', '');
 	_('testResultStatistical').setAttribute('label', '');
 	_('testResultStatistical').hidden = true;
-	removeChildrenOf(_('prerun-report', 'stack-trace'));
 	removeChildrenOf(_('testcase-reports'))
 	hideSource();
 	_('saveReport').setAttribute('disabled', true);

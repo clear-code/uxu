@@ -192,6 +192,14 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 				onselect="showSource(this.selectedItem.label);"
 				onclick="if (event.button == 0 &amp;&amp; event.target == this.selectedItem) showSource(this.selectedItem.label);"/>
 		</vbox>
+
+		<vbox role="prerun-report">
+			<description role="error" class="header"/>
+			<listbox hidden="true" role="stack-trace"
+				flex="1" rows="5" class="inset"
+				style="font-size: 0.8em;"
+				onselect="showSource(this.selectedItem.label);"/>
+		</vbox>
 	</box>
 
 	<!-- MENUS -->
@@ -294,21 +302,11 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 
 			<hbox flex="1">
 				<vbox flex="1" style="padding-top: 1em;">
-					<vbox flex="1">
-						<vbox id="prerun-report">
-							<description role="error" hidden="true" class="header"
-								context="contextMenu"/>
-							<listbox hidden="true" role="stack-trace"
-								flex="1" rows="5" class="inset"
-								style="font-size: 0.8em;"
-								onselect="showSource(this.selectedItem.label);"/>
-						</vbox>
-						<scrollbox id="testcase-reports"
-							flex="1"
-							orient="vertical"
-							style="overflow: auto;"
-							context="contextMenu"/>
-					</vbox>
+					<scrollbox id="testcase-reports"
+						flex="1"
+						orient="vertical"
+						style="overflow: auto;"
+						context="contextMenu"/>
 
 					<splitter id="content-splitter"
 						collapsed="true"

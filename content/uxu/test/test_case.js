@@ -311,10 +311,12 @@ function onStart()
 	this.environment.__proto__.addListener(this);
 	if (this._redirect) {
 		if (
-			(Cc['@mozilla.org/network/protocol;1?name=http'] !=
-			 Components.classesByID['{3d04c1d0-4e6c-11de-8a39-0800200c9a66}']) ||
-			(Cc['@mozilla.org/network/protocol;1?name=https'] !=
-			 Components.classesByID['{b81efa50-4e7d-11de-8a39-0800200c9a66}'])
+			!('{3d04c1d0-4e6c-11de-8a39-0800200c9a66}' in Components.classesByID) ||
+			(Cc['@mozilla.org/network/protocol;1?name=http'].getService() !=
+			 Components.classesByID['{3d04c1d0-4e6c-11de-8a39-0800200c9a66}'].getService()) ||
+			!('{b81efa50-4e7d-11de-8a39-0800200c9a66}' in Components.classesByID) ||
+			(Cc['@mozilla.org/network/protocol;1?name=https'].getService() !=
+			 Components.classesByID['{b81efa50-4e7d-11de-8a39-0800200c9a66}'].getService())
 			) {
 			this.fireEvent('Error', bundle.getString('error_protocol_handler_proxy_disabled'));
 		}

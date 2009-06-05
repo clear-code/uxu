@@ -20,8 +20,6 @@ const Pref = Cc['@mozilla.org/preferences;1']
 			.QueryInterface(Ci.nsIPrefBranch2);
 const IOService = Cc['@mozilla.org/network/io-service;1']
 			.getService(Components.interfaces.nsIIOService);
-const PromptService = Cc['@mozilla.org/embedcomp/prompt-service;1']
-			.getService(Ci.nsIPromptService);
 var bundle;
  
 function GlobalService() { 
@@ -64,6 +62,9 @@ GlobalService.prototype = {
 		bundle = Cc['@mozilla.org/intl/stringbundle;1']
 				.getService(Ci.nsIStringBundleService)
 				.createBundle('chrome://uxu/locale/uxu.properties');
+		PromptService = Cc['@mozilla.org/embedcomp/prompt-service;1']
+				.getService(Ci.nsIPromptService);
+
 		Pref.setBoolPref(kUXU_TEST_RUNNING, false);
 		this.checkInstallGlobal();
 	},
