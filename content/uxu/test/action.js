@@ -488,13 +488,10 @@ function fireKeyEventOnElement(aElement, aOptions)
 			this.fireKeyEventOnElement(aElement, options);
 			break;
 	}
-	var event = this._createKeyEventOnElement(aElement, aOptions);
-	if (event && aElement) {
-		aElement.dispatchEvent(event);
-		if (aOptions.type != 'keydown' &&
-			aOptions.type != 'keyup')
-			this._emulateEnterOnXULElement(aElement, aOptions);
-	}
+	aElement.dispatchEvent(this._createKeyEventOnElement(aElement, aOptions));
+	if (aOptions.type != 'keydown' &&
+		aOptions.type != 'keyup')
+		this._emulateEnterOnXULElement(aElement, aOptions);
 };
 	
 function _createKeyEventOnElement(aElement, aOptions) 
@@ -555,8 +552,7 @@ function fireXULCommandEvent(aWindow, aOptions)
 	if (!aOptions) aOptions = {};
 	this._normalizeScreenAndClientPoint(aOptions, aWindow);
 	var node = this.getElementFromScreenPoint(aWindow, aOptions.screenX, aOptions.screenY);
-	if (!node ||
-		!(node = this._getXULCommandEventDispatcher(node)))
+	if (!node)
 		throw new Error('action.fireXULCommandEvent::there is no element at ['+aOptions.screenX+','+aOptions.screenY+']!');
 	this.fireXULCommandEventOnElement(node, aOptions);
 };
@@ -566,6 +562,10 @@ function fireXULCommandEventOnElement(aElement, aOptions)
 	if (!aElement ||
 		!(aElement instanceof Ci.nsIDOMElement))
 		throw new Error('action.fireXULCommandEventOnElement:['+aElement+'] is not an element!');
+
+	aElement = this._getXULCommandEventDispatcher(aElement);
+	if (!aElement || aElement.getAttribute('disabled') == 'true')
+		return;
 
 	var event = this._createMouseEventOnElement(aElement, aOptions);
 	if (event && aElement)
@@ -592,7 +592,10 @@ function _createXULCommandEvent(aSourceEvent)
 function _getXULCommandEventDispatcher(aElement) 
 {
 	return aElement.ownerDocument.evaluate(
-			'ancestor-or-self::*[contains(" button toolbarbutton menuitem checkbox radio tab ", concat(" ", local-name(), " "))]',
+			'ancestor-or-self::*['+
+				'contains(" button menuitem checkbox radio tab ", concat(" ", local-name(), " ")) or '+
+				'(local-name() = "toolbarbutton" and (not(@type) or @type != "menu"))'+
+			']',
 			aElement,
 			null,
 			XPathResult.FIRST_ORDERED_NODE_TYPE,
