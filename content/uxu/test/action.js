@@ -779,6 +779,8 @@ function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 	}
 
 	aWindow = this.getWindowFromScreenPoint(aWindow, aScreenX, aScreenY);
+	if (!aWindow) return null;
+
 	var doc = aWindow.document;
 
 	var accNode;
