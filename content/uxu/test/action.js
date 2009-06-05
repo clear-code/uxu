@@ -856,7 +856,7 @@ function _getPopupElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 {
 	var doc = aWindow.document;
 	var popups = doc.evaluate(
-			'/descendant::*[contains(" menupopup popup tooltip panel", concat(" ", local-name(), " "))]',
+			'/descendant::*[contains(" menupopup popup tooltip panel ", concat(" ", local-name(), " "))]',
 			doc,
 			null,
 			XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
