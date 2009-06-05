@@ -425,7 +425,9 @@ var runnerListener = {
 	onError : function(aEvent)
 	{
 		var e = aEvent.data;
-		_('prerun-report', 'error').textContent = bundle.getFormattedString('error_failed', [e.toString()]);
+		if (_('prerun-report', 'error').textContent)
+			_('prerun-report', 'error').textContent += '\n';
+		_('prerun-report', 'error').textContent += bundle.getFormattedString('error_failed', [e.toString()]);
 		_('prerun-report', 'error').hidden = false;
 
 		if (utils.hasStackTrace(e)) {
@@ -696,6 +698,7 @@ function reset()
 	gErrorCount    = 0;
 	gFailureCount  = 0;
 	_('runFailed').setAttribute('disabled', true);
+	_('prerun-report', 'error').textContent = '';
 	_('prerun-report', 'error').hidden = true;
 	_('prerun-report', 'stack-trace').hidden = true;
 	_('testResultStatus').setAttribute('label', '');
