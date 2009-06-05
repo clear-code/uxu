@@ -10,6 +10,7 @@ const kUXU_DIR_NAME = 'uxu@clear-code.com';
 const kCATEGORY = 'm-uxu';
 
 const kPROXY_ENABLED_FILE_NAME = '.uxu-protocol-handler-proxy-enabled';
+const kSKIP_INITIALIZE_FILE_NAME = '.uxu-skip-restart';
 
 // default "@mozilla.org/network/protocol;1?name=http" class id
 const DEFAULT_HTTP_PROTOCOL_HANDLER = Components.classesByID['{4f47e42e-4d23-4dd3-bfda-eb29255e9ea3}'];
@@ -54,6 +55,10 @@ GlobalService.prototype = {
 			case 'nsPref:changed':
 				this.onPrefChange(aData)
 				return;
+
+			case 'uxu-profile-setup':
+				this.setUpUXUPrefs(aSubject.QueryInterface(Ci.nsILocalFile));
+				return;
 		}
 	},
  
@@ -66,12 +71,16 @@ GlobalService.prototype = {
 				.getService(Ci.nsIPromptService);
 
 		Pref.setBoolPref(kUXU_TEST_RUNNING, false);
-		this.checkInstallGlobal();
-		this.checkProxyEnabled();
 
-		Pref.addObserver(kUXU_INSTALL_GLOBAL, this, false);
-		Pref.addObserver(kUXU_PROXY_ENABLED, this, false);
+		if (!this.skipInitializeFile.exists()) {
+			this.checkInstallGlobal();
+			this.checkProxyEnabled();
+			Pref.addObserver(kUXU_INSTALL_GLOBAL, this, false);
+			Pref.addObserver(kUXU_PROXY_ENABLED, this, false);
+		}
+
 		Pref.addObserver('general.useragent', this, false);
+		ObserverService.addObserver(this, 'uxu-profile-setup', false);
 	},
  
 	onPrefChange : function(aPrefName) 
@@ -279,7 +288,7 @@ GlobalService.prototype = {
 		startup.quit(startup.eRestart | startup.eAttemptQuit);
 	},
  
-	confirmRestartToApplyChange : function()
+	confirmRestartToApplyChange : function() 
 	{
 		if (PromptService.confirmEx(
 				null,
@@ -336,6 +345,123 @@ GlobalService.prototype = {
 		return this._proxyEnabledFile;
 	},
 	_proxyEnabledFile : null,
+  
+	setUpUXUPrefs : function(aProfile) 
+	{
+		var skipInitialize = aProfile.clone(true);
+		skipInitialize.append(kSKIP_INITIALIZE_FILE_NAME);
+		skipInitialize.create(skipInitialize.NORMAL_FILE_TYPE, 0644);
+
+		if (this.proxyEnabled) {
+			var proxyEnabled = aProfile.clone(true);
+			proxyEnabled.append(kPROXY_ENABLED_FILE_NAME);
+			proxyEnabled.create(proxyEnabled.NORMAL_FILE_TYPE, 0644);
+		}
+
+		var userJSFile = aProfile.clone(true);
+		userJSFile.append('user.js');
+		var userJSContents = '';
+		if (userJSFile.exists()) userJSContents = this.readFrom(userJSFile);
+
+		var lines = [];
+		var prefs = <![CDATA[
+				bool extensions.uxu.protocolHandlerProxy.enabled
+				int  extensions.uxu.run.timeout
+				int  extensions.uxu.run.timeout.application
+				int  extensions.uxu.run.history.expire.days
+				char extensions.uxu.defaultEncoding
+				bool extensions.uxu.showInternalStacks
+				char extensions.uxu.priority.important
+				char extensions.uxu.priority.high
+				char extensions.uxu.priority.normal
+				char extensions.uxu.priority.low
+				bool extensions.uxu.warnOnNoAssertion
+				bool extensions.uxu.action.fireMouseEvent.useOldMethod
+				bool extensions.uxu.action.fireKeyEvent.useOldMethod
+				char extensions.uxu.runner.runMode
+				bool extensions.uxu.runner.runParallel
+				bool extensions.uxu.runner.autoShowContent
+				bool extensions.uxu.runner.coloredDiff
+				int  extensions.uxu.port
+				bool extensions.uxu.allowAccessesFromRemote
+				char extensions.uxu.allowAccessesFromRemote.allowedList
+			]]>.toString()
+				.replace(/^\s+|\s+$/g, '')
+				.split(/\s+/);
+		for (var i = 0, maxi = prefs.length; i < maxi; i += 2)
+		{
+			switch (prefs[i])
+			{
+				case 'bool':
+					lines.push('user_pref("'+prefs[i+1]+'", '+Pref.getBoolPref(prefs[i+1])+');');
+					break;
+				case 'int':
+					lines.push('user_pref("'+prefs[i+1]+'", '+Pref.getIntPref(prefs[i+1])+');');
+					break;
+				case 'char':
+					lines.push('user_pref("'+prefs[i+1]+'", "'+Pref.getCharPref(prefs[i+1])+'");');
+					break;
+			}
+		}
+		lines.push('user_pref("browser.dom.window.dump.enabled", true);');
+		lines.push('user_pref("javascript.options.showInConsole", true);');
+		lines.push('user_pref("extensions.update.enabled", false);');
+		// Firefox
+		lines.push('user_pref("browser.warnOnQuit", false);');
+		lines.push('user_pref("browser.warnOnRestart", false);');
+		lines.push('user_pref("browser.shell.checkDefaultBrowser", false);');
+		// Thunderbird
+		lines.push('user_pref("mail.shell.checkDefaultClient", false);');
+		lines.push('user_pref("mail.shell.checkDefaultMail", false);');
+
+		this.writeTo(userJSContents+'\n'+lines.join('\n')+'\n', userJSFile)
+	},
+	
+	get skipInitializeFile() 
+	{
+		if (!this._skipInitializeFile) {
+			this._skipInitializeFile = this.profileDirectory.clone(true);
+			this._skipInitializeFile.append(kSKIP_INITIALIZE_FILE_NAME);
+		}
+		return this._skipInitializeFile;
+	},
+	_skipInitializeFile : null,
+ 
+	readFrom : function(aTarget) 
+	{
+		aTarget = aTarget.QueryInterface(Ci.nsILocalFile)
+		stream = Cc['@mozilla.org/network/file-input-stream;1']
+					.createInstance(Ci.nsIFileInputStream);
+		try {
+			stream.init(aTarget, 1, 0, false); // open as "read only"
+		}
+		catch(ex) {
+			return '';
+		}
+
+		var fileContents = '';
+		try {
+			var scriptableStream = Cc['@mozilla.org/scriptableinputstream;1']
+					.createInstance(Ci.nsIScriptableInputStream);
+			scriptableStream.init(stream);
+			fileContents = scriptableStream.read(scriptableStream.available());
+			scriptableStream.close();
+		}
+		finally {
+			stream.close();
+		}
+
+		return fileContents;
+	},
+ 
+	writeTo : function(aContent, aTarget) 
+	{
+		var stream = Cc['@mozilla.org/network/file-output-stream;1']
+				.createInstance(Ci.nsIFileOutputStream);
+		stream.init(aTarget, 2, 0x200, false); // open as "write only"
+		stream.write(aContent, aContent.length);
+		stream.close();
+	},
   
 	/* nsICommandLineHandler */ 
 	

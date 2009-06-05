@@ -996,6 +996,8 @@ function _runByRemote(aStopper)
 		utils.installedUXU.copyTo(extensions, utils.installedUXU.leafName);
 	}
 
+	ObserverService.notifyObservers(profile, 'uxu-profile-setup', null);
+
 	this._remoteResultBuffer = '';
 	this._lastRemoteResponse = Date.now();
 	this._remoteReady = false;
