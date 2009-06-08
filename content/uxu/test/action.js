@@ -457,6 +457,9 @@ function fireKeyEventOnElement(aElement, aOptions)
 			return;
 	}
 
+	if (!aOptions) aOptions = {};
+	if (!aOptions.type) aOptions.type = 'keypress';
+
 	if (aElement.localName == 'textbox' &&
 		'inputField' in aElement &&
 		aElement.inputField instanceof Ci.nsIDOMElement)
@@ -507,6 +510,7 @@ function _createKeyEventOnElement(aElement, aOptions)
 		throw new Error('action._createKeyEventOnElement::['+aElement+'] is not an element!');
 
 	if (!aOptions) aOptions = {};
+	if (!aOptions.type) aOptions.type = 'keypress';
 
 	if (aOptions.type != 'keypress' &&
 		aOptions.charCode &&
