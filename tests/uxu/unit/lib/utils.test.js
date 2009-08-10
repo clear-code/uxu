@@ -670,16 +670,31 @@ function testInspectDOMNode()
 
 	p1 = content.document.getElementById('paragraph1');
 	assert.isNotNull(p1);
-	assert.inspectDOMNode('<P id="paragraph1">test<EM class="class" lang="en">em</EM></P>', p1);
+	if (utils.checkAppVersion('3.6a1pre') >= 0) {
+		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em xmlns="http://www.w3.org/1999/xhtml" class="class" lang="en">em</em></p>', p1);
+	}
+	else {
+		assert.inspectDOMNode('<P id="paragraph1">test<EM class="class" lang="en">em</EM></P>', p1);
+	}
 
 	p2 = content.document.getElementById('paragraph2');
 	assert.isNotNull(p2);
-	assert.inspectDOMNode('<P id="paragraph2">test<EM class="class" lang="en">em</EM></P>', p2);
+	if (utils.checkAppVersion('3.6a1pre') >= 0) {
+		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em xmlns="http://www.w3.org/1999/xhtml" class="class" lang="en">em</em></p>', p2);
+	}
+	else {
+		assert.inspectDOMNode('<P id="paragraph2">test<EM class="class" lang="en">em</EM></P>', p2);
+	}
 
 	fragment = content.document.createDocumentFragment();
 	fragment.appendChild(p1.cloneNode(true));
 	fragment.appendChild(p2.cloneNode(true));
-	assert.inspectDOMNode('<P id="paragraph1">test<EM class="class" lang="en">em</EM></P><P id="paragraph2">test<EM class="class" lang="en">em</EM></P>', fragment);
+	if (utils.checkAppVersion('3.6a1pre') >= 0) {
+		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em xmlns="http://www.w3.org/1999/xhtml" class="class" lang="en">em</em></p><p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em xmlns="http://www.w3.org/1999/xhtml" class="class" lang="en">em</em></p>', fragment);
+	}
+	else {
+		assert.inspectDOMNode('<P id="paragraph1">test<EM class="class" lang="en">em</EM></P><P id="paragraph2">test<EM class="class" lang="en">em</EM></P>', fragment);
+	}
 }
 
 assert.utilsEquals = function(aValue1, aValue2, aValue3, aMessage) {
@@ -850,6 +865,7 @@ test_setAndGetClipBoard.setUp = function() {
 		yield Do(utils.setUpTestWindow());
 	}
 	yield Do(utils.loadURI('../../fixtures/html.html'));
+	utils.getTestWindow().resizeTo(680, 480);
 	assert.contains('/fixtures/html.html', content.location.href);
 }
 test_setAndGetClipBoard.tearDown = function() {
