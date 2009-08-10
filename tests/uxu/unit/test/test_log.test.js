@@ -127,6 +127,11 @@ var log,
 	reports2;
 var bundle;
 
+function warmUp()
+{
+	utils.setPref('general.useragent.locale', 'ja');
+}
+
 function setUp()
 {
 	utils.setPref('general.useragent.locale', 'ja');
