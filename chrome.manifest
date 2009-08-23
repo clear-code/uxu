@@ -12,5 +12,7 @@ skin	uxu	classic/1.0	jar:chrome/uxu.jar!/skin/classic/uxu/
 
 style chrome://uxu/content/ui/runner.xul chrome://uxu/skin/style-fx3.css appversion>=3.0
 style chrome://uxu/content/ui/uxu.xul chrome://uxu/skin/style-fx3.css appversion>=3.0
+style chrome://uxu/content/ui/runner.xul chrome://uxu/skin/style-fx3.7.css appversion>=3.7a1pre
+style chrome://uxu/content/ui/uxu.xul chrome://uxu/skin/style-fx3.7.css appversion>=3.7a1pre
 
 resource uxu-modules modules/
