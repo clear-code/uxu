@@ -5,6 +5,65 @@ var isWindows = navigator.platform.toLowerCase().indexOf('win32') > -1;
 var topDir = baseURL+'../../../../';
 var utilsModule;
 
+
+function clearWindowsRegistoryKey(aRoot, aPath)
+{
+	try {
+		var regKey = Cc['@mozilla.org/windows-registry-key;1']
+						.createInstance(Ci.nsIWindowsRegKey);
+		regKey.open(aRoot, aPath, Ci.nsIWindowsRegKey.ACCESS_ALL);
+		try {
+			let values = [];
+			for (let i = 0, maxi = regKey.valueCount; i < maxi; i++)
+			{
+				values.push(regKey.getValueName(i));
+			}
+			values.forEach(function(aName) {
+				regKey.removeValue(aName);
+			});
+		}
+		catch(e) {
+		}
+		try {
+			let children = [];
+			for (let i = 0, maxi = regKey.childCount; i < maxi; i++)
+			{
+				children.push(regKey.getChildName(i));
+			}
+			children.forEach(function(aName) {
+				_clearWindowsRegistory(aRoot, aPath+'\\'+aName);
+			});
+		}
+		catch(e) {
+		}
+		regKey.close();
+	}
+	catch(e) {
+	}
+
+	aPath = aPath.replace(/\\([^\\]+)$/, '');
+	var name = RegExp.$1;
+	var parentRegKey = Cc['@mozilla.org/windows-registry-key;1']
+					.createInstance(Ci.nsIWindowsRegKey);
+	try {
+		parentRegKey.open(aRoot, aPath, Ci.nsIWindowsRegKey.ACCESS_ALL);
+		try {
+			if (parentRegKey.hasChild(name))
+				parentRegKey.removeChild(name);
+		}
+		catch(e) {
+			parentRegKey.close();
+			throw e;
+		}
+		finally {
+			parentRegKey.close();
+		}
+	}
+	catch(e) {
+	}
+}
+
+
 function setUp()
 {
 	utilsModule = {};
@@ -128,10 +187,20 @@ var testData = {
 	};
 
 test_setWindowsResigtory.setUp = function() {
-	utils.clearWindowsRegistory('HKCU\\Software\\ClearCode Inc.');
+	if (isWindows) {
+		clearWindowsRegistoryKey(
+			Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
+			'Software\\ClearCode Inc.'
+		);
+	}
 };
 test_setWindowsResigtory.tearDown = function() {
-	utils.clearWindowsRegistory('HKCU\\Software\\ClearCode Inc.');
+	if (isWindows) {
+		clearWindowsRegistoryKey(
+			Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
+			'HKCU\\Software\\ClearCode Inc.'
+		);
+	}
 };
 function test_setWindowsResigtory()
 {
@@ -154,8 +223,31 @@ function test_setWindowsResigtory()
 		}
 	}
 
-	for (var i in testData)
+	for (let i in testData)
 	{
 		assertSetWindowsResigtory(i, testData[i]);
+	}
+}
+
+test_clearWindowsRegistory.shouldSkip = !isWindows;
+test_clearWindowsRegistory.setUp = function() {
+	for (let i in testData)
+	{
+		utilsModule.setWindowsRegistory(i, testData[i]);
+		assert.strictlyEquals(testData[i], utilsModule.getWindowsRegistory(i));
+	}
+};
+test_clearWindowsRegistory.tearDown = function() {
+	clearWindowsRegistoryKey(
+		Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
+		'HKCU\\Software\\ClearCode Inc.'
+	);
+};
+function test_clearWindowsRegistory()
+{
+	utilsModule.clearWindowsRegistory(aKey);
+	for (let i in testData)
+	{
+		assert.isNull(utilsModule.getWindowsRegistory(i));
 	}
 }
