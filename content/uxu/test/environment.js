@@ -635,7 +635,6 @@ computeHashFromFile
 cosmeticClone
 createDatabase
 createDatabaseFromSQL
-createWindowsRegistoryKey
 Do
 doIteration
 dump

@@ -128,29 +128,10 @@ var testData = {
 	};
 
 test_setWindowsResigtory.setUp = function() {
-	for (var i in testData)
-	{
-		utils.clearWindowsRegistory(i);
-		let keys = [];
-		while ((i = i.replace(/\\[^\\]+$/, '')) &&
-				i.indexOf('HKCU\\Software\\ClearCode Inc.') == 0)
-		{
-			keys.push(i);
-		}
-		keys.reverse().forEach(function(aKey) {
-			utils.createWindowsRegistoryKey(aKey);
-		});
-	}
+	utils.clearWindowsRegistory('HKCU\\Software\\ClearCode Inc.');
 };
 test_setWindowsResigtory.tearDown = function() {
-	for (var i in testData)
-	{
-		while (i.indexOf('HKCU\\Software\\ClearCode Inc.') == 0)
-		{
-			utils.clearWindowsRegistory(i);
-			i = i.replace(/\\[^\\]+$/, '');
-		}
-	}
+	utils.clearWindowsRegistory('HKCU\\Software\\ClearCode Inc.');
 };
 function test_setWindowsResigtory()
 {
