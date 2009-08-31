@@ -13,8 +13,8 @@ var IOService = Cc['@mozilla.org/network/io-service;1']
 const ERROR_INVALID_OWNER = new Error('invalid owner');
 const ERROR_INVALID_XPATH_EXPRESSION = new Error('invalid expression');
 const ERROR_SLEEP_IS_NOT_AVAILABLE = new Error('"speep()" is not available on Gecko 1.8.x');
-const ERROR_PLATFORM_IS_NOT_WINDOWS = new Errror('the platform is not Windows!');
-const ERROR_FAILED_TO_WRITE_REGISTORY = new Errror('failed to write a value to the registory');
+const ERROR_PLATFORM_IS_NOT_WINDOWS = new Error('the platform is not Windows!');
+const ERROR_FAILED_TO_WRITE_REGISTORY = new Error('failed to write a value to the registory');
 	
 // DOMÉmÅ[ÉhéÊìæ 
 	
@@ -815,12 +815,12 @@ function loadPrefs(aFile, aHash)
 function _splitResigtoryKey(aKey) 
 {
 	var root = -1, path = '', name = '';
-	if ('nsIWindowsRegKey' in Ci) throw ERROR_PLATFORM_IS_NOT_WINDOWS;
+	if (!('nsIWindowsRegKey' in Ci)) throw ERROR_PLATFORM_IS_NOT_WINDOWS;
 
 	path = aKey.replace(/\\([^\\]+)$/, '');
 	name = RegExp.$1;
 
-	path = aKey.replace(/^([^\\]+)\\/, '');
+	path = path.replace(/^([^\\]+)\\/, '');
 	root = RegExp.$1.toUpperCase();
 	switch (root)
 	{
