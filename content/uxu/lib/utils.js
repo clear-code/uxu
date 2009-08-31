@@ -973,7 +973,7 @@ function setWindowsRegistory(aKey, aValue)
 				closeAndThrowError();
 				break;
 			case Ci.nsIWindowsRegKey.TYPE_STRING:
-				regKey.writeStringValue(name, aValue);
+				regKey.writeStringValue(name, String(aValue));
 				break;
 			case Ci.nsIWindowsRegKey.TYPE_BINARY:
 				switch (typeof aValue)
@@ -990,6 +990,7 @@ function setWindowsRegistory(aKey, aValue)
 					case 'object':
 						if (isArray(aValue)) {
 							aValue = aValue.map(function(aCode) {
+								if (typeof aCode != 'number') closeAndThrowError();
 								return String.fromCharCode(aCode);
 							}).join('');
 						}

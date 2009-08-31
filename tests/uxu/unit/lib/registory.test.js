@@ -180,11 +180,44 @@ function test_getWindowsResigtory()
 	);
 }
 
-var testData = {
-		'HKCU\\Software\\ClearCode Inc.\\UxU\\test-string' : 'string',
-		'HKCU\\Software\\ClearCode Inc.\\UxU\\test-number' : 29,
-		'HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary' : [0, 2, 9, 29]
-	};
+var testData = [
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-string',
+		  value    : 'string' },
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-string',
+		  value    : true,
+		  expected : 'true' },
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-string',
+		  value    : 29,
+		  expected : '29' },
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-number',
+		  value    : 29 },
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-number',
+		  value    : '2929',
+		  expected : 2929 },
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-number',
+		  value    : true,
+		  expected : 1 },
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-number',
+		  value    : false,
+		  expected : 0 },
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
+		  value    : [0, 2, 9, 29] },
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
+		  value    : 97,
+		  expected : [97] },
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
+		  value    : 'b',
+		  expected : [98] },
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
+		  value    : [true, false],
+		  error    : 'ERROR_FAILED_TO_WRITE_REGISTORY' },
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
+		  value    : ['a', 'b'],
+		  error    : 'ERROR_FAILED_TO_WRITE_REGISTORY' },
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
+		  value    : [{ value : true }, { value : false }],
+		  error    : 'ERROR_FAILED_TO_WRITE_REGISTORY' }
+	];
 
 test_setWindowsResigtory.setUp = function() {
 	if (isWindows) {
@@ -204,38 +237,50 @@ test_setWindowsResigtory.tearDown = function() {
 };
 function test_setWindowsResigtory()
 {
-	function assertSetWindowsResigtory(aKey, aValue)
+	function assertSetWindowsResigtory(aData)
 	{
 		if (isWindows) {
-			utilsModule.setWindowsRegistory(aKey, aValue);
-			assert.strictlyEquals(
-				aValue,
-				utilsModule.getWindowsRegistory(aKey)
-			);
+			if (aData.error) {
+				assert.raises(
+					utilsModule[aData.error],
+					function() {
+						utilsModule.setWindowsRegistory(aData.key, aData.value)
+					}
+				);
+			}
+			else {
+				utilsModule.setWindowsRegistory(aData.key, aData.value);
+				assert.strictlyEquals(
+					('expected' in aData ? aData.expected : aData.value ),
+					utilsModule.getWindowsRegistory(aData.key)
+				);
+			}
 		}
 		else {
 			assert.raises(
 				utilsModule.ERROR_PLATFORM_IS_NOT_WINDOWS,
 				function() {
-					utilsModule.setWindowsRegistory(aKey)
+					utilsModule.setWindowsRegistory(aData.key, aData.value)
 				}
 			);
 		}
 	}
 
-	for (let i in testData)
-	{
-		assertSetWindowsResigtory(i, testData[i]);
-	}
+	testData.forEach(function(aData) {
+		assertSetWindowsResigtory(aData);
+	});
 }
 
 test_clearWindowsRegistory.shouldSkip = !isWindows;
 test_clearWindowsRegistory.setUp = function() {
-	for (let i in testData)
-	{
-		utilsModule.setWindowsRegistory(i, testData[i]);
-		assert.strictlyEquals(testData[i], utilsModule.getWindowsRegistory(i));
-	}
+	testData.forEach(function(aData) {
+		if (aData.error) return;
+		utilsModule.setWindowsRegistory(aData.key, aData.value);
+		assert.strictlyEquals(
+			('expected' in aData ? aData.expected : aData.value ),
+			utilsModule.getWindowsRegistory(aData.key)
+		);
+	});
 };
 test_clearWindowsRegistory.tearDown = function() {
 	clearWindowsRegistoryKey(
@@ -246,8 +291,7 @@ test_clearWindowsRegistory.tearDown = function() {
 function test_clearWindowsRegistory()
 {
 	utilsModule.clearWindowsRegistory('HKCU\\Software\\ClearCode Inc.');
-	for (let i in testData)
-	{
-		assert.isNull(utilsModule.getWindowsRegistory(i));
-	}
+	testData.forEach(function(aData) {
+		assert.isNull(utilsModule.getWindowsRegistory(aData.key));
+	});
 }
