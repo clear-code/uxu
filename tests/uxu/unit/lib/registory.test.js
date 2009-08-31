@@ -245,7 +245,7 @@ test_clearWindowsRegistory.tearDown = function() {
 };
 function test_clearWindowsRegistory()
 {
-	utilsModule.clearWindowsRegistory(aKey);
+	utilsModule.clearWindowsRegistory('HKCU\\Software\\ClearCode Inc.');
 	for (let i in testData)
 	{
 		assert.isNull(utilsModule.getWindowsRegistory(i));

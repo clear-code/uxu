@@ -876,6 +876,9 @@ function getWindowsRegistory(aKey)
 				break;
 			case Ci.nsIWindowsRegKey.TYPE_BINARY:
 				value = regKey.readBinaryValue(name);
+				value = value.split('').map(function(aChar) {
+					return aChar.charCodeAt(0);
+				});
 				break;
 			case Ci.nsIWindowsRegKey.TYPE_INT:
 				value = regKey.readIntValue(name);
@@ -979,13 +982,16 @@ function setWindowsRegistory(aKey, aValue)
 						aValue = String.fromCharCode(aValue ? 1 : 0 );
 						break;
 					case 'string':
+						aValue = UCS2ToUTF8(aValue);
 						break;
 					case 'number':
 						aValue = String.fromCharCode(parseInt(aValue));
 						break;
 					case 'object':
 						if (isArray(aValue)) {
-							aValue = aValue.map(String.fromCharCode, String).join('');
+							aValue = aValue.map(function(aCode) {
+								return String.fromCharCode(aCode);
+							}).join('');
 						}
 						else {
 							closeAndThrowError();
