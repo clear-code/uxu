@@ -215,7 +215,7 @@ function test_GM_xmlhttpRequest()
 {
 	var sandbox = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_xmlHttpRequest.user.js');
 	sandbox.loadAsciiFile();
-	yield 500;
+	yield 1000;
 	assert.equals('ASCII', sandbox.data);
 }
 
