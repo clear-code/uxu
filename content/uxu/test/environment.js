@@ -628,6 +628,7 @@ checkApplicationVersion
 checkAppVersion
 cleanUpTempFiles
 clearPref
+clearWindowsRegistory
 compareVersions
 computeHash
 computeHashFromFile
@@ -652,6 +653,7 @@ getURLFromFile
 getURLFromFilePath
 getURLSpecFromFile
 getURLSpecFromFilePath
+getWindowsRegistory
 inspect
 inspectDOMNode
 loadPrefs
@@ -672,6 +674,7 @@ readFrom
 scheduleToRemove
 setClipBoard
 setPref
+setWindowsRegistory
 sha1
 sha1FromFile
 sha256

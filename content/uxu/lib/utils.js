@@ -857,7 +857,13 @@ function getWindowsRegistory(aKey)
 
 	var regKey = Cc['@mozilla.org/windows-registry-key;1']
 					.createInstance(Ci.nsIWindowsRegKey);
-	regKey.open(root, path, regKey.ACCESS_READ);
+	try {
+		regKey.open(root, path, regKey.ACCESS_READ);
+	}
+	catch(e) {
+		regKey.close();
+		return value;
+	}
 
 	if (regKey.hasValue(name)) {
 		switch (regKey.getValueType(name))
@@ -1000,6 +1006,33 @@ function setWindowsRegistory(aKey, aValue)
 
 	regKey.close();
 	return aValue;
+}
+ 
+function clearWindowsRegistory(aKey) 
+{
+	var root, path, name;
+	[root, path, name] = _splitResigtoryKey(aKey);
+	if (root < 0 || !path || !name) throw ERROR_FAILED_TO_WRITE_REGISTORY;
+
+	var regKey = Cc['@mozilla.org/windows-registry-key;1']
+					.createInstance(Ci.nsIWindowsRegKey);
+	try {
+		regKey.open(root, path, regKey.ACCESS_WRITE);
+	}
+	catch(e) {
+		regKey.close();
+		return;
+	}
+
+	try {
+		regKey.removeChild(name);
+	}
+	catch(e) {
+		regKey.close();
+		throw e;
+	}
+
+	regKey.close();
 }
   
 // クリップボード 

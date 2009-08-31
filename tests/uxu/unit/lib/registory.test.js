@@ -120,3 +120,50 @@ function test_getWindowsResigtory()
 			'CurrentVersion\\explorer\\Advanced\\TaskbarSizeMove'
 	);
 }
+
+var testData = {
+		'HKCU\\Software\\ClearCode Inc.\\UxU\\test-string' : 'string',
+		'HKCU\\Software\\ClearCode Inc.\\UxU\\test-number' : 29,
+		'HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary' : [0, 2, 9, 29]
+	};
+
+test_setWindowsResigtory.setUp = function() {
+	for (var i in testData)
+	{
+		utils.clearWindowsRegistory(i);
+		assert.isNull(utils.getWindowsRegistory(i));
+	}
+};
+test_setWindowsResigtory.tearDown = function() {
+	for (var i in testData)
+	{
+		utils.clearWindowsRegistory(i);
+		assert.isNull(utils.getWindowsRegistory(i));
+	}
+};
+function test_setWindowsResigtory()
+{
+	function assertSetWindowsResigtory(aKey, aValue)
+	{
+		if (isWindows) {
+			utilsModule.setWindowsRegistory(aKey, aValue);
+			assert.strictlyEquals(
+				aValue,
+				utilsModule.getWindowsRegistory(aKey)
+			);
+		}
+		else {
+			assert.raises(
+				utilsModule.ERROR_PLATFORM_IS_NOT_WINDOWS,
+				function() {
+					utilsModule.setWindowsRegistory(aKey)
+				}
+			);
+		}
+	}
+
+	for (var i in testData)
+	{
+		assertSetWindowsResigtory(i, testData[i]);
+	}
+}
