@@ -855,39 +855,29 @@ function getWindowsRegistory(aKey)
 	[root, path, name] = _splitResigtoryKey(aKey);
 	if (root < 0 || !path || !name) return value;
 
-	var regKey;
-	try {
-		regKey = Cc['@mozilla.org/windows-registry-key;1']
+	var regKey = Cc['@mozilla.org/windows-registry-key;1']
 					.createInstance(Ci.nsIWindowsRegKey);
-		regKey.open(root, path, regKey.ACCESS_READ);
-	}
-	catch(e) {
-		return value;
-	}
+	regKey.open(root, path, regKey.ACCESS_READ);
 
-	try {
-		if (regKey.hasValue(name)) {
-			switch (regKey.getValueType(name))
-			{
-				case Ci.nsIWindowsRegKey.TYPE_NONE:
-					value = true;
-					break;
-				case Ci.nsIWindowsRegKey.TYPE_STRING:
-					value = regKey.readStringValue(name);
-					break;
-				case Ci.nsIWindowsRegKey.TYPE_BINARY:
-					value = regKey.readBinaryValue(name);
-					break;
-				case Ci.nsIWindowsRegKey.TYPE_INT:
-					value = regKey.readIntValue(name);
-					break;
-				case Ci.nsIWindowsRegKey.TYPE_INT64:
-					value = regKey.readInt64Value(name);
-					break;
-			}
+	if (regKey.hasValue(name)) {
+		switch (regKey.getValueType(name))
+		{
+			case Ci.nsIWindowsRegKey.TYPE_NONE:
+				value = true;
+				break;
+			case Ci.nsIWindowsRegKey.TYPE_STRING:
+				value = regKey.readStringValue(name);
+				break;
+			case Ci.nsIWindowsRegKey.TYPE_BINARY:
+				value = regKey.readBinaryValue(name);
+				break;
+			case Ci.nsIWindowsRegKey.TYPE_INT:
+				value = regKey.readIntValue(name);
+				break;
+			case Ci.nsIWindowsRegKey.TYPE_INT64:
+				value = regKey.readInt64Value(name);
+				break;
 		}
-	}
-	catch(e) {
 	}
 
 	regKey.close();
@@ -900,20 +890,14 @@ function setWindowsRegistory(aKey, aValue)
 	[root, path, name] = _splitResigtoryKey(aKey);
 	if (root < 0 || !path || !name) throw ERROR_FAILED_TO_WRITE_REGISTORY;
 
-	var regKey;
-	try {
-		regKey = Cc['@mozilla.org/windows-registry-key;1']
+	var regKey = Cc['@mozilla.org/windows-registry-key;1']
 					.createInstance(Ci.nsIWindowsRegKey);
-		regKey.open(root, path, regKey.ACCESS_WRITE);
-	}
-	catch(e) {
-		throw ERROR_FAILED_TO_WRITE_REGISTORY;
-	}
+	regKey.open(root, path, regKey.ACCESS_WRITE);
 
-	function closeAndThrowError()
+	function closeAndThrowError(aError)
 	{
 		regKey.close();
-		throw ERROR_FAILED_TO_WRITE_REGISTORY;
+		throw aError || ERROR_FAILED_TO_WRITE_REGISTORY;
 	}
 
 	try {
@@ -1011,7 +995,7 @@ function setWindowsRegistory(aKey, aValue)
 		}
 	}
 	catch(e) {
-		closeAndThrowError();
+		closeAndThrowError(e);
 	}
 
 	regKey.close();

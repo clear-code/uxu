@@ -17,11 +17,11 @@ function tearDown()
 
 function test__splitResigtoryKey()
 {
-	function assertSplitRegistoryKey(aInput, aRoot, aPath, aName)
+	function assertSplitRegistoryKey(aExpected, aInput)
 	{
 		if (isWindows) {
 			assert.equals(
-				[aRoot, aPath, aName],
+				aExpected,
 				utilsModule._splitResigtoryKey(aInput)
 			);
 		}
@@ -36,54 +36,87 @@ function test__splitResigtoryKey()
 	}
 
 	assertSplitRegistoryKey(
-		'HKEY_CLASSES_ROOT\\.txt\\Content Type',
-		Ci.nsIWindowsRegKey.ROOT_KEY_CLASSES_ROOT,
-		'.txt',
-		'Content Type'
+		[Ci.nsIWindowsRegKey.ROOT_KEY_CLASSES_ROOT,
+		 '.txt',
+		 'Content Type'],
+		'HKEY_CLASSES_ROOT\\.txt\\Content Type'
 	);
 	assertSplitRegistoryKey(
-		'HKCR\\.txt\\Content Type',
-		Ci.nsIWindowsRegKey.ROOT_KEY_CLASSES_ROOT,
-		'.txt',
-		'Content Type'
+		[Ci.nsIWindowsRegKey.ROOT_KEY_CLASSES_ROOT,
+		 '.txt',
+		 'Content Type'],
+		'HKCR\\.txt\\Content Type'
 	);
 
 	assertSplitRegistoryKey(
+		[Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
+		 'Software\\Microsoft\\Windows\\'+
+			'CurrentVersion\\Internet Settings',
+		 'MigrateProxy'],
 		'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\'+
-			'CurrentVersion\\Internet Settings\\MigrateProxy',
-		Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
-		'Software\\Microsoft\\Windows\\'+
-			'CurrentVersion\\Internet Settings',
-		'MigrateProxy'
+			'CurrentVersion\\Internet Settings\\MigrateProxy'
 	);
 	assertSplitRegistoryKey(
+		[Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
+		 'Software\\Microsoft\\Windows\\'+
+			'CurrentVersion\\Internet Settings',
+		 'MigrateProxy'],
 		'HKCU\\Software\\Microsoft\\Windows\\'+
-			'CurrentVersion\\Internet Settings\\MigrateProxy',
-		Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
-		'Software\\Microsoft\\Windows\\'+
-			'CurrentVersion\\Internet Settings',
-		'MigrateProxy'
+			'CurrentVersion\\Internet Settings\\MigrateProxy'
 	);
 
 	assertSplitRegistoryKey(
+		[Ci.nsIWindowsRegKey.ROOT_KEY_LOCAL_MACHINE,
+		 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion',
+		 'ProgramFilesPath'],
 		'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\'+
-			'CurrentVersion\\ProgramFilesPath',
-		Ci.nsIWindowsRegKey.ROOT_KEY_LOCAL_MACHINE,
-		'SOFTWARE\\Microsoft\\Windows\\CurrentVersion',
-		'ProgramFilesPath'
+			'CurrentVersion\\ProgramFilesPath'
 	);
 	assertSplitRegistoryKey(
+		[Ci.nsIWindowsRegKey.ROOT_KEY_LOCAL_MACHINE,
+		 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion',
+		 'ProgramFilesPath'],
 		'HKLM\\SOFTWARE\\Microsoft\\Windows\\'+
-			'CurrentVersion\\ProgramFilesPath',
-		Ci.nsIWindowsRegKey.ROOT_KEY_LOCAL_MACHINE,
-		'SOFTWARE\\Microsoft\\Windows\\CurrentVersion',
-		'ProgramFilesPath'
+			'CurrentVersion\\ProgramFilesPath'
 	);
 
 	assertSplitRegistoryKey(
-		'INVALID_ROOT_KEY\\Path\\Name',
-		-1,
-		'Path',
-		'Name'
+		[-1,
+		 'Path',
+		 'Name'],
+		'UNKNOWN\\Path\\Name'
+	);
+}
+
+function test_getWindowsResigtory()
+{
+	function assertGetWindowsResigtory(aExpected, aKey)
+	{
+		if (isWindows) {
+			assert.strictlyEquals(
+				aExpected,
+				utilsModule.getWindowsRegistory(aKey)
+			);
+		}
+		else {
+			assert.raises(
+				utilsModule.ERROR_PLATFORM_IS_NOT_WINDOWS,
+				function() {
+					utilsModule.getWindowsRegistory(aKey)
+				}
+			);
+		}
+	}
+
+	// REG_SZ
+	assertGetWindowsResigtory(
+		'text/plain',
+		'HKCR\\.txt\\Content Type'
+	);
+	// REG_DWORD
+	assertGetWindowsResigtory(
+		0,
+		'HKLM\\Software\\Microsoft\\Windows\\'+
+			'CurrentVersion\\explorer\\Advanced\\TaskbarSizeMove'
 	);
 }
