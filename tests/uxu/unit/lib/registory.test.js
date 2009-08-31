@@ -15,21 +15,21 @@ function tearDown()
 {
 }
 
-function test__splitResigtoryKey()
+function test__splitRegistoryKey()
 {
 	function assertSplitRegistoryKey(aExpected, aInput)
 	{
 		if (isWindows) {
 			assert.equals(
 				aExpected,
-				utilsModule._splitResigtoryKey(aInput)
+				utilsModule._splitRegistoryKey(aInput)
 			);
 		}
 		else {
 			assert.raises(
 				utilsModule.ERROR_PLATFORM_IS_NOT_WINDOWS,
 				function() {
-					utilsModule._splitResigtoryKey(aInput)
+					utilsModule._splitRegistoryKey(aInput)
 				}
 			);
 		}
@@ -131,14 +131,25 @@ test_setWindowsResigtory.setUp = function() {
 	for (var i in testData)
 	{
 		utils.clearWindowsRegistory(i);
-		assert.isNull(utils.getWindowsRegistory(i));
+		let keys = [];
+		while ((i = i.replace(/\\[^\\]+$/, '')) &&
+				i.indexOf('HKCU\\Software\\ClearCode Inc.') == 0)
+		{
+			keys.push(i);
+		}
+		keys.reverse().forEach(function(aKey) {
+			utils.createWindowsRegistoryKey(aKey);
+		});
 	}
 };
 test_setWindowsResigtory.tearDown = function() {
 	for (var i in testData)
 	{
-		utils.clearWindowsRegistory(i);
-		assert.isNull(utils.getWindowsRegistory(i));
+		while (i.indexOf('HKCU\\Software\\ClearCode Inc.') == 0)
+		{
+			utils.clearWindowsRegistory(i);
+			i = i.replace(/\\[^\\]+$/, '');
+		}
 	}
 };
 function test_setWindowsResigtory()

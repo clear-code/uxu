@@ -812,7 +812,7 @@ function loadPrefs(aFile, aHash)
   
 // WindowsƒŒƒWƒXƒgƒŠ“Ç‚İ‘‚« 
 	
-function _splitResigtoryKey(aKey) 
+function _splitRegistoryKey(aKey) 
 {
 	var root = -1, path = '', name = '';
 	if (!('nsIWindowsRegKey' in Ci)) throw ERROR_PLATFORM_IS_NOT_WINDOWS;
@@ -852,13 +852,13 @@ function getWindowsRegistory(aKey)
 	var value = null;
 
 	var root, path, name;
-	[root, path, name] = _splitResigtoryKey(aKey);
+	[root, path, name] = _splitRegistoryKey(aKey);
 	if (root < 0 || !path || !name) return value;
 
 	var regKey = Cc['@mozilla.org/windows-registry-key;1']
 					.createInstance(Ci.nsIWindowsRegKey);
 	try {
-		regKey.open(root, path, regKey.ACCESS_READ);
+		regKey.open(root, path, Ci.nsIWindowsRegKey.ACCESS_READ);
 	}
 	catch(e) {
 		regKey.close();
@@ -893,12 +893,12 @@ function getWindowsRegistory(aKey)
 function setWindowsRegistory(aKey, aValue) 
 {
 	var root, path, name;
-	[root, path, name] = _splitResigtoryKey(aKey);
+	[root, path, name] = _splitRegistoryKey(aKey);
 	if (root < 0 || !path || !name) throw ERROR_FAILED_TO_WRITE_REGISTORY;
 
 	var regKey = Cc['@mozilla.org/windows-registry-key;1']
 					.createInstance(Ci.nsIWindowsRegKey);
-	regKey.open(root, path, regKey.ACCESS_WRITE);
+	regKey.open(root, path, Ci.nsIWindowsRegKey.ACCESS_WRITE);
 
 	function closeAndThrowError(aError)
 	{
@@ -1011,13 +1011,13 @@ function setWindowsRegistory(aKey, aValue)
 function clearWindowsRegistory(aKey) 
 {
 	var root, path, name;
-	[root, path, name] = _splitResigtoryKey(aKey);
+	[root, path, name] = _splitRegistoryKey(aKey);
 	if (root < 0 || !path || !name) throw ERROR_FAILED_TO_WRITE_REGISTORY;
 
 	var regKey = Cc['@mozilla.org/windows-registry-key;1']
 					.createInstance(Ci.nsIWindowsRegKey);
 	try {
-		regKey.open(root, path, regKey.ACCESS_WRITE);
+		regKey.open(root, path, Ci.nsIWindowsRegKey.ACCESS_WRITE);
 	}
 	catch(e) {
 		regKey.close();
@@ -1025,7 +1025,36 @@ function clearWindowsRegistory(aKey)
 	}
 
 	try {
-		regKey.removeChild(name);
+		if (regKey.hasChild(name))
+			regKey.removeChild(name);
+	}
+	catch(e) {
+		regKey.close();
+		throw e;
+	}
+
+	regKey.close();
+}
+ 
+function createWindowsRegistoryKey(aKey) 
+{
+	var root, path, name;
+	[root, path, name] = _splitRegistoryKey(aKey);
+	if (root < 0 || !path || !name) throw ERROR_FAILED_TO_WRITE_REGISTORY;
+
+	var regKey = Cc['@mozilla.org/windows-registry-key;1']
+					.createInstance(Ci.nsIWindowsRegKey);
+	try {
+		regKey.open(root, path, Ci.nsIWindowsRegKey.ACCESS_WRITE);
+	}
+	catch(e) {
+		regKey.close();
+		return;
+	}
+
+	try {
+		if (!regKey.hasChild(name))
+			regKey.createChild(name, Ci.nsIWindowsRegKey.ACCESS_WRITE);
 	}
 	catch(e) {
 		regKey.close();
