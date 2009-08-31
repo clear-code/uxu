@@ -290,6 +290,9 @@ test_clearWindowsRegistory.tearDown = function() {
 };
 function test_clearWindowsRegistory()
 {
+	utilsModule.clearWindowsRegistory('HKCU\\Software\\ClearCode Inc.\\UxU\\test-string');
+	assert.isNull(utilsModule.getWindowsRegistory('HKCU\\Software\\ClearCode Inc.\\UxU\\test-string'));
+
 	utilsModule.clearWindowsRegistory('HKCU\\Software\\ClearCode Inc.');
 	testData.forEach(function(aData) {
 		assert.isNull(utilsModule.getWindowsRegistory(aData.key));

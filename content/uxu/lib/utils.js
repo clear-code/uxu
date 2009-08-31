@@ -1095,6 +1095,8 @@ function _clearWindowsRegistory(aRoot, aPath)
 	try {
 		parentRegKey.open(aRoot, aPath, Ci.nsIWindowsRegKey.ACCESS_ALL);
 		try {
+			if (parentRegKey.hasValue(name))
+				parentRegKey.removeValue(name);
 			if (parentRegKey.hasChild(name))
 				parentRegKey.removeChild(name);
 		}
