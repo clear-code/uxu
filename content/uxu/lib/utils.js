@@ -13,6 +13,8 @@ var IOService = Cc['@mozilla.org/network/io-service;1']
 const ERROR_INVALID_OWNER = new Error('invalid owner');
 const ERROR_INVALID_XPATH_EXPRESSION = new Error('invalid expression');
 const ERROR_SLEEP_IS_NOT_AVAILABLE = new Error('"speep()" is not available on Gecko 1.8.x');
+const ERROR_PLATFORM_IS_NOT_WINDOWS = new Errror('the platform is not Windows!');
+const ERROR_FAILED_TO_WRITE_REGISTORY = new Errror('failed to write a value to the registory');
 	
 // DOMノード取得 
 	
@@ -806,6 +808,214 @@ function loadPrefs(aFile, aHash)
 	);
 
 	return result;
+}
+  
+// Windowsレジストリ読み書き 
+	
+function _splitResigtoryKey(aKey) 
+{
+	var root = -1, path = '', name = '';
+	if ('nsIWindowsRegKey' in Ci) throw ERROR_PLATFORM_IS_NOT_WINDOWS;
+
+	path = aKey.replace(/\\([^\\]+)$/, '');
+	name = RegExp.$1;
+
+	path = aKey.replace(/^([^\\]+)\\/, '');
+	root = RegExp.$1.toUpperCase();
+	switch (root)
+	{
+		case 'HKEY_CLASSES_ROOT':
+		case 'HKCR':
+			root = Ci.nsIWindowsRegKey.ROOT_KEY_CLASSES_ROOT;
+			break;
+
+		case 'HKEY_CURRENT_USER':
+		case 'HKCU':
+			root = Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER;
+			break;
+
+		case 'HKEY_LOCAL_MACHINE':
+		case 'HKLM':
+			root = Ci.nsIWindowsRegKey.ROOT_KEY_LOCAL_MACHINE;
+			break;
+
+		default:
+			root = -1;
+			break;
+	}
+
+	return [root, path, name];
+}
+ 
+function getWindowsRegistory(aKey) 
+{
+	var value = null;
+
+	var root, path, name;
+	[root, path, name] = _splitResigtoryKey(aKey);
+	if (root < 0 || !path || !name) return value;
+
+	var regKey;
+	try {
+		regKey = Cc['@mozilla.org/windows-registry-key;1']
+					.createInstance(Ci.nsIWindowsRegKey);
+		regKey.open(root, path, regKey.ACCESS_READ);
+	}
+	catch(e) {
+		return value;
+	}
+
+	try {
+		if (regKey.hasValue(name)) {
+			switch (regKey.getValueType(name))
+			{
+				case Ci.nsIWindowsRegKey.TYPE_NONE:
+					value = true;
+					break;
+				case Ci.nsIWindowsRegKey.TYPE_STRING:
+					value = regKey.readStringValue(name);
+					break;
+				case Ci.nsIWindowsRegKey.TYPE_BINARY:
+					value = regKey.readBinaryValue(name);
+					break;
+				case Ci.nsIWindowsRegKey.TYPE_INT:
+					value = regKey.readIntValue(name);
+					break;
+				case Ci.nsIWindowsRegKey.TYPE_INT64:
+					value = regKey.readInt64Value(name);
+					break;
+			}
+		}
+	}
+	catch(e) {
+	}
+
+	regKey.close();
+	return value;
+}
+ 
+function setWindowsRegistory(aKey, aValue) 
+{
+	var root, path, name;
+	[root, path, name] = _splitResigtoryKey(aKey);
+	if (root < 0 || !path || !name) throw ERROR_FAILED_TO_WRITE_REGISTORY;
+
+	var regKey;
+	try {
+		regKey = Cc['@mozilla.org/windows-registry-key;1']
+					.createInstance(Ci.nsIWindowsRegKey);
+		regKey.open(root, path, regKey.ACCESS_WRITE);
+	}
+	catch(e) {
+		throw ERROR_FAILED_TO_WRITE_REGISTORY;
+	}
+
+	function closeAndThrowError()
+	{
+		regKey.close();
+		throw ERROR_FAILED_TO_WRITE_REGISTORY;
+	}
+
+	try {
+		var type;
+		if (regKey.hasValue(name)) {
+			type = regKey.getValueType(name);
+		}
+		else {
+			switch (typeof aValue)
+			{
+				case 'string':
+					type = Ci.nsIWindowsRegKey.TYPE_STRING;
+					break;
+				case 'boolean':
+					type = Ci.nsIWindowsRegKey.TYPE_INT;
+					break;
+				case 'number':
+					type = Ci.nsIWindowsRegKey.TYPE_INT;
+					break;
+				case 'object':
+					if (isArray(aValue)) {
+						type = Ci.nsIWindowsRegKey.TYPE_BINARY;
+					}
+					else {
+						closeAndThrowError();
+					}
+					break;
+			}
+		}
+
+		switch (type)
+		{
+			case Ci.nsIWindowsRegKey.TYPE_NONE:
+				closeAndThrowError();
+				break;
+			case Ci.nsIWindowsRegKey.TYPE_STRING:
+				regKey.writeStringValue(name, aValue);
+				break;
+			case Ci.nsIWindowsRegKey.TYPE_BINARY:
+				switch (typeof aValue)
+				{
+					case 'boolean':
+						aValue = String.fromCharCode(aValue ? 1 : 0 );
+						break;
+					case 'string':
+						break;
+					case 'number':
+						aValue = String.fromCharCode(parseInt(aValue));
+						break;
+					case 'object':
+						if (isArray(aValue)) {
+							aValue = aValue.map(String.fromCharCode, String).join('');
+						}
+						else {
+							closeAndThrowError();
+						}
+						break;
+				}
+				regKey.writeBinaryValue(name, aValue);
+				break;
+			case Ci.nsIWindowsRegKey.TYPE_INT:
+				switch (typeof aValue)
+				{
+					case 'boolean':
+						aValue = aValue ? 1 : 0 ;
+						break;
+					case 'string':
+					case 'number':
+						aValue = parseInt(aValue);
+						if (isNaN(aValue)) closeAndThrowError();
+						break;
+					case 'object':
+						closeAndThrowError();
+						break;
+				}
+				regKey.writeIntValue(name, aValue);
+				break;
+			case Ci.nsIWindowsRegKey.TYPE_INT64:
+				switch (typeof aValue)
+				{
+					case 'boolean':
+						aValue = aValue ? 1 : 0 ;
+						break;
+					case 'string':
+					case 'number':
+						aValue = parseInt(aValue);
+						if (isNaN(aValue)) closeAndThrowError();
+						break;
+					case 'object':
+						closeAndThrowError();
+						break;
+				}
+				regKey.writeInt64Value(name, aValue);
+				break;
+		}
+	}
+	catch(e) {
+		closeAndThrowError();
+	}
+
+	regKey.close();
+	return aValue;
 }
   
 // クリップボード 
