@@ -865,7 +865,9 @@ test_setAndGetClipBoard.setUp = function() {
 		yield Do(utils.setUpTestWindow());
 	}
 	yield Do(utils.loadURI('../../fixtures/html.html'));
-	utils.getTestWindow().resizeTo(680, 480);
+	if (utils.product == 'Firefox') {
+		utils.getTestWindow().resizeTo(680, 480);
+	}
 	assert.contains('/fixtures/html.html', content.location.href);
 }
 test_setAndGetClipBoard.tearDown = function() {
