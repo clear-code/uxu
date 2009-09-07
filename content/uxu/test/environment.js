@@ -641,6 +641,7 @@ dump
 fixupIncompleteURI
 getClipBoard
 getFileFromKeyword
+getFileFromPath
 getFileFromURL
 getFileFromURLSpec
 getFilePathFromKeyword

@@ -186,6 +186,10 @@ function makeFileWithPath(aPath)
 	newFile.initWithPath(aPath);
 	return newFile;
 }
+function getFileFromPath(aPath) // alias
+{
+	return makeFileWithPath(aPath);
+}
  
 // URLÅ®ÉtÉ@ÉCÉã 
 	
@@ -2087,7 +2091,7 @@ function getInstalledLocationOfProduct(aProduct)
 
 	var file = this.getPref('extensions.uxu.product.'+aProduct);
 	if (file) {
-		file = getFileFromPath(file);
+		file = makeFileWithPath(file);
 		if (file.exists()) return file;
 	}
 
@@ -2155,7 +2159,7 @@ function _getInstalledLocationOfMozillaProduct(aProduct)
 		curVerKey.close();
 		productKey.close();
 
-		return getFileFromPath(path);
+		return makeFileWithPath(path);
 	}
 	catch(e) {
 	}
