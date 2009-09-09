@@ -328,18 +328,15 @@ function writeTo(aContent, aTarget, aEncoding)
 	if (!target) throw new Error('Error: Utils::writeTo() requires a file path or a File URL. '+aTarget+' is invalid!');
 
 	// create directories
-	var current = target;
-	var dirs    = [];
-	while (current.parent && !current.parent.exists())
-	{
-		dirs.push(current.parent);
-		current = current.parent;
-	}
-
-	if (dirs.length) {
-		for (var i = dirs.length-1; i > -1; i--)
-			dirs[i].create(dirs[i].DIRECTORY_TYPE, 0755);
-	}
+	(function(aDir) {
+		try {
+			if (aDir.parent) arguments.callee(aDir.parent);
+			if (aDir.exists()) return;
+			aDir.create(aDir.DIRECTORY_TYPE, 0755);
+		}
+		catch(e) {
+		}
+	})(target.parent);
 
 	var tempFile = getFileFromKeyword('TmpD');
 	tempFile.append(target.localName+'.writing');
