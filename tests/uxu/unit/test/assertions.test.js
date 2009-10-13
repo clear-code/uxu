@@ -697,8 +697,14 @@ function testImplementsInstance()
 	assertSuccess(assertionsModule.implementsInterface,
 		[Ci.nsIDOMWindow, window]
 	);
+	assertSuccess(assertionsModule.implementsInterface,
+		['nsIDOMWindow', window]
+	);
 	assertFailure(assertionsModule.implementsInterface,
 		[Ci.nsIDOMRange, window, message]
+	);
+	assertFailure(assertionsModule.implementsInterface,
+		['nsIDOMRange', window, message]
 	);
 }
 
