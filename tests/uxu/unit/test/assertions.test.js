@@ -690,6 +690,18 @@ function testArray()
 	assert.equal(2, assertionsModule.successCount);
 }
 
+function testImplementsInstance()
+{
+	var message = Math.random() * 65000;
+
+	assertSuccess(assertionsModule.implementsInterface,
+		[Ci.nsIDOMWindow, window]
+	);
+	assertFailure(assertionsModule.implementsInterface,
+		[Ci.nsIDOMRange, window, message]
+	);
+}
+
 function testRaises()
 {
 	var message = Math.random() * 65000;
