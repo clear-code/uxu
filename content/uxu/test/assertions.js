@@ -261,10 +261,10 @@ function isNotNull(aActual, aMessage)
 function implementsInterface(aExpectedInterface, aActualInstance, aMessage)
 {
 	if (Ci[aExpectedInterface] != aExpectedInterface)
-		raise new Error(bundle.getFormattedString('assert_implement_interface_not_interface', [appendTypeString(aExpectedInterface)]));
+		throw new Error(bundle.getFormattedString('assert_implement_interface_not_interface', [appendTypeString(aExpectedInterface)]));
 
 	if (!(aActualInstance instanceof Ci.nsISupports))
-		raise new Error(bundle.getFormattedString('assert_implement_interface_not_instance', [appendTypeString(aActualInstance)]));
+		throw new Error(bundle.getFormattedString('assert_implement_interface_not_instance', [appendTypeString(aActualInstance)]));
 
 	if (!(aActualInstance instanceof aExpectedInterface)) {
 		var actualInterfaces = [];
