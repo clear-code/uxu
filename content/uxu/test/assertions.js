@@ -272,7 +272,7 @@ function implementsInterface(aExpectedInterface, aActualInstance, aMessage)
 		{
 			if (aActualInstance instanceof Ci[i]) actualInterfaces.push(i);
 		}
-		actualInterfaces = actualInterfaces.join('\n');
+		actualInterfaces = actualInterfaces.sort().join('\n');
 		fail({
 		     	expected    : bundle.getFormattedString('assert_implement_interface_expected', [aExpectedInterface]),
 		     	actual      : bundle.getFormattedString('assert_implement_interface_actual', [actualInterfaces])
