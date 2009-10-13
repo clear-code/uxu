@@ -260,6 +260,9 @@ function isNotNull(aActual, aMessage)
 
 function implementsInterface(aExpectedInterface, aActualInstance, aMessage)
 {
+	if (typeof aExpectedInterface == 'string')
+		aExpectedInterface = Ci[aExpectedInterface];
+
 	if (Ci[aExpectedInterface] != aExpectedInterface)
 		throw new Error(bundle.getFormattedString('assert_implement_interface_not_interface', [appendTypeString(aExpectedInterface)]));
 
