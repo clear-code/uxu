@@ -52,6 +52,7 @@ function testSimpleTransitions()
 	};
 	eventHandlers.log = [];
 	fsm.go('state1', {}, stateHandlers, stateTransitions, eventHandlers);
+	yield 500;
 	assert.equals('abc', string);
 	assert.arrayEquals(
 		'state1 enter,state1 exit,state2 enter,state2 exit,state3 enter,state3 exit'.split(','),
@@ -105,6 +106,7 @@ function testSimpleBackTransitions()
 	};
 	eventHandlers.log = [];
 	fsm.go('state1', {}, stateHandlers, stateTransitions, eventHandlers);
+	yield 500;
 	assert.equals('aabbcc', string);
 	assert.arrayEquals(
 		'state1 enter,state1 exit,state1 enter,state1 exit,state2 enter,state2 exit,state2 enter,state2 exit,state3 enter,state3 exit,state3 enter,state3 exit'.split(','),
@@ -173,6 +175,7 @@ function testFailedTransitions()
 	};
 	eventHandlers.log = [];
 	fsm.go('state1', {}, stateHandlers, stateTransitions, eventHandlers);
+	yield 500;
 	assert.equals('a', string);
 	assert.arrayEquals(
 		['state1 enter'],
