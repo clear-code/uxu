@@ -191,11 +191,7 @@ function constructor(aTitle, aOptions)
 			return this._environment;
 		});
 
-	this._done = false;
-	this.__defineGetter__(
-		'done', function() {
-			return this._done;
-		});
+	this.done = false;
 
 	this._redirect = aOptions.redirect || null;
 	this.__defineSetter__(
@@ -717,7 +713,7 @@ function run(aStopper)
 
 	this._stopper = aStopper;
 
-	this._done = false;
+	this.done = false;
 	this._aborted = false;
 
 	if (this.shouldRunInRemote && this._runByRemote()) return;
@@ -1024,7 +1020,7 @@ function run(aStopper)
 		},
 		finished : function(aContinuation)
 		{
-			_this._done = true;
+			_this.done = true;
 			if (!_this._aborted)
 				_this.fireEvent('Finish', testCaseReport.report);
 		}
@@ -1118,7 +1114,7 @@ function _runByRemote(aStopper)
 			var current;
 			var timeout;
 			var interval;
-			while (!_this._done)
+			while (!_this.done)
 			{
 				timeout = _this._remoteReady ? afterReadyTimeout : beforeReadyTimeout ;
 				interval = _this._remoteReady ? afterReadyInterval : beforeReadyInterval ;
@@ -1185,7 +1181,7 @@ function onServerInput(aEvent)
 		return;
 	}
 	if (input.indexOf(TESTCASE_FINISED) == 0) {
-		this._done = true;
+		this.done = true;
 		this.fireEvent('ResponseRequest', responseId+'\n');
 		return;
 	}
@@ -1210,7 +1206,7 @@ function _onReceiveRemoteResult(aResult)
  
 function _onFinishRemoteResult(aReport) 
 {
-	this._done = true;
+	this.done = true;
 	if (!this._aborted) {
 		this.fireEvent('Finish', aReport);
 	}
