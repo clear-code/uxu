@@ -36,8 +36,13 @@ function clearCount()
 	testCount     = 0;
 }
 
-function assertDoneProcessCount(aSetUp, aTearDown, aTestCount)
+function assertDoneProcessCount(aSetUp, aTearDown, aTestCount, aMethod, aDoNotRun)
 {
+	if (!aDoNotRun) {
+		assert.isFalse(testcase.done);
+		testcase[aMethod || 'run']();
+		yield (function() { return testcase.done; });
+	}
 	assert.equals({ setUpCount    : aSetUp,
 	                tearDownCount : aTearDown,
 	                testCount     : aTestCount,
@@ -46,6 +51,18 @@ function assertDoneProcessCount(aSetUp, aTearDown, aTestCount)
 	                tearDownCount : tearDownCount,
 	                testCount     : testCount,
 	                done          : testcase.done });
+}
+
+function assertTestResult()
+{
+	testcase.run();
+	yield (function() { return testcase.done; });
+	assert.equals(
+		Array.slice(arguments),
+		testcase.tests.map(function(aTest) {
+			return aTest.report.result;
+		})
+	);
 }
 
 function assertInitialized(aTest, aDescription)
@@ -125,9 +142,7 @@ function testNormalStyle1()
 	assert.equals(3, testcase.tests.length);
 	assertInitialized(testcase.tests[0], '1');
 	testcase.masterPriority = 'must';
-	assert.isFalse(testcase.done);
-	testcase.run();
-	assertDoneProcessCount(3, 3, 3);
+	yield assertDoneProcessCount(3, 3, 3);
 }
 
 function testNormalStyle2()
@@ -141,9 +156,7 @@ function testNormalStyle2()
 	assert.equals(3, testcase.tests.length);
 	assertInitialized(testcase.tests[0], 'test1');
 	testcase.masterPriority = 'must';
-	assert.isFalse(testcase.done);
-	testcase.run();
-	assertDoneProcessCount(3, 3, 3);
+	yield assertDoneProcessCount(3, 3, 3);
 }
 
 function testNormalStyle3()
@@ -159,9 +172,7 @@ function testNormalStyle3()
 	assert.equals(3, testcase.tests.length);
 	assertInitialized(testcase.tests[0], '1');
 	testcase.masterPriority = 'must';
-	assert.isFalse(testcase.done);
-	testcase.run();
-	assertDoneProcessCount(3, 3, 3);
+	yield assertDoneProcessCount(3, 3, 3);
 }
 
 function testBDDStyle1()
@@ -174,9 +185,7 @@ function testBDDStyle1()
 	assert.equals(3, testcase.tests.length);
 	assertInitialized(testcase.tests[0], '1');
 	testcase.masterPriority = 'must';
-	assert.isFalse(testcase.done);
-	testcase.verify();
-	assertDoneProcessCount(3, 0, 3);
+	yield assertDoneProcessCount(3, 0, 3, 'verify');
 }
 
 function testBDDStyle2()
@@ -191,9 +200,7 @@ function testBDDStyle2()
 	assert.equals(3, testcase.tests.length);
 	assertInitialized(testcase.tests[0], '1');
 	testcase.masterPriority = 'must';
-	assert.isFalse(testcase.done);
-	testcase.verify();
-	assertDoneProcessCount(3, 0, 3);
+	yield assertDoneProcessCount(3, 0, 3, 'verify');
 }
 
 function testAsync()
@@ -227,13 +234,10 @@ function testAsync()
 		}
 	};
 	assert.equals(3, testcase.tests.length);
-	assert.isFalse(testcase.done);
 	var start = Date.now();
 	testcase.masterPriority = 'must';
-	testcase.run();
-	yield (function() { return testcase.done; });
+	yield assertDoneProcessCount(3, 3, 3);
 	assert.compare(Date.now() - start, '>=', (100 * 3) * 3);
-	assertDoneProcessCount(3, 3, 3);
 }
 
 function testPriority()
@@ -259,8 +263,7 @@ function testPriority()
 	for (var i = 0, maxi = 10; i < maxi; i++)
 	{
 		testcase.run();
-		assert.isTrue(testcase.done);
-		yield 0;
+		yield (function() { return testcase.done; });
 	}
 	assert.equals(testCount, setUpCount);
 	assert.equals(testCount, tearDownCount);
@@ -281,23 +284,22 @@ function testMasterPriority()
 
 	clearCount();
 	testcase.masterPriority = 'must';
-	testcase.run();
-	assertDoneProcessCount(2, 2, 2);
+	yield assertDoneProcessCount(2, 2, 2);
 
 	clearCount();
+	testcase.done = false;
 	testcase.masterPriority = 'never';
-	testcase.run();
-	assertDoneProcessCount(0, 0, 0);
+	yield assertDoneProcessCount(0, 0, 0);
 
 	clearCount();
+	testcase.done = false;
 	testcase.masterPriority = 'must';
 	var tests;
 	eval('tests = '+syncTests.toSource());
 	tests[1].priority = 'never';
 	testcase.tests = tests;
 	assert.equals(4, testcase.tests.length);
-	testcase.run();
-	assertDoneProcessCount(3, 3, 3);
+	yield assertDoneProcessCount(3, 3, 3);
 }
 
 function testForceRetry()
@@ -312,13 +314,12 @@ function testForceRetry()
 
 	clearCount();
 	testcase.masterPriority = 'must';
-	testcase.run();
-	assertDoneProcessCount(2, 2, 1);
+	yield assertDoneProcessCount(2, 2, 1);
 
 	clearCount();
+	testcase.done = false;
 	testcase.masterPriority = 'never';
-	testcase.run();
-	assertDoneProcessCount(0, 0, 0);
+	yield assertDoneProcessCount(0, 0, 0);
 }
 
 function testContext()
@@ -336,16 +337,15 @@ function testContext()
 	clearCount();
 	testcase.masterPriority = 'must';
 	assert.equals(0, tests.count);
-	testcase.run();
-	assertDoneProcessCount(2, 2, 0);
+	yield assertDoneProcessCount(2, 2, 0);
 	assert.equals(2, tests.count);
 
 	clearCount();
+	testcase.done = false;
 	var context = { count : 0 };
 	testcase.context = context;
 	assert.equals(0, context.count);
-	testcase.run();
-	assertDoneProcessCount(2, 2, 0);
+	yield assertDoneProcessCount(2, 2, 0);
 	assert.equals(2, context.count);
 }
 
@@ -381,20 +381,18 @@ function testListener()
 
 	clearCount();
 	testcase.masterPriority = 'must';
-	testcase.run();
-	assertDoneProcessCount(3, 3, 1);
+	yield assertDoneProcessCount(3, 3, 1);
 	assert.equals(1, failCount);
 	assert.equals(1, errorCount);
 
 	testcase.removeListener(listener);
 	testcase.addListener({handleEvent : listener});
 	clearCount();
+	testcase.done = false;
 	errorCount = 0;
 	failCount  = 0;
 	testcase.masterPriority = 'must';
-	testcase.run();
-	assert.isTrue(testcase.done);
-	assertDoneProcessCount(3, 3, 1);
+	yield assertDoneProcessCount(3, 3, 1);
 	assert.equals(1, failCount);
 	assert.equals(1, errorCount);
 }
@@ -419,14 +417,14 @@ function testStopper()
 	testcase.masterPriority = 'must';
 	testcase.run(stopper);
 	yield 1500;
-	assertDoneProcessCount(3, 3, 3);
+	yield assertDoneProcessCount(3, 3, 3, null, true);
 
 	clearCount();
 	testcase.run(stopper);
 	yield 100;
 	shouldStop = true;
 	yield 500;
-	assertDoneProcessCount(1, 1, 1);
+	yield assertDoneProcessCount(1, 1, 1, null, true);
 }
 function testPrivSetUpTearDown()
 {
@@ -501,18 +499,6 @@ function testStopper()
 	testcase.run();
 	yield (function() { return testcase.done; });
 	assert.equals('w,s0,s1,t1,d1,d0,s0,d2,d0,s0,s3,d3,d0,s0,s4,t4,d0,c', steps.join(','));
-}
-
-function assertTestResult()
-{
-	testcase.run();
-	yield (function() { return testcase.done; });
-	assert.equals(
-		Array.slice(arguments),
-		testcase.tests.map(function(aTest) {
-			return aTest.report.result;
-		})
-	);
 }
 
 function testAssertionsCount()
@@ -671,47 +657,70 @@ function testShouldSkipForAll_function_success()
 	yield assertTestResult('success', 'success', 'success');
 }
 
+
+function assertRegisterTestWithParameters(aTest, aDescriptions)
+{
+	var lastCount = testcase.tests.length;
+	testcase.registerTest(aTest);
+	assert.equals(aDescriptions.length, testcase.tests.length - lastCount);
+	for (let i = 0; i < aDescriptions.length; i++)
+	{
+		assert.equals(aDescriptions[i],
+		              testcase.tests[lastCount+i].description);
+	}
+}
+
 function testWithArrayParameters()
 {
-	var test = function(aParameter) {
+	var test;
+
+	test = function(aParameter) {
 			testcase.environment.assert.isTrue(aParameter);
 		};
 	test.description = 'desc1';
 	test.parameters = [true, false];
-
-	testcase.registerTest(test);
-	assert.equals(2, testcase.tests.length);
-	assert.equals(test.description+' (1)', testcase.tests[0].description);
-	assert.equals(test.description+' (2)', testcase.tests[1].description);
+	assertRegisterTestWithParameters(test,
+	                                 ['desc1 (1)',
+	                                  'desc1 (2)']);
 
 	test = function(aParameter) {
 			testcase.environment.assert.isTrue(aParameter);
 		};
 	test.description = 'desc2';
 	test.params = [true, false];
+	assertRegisterTestWithParameters(test,
+	                                 ['desc2 (1)',
+	                                  'desc2 (2)']);
 
-	testcase.registerTest(test);
-	assert.equals(4, testcase.tests.length);
-	assert.equals(test.description+' (1)', testcase.tests[2].description);
-	assert.equals(test.description+' (2)', testcase.tests[3].description);
+	test = function(aParameter) {
+			testcase.environment.assert.isTrue(aParameter);
+			yield 100;
+		};
+	test.description = 'desc3';
+	test.parameters = [true, false];
+	assertRegisterTestWithParameters(test,
+	                                 ['desc3 (1)',
+	                                  'desc3 (2)']);
 
 	testcase.masterPriority = 'must';
-	yield assertTestResult('success', 'failure', 'success', 'failure');
+	yield assertTestResult('success', 'failure',
+	                       'success', 'failure',
+	                       'success', 'failure');
 }
 
 function testWithHashParameters()
 {
-	var test = function(aParameter) {
+	var test;
+
+	test = function(aParameter) {
 			testcase.environment.assert.isTrue(aParameter);
 		};
 	test.description = 'desc1';
-	test.parameters = { parameter1 : true,
-	                    parameter2 : false };
-
-	testcase.registerTest(test);
-	assert.equals(2, testcase.tests.length);
-	assert.equals(test.description+' (parameter1)', testcase.tests[0].description);
-	assert.equals(test.description+' (parameter2)', testcase.tests[1].description);
+	test.parameters = { foo : true,
+	                    bar : false };
+	assertRegisterTestWithParameters(test,
+	                                 ['desc1 (foo)',
+	                                  'desc1 (bar)']);
 
 	test = function(aParameter) {
 			testcase.environment.assert.isTrue(aParameter);
@@ -719,13 +728,12 @@ function testWithHashParameters()
 	test.description = 'desc2';
 	test.params = { foo : true,
 	                bar : false };
-
-	testcase.registerTest(test);
-	assert.equals(4, testcase.tests.length);
-	assert.equals(test.description+' (foo)', testcase.tests[2].description);
-	assert.equals(test.description+' (bar)', testcase.tests[3].description);
+	assertRegisterTestWithParameters(test,
+	                                 ['desc2 (foo)',
+	                                  'desc2 (bar)']);
 
 	testcase.masterPriority = 'must';
-	yield assertTestResult('success', 'failure', 'success', 'failure');
+	yield assertTestResult('success', 'failure',
+	                       'success', 'failure');
 }
 
