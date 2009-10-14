@@ -538,9 +538,9 @@ function _normalizeTest(aFunction)
 	}
 	aFunction.description = desc;
 
-	var privSetUp    = null;
-	var privTearDown = null;
-	var shouldSkip   = null;
+	var privSetUp;
+	var privTearDown;
+	var shouldSkip;
 	for (let i in aFunction)
 	{
 		if (
@@ -590,7 +590,7 @@ function _normalizeTest(aFunction)
 function _createNewTestWithParameter(aFunction, aParameter, aSuffix) 
 {
 	var test = function() {
-			aFunction.call(this, aParameter);
+			return aFunction.call(this, aParameter);
 		};
 
 	for (let i in aFunction)
@@ -598,6 +598,7 @@ function _createNewTestWithParameter(aFunction, aParameter, aSuffix)
 		test[i] = aFunction[i];
 	}
 	test.description = aFunction.description + aSuffix;
+	test.original = aFunction;
 
 	return test;
 }
@@ -617,7 +618,8 @@ function _registerSingleTest(aFunction)
 		description : desc,
 		title       : desc,
 
-		code : aFunction,
+		code         : aFunction,
+		originalCode : aFunction.original,
 
 		priority      : aFunction.priority,
 		shouldSkip    : aFunction.shouldSkip,
