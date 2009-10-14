@@ -482,6 +482,44 @@ function registerTearDown(aFunction)
  
 function registerTest(aFunction) 
 {
+	var parameters = aFunction.parameters || aFunction.params;
+	if (!parameters) {
+		this.registerSingleTest(aFunction);
+		return;
+	}
+
+	switch (typeof parameters)
+	{
+		case 'number':
+		case 'boolean':
+		case 'string':
+			parameters = [parameters];
+			break;
+	}
+
+	if (utils.isArray(parameters)) {
+		parameters.forEach(function(aParameter, aIndex) {
+			let test = function() {
+					aFunction.call(this, aParameter);
+				};
+			test.description = getTestDescription(aFunction) + ' ('+aIndex+')';
+			this.registerSingleTest(test);
+		}, this);
+	}
+	else {
+		for (let i in parameters)
+		{
+			let parameter = parameters[i];
+			let test = function() {
+					aFunction.call(this, parameter);
+				};
+			test.description = getTestDescription(aFunction) + ' ('+i+')';
+			this.registerSingleTest(test);
+		}
+	}
+}
+function registerSingleTest(aFunction) 
+{
 	if (typeof aFunction != 'function' ||
 		this._tests.some(function(aTest) {
 			return (aTest.code == aFunction);
@@ -516,19 +554,10 @@ function registerTest(aFunction)
 		if (privSetUp && privTearDown && shouldSkip) break;
 	}
 
-	var desc = aFunction.description;
-	var key = desc;
-	var source = aFunction.toSource();
-	if (!desc) {
-		if (source.match(/\(?function ([^\(]+)\s*\(/)) {
-			desc = RegExp.$1;
-			key = desc;
-		}
-		else {
-			desc = source.substring(0, 30);
-			key = null;
-		}
-	}
+	var key = {}, source = {};
+	var desc = getTestDescription(aFunction, key, source);
+	key = key.value;
+	source = source.value;
 
 	var test = {
 		id          : 'test-'+Date.now()+'-'+parseInt(Math.random() * 65000),
@@ -569,6 +598,25 @@ function registerTest(aFunction)
 	test.name = this._source + '::' + this.title + '::' + (key || test.hash);
 
 	this._tests.push(test);
+}
+function getTestDescription(aFunction, aKey, aSource)
+{
+	var desc = aFunction.description;
+	var key = desc;
+	var source = aFunction.toSource();
+	if (!desc) {
+		if (source.match(/\(?function ([^\(]+)\s*\(/)) {
+			desc = RegExp.$1;
+			key = desc;
+		}
+		else {
+			desc = source.substring(0, 30);
+			key = null;
+		}
+	}
+	if (aKey) aKey.value = key;
+	if (aSource) aSource.value = source;
+	return desc;
 }
   
 /**
