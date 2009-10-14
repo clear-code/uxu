@@ -115,6 +115,7 @@ function constructor(aTitle, aOptions)
 			return this._title;
 		});
 
+	this._registereds = [];
 	this._tests = [];
 	this.__defineSetter__(
 		'tests', function(aHash) {
@@ -482,12 +483,15 @@ function registerTearDown(aFunction)
  
 function registerTest(aFunction) 
 {
-	if (typeof aFunction != 'function')
+	if (typeof aFunction != 'function' ||
+		this._registereds.indexOf(aFunction) > -1)
 		return;
+
+	this._registereds.push(aFunction);
 
 	this._normalizeTest(aFunction);
 
-	var parameters = aFunction.parameters || aFunction.params;
+	var parameters = aFunction.parameters;
 	if (!parameters) {
 		this._registerSingleTest(aFunction);
 		return;
@@ -504,7 +508,7 @@ function registerTest(aFunction)
 
 	if (utils.isArray(parameters)) {
 		parameters.forEach(function(aParameter, aIndex) {
-			this._registerSingleTest(_createNewTestWithParameter(
+			this._registerSingleTest(this._createNewTestWithParameter(
 				aFunction,
 				aParameter,
 				' ('+(aIndex+1)+')'
@@ -514,7 +518,7 @@ function registerTest(aFunction)
 	else {
 		for (let i in parameters)
 		{
-			this._registerSingleTest(_createNewTestWithParameter(
+			this._registerSingleTest(this._createNewTestWithParameter(
 				aFunction,
 				parameters[i],
 				' ('+i+')'
@@ -579,6 +583,8 @@ function _normalizeTest(aFunction)
 	aFunction.minAssertions = aFunction.minAssertions || aFunction.minAssertionsCount;
 	aFunction.maxAssertions = aFunction.maxAssertions || aFunction.maxAssertionsCount;
 
+	aFunction.parameters = aFunction.parameters || aFunction.params;
+
 	return aFunction;
 }
  
@@ -588,7 +594,7 @@ function _createNewTestWithParameter(aFunction, aParameter, aSuffix)
 			aFunction.call(this, aParameter);
 		};
 
-	for (var i in aFunction)
+	for (let i in aFunction)
 	{
 		test[i] = aFunction[i];
 	}
