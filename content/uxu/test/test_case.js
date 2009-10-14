@@ -115,7 +115,6 @@ function constructor(aTitle, aOptions)
 			return this._title;
 		});
 
-	this._registereds = [];
 	this._tests = [];
 	this.__defineSetter__(
 		'tests', function(aHash) {
@@ -484,10 +483,10 @@ function registerTearDown(aFunction)
 function registerTest(aFunction) 
 {
 	if (typeof aFunction != 'function' ||
-		this._registereds.indexOf(aFunction) > -1)
+		aFunction.__uxu__registered)
 		return;
 
-	this._registereds.push(aFunction);
+	aFunction.__uxu__registered = true;
 
 	this._normalizeTest(aFunction);
 
