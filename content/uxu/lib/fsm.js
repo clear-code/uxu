@@ -18,7 +18,7 @@ function go(aStateName, aContext, aStateHandlers, aStateTransitions, aEventHandl
 
 			var nextState = aStateTransitions[aStateName][aExitResult];
 			if (nextState)
-				go(nextState, aContext, aStateHandlers, aStateTransitions, aEventHandlers);
+				window.setTimeout(go, 0, nextState, aContext, aStateHandlers, aStateTransitions, aEventHandlers);
 		}
 	);
 }
