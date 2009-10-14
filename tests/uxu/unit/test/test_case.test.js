@@ -676,18 +676,24 @@ function testWithArrayParameters()
 	var test = function(aParameter) {
 			testcase.environment.assert.isTrue(aParameter);
 		};
+	test.description = 'desc1';
 	test.parameters = [true, false];
 
 	testcase.registerTest(test);
 	assert.equals(2, testcase.tests.length);
+	assert.equals(test.description+' (1)', testcase.tests[0].description);
+	assert.equals(test.description+' (2)', testcase.tests[1].description);
 
 	test = function(aParameter) {
 			testcase.environment.assert.isTrue(aParameter);
 		};
+	test.description = 'desc2';
 	test.params = [true, false];
 
 	testcase.registerTest(test);
 	assert.equals(4, testcase.tests.length);
+	assert.equals(test.description+' (1)', testcase.tests[2].description);
+	assert.equals(test.description+' (2)', testcase.tests[3].description);
 
 	testcase.masterPriority = 'must';
 	yield assertTestResult('success', 'failure', 'success', 'failure');
@@ -698,20 +704,26 @@ function testWithHashParameters()
 	var test = function(aParameter) {
 			testcase.environment.assert.isTrue(aParameter);
 		};
+	test.description = 'desc1';
 	test.parameters = { parameter1 : true,
 	                    parameter2 : false };
 
 	testcase.registerTest(test);
 	assert.equals(2, testcase.tests.length);
+	assert.equals(test.description+' (parameter1)', testcase.tests[0].description);
+	assert.equals(test.description+' (parameter2)', testcase.tests[1].description);
 
 	test = function(aParameter) {
 			testcase.environment.assert.isTrue(aParameter);
 		};
-	test.params = { parameter1 : true,
-	                parameter2 : false };
+	test.description = 'desc2';
+	test.params = { foo : true,
+	                bar : false };
 
 	testcase.registerTest(test);
 	assert.equals(4, testcase.tests.length);
+	assert.equals(test.description+' (foo)', testcase.tests[2].description);
+	assert.equals(test.description+' (bar)', testcase.tests[3].description);
 
 	testcase.masterPriority = 'must';
 	yield assertTestResult('success', 'failure', 'success', 'failure');
