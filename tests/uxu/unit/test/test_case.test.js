@@ -505,6 +505,8 @@ function testStopper()
 
 function assertTestResult()
 {
+	testcase.run();
+	yield (function() { return testcase.done; });
 	assert.equals(
 		Array.slice(arguments),
 		testcase.tests.map(function(aTest) {
@@ -540,9 +542,7 @@ function testAssertionsCount()
 		return f;
 	})());
 	testcase.masterPriority = 'must';
-	testcase.run();
-	yield (function() { return testcase.done; });
-	assertTestResult('success', 'failure', 'failure');
+	yield assertTestResult('success', 'failure', 'failure');
 }
 
 function testMinAssertionsCount()
@@ -569,9 +569,7 @@ function testMinAssertionsCount()
 		return f;
 	})());
 	testcase.masterPriority = 'must';
-	testcase.run();
-	yield (function() { return testcase.done; });
-	assertTestResult('failure', 'success', 'success');
+	yield assertTestResult('failure', 'success', 'success');
 }
 
 function testMaxAssertionsCount()
@@ -599,9 +597,7 @@ function testMaxAssertionsCount()
 	})());
 
 	testcase.masterPriority = 'must';
-	testcase.run();
-	yield (function() { return testcase.done; });
-	assertTestResult('success', 'success', 'failure');
+	yield assertTestResult('success', 'success', 'failure');
 }
 
 function testShouldSkip()
@@ -632,9 +628,7 @@ function testShouldSkip()
 	})());
 
 	testcase.masterPriority = 'must';
-	testcase.run();
-	yield (function() { return testcase.done; });
-	assertTestResult('skip', 'success', 'skip', 'success');
+	yield assertTestResult('skip', 'success', 'skip', 'success');
 }
 
 function testShouldSkipForAll_boolean_skip()
@@ -644,9 +638,7 @@ function testShouldSkipForAll_boolean_skip()
 	testcase.registerTest(function() {});
 	testcase.masterPriority = 'must';
 	testcase.shouldSkip = true;
-	testcase.run();
-	yield (function() { return testcase.done; });
-	assertTestResult('skip', 'skip', 'skip');
+	yield assertTestResult('skip', 'skip', 'skip');
 }
 
 function testShouldSkipForAll_boolean_success()
@@ -656,9 +648,7 @@ function testShouldSkipForAll_boolean_success()
 	testcase.registerTest(function() {});
 	testcase.masterPriority = 'must';
 	testcase.shouldSkip = false;
-	testcase.run();
-	yield (function() { return testcase.done; });
-	assertTestResult('success', 'success', 'success');
+	yield assertTestResult('success', 'success', 'success');
 }
 
 function testShouldSkipForAll_function_skip()
@@ -668,9 +658,7 @@ function testShouldSkipForAll_function_skip()
 	testcase.registerTest(function() {});
 	testcase.masterPriority = 'must';
 	testcase.shouldSkip = function() { return true; };
-	testcase.run();
-	yield (function() { return testcase.done; });
-	assertTestResult('skip', 'skip', 'skip');
+	yield assertTestResult('skip', 'skip', 'skip');
 }
 
 function testShouldSkipForAll_function_success()
@@ -680,8 +668,52 @@ function testShouldSkipForAll_function_success()
 	testcase.registerTest(function() {});
 	testcase.masterPriority = 'must';
 	testcase.shouldSkip = function() { return false; };
-	testcase.run();
-	yield (function() { return testcase.done; });
-	assertTestResult('success', 'success', 'success');
+	yield assertTestResult('success', 'success', 'success');
+}
+
+function testWithArrayParameters()
+{
+	var test = function(aParameter) {
+			testcase.environment.assert.isTrue(aParameter);
+		};
+	test.parameters = [true, false];
+
+	testcase.registerTest(test);
+	assert.equals(2, testcase.tests.length);
+
+	test = function(aParameter) {
+			testcase.environment.assert.isTrue(aParameter);
+		};
+	test.params = [true, false];
+
+	testcase.registerTest(test);
+	assert.equals(4, testcase.tests.length);
+
+	testcase.masterPriority = 'must';
+	yield assertTestResult('success', 'failure', 'success', 'failure');
+}
+
+function testWithHashParameters()
+{
+	var test = function(aParameter) {
+			testcase.environment.assert.isTrue(aParameter);
+		};
+	test.parameters = { parameter1 : true,
+	                    parameter2 : false };
+
+	testcase.registerTest(test);
+	assert.equals(2, testcase.tests.length);
+
+	test = function(aParameter) {
+			testcase.environment.assert.isTrue(aParameter);
+		};
+	test.params = { parameter1 : true,
+	                parameter2 : false };
+
+	testcase.registerTest(test);
+	assert.equals(4, testcase.tests.length);
+
+	testcase.masterPriority = 'must';
+	yield assertTestResult('success', 'failure', 'success', 'failure');
 }
 
