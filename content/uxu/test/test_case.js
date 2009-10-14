@@ -502,7 +502,7 @@ function registerTest(aFunction)
 			let test = function() {
 					aFunction.call(this, aParameter);
 				};
-			test.description = getTestDescription(aFunction) + ' ('+aIndex+')';
+			test.description = getTestDescription(aFunction) + ' ('+(aIndex+1)+')';
 			this.registerSingleTest(test);
 		}, this);
 	}
