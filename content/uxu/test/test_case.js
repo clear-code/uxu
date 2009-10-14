@@ -482,9 +482,14 @@ function registerTearDown(aFunction)
  
 function registerTest(aFunction) 
 {
+	if (typeof aFunction != 'function')
+		return;
+
+	this._normalizeTest(aFunction);
+
 	var parameters = aFunction.parameters || aFunction.params;
 	if (!parameters) {
-		this.registerSingleTest(aFunction);
+		this._registerSingleTest(aFunction);
 		return;
 	}
 
@@ -499,32 +504,36 @@ function registerTest(aFunction)
 
 	if (utils.isArray(parameters)) {
 		parameters.forEach(function(aParameter, aIndex) {
-			let test = function() {
-					aFunction.call(this, aParameter);
-				};
-			test.description = getTestDescription(aFunction) + ' ('+(aIndex+1)+')';
-			this.registerSingleTest(test);
+			this._registerSingleTest(_createNewTestWithParameter(
+				aFunction,
+				aParameter,
+				' ('+(aIndex+1)+')'
+			));
 		}, this);
 	}
 	else {
 		for (let i in parameters)
 		{
-			let parameter = parameters[i];
-			let test = function() {
-					aFunction.call(this, parameter);
-				};
-			test.description = getTestDescription(aFunction) + ' ('+i+')';
-			this.registerSingleTest(test);
+			this._registerSingleTest(_createNewTestWithParameter(
+				aFunction,
+				parameters[i],
+				' ('+i+')'
+			));
 		}
 	}
 }
-function registerSingleTest(aFunction) 
+	
+function _normalizeTest(aFunction) 
 {
-	if (typeof aFunction != 'function' ||
-		this._tests.some(function(aTest) {
-			return (aTest.code == aFunction);
-		}))
-		return;
+	var desc = aFunction.description;
+	if (!desc) {
+		var source = aFunction.toSource();
+		if (source.match(/\(?function ([^\(]+)\s*\(/))
+			desc = RegExp.$1;
+		else
+			desc = source.substring(0, 30);
+	}
+	aFunction.description = desc;
 
 	var privSetUp    = null;
 	var privTearDown = null;
@@ -554,10 +563,49 @@ function registerSingleTest(aFunction)
 		if (privSetUp && privTearDown && shouldSkip) break;
 	}
 
-	var key = {}, source = {};
-	var desc = getTestDescription(aFunction, key, source);
-	key = key.value;
-	source = source.value;
+	aFunction.setUp = privSetUp;
+	aFunction.tearDown = privTearDown;
+	aFunction.shouldSkip = shouldSkip;
+
+	aFunction.priority = (
+			(aFunction.priority === null ||
+			 aFunction.priority === void(0) ||
+			 typeof aFunction.priority == 'number') ?
+				aFunction.priority :
+				(String(aFunction.priority || '').toLowerCase() || null)
+		);
+
+	aFunction.assertions = aFunction.assertions || aFunction.assertionsCount;
+	aFunction.minAssertions = aFunction.minAssertions || aFunction.minAssertionsCount;
+	aFunction.maxAssertions = aFunction.maxAssertions || aFunction.maxAssertionsCount;
+
+	return aFunction;
+}
+ 
+function _createNewTestWithParameter(aFunction, aParameter, aSuffix) 
+{
+	var test = function() {
+			aFunction.call(this, aParameter);
+		};
+
+	for (var i in aFunction)
+	{
+		test[i] = aFunction[i];
+	}
+	test.description = aFunction.description + aSuffix;
+
+	return test;
+}
+ 
+function _registerSingleTest(aFunction) 
+{
+	if (this._tests.some(function(aTest) {
+			return (aTest.code == aFunction);
+		}))
+		return;
+
+	var desc = aFunction.description;
+	var source = aFunction.toSource();
 
 	var test = {
 		id          : 'test-'+Date.now()+'-'+parseInt(Math.random() * 65000),
@@ -566,27 +614,20 @@ function registerSingleTest(aFunction)
 
 		code : aFunction,
 
-		priority : (
-			(aFunction.priority === null ||
-			 aFunction.priority === void(0) ||
-			 typeof aFunction.priority == 'number') ?
-				aFunction.priority :
-				(String(aFunction.priority || '').toLowerCase() || null)
-		),
-		shouldSkip : shouldSkip,
+		priority      : aFunction.priority,
+		shouldSkip    : aFunction.shouldSkip,
 		targetProduct : aFunction.targetProduct,
-
-		setUp    : privSetUp,
-		tearDown : privTearDown,
-
-		assertions    : aFunction.assertions || aFunction.assertionsCount,
-		minAssertions : aFunction.minAssertions || aFunction.minAssertionsCount,
-		maxAssertions : aFunction.maxAssertions || aFunction.maxAssertionsCount,
+		setUp         : aFunction.setUp,
+		tearDown      : aFunction.tearDown,
+		assertions    : aFunction.assertions,
+		minAssertions : aFunction.minAssertions,
+		maxAssertions : aFunction.maxAssertions,
 
 		report : null
 	};
 
 	var sources = [];
+	sources.push(desc);
 	if (test.setUp) sources.push(test.setUp.toSource());
 	sources.push(source);
 	if (test.tearDown) sources.push(test.tearDown.toSource());
@@ -595,30 +636,11 @@ function registerSingleTest(aFunction)
 	sources.push('maxAssertions:'+test.maxAssertions);
 
 	test.hash = utils.computeHash(sources.join('\n'), 'MD5');
-	test.name = this._source + '::' + this.title + '::' + (key || test.hash);
+	test.name = this._source + '::' + this.title + '::' + (desc || test.hash);
 
 	this._tests.push(test);
 }
-function getTestDescription(aFunction, aKey, aSource)
-{
-	var desc = aFunction.description;
-	var key = desc;
-	var source = aFunction.toSource();
-	if (!desc) {
-		if (source.match(/\(?function ([^\(]+)\s*\(/)) {
-			desc = RegExp.$1;
-			key = desc;
-		}
-		else {
-			desc = source.substring(0, 30);
-			key = null;
-		}
-	}
-	if (aKey) aKey.value = key;
-	if (aSource) aSource.value = source;
-	return desc;
-}
-  
+   
 /**
  * Alternative style for defining setup. 
  *
