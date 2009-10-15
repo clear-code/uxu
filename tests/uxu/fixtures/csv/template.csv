@@ -1,2 +1,2 @@
-a[object],b[object],c[object],d[object]
-<%= a %>,<%= b %>,<%= c %>,<%= d %>
+a[object],b[object],c[string]
+<%= a %>,<%= b %>,<%= c %>
