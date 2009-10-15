@@ -2079,6 +2079,7 @@ function redirectURI(aURI, aRedirectDefinition)
 }
  
 // http://liosk.blog103.fc2.com/blog-entry-75.html
+// CSV parser based on RFC4180
 var CSVTokenizer = /,|\r?\n|[^,"\r\n][^,\r\n]*|"(?:[^"]|"")*"/g;
 function parseCSV(aInput) 
 {
@@ -2086,12 +2087,14 @@ function parseCSV(aInput)
 	var record = 0,
 		field = 0,
 		data = [['']],
-		qq = /""/g;
+		qq = /""/g,
+		longest = 0;
 	aInput.replace(/\r?\n$/, '')
 		.replace(CSVTokenizer, function(aToken) {
 			switch (aToken) {
 				case delimiter:
 					data[record][++field] = '';
+					if (field > longest) longest = field;
 					break;
 
 				case '\n':
@@ -2101,11 +2104,17 @@ function parseCSV(aInput)
 					break;
 
 				default:
-					data[record][field] = (token.charAt(0) != '"') ?
-						token :
-						token.slice(1, -1).replace(qq, '"') ;
+					data[record][field] = (aToken.charAt(0) != '"') ?
+						aToken :
+						aToken.slice(1, -1).replace(qq, '"') ;
 			}
 		});
+	data.forEach(function(aRecord) {
+		while (aRecord.length <= longest)
+		{
+			aRecord.push('');
+		}
+	});
 	return data;
 }
   
