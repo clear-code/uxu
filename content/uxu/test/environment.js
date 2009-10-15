@@ -670,6 +670,7 @@ notify
 openDatabase
 p
 parseCSV
+parseParametersFromCSV
 product
 productExecutable
 readCSV

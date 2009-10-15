@@ -1,0 +1,8 @@
+([
+	{ s: '0', n: 0, b: false, o: 0, j: 0, 'u [unknown]': '0' },
+	{ s: '1', n: 1, b: true, o: 1, j: 1, 'u [unknown]': '1' },
+	{ s: 'true', n: 1, b: true, o: true, j: true, 'u [unknown]': 'true' },
+	{ s: 'false', n: 0, b: false, o: false, j: false, 'u [unknown]': 'false' },
+	{ s: '', n: '', b: '', o: '', j: '', 'u [unknown]': '' },
+	{ s: '{a:0}', n: 0, b: true, o: {a:0}, j: {a:0}, 'u [unknown]': '{a:0}' }
+])
