@@ -669,9 +669,15 @@ normalizeToFile
 notify
 openDatabase
 p
+parseCSV
 product
 productExecutable
+readCSV
 readFrom
+readParamFromCSV
+readParamsFromCSV
+readParameterFromCSV
+readParametersFromCSV
 scheduleToRemove
 setClipBoard
 setPref

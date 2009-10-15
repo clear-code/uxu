@@ -366,6 +366,83 @@ function writeTo(aContent, aTarget, aEncoding)
 	return target;
 }
  
+function readCSV(aTarget, aEncoding, aContext) 
+{
+	var input = this.readFrom(aTarget, aEncoding);
+	if (aContext) input = this.parseTemplate(input, aContext);
+	return this.parseCSV(input);
+}
+ 
+function readParametersFromCSV(aTarget, aEncoding, aContext) 
+{
+	var data = this.readCSV(aTarget, aEncoding, aContext);
+	var parameters;
+	var columns = data.shift();
+	var isHash = !columns[0];
+
+	var types = [];
+	if (isHash) columns.splice(0, 1);
+
+	var typePattern = /.(\s*\[(string|number|boolean|object|json)\]\s*)$/i;
+	columns = columns.map(function(aColumn) {
+		let match = aColumn.match(typePattern);
+		if (match) {
+			aColumn = aColumn.replace(match[1], '');
+			types.push(match[2].toLowerCase());
+		}
+		else {
+			types.push('string');
+		}
+		return aColumn;
+	});
+
+	if (isHash) {
+		var parameters = {};
+		data.forEach(function(aRecord) {
+			let name = aRecord.shift();
+			let record = {};
+			aRecord.forEach(function(aField, aIndex) {
+				record[columns[aIndex]] = _convertParameterType(aField, types[aIndex]);
+			});
+			parameters[name] = record;
+		});
+		return parameters;
+	}
+	else {
+		return data.map(function(aRecord) {
+			let record = {};
+			aRecord.forEach(function(aField, aIndex) {
+				record[columns[aIndex]] = _convertParameterType(aField, types[aIndex]);
+			});
+			return record;
+		});
+	}
+}
+function _convertParameterType(aData, aType)
+{
+	switch (aType)
+	{
+		case 'number':
+			aData = Number(aData);
+			break;
+		case 'boolean':
+			aData = aData.toLowerCase();
+			aData = aData == 'true';
+			break;
+		case 'object':
+		case 'json':
+			eval('aData = '+aData);
+			break;
+		case 'string':
+		default:
+			break;
+	}
+	return aData;
+}
+var readParameterFromCSV = readParametersFromCSV;
+var readParamsFromCSV = readParametersFromCSV;
+var readParamFromCSV = readParametersFromCSV;
+ 
 // Subversionが作る不可視のファイルなどを除外して、普通に目に見えるファイルだけを複製する 
 function cosmeticClone(aOriginal, aDest, aName)
 {
@@ -1999,6 +2076,37 @@ function redirectURI(aURI, aRedirectDefinition)
 		return false;
 	});
 	return newURI || aURI;
+}
+ 
+// http://liosk.blog103.fc2.com/blog-entry-75.html
+var CSVTokenizer = /,|\r?\n|[^,"\r\n][^,\r\n]*|"(?:[^"]|"")*"/g;
+function parseCSV(aInput) 
+{
+	var delimiter = ',';
+	var record = 0,
+		field = 0,
+		data = [['']],
+		qq = /""/g;
+	aInput.replace(/\r?\n$/, '')
+		.replace(CSVTokenizer, function(aToken) {
+			switch (aToken) {
+				case delimiter:
+					data[record][++field] = '';
+					break;
+
+				case '\n':
+				case '\r\n':
+					data[++record] = [''];
+					field = 0;
+					break;
+
+				default:
+					data[record][field] = (token.charAt(0) != '"') ?
+						token :
+						token.slice(1, -1).replace(qq, '"') ;
+			}
+		});
+	return data;
 }
   
 // アプリケーション 
