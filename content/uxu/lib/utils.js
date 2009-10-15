@@ -2070,7 +2070,8 @@ function parseCSV(aInput)
  
 function parseParametersFromCSV(aCSV) 
 {
-	var data = aCSV;
+	var data;
+	eval('data = '+aCSV.toSource()); // duplicate object for safe
 	var parameters;
 	var columns = data.shift();
 	var isHash = !columns[0];
