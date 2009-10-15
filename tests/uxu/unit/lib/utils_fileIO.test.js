@@ -156,3 +156,23 @@ function test_fixupIncompleteURI()
 		assert.equals('/tmp', utilsModule.fixupIncompleteURI('/tmp'));
     }
 }
+
+function test_readJSON()
+{
+	assert.equals(
+		{
+			foo : "日本語",
+			bar : 29,
+			template : "<%= value %>"
+		},
+		utilsModule.readJSON(baseURL+'../../fixtures/test.json', 'UTF-8')
+	);
+	assert.equals(
+		{
+			foo : "日本語",
+			bar : 29,
+			template : 2929
+		},
+		utilsModule.readJSON(baseURL+'../../fixtures/test.json', 'UTF-8', { value : 2929 })
+	);
+}
