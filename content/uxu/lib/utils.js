@@ -2123,7 +2123,7 @@ function _convertParameterType(aData, aType)
 			aData = Number(aData);
 			break;
 		case 'boolean':
-			eval('aData = !(!('+(aData || '""')+'))');
+			eval('aData = !!('+(aData || '""')+')');
 			break;
 		case 'object':
 		case 'json':
