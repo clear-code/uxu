@@ -1,5 +1,5 @@
 ([
-	['a', 'b', 'c', 'd'],
-	['<%= value %>','<%= value %>','<%= value %>','<%= value %>']
+	['a[object]', 'b[object]', 'c[object]', 'd[object]'],
+	['<%= a %>','<%= b %>','<%= c %>','<%= d %>']
 
 ])
