@@ -2,20 +2,8 @@
 
 utils.include('utils_common.inc.js');
 
-var simpleCSV = <![CDATA[
-		a,b,c,d
-		,,,
-		a,,b,
-		,a,,b
-		0,1,2,3
-		less,columns
-		"string",string,"日本語",文字列
-		"comma,",;,:,'
-		"double""quote","multiple""double""quotes","line
-		break",'single quote'
-	]]>.toString()
-		.replace(/^\s+|\s+$/g, '')
-		.replace(/^\t+/gm, '');
+var csvBase = topDir+'tests/uxu/fixtures/csv/';
+
 var simpleCSVParsed = [
 		['a', 'b', 'c', 'd'],
 		['', '', '', ''],
@@ -39,17 +27,6 @@ var simpleCSVParameter = [
 		{ a: 'double"quote', b: 'multiple"double"quotes', c: 'line\nbreak', d: "'single quote'" }
 	];
 
-var hashCSV = <![CDATA[
-		,first,second,third,fourth,first
-		alphabets,a,b,c,d,
-		numbers,0,1,2,3,
-		blank,,,,,
-		blank,a,,b,,
-		blank,,a,,b,
-		blank(2),,a,b,,
-	]]>.toString()
-		.replace(/^\s+|\s+$/g, '')
-		.replace(/^\t+/gm, '');
 var hashCSVParsed = [
 		['', 'first', 'second', 'third', 'fourth', 'first'],
 		['alphabets', 'a', 'b', 'c', 'd', ''],
@@ -68,17 +45,6 @@ var hashCSVParameter = {
 		'blank(2)(2)' : { first: '', second: 'a', third: 'b', fourth: '', 'first(2)': '' }
 	};
 
-var typedCSV = <![CDATA[
-		s [string],n[Number],b[BOOLEAN] ,o[object],j [json],u [unknown]
-		0,0,0,0,0,0
-		1,1,1,1,1,1
-		true,1,true,true,true,true
-		false,0,false,false,false,false
-		,,,,,
-		{a:0},0,{a:0},{a:0},{a:0},{a:0}
-	]]>.toString()
-		.replace(/^\s+|\s+$/g, '')
-		.replace(/^\t+/gm, '');
 var typedCSVParsed = [
 		['s [string]', 'n[Number]', 'b[BOOLEAN] ', 'o[object]', 'j [json]', 'u [unknown]'],
 		['0', '0', '0', '0', '0', '0'],
@@ -98,13 +64,13 @@ var typedCSVParameter = [
 	];
 
 var CSVParameters = {
-		simple : { source    : simpleCSV,
+		simple : { source    : utils.readFrom(csvBase+'simple.csv', 'UTF-8'),
 		           CSV       : simpleCSVParsed,
 		           parameter : simpleCSVParameter },
-		hash   : { source    : hashCSV,
+		hash   : { source    : utils.readFrom(csvBase+'hash.csv', 'UTF-8'),
 		           CSV       : hashCSVParsed,
 		           parameter : hashCSVParameter },
-		typed  : { source    : typedCSV,
+		typed  : { source    : utils.readFrom(csvBase+'typed.csv', 'UTF-8'),
 		           CSV       : typedCSVParsed,
 		           parameter : typedCSVParameter }
 	};

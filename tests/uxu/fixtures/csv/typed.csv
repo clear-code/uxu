@@ -1,0 +1,7 @@
+s [string],n[Number],b[BOOLEAN] ,o[object],j [json],u [unknown]
+0,0,0,0,0,0
+1,1,1,1,1,1
+true,1,true,true,true,true
+false,0,false,false,false,false
+,,,,,
+{a:0},0,{a:0},{a:0},{a:0},{a:0}
