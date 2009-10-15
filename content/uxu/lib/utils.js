@@ -375,69 +375,7 @@ function readCSV(aTarget, aEncoding, aContext)
  
 function readParametersFromCSV(aTarget, aEncoding, aContext) 
 {
-	var data = this.readCSV(aTarget, aEncoding, aContext);
-	var parameters;
-	var columns = data.shift();
-	var isHash = !columns[0];
-
-	var types = [];
-	if (isHash) columns.splice(0, 1);
-
-	var typePattern = /.(\s*\[(string|number|boolean|object|json)\]\s*)$/i;
-	columns = columns.map(function(aColumn) {
-		let match = aColumn.match(typePattern);
-		if (match) {
-			aColumn = aColumn.replace(match[1], '');
-			types.push(match[2].toLowerCase());
-		}
-		else {
-			types.push('string');
-		}
-		return aColumn;
-	});
-
-	if (isHash) {
-		var parameters = {};
-		data.forEach(function(aRecord) {
-			let name = aRecord.shift();
-			let record = {};
-			aRecord.forEach(function(aField, aIndex) {
-				record[columns[aIndex]] = _convertParameterType(aField, types[aIndex]);
-			});
-			parameters[name] = record;
-		});
-		return parameters;
-	}
-	else {
-		return data.map(function(aRecord) {
-			let record = {};
-			aRecord.forEach(function(aField, aIndex) {
-				record[columns[aIndex]] = _convertParameterType(aField, types[aIndex]);
-			});
-			return record;
-		});
-	}
-}
-function _convertParameterType(aData, aType)
-{
-	switch (aType)
-	{
-		case 'number':
-			aData = Number(aData);
-			break;
-		case 'boolean':
-			aData = aData.toLowerCase();
-			aData = aData == 'true';
-			break;
-		case 'object':
-		case 'json':
-			eval('aData = '+aData);
-			break;
-		case 'string':
-		default:
-			break;
-	}
-	return aData;
+	return this.parseParametersFromCSV(this.readCSV(aTarget, aEncoding, aContext));
 }
 var readParameterFromCSV = readParametersFromCSV;
 var readParamsFromCSV = readParametersFromCSV;
@@ -2116,6 +2054,86 @@ function parseCSV(aInput)
 		}
 	});
 	return data;
+}
+ 
+function parseParametersFromCSV(aCSV) 
+{
+	var data = aCSV;
+	var parameters;
+	var columns = data.shift();
+	var isHash = !columns[0];
+
+	var types = [];
+	if (isHash) columns.splice(0, 1);
+
+	var typePattern = /.(\s*\[(string|number|boolean|object|json)\]\s*)$/i;
+	var columnNames = {};
+	columns = columns.map(function(aColumn) {
+		let match = aColumn.match(typePattern);
+		if (match) {
+			aColumn = aColumn.replace(match[1], '');
+			types.push(match[2].toLowerCase());
+		}
+		else {
+			types.push('string');
+		}
+		return _ensureUniquieName(aColumn, columnNames);
+	});
+
+	if (isHash) {
+		var parameters = {};
+		var names = {};
+		data.forEach(function(aRecord) {
+			let name = aRecord.shift();
+			let record = {};
+			aRecord.forEach(function(aField, aIndex) {
+				record[columns[aIndex]] = _convertParameterType(aField, types[aIndex]);
+			});
+			name = _ensureUniquieName(name, names);
+			parameters[name] = record;
+		});
+		return parameters;
+	}
+	else {
+		return data.map(function(aRecord) {
+			let record = {};
+			aRecord.forEach(function(aField, aIndex) {
+				record[columns[aIndex]] = _convertParameterType(aField, types[aIndex]);
+			});
+			return record;
+		});
+	}
+}
+function _ensureUniquieName(aName, aDatabase)
+{
+	if (aName in aDatabase) {
+		aName = aName+'('+(++aDatabase[aName])+')';
+		return arguments.callee(aName, aDatabase);
+	}
+	else {
+		aDatabase[aName] = 1;
+		return aName;
+	}
+}
+function _convertParameterType(aData, aType)
+{
+	switch (aType)
+	{
+		case 'number':
+			aData = Number(aData);
+			break;
+		case 'boolean':
+			eval('aData = !(!('+(aData || '""')+'))');
+			break;
+		case 'object':
+		case 'json':
+			eval('aData = ('+(aData || '""')+')');
+			break;
+		case 'string':
+		default:
+			break;
+	}
+	return aData;
 }
   
 // アプリケーション 
