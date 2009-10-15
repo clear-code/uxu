@@ -2039,6 +2039,8 @@ function parseCSV(aInput)
 		.replace(CSVTokenizer, function(aToken) {
 			switch (aToken) {
 				case delimiter:
+					// normalize CR+LF to LF in the previous field
+					data[record][field] = data[record][field].replace(/\r\n/g, '\n');
 					data[record][++field] = '';
 					if (field > longest) longest = field;
 					break;
@@ -2055,6 +2057,8 @@ function parseCSV(aInput)
 						aToken.slice(1, -1).replace(qq, '"') ;
 			}
 		});
+	// normalize CR+LF to LF in the last field
+	data[record][field] = data[record][field].replace(/\r\n/g, '\n');
 	data.forEach(function(aRecord) {
 		while (aRecord.length <= longest)
 		{
