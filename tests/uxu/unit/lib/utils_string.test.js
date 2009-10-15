@@ -30,17 +30,17 @@ function test_convertEncoding()
 
 	var sjisString = utilsModule.readFrom('../../fixtures/shift_jis.txt');
 
-	assert.equals('“ú–{Œê', XToUnicode(sjisString, 'Shift_JIS'));
-	assert.equals('“ú–{Œê', XToUCS2(sjisString, 'Shift_JIS'));
-	assert.equals(sjisString, UnicodeToX('“ú–{Œê', 'Shift_JIS'));
-	assert.equals(sjisString, UCS2ToX('“ú–{Œê', 'Shift_JIS'));
+	assert.equals('æ—¥æœ¬èª', XToUnicode(sjisString, 'Shift_JIS'));
+	assert.equals('æ—¥æœ¬èª', XToUCS2(sjisString, 'Shift_JIS'));
+	assert.equals(sjisString, UnicodeToX('æ—¥æœ¬èª', 'Shift_JIS'));
+	assert.equals(sjisString, UCS2ToX('æ—¥æœ¬èª', 'Shift_JIS'));
 }
 
 function test_parseTemplate()
 {
 	var str = <![CDATA[
 			<% for (var i = 0; i < 3; i++) { %>
-			256‚Ì16i”•\Œ»‚Í<%= (256).toString(16) %>‚Å‚·B
+			256ã®16é€²æ•°è¡¨ç¾ã¯<%= (256).toString(16) %>ã§ã™ã€‚
 			<% } %>
 			<%= foo %><%= this.foo %><%= \u65e5\u672c\u8a9e %>
 		]]>.toString();
@@ -49,16 +49,16 @@ function test_parseTemplate()
 			__parseTemplate__results : null,
 			aContext : null
 		};
-	params["“ú–{Œê"] = true;
+	params["æ—¥æœ¬èª"] = true;
 
 	assert.equals(
 		<![CDATA[
 			
-			256‚Ì16i”•\Œ»‚Í100‚Å‚·B
+			256ã®16é€²æ•°è¡¨ç¾ã¯100ã§ã™ã€‚
 			
-			256‚Ì16i”•\Œ»‚Í100‚Å‚·B
+			256ã®16é€²æ•°è¡¨ç¾ã¯100ã§ã™ã€‚
 			
-			256‚Ì16i”•\Œ»‚Í100‚Å‚·B
+			256ã®16é€²æ•°è¡¨ç¾ã¯100ã§ã™ã€‚
 			
 			barbartrue
 		]]>.toString(),

@@ -128,10 +128,10 @@ function test_readFrom()
 {
 	assert.equals('ASCII', utilsModule.readFrom(baseURL+'../../fixtures/ascii.txt'));
 	assert.equals('ASCII', utilsModule.readFrom('../../fixtures/ascii.txt'));
-	assert.equals('“ú–{Œê', utilsModule.readFrom(baseURL+'../../fixtures/utf8.txt', 'UTF-8'));
-	assert.equals('“ú–{Œê', utilsModule.readFrom('../../fixtures/utf8.txt', 'UTF-8'));
-	assert.equals('“ú–{Œê', utilsModule.readFrom(baseURL+'../../fixtures/shift_jis.txt', 'Shift_JIS'));
-	assert.equals('“ú–{Œê', utilsModule.readFrom('../../fixtures/shift_jis.txt', 'Shift_JIS'));
+	assert.equals('æ—¥æœ¬èªž', utilsModule.readFrom(baseURL+'../../fixtures/utf8.txt', 'UTF-8'));
+	assert.equals('æ—¥æœ¬èªž', utilsModule.readFrom('../../fixtures/utf8.txt', 'UTF-8'));
+	assert.equals('æ—¥æœ¬èªž', utilsModule.readFrom(baseURL+'../../fixtures/shift_jis.txt', 'Shift_JIS'));
+	assert.equals('æ—¥æœ¬èªž', utilsModule.readFrom('../../fixtures/shift_jis.txt', 'Shift_JIS'));
 }
 
 function test_writeTo()
@@ -139,11 +139,11 @@ function test_writeTo()
 	utilsModule.writeTo('ASCII', tempFile.path);
 	assert.equals('ASCII', utilsModule.readFrom(tempFile.path));
 
-	utilsModule.writeTo('“ú–{Œê', tempFile.path, 'UTF-8');
-	assert.equals('“ú–{Œê', utilsModule.readFrom(tempFile.path, 'UTF-8'));
+	utilsModule.writeTo('æ—¥æœ¬èªž', tempFile.path, 'UTF-8');
+	assert.equals('æ—¥æœ¬èªž', utilsModule.readFrom(tempFile.path, 'UTF-8'));
 
-	utilsModule.writeTo('“ú–{Œê', tempFile.path, 'Shift_JIS');
-	assert.equals('“ú–{Œê', utilsModule.readFrom(tempFile.path, 'Shift_JIS'));
+	utilsModule.writeTo('æ—¥æœ¬èªž', tempFile.path, 'Shift_JIS');
+	assert.equals('æ—¥æœ¬èªž', utilsModule.readFrom(tempFile.path, 'Shift_JIS'));
 }
 
 function test_fixupIncompleteURI()

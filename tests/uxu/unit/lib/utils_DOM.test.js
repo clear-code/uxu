@@ -67,8 +67,8 @@ function test_isTargetInRange()
 	assert.isTrue(utilsModule.isTargetInRange($('link5'), range));
 	assert.isFalse(utilsModule.isTargetInRange($('link10'), range));
 
-	assert.isTrue(utilsModule.isTargetInRange('リンク5', range));
-	assert.isFalse(utilsModule.isTargetInRange('リンク10', range));
+	assert.isTrue(utilsModule.isTargetInRange('繝ｪ繝ｳ繧ｯ5', range));
+	assert.isFalse(utilsModule.isTargetInRange('繝ｪ繝ｳ繧ｯ10', range));
 
 	var targetRange = content.document.createRange();
 	targetRange.selectNodeContents($('em5'));
@@ -104,9 +104,9 @@ function test_isTargetInSelection()
 	assert.isFalse(utilsModule.isTargetInSelection($('link10'), selection));
 	assert.isTrue(utilsModule.isTargetInSelection($('link13'), selection));
 
-	assert.isTrue(utilsModule.isTargetInSelection('リンク5', selection));
-	assert.isFalse(utilsModule.isTargetInSelection('リンク10', selection));
-	assert.isTrue(utilsModule.isTargetInSelection('リンク13', selection));
+	assert.isTrue(utilsModule.isTargetInSelection('繝ｪ繝ｳ繧ｯ5', selection));
+	assert.isFalse(utilsModule.isTargetInSelection('繝ｪ繝ｳ繧ｯ10', selection));
+	assert.isTrue(utilsModule.isTargetInSelection('繝ｪ繝ｳ繧ｯ13', selection));
 
 	var targetRange = content.document.createRange();
 	targetRange.selectNodeContents($('em5'));
@@ -132,8 +132,8 @@ function test_isTargetInSubTree()
 	assert.isTrue(utilsModule.isTargetInSubTree($('link5'), root));
 	assert.isFalse(utilsModule.isTargetInSubTree($('link10'), root));
 
-	assert.isTrue(utilsModule.isTargetInSubTree('リンク5', root));
-	assert.isFalse(utilsModule.isTargetInSubTree('リンク10', root));
+	assert.isTrue(utilsModule.isTargetInSubTree('繝ｪ繝ｳ繧ｯ5', root));
+	assert.isFalse(utilsModule.isTargetInSubTree('繝ｪ繝ｳ繧ｯ10', root));
 
 	var targetRange = content.document.createRange();
 	targetRange.selectNodeContents($('em5'));
