@@ -674,6 +674,7 @@ product
 productExecutable
 readCSV
 readFrom
+readJSON
 readParamFromCSV
 readParamsFromCSV
 readParameterFromCSV

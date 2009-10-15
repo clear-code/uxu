@@ -381,6 +381,14 @@ var readParameterFromCSV = readParametersFromCSV;
 var readParamsFromCSV = readParametersFromCSV;
 var readParamFromCSV = readParametersFromCSV;
  
+function readJSON(aTarget, aEncoding, aContext) 
+{
+	var input = this.readFrom(aTarget, aEncoding);
+	if (aContext) input = this.parseTemplate(input, aContext);
+	eval('input = ('+input+')');
+	return input;
+}
+ 
 // Subversionが作る不可視のファイルなどを除外して、普通に目に見えるファイルだけを複製する 
 function cosmeticClone(aOriginal, aDest, aName)
 {
