@@ -273,13 +273,17 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 
 	<deck flex="1" id="mainDeck">
 
-	<vbox flex="1">
-		<spacer flex="1"/>
+	<vbox id="initializingPanel"
+		flex="1"
+		pack="center">
+		<hbox pack="center">
+			<label value="&runner.initializing;"/>
+		</hbox>
 		<progressmeter id="initializingProgress" mode="undetermined"/>
-		<spacer flex="1"/>
 	</vbox>
 
-	<hbox flex="1">
+	<hbox id="mainPanel"
+		flex="1">
 		<vbox flex="1">
 			<toolbar>
 				<toolbaritem flex="1" align="center">

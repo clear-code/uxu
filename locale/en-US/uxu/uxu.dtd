@@ -11,6 +11,8 @@
 
 <!ENTITY runner.title "UxU Test Runner">
 
+<!ENTITY runner.initializing "Now initializing. Wait for a while...">
+
 <!ENTITY runner.fileMenu.label     "File">
 <!ENTITY runner.fileMenu.accesskey "F">
 <!ENTITY runner.run.label     "Run">

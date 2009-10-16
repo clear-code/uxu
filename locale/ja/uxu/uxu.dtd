@@ -11,6 +11,8 @@
 
 <!ENTITY runner.title "UxUテストランナー">
 
+<!ENTITY runner.initializing "初期化中です。しばらくお待ちください...">
+
 <!ENTITY runner.fileMenu.label     "ファイル">
 <!ENTITY runner.fileMenu.accesskey "F">
 <!ENTITY runner.run.label     "実行">
