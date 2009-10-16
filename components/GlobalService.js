@@ -70,16 +70,17 @@ GlobalService.prototype = {
 
 
 			case 'uxu-start-runner-request':
-				this.startRunner();
+				if (aData) eval('aData = '+aData);
+				this.startRunner(aSubject, aData);
 				return;
 
 			case 'uxu-start-server-request':
-				eval('aData = '+aData);
-				this.startServer(null, aData);
+				if (aData) eval('aData = '+aData);
+				this.startServer(aSubject, aData);
 				return;
 
 			case 'uxu-open-config-request':
-				this.openConfig();
+				this.openConfig(aSubject);
 				return;
 		}
 	},
@@ -531,65 +532,61 @@ GlobalService.prototype = {
 		stream.close();
 	},
   
-	startRunner : function(aOwner) 
+	openWindow : function(aOwner, aType, aURI, aFeatures, aOptions) 
 	{
-		var target = WindowManager.getMostRecentWindow('uxu:runner');
+		var target = WindowManager.getMostRecentWindow(aType);
 		if (target) {
 			target.focus();
+			return;
 		}
-		else {
-			WindowWatcher.openWindow(
-				aOwner || null,
-				'chrome://uxu/content/ui/runner.xul',
-				'_blank',
-				'chrome,all,dialog=no',
-				null
-			);
-		}
-	},
- 
-	startServer : function(aOwner, aOptions) 
-	{
-		var target = WindowManager.getMostRecentWindow('uxu:server');
-		if (target) {
-			target.focus();
-		}
-		else {
-			var bag = Cc['@mozilla.org/hash-property-bag;1']
+
+		var bag = null;
+		if (aOptions) {
+			bag = Cc['@mozilla.org/hash-property-bag;1']
 					.createInstance(Ci.nsIWritablePropertyBag);
 			for (var i in aOptions)
 			{
 				bag.setProperty(i, aOptions[i]);
 			}
-			WindowWatcher.openWindow(
-				aOwner || null,
-				'chrome://uxu/content/ui/uxu.xul',
-				'_blank',
-				'chrome,all,dialog=no',
-				bag
-			);
 		}
+		WindowWatcher.openWindow(aOwner || null, aURI, '_blank', aFeatures, bag);
+	},
+ 
+	startRunner : function(aOwner, aOptions) 
+	{
+		this.openWindow(
+			aOwner,
+			'uxu:runner',
+			'chrome://uxu/content/ui/runner.xul',
+			'chrome,all,dialog=no',
+			aOptions
+		);
+	},
+ 
+	startServer : function(aOwner, aOptions) 
+	{
+		this.openWindow(
+			aOwner,
+			'uxu:server',
+			'chrome://uxu/content/ui/uxu.xul',
+			'chrome,all,dialog=no',
+			aOptions
+		);
 	},
  
 	openConfig : function(aOwner) 
 	{
-		var target = WindowManager.getMostRecentWindow('uxu:config');
-		if (target) {
-			target.focus();
-		}
-		else {
-			var features = 'chrome,titlebar,toolbar,centerscreen';
-			features += Pref.getBoolPref('browser.preferences.instantApply') ?
-						',dialog=no' : 
-						',modal' ;
-			WindowWatcher.openWindow(
-				aOwner || null,
-				'chrome://uxu/content/ui/config.xul',
-				'_blank',
-				features,
-				null
-			);
-		}
+		var features = 'chrome,titlebar,toolbar,centerscreen';
+		features += Pref.getBoolPref('browser.preferences.instantApply') ?
+					',dialog=no' : 
+					',modal' ;
+		this.openWindow(
+			aOwner,
+			'uxu:config',
+			'chrome://uxu/content/ui/config.xul',
+			features,
+			aOptions
+		);
 	},
  
 	/* nsICommandLineHandler */ 
@@ -615,7 +612,7 @@ GlobalService.prototype = {
 			if (arg.server)
 				this.startServer(null, args);
 			else
-				this.startRunner();
+				this.startRunner(null, args);
 		}
 	},
  
