@@ -1,29 +1,3 @@
-window.addEventListener('load', function() {
-	window.removeEventListener('load', arguments.callee, false);
-
-	if (
-		nsPreferences.getBoolPref('extensions.uxu.auto.start') ||
-		(
-			nsPreferences.getBoolPref('extensions.uxu.autoStart.oneTime.enabled') &&
-			nsPreferences.getBoolPref('extensions.uxu.autoStart.oneTime')
-		)
-		) {
-		nsPreferences.setBoolPref('extensions.uxu.autoStart.oneTime', false);
-		startUxU({ serverPort : nsPreferences.getIntPref('extensions.uxu.autoStart.oneTime.port') });
-	}
-
-	if (
-		nsPreferences.getBoolPref('extensions.uxu.runner.autoStart') ||
-		(
-			nsPreferences.getBoolPref('extensions.uxu.runner.autoStart.oneTime.enabled') &&
-			nsPreferences.getBoolPref('extensions.uxu.runner.autoStart.oneTime')
-		)
-		) {
-		nsPreferences.setBoolPref('extensions.uxu.runner.autoStart.oneTime', false);
-		openUxURunner();
-	}
-}, false);
-
 window.addEventListener('unload', function() {
 	window.removeEventListener('unload', arguments.callee, false);
 

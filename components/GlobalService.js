@@ -23,6 +23,9 @@ const Pref = Cc['@mozilla.org/preferences;1']
 			.QueryInterface(Ci.nsIPrefBranch2);
 const IOService = Cc['@mozilla.org/network/io-service;1']
 			.getService(Components.interfaces.nsIIOService);
+var WindowWatcher;
+var WindowManager;
+
 var bundle;
  
 function GlobalService() { 
@@ -38,6 +41,11 @@ GlobalService.prototype = {
 		switch (aTopic)
 		{
 			case 'app-startup':
+				WindowWatcher = Cc['@mozilla.org/embedcomp/window-watcher;1']
+					.getService(Ci.nsIWindowWatcher);
+				WindowManager = Cc['@mozilla.org/appshell/window-mediator;1']
+					.getService(Ci.nsIWindowMediator);
+
 				ObserverService.addObserver(this, 'profile-after-change', false);
 				ObserverService.addObserver(this, 'final-ui-startup', false);
 				return;
@@ -58,6 +66,20 @@ GlobalService.prototype = {
 
 			case 'uxu-profile-setup':
 				this.setUpUXUPrefs(aSubject.QueryInterface(Ci.nsILocalFile));
+				return;
+
+
+			case 'uxu-start-runner-request':
+				this.startRunner();
+				return;
+
+			case 'uxu-start-server-request':
+				eval('aData = '+aData);
+				this.startServer(null, aData);
+				return;
+
+			case 'uxu-open-config-request':
+				this.openConfig();
 				return;
 		}
 	},
@@ -81,6 +103,36 @@ GlobalService.prototype = {
 
 		Pref.addObserver('general.useragent', this, false);
 		ObserverService.addObserver(this, 'uxu-profile-setup', false);
+		ObserverService.addObserver(this, 'uxu-start-runner-request', false);
+		ObserverService.addObserver(this, 'uxu-start-server-request', false);
+		ObserverService.addObserver(this, 'uxu-open-config-request', false);
+
+		this.autoStart();
+	},
+ 
+	autoStart : function() 
+	{
+		if (
+			Pref.getBoolPref('extensions.uxu.auto.start') ||
+			(
+				Pref.getBoolPref('extensions.uxu.autoStart.oneTime.enabled') &&
+				Pref.getBoolPref('extensions.uxu.autoStart.oneTime')
+			)
+			) {
+			Pref.setBoolPref('extensions.uxu.autoStart.oneTime', false);
+			this.startServer(null, { serverPort : Pref.getIntPref('extensions.uxu.autoStart.oneTime.port') });
+		}
+
+		if (
+			Pref.getBoolPref('extensions.uxu.runner.autoStart') ||
+			(
+				Pref.getBoolPref('extensions.uxu.runner.autoStart.oneTime.enabled') &&
+				Pref.getBoolPref('extensions.uxu.runner.autoStart.oneTime')
+			)
+			) {
+			Pref.setBoolPref('extensions.uxu.runner.autoStart.oneTime', false);
+			this.startRunner();
+		}
 	},
  
 	onPrefChange : function(aPrefName) 
@@ -479,6 +531,67 @@ GlobalService.prototype = {
 		stream.close();
 	},
   
+	startRunner : function(aOwner) 
+	{
+		var target = WindowManager.getMostRecentWindow('uxu:runner');
+		if (target) {
+			target.focus();
+		}
+		else {
+			WindowWatcher.openWindow(
+				aOwner || null,
+				'chrome://uxu/content/ui/runner.xul',
+				'_blank',
+				'chrome,all,dialog=no',
+				null
+			);
+		}
+	},
+ 
+	startServer : function(aOwner, aOptions) 
+	{
+		var target = WindowManager.getMostRecentWindow('uxu:server');
+		if (target) {
+			target.focus();
+		}
+		else {
+			var bag = Cc['@mozilla.org/hash-property-bag;1']
+					.createInstance(Ci.nsIWritablePropertyBag);
+			for (var i in aOptions)
+			{
+				bag.setProperty(i, aOptions[i]);
+			}
+			WindowWatcher.openWindow(
+				aOwner || null,
+				'chrome://uxu/content/ui/uxu.xul',
+				'_blank',
+				'chrome,all,dialog=no',
+				bag
+			);
+		}
+	},
+ 
+	openConfig : function(aOwner) 
+	{
+		var target = WindowManager.getMostRecentWindow('uxu:config');
+		if (target) {
+			target.focus();
+		}
+		else {
+			var features = 'chrome,titlebar,toolbar,centerscreen';
+			features += Pref.getBoolPref('browser.preferences.instantApply') ?
+						',dialog=no' : 
+						',modal' ;
+			WindowWatcher.openWindow(
+				aOwner || null,
+				'chrome://uxu/content/ui/config.xul',
+				'_blank',
+				features,
+				null
+			);
+		}
+	},
+ 
 	/* nsICommandLineHandler */ 
 	
 	handle : function(aCommandLine) 
@@ -499,22 +612,10 @@ GlobalService.prototype = {
 
 		if (arg.testcase || arg.server) {
 			aCommandLine.preventDefault = true;
-			var WindowWatcher = Components
-					.classes['@mozilla.org/embedcomp/window-watcher;1']
-					.getService(Ci.nsIWindowWatcher);
-			var bag = Cc['@mozilla.org/hash-property-bag;1']
-					.createInstance(Ci.nsIWritablePropertyBag);
-			for (var i in arg)
-			{
-				bag.setProperty(i, arg[i]);
-			}
-			WindowWatcher.openWindow(
-				null,
-				arg.server ? 'chrome://uxu/content/ui/uxu.xul' : 'chrome://uxu/content/ui/runner.xul',
-				'_blank',
-				'chrome,all,dialog=no',
-				bag
-			);
+			if (arg.server)
+				this.startServer(null, args);
+			else
+				this.startRunner();
 		}
 	},
  
