@@ -837,7 +837,7 @@ function _splitRegistoryKey(aKey)
 {
 	var root = -1, path = '', name = '';
 	if (!('nsIWindowsRegKey' in Ci))
-		throw new Error(bungle.getString('error_utils_platform_is_not_windows'));
+		throw new Error(bundle.getString('error_utils_platform_is_not_windows'));
 
 	path = aKey.replace(/\\([^\\]+)$/, '');
 	name = RegExp.$1;
@@ -920,7 +920,7 @@ function setWindowsRegistory(aKey, aValue)
 	var root, path, name;
 	[root, path, name] = _splitRegistoryKey(aKey);
 	if (root < 0 || !path || !name)
-		throw new Error(bungle.getFormattedString('error_utils_failed_to_write_registory', [aKey, aValue]));
+		throw new Error(bundle.getFormattedString('error_utils_failed_to_write_registory', [aKey, aValue]));
 
 	// create upper level items automatically
 	var ancestors = [];
@@ -959,7 +959,7 @@ function setWindowsRegistory(aKey, aValue)
 	function closeAndThrowError(aError)
 	{
 		regKey.close();
-		throw aError || new Error(bungle.getFormattedString('error_utils_failed_to_write_registory', [aKey, aValue]));
+		throw aError || new Error(bundle.getFormattedString('error_utils_failed_to_write_registory', [aKey, aValue]));
 	}
 
 	try {
@@ -1073,7 +1073,7 @@ function clearWindowsRegistory(aKey)
 	var root, path, name;
 	[root, path, name] = _splitRegistoryKey(aKey);
 	if (root < 0 || !path || !name)
-		throw new Error(bungle.getFormattedString('error_utils_failed_to_clear_registory', [aKey]));
+		throw new Error(bundle.getFormattedString('error_utils_failed_to_clear_registory', [aKey]));
 
 	_clearWindowsRegistory(root, path+'\\'+name);
 }
