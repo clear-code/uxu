@@ -291,18 +291,19 @@ var implementInterface = implementsInterface;
 function raises(aExpectedException, aTask, aContext, aMessage)
 {
 	var raised = false;
+	var exception;
 	if (typeof aTask == 'function') {
 		try {
 			aTask = aTask.call(aContext);
 		}
-		catch(e if e == aExpectedException) {
+		catch(e if e == aExpectedException ||
+		           e.name == aExpectedException ||
+		           e.message == aExpectedException) {
 			raised = true;
+			exception = e;
 		}
-		catch(e if e.name == aExpectedException) {
-			raised = true;
-		}
-		catch(e if e.message == aExpectedException) {
-			raised = true;
+		catch(e) {
+			exception = e;
 		}
 	}
 	if (aTask && utils.isGeneratedIterator(aTask)) {
@@ -314,28 +315,40 @@ function raises(aExpectedException, aTask, aContext, aMessage)
 					!e ||
 					(
 						e != aExpectedException &&
-						e.name != aExpectedException
+						e.name != aExpectedException &&
+						e.message != aExpectedException
 					)
 					) {
-					_this._onRaisesFinish(aExpectedException, aMessage);
+					_this._onRaisesFinish(aExpectedException, e, aMessage);
 				}
 				_this._onSuccess();
 			}
 		});
 	}
 	else if (!raised) {
-		this._onRaisesFinish(aExpectedException, aMessage);
+		this._onRaisesFinish(aExpectedException, exception, aMessage);
 	}
 	this._onSuccess();
 }
 var raise = raises;
-function _onRaisesFinish(aExpectedException, aMessage)
+function _onRaisesFinish(aExpectedException, aActualException, aMessage)
 {
-	fail({
-	     	expectedRaw : aExpectedException,
-	     	expected    : bundle.getFormattedString('assert_raises_expected', [aExpectedException])
-	     },
-	     bundle.getString('assert_raises'), aMessage);
+	if (aActualException) {
+		fail({
+		     	expectedRaw : aExpectedException,
+		     	actualRaw   : aActualException,
+		     	expected    : bundle.getFormattedString('assert_raises_expected', [aExpectedException]),
+		     	actual      : bundle.getFormattedString('assert_raises_actual', [aActualException])
+		     },
+		     bundle.getString('assert_raises'), aMessage);
+	}
+	else {
+		fail({
+		     	expectedRaw : aExpectedException,
+		     	expected    : bundle.getFormattedString('assert_raises_expected', [aExpectedException])
+		     },
+		     bundle.getString('assert_raises'), aMessage);
+	}
 }
 
 function notRaises(aUnexpectedException, aTask, aContext, aMessage)
@@ -346,15 +359,9 @@ function notRaises(aUnexpectedException, aTask, aContext, aMessage)
 		try {
 			aTask = aTask.call(aContext);
 		}
-		catch(e if e == aUnexpectedException) {
-			exception = e;
-			raised = true;
-		}
-		catch(e if e.name == aUnexpectedException) {
-			exception = e;
-			raised = true;
-		}
-		catch(e if e.message == aUnexpectedException) {
+		catch(e if e == aUnexpectedException ||
+		           e.name == aUnexpectedException ||
+		           e.message == aUnexpectedException) {
 			exception = e;
 			raised = true;
 		}
@@ -379,8 +386,7 @@ function notRaises(aUnexpectedException, aTask, aContext, aMessage)
 					_this._onSuccess();
 					return;
 				}
-				exception = e;
-				_this._onNotRaisesFinish(aUnexpectedException, exception, aMessage);
+				_this._onNotRaisesFinish(aUnexpectedException, e, aMessage);
 			}
 		});
 	}
