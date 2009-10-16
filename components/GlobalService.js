@@ -576,16 +576,16 @@ GlobalService.prototype = {
  
 	openConfig : function(aOwner) 
 	{
-		var features = 'chrome,titlebar,toolbar,centerscreen';
-		features += Pref.getBoolPref('browser.preferences.instantApply') ?
-					',dialog=no' : 
-					',modal' ;
 		this.openWindow(
 			aOwner,
 			'uxu:config',
 			'chrome://uxu/content/ui/config.xul',
-			features,
-			aOptions
+			('chrome,titlebar,toolbar,centerscreen' +
+				Pref.getBoolPref('browser.preferences.instantApply') ?
+					',dialog=no' : 
+					',modal'
+			),
+			null
 		);
 	},
  
