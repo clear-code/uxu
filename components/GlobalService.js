@@ -610,9 +610,9 @@ GlobalService.prototype = {
 		if (arg.testcase || arg.server) {
 			aCommandLine.preventDefault = true;
 			if (arg.server)
-				this.startServer(null, args);
+				this.startServer(null, arg);
 			else
-				this.startRunner(null, args);
+				this.startRunner(null, arg);
 		}
 	},
  
