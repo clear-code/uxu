@@ -294,8 +294,7 @@ function startup()
 	if (!running && lastResult) {
 		mainDeck.selectedIndex = 0;
 		try {
-			eval('lastResult = '+lastResult);
-			gLog.items = lastResult;
+			eval('gLog.items = '+lastResult);
 			var current = 0;
 			var step = 20;
 			var progress = _('initializingProgress');
@@ -324,7 +323,7 @@ function startup()
 	}
 
 	// ‹Œ”Å‚Ìpersist‘®«‚É‚æ‚Á‚Ä•Û‘¶‚³‚ê‚Ä‚¢‚½’l‚ª•œŒ³‚³‚ê‚Ä‚µ‚Ü‚Á‚½ê‡‚Ì‚½‚ß‚É
-	window.setTimeout(setTestFile, 0, defaultTestPath);
+	window.setTimeout(setTestFile, 0, defaultTestPath, false);
 }
 	 
 var alwaysRaisedObserver = { 
