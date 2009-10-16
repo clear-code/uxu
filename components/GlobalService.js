@@ -558,7 +558,7 @@ GlobalService.prototype = {
 			aOwner,
 			'uxu:runner',
 			'chrome://uxu/content/ui/runner.xul',
-			'chrome,all,dialog=no',
+			'chrome,all,dialog=no,resizable=yes',
 			aOptions
 		);
 	},
@@ -569,7 +569,7 @@ GlobalService.prototype = {
 			aOwner,
 			'uxu:server',
 			'chrome://uxu/content/ui/uxu.xul',
-			'chrome,all,dialog=no',
+			'chrome,all,dialog=no,resizable=yes',
 			aOptions
 		);
 	},
