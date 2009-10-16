@@ -482,8 +482,6 @@ function registerTest(aFunction)
 		aFunction.__uxu__registered)
 		return;
 
-	aFunction.__uxu__registered = true;
-
 	this._normalizeTest(aFunction);
 
 	var parameters = aFunction.parameters;
@@ -502,6 +500,7 @@ function registerTest(aFunction)
 	}
 
 	if (utils.isArray(parameters)) {
+		aFunction.__uxu__registered = true;
 		parameters.forEach(function(aParameter, aIndex) {
 			this._registerSingleTest(this._createNewTestWithParameter(
 				aFunction,
@@ -511,6 +510,7 @@ function registerTest(aFunction)
 		}, this);
 	}
 	else {
+		aFunction.__uxu__registered = true;
 		for (let i in parameters)
 		{
 			this._registerSingleTest(this._createNewTestWithParameter(
@@ -594,13 +594,14 @@ function _createNewTestWithParameter(aFunction, aParameter, aSuffix)
 		test[i] = aFunction[i];
 	}
 	test.description = aFunction.description + aSuffix;
-	test.original = aFunction;
+	test.__uxu__original = aFunction;
 
 	var setUp = aFunction.setUp;
 	if (setUp) {
 		test.setUp = function() {
 			return setUp.call(this, aParameter);
 		};
+		test.setUp.__uxu__original = setUp;
 	}
 
 	var tearDown = aFunction.tearDown;
@@ -608,6 +609,7 @@ function _createNewTestWithParameter(aFunction, aParameter, aSuffix)
 		test.tearDown = function() {
 			return tearDown.call(this, aParameter);
 		};
+		test.tearDown.__uxu__original = tearDown;
 	}
 
 	return test;
@@ -615,22 +617,19 @@ function _createNewTestWithParameter(aFunction, aParameter, aSuffix)
  
 function _registerSingleTest(aFunction) 
 {
-	if (this._tests.some(function(aTest) {
-			return (aTest.code == aFunction);
-		}))
+	if (aFunction.__uxu__registered)
 		return;
 
+	aFunction.__uxu__registered = true;
+
 	var desc = aFunction.description;
-	var source = aFunction.toSource();
 
 	var test = {
 		id          : 'test-'+Date.now()+'-'+parseInt(Math.random() * 65000),
 		description : desc,
 		title       : desc,
 
-		code         : aFunction,
-		originalCode : aFunction.original,
-
+		code          : aFunction,
 		priority      : aFunction.priority,
 		shouldSkip    : aFunction.shouldSkip,
 		targetProduct : aFunction.targetProduct,
@@ -644,10 +643,17 @@ function _registerSingleTest(aFunction)
 	};
 
 	var sources = [];
+
 	sources.push(desc);
-	if (test.setUp) sources.push(test.setUp.toSource());
-	sources.push(source);
-	if (test.tearDown) sources.push(test.tearDown.toSource());
+
+	if (test.setUp)
+		sources.push((test.setUp.__uxu__original || test.setUp).toSource());
+
+	sources.push((aFunction.__uxu__original || aFunction)toSource());
+
+	if (test.tearDown)
+		sources.push((test.tearDown.__uxu__original || test.tearDown).toSource());
+
 	sources.push('assertions:'+test.assertions);
 	sources.push('minAssertions:'+test.minAssertions);
 	sources.push('maxAssertions:'+test.maxAssertions);
