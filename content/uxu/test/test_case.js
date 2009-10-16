@@ -1020,9 +1020,10 @@ function run(aStopper)
 		},
 		finished : function(aContinuation)
 		{
-			_this.done = true;
-			if (!_this._aborted)
+			if (!_this._aborted) {
+				_this.done = true;
 				_this.fireEvent('Finish', testCaseReport.report);
+			}
 		}
 	};
 

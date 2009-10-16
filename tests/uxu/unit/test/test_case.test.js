@@ -392,9 +392,9 @@ function testStopper()
 	testcase.tests = {
 		setUp : function() { setUpCount++; },
 		tearDown : function() { tearDownCount++; },
-		'1' : function() { testCount++; yield 300; },
-		'2' : function() { testCount++; yield 100; },
-		'3' : function() { testCount++; yield 100; }
+		'1' : function() { testCount++; yield 1000; },
+		'2' : function() { testCount++; yield 1000; },
+		'3' : function() { testCount++; yield 1000; }
 	};
 	assert.equals(3, testcase.tests.length);
 
@@ -406,14 +406,16 @@ function testStopper()
 	clearCount();
 	testcase.masterPriority = 'must';
 	testcase.run(stopper);
-	yield 1500;
+	yield 5000;
 	yield Do(assertDoneProcessCount(3, 3, 3, { doNotRun : true }));
 
 	clearCount();
+	testcase.done = false;
+	testcase.masterPriority = 'must';
 	testcase.run(stopper);
-	yield 100;
-	shouldStop = true;
 	yield 500;
+	shouldStop = true;
+	yield 5000;
 	yield Do(assertDoneProcessCount(1, 1, 1, { doNotRun : true, done : false }));
 }
 function testPrivSetUpTearDown()
