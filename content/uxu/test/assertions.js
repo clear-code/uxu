@@ -301,6 +301,9 @@ function raises(aExpectedException, aTask, aContext, aMessage)
 		catch(e if e.name == aExpectedException) {
 			raised = true;
 		}
+		catch(e if e.message == aExpectedException) {
+			raised = true;
+		}
 	}
 	if (aTask && utils.isGeneratedIterator(aTask)) {
 		var _this = this;
@@ -348,6 +351,10 @@ function notRaises(aUnexpectedException, aTask, aContext, aMessage)
 			raised = true;
 		}
 		catch(e if e.name == aUnexpectedException) {
+			exception = e;
+			raised = true;
+		}
+		catch(e if e.message == aUnexpectedException) {
 			exception = e;
 			raised = true;
 		}

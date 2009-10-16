@@ -5,7 +5,6 @@ var isWindows = navigator.platform.toLowerCase().indexOf('win32') > -1;
 var topDir = baseURL+'../../../../';
 var utilsModule;
 
-
 function clearWindowsRegistoryKey(aRoot, aPath)
 {
 	try {
@@ -180,6 +179,8 @@ function test_getWindowsResigtory()
 	);
 }
 
+var bundle = {};
+utils.include(topDir+'content/uxu/lib/bundle.js', bundle);
 var testData = [
 		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-string',
 		  value    : 'string' },
@@ -210,13 +211,22 @@ var testData = [
 		  expected : [98] },
 		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
 		  value    : [true, false],
-		  error    : 'ERROR_FAILED_TO_WRITE_REGISTORY' },
+		  error    : bundle.getFormattedString(
+		               'error_utils_failed_to_write_registory',
+		               ['HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
+		                [true, false]]) },
 		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
 		  value    : ['a', 'b'],
-		  error    : 'ERROR_FAILED_TO_WRITE_REGISTORY' },
+		  error    : bundle.getFormattedString(
+		               'error_utils_failed_to_write_registory',
+		               ['HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
+		                ['a', 'b']]) },
 		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
 		  value    : [{ value : true }, { value : false }],
-		  error    : 'ERROR_FAILED_TO_WRITE_REGISTORY' }
+		  error    : bundle.getFormattedString(
+		               'error_utils_failed_to_write_registory',
+		               ['HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
+		                [{ value : true }, { value : false }]]) }
 	];
 
 test_setWindowsResigtory.setUp = function() {
@@ -235,40 +245,34 @@ test_setWindowsResigtory.tearDown = function() {
 		);
 	}
 };
-function test_setWindowsResigtory()
+test_setWindowsResigtory.parameters = testData;
+function test_setWindowsResigtory(aData)
 {
-	function assertSetWindowsResigtory(aData)
-	{
-		if (isWindows) {
-			if (aData.error) {
-				assert.raises(
-					utilsModule[aData.error],
-					function() {
-						utilsModule.setWindowsRegistory(aData.key, aData.value)
-					}
-				);
-			}
-			else {
-				utilsModule.setWindowsRegistory(aData.key, aData.value);
-				assert.strictlyEquals(
-					('expected' in aData ? aData.expected : aData.value ),
-					utilsModule.getWindowsRegistory(aData.key)
-				);
-			}
-		}
-		else {
+	if (isWindows) {
+		if (aData.error) {
 			assert.raises(
-				utilsModule.ERROR_PLATFORM_IS_NOT_WINDOWS,
+				aData.error,
 				function() {
 					utilsModule.setWindowsRegistory(aData.key, aData.value)
 				}
 			);
 		}
+		else {
+			utilsModule.setWindowsRegistory(aData.key, aData.value);
+			assert.strictlyEquals(
+				('expected' in aData ? aData.expected : aData.value ),
+				utilsModule.getWindowsRegistory(aData.key)
+			);
+		}
 	}
-
-	testData.forEach(function(aData) {
-		assertSetWindowsResigtory(aData);
-	});
+	else {
+		assert.raises(
+			utilsModule.ERROR_PLATFORM_IS_NOT_WINDOWS,
+			function() {
+				utilsModule.setWindowsRegistory(aData.key, aData.value)
+			}
+		);
+	}
 }
 
 test_clearWindowsRegistory.shouldSkip = !isWindows;
