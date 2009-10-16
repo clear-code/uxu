@@ -2086,7 +2086,7 @@ function parseParametersFromCSV(aCSV)
 	var types = [];
 	if (isHash) columns.splice(0, 1);
 
-	var typePattern = /.(\s*\[(string|number|boolean|object|json|auto)\]\s*)$/i;
+	var typePattern = /.(\s*\[([^\]]+)\]\s*)$/i;
 	var columnNames = {};
 	columns = columns.map(function(aColumn) {
 		let match = aColumn.match(typePattern);
@@ -2138,28 +2138,51 @@ function _ensureUniquieName(aName, aDatabase)
 function _convertParameterType(aInput, aType)
 {
 	var source = aInput;
-	if (!aType || aType == 'auto') {
-		if (/^[0-9]+(\.[0-9]+)$/.test(source)) {
-			aType = 'number';
-		}
-		else if (/^(true|false)$/i.test(source)) {
-			aType = 'boolean';
-			source = source.toLowerCase();
-		}
-		else {
-			aType = 'string';
-		}
+	aType = String(aType || '').toLowerCase();
+
+	switch (aType)
+	{
+		case 'auto':
+		default:
+			if (/^[0-9]+(\.[0-9]+)$/.test(source)) {
+				aType = 'number';
+			}
+			else if (/^(true|false)$/i.test(source)) {
+				aType = 'boolean';
+				source = source.toLowerCase();
+			}
+			else {
+				aType = 'string';
+			}
+			break;
+
+		case 'number':
+		case 'int':
+		case 'float':
+
+		case 'boolean':
+		case 'bool':
+
+		case 'string':
+		case 'char':
+
+		case 'object':
+		case 'json':
+			break;
 	}
 
 	var data;
 	switch (aType)
 	{
 		case 'number':
+		case 'int':
+		case 'float':
 			data = Number(source);
 			if (isNaN(data))
 				throw new Error(bundle.getFormattedString('error_utils_parameters_from_CSV_invalid_number', [aInput]));
 			break;
 		case 'boolean':
+		case 'bool':
 			try {
 				eval('data = !!('+(source || '""')+')');
 			}
@@ -2177,6 +2200,7 @@ function _convertParameterType(aInput, aType)
 			}
 			break;
 		case 'string':
+		case 'char':
 		default:
 			data = source;
 			break;
