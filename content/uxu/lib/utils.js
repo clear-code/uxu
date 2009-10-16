@@ -365,7 +365,7 @@ function writeTo(aContent, aTarget, aEncoding)
  
 function readCSV(aTarget, aEncoding, aContext) 
 {
-	var input = this.readFrom(aTarget, aEncoding);
+	var input = this.readFrom(aTarget, aEncoding || this.getPref('extensions.uxu.defaultEncoding'));
 	if (aContext) input = this.parseTemplate(input, aContext);
 	return this.parseCSV(input);
 }
@@ -380,7 +380,7 @@ var readParamFromCSV = readParametersFromCSV;
  
 function readJSON(aTarget, aEncoding, aContext) 
 {
-	var input = this.readFrom(aTarget, aEncoding);
+	var input = this.readFrom(aTarget, aEncoding || this.getPref('extensions.uxu.defaultEncoding'));
 	if (aContext) input = this.parseTemplate(input, aContext);
 	eval('input = ('+input+')');
 	return input;
