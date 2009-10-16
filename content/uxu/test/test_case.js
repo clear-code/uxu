@@ -500,7 +500,6 @@ function registerTest(aFunction)
 	}
 
 	if (utils.isArray(parameters)) {
-		aFunction.__uxu__registered = true;
 		parameters.forEach(function(aParameter, aIndex) {
 			this._registerSingleTest(this._createNewTestWithParameter(
 				aFunction,
@@ -508,9 +507,9 @@ function registerTest(aFunction)
 				' ('+(aIndex+1)+')'
 			));
 		}, this);
+		aFunction.__uxu__registered = true;
 	}
 	else {
-		aFunction.__uxu__registered = true;
 		for (let i in parameters)
 		{
 			this._registerSingleTest(this._createNewTestWithParameter(
@@ -519,6 +518,7 @@ function registerTest(aFunction)
 				' ('+i+')'
 			));
 		}
+		aFunction.__uxu__registered = true;
 	}
 }
 	
@@ -649,7 +649,7 @@ function _registerSingleTest(aFunction)
 	if (test.setUp)
 		sources.push((test.setUp.__uxu__original || test.setUp).toSource());
 
-	sources.push((aFunction.__uxu__original || aFunction)toSource());
+	sources.push((aFunction.__uxu__original || aFunction).toSource());
 
 	if (test.tearDown)
 		sources.push((test.tearDown.__uxu__original || test.tearDown).toSource());

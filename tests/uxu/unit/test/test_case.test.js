@@ -662,33 +662,43 @@ function assertRegisterTestWithParameters(aTest, aDescriptions)
 	}
 }
 
+var privateSetUpWithParametersResults;
+var privateTearDownWithParametersResults;
+
+function createNewTestForParameters(aDescription)
+{
+	var test = function(aParameter) {
+			testcase.environment.assert.isTrue(aParameter);
+		};
+	test.description = aDescription;
+	test.setUp = function(aParameter) {
+			privateSetUpWithParametersResults.push(aParameter);
+		};
+	test.tearDown = function(aParameter) {
+			privateTearDownWithParametersResults.push(aParameter);
+		};
+	return test;
+}
+
 function testWithArrayParameters()
 {
 	var test;
+	privateSetUpWithParametersResults = [];
+	privateTearDownWithParametersResults = [];
 
-	test = function(aParameter) {
-			testcase.environment.assert.isTrue(aParameter);
-		};
-	test.description = 'desc1';
+	test = createNewTestForParameters('desc1');
 	test.parameters = [true, false];
 	assertRegisterTestWithParameters(test,
 	                                 ['desc1 (1)',
 	                                  'desc1 (2)']);
 
-	test = function(aParameter) {
-			testcase.environment.assert.isTrue(aParameter);
-		};
-	test.description = 'desc2';
+	test = createNewTestForParameters('desc2');
 	test.params = [true, false];
 	assertRegisterTestWithParameters(test,
 	                                 ['desc2 (1)',
 	                                  'desc2 (2)']);
 
-	test = function(aParameter) {
-			testcase.environment.assert.isTrue(aParameter);
-			yield 100;
-		};
-	test.description = 'desc3';
+	test = createNewTestForParameters('desc3');
 	test.parameters = [true, false];
 	assertRegisterTestWithParameters(test,
 	                                 ['desc3 (1)',
@@ -698,26 +708,26 @@ function testWithArrayParameters()
 	yield Do(assertTestResult('success', 'failure',
 	                          'success', 'failure',
 	                          'success', 'failure'));
+	assert.equals([true, false, true, false, true, false],
+	              privateSetUpWithParametersResults);
+	assert.equals([true, false, true, false, true, false],
+	              privateTearDownWithParametersResults);
 }
 
 function testWithHashParameters()
 {
 	var test;
+	privateSetUpWithParametersResults = [];
+	privateTearDownWithParametersResults = [];
 
-	test = function(aParameter) {
-			testcase.environment.assert.isTrue(aParameter);
-		};
-	test.description = 'desc1';
+	test = createNewTestForParameters('desc1');
 	test.parameters = { foo : true,
 	                    bar : false };
 	assertRegisterTestWithParameters(test,
 	                                 ['desc1 (foo)',
 	                                  'desc1 (bar)']);
 
-	test = function(aParameter) {
-			testcase.environment.assert.isTrue(aParameter);
-		};
-	test.description = 'desc2';
+	test = createNewTestForParameters('desc2');
 	test.params = { foo : true,
 	                bar : false };
 	assertRegisterTestWithParameters(test,
@@ -727,5 +737,9 @@ function testWithHashParameters()
 	testcase.masterPriority = 'must';
 	yield Do(assertTestResult('success', 'failure',
 	                          'success', 'failure'));
+	assert.equals([true, false, true, false],
+	              privateSetUpWithParametersResults);
+	assert.equals([true, false, true, false],
+	              privateTearDownWithParametersResults);
 }
 
