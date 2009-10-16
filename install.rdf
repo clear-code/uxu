@@ -29,7 +29,7 @@
 				em:maxVersion="3.0b4pre" />
 		</em:targetApplication>
 		<em:targetApplication>
-			<!-- XULRunner Application -->
+			<!-- XULRunner Applications -->
 			<Description em:id="toolkit@mozilla.org"
 				em:minVersion="0"
 				em:maxVersion="99" />
