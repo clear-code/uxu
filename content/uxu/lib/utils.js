@@ -2159,6 +2159,7 @@ function _convertParameterType(aInput, aType)
 		case 'number':
 		case 'int':
 		case 'float':
+		case 'double':
 
 		case 'boolean':
 		case 'bool':
@@ -2177,6 +2178,7 @@ function _convertParameterType(aInput, aType)
 		case 'number':
 		case 'int':
 		case 'float':
+		case 'double':
 			data = Number(source);
 			if (isNaN(data))
 				throw new Error(bundle.getFormattedString('error_utils_parameters_from_CSV_invalid_number', [aInput]));
