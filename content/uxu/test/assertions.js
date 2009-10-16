@@ -57,7 +57,9 @@ function equals(aExpected, aActual, aMessage)
 		     aMessage);
 	this._onSuccess();
 }
-function equal() { this.equals.apply(this, arguments); }
+var equal = equals;
+var arrayEquals = equals;
+var arrayEqual = equals;
 
 function notEquals(aExpected, aActual, aMessage)
 {
@@ -72,7 +74,7 @@ function notEquals(aExpected, aActual, aMessage)
 		     aMessage);
 	this._onSuccess();
 }
-function notEqual() { this.notEquals.apply(this, arguments); }
+var notEqual = notEquals;
 
 function strictlyEquals(aExpected, aActual, aMessage)
 {
@@ -87,7 +89,7 @@ function strictlyEquals(aExpected, aActual, aMessage)
 		     aMessage);
 	this._onSuccess();
 }
-function strictlyEqual() { this.strictlyEquals.apply(this, arguments); }
+var strictlyEqual = strictlyEquals;
 
 function notStrictlyEquals(aExpected, aActual, aMessage)
 {
@@ -102,7 +104,7 @@ function notStrictlyEquals(aExpected, aActual, aMessage)
 		     aMessage);
 	this._onSuccess();
 }
-function notStrictlyEqual() { this.notStrictlyEquals.apply(this, arguments); }
+var notStrictlyEqual = notStrictlyEquals;
 
 function isTrue(aActual, aMessage)
 {
@@ -284,7 +286,7 @@ function implementsInterface(aExpectedInterface, aActualInstance, aMessage)
 	}
 	this._onSuccess();
 }
-function implementInterface() { this.implementsInterface.apply(this, arguments); }
+var implementInterface = implementsInterface;
 
 function raises(aExpectedException, aTask, aContext, aMessage)
 {
@@ -323,7 +325,7 @@ function raises(aExpectedException, aTask, aContext, aMessage)
 	}
 	this._onSuccess();
 }
-function raise() { return this.raises.apply(this, arguments); }
+var raise = raises;
 function _onRaisesFinish(aExpectedException, aMessage)
 {
 	fail({
@@ -377,7 +379,7 @@ function notRaises(aUnexpectedException, aTask, aContext, aMessage)
 	}
 	this._onSuccess();
 }
-function notRaise() { return this.notRaises.apply(this, arguments); }
+var notRaise = notRaises;
 function _onNotRaisesFinish(aUnexpectedException, aActualException, aMessage)
 {
 	fail({
@@ -401,7 +403,7 @@ function matches(aExpectedPattern, aActualString, aMessage)
 		     bundle.getString('assert_matches'), aMessage);
 	this._onSuccess();
 }
-function match() { this.matches.apply(this, arguments); }
+var match = matches;
 
 function notMatches(aUnexpectedPattern, aActualString, aMessage)
 {
@@ -415,7 +417,7 @@ function notMatches(aUnexpectedPattern, aActualString, aMessage)
 		     bundle.getString('assert_not_matches'), aMessage);
 	this._onSuccess();
 }
-function notMatch() { this.notMatches.apply(this, arguments); }
+var notMatch = notMatches;
 
 function pattern(aExpectedString, aActualPattern, aMessage)
 {
@@ -442,9 +444,6 @@ function notPattern(aUnexpectedString, aActualPattern, aMessage)
 		     bundle.getString('assert_not_pattern'), aMessage);
 	this._onSuccess();
 }
-
-function arrayEquals() { this.equals.apply(this, arguments); }
-function arrayEqual() { this.equals.apply(this, arguments); }
 
 function inDelta(aExpected, aActual, aDelta, aMessage)
 {
@@ -488,7 +487,7 @@ function _greaterThan(aExpected, aActual, aMessage)
 			 aMessage);
 	this._onSuccess();
 }
-function _greater() { this._greaterThan.apply(this, arguments); }
+var _greater = _greaterThan;
 
 function _greaterOrEqual(aExpected, aActual, aMessage)
 {
@@ -521,7 +520,7 @@ function _lessThan(aExpected, aActual, aMessage)
 			 aMessage);
 	this._onSuccess();
 }
-function _less() { this._lessThan.apply(this, arguments); }
+var _less = _lessThan;
 
 function _lessOrEqual(aExpected, aActual, aMessage)
 {
@@ -588,7 +587,7 @@ function contains(aExpected, aActual, aMessage)
 		     aMessage);
 	this._onSuccess();
 }
-function contain() { this.contains.apply(this, arguments); }
+var contain = contains;
 
 function notContains(aExpected, aActual, aMessage)
 {
@@ -611,7 +610,7 @@ function notContains(aExpected, aActual, aMessage)
 		     aMessage);
 	this._onSuccess();
 }
-function notContain() { this.notContains.apply(this, arguments); }
+var notContain = notContains;
 
 function contained(aExpected, aActual, aMessage)
 {
@@ -678,7 +677,7 @@ function finishesWithin(aExpectedTime, aTask, aContext, aMessage)
 		this._onFinishesWithinFinish(aExpectedTime, startAt, aMessage);
 	}
 }
-function finishWithin() { return this.finishesWithin.apply(this, arguments); }
+var finishWithin = finishesWithin;
 function _onFinishesWithinFinish(aExpectedTime, aStartAt, aMessage)
 {
 	var actualTime = Date.now() - aStartAt;
@@ -738,7 +737,7 @@ function _assertionsCount(aExpectedCount, aOperator, aTask, aContext, aMessage)
 	this._onSuccess();
 }
 function assertionsCountEquals(aExpected, aTask, aContext, aMessage) { return this._assertionsCount(aExpected, '==', aTask, aContext, aMessage); }
-function assertionsCountEqual(aExpected, aTask, aContext, aMessage) { return this.assertionsCountEquals.apply(this, arguments); }
+var assertionsCountEqual = assertionsCountEquals;
 function assertionsMinCount(aExpected, aTask, aContext, aMessage) { return this._assertionsCount(aExpected, '<=', aTask, aContext, aMessage); }
 function assertionsMaxCount(aExpected, aTask, aContext, aMessage) { return this._assertionsCount(aExpected, '>=', aTask, aContext, aMessage); }
 
