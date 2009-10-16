@@ -5,7 +5,7 @@ var isWindows = navigator.platform.toLowerCase().indexOf('win32') > -1;
 var topDir = baseURL+'../../../../';
 var utilsModule;
 
-function clearWindowsRegistoryKey(aRoot, aPath)
+function clearWindowsRegistryKey(aRoot, aPath)
 {
 	try {
 		var regKey = Cc['@mozilla.org/windows-registry-key;1']
@@ -30,7 +30,7 @@ function clearWindowsRegistoryKey(aRoot, aPath)
 				children.push(regKey.getChildName(i));
 			}
 			children.forEach(function(aName) {
-				_clearWindowsRegistory(aRoot, aPath+'\\'+aName);
+				_clearWindowsRegistry(aRoot, aPath+'\\'+aName);
 			});
 		}
 		catch(e) {
@@ -73,40 +73,40 @@ function tearDown()
 {
 }
 
-function test__splitRegistoryKey()
+function test__splitRegistryKey()
 {
-	function assertSplitRegistoryKey(aExpected, aInput)
+	function assertSplitRegistryKey(aExpected, aInput)
 	{
 		if (isWindows) {
 			assert.equals(
 				aExpected,
-				utilsModule._splitRegistoryKey(aInput)
+				utilsModule._splitRegistryKey(aInput)
 			);
 		}
 		else {
 			assert.raises(
 				utilsModule.ERROR_PLATFORM_IS_NOT_WINDOWS,
 				function() {
-					utilsModule._splitRegistoryKey(aInput)
+					utilsModule._splitRegistryKey(aInput)
 				}
 			);
 		}
 	}
 
-	assertSplitRegistoryKey(
+	assertSplitRegistryKey(
 		[Ci.nsIWindowsRegKey.ROOT_KEY_CLASSES_ROOT,
 		 '.txt',
 		 'Content Type'],
 		'HKEY_CLASSES_ROOT\\.txt\\Content Type'
 	);
-	assertSplitRegistoryKey(
+	assertSplitRegistryKey(
 		[Ci.nsIWindowsRegKey.ROOT_KEY_CLASSES_ROOT,
 		 '.txt',
 		 'Content Type'],
 		'HKCR\\.txt\\Content Type'
 	);
 
-	assertSplitRegistoryKey(
+	assertSplitRegistryKey(
 		[Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
 		 'Software\\Microsoft\\Windows\\'+
 			'CurrentVersion\\Internet Settings',
@@ -114,7 +114,7 @@ function test__splitRegistoryKey()
 		'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\'+
 			'CurrentVersion\\Internet Settings\\MigrateProxy'
 	);
-	assertSplitRegistoryKey(
+	assertSplitRegistryKey(
 		[Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
 		 'Software\\Microsoft\\Windows\\'+
 			'CurrentVersion\\Internet Settings',
@@ -123,14 +123,14 @@ function test__splitRegistoryKey()
 			'CurrentVersion\\Internet Settings\\MigrateProxy'
 	);
 
-	assertSplitRegistoryKey(
+	assertSplitRegistryKey(
 		[Ci.nsIWindowsRegKey.ROOT_KEY_LOCAL_MACHINE,
 		 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion',
 		 'ProgramFilesPath'],
 		'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\'+
 			'CurrentVersion\\ProgramFilesPath'
 	);
-	assertSplitRegistoryKey(
+	assertSplitRegistryKey(
 		[Ci.nsIWindowsRegKey.ROOT_KEY_LOCAL_MACHINE,
 		 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion',
 		 'ProgramFilesPath'],
@@ -138,7 +138,7 @@ function test__splitRegistoryKey()
 			'CurrentVersion\\ProgramFilesPath'
 	);
 
-	assertSplitRegistoryKey(
+	assertSplitRegistryKey(
 		[-1,
 		 'Path',
 		 'Name'],
@@ -153,14 +153,14 @@ function test_getWindowsResigtory()
 		if (isWindows) {
 			assert.strictlyEquals(
 				aExpected,
-				utilsModule.getWindowsRegistory(aKey)
+				utilsModule.getWindowsRegistry(aKey)
 			);
 		}
 		else {
 			assert.raises(
 				utilsModule.ERROR_PLATFORM_IS_NOT_WINDOWS,
 				function() {
-					utilsModule.getWindowsRegistory(aKey)
+					utilsModule.getWindowsRegistry(aKey)
 				}
 			);
 		}
@@ -212,26 +212,26 @@ var testData = [
 		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
 		  value    : [true, false],
 		  error    : bundle.getFormattedString(
-		               'error_utils_failed_to_write_registory',
+		               'error_utils_failed_to_write_registry',
 		               ['HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
 		                [true, false]]) },
 		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
 		  value    : ['a', 'b'],
 		  error    : bundle.getFormattedString(
-		               'error_utils_failed_to_write_registory',
+		               'error_utils_failed_to_write_registry',
 		               ['HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
 		                ['a', 'b']]) },
 		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
 		  value    : [{ value : true }, { value : false }],
 		  error    : bundle.getFormattedString(
-		               'error_utils_failed_to_write_registory',
+		               'error_utils_failed_to_write_registry',
 		               ['HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
 		                [{ value : true }, { value : false }]]) }
 	];
 
 test_setWindowsResigtory.setUp = function() {
 	if (isWindows) {
-		clearWindowsRegistoryKey(
+		clearWindowsRegistryKey(
 			Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
 			'Software\\ClearCode Inc.'
 		);
@@ -239,7 +239,7 @@ test_setWindowsResigtory.setUp = function() {
 };
 test_setWindowsResigtory.tearDown = function() {
 	if (isWindows) {
-		clearWindowsRegistoryKey(
+		clearWindowsRegistryKey(
 			Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
 			'HKCU\\Software\\ClearCode Inc.'
 		);
@@ -253,15 +253,15 @@ function test_setWindowsResigtory(aData)
 			assert.raises(
 				aData.error,
 				function() {
-					utilsModule.setWindowsRegistory(aData.key, aData.value)
+					utilsModule.setWindowsRegistry(aData.key, aData.value)
 				}
 			);
 		}
 		else {
-			utilsModule.setWindowsRegistory(aData.key, aData.value);
+			utilsModule.setWindowsRegistry(aData.key, aData.value);
 			assert.strictlyEquals(
 				('expected' in aData ? aData.expected : aData.value ),
-				utilsModule.getWindowsRegistory(aData.key)
+				utilsModule.getWindowsRegistry(aData.key)
 			);
 		}
 	}
@@ -269,36 +269,36 @@ function test_setWindowsResigtory(aData)
 		assert.raises(
 			utilsModule.ERROR_PLATFORM_IS_NOT_WINDOWS,
 			function() {
-				utilsModule.setWindowsRegistory(aData.key, aData.value)
+				utilsModule.setWindowsRegistry(aData.key, aData.value)
 			}
 		);
 	}
 }
 
-test_clearWindowsRegistory.shouldSkip = !isWindows;
-test_clearWindowsRegistory.setUp = function() {
+test_clearWindowsRegistry.shouldSkip = !isWindows;
+test_clearWindowsRegistry.setUp = function() {
 	testData.forEach(function(aData) {
 		if (aData.error) return;
-		utilsModule.setWindowsRegistory(aData.key, aData.value);
+		utilsModule.setWindowsRegistry(aData.key, aData.value);
 		assert.strictlyEquals(
 			('expected' in aData ? aData.expected : aData.value ),
-			utilsModule.getWindowsRegistory(aData.key)
+			utilsModule.getWindowsRegistry(aData.key)
 		);
 	});
 };
-test_clearWindowsRegistory.tearDown = function() {
-	clearWindowsRegistoryKey(
+test_clearWindowsRegistry.tearDown = function() {
+	clearWindowsRegistryKey(
 		Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
 		'HKCU\\Software\\ClearCode Inc.'
 	);
 };
-function test_clearWindowsRegistory()
+function test_clearWindowsRegistry()
 {
-	utilsModule.clearWindowsRegistory('HKCU\\Software\\ClearCode Inc.\\UxU\\test-string');
-	assert.isNull(utilsModule.getWindowsRegistory('HKCU\\Software\\ClearCode Inc.\\UxU\\test-string'));
+	utilsModule.clearWindowsRegistry('HKCU\\Software\\ClearCode Inc.\\UxU\\test-string');
+	assert.isNull(utilsModule.getWindowsRegistry('HKCU\\Software\\ClearCode Inc.\\UxU\\test-string'));
 
-	utilsModule.clearWindowsRegistory('HKCU\\Software\\ClearCode Inc.');
+	utilsModule.clearWindowsRegistry('HKCU\\Software\\ClearCode Inc.');
 	testData.forEach(function(aData) {
-		assert.isNull(utilsModule.getWindowsRegistory(aData.key));
+		assert.isNull(utilsModule.getWindowsRegistry(aData.key));
 	});
 }

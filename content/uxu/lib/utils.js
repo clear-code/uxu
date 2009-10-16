@@ -833,7 +833,7 @@ function loadPrefs(aFile, aHash)
   
 // WindowsƒŒƒWƒXƒgƒŠ“Ç‚İ‘‚« 
 	
-function _splitRegistoryKey(aKey) 
+function _splitRegistryKey(aKey) 
 {
 	var root = -1, path = '', name = '';
 	if (!('nsIWindowsRegKey' in Ci))
@@ -869,12 +869,12 @@ function _splitRegistoryKey(aKey)
 	return [root, path, name];
 }
  
-function getWindowsRegistory(aKey) 
+function getWindowsRegistry(aKey) 
 {
 	var value = null;
 
 	var root, path, name;
-	[root, path, name] = _splitRegistoryKey(aKey);
+	[root, path, name] = _splitRegistryKey(aKey);
 	if (root < 0 || !path || !name) return value;
 
 	var regKey = Cc['@mozilla.org/windows-registry-key;1']
@@ -915,12 +915,12 @@ function getWindowsRegistory(aKey)
 	return value;
 }
  
-function setWindowsRegistory(aKey, aValue) 
+function setWindowsRegistry(aKey, aValue) 
 {
 	var root, path, name;
-	[root, path, name] = _splitRegistoryKey(aKey);
+	[root, path, name] = _splitRegistryKey(aKey);
 	if (root < 0 || !path || !name)
-		throw new Error(bundle.getFormattedString('error_utils_failed_to_write_registory', [aKey, aValue]));
+		throw new Error(bundle.getFormattedString('error_utils_failed_to_write_registry', [aKey, aValue]));
 
 	// create upper level items automatically
 	var ancestors = [];
@@ -959,7 +959,7 @@ function setWindowsRegistory(aKey, aValue)
 	function closeAndThrowError(aError)
 	{
 		regKey.close();
-		throw aError || new Error(bundle.getFormattedString('error_utils_failed_to_write_registory', [aKey, aValue]));
+		throw aError || new Error(bundle.getFormattedString('error_utils_failed_to_write_registry', [aKey, aValue]));
 	}
 
 	try {
@@ -1068,16 +1068,16 @@ function setWindowsRegistory(aKey, aValue)
 	return aValue;
 }
  
-function clearWindowsRegistory(aKey) 
+function clearWindowsRegistry(aKey) 
 {
 	var root, path, name;
-	[root, path, name] = _splitRegistoryKey(aKey);
+	[root, path, name] = _splitRegistryKey(aKey);
 	if (root < 0 || !path || !name)
-		throw new Error(bundle.getFormattedString('error_utils_failed_to_clear_registory', [aKey]));
+		throw new Error(bundle.getFormattedString('error_utils_failed_to_clear_registry', [aKey]));
 
-	_clearWindowsRegistory(root, path+'\\'+name);
+	_clearWindowsRegistry(root, path+'\\'+name);
 }
-function _clearWindowsRegistory(aRoot, aPath)
+function _clearWindowsRegistry(aRoot, aPath)
 {
 	try {
 		var regKey = Cc['@mozilla.org/windows-registry-key;1']
@@ -1102,7 +1102,7 @@ function _clearWindowsRegistory(aRoot, aPath)
 				children.push(regKey.getChildName(i));
 			}
 			children.forEach(function(aName) {
-				_clearWindowsRegistory(aRoot, aPath+'\\'+aName);
+				_clearWindowsRegistry(aRoot, aPath+'\\'+aName);
 			});
 		}
 		catch(e) {
