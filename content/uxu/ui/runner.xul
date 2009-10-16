@@ -271,6 +271,14 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 
 	<!-- MAIN -->
 
+	<deck flex="1" id="mainDeck">
+
+	<vbox flex="1">
+		<spacer flex="1"/>
+		<progressmeter id="initializingProgress" mode="undetermined"/>
+		<spacer flex="1"/>
+	</vbox>
+
 	<hbox flex="1">
 		<vbox flex="1">
 			<toolbar>
@@ -324,6 +332,8 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 			</hbox>
 		</vbox>
 	</hbox>
+
+	</deck>
 
 	<statusbar>
 		<statusbarpanel id="testResultStatus" flex="1" crop="end"/>

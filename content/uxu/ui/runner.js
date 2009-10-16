@@ -289,19 +289,38 @@ function startup()
 		running = true;
 	}
 
-	if (!running) {
-		var lastResult = utils.getPref('extensions.uxu.runner.lastResults');
-		if (lastResult) {
-			try {
-				eval('lastResult = '+lastResult);
-				gLog.items = lastResult;
-				buildReportsFromResults(gLog.items);
-				updateUIForAllTestsFinish();
-			}
-			catch(e) {
-				alert(e);
-			}
+	var mainDeck = _('mainDeck');
+	var lastResult = utils.getPref('extensions.uxu.runner.lastResults');
+	if (!running && lastResult) {
+		mainDeck.selectedIndex = 0;
+		try {
+			eval('lastResult = '+lastResult);
+			gLog.items = lastResult;
+			var current = 0;
+			var step = 20;
+			var progress = _('initializingProgress');
+			progress.setAttribute('mode', 'determined');
+			var lastResultTimer = window.setInterval(function() {
+					var items = gLog.items.slice(current, step);
+					current += step;
+					if (items.length) {
+						progress.setAttribute('value', Math.min(100, parseInt(current / gLog.items.length * 100)));
+						buildReportsFromResults(gLog.items);
+					}
+					else {
+						window.clearInterval(lastResultTimer);
+						updateUIForAllTestsFinish();
+						mainDeck.selectedIndex = 1;
+					}
+				}, 50);
 		}
+		catch(e) {
+			alert(e);
+			mainDeck.selectedIndex = 1;
+		}
+	}
+	else {
+		mainDeck.selectedIndex = 1;
 	}
 
 	// ‹Œ”Å‚Ìpersist‘®«‚É‚æ‚Á‚Ä•Û‘¶‚³‚ê‚Ä‚¢‚½’l‚ª•œŒ³‚³‚ê‚Ä‚µ‚Ü‚Á‚½ê‡‚Ì‚½‚ß‚É
