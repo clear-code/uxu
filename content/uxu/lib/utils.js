@@ -9,12 +9,6 @@ var prefread = lib_module.require('package', 'prefread');
 
 var IOService = Cc['@mozilla.org/network/io-service;1']
 		.getService(Ci.nsIIOService);
-
-const ERROR_INVALID_OWNER = new Error('invalid owner');
-const ERROR_INVALID_XPATH_EXPRESSION = new Error('invalid expression');
-const ERROR_SLEEP_IS_NOT_AVAILABLE = new Error('"speep()" is not available on Gecko 1.8.x');
-const ERROR_PLATFORM_IS_NOT_WINDOWS = new Error('the platform is not Windows!');
-const ERROR_FAILED_TO_WRITE_REGISTORY = new Error('failed to write a value to the registory');
 	
 // DOMノード取得 
 	
@@ -29,7 +23,7 @@ function _getDocument(aOwner)
 			aOwner instanceof Ci.nsIDOMWindow ?
 				aOwner.document :
 				null;
-	if (!doc) throw ERROR_INVALID_OWNER;
+	if (!doc) throw new Error(bundle.getFormattedString('error_utils_invalid_owner', [aOwner]));
 	return doc;
 }
  
@@ -45,7 +39,8 @@ function $(aNodeOrID, aOwner)
 // http://lowreal.net/logs/2006/03/16/1
 function $X() 
 {
-	if (!arguments || !arguments.length) throw ERROR_INVALID_XPATH_EXPRESSION;
+	if (!arguments || !arguments.length)
+		throw new Error(bundle.getString('error_utils_no_xpath_expression'));
 
 	var expression = null,
 		context    = null,
@@ -68,7 +63,7 @@ function $X()
 			break;
 	}
 
-	if (!expression) throw ERROR_INVALID_XPATH_EXPRESSION;
+	if (!expression) throw new Error(bundle.getString('error_utils_no_xpath_expression'));
 
 	var doc = _getDocument(context);
 	if (!context) context = doc;
@@ -119,7 +114,7 @@ const isSleepAvailable = '@mozilla.org/thread-manager;1' in Cc;
 function sleep(aWait) 
 {
 	if (!isSleepAvailable) {
-		throw ERROR_SLEEP_IS_NOT_AVAILABLE;
+		throw new Error(bundle.getString('error_utils_sleep_is_not_available'));
 	}
 	var timer = { timeup: false };
 	var interval = window.setInterval(function() {
@@ -273,7 +268,8 @@ function getURLSpecFromFilePath(aPath)
 function readFrom(aTarget, aEncoding)
 {
 	var target = this.normalizeToFile(aTarget);
-	if (!target) throw new Error('Error: Utils::readFrom() requires a file path or a File URL. '+aTarget+' is invalid!');
+	if (!target)
+		throw new Error(bundle.getFormattedString('error_utils_read_from', [aTarget]));
 
 	var stream;
 	try {
@@ -325,7 +321,8 @@ function readFrom(aTarget, aEncoding)
 function writeTo(aContent, aTarget, aEncoding)
 {
 	target = this.normalizeToFile(aTarget);
-	if (!target) throw new Error('Error: Utils::writeTo() requires a file path or a File URL. '+aTarget+' is invalid!');
+	if (!target)
+		throw new Error(bundle.getFormattedString('error_utils_write_to', [aTarget]));
 
 	// create directories
 	(function(aDir) {
@@ -494,7 +491,7 @@ function include(aSource, aEnvironment, aEncoding)
 		script = this.readFrom(aSource, encoding) || '';
 	}
 	catch(e) {
-		throw new Error('Error: Utils::include() failed to read specified script.\n'+e);
+		throw new Error(bundle.getFormattedString('error_utils_include', [e]));
 	}
 	var env = aEnvironment || {};
 	env._lastEvaluatedScript = script;
@@ -839,7 +836,8 @@ function loadPrefs(aFile, aHash)
 function _splitRegistoryKey(aKey) 
 {
 	var root = -1, path = '', name = '';
-	if (!('nsIWindowsRegKey' in Ci)) throw ERROR_PLATFORM_IS_NOT_WINDOWS;
+	if (!('nsIWindowsRegKey' in Ci))
+		throw new Error(bungle.getString('error_utils_platform_is_not_windows'));
 
 	path = aKey.replace(/\\([^\\]+)$/, '');
 	name = RegExp.$1;
@@ -921,7 +919,8 @@ function setWindowsRegistory(aKey, aValue)
 {
 	var root, path, name;
 	[root, path, name] = _splitRegistoryKey(aKey);
-	if (root < 0 || !path || !name) throw ERROR_FAILED_TO_WRITE_REGISTORY;
+	if (root < 0 || !path || !name)
+		throw new Error(bungle.getFormattedString('error_utils_failed_to_write_registory', [aKey, aValue]));
 
 	// create upper level items automatically
 	var ancestors = [];
@@ -960,7 +959,7 @@ function setWindowsRegistory(aKey, aValue)
 	function closeAndThrowError(aError)
 	{
 		regKey.close();
-		throw aError || ERROR_FAILED_TO_WRITE_REGISTORY;
+		throw aError || new Error(bungle.getFormattedString('error_utils_failed_to_write_registory', [aKey, aValue]));
 	}
 
 	try {
@@ -1073,7 +1072,8 @@ function clearWindowsRegistory(aKey)
 {
 	var root, path, name;
 	[root, path, name] = _splitRegistoryKey(aKey);
-	if (root < 0 || !path || !name) throw ERROR_FAILED_TO_WRITE_REGISTORY;
+	if (root < 0 || !path || !name)
+		throw new Error(bungle.getFormattedString('error_utils_failed_to_clear_registory', [aKey]));
 
 	_clearWindowsRegistory(root, path+'\\'+name);
 }
@@ -1265,7 +1265,7 @@ function fixupIncompleteURI(aURIOrPart)
 			getFileFromURLSpec(uri);
 		}
 		catch(e) {
-			throw new Error('utils.fixupIncompleteURI::['+aURIOrPart+'] is not a valid file path or URL!');
+			throw new Error(bundle.getFormattedString('error_utils_failed_to_fixup_incomplete_uri', [aURIOrPart]));
 		}
 	}
 	return uri;
@@ -1293,13 +1293,13 @@ function isGeneratedIterator(aObject)
 function doIteration(aGenerator, aCallbacks) 
 {
 	if (!aGenerator)
-		throw new Error('doIteration:: no generator!');
+		throw new Error(bundle.getString('error_utils_no_generator'));
 
 	var iterator = aGenerator;
 	if (typeof aGenerator == 'function')
 		iterator = aGenerator();
 	if (!isGeneratedIterator(iterator))
-		throw new Error('doIteration:: ['+aGenerator+'] is not a generator!');
+		throw new Error(bundle.getFormattedString('error_utils_invalid_generator', [aGenerator]));
 
 	var callerStack = getStackTrace();
 
@@ -1498,7 +1498,7 @@ function createDatabaseFromSQLFile(aSQLFile, aEncoding)
 		sql = this.readFrom(aSQLFile, aEncoding);
 	}
 	catch(e) {
-		throw new Error('Error: Utils::createDatabaseFromSQLFile() failed to read specified file.\n'+e);
+		throw new Error(bundle.getFormattedString('error_utils_cannot_read_sql_file', [aSQLFile, e]));
 	}
 	return this.createDatabaseFromSQL(sql);
 }
@@ -1930,7 +1930,7 @@ function computeHash(aData, aHashAlgorithm)
 		hasher.init(hasher[algorithm])
 	}
 	else {
-		throw new Error('unknown hash algorithm: '+aHashAlgorithm);
+		throw new Error(bundle.getFormattedString('error_utils_unknown_hash_algorithm', [aHashAlgorithm]));
 	}
 
 	if (aData instanceof Ci.nsIFile) {
@@ -1962,10 +1962,15 @@ function sha512(aData) { return computeHash(aData, 'sha512'); }
  
 function computeHashFromFile(aFile, aHashAlgorithm) 
 {
-	aFile = this.normalizeToFile(aFile);
-	if (!aFile || !aFile.exists() || aFile.isDirectory())
-		throw new Error('this is not a legal file');
-	return computeHash(aFile, aHashAlgorithm);
+	var file = this.normalizeToFile(aFile);
+	if (!file)
+		throw new Error(bundle.getFormattedString('error_utils_compute_hash_from_file_null', [aFile]));
+	if (!file.exists())
+		throw new Error(bundle.getFormattedString('error_utils_compute_hash_from_file_not_exists', [aFile]));
+	if (file.isDirectory())
+		throw new Error(bundle.getFormattedString('error_utils_compute_hash_from_file_directory', [aFile]));
+
+	return computeHash(file, aHashAlgorithm);
 }
  
 function md2FromFile(aFile) { return computeHashFromFile(this.normalizeToFile(aFile), 'md2'); } 
@@ -1975,8 +1980,6 @@ function sha256FromFile(aFile) { return computeHashFromFile(this.normalizeToFile
 function sha384FromFile(aFile) { return computeHashFromFile(this.normalizeToFile(aFile), 'sha384'); }
 function sha512FromFile(aFile) { return computeHashFromFile(this.normalizeToFile(aFile), 'sha512'); }
  
-const ERROR_INVALID_REDIRECT_DEFINITION_ARRAY = new Error('definition array of redirection is invalid.');
-
 function redirectURI(aURI, aRedirectDefinition) 
 {
 	if (!aRedirectDefinition) return aURI;
@@ -1990,7 +1993,8 @@ function redirectURI(aURI, aRedirectDefinition)
 	var targets  = [];
 	if (isArray(aRedirectDefinition)) {
 		if (aRedirectDefinition.length % 2)
-			throw ERROR_INVALID_REDIRECT_DEFINITION_ARRAY;
+			throw new Error(bundle.getString('error_utils_invalid_redirect_definition'));
+
 		for (var i = 0, maxi = aRedirectDefinition.length; i < maxi; i = i+2)
 		{
 			matchers.push(aRedirectDefinition[i]);
@@ -2131,34 +2135,53 @@ function _ensureUniquieName(aName, aDatabase)
 		return aName;
 	}
 }
-function _convertParameterType(aData, aType)
+function _convertParameterType(aInput, aType)
 {
+	var source = aInput;
 	if (!aType || aType == 'auto') {
-		if (/^[0-9]+(\.[0-9]+)$/.test(aData))
+		if (/^[0-9]+(\.[0-9]+)$/.test(source)) {
 			aType = 'number';
-		else if (/^(true|false)$/i.test(aData))
+		}
+		else if (/^(true|false)$/i.test(source)) {
 			aType = 'boolean';
-		else
+			source = source.toLowerCase();
+		}
+		else {
 			aType = 'string';
+		}
 	}
 
+	var data;
 	switch (aType)
 	{
 		case 'number':
-			aData = Number(aData);
+			data = Number(source);
+			if (isNaN(data))
+				throw new Error(bundle.getFormattedString('error_utils_parameters_from_CSV_invalid_number', [aInput]));
 			break;
 		case 'boolean':
-			eval('aData = !!('+(aData || '""')+')');
+			try {
+				eval('data = !!('+(source || '""')+')');
+			}
+			catch(e) {
+				throw new Error(bundle.getFormattedString('error_utils_parameters_from_CSV_invalid_boolean', [aInput]));
+			}
 			break;
 		case 'object':
 		case 'json':
-			eval('aData = ('+(aData || '""')+')');
+			try {
+				eval('data = ('+(source || '""')+')');
+			}
+			catch(e) {
+				throw new Error(bundle.getFormattedString('error_utils_parameters_from_CSV_invalid_object', [aInput]));
+			}
 			break;
 		case 'string':
 		default:
+			data = source;
 			break;
 	}
-	return aData;
+	return data;
 }
   
 // アプリケーション 
