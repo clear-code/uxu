@@ -2144,7 +2144,7 @@ function _convertParameterType(aInput, aType)
 	{
 		case 'auto':
 		default:
-			if (/^[0-9]+(\.[0-9]+)$/.test(source)) {
+			if (/^[\-\+]?[0-9]+(\.[0-9]+)$/.test(source)) {
 				aType = 'number';
 			}
 			else if (/^(true|false)$/i.test(source)) {

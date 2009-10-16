@@ -2,7 +2,7 @@ a,b,c,d
 ,,,
 a,,b,
 ,a,,b
-0,1,2,3
+0,1,+0.2,-3.3
 true,false,True,False
 less,columns
 "string",string,"日本語",文字列
