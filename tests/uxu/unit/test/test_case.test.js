@@ -145,7 +145,7 @@ function testNormalStyle1()
 	testcase.test(3, function() { testCount++; });
 	assert.equals(3, testcase.tests.length);
 	assertInitialized(testcase.tests[0], '1');
-	yield assertDoneProcessCount(3, 3, 3, { priority : 'must' });
+	yield Do(assertDoneProcessCount(3, 3, 3, { priority : 'must' }));
 }
 
 function testNormalStyle2()
@@ -158,7 +158,7 @@ function testNormalStyle2()
 	testcase.registerTest(function test3() { testCount++; });
 	assert.equals(3, testcase.tests.length);
 	assertInitialized(testcase.tests[0], 'test1');
-	yield assertDoneProcessCount(3, 3, 3, { priority : 'must' });
+	yield Do(assertDoneProcessCount(3, 3, 3, { priority : 'must' }));
 }
 
 function testNormalStyle3()
@@ -173,7 +173,7 @@ function testNormalStyle3()
 	};
 	assert.equals(3, testcase.tests.length);
 	assertInitialized(testcase.tests[0], '1');
-	yield assertDoneProcessCount(3, 3, 3, { priority : 'must' });
+	yield Do(assertDoneProcessCount(3, 3, 3, { priority : 'must' }));
 }
 
 function testBDDStyle1()
@@ -185,7 +185,7 @@ function testBDDStyle1()
 	testcase.states(3, function() { testCount++; });
 	assert.equals(3, testcase.tests.length);
 	assertInitialized(testcase.tests[0], '1');
-	yield assertDoneProcessCount(3, 0, 3, { priority : 'must', method : 'verify' });
+	yield Do(assertDoneProcessCount(3, 0, 3, { priority : 'must', method : 'verify' }));
 }
 
 function testBDDStyle2()
@@ -199,7 +199,7 @@ function testBDDStyle2()
 	};
 	assert.equals(3, testcase.tests.length);
 	assertInitialized(testcase.tests[0], '1');
-	yield assertDoneProcessCount(3, 0, 3, { priority : 'must', method : 'verify' });
+	yield Do(assertDoneProcessCount(3, 0, 3, { priority : 'must', method : 'verify' }));
 }
 
 function testAsync()
@@ -234,7 +234,7 @@ function testAsync()
 	};
 	assert.equals(3, testcase.tests.length);
 	var start = Date.now();
-	yield assertDoneProcessCount(3, 3, 3, { priority : 'must' });
+	yield Do(assertDoneProcessCount(3, 3, 3, { priority : 'must' }));
 	assert.compare(Date.now() - start, '>=', (100 * 3) * 3);
 }
 
@@ -281,11 +281,11 @@ function testMasterPriority()
 	assert.equals(2, testcase.tests.length);
 
 	clearCount();
-	yield assertDoneProcessCount(2, 2, 2, { priority : 'must' });
+	yield Do(assertDoneProcessCount(2, 2, 2, { priority : 'must' }));
 
 	clearCount();
 	testcase.done = false;
-	yield assertDoneProcessCount(0, 0, 0, { priority : 'never' });
+	yield Do(assertDoneProcessCount(0, 0, 0, { priority : 'never' }));
 
 	clearCount();
 	testcase.done = false;
@@ -294,7 +294,7 @@ function testMasterPriority()
 	tests[1].priority = 'never';
 	testcase.tests = tests;
 	assert.equals(4, testcase.tests.length);
-	yield assertDoneProcessCount(3, 3, 3, { priority : 'must' });
+	yield Do(assertDoneProcessCount(3, 3, 3, { priority : 'must' }));
 }
 
 function testForceRetry()
@@ -308,11 +308,11 @@ function testForceRetry()
 	assert.equals(2, testcase.tests.length);
 
 	clearCount();
-	yield assertDoneProcessCount(2, 2, 1, { priority : 'must' });
+	yield Do(assertDoneProcessCount(2, 2, 1, { priority : 'must' }));
 
 	clearCount();
 	testcase.done = false;
-	yield assertDoneProcessCount(0, 0, 0, { priority : 'never' });
+	yield Do(assertDoneProcessCount(0, 0, 0, { priority : 'never' }));
 }
 
 function testContext()
@@ -329,7 +329,7 @@ function testContext()
 
 	clearCount();
 	assert.equals(0, tests.count);
-	yield assertDoneProcessCount(2, 2, 0, { priority : 'must' });
+	yield Do(assertDoneProcessCount(2, 2, 0, { priority : 'must' }));
 	assert.equals(2, tests.count);
 
 	clearCount();
@@ -337,7 +337,7 @@ function testContext()
 	var context = { count : 0 };
 	testcase.context = context;
 	assert.equals(0, context.count);
-	yield assertDoneProcessCount(2, 2, 0);
+	yield Do(assertDoneProcessCount(2, 2, 0));
 	assert.equals(2, context.count);
 }
 
@@ -372,7 +372,7 @@ function testListener()
 	assert.equals(3, testcase.tests.length);
 
 	clearCount();
-	yield assertDoneProcessCount(3, 3, 1, { priority : 'must' });
+	yield Do(assertDoneProcessCount(3, 3, 1, { priority : 'must' }));
 	assert.equals(1, failCount);
 	assert.equals(1, errorCount);
 
@@ -382,7 +382,7 @@ function testListener()
 	testcase.done = false;
 	errorCount = 0;
 	failCount  = 0;
-	yield assertDoneProcessCount(3, 3, 1, { priority : 'must' });
+	yield Do(assertDoneProcessCount(3, 3, 1, { priority : 'must' }));
 	assert.equals(1, failCount);
 	assert.equals(1, errorCount);
 }
@@ -407,14 +407,14 @@ function testStopper()
 	testcase.masterPriority = 'must';
 	testcase.run(stopper);
 	yield 1500;
-	yield assertDoneProcessCount(3, 3, 3, { doNotRun : true });
+	yield Do(assertDoneProcessCount(3, 3, 3, { doNotRun : true }));
 
 	clearCount();
 	testcase.run(stopper);
 	yield 100;
 	shouldStop = true;
 	yield 500;
-	yield assertDoneProcessCount(1, 1, 1, { doNotRun : true, done : false });
+	yield Do(assertDoneProcessCount(1, 1, 1, { doNotRun : true, done : false }));
 }
 function testPrivSetUpTearDown()
 {
@@ -518,7 +518,7 @@ function testAssertionsCount()
 		return f;
 	})());
 	testcase.masterPriority = 'must';
-	yield assertTestResult('success', 'failure', 'failure');
+	yield Do(assertTestResult('success', 'failure', 'failure'));
 }
 
 function testMinAssertionsCount()
@@ -545,7 +545,7 @@ function testMinAssertionsCount()
 		return f;
 	})());
 	testcase.masterPriority = 'must';
-	yield assertTestResult('failure', 'success', 'success');
+	yield Do(assertTestResult('failure', 'success', 'success'));
 }
 
 function testMaxAssertionsCount()
@@ -573,7 +573,7 @@ function testMaxAssertionsCount()
 	})());
 
 	testcase.masterPriority = 'must';
-	yield assertTestResult('success', 'success', 'failure');
+	yield Do(assertTestResult('success', 'success', 'failure'));
 }
 
 function testShouldSkip()
@@ -604,7 +604,7 @@ function testShouldSkip()
 	})());
 
 	testcase.masterPriority = 'must';
-	yield assertTestResult('skip', 'success', 'skip', 'success');
+	yield Do(assertTestResult('skip', 'success', 'skip', 'success'));
 }
 
 function testShouldSkipForAll_boolean_skip()
@@ -614,7 +614,7 @@ function testShouldSkipForAll_boolean_skip()
 	testcase.registerTest(function() {});
 	testcase.masterPriority = 'must';
 	testcase.shouldSkip = true;
-	yield assertTestResult('skip', 'skip', 'skip');
+	yield Do(assertTestResult('skip', 'skip', 'skip'));
 }
 
 function testShouldSkipForAll_boolean_success()
@@ -624,7 +624,7 @@ function testShouldSkipForAll_boolean_success()
 	testcase.registerTest(function() {});
 	testcase.masterPriority = 'must';
 	testcase.shouldSkip = false;
-	yield assertTestResult('success', 'success', 'success');
+	yield Do(assertTestResult('success', 'success', 'success'));
 }
 
 function testShouldSkipForAll_function_skip()
@@ -634,7 +634,7 @@ function testShouldSkipForAll_function_skip()
 	testcase.registerTest(function() {});
 	testcase.masterPriority = 'must';
 	testcase.shouldSkip = function() { return true; };
-	yield assertTestResult('skip', 'skip', 'skip');
+	yield Do(assertTestResult('skip', 'skip', 'skip'));
 }
 
 function testShouldSkipForAll_function_success()
@@ -644,7 +644,7 @@ function testShouldSkipForAll_function_success()
 	testcase.registerTest(function() {});
 	testcase.masterPriority = 'must';
 	testcase.shouldSkip = function() { return false; };
-	yield assertTestResult('success', 'success', 'success');
+	yield Do(assertTestResult('success', 'success', 'success'));
 }
 
 
@@ -693,9 +693,9 @@ function testWithArrayParameters()
 	                                  'desc3 (2)']);
 
 	testcase.masterPriority = 'must';
-	yield assertTestResult('success', 'failure',
-	                       'success', 'failure',
-	                       'success', 'failure');
+	yield Do(assertTestResult('success', 'failure',
+	                          'success', 'failure',
+	                          'success', 'failure'));
 }
 
 function testWithHashParameters()
@@ -723,7 +723,7 @@ function testWithHashParameters()
 	                                  'desc2 (bar)']);
 
 	testcase.masterPriority = 'must';
-	yield assertTestResult('success', 'failure',
-	                       'success', 'failure');
+	yield Do(assertTestResult('success', 'failure',
+	                          'success', 'failure'));
 }
 
