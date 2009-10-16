@@ -1495,7 +1495,7 @@ function createDatabaseFromSQLFile(aSQLFile, aEncoding)
 	aSQLFile = this.normalizeToFile(aSQLFile);
 	var sql;
 	try {
-		sql = this.readFrom(aSQLFile, aEncoding);
+		sql = this.readFrom(aSQLFile, aEncoding || this.getPref('extensions.uxu.defaultEncoding'));
 	}
 	catch(e) {
 		throw new Error(bundle.getFormattedString('error_utils_cannot_read_sql_file', [aSQLFile, e]));
