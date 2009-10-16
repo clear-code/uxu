@@ -28,6 +28,12 @@
 				em:minVersion="2.0"
 				em:maxVersion="3.0b4pre" />
 		</em:targetApplication>
+		<em:targetApplication>
+			<!-- XulBox -->
+			<Description em:id="{f2a89818-17ae-4bd4-b411-b010b93bdd8c}"
+				em:minVersion="0.0.1"
+				em:maxVersion="1.0" />
+		</em:targetApplication>
 
 	</Description>
 
