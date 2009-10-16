@@ -596,6 +596,20 @@ function _createNewTestWithParameter(aFunction, aParameter, aSuffix)
 	test.description = aFunction.description + aSuffix;
 	test.original = aFunction;
 
+	var setUp = aFunction.setUp;
+	if (setUp) {
+		test.setUp = function() {
+			return setUp.call(this, aParameter);
+		};
+	}
+
+	var tearDown = aFunction.tearDown;
+	if (tearDown) {
+		test.tearDown = function() {
+			return tearDown.call(this, aParameter);
+		};
+	}
+
 	return test;
 }
  
@@ -767,7 +781,7 @@ function run(aStopper)
 				aContinuation('ok');
 				return;
 			}
-			var usesContinuation = aFunction.arity > 0;
+			var usesContinuation = aOptions.useContinuation && aFunction.arity > 0;
 			try {
 				var result = usesContinuation ?
 						aFunction.call(context, aContinuation) :
@@ -880,7 +894,8 @@ function run(aStopper)
 				_this._setUp,
 				{
 					errorDescription : bundle.getFormattedString('report_description_setup', [current.description]),
-					report : testReport
+					report : testReport,
+					useContinuation : true
 				}
 			);
 		},
@@ -963,7 +978,8 @@ function run(aStopper)
 					report : testReport,
 					onError : function() {
 						_this._onFinish(current, RESULT_ERROR);
-					}
+					},
+					useContinuation : true
 				}
 			);
 		},
