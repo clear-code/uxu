@@ -2082,7 +2082,7 @@ function parseParametersFromCSV(aCSV)
 	var types = [];
 	if (isHash) columns.splice(0, 1);
 
-	var typePattern = /.(\s*\[(string|number|boolean|object|json)\]\s*)$/i;
+	var typePattern = /.(\s*\[(string|number|boolean|object|json|auto)\]\s*)$/i;
 	var columnNames = {};
 	columns = columns.map(function(aColumn) {
 		let match = aColumn.match(typePattern);
@@ -2091,7 +2091,7 @@ function parseParametersFromCSV(aCSV)
 			types.push(match[2].toLowerCase());
 		}
 		else {
-			types.push('string');
+			types.push('auto');
 		}
 		return _ensureUniquieName(aColumn, columnNames);
 	});
@@ -2133,6 +2133,15 @@ function _ensureUniquieName(aName, aDatabase)
 }
 function _convertParameterType(aData, aType)
 {
+	if (!aType || aType == 'auto') {
+		if (/^[0-9]+(\.[0-9]+)$/.test(aData))
+			aType = 'number';
+		else if (/^(true|false)$/i.test(aData))
+			aType = 'boolean';
+		else
+			aType = 'string';
+	}
+
 	switch (aType)
 	{
 		case 'number':
