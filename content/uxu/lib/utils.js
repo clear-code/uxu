@@ -2180,6 +2180,7 @@ function _convertParameterType(aInput, aType)
 			data = Number(source);
 			if (isNaN(data))
 				throw new Error(bundle.getFormattedString('error_utils_parameters_from_CSV_invalid_number', [aInput]));
+			if (aType == 'int') data = parseInt(data);
 			break;
 		case 'boolean':
 		case 'bool':
