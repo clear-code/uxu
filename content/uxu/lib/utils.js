@@ -2039,14 +2039,14 @@ function parseCSV(aInput)
 		.replace(CSVTokenizer, function(aToken) {
 			switch (aToken) {
 				case delimiter:
-					// normalize CR+LF to LF in the previous field
-					data[record][field] = data[record][field].replace(/\r\n/g, '\n');
+					data[record][field] = _normalizeCSVField(data[record][field]);
 					data[record][++field] = '';
 					if (field > longest) longest = field;
 					break;
 
 				case '\n':
 				case '\r\n':
+					data[record][field] = _normalizeCSVField(data[record][field]);
 					data[++record] = [''];
 					field = 0;
 					break;
@@ -2057,8 +2057,7 @@ function parseCSV(aInput)
 						aToken.slice(1, -1).replace(qq, '"') ;
 			}
 		});
-	// normalize CR+LF to LF in the last field
-	data[record][field] = data[record][field].replace(/\r\n/g, '\n');
+	data[record][field] = _normalizeCSVField(data[record][field]);
 	data.forEach(function(aRecord) {
 		while (aRecord.length <= longest)
 		{
@@ -2066,6 +2065,10 @@ function parseCSV(aInput)
 		}
 	});
 	return data;
+}
+function _normalizeCSVField(aSource)
+{
+	return aSource.replace(/\r\n/g, '\n');
 }
  
 function parseParametersFromCSV(aCSV) 
