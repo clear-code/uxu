@@ -382,7 +382,12 @@ function readJSON(aTarget, aEncoding, aContext)
 {
 	var input = this.readFrom(aTarget, aEncoding || this.getPref('extensions.uxu.defaultEncoding'));
 	if (aContext) input = this.parseTemplate(input, aContext);
-	eval('input = ('+input+')');
+	try {
+		eval('input = ('+input+')');
+	}
+	catch(e) {
+		throw new Error(bundle.getFormattedString('error_utils_readJSON_error', [e]));
+	}
 	return input;
 }
  
@@ -392,17 +397,24 @@ function cosmeticClone(aOriginal, aDest, aName)
 	aOriginal = normalizeToFile(aOriginal);
 	aDest = normalizeToFile(aDest);
 
-	if (
-		!aOriginal ||
-		!aOriginal.exists() ||
-		aOriginal.isHidden() ||
-		aOriginal.leafName.indexOf('.') == 0
-		)
-		return null;
+	if (!aOriginal)
+		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_no_original', [aOriginal]));
+	if (!aOriginal.exists())
+		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_original_not_exists', [aOriginal.path]));
+	if (aOriginal.isHidden() ||
+		aOriginal.leafName.indexOf('.') == 0)
+		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_original_hidden', [aOriginal.path]));
+
+	if (!aDest)
+		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_no_dest', [aDest]));
+	if (!aDest.exists())
+		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_dest_not_exists', [aDest.path]));
+	if (!aDest.isDirectory())
+		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_dest_not_folder', [aDest.path]));
 
 	if (!aName) {
 		if (aOriginal.parent.equals(aDest))
-			return null;
+			throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_duplicate', [aOriginal.path]));
 		aName = aOriginal.leafName;
 	}
 
