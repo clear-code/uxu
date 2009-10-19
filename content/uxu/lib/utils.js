@@ -391,6 +391,7 @@ function cosmeticClone(aOriginal, aDest, aName)
 {
 	aOriginal = normalizeToFile(aOriginal);
 	aDest = normalizeToFile(aDest);
+	if (!aName) aName = aOriginal.leafName;
 
 	if (
 		!aOriginal ||
