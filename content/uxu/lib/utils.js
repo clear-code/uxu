@@ -391,7 +391,6 @@ function cosmeticClone(aOriginal, aDest, aName)
 {
 	aOriginal = normalizeToFile(aOriginal);
 	aDest = normalizeToFile(aDest);
-	if (!aName) aName = aOriginal.leafName;
 
 	if (
 		!aOriginal ||
@@ -400,6 +399,12 @@ function cosmeticClone(aOriginal, aDest, aName)
 		aOriginal.leafName.indexOf('.') == 0
 		)
 		return null;
+
+	if (!aName) {
+		if (aOriginal.parent.equals(aDest))
+			return null;
+		aName = aOriginal.leafName;
+	}
 
 	if (aOriginal.isDirectory()) {
 		var folder = aDest.clone();
