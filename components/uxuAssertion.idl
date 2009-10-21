@@ -125,4 +125,18 @@ interface uxuIAssertion : nsISupports
 	void fail(in nsIVariant expectedAndActual, in nsIVariant message, [optional] in nsIVariant extraMessage);
 
 	AString appendTypeString(in nsIVariant value);
+
+	property unsigned long successCount;
+};
+
+
+[scriptable, uuid(6939b620-be29-11de-8a39-0800200c9a66)]
+interface uxuIEventTarget : nsISupports
+{
+	void initListeners();
+	void inheritListeners(in nsIVariant original);
+	void addListener(in nsIVariant listener);
+	void removeListener(in nsIVariant listener);
+	void removeAllListeners();
+	void fireEvent(in nsIVariant event, in nsIVariant data);
 };

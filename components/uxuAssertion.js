@@ -47,7 +47,8 @@ uxuAssertion.prototype = {
 	getInterfaces : function(aCount)
 	{
 		var interfaces = [
-				Ci.uxuIAssertion
+				Ci.uxuIAssertion,
+				Ci.uxuIEventTarget
 				/* ,
 				Ci.nsIClassInfo,
 				Ci.nsIObserver
@@ -64,6 +65,7 @@ uxuAssertion.prototype = {
 	QueryInterface : function(aIID) 
 	{
 		if (!aIID.equals(Ci.uxuIAssertion) &&
+			!aIID.equals(Ci.uxuIEventTarget) &&
 			!aIID.equals(Ci.nsIClassInfo) &&
 			!aIID.equals(Ci.nsISupports))
 			throw Components.results.NS_ERROR_NO_INTERFACE;
