@@ -137,6 +137,7 @@ function attachAssertions()
 	var Assertions  = test_module.require('class', 'assertions');
 	var assert = {};
 	assert.__proto__ = new Assertions();
+//	assert = new Assertion();
 	this.__defineGetter__('assert', function() {
 		return assert;
 	});

@@ -126,7 +126,7 @@ interface uxuIAssertion : nsISupports
 
 	AString appendTypeString(in nsIVariant value);
 
-	property unsigned long successCount;
+	attribute unsigned long successCount;
 };
 
 
