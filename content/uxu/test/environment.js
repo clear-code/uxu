@@ -562,26 +562,30 @@ function cleanUpModifiedPrefs()
   
 // utils 
 	
-function include(aSource, aEnvironment, aEncoding) 
+function include(aSource, aEncoding, aScope) 
 {
-	if (aEncoding === void(0)) aEncoding = utils.getPref('extensions.uxu.defaultEncoding');
-	return utils.include.call(this, aSource, (aEnvironment || this.environment), aEncoding);
+	if (typeof aEncoding == 'object') { // for backward compatibility
+		var scope = aEncoding;
+		aEncoding = aScope;
+		aScope = scope;
+	}
+	return utils.include.call(this, aSource, (aScope || this.environment), aEncoding);
 };
  
-function createDatabaseFromSQLFile(aFile, aEncoding) 
+function createDatabaseFromSQLFile(aFile, aEncoding, aScope) 
 {
 	if (aEncoding === void(0)) aEncoding = utils.getPref('extensions.uxu.defaultEncoding');
 	return utils.createDatabaseFromSQLFile.call(this, aFile, aEncoding);
 };
  
-function processTemplate(aCode, aContext) 
+function processTemplate(aCode, aScope) 
 {
 	var env = {};
-	if (aContext) {
-		for (var i in aContext)
+	if (aScope) {
+		for (var i in aScope)
 		{
-			if (aContext.hasOwnProperty(i))
-				env[i] = aContext[i];
+			if (aScope.hasOwnProperty(i))
+				env[i] = aScope[i];
 		}
 	}
 	env.__proto__ = this.environment;

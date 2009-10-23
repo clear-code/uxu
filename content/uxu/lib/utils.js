@@ -363,25 +363,25 @@ function writeTo(aContent, aTarget, aEncoding)
 	return target;
 }
  
-function readCSV(aTarget, aEncoding, aContext) 
+function readCSV(aTarget, aEncoding, aScope) 
 {
 	var input = this.readFrom(aTarget, aEncoding || this.getPref('extensions.uxu.defaultEncoding'));
-	if (aContext) input = this.processTemplate(input, aContext);
+	if (aScope) input = this.processTemplate(input, aScope);
 	return this.parseCSV(input);
 }
  
-function readParametersFromCSV(aTarget, aEncoding, aContext) 
+function readParametersFromCSV(aTarget, aEncoding, aScope) 
 {
-	return this.parseParametersFromCSV(this.readCSV(aTarget, aEncoding, aContext));
+	return this.parseParametersFromCSV(this.readCSV(aTarget, aEncoding, aScope));
 }
 var readParameterFromCSV = readParametersFromCSV;
 var readParamsFromCSV = readParametersFromCSV;
 var readParamFromCSV = readParametersFromCSV;
  
-function readJSON(aTarget, aEncoding, aContext) 
+function readJSON(aTarget, aEncoding, aScope) 
 {
 	var input = this.readFrom(aTarget, aEncoding || this.getPref('extensions.uxu.defaultEncoding'));
-	if (aContext) input = this.processTemplate(input, aContext);
+	if (aScope) input = this.processTemplate(input, aScope);
 	try {
 		eval('input = ('+input+')');
 	}
@@ -500,8 +500,14 @@ function stopScheduledRemove()
 var loader = Cc['@mozilla.org/moz/jssubscript-loader;1'] 
 		.getService(Ci.mozIJSSubScriptLoader);
 
-function include(aSource, aEnvironment, aEncoding)
+function include(aSource, aEncoding, aScope)
 {
+	if (typeof aEncoding == 'object') { // for backward compatibility
+		var scope = aEncoding;
+		aEncoding = aScope;
+		aScope = scope;
+	}
+
 	aSource = this.fixupIncompleteURI(aSource);
 	var encoding = aEncoding || this.getPref('extensions.uxu.defaultEncoding');
 	var script;
@@ -511,13 +517,13 @@ function include(aSource, aEnvironment, aEncoding)
 	catch(e) {
 		throw new Error(bundle.getFormattedString('error_utils_include', [e]));
 	}
-	var env = aEnvironment || {};
-	env._lastEvaluatedScript = script;
+	aScope = aScope || {};
+	aScope._lastEvaluatedScript = script;
 	loader.loadSubScript(
 		'chrome://uxu/content/lib/subScriptRunner.js?includeSource='+
 			encodeURIComponent(aSource)+
 			';encoding='+encoding,
-		env
+		aScope
 	);
 	return script;
 };
@@ -1517,7 +1523,7 @@ function createDatabaseFromSQL(aSQL)
 	return connection;
 }
  
-function createDatabaseFromSQLFile(aSQLFile, aEncoding, aContext) 
+function createDatabaseFromSQLFile(aSQLFile, aEncoding, aScope) 
 {
 	aSQLFile = this.normalizeToFile(aSQLFile);
 	var sql;
@@ -1527,7 +1533,7 @@ function createDatabaseFromSQLFile(aSQLFile, aEncoding, aContext)
 	catch(e) {
 		throw new Error(bundle.getFormattedString('error_utils_cannot_read_sql_file', [aSQLFile, e]));
 	}
-	if (aContext) input = this.processTemplate(sql, aContext);
+	if (aScope) input = this.processTemplate(sql, aScope);
 	return this.createDatabaseFromSQL(sql);
 }
   
@@ -1922,7 +1928,7 @@ function isTargetInSubTree(aTarget, aNode)
   
 // •¶Žš—ñˆ— 
 	
-function processTemplate(aCode, aContext) 
+function processTemplate(aCode, aScope) 
 {
 	var __processTemplate__codes = [];
 	aCode.split('%>').forEach(function(aPart) {
@@ -1943,7 +1949,7 @@ function processTemplate(aCode, aContext)
 	});
 	var sandbox = new Components.utils.Sandbox(window);
 	sandbox.__proto__ = { __processTemplate__results : [] };
-	if (aContext) sandbox.__proto__.__proto__ = aContext;
+	if (aScope) sandbox.__proto__.__proto__ = aScope;
 	Components.utils.evalInSandbox(__processTemplate__codes.join('\n'), sandbox);
 	return sandbox.__processTemplate__results.join('');
 }
