@@ -1517,7 +1517,7 @@ function createDatabaseFromSQL(aSQL)
 	return connection;
 }
  
-function createDatabaseFromSQLFile(aSQLFile, aEncoding) 
+function createDatabaseFromSQLFile(aSQLFile, aEncoding, aContext) 
 {
 	aSQLFile = this.normalizeToFile(aSQLFile);
 	var sql;
@@ -1527,6 +1527,7 @@ function createDatabaseFromSQLFile(aSQLFile, aEncoding)
 	catch(e) {
 		throw new Error(bundle.getFormattedString('error_utils_cannot_read_sql_file', [aSQLFile, e]));
 	}
+	if (aContext) input = this.processTemplate(sql, aContext);
 	return this.createDatabaseFromSQL(sql);
 }
   
