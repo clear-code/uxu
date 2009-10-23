@@ -2405,9 +2405,58 @@ function _getInstalledLocationOfMozillaProduct(aProduct)
 var _comparator = Cc['@mozilla.org/xpcom/version-comparator;1']
 					.getService(Ci.nsIVersionComparator);
 	
-function compareVersions(aA, aB) 
+function compareVersions() 
 {
-	return _comparator.compare(aA, aB);
+	var aA, aB, aOperator;
+	switch (arguments.length)
+	{
+		case 3:
+			aA = arguments[0];
+			aB = arguments[2];
+			var result;
+			try {
+				result = _comparator.compare(aA, aB);
+			}
+			catch(e) {
+				throw new Error(bundle.getFormattedString('error_utils_compareVersions_failed_to_compare', [aA, aB, e]));
+			}
+			switch (arguments[1])
+			{
+				case '<':
+					return result < 0;
+				case '=<':
+				case '<=':
+					return result <= 0;
+				case '>':
+					return reuult > 0;
+				case '=>':
+				case '>=':
+					return reuult >= 0;
+				case '=':
+				case '==':
+				case '===':
+					return result == 0;
+				case '!=':
+				case '!==':
+					return result != 0;
+				default:
+					throw new Error(bundle.getFormattedString('error_utils_compareVersions_invalid_operator', [aA, aB, aOperator]));
+			}
+			break;
+
+		case 2:
+			aA = arguments[0];
+			aB = arguments[1];
+			try {
+				return _comparator.compare(aA, aB);
+			}
+			catch(e) {
+				throw new Error(bundle.getFormattedString('error_utils_compareVersions_failed_to_compare', [aA, aB, e]));
+			}
+
+		default:
+			throw new Error(bundle.getFormattedString('error_utils_compareVersions_invalid_arguments', [Array.slice(arguments).join(', ')]));
+	}
 }
  
 function checkAppVersion(aVersion) 
