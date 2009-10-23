@@ -2264,6 +2264,7 @@ var product = (function() {
 })();
  
 var productExecutable = getFileFromKeyword('XREExeF'); 
+var productVersion = XULAppInfo.version;
  
 function restartApplication(aForce) 
 {

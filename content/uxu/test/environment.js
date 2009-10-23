@@ -675,6 +675,7 @@ parseCSV
 parseParametersFromCSV
 product
 productExecutable
+productVersion
 readCSV
 readFrom
 readJSON
