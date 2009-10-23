@@ -366,7 +366,7 @@ function writeTo(aContent, aTarget, aEncoding)
 function readCSV(aTarget, aEncoding, aContext) 
 {
 	var input = this.readFrom(aTarget, aEncoding || this.getPref('extensions.uxu.defaultEncoding'));
-	if (aContext) input = this.parseTemplate(input, aContext);
+	if (aContext) input = this.processTemplate(input, aContext);
 	return this.parseCSV(input);
 }
  
@@ -381,7 +381,7 @@ var readParamFromCSV = readParametersFromCSV;
 function readJSON(aTarget, aEncoding, aContext) 
 {
 	var input = this.readFrom(aTarget, aEncoding || this.getPref('extensions.uxu.defaultEncoding'));
-	if (aContext) input = this.parseTemplate(input, aContext);
+	if (aContext) input = this.processTemplate(input, aContext);
 	try {
 		eval('input = ('+input+')');
 	}
@@ -1921,31 +1921,32 @@ function isTargetInSubTree(aTarget, aNode)
   
 // •¶Žš—ñˆ— 
 	
-function parseTemplate(aCode, aContext) 
+function processTemplate(aCode, aContext) 
 {
-	var __parseTemplate__codes = [];
+	var __processTemplate__codes = [];
 	aCode.split('%>').forEach(function(aPart) {
 		let strPart, codePart;
 		[strPart, codePart] = aPart.split('<%');
-		__parseTemplate__codes.push('__parseTemplate__results.push('+
+		__processTemplate__codes.push('__processTemplate__results.push('+
 		                            strPart.toSource()+
 		                            ');');
 		if (!codePart) return;
 		if (codePart.charAt(0) == '=') {
-			__parseTemplate__codes.push('__parseTemplate__results.push(('+
+			__processTemplate__codes.push('__processTemplate__results.push(('+
 			                            codePart.substring(1)+
 			                            ') || "");');
 		}
 		else {
-			__parseTemplate__codes.push(codePart);
+			__processTemplate__codes.push(codePart);
 		}
 	});
 	var sandbox = new Components.utils.Sandbox(window);
-	sandbox.__proto__ = { __parseTemplate__results : [] };
+	sandbox.__proto__ = { __processTemplate__results : [] };
 	if (aContext) sandbox.__proto__.__proto__ = aContext;
-	Components.utils.evalInSandbox(__parseTemplate__codes.join('\n'), sandbox);
-	return sandbox.__parseTemplate__results.join('');
+	Components.utils.evalInSandbox(__processTemplate__codes.join('\n'), sandbox);
+	return sandbox.__processTemplate__results.join('');
 }
+var parseTemplate = processTemplate; // for backward compatibility
  
 var hasher = Cc['@mozilla.org/security/hash;1'] 
 		.createInstance(Ci.nsICryptoHash);

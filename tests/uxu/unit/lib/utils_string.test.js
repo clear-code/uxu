@@ -36,7 +36,7 @@ function test_convertEncoding()
 	assert.equals(sjisString, UCS2ToX('日本語', 'Shift_JIS'));
 }
 
-function test_parseTemplate()
+function test_processTemplate()
 {
 	var str = <![CDATA[
 			<% for (var i = 0; i < 3; i++) { %>
@@ -46,7 +46,7 @@ function test_parseTemplate()
 		]]>.toString();
 	var params = {
 			foo : 'bar',
-			__parseTemplate__results : null,
+			__processTemplate__results : null,
 			aContext : null
 		};
 	params["日本語"] = true;
@@ -62,6 +62,6 @@ function test_parseTemplate()
 			
 			barbartrue
 		]]>.toString(),
-		utilsModule.parseTemplate(str, params)
+		utilsModule.processTemplate(str, params)
 	);
 }

@@ -575,7 +575,7 @@ function createDatabaseFromSQLFile(aFile, aEncoding)
 	return utils.createDatabaseFromSQLFile.call(this, aFile, aEncoding);
 };
  
-function parseTemplate(aCode, aContext) 
+function processTemplate(aCode, aContext) 
 {
 	var env = {};
 	if (aContext) {
@@ -586,11 +586,12 @@ function parseTemplate(aCode, aContext)
 		}
 	}
 	env.__proto__ = this.environment;
-	var result = utils.parseTemplate(aCode, env);
+	var result = utils.processTemplate(aCode, env);
 	env.__proto__ = void(0);
 	env = null;
 	return result;
 }
+var parseTemplate = processTemplate; // for backward compatibility
  
 function $(aNodeOrID, aOwner) 
 {
