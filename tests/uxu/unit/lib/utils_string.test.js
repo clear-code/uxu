@@ -2,6 +2,9 @@
 
 utils.include('utils_common.inc.js');
 
+var bundle = {};
+utils.include(topDir+'content/uxu/lib/bundle.js', bundle);
+
 
 test_formatError.priority = 'never';
 function test_formatError()
@@ -154,6 +157,13 @@ test_compareVersions.parameters = {
 	alphabetEQGT_Rev_OK_GT : { args : ['2.9b1', '=>', '2.9a2'], expected : true },
 	alphabetEQGT_Rev_NG    : { args : ['2.9a2', '=>', '2.9b1'], expected : false },
 
+	errorTooLessArgs : { args : ['2.9'],
+	                     error : bundle.getFormattedString('error_utils_compareVersions_invalid_arguments', ['2.9']) },
+	errorTooManyArgs : { args : ['2.9', '==', '2.9', 'foo'],
+	                     error : bundle.getFormattedString('error_utils_compareVersions_invalid_arguments', ['2.9, ==, 2.9, foo']) },
+	errorInvalidOperator : { args : ['2.9', '?', '2.9'],
+	                         error : bundle.getFormattedString('error_utils_compareVersions_invalid_operator', ['2.9', '2.9', '?']) },
+
 	simpleEqualsOld   : { args : ['29', '29'], expected : 0 },
 	simpleLTOld       : { args : ['29', '290'], expected : -1 },
 	simpleGTOld       : { args : ['290', '29'], expected : 1 },
@@ -166,6 +176,15 @@ test_compareVersions.parameters = {
 };
 function test_compareVersions(aParameter)
 {
-	assert.strictlyEquals(aParameter.expected,
-	                      utilsModule.compareVersions.apply(utilsModule, aParameter.args));
+	if (aParameter.error) {
+		assert.raises(aParameter.error,
+		              function() {
+		                utilsModule.compareVersions.apply(utilsModule, aParameter.args);
+		              },
+		              null);
+	}
+	else {
+		assert.strictlyEquals(aParameter.expected,
+		                      utilsModule.compareVersions.apply(utilsModule, aParameter.args));
+	}
 }

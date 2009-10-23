@@ -2413,6 +2413,7 @@ function compareVersions()
 		case 3:
 			aA = arguments[0];
 			aB = arguments[2];
+			aOperator = arguments[1];
 			var result;
 			try {
 				result = _comparator.compare(aA, aB);
@@ -2420,7 +2421,7 @@ function compareVersions()
 			catch(e) {
 				throw new Error(bundle.getFormattedString('error_utils_compareVersions_failed_to_compare', [aA, aB, e]));
 			}
-			switch (arguments[1])
+			switch (aOperator)
 			{
 				case '<':
 					return result < 0;
