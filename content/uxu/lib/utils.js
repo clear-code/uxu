@@ -2428,10 +2428,10 @@ function compareVersions()
 				case '<=':
 					return result <= 0;
 				case '>':
-					return reuult > 0;
+					return result > 0;
 				case '=>':
 				case '>=':
-					return reuult >= 0;
+					return result >= 0;
 				case '=':
 				case '==':
 				case '===':
