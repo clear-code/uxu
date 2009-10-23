@@ -337,6 +337,14 @@ function testNotify()
 function test_include()
 {
 	var namespace = {};
+	utilsModule.include('../../fixtures/test.js', 'UTF-8', namespace);
+	assert.isDefined(namespace.string);
+	assert.equals('文字列', namespace.string);
+}
+
+function test_include_oldStyle()
+{
+	var namespace = {};
 	utilsModule.include('../../fixtures/test.js', namespace, 'UTF-8');
 	assert.isDefined(namespace.string);
 	assert.equals('文字列', namespace.string);
