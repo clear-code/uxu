@@ -401,9 +401,11 @@ function cosmeticClone(aOriginal, aDest, aName, aInternalCall)
 		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_no_original', [aOriginal]));
 	if (!aOriginal.exists())
 		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_original_not_exists', [aOriginal.path]));
-	if (!aInternalCall &&
-		(aOriginal.isHidden() || aOriginal.leafName.indexOf('.') == 0))
-		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_original_hidden', [aOriginal.path]));
+	if (aOriginal.isHidden() || aOriginal.leafName.indexOf('.') == 0) {
+		if (!aInternalCall)
+			throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_original_hidden', [aOriginal.path]));
+		return;
+	}
 
 	if (!aDest)
 		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_no_dest', [aDest]));
