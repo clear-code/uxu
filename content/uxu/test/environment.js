@@ -640,6 +640,10 @@ computeHashFromFile
 cosmeticClone
 createDatabase
 createDatabaseFromSQL
+createTempDir
+createTempDirectory
+createTempFile
+createTempFolder
 Do
 doIteration
 dump

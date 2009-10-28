@@ -570,6 +570,7 @@ function makeTempFile(aOriginal, aCosmetic)
 		return temp;
 	}
 };
+var createTempFile = makeTempFile;
  
 function makeTempFolder(aOriginal, aCosmetic) 
 {
@@ -584,6 +585,9 @@ function makeTempFolder(aOriginal, aCosmetic)
 };
 var makeTempDir = makeTempFolder;
 var makeTempDirectory = makeTempFolder;
+var createTempDir = makeTempFolder;
+var createTempDirectory = makeTempFolder;
+var createTempFolder = makeTempFolder;
  
 function cleanUpTempFiles(aDelayed) 
 {
