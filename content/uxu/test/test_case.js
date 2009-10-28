@@ -338,8 +338,6 @@ function onFinish()
  
 function onAbort(aEvent) 
 {
-	if (aEvent.reason == 'error') {
-	}
 	this.onFinish();
 }
  
@@ -745,8 +743,12 @@ function run(aStopper)
 			this._run();
 	}
 	catch(e) {
-		this._aborted = true;
-		this.fireEvent('Abort', { reason : 'error', error : e });
+		var report = new Report();
+		report.result = RESULT_ERROR;
+		report.exception = utils.normalizeError(e);
+		report.description = bundle.getString('report_fatal_error');
+		report.onFinish();
+		this.fireEvent('Finish', report);
 	}
 }
 function _run()
@@ -1018,7 +1020,7 @@ function _run()
 		{
 			if (_this._stopper && _this._stopper()) {
 				_this._aborted = true;
-				_this.fireEvent('Abort', { reason : 'user' });
+				_this.fireEvent('Abort');
 				aContinuation('ko');
 				return;
 			}
@@ -1208,7 +1210,7 @@ function onServerInput(aEvent)
 	}
 	if (this._aborted) {
 		this.fireEvent('ResponseRequest', TESTCASE_ABORTED+responseId+'\n');
-		this.fireEvent('Abort', { reason : 'user' });
+		this.fireEvent('Abort');
 		return;
 	}
 	if (input.indexOf(TESTCASE_STARTED) == 0) {
