@@ -392,7 +392,7 @@ function readJSON(aTarget, aEncoding, aScope)
 }
  
 // Subversionが作る不可視のファイルなどを除外して、普通に目に見えるファイルだけを複製する 
-function cosmeticClone(aOriginal, aDest, aName)
+function cosmeticClone(aOriginal, aDest, aName, aInternalCall)
 {
 	aOriginal = normalizeToFile(aOriginal);
 	aDest = normalizeToFile(aDest);
@@ -401,8 +401,8 @@ function cosmeticClone(aOriginal, aDest, aName)
 		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_no_original', [aOriginal]));
 	if (!aOriginal.exists())
 		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_original_not_exists', [aOriginal.path]));
-	if (aOriginal.isHidden() ||
-		aOriginal.leafName.indexOf('.') == 0)
+	if (!aInternalCall &&
+		(aOriginal.isHidden() || aOriginal.leafName.indexOf('.') == 0))
 		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_original_hidden', [aOriginal.path]));
 
 	if (!aDest)
@@ -428,7 +428,7 @@ function cosmeticClone(aOriginal, aDest, aName)
 		while (files.hasMoreElements())
 		{
 			file = files.getNext().QueryInterface(Ci.nsILocalFile);
-			arguments.callee(file, folder, file.leafName);
+			arguments.callee(file, folder, file.leafName, true);
 		}
 		return folder;
 	}
