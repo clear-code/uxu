@@ -533,17 +533,27 @@ function makeTempFile(aOriginal, aCosmetic)
 	var temp = this.getFileFromKeyword('TmpD');
 	if (aOriginal) {
 		if (typeof aOriginal == 'string') {
-			aOriginal = this.fixupIncompleteURI(aOriginal);
-			if (aOriginal.match(/^\w+:\/\//))
-				aOriginal = this.makeURIFromSpec(aOriginal);
-			else
-				aOriginal = this.makeFileWithPath(aOriginal);
+			try {
+				var resolved = this.fixupIncompleteURI(aOriginal);
+				if (resolved.match(/^\w+:\/\//))
+					aOriginal = this.makeURIFromSpec(resolved);
+				else
+					aOriginal = this.makeFileWithPath(resolved);
+			}
+			catch(e) {
+				throw new Error(bundle.getFormattedString('error_utils_invalid_original_file', [aOriginal]));
+			}
 		}
 		try {
 			aOriginal = aOriginal.QueryInterface(Ci.nsILocalFile)
 		}
 		catch(e) {
-			aOriginal = this.getFileFromURLSpec(aOriginal.spec);
+			try {
+				aOriginal = this.getFileFromURLSpec(aOriginal.spec);
+			}
+			catch(e) {
+				throw new Error(bundle.getFormattedString('error_utils_invalid_original_file', [aOriginal]));
+			}
 		}
 		temp.append(aOriginal.leafName + '.tmp');
 		temp.createUnique(
