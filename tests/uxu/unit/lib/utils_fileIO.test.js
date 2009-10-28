@@ -9,6 +9,17 @@ function warmUp()
 	utils.include(topDir+'content/uxu/lib/bundle.js', bundle);
 }
 
+var notExistFilesParent = utils.makeTempFolder();
+var notExistFile = notExistFilesParent.clone();
+notExistFile.append('notexist');
+var notFolder = utils.makeTempFile();
+utils.writeTo('foo', notFolder);
+function coolDown()
+{
+	utils.scheduleToRemove(notExistFilesParent);
+	utils.scheduleToRemove(notFolder);
+}
+
 var testDir;
 function tearDown()
 {
@@ -268,6 +279,27 @@ function test_cosmeticClone_folder()
 		bundle.getFormattedString('error_utils_cosmeticClone_original_hidden', [original.path]),
 		function() {
 			cloned = utilsModule.cosmeticClone(original, tempDir);
+		}
+	);
+}
+
+test_cosmeticClone_invalidInput.parameters = {
+	notExistOrignal : { orig  : notExistFile,
+	                    dest  : notExistFilesParent,
+	                    error : bundle.getFormattedString('error_utils_cosmeticClone_original_not_exists', [notExistFile.path]) },
+	notExistDest    : { orig  : notExistFilesParent,
+	                    dest  : notExistFile,
+	                    error : bundle.getFormattedString('error_utils_cosmeticClone_dest_not_exist', [notExistFile.path]) },
+	notFolderDest   : { orig  : notExistFilesParent,
+	                    dest  : notFolder,
+	                    error : bundle.getFormattedString('error_utils_cosmeticClone_dest_not_folder', [notFolder.path]) },
+};
+function test_cosmeticClone_invalidInput(aParameter)
+{
+	assert.raises(
+		aParameter.error,
+		function() {
+			cloned = utilsModule.cosmeticClone(aParameter.orig, aParameter.dest);
 		}
 	);
 }

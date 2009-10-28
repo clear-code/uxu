@@ -394,37 +394,37 @@ function readJSON(aTarget, aEncoding, aScope)
 // Subversionが作る不可視のファイルなどを除外して、普通に目に見えるファイルだけを複製する 
 function cosmeticClone(aOriginal, aDest, aName, aInternalCall)
 {
-	aOriginal = normalizeToFile(aOriginal);
-	aDest = normalizeToFile(aDest);
+	var orig = this.normalizeToFile(aOriginal);
+	var dest = this.normalizeToFile(aDest);
 
-	if (!aOriginal)
+	if (!orig)
 		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_no_original', [aOriginal]));
-	if (!aOriginal.exists())
-		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_original_not_exists', [aOriginal.path]));
-	if (aOriginal.isHidden() || aOriginal.leafName.indexOf('.') == 0) {
+	if (!orig.exists())
+		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_original_not_exists', [orig.path]));
+	if (orig.isHidden() || orig.leafName.indexOf('.') == 0) {
 		if (!aInternalCall)
-			throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_original_hidden', [aOriginal.path]));
+			throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_original_hidden', [orig.path]));
 		return;
 	}
 
-	if (!aDest)
+	if (!dest)
 		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_no_dest', [aDest]));
-	if (!aDest.exists())
-		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_dest_not_exists', [aDest.path]));
-	if (!aDest.isDirectory())
-		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_dest_not_folder', [aDest.path]));
+	if (!dest.exists())
+		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_dest_not_exist', [dest.path]));
+	if (!dest.isDirectory())
+		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_dest_not_folder', [dest.path]));
 
-	if (!aName) aName = aOriginal.leafName;
+	if (!aName) aName = orig.leafName;
 
-	var destFile = aDest.clone();
+	var destFile = dest.clone();
 	destFile.append(aName);
 	if (destFile.exists())
 		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_duplicate', [destFile.path]));
 
-	if (aOriginal.isDirectory()) {
+	if (orig.isDirectory()) {
 		destFile.create(destFile.DIRECTORY_TYPE, 0777);
 
-		var files = aOriginal.directoryEntries;
+		var files = orig.directoryEntries;
 		var file;
 		while (files.hasMoreElements())
 		{
@@ -434,7 +434,7 @@ function cosmeticClone(aOriginal, aDest, aName, aInternalCall)
 		return destFile;
 	}
 	else {
-		aOriginal.copyTo(aDest, aName);
+		orig.copyTo(dest, aName);
 		return destFile;
 	}
 }
