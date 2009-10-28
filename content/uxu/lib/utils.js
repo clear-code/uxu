@@ -571,6 +571,20 @@ function makeTempFile(aOriginal, aCosmetic)
 	}
 };
  
+function makeTempFolder(aOriginal, aCosmetic) 
+{
+	if (aOriginal)
+		return makeTempFile(aOriginal, aCosmetic);
+
+	var temp = this.getFileFromKeyword('TmpD');
+	temp.append('uxu.tmp_dir');
+	temp.createUnique(temp.DIRECTORY_TYPE, 0777);
+	this.tempFiles.push(temp);
+	return temp;
+};
+var makeTempDir = makeTempFolder;
+var makeTempDirectory = makeTempFolder;
+ 
 function cleanUpTempFiles(aDelayed) 
 {
 	_cleanUpTempFiles(aDelayed, null, this);

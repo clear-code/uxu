@@ -664,7 +664,10 @@ inspect
 inspectDOMNode
 loadPrefs
 makeFileWithPath
+makeTempDir
+makeTempDirectory
 makeTempFile
+makeTempFolder
 makeURIFromSpec
 md2
 md2FromFile
