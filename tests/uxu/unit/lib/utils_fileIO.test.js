@@ -2,24 +2,6 @@
 
 utils.include('utils_common.inc.js');
 
-var bundle;
-function warmUp()
-{
-	bundle = {};
-	utils.include(topDir+'content/uxu/lib/bundle.js', bundle);
-}
-
-var notExistFilesParent = utils.makeTempFolder();
-var notExistFile = notExistFilesParent.clone();
-notExistFile.append('notexist');
-var notFolder = utils.makeTempFile();
-utils.writeTo('foo', notFolder);
-function coolDown()
-{
-	utils.scheduleToRemove(notExistFilesParent);
-	utils.scheduleToRemove(notFolder);
-}
-
 var testDir;
 function tearDown()
 {
@@ -283,23 +265,52 @@ function test_cosmeticClone_folder()
 	);
 }
 
+var bundle;
+utils.include(topDir+'content/uxu/lib/bundle.js', bundle);
 test_cosmeticClone_invalidInput.parameters = {
-	notExistOrignal : { orig  : notExistFile,
-	                    dest  : notExistFilesParent,
-	                    error : bundle.getFormattedString('error_utils_cosmeticClone_original_not_exists', [notExistFile.path]) },
-	notExistDest    : { orig  : notExistFilesParent,
-	                    dest  : notExistFile,
-	                    error : bundle.getFormattedString('error_utils_cosmeticClone_dest_not_exist', [notExistFile.path]) },
-	notFolderDest   : { orig  : notExistFilesParent,
-	                    dest  : notFolder,
-	                    error : bundle.getFormattedString('error_utils_cosmeticClone_dest_not_folder', [notFolder.path]) },
+	notExistOrignal : function() {
+		var orig = tempDir.clone();
+		orig.append('temp'+parseInt(Math.random() * 50000));
+		return {
+			orig : orig,
+			dest : tempDir,
+			error : bundle.getFormattedString('error_utils_cosmeticClone_original_not_exists', [orig.path])
+		};
+	},
+	notExistDest : function() {
+		var orig = tempDir.clone();
+		orig.append('temp'+parseInt(Math.random() * 50000));
+		orig.createUnique(orig.NORMAL_FILE_TYPE, 0666);
+		var dest = tempDir.clone();
+		dest.append('tempDir'+parseInt(Math.random() * 50000));
+		return {
+			orig : orig,
+			dest : dest,
+			error : bundle.getFormattedString('error_utils_cosmeticClone_dest_not_exist', [dest.path])
+		};
+	},
+	notFolderDest : function() {
+		var orig = tempDir.clone();
+		orig.append('temp'+parseInt(Math.random() * 50000));
+		orig.createUnique(orig.NORMAL_FILE_TYPE, 0666);
+		var dest = tempDir.clone();
+		dest.append('tempDir'+parseInt(Math.random() * 50000));
+		dest.createUnique(dest.NORMAL_FILE_TYPE, 0666);
+		return {
+			orig : orig,
+			dest : dest,
+			error : bundle.getFormattedString('error_utils_cosmeticClone_dest_not_folder', [dest.path])
+		};
+	}
 };
 function test_cosmeticClone_invalidInput(aParameter)
 {
+	tempDir = utils.makeTempFolder();
+	aParameter = aParameter();
 	assert.raises(
 		aParameter.error,
 		function() {
-			cloned = utilsModule.cosmeticClone(aParameter.orig, aParameter.dest);
+			var cloned = utilsModule.cosmeticClone(aParameter.orig, aParameter.dest);
 		}
 	);
 }
