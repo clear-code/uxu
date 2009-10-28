@@ -429,7 +429,7 @@ function cosmeticClone(aOriginal, aDest, aName, aInternalCall)
 		while (files.hasMoreElements())
 		{
 			file = files.getNext().QueryInterface(Ci.nsILocalFile);
-			arguments.callee(file, destFile, file.leafName, true);
+			arguments.callee.call(this, file, destFile, file.leafName, true);
 		}
 		return destFile;
 	}
