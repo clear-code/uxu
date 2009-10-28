@@ -336,8 +336,10 @@ function onFinish()
 	this.removeAllListeners();
 }
  
-function onAbort() 
+function onAbort(aEvent) 
 {
+	if (aEvent.reason == 'error') {
+	}
 	this.onFinish();
 }
  
@@ -729,15 +731,26 @@ function verify(aStopper)
  */
 function run(aStopper)
 {
-	if (!this.environment) throw ERROR_NOT_INITIALIZED;
+	try {
+		if (!this.environment) throw ERROR_NOT_INITIALIZED;
 
-	this._stopper = aStopper;
+		this._stopper = aStopper;
 
-	this.done = false;
-	this._aborted = false;
+		this.done = false;
+		this._aborted = false;
 
-	if (this.shouldRunInRemote && this._runByRemote()) return;
-
+		if (this.shouldRunInRemote)
+			this._runByRemote();
+		else
+			this._run();
+	}
+	catch(e) {
+		this._aborted = true;
+		this.fireEvent('Abort', { reason : 'error', error : e });
+	}
+}
+function _run()
+{
 	var context = this.context || {};
 	if (
 		(
@@ -1005,7 +1018,7 @@ function run(aStopper)
 		{
 			if (_this._stopper && _this._stopper()) {
 				_this._aborted = true;
-				_this.fireEvent('Abort');
+				_this.fireEvent('Abort', { reason : 'user' });
 				aContinuation('ko');
 				return;
 			}
@@ -1052,7 +1065,7 @@ function run(aStopper)
 	fsm.go('start', {}, stateHandlers, stateTransitions, []);
 }
 	
-function _runByRemote(aStopper) 
+function _runByRemote() 
 {
 	if (
 		!this._profile ||
@@ -1195,7 +1208,7 @@ function onServerInput(aEvent)
 	}
 	if (this._aborted) {
 		this.fireEvent('ResponseRequest', TESTCASE_ABORTED+responseId+'\n');
-		this.fireEvent('Abort');
+		this.fireEvent('Abort', { reason : 'user' });
 		return;
 	}
 	if (input.indexOf(TESTCASE_STARTED) == 0) {

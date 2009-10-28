@@ -116,7 +116,10 @@ function _toText(aFormat)
 			});
 		});
 		result.push(bundle.getString('log_separator_testcase'));
-		result.push(bundle.getFormattedString(aLog.aborted ? 'log_abort' : 'log_finish', [new Date(aLog.finish)]));
+		if (aLog.aborted)
+			result.push(bundle.getFormattedString('log_abort_user', [new Date(aLog.finish)]));
+		else
+			result.push(bundle.getFormattedString('log_finish', [new Date(aLog.finish)]));
 		result.push(_getLogTimeStr(aLog.time));
 		result.push(bundle.getFormattedString('log_result', [count.success, count.failure, count.error, count.skip]));
 		result.push(bundle.getString('log_separator_testcase'));

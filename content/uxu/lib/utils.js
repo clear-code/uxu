@@ -641,8 +641,10 @@ function normalizeError(e)
  
 function formatError(e) 
 {
-	var options = { onlyFile : true, onlyExternal : true, onlyTraceLine : true};
-	return e.toString() + '\n' + formatStackTrace(e, options);
+	var lines = formatStackTrace(e, { onlyFile : true, onlyExternal : true, onlyTraceLine : true });
+	if (!lines || utils.getPref('extensions.uxu.showInternalStacks'))
+		lines = formatStackTrace(e, { onlyFile : true, onlyTraceLine : true });
+	return e.toString() + '\n' + lines;
 }
  
 function hasStackTrace(aException) 
