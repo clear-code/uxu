@@ -2,6 +2,21 @@
 
 utils.include('utils_common.inc.js');
 
+var bundle;
+function warmUp()
+{
+	bundle = {};
+	utils.include(topDir+'content/uxu/lib/bundle.js', bundle);
+}
+
+var testDir;
+function tearDown()
+{
+	if (testDir.length) {
+		utils.scheduleToRemove(testDir);
+		testDir = null;
+	}
+}
 
 function test_makeURIFromSpec()
 {
@@ -174,5 +189,85 @@ function test_readJSON()
 			template : 2929
 		},
 		utilsModule.readJSON(baseURL+'../../fixtures/test.json', 'UTF-8', { value : 2929 })
+	);
+}
+
+function test_cosmeticClone_file()
+{
+	tempDir = utils.makeTempFolder();
+	var original, cloned;
+
+	original = utils.getFileFromURLSpec(baseURL+'../../fixtures/folder/normal.txt');
+
+	cloned = utilsModule.cosmeticClone(original, tempDir);
+	assert.isDefined(cloned);
+	assert.implementsInterface(Ci.nsILocalFile, cloned);
+	assert.equals('normal.txt', cloned.leafName);
+
+	var existsPath = cloned.path;
+	assert.raises(
+		bundle.getFormattedString('error_utils_cosmeticClone_duplicate', [existsPath]),
+		function() {
+			cloned = utilsModule.cosmeticClone(original, tempDir);
+		}
+	);
+
+	cloned = utilsModule.cosmeticClone(original, tempDir, 'different.txt');
+	assert.isDefined(cloned);
+	assert.implementsInterface(Ci.nsILocalFile, cloned);
+	assert.equals('different.txt', cloned.leafName);
+
+	original = utils.getFileFromURLSpec(baseURL+'../../fixtures/folder/.dot-file');
+	assert.raises(
+		bundle.getFormattedString('error_utils_cosmeticClone_original_hidden', [original.path]),
+		function() {
+			cloned = utilsModule.cosmeticClone(original, tempDir);
+		}
+	);
+}
+
+function test_cosmeticClone_folder()
+{
+	tempDir = utils.makeTempFolder();
+	var original, cloned;
+
+	original = utils.getFileFromURLSpec(baseURL+'../../fixtures/folder');
+
+	cloned = utilsModule.cosmeticClone(original, tempDir);
+	assert.isDefined(cloned);
+	assert.implementsInterface(Ci.nsILocalFile, cloned);
+	assert.equals('folder', cloned.leafName);
+
+	var normal = cloned.clone();
+	normal.append('normal.txt');
+	assert.isTrue(normal.exists());
+
+	var hiddenFile = cloned.clone();
+	hiddenFile.append('.dot-file');
+	assert.isFalse(hiddenFile.exists());
+
+	var hiddenFolder = cloned.clone();
+	hiddenFolder.append('.dot-folder');
+	assert.isFalse(hiddenFolder.exists());
+
+	var existsPath = cloned.path;
+	assert.raises(
+		bundle.getFormattedString('error_utils_cosmeticClone_duplicate', [existsPath]),
+		function() {
+			cloned = utilsModule.cosmeticClone(original, tempDir);
+		}
+	);
+
+	cloned = utilsModule.cosmeticClone(original, tempDir, 'different');
+	assert.isDefined(cloned);
+	assert.implementsInterface(Ci.nsILocalFile, cloned);
+	assert.equals('different', cloned.leafName);
+
+	original = utils.getFileFromURLSpec(baseURL+'../../fixtures/folder/.dot-file');
+	assert.raises(
+		bundle.getFormattedString('error_utils_cosmeticClone_original_hidden', [original.path]),
+		function() {
+			cloned = utilsModule.cosmeticClone(original, tempDir);
+		}
 	);
 }
