@@ -654,7 +654,9 @@ function hasStackTrace(aException)
 function formatStackTraceForDisplay(aException) 
 {
 	var lines = formatStackTrace(aException, { onlyTraceLine : true, onlyExternal : true }).split('\n');
-	if (!lines.length || utils.getPref('extensions.uxu.showInternalStacks'))
+	if (!lines.length ||
+		(lines.length == 1 && !lines[0]) ||
+		utils.getPref('extensions.uxu.showInternalStacks'))
 		lines = formatStackTrace(aException, { onlyTraceLine : true }).split('\n');
 	lines = lines.filter(function(aLine) {
 		return aLine;
