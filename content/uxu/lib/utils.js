@@ -412,31 +412,28 @@ function cosmeticClone(aOriginal, aDest, aName, aInternalCall)
 	if (!aDest.isDirectory())
 		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_dest_not_folder', [aDest.path]));
 
-	if (!aName) {
-		if (aOriginal.parent.equals(aDest))
-			throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_duplicate', [aOriginal.path]));
-		aName = aOriginal.leafName;
-	}
+	if (!aName) aName = aOriginal.leafName;
+
+	var destFile = aDest.clone();
+	destFile.append(aName);
+	if (destFile.exists())
+		throw new Error(bundle.getFormattedString('error_utils_cosmeticClone_duplicate', [destFile.path]));
 
 	if (aOriginal.isDirectory()) {
-		var folder = aDest.clone();
-		folder.append(aName);
-		folder.create(folder.DIRECTORY_TYPE, 0777);
+		destFile.create(destFile.DIRECTORY_TYPE, 0777);
 
 		var files = aOriginal.directoryEntries;
 		var file;
 		while (files.hasMoreElements())
 		{
 			file = files.getNext().QueryInterface(Ci.nsILocalFile);
-			arguments.callee(file, folder, file.leafName, true);
+			arguments.callee(file, destFile, file.leafName, true);
 		}
-		return folder;
+		return destFile;
 	}
 	else {
 		aOriginal.copyTo(aDest, aName);
-		var cloned = aDest.clone();
-		cloned.append(aName);
-		return cloned;
+		return destFile;
 	}
 }
  
