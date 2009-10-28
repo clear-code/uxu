@@ -569,7 +569,7 @@ function include(aSource, aEncoding, aScope)
 		aEncoding = aScope;
 		aScope = scope;
 	}
-	return utils.include.call(this, aSource, (aScope || this.environment), aEncoding);
+	return utils.include.call(this, aSource, aEncoding, (aScope || this.environment));
 };
  
 function createDatabaseFromSQLFile(aFile, aEncoding, aScope) 

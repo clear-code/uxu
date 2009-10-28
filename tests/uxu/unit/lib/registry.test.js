@@ -67,6 +67,11 @@ function setUp()
 {
 	utilsModule = {};
 	utils.include(topDir+'content/uxu/lib/utils.js', utilsModule);
+
+	clearWindowsRegistryKey(
+		Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
+		'HKCU\\Software\\ClearCode Inc.\\UxU'
+	);
 }
 
 function tearDown()
@@ -182,50 +187,50 @@ function test_getWindowsResigtory()
 var bundle = {};
 utils.include(topDir+'content/uxu/lib/bundle.js', bundle);
 var testData = [
-		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-string',
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-string',
 		  value    : 'string' },
-		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-string',
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-string',
 		  value    : true,
 		  expected : 'true' },
-		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-string',
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-string',
 		  value    : 29,
 		  expected : '29' },
-		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-number',
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-number',
 		  value    : 29 },
-		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-number',
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-number',
 		  value    : '2929',
 		  expected : 2929 },
-		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-number',
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-number',
 		  value    : true,
 		  expected : 1 },
-		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-number',
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-number',
 		  value    : false,
 		  expected : 0 },
-		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-binary',
 		  value    : [0, 2, 9, 29] },
-		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-binary',
 		  value    : 97,
 		  expected : [97] },
-		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-binary',
 		  value    : 'b',
 		  expected : [98] },
-		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-binary',
 		  value    : [true, false],
 		  error    : bundle.getFormattedString(
 		               'error_utils_failed_to_write_registry',
-		               ['HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
+		               ['HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-binary',
 		                [true, false]]) },
-		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-binary',
 		  value    : ['a', 'b'],
 		  error    : bundle.getFormattedString(
 		               'error_utils_failed_to_write_registry',
-		               ['HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
+		               ['HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-binary',
 		                ['a', 'b']]) },
-		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
+		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-binary',
 		  value    : [{ value : true }, { value : false }],
 		  error    : bundle.getFormattedString(
 		               'error_utils_failed_to_write_registry',
-		               ['HKCU\\Software\\ClearCode Inc.\\UxU\\test-binary',
+		               ['HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-binary',
 		                [{ value : true }, { value : false }]]) }
 	];
 
@@ -233,7 +238,7 @@ test_setWindowsResigtory.setUp = function() {
 	if (isWindows) {
 		clearWindowsRegistryKey(
 			Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
-			'Software\\ClearCode Inc.'
+			'Software\\ClearCode Inc.\\UxU'
 		);
 	}
 };
@@ -241,7 +246,7 @@ test_setWindowsResigtory.tearDown = function() {
 	if (isWindows) {
 		clearWindowsRegistryKey(
 			Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
-			'HKCU\\Software\\ClearCode Inc.'
+			'HKCU\\Software\\ClearCode Inc.\\UxU'
 		);
 	}
 };
@@ -289,15 +294,15 @@ test_clearWindowsRegistry.setUp = function() {
 test_clearWindowsRegistry.tearDown = function() {
 	clearWindowsRegistryKey(
 		Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
-		'HKCU\\Software\\ClearCode Inc.'
+		'HKCU\\Software\\ClearCode Inc.\\UxU'
 	);
 };
 function test_clearWindowsRegistry()
 {
-	utilsModule.clearWindowsRegistry('HKCU\\Software\\ClearCode Inc.\\UxU\\test-string');
-	assert.isNull(utilsModule.getWindowsRegistry('HKCU\\Software\\ClearCode Inc.\\UxU\\test-string'));
+	utilsModule.clearWindowsRegistry('HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-string');
+	assert.isNull(utilsModule.getWindowsRegistry('HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-string'));
 
-	utilsModule.clearWindowsRegistry('HKCU\\Software\\ClearCode Inc.');
+	utilsModule.clearWindowsRegistry('HKCU\\Software\\ClearCode Inc.\\UxU');
 	testData.forEach(function(aData) {
 		assert.isNull(utilsModule.getWindowsRegistry(aData.key));
 	});
