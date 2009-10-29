@@ -1,0 +1,2 @@
+a[object]	b[object]	c[string]
+<%= a %>	<%= b %>	<%= c %>

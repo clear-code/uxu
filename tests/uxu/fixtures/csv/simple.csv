@@ -6,6 +6,6 @@ a,,b,
 true,false,True,False
 less,columns
 "string",string,"日本語",文字列
-"comma,",;,:,'
+"comma, tab	",;,:,'
 "double""quote","multiple""double""quotes","line
 break",'single quote'

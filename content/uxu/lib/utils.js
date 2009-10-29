@@ -363,20 +363,33 @@ function writeTo(aContent, aTarget, aEncoding)
 	return target;
 }
  
-function readCSV(aTarget, aEncoding, aScope) 
+function readCSV(aTarget, aEncoding, aScope, aDelimiter) 
 {
 	var input = this.readFrom(aTarget, aEncoding || this.getPref('extensions.uxu.defaultEncoding'));
 	if (aScope) input = this.processTemplate(input, aScope);
-	return this.parseCSV(input);
+	return parseCSV(input, aDelimiter);
+}
+ 
+function readTSV(aTarget, aEncoding, aScope) 
+{
+	return this.readCSV(aTarget, aEncoding, aScope, '\t');
 }
  
 function readParametersFromCSV(aTarget, aEncoding, aScope) 
 {
-	return this.parseParametersFromCSV(this.readCSV(aTarget, aEncoding, aScope));
+	return _parseParametersFrom2DArray(this.readCSV(aTarget, aEncoding, aScope));
 }
 var readParameterFromCSV = readParametersFromCSV;
 var readParamsFromCSV = readParametersFromCSV;
 var readParamFromCSV = readParametersFromCSV;
+ 
+function readParametersFromTSV(aTarget, aEncoding, aScope) 
+{
+	return _parseParametersFrom2DArray(this.readTSV(aTarget, aEncoding, aScope));
+}
+var readParameterFromTSV = readParametersFromTSV;
+var readParamsFromTSV = readParametersFromTSV;
+var readParamFromTSV = readParametersFromTSV;
  
 function readJSON(aTarget, aEncoding, aScope) 
 {
@@ -2096,17 +2109,20 @@ function redirectURI(aURI, aRedirectDefinition)
  
 // http://liosk.blog103.fc2.com/blog-entry-75.html
 // CSV parser based on RFC4180
-var CSVTokenizer = /,|\r?\n|[^,"\r\n][^,\r\n]*|"(?:[^"]|"")*"/g;
-function parseCSV(aInput) 
+function parseCSV(aInput, aDelimiter) 
 {
-	var delimiter = ',';
+	var delimiter = aDelimiter || ',';
+	var tokenizer = new RegExp(
+			delimiter+'|\r?\n|[^'+delimiter+'"\r\n][^'+delimiter+'\r\n]*|"(?:[^"]|"")*"',
+			'g'
+		);
 	var record = 0,
 		field = 0,
 		data = [['']],
 		qq = /""/g,
 		longest = 0;
 	aInput.replace(/\r?\n$/, '')
-		.replace(CSVTokenizer, function(aToken) {
+		.replace(tokenizer, function(aToken) {
 			switch (aToken) {
 				case delimiter:
 					data[record][field] = _normalizeCSVField(data[record][field]);
@@ -2140,11 +2156,15 @@ function _normalizeCSVField(aSource)
 {
 	return aSource.replace(/\r\n/g, '\n');
 }
+function parseTSV(aInput) 
+{
+	return parseCSV(aInput, '\t');
+}
  
-function parseParametersFromCSV(aCSV) 
+function _parseParametersFrom2DArray(aArray) 
 {
 	var data;
-	eval('data = '+aCSV.toSource()); // duplicate object for safe
+	eval('data = '+aArray.toSource()); // duplicate object for safe
 	var parameters;
 	var columns = data.shift();
 	var isHash = !columns[0];

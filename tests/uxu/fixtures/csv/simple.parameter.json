@@ -6,6 +6,6 @@
 	{ a: true, b: false, c: true, d: false },
 	{ a: 'less', b: 'columns', c: '', d: '' },
 	{ a: 'string', b: 'string', c: '日本語', d: '文字列' },
-	{ a: 'comma,', b: ';', c: ':', d: "'" },
+	{ a: 'comma, tab	', b: ';', c: ':', d: "'" },
 	{ a: 'double"quote', b: 'multiple"double"quotes', c: 'line\nbreak', d: "'single quote'" }
 ])
