@@ -238,25 +238,8 @@ function test_Do()
 	assert.isDefined(result.value);
 }
 
-assert.inspect = function(aExpected, aObject) {
-	assert.equals(aExpected, utilsModule.inspect(aObject));
-};
-
-testInspect.priority = "must";
-function testInspect()
-{
-	assert.inspect('"String"', "String");
-	assert.inspect('10', 10);
-	assert.inspect('["String", 10]', ["String", 10]);
-
-	var object = {string: "String", 29: 10};
-	assert.inspect('{"29": 10, "string": "String"}', object);
-	assert.inspect('[{"29": 10, "string": "String"}]', [object]);
-	assert.inspect('[{"29": 10, "string": "String"}, ' +
-		       '{"29": 10, "string": "String"}]',
-		       [object, object]);
-
-	object = {
+var simpleObject = {string: "String", 29: 10};
+var selfReferenceObject = {
 		get propGetter()
 		{
 			return true;
@@ -266,13 +249,76 @@ function testInspect()
 			throw 'error';
 		}
 	};
-	object.self = object;
-	var inspected = '{"propError": (INACCESSIBLE #1, REASON: error), '+
-					'"propGetter": true, "self": [object Object]}';
-	assert.inspect(inspected, object);
-	assert.inspect('['+inspected+', '+inspected+']', [object, object]);
-}
+var inspectedSelfReferenceObject = (
+		'{"propError": (INACCESSIBLE #1, REASON: error), '+
+		'"propGetter": true, "self": [object Object]}'
+	);
+var inspectedSelfReferenceObjectIndent = (
+		'{\n  "propError": (INACCESSIBLE #1, REASON: error),\n'+
+		'  "propGetter": true,\n  "self": [object Object]\n}'
+	);
+selfReferenceObject.self = selfReferenceObject;
+testInspect.parameters = {
+	string:         { input    : "String",
+	                  expected : '"String"' },
+	number:         { input    : 10,
+	                  expected : '10' },
+	array:          { input    : ["String", 10],
+	                  expected : '["String", 10]' },
+	object:         { input    : simpleObject,
+	                  expected : '{"29": 10, "string": "String"}' },
+	objectArray:    { input    : [simpleObject],
+	                  expected : '[{"29": 10, "string": "String"}]' },
+	objectArray2:   { input    : [simpleObject, simpleObject],
+	                  expected : '[{"29": 10, "string": "String"}, ' +
+	                	         '{"29": 10, "string": "String"}]' },
+	recursive:      { input    : selfReferenceObject,
+	                  expected : inspectedSelfReferenceObject },
+	recursiveArray: { input    : [selfReferenceObject, selfReferenceObject],
+	                  expected : '['+inspectedSelfReferenceObject+', '+
+	                             inspectedSelfReferenceObject+']' },
 
+	indentString:   { input    : "String",
+	                  indent   : '  ',
+	                  expected : '"String"' },
+	indentNumber:   { input    : 10,
+	                  indent   : '  ',
+	                  expected : '10' },
+	indentArray:    { input    : ["String", 10],
+	                  indent   : '  ',
+	                  expected : '[\n  "String",\n  10\n]' },
+	indentObject:   { input    : simpleObject,
+	                  indent   : '  ',
+	                  expected : '{\n  "29": 10,\n  "string": "String"\n}' },
+	indentObjectArray:
+	                { input    : [simpleObject],
+	                  indent   : '  ',
+	                  expected : '[\n  {\n    "29": 10,\n    "string": "String"\n  }\n]' },
+	indentObjectArray2:
+	                { input    : [simpleObject, simpleObject],
+	                  indent   : '  ',
+	                  expected : '[\n  {\n    "29": 10,\n    "string": "String"\n  },\n' +
+	                             '  {\n    "29": 10,\n    "string": "String"\n  }\n]' },
+	indentRecursive:
+	                { input    : selfReferenceObject,
+	                  indent   : '  ',
+	                  expected : inspectedSelfReferenceObjectIndent },
+	indentRecursiveArray:
+	                { input    : [selfReferenceObject, selfReferenceObject],
+	                  indent   : '  ',
+	                  expected : '[\n'+
+	                             inspectedSelfReferenceObjectIndent.replace(/^/gm, '  ')+',\n'+
+	                             inspectedSelfReferenceObjectIndent.replace(/^/gm, '  ')+
+	                             '\n]' }
+};
+testInspect.priority = "must";
+function testInspect(aParameter)
+{
+	assert.equals(
+		aParameter.expected,
+		utilsModule.inspect(aParameter.input, aParameter.indent)
+	);
+}
 
 assert.utilsEquals = function(aValue1, aValue2, aValue3, aMessage) {
 	assert.isTrue(utilsModule.equals(aValue1, aValue2), aMessage);

@@ -1583,7 +1583,7 @@ function createDatabaseFromSQLFile(aSQLFile, aEncoding, aScope)
   
 // âêÕ 
 	
-function inspect(aObject) 
+function inspect(aObject, aIndent) 
 {
 	var inspectedObjects = [];
 	var inspectedResults = {};
@@ -1593,7 +1593,9 @@ function inspect(aObject)
 			values     : [],
 			count      : 0
 		};
-	return (function (aTarget) {
+
+	function _inspect(aTarget, aIndent)
+	{
 		var index;
 
 		if (aTarget === null)
@@ -1625,8 +1627,21 @@ function inspect(aObject)
 			inspectedObjects.push(aTarget);
 			inspectedResults[index] = aTarget.toString();
 
-			var values = aTarget.map(arguments.callee);
-			inspectedResults[index] = "[" + values.join(", ") + "]";
+			var values = aTarget.map(function(aObject) {
+							return _inspect(aObject, aIndent);
+						});
+			if (aIndent) {
+				inspectedResults[index] = "[\n" +
+						values
+							.map(function(aElement) {
+								return aElement.replace(/^/gm, aIndent);
+							})
+							.join(",\n") +
+						"\n]";
+			}
+			else {
+				inspectedResults[index] = "[" + values.join(", ") + "]";
+			}
 			return inspectedResults[index];
 		}
 		else if (typeof aTarget == 'string' ||
@@ -1645,7 +1660,7 @@ function inspect(aObject)
 			var values = names.sort().map(function(aName) {
 					var value;
 					try {
-						value = this(aTarget[aName]);
+						value = _inspect(aTarget[aName], aIndent);
 					}
 					catch(e) {
 						var objIndex = inaccessible.objects.indexOf(aTarget);
@@ -1667,14 +1682,27 @@ function inspect(aObject)
 						}
 					}
 					return aName.quote() + ': ' + value;
-				}, arguments.callee);
-			inspectedResults[index] = "{" + values.join(", ") + "}";
+				});
+			if (aIndent) {
+				inspectedResults[index] = "{\n" +
+						values
+							.map(function(aElement) {
+								return aElement.replace(/^/gm, aIndent);
+							})
+							.join(",\n") +
+						"\n}";
+			}
+			else {
+				inspectedResults[index] = "{" + values.join(", ") + "}";
+			}
 			return inspectedResults[index];
 		}
 		else {
 			return aTarget.toString();
 		}
-	})(aObject);
+	}
+
+	return _inspect(aObject, aIndent);
 }
  
 function inspectType(aObject) 
@@ -2156,7 +2184,7 @@ function _normalizeCSVField(aSource)
 {
 	return aSource.replace(/\r\n/g, '\n');
 }
-function parseTSV(aInput) 
+function parseTSV(aInput)
 {
 	return parseCSV(aInput, '\t');
 }
