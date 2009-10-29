@@ -47,6 +47,7 @@ function test_parseCSV(aParameter)
 test_readCSV.parameters = CSVParameters;
 function test_readCSV(aParameter)
 {
+	assert.isTrue(false);
 	assert.equals(aParameter.parsed, utilsModule.readCSV(aParameter.path, 'UTF-8', values));
 }
 

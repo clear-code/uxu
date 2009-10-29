@@ -74,6 +74,28 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 	font-size: 1.2em;
 }
 
+*[role=parameter-container] {
+	background: ThreeDLightShadow;
+	margin: 0 0.5em 0 0.5em;
+	padding: 0.2em;
+}
+
+*[role=parameter-label] {
+	font-size: 95%;
+	margin: 0;
+	padding: 0;
+}
+
+*[role=parameter] {
+	-moz-appearance: none;
+	background: transparent;
+	border: 0 none;
+	color: inherit;
+	font-size: 95%;
+	margin: 0;
+	padding: 0;
+}
+
 *[role=vs] label {
 	margin: 0;
 	padding: 0;
@@ -85,6 +107,8 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 }
 
 *[role=description],
+*[role=parameter-label],
+*[role=parameter],
 *[role=error],
 *[role=additionalInfo],
 *[role=vs] label,

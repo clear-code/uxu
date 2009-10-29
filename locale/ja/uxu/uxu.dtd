@@ -71,6 +71,7 @@
 <!ENTITY runner.source "ソース">
 <!ENTITY runner.close "閉じる">
 
+<!ENTITY runner.parameter.label    "パラメータ:">
 <!ENTITY runner.expected.label     "期待値">
 <!ENTITY runner.expected.separator ":">
 <!ENTITY runner.actual.label       "実際の値">

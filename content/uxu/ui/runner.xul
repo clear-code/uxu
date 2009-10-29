@@ -153,6 +153,15 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 			</vbox>
 			<vbox role="test-report-parts" flex="1">
 				<hbox><label role="description" flex="1"/></hbox>
+				<hbox role="parameter-container"
+					align="center"
+					collapsed="true">
+					<label role="parameter-label"
+						value="&runner.parameter.label;"/>
+					<textbox role="parameter"
+						readonly="true"
+						flex="1"/>
+				</hbox>
 				<!-- test-report-part(s) -->
 			</vbox>
 		</hbox>

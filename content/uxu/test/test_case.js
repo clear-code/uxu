@@ -612,6 +612,9 @@ function _createNewTestWithParameter(aFunction, aParameter, aSuffix)
 		test.tearDown.__uxu__original = tearDown;
 	}
 
+	test.parameter = utils.inspect(aParameter);
+	test.formattedParameter = utils.inspect(aParameter, '  ');
+
 	return test;
 }
  
@@ -628,6 +631,8 @@ function _registerSingleTest(aFunction)
 		id          : 'test-'+Date.now()+'-'+parseInt(Math.random() * 65000),
 		description : desc,
 		title       : desc,
+		parameter   : aFunction.parameter,
+		formattedParameter : aFunction.formattedParameter,
 
 		code          : aFunction,
 		priority      : aFunction.priority,
@@ -646,6 +651,9 @@ function _registerSingleTest(aFunction)
 
 	sources.push(desc);
 
+	if (test.parameter)
+		sources.push('parameter:'+test.parameter);
+
 	if (test.setUp)
 		sources.push((test.setUp.__uxu__original || test.setUp).toSource());
 
@@ -656,7 +664,6 @@ function _registerSingleTest(aFunction)
 
 	sources.push('assertions:'+test.assertions);
 	sources.push('minAssertions:'+test.minAssertions);
-	sources.push('maxAssertions:'+test.maxAssertions);
 
 	test.hash = utils.computeHash(sources.join('\n'), 'MD5');
 	test.name = this._source + '::' + this.title + '::' + (desc || test.hash);
@@ -818,6 +825,8 @@ function _run()
 							aOptions.report.report.result = RESULT_ERROR;
 							aOptions.report.report.exception = utils.normalizeError(e);
 							aOptions.report.report.description = aOptions.errorDescription;
+							aOptions.report.report.parameter = aOptions.parameter;
+							aOptions.report.report.formattedParameter = aOptions.formattedParameter;
 							aOptions.report.report.onFinish();
 							aContinuation('ko');
 						}
@@ -832,6 +841,8 @@ function _run()
 				aOptions.report.report.result = RESULT_ERROR;
 				aOptions.report.report.exception = utils.normalizeError(e);
 				aOptions.report.report.description = aOptions.errorDescription;
+				aOptions.report.report.parameter = aOptions.parameter;
+				aOptions.report.report.formattedParameter = aOptions.formattedParameter;
 				aOptions.report.report.onFinish();
 				aContinuation('ko');
 			}
@@ -931,6 +942,8 @@ function _run()
 				current.setUp,
 				{
 					errorDescription : bundle.getFormattedString('report_description_priv_setup', [current.description]),
+					parameter : current.parameter,
+					formattedParameter : current.formattedParameter,
 					report : testReport
 				}
 			);
@@ -943,6 +956,8 @@ function _run()
 			if (newReport.result) {
 				testReport.report = newReport;
 				testReport.report.description = current.description;
+				testReport.report.parameter = current.parameter;
+				testReport.report.formattedParameter = current.formattedParameter;
 				testReport.report.onDetailedFinish();
 				aContinuation('ok');
 			}
@@ -982,6 +997,8 @@ function _run()
 				current.tearDown,
 				{
 					errorDescription : bundle.getFormattedString('report_description_priv_teardown', [current.description]),
+					parameter : current.parameter,
+					formattedParameter : current.formattedParameter,
 					report : testReport,
 					onError : function() {
 						_this._onFinish(current, RESULT_ERROR);
@@ -1011,6 +1028,8 @@ function _run()
 			testReport.report.testOwner = _this;
 			testReport.report.testIndex = testIndex;
 			testReport.report.testID    = current.name;
+			testReport.report.parameter = current.parameter;
+			testReport.report.formattedParameter = current.formattedParameter;
 			testReport.report.notifications = _this.notifications;
 			_this.notifications = [];
 			_this.fireEvent('TestFinish', testReport.report);

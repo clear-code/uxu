@@ -71,6 +71,7 @@
 <!ENTITY runner.source "Source">
 <!ENTITY runner.close "Close">
 
+<!ENTITY runner.parameter.label    "Parameter:">
 <!ENTITY runner.expected.label     "Expected">
 <!ENTITY runner.expected.separator ":">
 <!ENTITY runner.actual.label       "But was">

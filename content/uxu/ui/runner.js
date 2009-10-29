@@ -892,6 +892,11 @@ function fillReportFromResult(aTestCase, aResult)
 	_(wTestReport).setAttribute('report-type', aResult.type);
 	_(wTestReport, 'description').textContent = aResult.title;
 	_(wTestReport, 'description').setAttribute('tooltiptext', aResult.title);
+	if (aResult.parameter) {
+		_(wTestReport, 'parameter-container').removeAttribute('collapsed');
+		_(wTestReport, 'parameter-container').setAttribute('tooltiptext', aResult.formattedParameter);
+		_(wTestReport, 'parameter').setAttribute('value', aResult.parameter);
+	}
 
 	if (aResult.type == TestCase.prototype.RESULT_ERROR ||
 		aResult.type == TestCase.prototype.RESULT_FAILURE) {

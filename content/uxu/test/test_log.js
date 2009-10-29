@@ -20,6 +20,8 @@ var IGNORE_SUCCESS = 2048;
 
 var FORMAT_DEFUALT = FORMAT_TEXT | IGNORE_SKIPPED;// | IGNORE_SUCCESS;
 
+var MAX_PARAMETER_LENGTH_TEXT = 80;
+
 
 function constructor()
 {
@@ -86,6 +88,12 @@ function _toText(aFormat)
 			outputCount++;
 
 			result.push(bundle.getFormattedString('log_test_title', [aResult.title]));
+			if (aResult.parameter) {
+				let parameter = aResult.parameter;
+				if (parameter.length > MAX_PARAMETER_LENGTH_TEXT)
+					parameter = parameter.substr(0, MAX_PARAMETER_LENGTH_TEXT)+'...';
+				result.push(bundle.getFormattedString('log_test_parameter', [parameter]));
+			}
 			result.push(bundle.getFormattedString('log_test_step', [aResult.step]));
 			result.push(bundle.getFormattedString('log_test_timestamp', [new Date(aResult.timestamp)]));
 			result.push(bundle.getFormattedString('log_test_result', [bundle.getString('report_result_'+aResult.type)]));
@@ -221,6 +229,8 @@ function _createResultFromReport(aReport, aTimestamp)
 	return {
 		type          : aReport.result,
 		title         : aReport.description,
+		parameter     : aReport.parameter,
+		formattedParameter : aReport.formattedParameter,
 		timestamp     : (aTimestamp || Date.now()),
 		time          : aReport.time,
 		detailedTime  : aReport.detailedTime,

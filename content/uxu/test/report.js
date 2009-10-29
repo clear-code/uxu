@@ -33,6 +33,20 @@ function constructor()
 		return this._descriptions;
 	});
 
+	this._parameters = [];
+	this.__defineGetter__('parameter', function() {
+		var d = this._parameters;
+		return d.length == 0 ? void(0) : d[d.length-1];
+	});
+	this.__defineSetter__('parameter', function(aDescription) {
+		if (aDescription)
+			this._parameters.push(aDescription);
+		return aDescription;
+	});
+	this.__defineGetter__('parameters', function() {
+		return this._parameters;
+	});
+
 	this._notifications = [];
 	this.__defineGetter__('notifications', function() {
 		return this._notifications;
