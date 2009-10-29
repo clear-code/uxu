@@ -153,15 +153,48 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 			</vbox>
 			<vbox role="test-report-parts" flex="1">
 				<hbox><label role="description" flex="1"/></hbox>
-				<hbox role="parameter-container"
-					align="center"
-					collapsed="true">
-					<label role="parameter-label"
-						value="&runner.parameter.label;"/>
-					<textbox role="parameter"
-						readonly="true"
-						flex="1"/>
-				</hbox>
+				<grid role="parameter-container" collapsed="true">
+					<columns>
+						<column/>
+						<column flex="1"/>
+						<column/>
+					</columns>
+					<rows>
+						<row flex="1" align="center">
+							<label role="parameter-label"
+								value="&runner.parameter.label;"/>
+							<textbox role="parameter-oneline"
+								readonly="true"
+								flex="1"/>
+							<toolbarbutton label="&runner.parameter.toMultiLine;"
+								oncommand="
+									var box = this.parentNode;
+									box.setAttribute('collapsed', true);
+									box.nextSibling.removeAttribute('collapsed');
+									box.nextSibling.nextSibling.removeAttribute('collapsed');
+								"/>
+						</row>
+						<row flex="1" align="center" collapsed="true">
+							<label role="parameter-label"
+								value="&runner.parameter.label;"/>
+							<spacer/>
+							<toolbarbutton label="&runner.parameter.toOneLine;"
+								oncommand="
+									var box = this.parentNode;
+									box.setAttribute('collapsed', true);
+									box.nextSibling.setAttribute('collapsed', true);
+									box.previousSibling.removeAttribute('collapsed');
+								"/>
+						</row>
+						<row flex="1" align="start" collapsed="true">
+							<spacer/>
+							<vbox role="parameter-multiline-container" flex="1">
+								<description role="parameter-multiline" flex="1"/>
+							</vbox>
+							<spacer/>
+						</row>
+					</rows>
+				</grid>
 				<!-- test-report-part(s) -->
 			</vbox>
 		</hbox>

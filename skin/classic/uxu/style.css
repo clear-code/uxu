@@ -77,23 +77,32 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 *[role=parameter-container] {
 	background: ThreeDLightShadow;
 	margin: 0 0.5em 0 0.5em;
+	max-height: 10em;
 	padding: 0.2em;
 }
 
-*[role=parameter-label] {
+*[role=parameter-container] label,
+*[role=parameter-container] description {
 	font-size: 95%;
 	margin: 0;
 	padding: 0;
 }
 
-*[role=parameter] {
+*[role=parameter-oneline],
+*[role=parameter-multiline] {
 	-moz-appearance: none;
 	background: transparent;
 	border: 0 none;
 	color: inherit;
-	font-size: 95%;
 	margin: 0;
 	padding: 0;
+}
+
+*[role=parameter-multiline-container] {
+	height: auto;
+	margin-top: -1em;
+	overflow: auto;
+	position: relative;
 }
 
 *[role=vs] label {
@@ -108,7 +117,8 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 
 *[role=description],
 *[role=parameter-label],
-*[role=parameter],
+*[role=parameter-oneline],
+*[role=parameter-multiline],
 *[role=error],
 *[role=additionalInfo],
 *[role=vs] label,

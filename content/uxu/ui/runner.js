@@ -893,9 +893,10 @@ function fillReportFromResult(aTestCase, aResult)
 	_(wTestReport, 'description').textContent = aResult.title;
 	_(wTestReport, 'description').setAttribute('tooltiptext', aResult.title);
 	if (aResult.parameter) {
+		_(wTestReport, 'parameter-oneline').setAttribute('value', aResult.parameter);
+		_(wTestReport, 'parameter-multiline').textContent = aResult.formattedParameter;
+		_(wTestReport, 'parameter-multiline').setAttribute('style', 'min-height:'+aResult.formattedParameter.split('\n').length+'em');
 		_(wTestReport, 'parameter-container').removeAttribute('collapsed');
-		_(wTestReport, 'parameter-container').setAttribute('tooltiptext', aResult.formattedParameter);
-		_(wTestReport, 'parameter').setAttribute('value', aResult.parameter);
 	}
 
 	if (aResult.type == TestCase.prototype.RESULT_ERROR ||
