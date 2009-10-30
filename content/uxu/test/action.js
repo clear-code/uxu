@@ -100,8 +100,8 @@ function _getMouseOptionsFromArguments(aArguments)
 				element = aArg;
 			else if (modifierNames.some(function(aName) {
 					return aName in aArg;
-				})
-				modifiers = aArgs;
+				}))
+				modifiers = aArg;
 		}
 		return (x && y && w && modifiers && element);
 	});
@@ -746,16 +746,23 @@ function _getKeyOptionsFor(aType, aArguments)
 		if (typeof aArg == 'number') {
 			keyCode = aArg;
 		}
-		if (typeof aArg == 'string') {
-			charCode = aArg.charCodeAt(0);
+		else if (typeof aArg == 'string') {
+			if (aArg.length == 1) {
+				charCode = aArg.charCodeAt(0);
+			}
+			else {
+				var name = 'DOM_VK_'+aArg.toUpperCase();
+				if (name in Ci.nsIDOMKeyEvent)
+					keyCode = Ci.nsIDOMKeyEvent[name];
+			}
 		}
 		else if (aArg) {
 			if (aArg instanceof Ci.nsIDOMElement)
 				element = aArg;
 			else if (modifierNames.some(function(aName) {
 					return aName in aArg;
-				})
-				modifiers = aArgs;
+				}))
+				modifiers = aArg;
 		}
 		return ((keyCode || charCode) && modifiers && element);
 	});
@@ -788,21 +795,21 @@ function _getKeyOptionsFor(aType, aArguments)
 function keyPressOn() 
 {
 	var options = _getKeyOptionsFor('keypress', arguments);
-	fireKeyEventOnElement(options.element, optiosn);
+	fireKeyEventOnElement(options.element, options);
 }
 var keypressOn = keyPressOn;
  
 function keyDownOn(aElement, aKeyOrCharCode) 
 {
 	var options = _getKeyOptionsFor('keydown', arguments);
-	fireKeyEventOnElement(options.element, optiosn);
+	fireKeyEventOnElement(options.element, options);
 }
 var keydownOn = keyDownOn;
  
 function keyUpOn(aElement, aKeyOrCharCode) 
 {
 	var options = _getKeyOptionsFor('keyup', arguments);
-	fireKeyEventOnElement(options.element, optiosn);
+	fireKeyEventOnElement(options.element, options);
 }
 var keyupOn = keyUpOn;
  
@@ -1419,6 +1426,7 @@ function getFrameFromScreenPoint(aFrame, aScreenX, aScreenY)
 	}
 	return null;
 };
+var getWindowFromScreenPoint = getFrameFromScreenPoint; // for backward compatibility
 	
 function _flattenFrames(aFrame) 
 {
