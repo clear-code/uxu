@@ -140,6 +140,7 @@ function clickOn()
 	var options = _getMouseOptionsFor('click', 0, arguments);
 	fireMouseEventOnElement(options.element, options);
 }
+var leftClickOn = clickOn;
  
 function middleClickOn() 
 {
@@ -160,30 +161,31 @@ function doubleClickOn()
 	var options = _getMouseOptionsFor('dblclick', 0, arguments);
 	fireMouseEventOnElement(options.element, options);
 }
+var doubleclickOn = doubleClickOn;
 var dblClickOn = doubleClickOn;
 var dblclickOn = doubleClickOn;
+var leftDoubleclickOn = doubleClickOn;
+var leftDoubleClickOn = doubleClickOn;
+var leftDblClickOn = doubleClickOn;
+var leftDblclickOn = doubleClickOn;
  
-function doubleMiddleClickOn() 
+function middleDoubleClickOn() 
 {
 	var options = _getMouseOptionsFor('dblclick', 1, arguments);
 	fireMouseEventOnElement(options.element, options);
 }
-var middleDoubleClickOn = doubleMiddleClickOn;
-var dblclickMiddleOn = doubleMiddleClickOn;
-var dblClickMiddleOn = doubleMiddleClickOn;
-var middleDblClickOn = doubleMiddleClickOn;
-var middleDblclickOn = doubleMiddleClickOn;
+var middleDoubleclickOn = middleDoubleClickOn;
+var middleDblClickOn = middleDoubleClickOn;
+var middleDblclickOn = middleDoubleClickOn;
  
-function doubleRightClickOn() 
+function rightDoubleClickOn() 
 {
 	var options = _getMouseOptionsFor('dblclick', 2, arguments);
 	fireMouseEventOnElement(options.element, options);
 }
-var rightDoubleClickOn = doubleRightClickOn;
-var dblclickRightOn = doubleRightClickOn;
-var dblClickRightOn = doubleRightClickOn;
-var rightDblClickOn = doubleRightClickOn;
-var rightDblclickOn = doubleRightClickOn;
+var rightDoubleclickOn = rightDoubleClickOn;
+var rightDblClickOn = rightDoubleClickOn;
+var rightDblclickOn = rightDoubleClickOn;
   
 // mousedown/mouseup on element 
 	
@@ -193,6 +195,8 @@ function mouseDownOn()
 	fireMouseEventOnElement(options.element, options);
 }
 var mousedownOn = mouseDownOn;
+var leftMouseDownOn = mouseDownOn;
+var leftMousedownOn = mouseDownOn;
  
 function middleMouseDownOn() 
 {
@@ -200,8 +204,6 @@ function middleMouseDownOn()
 	fireMouseEventOnElement(options.element, options);
 }
 var middleMousedownOn = middleMouseDownOn;
-var mouseDownMiddleOn = middleMouseDownOn;
-var mousedownMiddleOn = middleMouseDownOn;
  
 function rightMouseDownOn() 
 {
@@ -209,8 +211,6 @@ function rightMouseDownOn()
 	fireMouseEventOnElement(options.element, options);
 }
 var rightMousedownOn = rightMouseDownOn;
-var mouseDownRightOn = rightMouseDownOn;
-var mousedownRightOn = rightMouseDownOn;
  
 function mouseUpOn() 
 {
@@ -218,6 +218,8 @@ function mouseUpOn()
 	fireMouseEventOnElement(options.element, options);
 }
 var mouseupOn = mouseUpOn;
+var leftMouseUpOn = mouseUpOn;
+var leftMouseupOn = mouseUpOn;
  
 function middleMouseUpOn() 
 {
@@ -225,8 +227,6 @@ function middleMouseUpOn()
 	fireMouseEventOnElement(options.element, options);
 }
 var middleMouseupOn = middleMouseUpOn;
-var mouseUpMiddleOn = middleMouseUpOn;
-var mouseupMiddleOn = middleMouseUpOn;
  
 function rightMouseUpOn() 
 {
@@ -234,8 +234,6 @@ function rightMouseUpOn()
 	fireMouseEventOnElement(options.element, options);
 }
 var rightMouseupOn = rightMouseUpOn;
-var mouseUpRightOn = rightMouseUpOn;
-var mouseupRightOn = rightMouseUpOn;
   
 // click at position 
 	
@@ -244,6 +242,7 @@ function clickAt()
 	var options = _getMouseOptionsFor('click', 0, arguments);
 	fireMouseEvent(options.window, options);
 }
+var leftClickAt = clickAt;
  
 function middleClickAt() 
 {
@@ -264,30 +263,29 @@ function doubleClickAt()
 	var options = _getMouseOptionsFor('dblclick', 0, arguments);
 	fireMouseEvent(options.window, options);
 }
+var doubleclickAt = doubleClickAt;
 var dblClickAt = doubleClickAt;
 var dblclickAt = doubleClickAt;
+var leftDoubleClickAt = doubleClickAt;
+var leftDoubleclickAt = doubleClickAt;
  
-function doubleMiddleClickAt() 
+function middleDoubleClickAt() 
 {
 	var options = _getMouseOptionsFor('dblclick', 1, arguments);
 	fireMouseEvent(options.window, options);
 }
-var middleDoubleClickAt = doubleMiddleClickAt;
-var dblclickMiddleAt = doubleMiddleClickAt;
-var dblClickMiddleAt = doubleMiddleClickAt;
-var middleDblClickAt = doubleMiddleClickAt;
-var middleDblclickAt = doubleMiddleClickAt;
+var middleDoubleclickAt = middleDoubleClickAt;
+var middleDblClickAt = middleDoubleClickAt;
+var middleDblclickAt = middleDoubleClickAt;
  
-function doubleRightClickAt() 
+function rightDoubleClickAt() 
 {
 	var options = _getMouseOptionsFor('dblclick', 2, arguments);
 	fireMouseEvent(options.window, options);
 }
-var rightDoubleClickAt = doubleRightClickAt;
-var dblclickRightAt = doubleRightClickAt;
-var dblClickRightAt = doubleRightClickAt;
-var rightDblClickAt = doubleRightClickAt;
-var rightDblclickAt = doubleRightClickAt;
+var rightDoubleclickAt = rightDoubleClickAt;
+var rightDblClickAt = rightDoubleClickAt;
+var rightDblclickAt = rightDoubleClickAt;
   
 // mousedown/mouseup at position 
 	
@@ -297,6 +295,8 @@ function mouseDownAt()
 	fireMouseEvent(options.window, options);
 }
 var mousedownAt = mouseDownAt;
+var leftMouseDownAt = mouseDownAt;
+var leftMousedownAt = mouseDownAt;
  
 function middleMouseDownAt() 
 {
@@ -304,8 +304,6 @@ function middleMouseDownAt()
 	fireMouseEvent(options.window, options);
 }
 var middleMousedownAt = middleMouseDownAt;
-var mouseDownMiddleAt = middleMouseDownAt;
-var mousedownMiddleAt = middleMouseDownAt;
  
 function rightMouseDownAt() 
 {
@@ -313,8 +311,6 @@ function rightMouseDownAt()
 	fireMouseEvent(options.window, options);
 }
 var rightMousedownAt = rightMouseDownAt;
-var mouseDownRightAt = rightMouseDownAt;
-var mousedownRightAt = rightMouseDownAt;
  
 function mouseUpAt() 
 {
@@ -322,6 +318,8 @@ function mouseUpAt()
 	fireMouseEvent(options.window, options);
 }
 var mouseupAt = mouseUpAt;
+var leftMouseUpAt = mouseUpAt;
+var leftMouseupAt = mouseUpAt;
  
 function middleMouseUpAt() 
 {
@@ -329,8 +327,6 @@ function middleMouseUpAt()
 	fireMouseEvent(options.window, options);
 }
 var middleMouseupAt = middleMouseUpAt;
-var mouseUpMiddleAt = middleMouseUpAt;
-var mouseupMiddleAt = middleMouseUpAt;
  
 function rightMouseUpAt() 
 {
@@ -338,8 +334,6 @@ function rightMouseUpAt()
 	fireMouseEvent(options.window, options);
 }
 var rightMouseupAt = rightMouseUpAt;
-var mouseUpRightAt = rightMouseUpAt;
-var mouseupRightAt = rightMouseUpAt;
   
 // lower level API 
 	
