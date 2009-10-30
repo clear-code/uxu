@@ -270,32 +270,13 @@ function test_keyupOn()
 
 /* text input */
 
-function test_inputTo()
+function assertInput(aInputString, aFinalString)
 {
-	var input = $('input');
-	var events;
-	assert.equals('', input.value);
-
-	actionModule.inputTo(input, 'string');
-	assert.equals('string', input.value);
-	events = assertEventsCount(('string'.length * 3) + 1);
+	assert.equals(aFinalString, target.value);
+	var events = assertEventsCount((aInputString.length * 3) + 1);
 	assert.equals(
 		{ type : 'keypress', target : 'input',
-		  keyCode : 0, charCode : 'g'.charCodeAt(0),
-		  altKey : false, ctrlKey : false, metaKey : false, shiftKey : false },
-		events[events.length-2]
-	);
-	assert.equals(
-		{ type : 'input', target : 'input' },
-		events[events.length-1]
-	);
-
-	actionModule.inputTo(input, 'moji');
-	assert.equals('moji', input.value);
-	events = assertEventsCount(('moji'.length * 3) + 1);
-	assert.equals(
-		{ type : 'keypress', target : 'input',
-		  keyCode : 0, charCode : 'i'.charCodeAt(0),
+		  keyCode : 0, charCode : aInputString.charCodeAt(aInputString.length-1),
 		  altKey : false, ctrlKey : false, metaKey : false, shiftKey : false },
 		events[events.length-2]
 	);
@@ -305,35 +286,68 @@ function test_inputTo()
 	);
 }
 
+function test_inputTo()
+{
+	target = $('input');
+	assert.equals('', target.value);
+
+	actionModule.inputTo(target, 'string');
+	assertInput('string', 'string');
+
+	actionModule.inputTo(target, 'moji');
+	assertInput('moji', 'moji');
+}
+
 function test_appendTo()
 {
-	var input = $('input');
-	var events;
-	assert.equals('', input.value);
+	target = $('input');
+	assert.equals('', target.value);
 
-	actionModule.appendTo(input, 'string');
-	assert.equals('string', input.value);
-	events = assertEventsCount(('string'.length * 3) + 1);
-	assert.equals(
-		{ type : 'keypress', target : 'input',
-		  keyCode : 0, charCode : 'g'.charCodeAt(0),
-		  altKey : false, ctrlKey : false, metaKey : false, shiftKey : false },
-		events[events.length-2]
-	);
+	actionModule.appendTo(target, 'string');
+	assertInput('string', 'string');
+
+	actionModule.appendTo(target, 'moji');
+	assertInput('moji', 'stringmoji');
+}
+
+function test_pasteTo()
+{
+	target = $('input');
+	assert.equals('', target.value);
+
+	actionModule.pasteTo(target, 'string');
+	assert.equals('string', target.value);
+	events = assertEventsCount(1);
 	assert.equals(
 		{ type : 'input', target : 'input' },
 		events[events.length-1]
 	);
 
-	actionModule.appendTo(input, 'moji');
-	assert.equals('stringmoji', input.value);
-	events = assertEventsCount(('moji'.length * 3) + 1);
+	actionModule.pasteTo(target, 'moji');
+	assert.equals('moji', target.value);
+	events = assertEventsCount(1);
 	assert.equals(
-		{ type : 'keypress', target : 'input',
-		  keyCode : 0, charCode : 'i'.charCodeAt(0),
-		  altKey : false, ctrlKey : false, metaKey : false, shiftKey : false },
-		events[events.length-2]
+		{ type : 'input', target : 'input' },
+		events[events.length-1]
 	);
+}
+
+function test_additionallyPasteTo()
+{
+	target = $('input');
+	assert.equals('', target.value);
+
+	actionModule.additionallyPasteTo(target, 'string');
+	assert.equals('string', target.value);
+	events = assertEventsCount(1);
+	assert.equals(
+		{ type : 'input', target : 'input' },
+		events[events.length-1]
+	);
+
+	actionModule.additionallyPasteTo(target, 'moji');
+	assert.equals('stringmoji', target.value);
+	events = assertEventsCount(1);
 	assert.equals(
 		{ type : 'input', target : 'input' },
 		events[events.length-1]

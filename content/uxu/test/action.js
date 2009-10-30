@@ -1142,6 +1142,18 @@ function appendTo()
 	inputTextToField(options.element, options.input, true);
 }
  
+function pasteTo() 
+{
+	var options = _getInputOptionsFor(arguments);
+	inputTextToField(options.element, options.input, false, true);
+}
+ 
+function additionallyPasteTo() 
+{
+	var options = _getInputOptionsFor(arguments);
+	inputTextToField(options.element, options.input, true, true);
+}
+ 
 // lower level API 
 	
 var withIMECharacters = '\u3040-\uA4CF\uF900-\uFAFF'; 
