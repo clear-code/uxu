@@ -549,8 +549,8 @@ function _updateMouseEventOptionsOnElement(aOptions, aElement)
 		box.screenX + box.width < frameX ||
 		box.screenY + box.height < frameY
 		) {
-		if (!('screenX' in aOptions)) aOptions.screenX = box.screenX + Math.floor(box.width / 2);
-		if (!('screenY' in aOptions)) aOptions.screenY = box.screenY + Math.floor(box.height / 2);
+		aOptions.screenX = box.screenX + Math.floor(box.width / 2);
+		aOptions.screenY = box.screenY + Math.floor(box.height / 2);
 	}
 	else { // inside of screen:
 		var visibleX = box.screenX;
@@ -573,12 +573,12 @@ function _updateMouseEventOptionsOnElement(aOptions, aElement)
 			visibleH -= ((box.screenY + box.height) - (frameY + frameH));
 		}
 
-		if (!('screenX' in aOptions)) aOptions.screenX = visibleX + Math.floor(visibleW / 2);
-		if (!('screenY' in aOptions)) aOptions.screenY = visibleY + Math.floor(visibleH / 2);
+		aOptions.screenX = visibleX + Math.floor(visibleW / 2);
+		aOptions.screenY = visibleY + Math.floor(visibleH / 2);
 	}
 
-	if (!('x' in aOptions)) aOptions.x = aOptions.screenX - rootBox.screenX - frame.scrollX;
-	if (!('y' in aOptions)) aOptions.y = aOptions.screenY - rootBox.screenY - frame.scrollY;
+	aOptions.x = aOptions.screenX - rootBox.screenX - frame.scrollX;
+	aOptions.y = aOptions.screenY - rootBox.screenY - frame.scrollY;
 }
     
 // drag and drop: under construction 
