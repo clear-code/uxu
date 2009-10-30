@@ -9,7 +9,7 @@ var options = {
 		uri      : topDir+'tests/uxu/fixtures/action.xul',
 		name     : '_blank',
 		features : 'chrome,all,dialog=no',
-		width    : 500,
+		width    : 600,
 		height   : 300
 	};
 
@@ -24,35 +24,16 @@ function setUp()
 
 function tearDown()
 {
+	actionTearDown();
 	utils.tearDownTestWindow(options);
 }
 
-/* public */
-
-function generateMouseEventLogFromParams(aParam, aBox)
+function inPopup(aNode)
 {
-	var event = {
-		type     : aParam.type || 'click',
-		button   : aParam.button || 0,
-		detail   : aParam.detail || 0,
-		altKey   : aParam.altKey || false,
-		ctrlKey  : aParam.ctrlKey || false,
-		metaKey  : aParam.metaKey || false,
-		shiftKey : aParam.shiftKey || false,
-		screenX  : aParam.screenX || 0,
-		screenY  : aParam.screenY || 0
-	};
-	var rootBoxObject = utils.getBoxObjectFor(win.document.documentElement);
-	event.clientX = event.screenX - rootBoxObject.screenX;
-	event.clientY = event.screenY - rootBoxObject.screenY;
-	if (aBox) {
-		event.screenX = aBox.screenX + (aBox.width / 2);
-		event.screenY = aBox.screenY + (aBox.height / 2);
-		event.clientX = aBox.x + (aBox.width / 2);
-		event.clientY = aBox.y + (aBox.height / 2);
-	}
-	return event;
+	return $X('ancestor-or-self::*[contain(concat(" ",local-name()," "), " popup menupopup panel tooltip ")]', aNode).singleNodeValue;
 }
+
+/* public */
 
 function assertMouseEventFire(aFire, aToolbarButtonMenuShouldBeOpened)
 {
@@ -93,14 +74,14 @@ function assertMouseEventFire(aFire, aToolbarButtonMenuShouldBeOpened)
 			'menuitem',
 			function() {
 				popup.showPopup();
-				yield 300;
+				yield 500;
 			}
 		));
 	yield Do(aFire(
 			'menuitem-disabled',
 			function() {
 				popup.showPopup();
-				yield 300;
+				yield 500;
 			}
 		));
 	if (!isGecko18) {
@@ -108,14 +89,14 @@ function assertMouseEventFire(aFire, aToolbarButtonMenuShouldBeOpened)
 				'button-in-panel',
 				function() {
 					$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
-					yield 300;
+					yield 500;
 				}
 			));
 		yield Do(aFire(
 				'button-in-panel-disabled',
 				function() {
 					$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
-					yield 300;
+					yield 500;
 				}
 			));
 	}
@@ -125,10 +106,10 @@ function test_fireMouseEvent()
 {
 	function assertFire(aTargetId, aSetUpBeforeEvent)
 	{
-		var target = $(aTargetId, win);
-		var events, event, param;
-
-		events = assertEventsCount(0, win, win)
+		target = $(aTargetId, win);
+		rootBoxObject = utils.getBoxObjectFor(win.document.documentElement);
+		var event, param;
+		var events = assertEventsCount(0, win, win)
 
 		if (aSetUpBeforeEvent)
 			yield Do(aSetUpBeforeEvent);
@@ -137,37 +118,29 @@ function test_fireMouseEvent()
 		param = {
 			type     : 'mouseup',
 			button   : 1,
-			detail   : 0,
 			shiftKey : true,
 			screenX  : boxObject.screenX+10,
 			screenY  : boxObject.screenY+3
 		};
 		actionModule.fireMouseEvent(win, param);
 		events = assertEventsCount(1, win)
-
-		event = generateMouseEventLogFromParams(param);
-		event.target = aTargetId;
-		assert.equals(event, events[events.length-1]);
+		var detail = inPopup(target) ? 1 : 0 ;
+		assertMouseEventAt('mouseup', 1, param.screenX, param.screenY, param, detail, events[events.length-1])
 
 		if (aSetUpBeforeEvent)
 			yield Do(aSetUpBeforeEvent);
-
 
 		boxObject = utils.getBoxObjectFor(target);
 		param = {
 			type     : 'mousedown',
 			button   : 1,
-			detail   : 1,
 			ctrlKey  : true,
 			screenX  : boxObject.screenX+5,
 			screenY  : boxObject.screenY+5
 		};
 		actionModule.fireMouseEvent(win, param);
 		events = assertEventsCount(1, win)
-
-		event = generateMouseEventLogFromParams(param);
-		event.target = aTargetId;
-		assert.equals(event, events[events.length-1]);
+		assertMouseEventAt('mousedown', 1, param.screenX, param.screenY, param, 1, events[events.length-1])
 
 		if (aSetUpBeforeEvent)
 			yield Do(aSetUpBeforeEvent);
@@ -176,28 +149,16 @@ function test_fireMouseEvent()
 		param = {
 			type    : 'click',
 			button  : 2,
-			detail  : 1,
 			ctrlKey : true,
 			screenX : boxObject.screenX+5,
 			screenY : boxObject.screenY+5
-		}
+		};
 		actionModule.fireMouseEvent(win, param);
 		yield 100;
 		events = assertEventsCount(3, win)
-
-		event = generateMouseEventLogFromParams(param);
-		event.target = aTargetId;
-		event.type = 'mousedown';
-		assert.equals(event, events[events.length-3]);
-
-		event = generateMouseEventLogFromParams(param);
-		event.target = aTargetId;
-		event.type = 'mouseup';
-		assert.equals(event, events[events.length-2]);
-
-		event = generateMouseEventLogFromParams(param);
-		event.target = aTargetId;
-		assert.equals(event, events[events.length-1]);
+		assertMouseEventAt('mousedown', 2, param.screenX, param.screenY, param, 1, events[events.length-3])
+		assertMouseEventAt('mouseup', 2, param.screenX, param.screenY, param, 1, events[events.length-2])
+		assertMouseEventAt('click', 2, param.screenX, param.screenY, param, 1, events[events.length-1])
 	}
 
 	yield Do(assertMouseEventFire(assertFire));
@@ -207,107 +168,69 @@ function test_fireMouseEventOnElement()
 {
 	function assertFire(aTargetId, aSetUpBeforeEvent)
 	{
-		var target = $(aTargetId, win);
-		var events, event, param;
-
-		events = assertEventsCount(0, win)
+		target = $(aTargetId, win);
+		rootBoxObject = utils.getBoxObjectFor(win.document.documentElement);
+		var event, param;
+		var events = assertEventsCount(0, win)
 
 		if (aSetUpBeforeEvent)
 			yield Do(aSetUpBeforeEvent);
 
+		boxObject = utils.getBoxObjectFor(target);
 		param = {
 			type     : 'mouseup',
 			button   : 1,
-			detail   : 0,
 			shiftKey : true
-		}
+		};
 		actionModule.fireMouseEventOnElement(target, param);
 		events = assertEventsCount(1, win)
-
-		event = generateMouseEventLogFromParams(param);
-		event.target = aTargetId;
-		assert.equals(event, events[events.length-1]);
-
+		var detail = inPopup(target) ? 1 : 0 ;
+		assertMouseEventOn('mouseup', 1, param, detail, events[events.length-1]);
 
 		if (aSetUpBeforeEvent)
 			yield Do(aSetUpBeforeEvent);
 
+		boxObject = utils.getBoxObjectFor(target);
 		param = {
 			type     : 'mousedown',
 			button   : 1,
-			detail   : 1,
 			ctrlKey  : true
 		};
 		actionModule.fireMouseEventOnElement(target, param);
 		events = assertEventsCount(1, win)
-
-		event = generateMouseEventLogFromParams(param);
-		event.target = aTargetId;
-		assert.equals(event, events[events.length-1]);
-
+		assertMouseEventOn('mousedown', 1, param, 1, events[events.length-1]);
 
 		if (aSetUpBeforeEvent)
 			yield Do(aSetUpBeforeEvent);
 
+		boxObject = utils.getBoxObjectFor(target);
 		param = {
 			type    : 'click',
 			button  : 2,
-			detail  : 1,
 			ctrlKey : true
-		}
+		};
 		actionModule.fireMouseEventOnElement(target, param);
 		yield 100;
 		events = assertEventsCount(3, win)
-
-		event = generateMouseEventLogFromParams(param);
-		event.target = aTargetId;
-		event.type = 'mousedown';
-		assert.equals(event, events[events.length-3]);
-
-		event = generateMouseEventLogFromParams(param);
-		event.target = aTargetId;
-		event.type = 'mouseup';
-		assert.equals(event, events[events.length-2]);
-
-		event = generateMouseEventLogFromParams(param);
-		event.target = aTargetId;
-		assert.equals(event, events[events.length-1]);
+		assertMouseEventOn('mousedown', 2, param, 1, events[events.length-3]);
+		assertMouseEventOn('mouseup', 2, param, 1, events[events.length-2]);
+		assertMouseEventOn('click', 2, param, 1, events[events.length-1]);
 	}
 
 	yield Do(assertMouseEventFire(assertFire));
 }
 
 
-function generateKeyEventLogFromParams(aParam)
-{
-	var event = {
-		type     : aParam.type || 'keypress',
-		keyCode  : aParam.keyCode || 0,
-		charCode : aParam.charCode || 0,
-		altKey   : aParam.altKey || false,
-		ctrlKey  : aParam.ctrlKey || false,
-		metaKey  : aParam.metaKey || false,
-		shiftKey : aParam.shiftKey || false
-	};
-	if (event.type != 'keypress' &&
-		event.charCode &&
-		!event.keyCode) {
-		event.keyCode = Ci.nsIDOMKeyEvent['DOM_VK_'+String.fromCharCode(event.charCode).toUpperCase()];
-		event.charCode = 0;
-	}
-	return event;
-}
-
 function test_fireKeyEventOnElement()
 {
 	function assertFire(aTargetId, aSetUpBeforeEvent)
 	{
-		var target = $(aTargetId, win);
+		target = $(aTargetId, win);
 		if ('focus' in target) target.focus();
-		var boxObject = utils.getBoxObjectFor(target);
-		var events, event, param;
-
-		events = assertEventsCount(0, win)
+		boxObject = utils.getBoxObjectFor(target);
+		rootBoxObject = utils.getBoxObjectFor(win.document.documentElement);
+		var event, param;
+		var events = assertEventsCount(0, win)
 
 		if (aSetUpBeforeEvent)
 			yield Do(aSetUpBeforeEvent);
@@ -319,11 +242,7 @@ function test_fireKeyEventOnElement()
 		};
 		actionModule.fireKeyEventOnElement(target, param);
 		events = assertEventsCount(1, win)
-
-		event = generateKeyEventLogFromParams(param);
-		event.target = aTargetId;
-		assert.equals(event, events[events.length-1]);
-
+		assertKeyEvent('keydown', Ci.nsIDOMKeyEvent.DOM_VK_DELETE, 0, param, events[events.length-1]);
 
 		if (aSetUpBeforeEvent)
 			yield Do(aSetUpBeforeEvent);
@@ -335,11 +254,7 @@ function test_fireKeyEventOnElement()
 		};
 		actionModule.fireKeyEventOnElement(target, param);
 		events = assertEventsCount(1, win)
-
-		event = generateKeyEventLogFromParams(param);
-		event.target = aTargetId;
-		assert.equals(event, events[events.length-1]);
-
+		assertKeyEvent('keyup', 0, 'f', param, events[events.length-1]);
 
 		if (aSetUpBeforeEvent)
 			yield Do(aSetUpBeforeEvent);
@@ -349,25 +264,13 @@ function test_fireKeyEventOnElement()
 			charCode : 'c'.charCodeAt(0),
 			ctrlKey  : true,
 			shiftKey : true
-		}
+		};
 		actionModule.fireKeyEventOnElement(target, param);
 		yield 100;
 		events = assertEventsCount(3, win)
-
-		param.type = 'keydown';
-		event = generateKeyEventLogFromParams(param);
-		event.target = aTargetId;
-		assert.equals(event, events[events.length-3]);
-
-		param.type = 'keyup';
-		event = generateKeyEventLogFromParams(param);
-		event.target = aTargetId;
-		assert.equals(event, events[events.length-2]);
-
-		param.type = 'keypress';
-		event = generateKeyEventLogFromParams(param);
-		event.target = aTargetId;
-		assert.equals(event, events[events.length-1]);
+		assertKeyEvent('keydown', 0, 'c', param, events[events.length-3]);
+		assertKeyEvent('keyup', 0, 'c', param, events[events.length-2]);
+		assertKeyEvent('keypress', 0, 'c', param, events[events.length-1]);
 	}
 
 	yield Do(assertFire('button'));
@@ -439,6 +342,8 @@ function test_inputTextToField()
 		events[events.length-1]
 	);
 }
+
+
 
 function assertXULCommandEventFireOrNotFire(aFire, aNotFire, aToolbarButtonMenuShouldBeOpened)
 {
@@ -573,33 +478,21 @@ function test_fireXULCommandEventByMouseEvent()
 {
 	function assertFire(aTargetId)
 	{
+		target = $(aTargetId, win);
 		var event, param;
-
 		var events = assertEventsCount(0, win)
 
+		boxObject = utils.getBoxObjectFor(target);
+		rootBoxObject = utils.getBoxObjectFor(win.document.documentElement);
 		param = {
 			type     : 'click',
-			button   : 0,
-			detail   : 1
-		}
-		actionModule.fireMouseEventOnElement($(aTargetId, win), param);
+			button   : 0
+		};
+		actionModule.fireMouseEventOnElement(target, param);
 		events = assertEventsCount(4, win)
-
-		event = generateMouseEventLogFromParams(param);
-		event.target = aTargetId;
-		event.type = 'mousedown';
-		assert.equals(event, events[events.length-4]);
-
-		event = generateMouseEventLogFromParams(param);
-		event.target = aTargetId;
-		event.type = 'mouseup';
-		assert.equals(event, events[events.length-3]);
-
-		event = generateMouseEventLogFromParams(param);
-		event.target = aTargetId;
-		event.type = 'click';
-		assert.equals(event, events[events.length-2]);
-
+		assertMouseEventOn('mousedown', 0, param, 1, events[events.length-4]);
+		assertMouseEventOn('mouseup', 0, param, 1, events[events.length-3]);
+		assertMouseEventOn('click', 0, param, 1, events[events.length-2]);
 		assert.equals(
 			{ type : 'command', target : aTargetId },
 			events[events.length-1]
@@ -608,31 +501,21 @@ function test_fireXULCommandEventByMouseEvent()
 
 	function assertNotFire(aTargetId)
 	{
+		target = $(aTargetId, win);
 		var event, param;
 		var events = assertEventsCount(0, win)
 
+		boxObject = utils.getBoxObjectFor(target);
+		rootBoxObject = utils.getBoxObjectFor(win.document.documentElement);
 		param = {
 			type     : 'click',
-			button   : 0,
-			detail   : 1
-		}
-		actionModule.fireMouseEventOnElement($(aTargetId, win), param);
+			button   : 0
+		};
+		actionModule.fireMouseEventOnElement(target, param);
 		events = assertEventsCount(3, win)
-
-		event = generateMouseEventLogFromParams(param);
-		event.target = aTargetId;
-		event.type = 'mousedown';
-		assert.equals(event, events[events.length-3]);
-
-		event = generateMouseEventLogFromParams(param);
-		event.target = aTargetId;
-		event.type = 'mouseup';
-		assert.equals(event, events[events.length-2]);
-
-		event = generateMouseEventLogFromParams(param);
-		event.target = aTargetId;
-		event.type = 'click';
-		assert.equals(event, events[events.length-1]);
+		assertMouseEventOn('mousedown', 0, param, 1, events[events.length-3]);
+		assertMouseEventOn('mouseup', 0, param, 1, events[events.length-2]);
+		assertMouseEventOn('click', 0, param, 1, events[events.length-1]);
 	}
 
 	yield Do(assertXULCommandEventFireOrNotFire(assertFire, assertNotFire, true));
@@ -643,7 +526,7 @@ function test_fireXULCommandEventByKeyEvent()
 {
 	function assertFire(aTargetId, aKeyEventsShouldBeIgnored)
 	{
-		var target = $(aTargetId, win);
+		target = $(aTargetId, win);
 		if ('focus' in target) target.focus();
 		var event, param;
 		var events = assertEventsCount(0, win)
@@ -651,7 +534,7 @@ function test_fireXULCommandEventByKeyEvent()
 		param = {
 			type     : 'keypress',
 			keyCode  : Ci.nsIDOMKeyEvent.DOM_VK_RETURN
-		}
+		};
 		actionModule.fireKeyEventOnElement(target, param);
 		yield 100;
 		if (aKeyEventsShouldBeIgnored) {
@@ -659,23 +542,10 @@ function test_fireXULCommandEventByKeyEvent()
 		}
 		else {
 			events = assertEventsCount(4, win)
-
-			param.type = 'keydown';
-			event = generateKeyEventLogFromParams(param);
-			event.target = aTargetId;
-			assert.equals(event, events[events.length-4]);
-
-			param.type = 'keyup';
-			event = generateKeyEventLogFromParams(param);
-			event.target = aTargetId;
-			assert.equals(event, events[events.length-3]);
-
-			param.type = 'keypress';
-			event = generateKeyEventLogFromParams(param);
-			event.target = aTargetId;
-			assert.equals(event, events[events.length-2]);
+			assertKeyEvent('keydown', param.keyCode, 0, param, events[events.length-4]);
+			assertKeyEvent('keyup', param.keyCode, 0, param, events[events.length-3]);
+			assertKeyEvent('keypress', param.keyCode, 0, param, events[events.length-2]);
 		}
-
 		assert.equals(
 			{ type : 'command', target : aTargetId },
 			events[events.length-1]
@@ -684,7 +554,7 @@ function test_fireXULCommandEventByKeyEvent()
 
 	function assertNotFire(aTargetId, aKeyEventsShouldBeIgnored)
 	{
-		var target = $(aTargetId, win);
+		target = $(aTargetId, win);
 		if ('focus' in target) target.focus();
 		var event, param;
 		var events = assertEventsCount(0, win)
@@ -692,7 +562,7 @@ function test_fireXULCommandEventByKeyEvent()
 		param = {
 			type     : 'keypress',
 			keyCode  : Ci.nsIDOMKeyEvent.DOM_VK_RETURN
-		}
+		};
 		actionModule.fireKeyEventOnElement(target, param);
 		yield 100;
 		events = assertEventsCount(0, win)

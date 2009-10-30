@@ -3,6 +3,15 @@ function actionSetUp()
 	lastCount = 0;
 	target = null;
 	boxObject = null;
+	rootBoxObject = null;
+}
+
+function actionTearDown()
+{
+	lastCount = 0;
+	target = null;
+	boxObject = null;
+	rootBoxObject = null;
 }
 
 
@@ -25,6 +34,7 @@ function assertEventsCount(aCount, aOwner)
 
 var target;
 var boxObject;
+var rootBoxObject;
 
 function assertMouseEventAt(aType, aButton, aScreenX, aScreenY, aModifiers, aDetail, aEvent)
 {
@@ -66,14 +76,15 @@ function generateMouseEventLog(aType, aButton, aScreenX, aScreenY, aModifiers, a
 			case 'dblclick': event.detail = 2; break;
 		}
 	}
-	var rootBoxObject = utils.getBoxObjectFor(content.document.body);
-	event.clientX = event.screenX - rootBoxObject.screenX;
-	event.clientY = event.screenY - rootBoxObject.screenY;
+	var rootBox = rootBoxObject || utils.getBoxObjectFor(content.document.body);
+	event.clientX = event.screenX - rootBox.screenX;
+	event.clientY = event.screenY - rootBox.screenY;
 	if (aBox) {
-		event.screenX = aBox.screenX + (aBox.width / 2);
-		event.screenY = aBox.screenY + (aBox.height / 2);
-		event.clientX = aBox.x + (aBox.width / 2);
-		event.clientY = aBox.y + (aBox.height / 2);
+		event.screenX = aBox.screenX + Math.floor(aBox.width / 2);
+		event.screenY = aBox.screenY + Math.floor(aBox.height / 2);
+		let frame = rootBox.element.ownerDocument.defaultView;
+		event.clientX = event.screenX - rootBox.screenX - frame.scrollX;
+		event.clientY = event.screenY - rootBox.screenY - frame.scrollY;
 	}
 	return event;
 }

@@ -13,6 +13,7 @@ function setUp()
 
 function tearDown()
 {
+	actionTearDown();
 	yield Do(utils.loadURI('about:blank'));
 }
 

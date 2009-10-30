@@ -14,6 +14,7 @@ function setUp()
 
 function tearDown()
 {
+	actionTearDown();
 	yield Do(utils.loadURI('about:blank'));
 }
 
@@ -89,9 +90,8 @@ function test_fireMouseEvent()
 		ctrlKey  : true,
 		screenX  : boxObject.screenX+10,
 		screenY  : boxObject.screenY+10
-	}
-	x = boxObject.screenX+10;
-	y = boxObject.screenY+10;
+	};
+	[x, y] = [param.screenX, param.screenY];
 	actionModule.fireMouseEvent(content, param);
 	events = assertEventsCount(1);
 	assertMouseEventAt('mousedown', 2, x, y, param, 1, events[events.length-1]);
@@ -102,9 +102,8 @@ function test_fireMouseEvent()
 		altKey   : true,
 		screenX  : boxObject.screenX+20,
 		screenY  : boxObject.screenY+20
-	}
-	x = boxObject.screenX+20;
-	y = boxObject.screenY+20;
+	};
+	[x, y] = [param.screenX, param.screenY];
 	actionModule.fireMouseEvent(content, param);
 	events = assertEventsCount(1);
 	assertMouseEventAt('mouseup', 1, x, y, param, 0, events[events.length-1]);
@@ -115,9 +114,8 @@ function test_fireMouseEvent()
 		shiftKey : true,
 		screenX  : boxObject.screenX+30,
 		screenY  : boxObject.screenY+30
-	}
-	x = boxObject.screenX+30;
-	y = boxObject.screenY+30;
+	};
+	[x, y] = [param.screenX, param.screenY];
 	actionModule.fireMouseEvent(content, param);
 	events = assertEventsCount(3);
 	assertMouseEventAt('mousedown', 0, x, y, param, 1, events[events.length-3]);
@@ -130,9 +128,8 @@ function test_fireMouseEvent()
 		shiftKey : true,
 		screenX  : boxObject.screenX+40,
 		screenY  : boxObject.screenY+40
-	}
-	x = boxObject.screenX+40;
-	y = boxObject.screenY+40;
+	};
+	[x, y] = [param.screenX, param.screenY];
 	actionModule.fireMouseEvent(content, param);
 	events = assertEventsCount(7);
 	assertMouseEventAt('mousedown', 0, x, y, param, 1, events[events.length-7]);
