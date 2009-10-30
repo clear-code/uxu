@@ -549,8 +549,8 @@ function _updateMouseEventOptionsOnElement(aOptions, aElement)
 		box.screenX + box.width < frameX ||
 		box.screenY + box.height < frameY
 		) {
-		if (!('screenX' in aOptions)) aOptions.screenX = box.screenX + parseInt(box.width / 2);
-		if (!('screenY' in aOptions)) aOptions.screenY = box.screenY + parseInt(box.height / 2);
+		if (!('screenX' in aOptions)) aOptions.screenX = box.screenX + Math.floor(box.width / 2);
+		if (!('screenY' in aOptions)) aOptions.screenY = box.screenY + Math.floor(box.height / 2);
 	}
 	else { // inside of screen:
 		var visibleX = box.screenX;
@@ -573,8 +573,8 @@ function _updateMouseEventOptionsOnElement(aOptions, aElement)
 			visibleH -= ((box.screenY + box.height) - (frameY + frameH));
 		}
 
-		if (!('screenX' in aOptions)) aOptions.screenX = visibleX + parseInt(visibleW / 2);
-		if (!('screenY' in aOptions)) aOptions.screenY = visibleY + parseInt(visibleH / 2);
+		if (!('screenX' in aOptions)) aOptions.screenX = visibleX + Math.floor(visibleW / 2);
+		if (!('screenY' in aOptions)) aOptions.screenY = visibleY + Math.floor(visibleH / 2);
 	}
 
 	if (!('x' in aOptions)) aOptions.x = aOptions.screenX - rootBox.screenX - frame.scrollX;
@@ -679,10 +679,10 @@ function dragMove(aFromElement, aToElement, aOptions)
 	var toBox = getBoxObjectFor(aToElement);
 	return dragMove(
 			win,
-			fromBox.screenX + parseInt(fromBox.width / 2),
-			fromBox.screenY + parseInt(fromBox.height / 2),
-			toBox.screenX + parseInt(toBox.width / 2),
-			toBox.screenY + parseInt(toBox.height / 2),
+			fromBox.screenX + Math.floor(fromBox.width / 2),
+			fromBox.screenY + Math.floor(fromBox.height / 2),
+			toBox.screenX + Math.floor(toBox.width / 2),
+			toBox.screenY + Math.floor(toBox.height / 2),
 			aOptions
 		);
 };
@@ -722,10 +722,10 @@ function dragAndDropOnElement(aFromElement, aToElement, aOptions)
 	var toBox = getBoxObjectFor(aToElement);
 	return dragAndDrop(
 			win,
-			fromBox.screenX + parseInt(fromBox.width / 2),
-			fromBox.screenY + parseInt(fromBox.height / 2),
-			toBox.screenX + parseInt(toBox.width / 2),
-			toBox.screenY + parseInt(toBox.height / 2),
+			fromBox.screenX + Math.floor(fromBox.width / 2),
+			fromBox.screenY + Math.floor(fromBox.height / 2),
+			toBox.screenX + Math.floor(toBox.width / 2),
+			toBox.screenY + Math.floor(toBox.height / 2),
 			aOptions
 		);
 };
