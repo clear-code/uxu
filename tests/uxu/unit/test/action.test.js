@@ -298,7 +298,6 @@ function test_keyupOn()
 function test_inputTo()
 {
 	var input = $('input');
-	var log = $('log');
 	var events;
 	assert.equals('', input.value);
 
