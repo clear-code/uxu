@@ -470,8 +470,10 @@ var runnerListener = {
 
 
 	// events from testcases
+	doneReportCount : 0,
 	onTestCaseStart : function(aEvent)
 	{
+		this.doneReportCount = 0;
 		gLog.items = aEvent.data.log.items;
 		gRemoteRun.onEvent('progress');
 		var report = getReport(aEvent.data.testCase);
@@ -488,9 +490,12 @@ var runnerListener = {
 	{
 		gLog.items = aEvent.data.log.items;
 		gRemoteRun.onEvent('progress');
-		gLog.lastItem.results.forEach(function(aOneResult) {
-			fillReportFromResult(aEvent.data.testCase, aOneResult);
-		});
+		gLog.lastItem.results
+			.slice(this.doneReportCount)
+			.forEach(function(aOneResult) {
+				fillReportFromResult(aEvent.data.testCase, aOneResult);
+			});
+		this.doneReportCount = gLog.lastItem.results.length;
 	},
 	onTestCaseRemoteTestFinish : function(aEvent)
 	{

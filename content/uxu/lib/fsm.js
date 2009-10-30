@@ -1,5 +1,5 @@
 // from MozLab
-var MAX_NEST = 50;
+var MAX_NEST = 100;
 function go(aStateName, aContext, aStateHandlers, aStateTransitions, aEventHandlers, aNest)
 {
 	if (!aNest) aNest = { count : 0 };
