@@ -64,24 +64,24 @@ function fireMouseEvent(aWindow, aOptions)
 
 	if (!aOptions) aOptions = {};
 
-	this._normalizeScreenAndClientPoint(aOptions, aWindow);
+	_normalizeScreenAndClientPoint(aOptions, aWindow);
 	var x = aOptions.x;
 	var y = aOptions.y;
 	var screenX = aOptions.screenX;
 	var screenY = aOptions.screenY;
 
-	var win = this.getWindowFromScreenPoint(aWindow, screenX, screenY);
+	var win = getFrameFromScreenPoint(aWindow, screenX, screenY);
 	if (!win ||
 		!(win instanceof Ci.nsIDOMWindow))
 		throw new Error('action.fireMouseEvent::there is no frame at ['+screenX+', '+screenY+']!');
 
-	var utils = this._getWindowUtils(win);
-	var node = this.getElementFromScreenPoint(aWindow, screenX, screenY);
+	var utils = _getWindowUtils(win);
+	var node = getElementFromScreenPoint(aWindow, screenX, screenY);
 
 	if (
 		'sendMouseEvent' in utils &&
 		!shouldEmulateMouseEvent &&
-		!this._getOwnerPopup(node)
+		!_getOwnerPopup(node)
 		) {
 		const nsIDOMNSEvent = Ci.nsIDOMNSEvent;
 		var flags = 0;
@@ -114,15 +114,15 @@ function fireMouseEvent(aWindow, aOptions)
 			default:
 				utils.sendMouseEvent('mousedown', x, y, button, detail, flags);
 				utils.sendMouseEvent('mouseup', x, y, button, detail, flags);
-//				this._emulateClickOnXULElement(node, aOptions);
+//				_emulateClickOnXULElement(node, aOptions);
 				break;
 		}
 		return;
 	}
 
 	if (node) {
-		this.fireMouseEventOnElement(node, aOptions);
-		this._emulateClickOnXULElement(node, aOptions);
+		fireMouseEventOnElement(node, aOptions);
+		_emulateClickOnXULElement(node, aOptions);
 	}
 	else
 		throw new Error('action.fireMouseEvent::there is no element at ['+x+','+y+']!');
@@ -131,7 +131,7 @@ function fireMouseEvent(aWindow, aOptions)
 function _emulateClickOnXULElement(aElement, aOptions) 
 {
 	if (!aOptions) aOptions = {};
-	this._emulateActionOnXULElement(
+	_emulateActionOnXULElement(
 		aElement,
 		aOptions,
 		aOptions.type == 'click' && aOptions.button == 0
@@ -155,15 +155,15 @@ function fireMouseEventOnElement(aElement, aOptions)
 		!(aElement instanceof Ci.nsIDOMElement))
 		throw new Error('action.fireMouseEventOnElement::['+aElement+'] is not an element!');
 
-	var utils = this._getWindowUtils(aElement.ownerDocument.defaultView);
+	var utils = _getWindowUtils(aElement.ownerDocument.defaultView);
 	if (!aOptions) aOptions = { type : 'click' };
 	if (
 		'sendMouseEvent' in utils &&
 		!shouldEmulateMouseEvent &&
-		!this._getOwnerPopup(aElement)
+		!_getOwnerPopup(aElement)
 		) {
-		this._updateMouseEventOptionsOnElement(aOptions, aElement);
-		this.fireMouseEvent(aElement.ownerDocument.defaultView, aOptions);
+		_updateMouseEventOptionsOnElement(aOptions, aElement);
+		fireMouseEvent(aElement.ownerDocument.defaultView, aOptions);
 		return;
 	}
 
@@ -177,13 +177,13 @@ function fireMouseEventOnElement(aElement, aOptions)
 		case 'dblclick':
 			options = { type : 'mousedown', detail : detail };
 			options.__proto__ = aOptions;
-			this.fireMouseEventOnElement(aElement, options);
+			fireMouseEventOnElement(aElement, options);
 			options.type = 'mouseup';
-			this.fireMouseEventOnElement(aElement, options);
+			fireMouseEventOnElement(aElement, options);
 			// on Gecko 1.8, we have to fire click event manually!
 			if (!('sendMouseEvent' in utils)) {
 				options.type = 'click';
-				event = this._createMouseEventOnElement(aElement, options);
+				event = _createMouseEventOnElement(aElement, options);
 				if (event && aElement) aElement.dispatchEvent(event);
 			}
 			detail++;
@@ -191,24 +191,24 @@ function fireMouseEventOnElement(aElement, aOptions)
 		default:
 			options = { type : 'mousedown', detail : detail };
 			options.__proto__ = aOptions;
-			this.fireMouseEventOnElement(aElement, options);
+			fireMouseEventOnElement(aElement, options);
 			options.type = 'mouseup';
-			this.fireMouseEventOnElement(aElement, options);
+			fireMouseEventOnElement(aElement, options);
 			// on Gecko 1.8, we have to fire click event manually!
 			if (!('sendMouseEvent' in utils) && aOptions.type == 'dblclick') {
 				options.type = 'click';
-				event = this._createMouseEventOnElement(aElement, options);
+				event = _createMouseEventOnElement(aElement, options);
 				if (event && aElement) aElement.dispatchEvent(event);
 			}
 			break;
 	}
-	event = this._createMouseEventOnElement(aElement, aOptions);
+	event = _createMouseEventOnElement(aElement, aOptions);
 	if (event && aElement)
 		aElement.dispatchEvent(event);
 	if (aOptions.type != 'mousedown' &&
 		aOptions.type != 'mouseup' &&
 		aOptions.type != 'dblclick')
-		this._emulateClickOnXULElement(aElement, aOptions);
+		_emulateClickOnXULElement(aElement, aOptions);
 };
 	
 function _createMouseEventOnElement(aElement, aOptions) 
@@ -219,7 +219,7 @@ function _createMouseEventOnElement(aElement, aOptions)
 
 	if (!aOptions) aOptions = {};
 	if (!aElement) return null;
-	this._updateMouseEventOptionsOnElement(aOptions, aElement);
+	_updateMouseEventOptionsOnElement(aOptions, aElement);
 
 	var event = aElement.ownerDocument.createEvent('MouseEvents');
 	event.initMouseEvent(
@@ -247,7 +247,7 @@ function _updateMouseEventOptionsOnElement(aOptions, aElement)
 	if (aElement.nodeType != aElement.ELEMENT_NODE) aElement = aElement.parentNode;
 	if (!aOptions) aOptions = {};
 
-	var doc = this._getDocumentFromEventTarget(aElement);
+	var doc = _getDocumentFromEventTarget(aElement);
 	var frame = doc.defaultView;
 	var box = getBoxObjectFor(aElement);
 	var root = doc.documentElement;
@@ -300,28 +300,28 @@ function dragStart(aWindow, aOptions)
 {
 	if (!aOptions) aOptions = {};
 	aOptions.type = 'mousedown';
-	this.fireMouseEvent(aWindow, aOptions);
+	fireMouseEvent(aWindow, aOptions);
 };
 	
 function dragStartOnElement(aElement, aOptions) 
 {
 	if (!aOptions) aOptions = {};
 	aOptions.type = 'mousedown';
-	this.fireMouseEventOnElement(aElement, aOptions);
+	fireMouseEventOnElement(aElement, aOptions);
 };
   
 function dragEnd(aWindow, aOptions) 
 {
 	if (!aOptions) aOptions = {};
 	aOptions.type = 'mouseup';
-	this.fireMouseEvent(aWindow, aOptions);
+	fireMouseEvent(aWindow, aOptions);
 };
 	
 function dragEndOnElement(aElement, aOptions) 
 {
 	if (!aOptions) aOptions = {};
 	aOptions.type = 'mouseup';
-	this.fireMouseEventOnElement(aElement, aOptions);
+	fireMouseEventOnElement(aElement, aOptions);
 };
   
 function dragMove(aWindow, aFromX, aFromY, aToX, aToY, aOptions) 
@@ -361,7 +361,7 @@ function dragMove(aWindow, aFromX, aFromY, aToX, aToY, aOptions)
 			aOptions.type = 'mousemove';
 			aOptions.screenX = x;
 			aOptions.screenY = y;
-			_this.fireMouseEvent(aWindow, aOptions);
+			fireMouseEvent(aWindow, aOptions);
 			yield;
 			if (x == aToX && y == aToY) break;
 		}
@@ -390,7 +390,7 @@ function dragMove(aFromElement, aToElement, aOptions)
 	var win = doc.defaultView;
 	var fromBox = getBoxObjectFor(aFromElement);
 	var toBox = getBoxObjectFor(aToElement);
-	return this.dragMove(
+	return dragMove(
 			win,
 			fromBox.screenX + parseInt(fromBox.width / 2),
 			fromBox.screenY + parseInt(fromBox.height / 2),
@@ -405,17 +405,17 @@ function dragAndDrop(aWindow, aFromX, aFromY, aToX, aToY, aOptions)
 	if (!aOptions) aOptions = {};
 	aOptions.screenX = aFromX;
 	aOptions.screenY = aFromY;
-	this.dragStart(aWindow, aOptions);
+	dragStart(aWindow, aOptions);
 	var dragEndFlag = { value : false };
 	var _this = this;
 	aWindow.setTimeout(function() {
-		var flag = _this.dragMove(aWindow, aFromX, aFromY, aToX, aToY, aOptions);
+		var flag = dragMove(aWindow, aFromX, aFromY, aToX, aToY, aOptions);
 		var timer = aWindow.setInterval(function() {
 			if (!flag.value) return;
 			aWindow.clearInterval(timer);
 			aOptions.screenX = aToX;
 			aOptions.screenY = aToY;
-			_this.dragEnd(aWindow, aOptions);
+			dragEnd(aWindow, aOptions);
 			dragEndFlag.value = true;
 		}, 10);
 	}, 0);
@@ -433,7 +433,7 @@ function dragAndDropOnElement(aFromElement, aToElement, aOptions)
 	var win = doc.defaultView;
 	var fromBox = getBoxObjectFor(aFromElement);
 	var toBox = getBoxObjectFor(aToElement);
-	return this.dragAndDrop(
+	return dragAndDrop(
 			win,
 			fromBox.screenX + parseInt(fromBox.width / 2),
 			fromBox.screenY + parseInt(fromBox.height / 2),
@@ -452,7 +452,7 @@ function fireKeyEventOnElement(aElement, aOptions)
 		throw new Error('action.fireKeyEventOnElement::['+aElement+'] is not an element!');
 
 	if (aElement instanceof Ci.nsIDOMXULElement) {
-		let dispatcher = this._getXULKeyEventDispatcher(aElement);
+		let dispatcher = _getXULKeyEventDispatcher(aElement);
 		if (!dispatcher || dispatcher.getAttribute('disabled') == 'true')
 			return;
 	}
@@ -465,8 +465,8 @@ function fireKeyEventOnElement(aElement, aOptions)
 		aElement.inputField instanceof Ci.nsIDOMElement)
 		aElement = aElement.inputField;
 
-	var doc = this._getDocumentFromEventTarget(aElement);
-	var utils = this._getWindowUtils(doc.defaultView);
+	var doc = _getDocumentFromEventTarget(aElement);
+	var utils = _getWindowUtils(doc.defaultView);
 	if ('sendKeyEvent' in utils &&
 		!shouldEmulateKeyEvent) {
 		const nsIDOMNSEvent = Ci.nsIDOMNSEvent;
@@ -492,15 +492,15 @@ function fireKeyEventOnElement(aElement, aOptions)
 		default:
 			var options = { type : 'keydown' };
 			options.__proto__ = aOptions;
-			this.fireKeyEventOnElement(aElement, options);
+			fireKeyEventOnElement(aElement, options);
 			options.type = 'keyup';
-			this.fireKeyEventOnElement(aElement, options);
+			fireKeyEventOnElement(aElement, options);
 			break;
 	}
-	aElement.dispatchEvent(this._createKeyEventOnElement(aElement, aOptions));
+	aElement.dispatchEvent(_createKeyEventOnElement(aElement, aOptions));
 	if (aOptions.type != 'keydown' &&
 		aOptions.type != 'keyup')
-		this._emulateEnterOnXULElement(aElement, aOptions);
+		_emulateEnterOnXULElement(aElement, aOptions);
 };
 	
 function _createKeyEventOnElement(aElement, aOptions) 
@@ -520,7 +520,7 @@ function _createKeyEventOnElement(aElement, aOptions)
 	}
 
 	var node = aElement;
-	var doc = this._getDocumentFromEventTarget(node);
+	var doc = _getDocumentFromEventTarget(node);
 	var event = doc.createEvent('KeyEvents');
 	event.initKeyEvent(
 		(aOptions.type || 'keypress'),
@@ -540,7 +540,7 @@ function _createKeyEventOnElement(aElement, aOptions)
 function _emulateEnterOnXULElement(aElement, aOptions) 
 {
 	if (!aOptions) aOptions = {};
-	this._emulateActionOnXULElement(
+	_emulateActionOnXULElement(
 		aElement,
 		aOptions,
 		aOptions.type == 'keypress' &&
@@ -560,11 +560,11 @@ function fireXULCommandEvent(aWindow, aOptions)
 		throw new Error('action.fireXULCommandEvent::['+aWindow+'] is not a frame!');
 
 	if (!aOptions) aOptions = {};
-	this._normalizeScreenAndClientPoint(aOptions, aWindow);
-	var node = this.getElementFromScreenPoint(aWindow, aOptions.screenX, aOptions.screenY);
+	_normalizeScreenAndClientPoint(aOptions, aWindow);
+	var node = getElementFromScreenPoint(aWindow, aOptions.screenX, aOptions.screenY);
 	if (!node)
 		throw new Error('action.fireXULCommandEvent::there is no element at ['+aOptions.screenX+','+aOptions.screenY+']!');
-	return this.fireXULCommandEventOnElement(node, aOptions);
+	return fireXULCommandEventOnElement(node, aOptions);
 };
  
 function fireXULCommandEventOnElement(aElement, aOptions) 
@@ -573,13 +573,13 @@ function fireXULCommandEventOnElement(aElement, aOptions)
 		!(aElement instanceof Ci.nsIDOMElement))
 		throw new Error('action.fireXULCommandEventOnElement:['+aElement+'] is not an element!');
 
-	aElement = this._getXULCommandEventDispatcher(aElement);
+	aElement = _getXULCommandEventDispatcher(aElement);
 	if (!aElement || aElement.getAttribute('disabled') == 'true')
 		return false;
 
-	var event = this._createMouseEventOnElement(aElement, aOptions);
+	var event = _createMouseEventOnElement(aElement, aOptions);
 	if (event) {
-		aElement.dispatchEvent(this._createXULCommandEvent(event));
+		aElement.dispatchEvent(_createXULCommandEvent(event));
 		if (aElement.localName == 'menuitem') {
 			aElement.ownerDocument.defaultView.setTimeout(function(aSelf) {
 				var popup = aElement;
@@ -644,7 +644,7 @@ function _emulateActionOnXULElement(aElement, aOptions, aIsSimpleGesture)
 {
 	if (!aElement) return;
 
-	var target = this._getXULCommandEventDispatcher(aElement);
+	var target = _getXULCommandEventDispatcher(aElement);
 	if (!target || target.getAttribute('disabled') == 'true') return;
 
 	if (!aOptions) aOptions = {};
@@ -737,7 +737,7 @@ function _emulateActionOnXULElement(aElement, aOptions, aIsSimpleGesture)
 
 	if (!shouldSendXULCommandEvent) return;
 	try {
-		this.fireXULCommandEventOnElement(target, aOptions);
+		fireXULCommandEventOnElement(target, aOptions);
 	}
 	catch(e) {
 		dump(e+'\n');
@@ -793,7 +793,7 @@ function inputTextToField(aElement, aValue, aAppend, aDontFireKeyEvents)
 		aElement.value += (aValue || '');
 	}
 
-	var doc = this._getDocumentFromEventTarget(aElement);
+	var doc = _getDocumentFromEventTarget(aElement);
 	var event = doc.createEvent('UIEvents');
 	event.initUIEvent('input', true, true, doc.defaultView, 0);
 	aElement.dispatchEvent(event);
@@ -807,10 +807,10 @@ function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 		!(aWindow instanceof Ci.nsIDOMWindow))
 		throw new Error('action.getElementFromScreenPoint::['+aWindow+'] is not a frame!');
 
-	var popup = this._getPopupElementFromScreenPoint(aWindow, aScreenX, aScreenY);
+	var popup = _getPopupElementFromScreenPoint(aWindow, aScreenX, aScreenY);
 	if (popup) return popup;
 
-	var clientPos = this._getClientPointFromScreenPoint(aWindow, aScreenX, aScreenY);
+	var clientPos = _getClientPointFromScreenPoint(aWindow, aScreenX, aScreenY);
 	if ('elementFromPoint' in aWindow.document) {
 		var elem = aWindow.document.elementFromPoint(clientPos.x, clientPos.y);
 		if (
@@ -818,20 +818,20 @@ function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 			(
 				/^(i?frame|browser)$/i.test(elem.localName) ||
 				(elem.localName == 'tabbrowser' &&
-				this._isInside(elem.mPanelContainer.boxObject, aScreenX, aScreenY))
+				_isInside(elem.mPanelContainer.boxObject, aScreenX, aScreenY))
 			)
 			) {
-			var node = this.getElementFromScreenPoint(
+			var node = getElementFromScreenPoint(
 					elem.contentWindow,
 					aScreenX + aWindow.scrollX,
 					aScreenY + aWindow.scrollY
 				);
-			return this._getOriginalTargetFromScreenPoint(node, aScreenX, aScreenY);
+			return _getOriginalTargetFromScreenPoint(node, aScreenX, aScreenY);
 		}
-		return this._getOriginalTargetFromScreenPoint(elem, aScreenX, aScreenY);
+		return _getOriginalTargetFromScreenPoint(elem, aScreenX, aScreenY);
 	}
 
-	aWindow = this.getWindowFromScreenPoint(aWindow, aScreenX, aScreenY);
+	aWindow = getFrameFromScreenPoint(aWindow, aScreenX, aScreenY);
 	if (!aWindow) return null;
 
 	var doc = aWindow.document;
@@ -852,13 +852,13 @@ function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 	var walker = doc.createTreeWalker(startNode, NodeFilter.SHOW_ELEMENT, elementFilter, false);
 	for (var node = walker.firstChild(); node != null; node = walker.nextNode())
 	{
-		if (this._isInside(getBoxObjectFor(node), aScreenX, aScreenY))
+		if (_isInside(getBoxObjectFor(node), aScreenX, aScreenY))
 			nodes.push(node);
 	}
 
 	if (!nodes.length) return null;
 	if (nodes.length == 1)
-		return this._getOriginalTargetFromScreenPoint(nodes[0], aScreenX, aScreenY);
+		return _getOriginalTargetFromScreenPoint(nodes[0], aScreenX, aScreenY);
 
 	var smallest = [];
 	nodes.forEach(function(aNode) {
@@ -904,7 +904,7 @@ function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 		});
 		node = (deepest.length == 1) ? deepest[0] : deepest[deepest.length-1] ;
 	}
-	return this._getOriginalTargetFromScreenPoint(node, aScreenX, aScreenY);
+	return _getOriginalTargetFromScreenPoint(node, aScreenX, aScreenY);
 };
 	
 function _getPopupElementFromScreenPoint(aWindow, aScreenX, aScreenY) 
@@ -921,24 +921,24 @@ function _getPopupElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 	{
 		var popup = popups.snapshotItem(i);
 		if (popup.state != 'open') continue;
-		if (!this._isInside(popup.boxObject, aScreenX, aScreenY)) continue;
+		if (!_isInside(popup.boxObject, aScreenX, aScreenY)) continue;
 
 		var nodes = [];
 		var walker = doc.createTreeWalker(popup, NodeFilter.SHOW_ELEMENT, elementFilter, false);
 		for (var node = walker.firstChild(); node != null; node = walker.nextNode())
 		{
-			if (this._isInside(getBoxObjectFor(node), aScreenX, aScreenY))
+			if (_isInside(getBoxObjectFor(node), aScreenX, aScreenY))
 				nodes.push(node);
 		}
 		if (!nodes.length) continue;
-		return this._getOriginalTargetFromScreenPoint(nodes[nodes.length-1], aScreenX, aScreenY);
+		return _getOriginalTargetFromScreenPoint(nodes[nodes.length-1], aScreenX, aScreenY);
 	}
 	return null;
 }
  
 function _getOriginalTargetFromScreenPoint(aElement, aScreenX, aScreenY) 
 {
-	return this._getOriginalTargetFromScreenPointInternal(aElement, aScreenX, aScreenY) || aElement;
+	return _getOriginalTargetFromScreenPointInternal(aElement, aScreenX, aScreenY) || aElement;
 }
 	
 function _getOriginalTargetFromScreenPointInternal(aElement, aScreenX, aScreenY) 
@@ -951,9 +951,9 @@ function _getOriginalTargetFromScreenPointInternal(aElement, aScreenX, aScreenY)
 	for (var i = 0, maxi = nodes.length; i < maxi; i++)
 	{
 		if (nodes[i].nodeType != nodes[i].ELEMENT_NODE ||
-			!this._isInside(getBoxObjectFor(nodes[i]), aScreenX, aScreenY))
+			!_isInside(getBoxObjectFor(nodes[i]), aScreenX, aScreenY))
 			continue;
-		var node = this._getOriginalTargetFromScreenPointInternal(nodes[i], aScreenX, aScreenY);
+		var node = _getOriginalTargetFromScreenPointInternal(nodes[i], aScreenX, aScreenY);
 		if (node) return node;
 	}
 	return null;
@@ -963,18 +963,18 @@ var elementFilter = function(aNode) {
 	return NodeFilter.FILTER_ACCEPT;
 };
   
-function getWindowFromScreenPoint(aWindow, aScreenX, aScreenY) 
+function getFrameFromScreenPoint(aWindow, aScreenX, aScreenY) 
 {
 	if (!aWindow ||
 		!(aWindow instanceof Ci.nsIDOMWindow))
-		throw new Error('action.getWindowFromScreenPoint::['+aWindow+'] is not a frame!');
+		throw new Error('action.getFrameFromScreenPoint::['+aWindow+'] is not a frame!');
 
 	if ('elementFromPoint' in aWindow.document) {
-		var elem = this.getElementFromScreenPoint(aWindow, aScreenX, aScreenY);
+		var elem = getElementFromScreenPoint(aWindow, aScreenX, aScreenY);
 		return elem ? elem.ownerDocument.defaultView : null ;
 	}
 
-	var wins = this._flattenWindows(aWindow);
+	var wins = _flattenWindows(aWindow);
 	for (var i = wins.length - 1; i >= 0; i--) {
 		let win = wins[i];
 		let doc = win.document;
@@ -993,10 +993,10 @@ function getWindowFromScreenPoint(aWindow, aScreenX, aScreenY)
 			frameList.push(arr[j]);
 		for (let j = frameList.length - 1; j >= 0; j--) {
 			let box = getBoxObjectFor(frameList[j]);
-			if (this._isInside(box, aScreenX, aScreenY))
+			if (_isInside(box, aScreenX, aScreenY))
 				return frameList[j].contentWindow;
 		}
-		if (this._isInside(getBoxObjectFor(doc.documentElement), aScreenX, aScreenY))
+		if (_isInside(getBoxObjectFor(doc.documentElement), aScreenX, aScreenY))
 			return win;
 	}
 	return null;
@@ -1010,7 +1010,7 @@ function _flattenWindows(aWindow)
 
 	var ret = [aWindow];
 	for (var i = 0; i < aWindow.frames.length; i++)
-		ret = ret.concat(this._flattenWindows(aWindow.frames[i]));
+		ret = ret.concat(_flattenWindows(aWindow.frames[i]));
 	return ret;
 };
   
@@ -1033,7 +1033,7 @@ function _normalizeScreenAndClientPoint(aOptions, aWindow)
 		!(aWindow instanceof Ci.nsIDOMWindow))
 		throw new Error('action._normalizeScreenAndClientPoint::['+aWindow+'] is not a frame!');
 
-	var zoom = this.isFullZoom() ? this.getZoom(aWindow) : 1 ;
+	var zoom = isFullZoom() ? getZoom(aWindow) : 1 ;
 	var box = getBoxObjectFor(aWindow.document.documentElement);
 
 	var x = ('x' in aOptions ?
