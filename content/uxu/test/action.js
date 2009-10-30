@@ -1221,9 +1221,30 @@ function _getWindowFromScreenPoint(aScreenX, aScreenY)
 	}
 	new Error('action._getWindowFromScreenPoint:: there is no window at '+aScreenX+', '+aScreenY+'!');
 }
- 
-function getElementFromScreenPoint(aFrame, aScreenX, aScreenY) 
+function _getFrameAndScreenPointFromArguments(aArguments)
 {
+	var w, x, y;
+	Array.slice(aArguments).some(function(aArg) {
+		if (typeof aArg == 'number') {
+			if (x === void(0))
+				x = aArg;
+			else if (y === void(0))
+				y = aArg;
+		}
+		else if (aArg) {
+			if (aArg instanceof Ci.nsIDOMWindow)
+				w = aArg;
+		}
+		return (x !== void(0) && y !== void(0));
+	});
+	if (!w)
+		w = _getWindowFromScreenPoint(x, y);
+	return [w, x, y];
+}
+ 
+function getElementFromScreenPoint() 
+{
+	var [aFrame, aScreenX, aScreenY] = _getFrameAndScreenPointFromArguments(arguments);
 	if (!aFrame ||
 		!(aFrame instanceof Ci.nsIDOMWindow))
 		throw new Error('action.getElementFromScreenPoint::['+aFrame+'] is not a frame!');
@@ -1384,8 +1405,9 @@ var elementFilter = function(aNode) {
 	return NodeFilter.FILTER_ACCEPT;
 };
   
-function getFrameFromScreenPoint(aFrame, aScreenX, aScreenY) 
+function getFrameFromScreenPoint() 
 {
+	var [aFrame, aScreenX, aScreenY] = _getFrameAndScreenPointFromArguments(arguments);
 	if (!aFrame ||
 		!(aFrame instanceof Ci.nsIDOMWindow))
 		throw new Error('action.getFrameFromScreenPoint::['+aFrame+'] is not a frame!');
