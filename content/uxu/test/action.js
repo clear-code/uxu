@@ -56,6 +56,291 @@ function getZoom(aWindow)
   
 /* mouse event */ 
 	
+// utils 
+	
+function _getMouseOptionsFor(aType, aButton, aArguments) 
+{
+	var options = _getMouseOptionsFromArguments(aArguments);
+	var returnOptions = {
+		type : aType,
+		button : aButton,
+		altKey : options.modifiers.altKey,
+		ctrlKey : options.modifiers.ctrlKey,
+		shiftKey : options.modifiers.shiftKey,
+		metaKey : options.modifiers.metaKey
+	};
+	if (options.element) {
+		returnOptions.element = options.element;
+	}
+	if (options.window) {
+		returnOptions.window = options.window;
+		returnOptions.x = options.x;
+		returnOptions.y = options.y;
+	}
+	return returnOptions;
+}
+ 
+function _getMouseOptionsFromArguments(aArguments) 
+{
+	var modifierNames = 'alt,ctrl,control,shift,meta,cmd,command'
+							.replace(/([^,]+)/g, '$1,$1Key')
+							.split(',');
+	var x, y, w, modifiers, element;
+	Array.slice(aArguments).some(function(aArg) {
+		if (typeof aArg == 'number') {
+			if (x === void(0))
+				x = aArg;
+			else if (y === void(0))
+				y = aArg;
+		}
+		else if (aArg) {
+			if (aArg instanceof Ci.nsIDOMWindow)
+				w = aArg;
+			else if (aArg instanceof Ci.nsIDOMElement)
+				element = aArg;
+			else if (modifierNames.some(function(aName) {
+					return aName in aArg;
+				})
+				modifiers = aArgs;
+		}
+		return (x && y && w && modifiers && element);
+	});
+
+	if (!w && x !== void(0) && y !== void(0)) {
+		w = _getWindowFromScreenPoint(x, y);
+		x -= w.screenX;
+		y -= w.screenY;
+	}
+
+	if (modifiers) {
+		modifiers.altKey = modifiers.altKey || modifiers.alt;
+		modifiers.ctrlKey = modifiers.ctrlKey || modifiers.ctrl ||
+							modifiers.controlKey || modifiers.control;
+		modifiers.shiftKey = modifiers.shiftKey || modifiers.shift;
+		modifiers.metaKey = modifiers.metaKey || modifiers.meta ||
+							modifiers.cmdKey || modifiers.cmd ||
+							modifiers.commandKey || modifiers.command;
+	}
+
+	return {
+		x : x,
+		y : y,
+		window : w,
+		element : element,
+		modifiers : modifiers || {}
+	};
+}
+  
+// click on element 
+	
+function clickOn() 
+{
+	var options = _getMouseOptionsFor('click', 0, arguments);
+	fireMouseEventOnElement(options.element, options);
+}
+ 
+function middleClickOn() 
+{
+	var options = _getMouseOptionsFor('click', 1, arguments);
+	fireMouseEventOnElement(options.element, options);
+}
+ 
+function rightClickOn() 
+{
+	var options = _getMouseOptionsFor('click', 2, arguments);
+	fireMouseEventOnElement(options.element, options);
+}
+  
+// dblclick on element 
+	
+function doubleClickOn() 
+{
+	var options = _getMouseOptionsFor('dblclick', 0, arguments);
+	fireMouseEventOnElement(options.element, options);
+}
+var dblClickOn = doubleClickOn;
+var dblclickOn = doubleClickOn;
+ 
+function doubleMiddleClickOn() 
+{
+	var options = _getMouseOptionsFor('dblclick', 1, arguments);
+	fireMouseEventOnElement(options.element, options);
+}
+var middleDoubleClickOn = doubleMiddleClickOn;
+var dblclickMiddleOn = doubleMiddleClickOn;
+var dblClickMiddleOn = doubleMiddleClickOn;
+var middleDblClickOn = doubleMiddleClickOn;
+var middleDblclickOn = doubleMiddleClickOn;
+ 
+function doubleRightClickOn() 
+{
+	var options = _getMouseOptionsFor('dblclick', 2, arguments);
+	fireMouseEventOnElement(options.element, options);
+}
+var rightDoubleClickOn = doubleRightClickOn;
+var dblclickRightOn = doubleRightClickOn;
+var dblClickRightOn = doubleRightClickOn;
+var rightDblClickOn = doubleRightClickOn;
+var rightDblclickOn = doubleRightClickOn;
+  
+// mousedown/mouseup on element 
+	
+function mouseDownOn() 
+{
+	var options = _getMouseOptionsFor('mousedown', 0, arguments);
+	fireMouseEventOnElement(options.element, options);
+}
+var mousedownOn = mouseDownOn;
+ 
+function middleMouseDownOn() 
+{
+	var options = _getMouseOptionsFor('mousedown', 1, arguments);
+	fireMouseEventOnElement(options.element, options);
+}
+var middleMousedownOn = middleMouseDownOn;
+var mouseDownMiddleOn = middleMouseDownOn;
+var mousedownMiddleOn = middleMouseDownOn;
+ 
+function rightMouseDownOn() 
+{
+	var options = _getMouseOptionsFor('mousedown', 2, arguments);
+	fireMouseEventOnElement(options.element, options);
+}
+var rightMousedownOn = rightMouseDownOn;
+var mouseDownRightOn = rightMouseDownOn;
+var mousedownRightOn = rightMouseDownOn;
+ 
+function mouseUpOn() 
+{
+	var options = _getMouseOptionsFor('mouseup', 0, arguments);
+	fireMouseEventOnElement(options.element, options);
+}
+var mouseupOn = mouseUpOn;
+ 
+function middleMouseUpOn() 
+{
+	var options = _getMouseOptionsFor('mouseup', 1, arguments);
+	fireMouseEventOnElement(options.element, options);
+}
+var middleMouseupOn = middleMouseUpOn;
+var mouseUpMiddleOn = middleMouseUpOn;
+var mouseupMiddleOn = middleMouseUpOn;
+ 
+function rightMouseUpOn() 
+{
+	var options = _getMouseOptionsFor('mouseup', 2, arguments);
+	fireMouseEventOnElement(options.element, options);
+}
+var rightMouseupOn = rightMouseUpOn;
+var mouseUpRightOn = rightMouseUpOn;
+var mouseupRightOn = rightMouseUpOn;
+  
+// click at position 
+	
+function clickAt() 
+{
+	var options = _getMouseOptionsFor('click', 0, arguments);
+	fireMouseEvent(options.window, options);
+}
+ 
+function middleClickAt() 
+{
+	var options = _getMouseOptionsFor('click', 1, arguments);
+	fireMouseEvent(options.window, options);
+}
+ 
+function rightClickAt() 
+{
+	var options = _getMouseOptionsFor('click', 2, arguments);
+	fireMouseEvent(options.window, options);
+}
+  
+// dblclick at position 
+	
+function doubleClickAt() 
+{
+	var options = _getMouseOptionsFor('dblclick', 0, arguments);
+	fireMouseEvent(options.window, options);
+}
+var dblClickAt = doubleClickAt;
+var dblclickAt = doubleClickAt;
+ 
+function doubleMiddleClickAt() 
+{
+	var options = _getMouseOptionsFor('dblclick', 1, arguments);
+	fireMouseEvent(options.window, options);
+}
+var middleDoubleClickAt = doubleMiddleClickAt;
+var dblclickMiddleAt = doubleMiddleClickAt;
+var dblClickMiddleAt = doubleMiddleClickAt;
+var middleDblClickAt = doubleMiddleClickAt;
+var middleDblclickAt = doubleMiddleClickAt;
+ 
+function doubleRightClickAt() 
+{
+	var options = _getMouseOptionsFor('dblclick', 2, arguments);
+	fireMouseEvent(options.window, options);
+}
+var rightDoubleClickAt = doubleRightClickAt;
+var dblclickRightAt = doubleRightClickAt;
+var dblClickRightAt = doubleRightClickAt;
+var rightDblClickAt = doubleRightClickAt;
+var rightDblclickAt = doubleRightClickAt;
+  
+// mousedown/mouseup at position 
+	
+function mouseDownAt() 
+{
+	var options = _getMouseOptionsFor('mousedown', 0, arguments);
+	fireMouseEvent(options.window, options);
+}
+var mousedownAt = mouseDownAt;
+ 
+function middleMouseDownAt() 
+{
+	var options = _getMouseOptionsFor('mousedown', 1, arguments);
+	fireMouseEvent(options.window, options);
+}
+var middleMousedownAt = middleMouseDownAt;
+var mouseDownMiddleAt = middleMouseDownAt;
+var mousedownMiddleAt = middleMouseDownAt;
+ 
+function rightMouseDownAt() 
+{
+	var options = _getMouseOptionsFor('mousedown', 2, arguments);
+	fireMouseEvent(options.window, options);
+}
+var rightMousedownAt = rightMouseDownAt;
+var mouseDownRightAt = rightMouseDownAt;
+var mousedownRightAt = rightMouseDownAt;
+ 
+function mouseUpAt() 
+{
+	var options = _getMouseOptionsFor('mouseup', 0, arguments);
+	fireMouseEvent(options.window, options);
+}
+var mouseupAt = mouseUpAt;
+ 
+function middleMouseUpAt() 
+{
+	var options = _getMouseOptionsFor('mouseup', 1, arguments);
+	fireMouseEvent(options.window, options);
+}
+var middleMouseupAt = middleMouseUpAt;
+var mouseUpMiddleAt = middleMouseUpAt;
+var mouseupMiddleAt = middleMouseUpAt;
+ 
+function rightMouseUpAt() 
+{
+	var options = _getMouseOptionsFor('mouseup', 2, arguments);
+	fireMouseEvent(options.window, options);
+}
+var rightMouseupAt = rightMouseUpAt;
+var mouseUpRightAt = rightMouseUpAt;
+var mouseupRightAt = rightMouseUpAt;
+  
+// lower level API 
+	
 function fireMouseEvent(aWindow, aOptions) 
 {
 	if (!aWindow ||
@@ -295,7 +580,9 @@ function _updateMouseEventOptionsOnElement(aOptions, aElement)
 	if (!('x' in aOptions)) aOptions.x = aOptions.screenX - rootBox.screenX - frame.scrollX;
 	if (!('y' in aOptions)) aOptions.y = aOptions.screenY - rootBox.screenY - frame.scrollY;
 }
-  
+    
+// drag and drop: under construction 
+	
 function dragStart(aWindow, aOptions) 
 {
 	if (!aOptions) aOptions = {};
@@ -445,6 +732,82 @@ function dragAndDropOnElement(aFromElement, aToElement, aOptions)
    
 /* key event */ 
 	
+// utils 
+	
+function _getKeyOptionsFor(aType, aArguments) 
+{
+	var modifierNames = 'alt,ctrl,control,shift,meta,cmd,command'
+							.replace(/([^,]+)/g, '$1,$1Key')
+							.split(',');
+	var keyCode = 0,
+		charCode = 0,
+		modifiers, element;
+	Array.slice(aArguments).some(function(aArg) {
+		if (typeof aArg == 'number') {
+			keyCode = aArg;
+		}
+		if (typeof aArg == 'string') {
+			charCode = aArg.charCodeAt(0);
+		}
+		else if (aArg) {
+			if (aArg instanceof Ci.nsIDOMElement)
+				element = aArg;
+			else if (modifierNames.some(function(aName) {
+					return aName in aArg;
+				})
+				modifiers = aArgs;
+		}
+		return ((keyCode || charCode) && modifiers && element);
+	});
+
+	if (modifiers) {
+		modifiers.altKey = modifiers.altKey || modifiers.alt;
+		modifiers.ctrlKey = modifiers.ctrlKey || modifiers.ctrl ||
+							modifiers.controlKey || modifiers.control;
+		modifiers.shiftKey = modifiers.shiftKey || modifiers.shift;
+		modifiers.metaKey = modifiers.metaKey || modifiers.meta ||
+							modifiers.cmdKey || modifiers.cmd ||
+							modifiers.commandKey || modifiers.command;
+	}
+	else {
+		modifiers = {};
+	}
+
+	return {
+		type : aType,
+		keyCode : keyCode,
+		charCode : charCode,
+		element : element,
+		altKey : modifiers.altKey,
+		ctrlKey : modifiers.ctrlKey,
+		shiftKey : modifiers.shiftKey,
+		metaKey : modifiers.metaKey
+	};
+}
+  
+function keyPressOn() 
+{
+	var options = _getKeyOptionsFor('keypress', arguments);
+	fireKeyEventOnElement(options.element, optiosn);
+}
+var keypressOn = keyPressOn;
+ 
+function keyDownOn(aElement, aKeyOrCharCode) 
+{
+	var options = _getKeyOptionsFor('keydown', arguments);
+	fireKeyEventOnElement(options.element, optiosn);
+}
+var keydownOn = keyDownOn;
+ 
+function keyUpOn(aElement, aKeyOrCharCode) 
+{
+	var options = _getKeyOptionsFor('keyup', arguments);
+	fireKeyEventOnElement(options.element, optiosn);
+}
+var keyupOn = keyUpOn;
+ 
+// lower level API 
+	
 function fireKeyEventOnElement(aElement, aOptions) 
 {
 	if (!aElement ||
@@ -550,7 +913,7 @@ function _emulateEnterOnXULElement(aElement, aOptions)
 		)
 	);
 }
-   
+    
 /* XULCommand event */ 
 	
 function fireXULCommandEvent(aWindow, aOptions) 
@@ -746,6 +1109,38 @@ function _emulateActionOnXULElement(aElement, aOptions, aIsSimpleGesture)
   
 /* text input */ 
 	
+// utils 
+	
+function _getInputOptionsFor(aArguments) 
+{
+	var input, element;
+	Array.slice(aArguments).some(function(aArg) {
+		if (typeof aArg == 'string') {
+			input = aArg;
+		}
+		else if (aArg) {
+			if (aArg instanceof Ci.nsIDOMElement)
+				element = aArg;
+		}
+		return (input !== void(0) && element);
+	});
+	return { input : input, element : element };
+}
+  
+function inputTo() 
+{
+	var options = _getInputOptionsFor(arguments);
+	inputTextToField(options.element, options.input);
+}
+ 
+function appendTo() 
+{
+	var options = _getInputOptionsFor(arguments);
+	inputTextToField(options.element, options.input, true);
+}
+ 
+// lower level API 
+	
 var withIMECharacters = '\u3040-\uA4CF\uF900-\uFAFF'; 
 var kINPUT_ARRAY_PATTERN  = new RegExp('[^'+withIMECharacters+']|['+withIMECharacters+']+', 'g');
 var kDIRECT_INPUT_PATTERN = new RegExp('[^'+withIMECharacters+']');
@@ -798,21 +1193,44 @@ function inputTextToField(aElement, aValue, aAppend, aDontFireKeyEvents)
 	event.initUIEvent('input', true, true, doc.defaultView, 0);
 	aElement.dispatchEvent(event);
 };
-  
+   
 /* ç¿ïWëÄçÏ */ 
 	
-function getElementFromScreenPoint(aWindow, aScreenX, aScreenY) 
+function _getWindowFromScreenPoint(aScreenX, aScreenY) 
 {
-	if (!aWindow ||
-		!(aWindow instanceof Ci.nsIDOMWindow))
-		throw new Error('action.getElementFromScreenPoint::['+aWindow+'] is not a frame!');
+	var windows = Cc['@mozilla.org/appshell/window-mediator;1']
+							.getService(Ci.nsIWindowMediator)
+							.getZOrderDOMWindowEnumerator(null, true);
+	while (windows.hasMoreElements())
+	{
+		let w = windows.getNext().QueryInterface(Ci.nsIDOMWindowInternal);
+		let left   = aBox.screenX;
+		let top    = aBox.screenY;
+		let right  = left + aBox.outerWidth;
+		let bottom = top + aBox.outerHeight;
+		if (
+				left   <= aScreenX &&
+				right  >= aScreenX &&
+				top    <= aScreenY &&
+				bottom >= aScreenY
+			)
+			return w;
+	}
+	new Error('action._getWindowFromScreenPoint:: there is no window at '+aScreenX+', '+aScreenY+'!');
+}
+ 
+function getElementFromScreenPoint(aFrame, aScreenX, aScreenY) 
+{
+	if (!aFrame ||
+		!(aFrame instanceof Ci.nsIDOMWindow))
+		throw new Error('action.getElementFromScreenPoint::['+aFrame+'] is not a frame!');
 
-	var popup = _getPopupElementFromScreenPoint(aWindow, aScreenX, aScreenY);
+	var popup = _getPopupElementFromScreenPoint(aFrame, aScreenX, aScreenY);
 	if (popup) return popup;
 
-	var clientPos = _getClientPointFromScreenPoint(aWindow, aScreenX, aScreenY);
-	if ('elementFromPoint' in aWindow.document) {
-		var elem = aWindow.document.elementFromPoint(clientPos.x, clientPos.y);
+	var clientPos = _getClientPointFromScreenPoint(aFrame, aScreenX, aScreenY);
+	if ('elementFromPoint' in aFrame.document) {
+		var elem = aFrame.document.elementFromPoint(clientPos.x, clientPos.y);
 		if (
 			elem &&
 			(
@@ -823,18 +1241,18 @@ function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 			) {
 			var node = getElementFromScreenPoint(
 					elem.contentWindow,
-					aScreenX + aWindow.scrollX,
-					aScreenY + aWindow.scrollY
+					aScreenX + aFrame.scrollX,
+					aScreenY + aFrame.scrollY
 				);
 			return _getOriginalTargetFromScreenPoint(node, aScreenX, aScreenY);
 		}
 		return _getOriginalTargetFromScreenPoint(elem, aScreenX, aScreenY);
 	}
 
-	aWindow = getFrameFromScreenPoint(aWindow, aScreenX, aScreenY);
-	if (!aWindow) return null;
+	aFrame = getFrameFromScreenPoint(aFrame, aScreenX, aScreenY);
+	if (!aFrame) return null;
 
-	var doc = aWindow.document;
+	var doc = aFrame.document;
 
 	var accNode;
 	try {
@@ -907,9 +1325,9 @@ function getElementFromScreenPoint(aWindow, aScreenX, aScreenY)
 	return _getOriginalTargetFromScreenPoint(node, aScreenX, aScreenY);
 };
 	
-function _getPopupElementFromScreenPoint(aWindow, aScreenX, aScreenY) 
+function _getPopupElementFromScreenPoint(aFrame, aScreenX, aScreenY) 
 {
-	var doc = aWindow.document;
+	var doc = aFrame.document;
 	var popups = doc.evaluate(
 			'/descendant::*[contains(" menupopup popup tooltip panel ", concat(" ", local-name(), " "))]',
 			doc,
@@ -963,18 +1381,18 @@ var elementFilter = function(aNode) {
 	return NodeFilter.FILTER_ACCEPT;
 };
   
-function getFrameFromScreenPoint(aWindow, aScreenX, aScreenY) 
+function getFrameFromScreenPoint(aFrame, aScreenX, aScreenY) 
 {
-	if (!aWindow ||
-		!(aWindow instanceof Ci.nsIDOMWindow))
-		throw new Error('action.getFrameFromScreenPoint::['+aWindow+'] is not a frame!');
+	if (!aFrame ||
+		!(aFrame instanceof Ci.nsIDOMWindow))
+		throw new Error('action.getFrameFromScreenPoint::['+aFrame+'] is not a frame!');
 
-	if ('elementFromPoint' in aWindow.document) {
-		var elem = getElementFromScreenPoint(aWindow, aScreenX, aScreenY);
+	if ('elementFromPoint' in aFrame.document) {
+		var elem = getElementFromScreenPoint(aFrame, aScreenX, aScreenY);
 		return elem ? elem.ownerDocument.defaultView : null ;
 	}
 
-	var wins = _flattenWindows(aWindow);
+	var wins = _flattenFrames(aFrame);
 	for (var i = wins.length - 1; i >= 0; i--) {
 		let win = wins[i];
 		let doc = win.document;
@@ -1002,58 +1420,58 @@ function getFrameFromScreenPoint(aWindow, aScreenX, aScreenY)
 	return null;
 };
 	
-function _flattenWindows(aWindow) 
+function _flattenFrames(aFrame) 
 {
-	if (!aWindow ||
-		!(aWindow instanceof Ci.nsIDOMWindow))
-		throw new Error('action._flattenWindows::['+aWindow+'] is not a frame!');
+	if (!aFrame ||
+		!(aFrame instanceof Ci.nsIDOMWindow))
+		throw new Error('action._flattenFrames::['+aFrame+'] is not a frame!');
 
-	var ret = [aWindow];
-	for (var i = 0; i < aWindow.frames.length; i++)
-		ret = ret.concat(_flattenWindows(aWindow.frames[i]));
+	var ret = [aFrame];
+	for (var i = 0; i < aFrame.frames.length; i++)
+		ret = ret.concat(_flattenFrames(aFrame.frames[i]));
 	return ret;
 };
   
-function _getClientPointFromScreenPoint(aWindow, aScreenX, aScreenY) 
+function _getClientPointFromScreenPoint(aFrame, aScreenX, aScreenY) 
 {
-	if (!aWindow ||
-		!(aWindow instanceof Ci.nsIDOMWindow))
-		throw new Error('action._getClientPointFromScreenPoint::['+aWindow+'] is not a frame!');
+	if (!aFrame ||
+		!(aFrame instanceof Ci.nsIDOMWindow))
+		throw new Error('action._getClientPointFromScreenPoint::['+aFrame+'] is not a frame!');
 
-	var box = getBoxObjectFor(aWindow.document.documentElement);
+	var box = getBoxObjectFor(aFrame.document.documentElement);
 	return {
-		x : aScreenX - box.screenX - aWindow.scrollX,
-		y : aScreenY - box.screenY - aWindow.scrollY
+		x : aScreenX - box.screenX - aFrame.scrollX,
+		y : aScreenY - box.screenY - aFrame.scrollY
 	};
 }
  
-function _normalizeScreenAndClientPoint(aOptions, aWindow) 
+function _normalizeScreenAndClientPoint(aOptions, aFrame) 
 {
-	if (!aWindow ||
-		!(aWindow instanceof Ci.nsIDOMWindow))
-		throw new Error('action._normalizeScreenAndClientPoint::['+aWindow+'] is not a frame!');
+	if (!aFrame ||
+		!(aFrame instanceof Ci.nsIDOMWindow))
+		throw new Error('action._normalizeScreenAndClientPoint::['+aFrame+'] is not a frame!');
 
-	var zoom = isFullZoom() ? getZoom(aWindow) : 1 ;
-	var box = getBoxObjectFor(aWindow.document.documentElement);
+	var zoom = isFullZoom() ? getZoom(aFrame) : 1 ;
+	var box = getBoxObjectFor(aFrame.document.documentElement);
 
 	var x = ('x' in aOptions ?
 			aOptions.x :
 		'screenX' in aOptions ?
-			aOptions.screenX - box.screenX - aWindow.scrollX :
+			aOptions.screenX - box.screenX - aFrame.scrollX :
 			0
 		) * zoom;
 	var y = ('y' in aOptions ?
 			aOptions.y :
 		'screenY' in aOptions ?
-			aOptions.screenY - box.screenY - aWindow.scrollY :
+			aOptions.screenY - box.screenY - aFrame.scrollY :
 			0
 		) * zoom;
 	var screenX = ('screenX' in aOptions) ?
 			aOptions.screenX :
-			box.screenX + x + aWindow.scrollX;
+			box.screenX + x + aFrame.scrollX;
 	var screenY = ('screenY' in aOptions) ?
 			aOptions.screenY :
-			box.screenY + y + aWindow.scrollY;
+			box.screenY + y + aFrame.scrollY;
 
 	aOptions.x = x;
 	aOptions.y = y;
@@ -1077,9 +1495,9 @@ function _isInside(aBox, aScreenX, aScreenY)
   
 /* utils */ 
 	
-function _getWindowUtils(aWindow) 
+function _getWindowUtils(aFrame) 
 {
-	return aWindow
+	return aFrame
 			.QueryInterface(Ci.nsIInterfaceRequestor)
 			.getInterface(Ci.nsIDOMWindowUtils);
 };
