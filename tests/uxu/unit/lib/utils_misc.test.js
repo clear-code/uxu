@@ -432,10 +432,7 @@ function test_setAndGetClipBoard()
 		selection.addRange(range);
 	}
 	else {
-		action.fireMouseEventOnElement(
-			content.document.getElementById('paragraph3'),
-			{ type : 'dblclick', button : 0 }
-		);
+		action.dblclickOn(content.document.getElementById('paragraph3'));
 		yield 100;
 	}
 	assert.equals('paragraph3', selection.toString());
@@ -454,10 +451,7 @@ function test_setAndGetClipBoard()
 		selection.addRange(range);
 	}
 	else {
-		action.fireMouseEventOnElement(
-			content.document.getElementById('paragraph4'),
-			{ type : 'dblclick', button : 0 }
-		);
+		action.dblclickOn(content.document.getElementById('paragraph4'));
 		yield 100;
 	}
 	assert.equals('paragraph4', selection.toString());

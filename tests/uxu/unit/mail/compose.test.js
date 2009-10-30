@@ -86,9 +86,9 @@ function testAddressFields()
 	assert.equals(nodes[0], compose.firstAddressField);
 	assert.equals(nodes[0], compose.lastAddressField);
 
-	action.inputTextToField(nodes[0], 'test@example.com');
+	action.inputTo(nodes[0], 'test@example.com');
 	yield 500;
-	action.fireKeyEventOnElement(nodes[0], { keyCode : Ci.nsIDOMKeyEvent.DOM_VK_RETURN });
+	action.keypressOn(nodes[0], 'return');
 	yield 200;
 
 	nodes = $X(expression, composeWindow.document);
@@ -118,9 +118,9 @@ function testBlankAddressFields()
 	assert.equals(field, compose.firstBlankAddressField);
 	assert.equals(field, compose.lastBlankAddressField);
 
-	action.inputTextToField(field, 'test@example.com');
+	action.inputTo(field, 'test@example.com');
 	yield 500;
-	action.fireKeyEventOnElement(field, { keyCode : Ci.nsIDOMKeyEvent.DOM_VK_RETURN });
+	action.keypressOn(field, 'return');
 	yield 200;
 
 	var fields = compose.addressFields;
@@ -154,9 +154,9 @@ function testAddressTypes()
 
 	var field = $X('//*[@id="addressingWidget"]/descendant::*[local-name()="textbox"]', composeWindow.document, XPathResult.FIRST_ORDERED_NODE_TYPE);
 	assert.isNotNull(field);
-	action.inputTextToField(field, 'test@example.com');
+	action.inputTo(field, 'test@example.com');
 	yield 500;
-	action.fireKeyEventOnElement(field, { keyCode : Ci.nsIDOMKeyEvent.DOM_VK_RETURN });
+	action.keypressOn(field, 'return');
 	yield 200;
 
 	nodes = $X(expression, composeWindow.document);
