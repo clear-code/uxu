@@ -1,4 +1,5 @@
 var topDir = baseURL+'../../../../';
+utils.include('action.inc.js', 'Shift_JIS');
 
 var isGecko18 = utils.checkAppVersion('3.0') < 0;
 
@@ -18,6 +19,7 @@ function setUp()
 	utils.include(topDir+'content/uxu/test/action.js', actionModule);
 	yield Do(utils.setUpTestWindow(options));
 	win = utils.getTestWindow(options);
+	actionSetUp();
 }
 
 function tearDown()
@@ -124,14 +126,9 @@ function test_fireMouseEvent()
 	function assertFire(aTargetId, aSetUpBeforeEvent)
 	{
 		var target = $(aTargetId, win);
-		var log = $('log', win);
 		var events, event, param;
-		var lastCount = 0;
 
-		if (log.textContent) {
-			eval('events = '+log.textContent);
-			lastCount = events.length;
-		}
+		events = assertEventsCount(0, win, win)
 
 		if (aSetUpBeforeEvent)
 			yield Do(aSetUpBeforeEvent);
@@ -146,13 +143,11 @@ function test_fireMouseEvent()
 			screenY  : boxObject.screenY+3
 		};
 		actionModule.fireMouseEvent(win, param);
-		eval('events = '+log.textContent);
-		assert.equals(lastCount+1, events.length, inspect(events));
+		events = assertEventsCount(1, win)
 
 		event = generateMouseEventLogFromParams(param);
 		event.target = aTargetId;
 		assert.equals(event, events[events.length-1]);
-		lastCount = events.length;
 
 		if (aSetUpBeforeEvent)
 			yield Do(aSetUpBeforeEvent);
@@ -168,13 +163,11 @@ function test_fireMouseEvent()
 			screenY  : boxObject.screenY+5
 		};
 		actionModule.fireMouseEvent(win, param);
-		eval('events = '+log.textContent);
-		assert.equals(lastCount+1, events.length, inspect(events));
+		events = assertEventsCount(1, win)
 
 		event = generateMouseEventLogFromParams(param);
 		event.target = aTargetId;
 		assert.equals(event, events[events.length-1]);
-		lastCount = events.length;
 
 		if (aSetUpBeforeEvent)
 			yield Do(aSetUpBeforeEvent);
@@ -190,8 +183,7 @@ function test_fireMouseEvent()
 		}
 		actionModule.fireMouseEvent(win, param);
 		yield 100;
-		eval('events = '+log.textContent);
-		assert.equals(lastCount+3, events.length, inspect(events));
+		events = assertEventsCount(3, win)
 
 		event = generateMouseEventLogFromParams(param);
 		event.target = aTargetId;
@@ -216,14 +208,9 @@ function test_fireMouseEventOnElement()
 	function assertFire(aTargetId, aSetUpBeforeEvent)
 	{
 		var target = $(aTargetId, win);
-		var log = $('log', win);
 		var events, event, param;
-		var lastCount = 0;
 
-		if (log.textContent) {
-			eval('events = '+log.textContent);
-			lastCount = events.length;
-		}
+		events = assertEventsCount(0, win)
 
 		if (aSetUpBeforeEvent)
 			yield Do(aSetUpBeforeEvent);
@@ -235,13 +222,11 @@ function test_fireMouseEventOnElement()
 			shiftKey : true
 		}
 		actionModule.fireMouseEventOnElement(target, param);
-		eval('events = '+log.textContent);
-		assert.equals(lastCount+1, events.length, inspect(events));
+		events = assertEventsCount(1, win)
 
 		event = generateMouseEventLogFromParams(param);
 		event.target = aTargetId;
 		assert.equals(event, events[events.length-1]);
-		lastCount = events.length;
 
 
 		if (aSetUpBeforeEvent)
@@ -254,13 +239,11 @@ function test_fireMouseEventOnElement()
 			ctrlKey  : true
 		};
 		actionModule.fireMouseEventOnElement(target, param);
-		eval('events = '+log.textContent);
-		assert.equals(lastCount+1, events.length, inspect(events));
+		events = assertEventsCount(1, win)
 
 		event = generateMouseEventLogFromParams(param);
 		event.target = aTargetId;
 		assert.equals(event, events[events.length-1]);
-		lastCount = events.length;
 
 
 		if (aSetUpBeforeEvent)
@@ -274,8 +257,7 @@ function test_fireMouseEventOnElement()
 		}
 		actionModule.fireMouseEventOnElement(target, param);
 		yield 100;
-		eval('events = '+log.textContent);
-		assert.equals(lastCount+3, events.length, inspect(events));
+		events = assertEventsCount(3, win)
 
 		event = generateMouseEventLogFromParams(param);
 		event.target = aTargetId;
@@ -323,14 +305,9 @@ function test_fireKeyEventOnElement()
 		var target = $(aTargetId, win);
 		if ('focus' in target) target.focus();
 		var boxObject = utils.getBoxObjectFor(target);
-		var log = $('log', win);
 		var events, event, param;
-		var lastCount = 0;
 
-		if (log.textContent) {
-			eval('events = '+log.textContent);
-			lastCount = events.length;
-		}
+		events = assertEventsCount(0, win)
 
 		if (aSetUpBeforeEvent)
 			yield Do(aSetUpBeforeEvent);
@@ -341,13 +318,11 @@ function test_fireKeyEventOnElement()
 			ctrlKey : true
 		};
 		actionModule.fireKeyEventOnElement(target, param);
-		eval('events = '+log.textContent);
-		assert.equals(lastCount+1, events.length);
+		events = assertEventsCount(1, win)
 
 		event = generateKeyEventLogFromParams(param);
 		event.target = aTargetId;
 		assert.equals(event, events[events.length-1]);
-		lastCount = events.length;
 
 
 		if (aSetUpBeforeEvent)
@@ -359,13 +334,11 @@ function test_fireKeyEventOnElement()
 			shiftKey : true
 		};
 		actionModule.fireKeyEventOnElement(target, param);
-		eval('events = '+log.textContent);
-		assert.equals(lastCount+1, events.length, inspect(events));
+		events = assertEventsCount(1, win)
 
 		event = generateKeyEventLogFromParams(param);
 		event.target = aTargetId;
 		assert.equals(event, events[events.length-1]);
-		lastCount = events.length;
 
 
 		if (aSetUpBeforeEvent)
@@ -379,8 +352,7 @@ function test_fireKeyEventOnElement()
 		}
 		actionModule.fireKeyEventOnElement(target, param);
 		yield 100;
-		eval('events = '+log.textContent);
-		assert.equals(lastCount+3, events.length, inspect(events));
+		events = assertEventsCount(3, win)
 
 		param.type = 'keydown';
 		event = generateKeyEventLogFromParams(param);
@@ -414,15 +386,12 @@ function test_fireKeyEventOnElement()
 function test_inputTextToField()
 {
 	var input = $('input', win);
-	var log = $('log', win);
-	var events,
-		lastCount = 0;
+	var events;
 	assert.equals('', input.value);
 
 	actionModule.inputTextToField(input, 'string');
 	assert.equals('string', input.value);
-	eval('events = '+log.textContent);
-	assert.equals(lastCount + ('string'.length * 3) + 1, events.length, inspect(events));
+	events = assertEventsCount(('string'.length * 3) + 1, win)
 	assert.equals(
 		{ type : 'keypress', target : 'input',
 		  keyCode : 0, charCode : 'g'.charCodeAt(0),
@@ -433,12 +402,10 @@ function test_inputTextToField()
 		{ type : 'input', target : 'input' },
 		events[events.length-1]
 	);
-	lastCount = events.length;
 
 	actionModule.inputTextToField(input, 'moji');
 	assert.equals('moji', input.value);
-	eval('events = '+log.textContent);
-	assert.equals(lastCount + ('moji'.length * 3) + 1, events.length, inspect(events));
+	events = assertEventsCount(('moji'.length * 3) + 1, win)
 	assert.equals(
 		{ type : 'keypress', target : 'input',
 		  keyCode : 0, charCode : 'i'.charCodeAt(0),
@@ -449,12 +416,10 @@ function test_inputTextToField()
 		{ type : 'input', target : 'input' },
 		events[events.length-1]
 	);
-	lastCount = events.length;
 
 	actionModule.inputTextToField(input, 'retsu', true);
 	assert.equals('mojiretsu', input.value);
-	eval('events = '+log.textContent);
-	assert.equals(lastCount + ('retsu'.length * 3) + 1, events.length, inspect(events));
+	events = assertEventsCount(('retsu'.length * 3) + 1, win)
 	assert.equals(
 		{ type : 'keypress', target : 'input',
 		  keyCode : 0, charCode : 'u'.charCodeAt(0),
@@ -465,12 +430,10 @@ function test_inputTextToField()
 		{ type : 'input', target : 'input' },
 		events[events.length-1]
 	);
-	lastCount = events.length;
 
 	actionModule.inputTextToField(input, 'foobar', false, true);
 	assert.equals('foobar', input.value);
-	eval('events = '+log.textContent);
-	assert.equals(lastCount+1, events.length, inspect(events));
+	events = assertEventsCount(1, win)
 	assert.equals(
 		{ type : 'input', target : 'input' },
 		events[events.length-1]
@@ -557,19 +520,12 @@ function test_fireXULCommandEvent()
 {
 	function assertFire(aTargetId)
 	{
-		var log = $('log', win);
 		var box = utils.getBoxObjectFor($(aTargetId, win));
-		var events;
-		if (log.textContent)
-			eval('events = '+log.textContent);
-		else
-			events = [];
-		var lastCount = events.length;
+		var events = assertEventsCount(0, win)
 		var retVal = actionModule.fireXULCommandEvent(win, { screenX : box.screenX+5, screenY : box.screenY+5 });
 		assert.isTrue(retVal);
 		assert.notEquals('', log.textContent);
-		eval('events = '+log.textContent);
-		assert.equals(lastCount+1, events.length, inspect(events));
+		events = assertEventsCount(1, win)
 		assert.equals(
 			{ type : 'command', target : aTargetId },
 			events[events.length-1]
@@ -578,12 +534,10 @@ function test_fireXULCommandEvent()
 
 	function assertNotFire(aTargetId)
 	{
-		var log = $('log', win);
 		var box = utils.getBoxObjectFor($(aTargetId, win));
-		var lastResult = log.textContent;
 		var retVal = actionModule.fireXULCommandEvent(win, { screenX : box.screenX+5, screenY : box.screenY+5 });
 		assert.isFalse(retVal);
-		assert.equals(lastResult, log.textContent);
+		events = assertEventsCount(0, win)
 	}
 
 	yield Do(assertXULCommandEventFireOrNotFire(assertFire, assertNotFire, false));
@@ -594,18 +548,10 @@ function test_fireXULCommandEventOnElement()
 {
 	function assertFire(aTargetId)
 	{
-		var log = $('log', win);
-		var events;
-		if (log.textContent)
-			eval('events = '+log.textContent);
-		else
-			events = [];
-		var lastCount = events.length;
+		var events = assertEventsCount(0, win)
 		var retVal = actionModule.fireXULCommandEventOnElement($(aTargetId, win));
 		assert.isTrue(retVal);
-		assert.notEquals('', log.textContent);
-		eval('events = '+log.textContent);
-		assert.equals(lastCount+1, events.length, inspect(events));
+		events = assertEventsCount(1, win)
 		assert.equals(
 			{ type : 'command', target : aTargetId },
 			events[events.length-1]
@@ -614,11 +560,9 @@ function test_fireXULCommandEventOnElement()
 
 	function assertNotFire(aTargetId)
 	{
-		var log = $('log', win);
-		var lastResult = log.textContent;
 		var retVal = actionModule.fireXULCommandEventOnElement($(aTargetId, win));
 		assert.isFalse(retVal);
-		assert.equals(lastResult, log.textContent);
+		var events = assertEventsCount(0, win)
 	}
 
 	yield Do(assertXULCommandEventFireOrNotFire(assertFire, assertNotFire, false));
@@ -629,14 +573,9 @@ function test_fireXULCommandEventByMouseEvent()
 {
 	function assertFire(aTargetId)
 	{
-		var log = $('log', win);
-		var events, event, param;
-		var lastCount = 0;
+		var event, param;
 
-		if (log.textContent) {
-			eval('events = '+log.textContent);
-			lastCount = events.length;
-		}
+		var events = assertEventsCount(0, win)
 
 		param = {
 			type     : 'click',
@@ -644,8 +583,7 @@ function test_fireXULCommandEventByMouseEvent()
 			detail   : 1
 		}
 		actionModule.fireMouseEventOnElement($(aTargetId, win), param);
-		eval('events = '+log.textContent);
-		assert.equals(lastCount+4, events.length, inspect(events));
+		events = assertEventsCount(4, win)
 
 		event = generateMouseEventLogFromParams(param);
 		event.target = aTargetId;
@@ -670,14 +608,8 @@ function test_fireXULCommandEventByMouseEvent()
 
 	function assertNotFire(aTargetId)
 	{
-		var log = $('log', win);
-		var events, event, param;
-		var lastCount = 0;
-
-		if (log.textContent) {
-			eval('events = '+log.textContent);
-			lastCount = events.length;
-		}
+		var event, param;
+		var events = assertEventsCount(0, win)
 
 		param = {
 			type     : 'click',
@@ -685,8 +617,7 @@ function test_fireXULCommandEventByMouseEvent()
 			detail   : 1
 		}
 		actionModule.fireMouseEventOnElement($(aTargetId, win), param);
-		eval('events = '+log.textContent);
-		assert.equals(lastCount+3, events.length, inspect(events));
+		events = assertEventsCount(3, win)
 
 		event = generateMouseEventLogFromParams(param);
 		event.target = aTargetId;
@@ -714,14 +645,8 @@ function test_fireXULCommandEventByKeyEvent()
 	{
 		var target = $(aTargetId, win);
 		if ('focus' in target) target.focus();
-		var log = $('log', win);
-		var events, event, param;
-		var lastCount = 0;
-
-		if (log.textContent) {
-			eval('events = '+log.textContent);
-			lastCount = events.length;
-		}
+		var event, param;
+		var events = assertEventsCount(0, win)
 
 		param = {
 			type     : 'keypress',
@@ -729,13 +654,11 @@ function test_fireXULCommandEventByKeyEvent()
 		}
 		actionModule.fireKeyEventOnElement(target, param);
 		yield 100;
-		assert.notEquals('', log.textContent);
-		eval('events = '+log.textContent);
 		if (aKeyEventsShouldBeIgnored) {
-			assert.equals(lastCount+1, events.length, inspect(events));
+			events = assertEventsCount(1, win)
 		}
 		else {
-			assert.equals(lastCount+4, events.length, inspect(events));
+			events = assertEventsCount(4, win)
 
 			param.type = 'keydown';
 			event = generateKeyEventLogFromParams(param);
@@ -763,15 +686,8 @@ function test_fireXULCommandEventByKeyEvent()
 	{
 		var target = $(aTargetId, win);
 		if ('focus' in target) target.focus();
-		var log = $('log', win);
-		var events, event, param;
-		var lastCount = 0;
-		var lastResult = log.textContent;
-
-		if (log.textContent) {
-			eval('events = '+log.textContent);
-			lastCount = events.length;
-		}
+		var event, param;
+		var events = assertEventsCount(0, win)
 
 		param = {
 			type     : 'keypress',
@@ -779,13 +695,7 @@ function test_fireXULCommandEventByKeyEvent()
 		}
 		actionModule.fireKeyEventOnElement(target, param);
 		yield 100;
-		if (log.textContent) {
-			eval('events = '+log.textContent);
-			assert.notEquals(
-				{ type : 'command', target : aTargetId },
-				events[events.length-1]
-			);
-		}
+		events = assertEventsCount(0, win)
 	}
 
 	yield Do(assertXULCommandEventFireOrNotFire(assertFire, assertNotFire, false));

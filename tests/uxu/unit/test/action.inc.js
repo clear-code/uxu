@@ -7,10 +7,16 @@ function actionSetUp()
 
 
 var lastCount = 0;
-function assertEventsCount(aCount)
+function assertEventsCount(aCount, aOwner)
 {
 	var events;
-	eval('events = '+$('log').textContent);
+	var result = $('log', aOwner).textContent;
+	if (result) {
+		eval('events = '+result);
+	}
+	else {
+		events = [];
+	}
 	assert.equals(lastCount+aCount, events.length, inspect(events));
 	lastCount += aCount;
 	return events;
