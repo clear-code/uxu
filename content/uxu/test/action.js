@@ -108,8 +108,10 @@ function _getMouseOptionsFromArguments(aArguments)
 
 	if (!w && x !== void(0) && y !== void(0)) {
 		w = _getWindowFromScreenPoint(x, y);
-		x -= w.screenX;
-		y -= w.screenY;
+		w = getFrameFromScreenPoint(w, x, y);
+		let root = getBoxObjectFor(w.document.documentElement);
+		x = x - root.screenX - w.scrollX;
+		y = y - root.screenY - w.scrollY;
 	}
 
 	if (modifiers) {
@@ -1211,10 +1213,10 @@ function _getWindowFromScreenPoint(aScreenX, aScreenY)
 	while (windows.hasMoreElements())
 	{
 		let w = windows.getNext().QueryInterface(Ci.nsIDOMWindowInternal);
-		let left   = aBox.screenX;
-		let top    = aBox.screenY;
-		let right  = left + aBox.outerWidth;
-		let bottom = top + aBox.outerHeight;
+		let left   = w.screenX;
+		let top    = w.screenY;
+		let right  = left + w.outerWidth;
+		let bottom = top + w.outerHeight;
 		if (
 				left   <= aScreenX &&
 				right  >= aScreenX &&

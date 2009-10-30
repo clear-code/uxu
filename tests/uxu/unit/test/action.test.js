@@ -21,82 +21,152 @@ function tearDown()
 
 /* mouse events */
 
-function test_mousedownAt()
+function assertAtArgs(aMethod, aType, aButton, aX, aY, aModifiers, aArgs)
 {
-	target = $('clickable-box');
-	boxObject = utils.getBoxObjectFor(target);
-	var events, modifiers, x, y;
-
-	modifiers = { ctrlKey : true };
-	x = boxObject.screenX+10;
-	y = boxObject.screenY+10;
-	actionModule.rightMousedownAt(content, boxObject.x+10, boxObject.y+10, modifiers);
-	events = assertEventsCount(1);
-	assertMouseEventAt('mousedown', 2, x, y, modifiers, 1, events[events.length-1]);
-
-	modifiers = { altKey : true };
-	x = boxObject.screenX+20;
-	y = boxObject.screenY+20;
-	actionModule.middleMouseupAt(content, boxObject.x+20, boxObject.y+20, modifiers);
-	events = assertEventsCount(1);
-	assertMouseEventAt('mouseup', 1, x, y, modifiers, 0, events[events.length-1]);
-
-	modifiers = { shiftKey : true };
-	x = boxObject.screenX+30;
-	y = boxObject.screenY+30;
-	actionModule.clickAt(content, boxObject.x+30, boxObject.y+30, modifiers);
-	events = assertEventsCount(3);
-	assertMouseEventAt('mousedown', 0, x, y, modifiers, 1, events[events.length-3]);
-	assertMouseEventAt('mouseup', 0, x, y, modifiers, 1, events[events.length-2]);
-	assertMouseEventAt('click', 0, x, y, modifiers, 1, events[events.length-1]);
-
-	modifiers = { shiftKey : true };
-	x = boxObject.screenX+40;
-	y = boxObject.screenY+40;
-	actionModule.dblclickAt(content, boxObject.x+40, boxObject.y+40, modifiers);
-	events = assertEventsCount(7);
-	assertMouseEventAt('mousedown', 0, x, y, modifiers, 1, events[events.length-7]);
-	assertMouseEventAt('mouseup', 0, x, y, modifiers, 1, events[events.length-6]);
-	assertMouseEventAt('click', 0, x, y, modifiers, 1, events[events.length-5]);
-	assertMouseEventAt('mousedown', 0, x, y, modifiers, 2, events[events.length-4]);
-	assertMouseEventAt('mouseup', 0, x, y, modifiers, 2, events[events.length-3]);
-	assertMouseEventAt('click', 0, x, y, modifiers, 2, events[events.length-2]);
-	assertMouseEventAt('dblclick', 0, x, y, modifiers, 2, events[events.length-1]);
+	if (!aModifiers) aModifiers = {};
+	aMethod.apply(actionModule, aArgs);
+	var events;
+	switch (aType)
+	{
+		case 'mousedown':
+			events = assertEventsCount(1);
+			assertMouseEventAt(aType, aButton, aX, aY, aModifiers, 1, events[events.length-1]);
+			break;
+		case 'mouseup':
+			var detail;
+			events = assertEventsCount(1);
+			assertMouseEventAt(aType, aButton, aX, aY, aModifiers, 0, events[events.length-1]);
+			break;
+		case 'click':
+			events = assertEventsCount(3);
+			assertMouseEventAt('mousedown', aButton, aX, aY, aModifiers, 1, events[events.length-3]);
+			assertMouseEventAt('mouseup', aButton, aX, aY, aModifiers, 1, events[events.length-2]);
+			assertMouseEventAt('click', aButton, aX, aY, aModifiers, 1, events[events.length-1]);
+			break;
+		case 'dblclick':
+			events = assertEventsCount(7);
+			assertMouseEventAt('mousedown', aButton, aX, aY, aModifiers, 1, events[events.length-7]);
+			assertMouseEventAt('mouseup', aButton, aX, aY, aModifiers, 1, events[events.length-6]);
+			assertMouseEventAt('click', aButton, aX, aY, aModifiers, 1, events[events.length-5]);
+			assertMouseEventAt('mousedown', aButton, aX, aY, aModifiers, 2, events[events.length-4]);
+			assertMouseEventAt('mouseup', aButton, aX, aY, aModifiers, 2, events[events.length-3]);
+			assertMouseEventAt('click', aButton, aX, aY, aModifiers, 2, events[events.length-2]);
+			assertMouseEventAt('dblclick', aButton, aX, aY, aModifiers, 2, events[events.length-1]);
+			break;
+	}
 }
 
-function test_mousedownOn()
+function assertOnArgs(aMethod, aType, aButton, aModifiers, aArgs)
 {
+	if (!aModifiers) aModifiers = {};
+	aMethod.apply(actionModule, aArgs);
+	var events;
+	switch (aType)
+	{
+		case 'mousedown':
+			events = assertEventsCount(1);
+			assertMouseEventOn(aType, aButton, aModifiers, 1, events[events.length-1]);
+			break;
+		case 'mouseup':
+			var detail;
+			events = assertEventsCount(1);
+			assertMouseEventOn(aType, aButton, aModifiers, 0, events[events.length-1]);
+			break;
+		case 'click':
+			events = assertEventsCount(3);
+			assertMouseEventOn('mousedown', aButton, aModifiers, 1, events[events.length-3]);
+			assertMouseEventOn('mouseup', aButton, aModifiers, 1, events[events.length-2]);
+			assertMouseEventOn('click', aButton, aModifiers, 1, events[events.length-1]);
+			break;
+		case 'dblclick':
+			events = assertEventsCount(7);
+			assertMouseEventOn('mousedown', aButton, aModifiers, 1, events[events.length-7]);
+			assertMouseEventOn('mouseup', aButton, aModifiers, 1, events[events.length-6]);
+			assertMouseEventOn('click', aButton, aModifiers, 1, events[events.length-5]);
+			assertMouseEventOn('mousedown', aButton, aModifiers, 2, events[events.length-4]);
+			assertMouseEventOn('mouseup', aButton, aModifiers, 2, events[events.length-3]);
+			assertMouseEventOn('click', aButton, aModifiers, 2, events[events.length-2]);
+			assertMouseEventOn('dblclick', aButton, aModifiers, 2, events[events.length-1]);
+			break;
+	}
+}
+
+test_mouseEventAt.parameters = [
+	{ type : 'mousedown', method : 'mousedownAt', button : 0 },
+	{ type : 'mousedown', method : 'middleMousedownAt', button : 1 },
+	{ type : 'mousedown', method : 'rightMousedownAt', button : 2 },
+	{ type : 'mouseup', method : 'mouseupAt', button : 0 },
+	{ type : 'mouseup', method : 'middleMouseupAt', button : 1 },
+	{ type : 'mouseup', method : 'rightMouseupAt', button : 2 },
+	{ type : 'click', method : 'clickAt', button : 0 },
+	{ type : 'click', method : 'middleClickAt', button : 1 },
+	{ type : 'click', method : 'rightClickAt', button : 2 },
+	{ type : 'dblclick', method : 'dblclickAt', button : 0 },
+	{ type : 'dblclick', method : 'middleDblclickAt', button : 1 },
+	{ type : 'dblclick', method : 'rightDblclickAt', button : 2 }
+];
+function test_mouseEventAt(aParameter)
+{
+	utils.setPref('nglayout.events.dispatchLeftClickOnly', false);
+	utils.setPref('general.autoScroll', false);
 	target = $('clickable-box');
 	boxObject = utils.getBoxObjectFor(target);
-	var event;
+	lastCount = 0;
 
-	modifiers = { ctrlKey : true };
-	actionModule.rightMousedownOn(target, modifiers);
-	events = assertEventsCount(1);
-	assertMouseEventOn('mousedown', 2, modifiers, 1, events[events.length-1]);
+	var x = boxObject.x;
+	var y = boxObject.y;
+	var screenX = boxObject.screenX;
+	var screenY = boxObject.screenY;
 
-	modifiers = { ctrlKey : true };
-	actionModule.middleMouseupOn(target, modifiers);
-	events = assertEventsCount(1);
-	assertMouseEventOn('mouseup', 1, modifiers, 0, events[events.length-1]);
+	yield Do(assertAtArgs(actionModule[aParameter.method],
+	                      aParameter.type, aParameter.button,
+	                      screenX+5, screenY+5, null,
+	                      [content, x+5, y+5]));
+	yield Do(assertAtArgs(actionModule[aParameter.method],
+	                      aParameter.type, aParameter.button,
+	                      screenX+8, screenY+8, { ctrlKey : true },
+	                      [content, x+8, y+8, { ctrlKey : true }]));
+	yield Do(assertAtArgs(actionModule[aParameter.method],
+	                      aParameter.type, aParameter.button,
+	                      screenX+10, screenY+10, { shiftKey : true, altKey : true },
+	                      [content, { shiftKey : true, altKey : true }, x+10, y+10]));
+	yield Do(assertAtArgs(actionModule[aParameter.method],
+	                      aParameter.type, aParameter.button,
+	                      screenX+15, screenY+15, null,
+	                      [screenX+15, screenY+15]));
+}
 
-	modifiers = { shiftKey : true };
-	actionModule.clickOn(target, modifiers);
-	events = assertEventsCount(3);
-	assertMouseEventOn('mousedown', 0, modifiers, 1, events[events.length-3]);
-	assertMouseEventOn('mouseup', 0, modifiers, 1, events[events.length-2]);
-	assertMouseEventOn('click', 0, modifiers, 1, events[events.length-1]);
+test_mouseEventOn.parameters = [
+	{ type : 'mousedown', method : 'mousedownOn', button : 0 },
+	{ type : 'mousedown', method : 'middleMousedownOn', button : 1 },
+	{ type : 'mousedown', method : 'rightMousedownOn', button : 2 },
+	{ type : 'mouseup', method : 'mouseupOn', button : 0 },
+	{ type : 'mouseup', method : 'middleMouseupOn', button : 1 },
+	{ type : 'mouseup', method : 'rightMouseupOn', button : 2 },
+	{ type : 'click', method : 'clickOn', button : 0 },
+	{ type : 'click', method : 'middleClickOn', button : 1 },
+	{ type : 'click', method : 'rightClickOn', button : 2 },
+	{ type : 'dblclick', method : 'dblclickOn', button : 0 },
+	{ type : 'dblclick', method : 'middleDblclickOn', button : 1 },
+	{ type : 'dblclick', method : 'rightDblclickOn', button : 2 }
+];
+function test_mouseEventOn(aParameter)
+{
+	utils.setPref('nglayout.events.dispatchLeftClickOnly', false);
+	utils.setPref('general.autoScroll', false);
+	target = $('clickable-box');
+	boxObject = utils.getBoxObjectFor(target);
+	lastCount = 0;
 
-	modifiers = { shiftKey : true };
-	actionModule.dblclickOn(target, modifiers);
-	events = assertEventsCount(7);
-	assertMouseEventOn('mousedown', 0, modifiers, 1, events[events.length-7]);
-	assertMouseEventOn('mouseup', 0, modifiers, 1, events[events.length-6]);
-	assertMouseEventOn('click', 0, modifiers, 1, events[events.length-5]);
-	assertMouseEventOn('mousedown', 0, modifiers, 2, events[events.length-4]);
-	assertMouseEventOn('mouseup', 0, modifiers, 2, events[events.length-3]);
-	assertMouseEventOn('click', 0, modifiers, 2, events[events.length-2]);
-	assertMouseEventOn('dblclick', 0, modifiers, 2, events[events.length-1]);
+	yield Do(assertOnArgs(actionModule[aParameter.method],
+	                      aParameter.type, aParameter.button, null,
+	                      [target]));
+	yield Do(assertOnArgs(actionModule[aParameter.method],
+	                      aParameter.type, aParameter.button, { ctrlKey : true },
+	                      [target, { ctrlKey : true }]));
+	yield Do(assertOnArgs(actionModule[aParameter.method],
+	                      aParameter.type, aParameter.button, { shiftKey : true, altKey : true },
+	                      [{ shiftKey : true, altKey : true }, target]));
 }
 
 
