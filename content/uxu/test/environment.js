@@ -647,6 +647,7 @@ createTempFolder
 Do
 doIteration
 dump
+evalInSandbox
 fixupIncompleteURI
 getClipBoard
 getFileFromKeyword

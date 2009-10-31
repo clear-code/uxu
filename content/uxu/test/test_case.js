@@ -1250,7 +1250,7 @@ function _onReceiveRemoteResult(aResult)
 {
 	var result;
 	try {
-		eval('result = '+aResult);
+		result = utils.evalInSandbox(aResult);
 		result[result.length-1].results.forEach(function(aResult) {
 			this._onFinish(this._tests[aResult.index], aResult.type);
 		}, this);

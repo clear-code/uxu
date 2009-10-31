@@ -294,7 +294,7 @@ function startup()
 	if (!running && lastResult) {
 		mainDeck.selectedIndex = 0;
 		try {
-			eval('gLog.items = '+lastResult);
+			gLog.items = utils.evalInSandbox(lastResult);
 			var current = 0;
 			var step = 20;
 			var progress = _('initializingProgress');

@@ -70,19 +70,28 @@ GlobalService.prototype = {
 
 
 			case 'uxu-start-runner-request':
-				if (aData) eval('aData = '+aData);
-				this.startRunner(aSubject, aData);
+				this.startRunner(aSubject, this.evalInSandbox(aData));
 				return;
 
 			case 'uxu-start-server-request':
-				if (aData) eval('aData = '+aData);
-				this.startServer(aSubject, aData);
+				this.startServer(aSubject, this.evalInSandbox(aData));
 				return;
 
 			case 'uxu-open-config-request':
 				this.openConfig(aSubject);
 				return;
 		}
+	},
+ 
+	evalInSandbox : function(aCode, aOwner) 
+	{
+		try {
+			var sandbox = new Components.utils.Sandbox(aOwner || 'about:blank');
+			return Components.utils.evalInSandbox(aCode, sandbox);
+		}
+		catch(e) {
+		}
+		return void(0);
 	},
  
 	init : function() 

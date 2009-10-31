@@ -1,6 +1,7 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*- 
 
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
+var utils  = lib_module.require('package', 'utils');
 
 var inherits = lib_module.require('class', 'observer');
 
@@ -21,6 +22,6 @@ function observe(aSubject, aTopic, aData)
 {
 	this.subjects.push(aSubject);
 	this.topics.push(aTopic);
-	eval('aData = '+aData);
+	aData = utils.evalInSandbox(aData);
 	this.data.push(aData);
 }

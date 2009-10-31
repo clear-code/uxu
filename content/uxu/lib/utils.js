@@ -10,6 +10,17 @@ var prefread = lib_module.require('package', 'prefread');
 var IOService = Cc['@mozilla.org/network/io-service;1']
 		.getService(Ci.nsIIOService);
 	
+function evalInSandbox(aCode, aOwner) 
+{
+	try {
+		var sandbox = new Components.utils.Sandbox(aOwner || 'about:blank');
+		return Components.utils.evalInSandbox(aCode, sandbox);
+	}
+	catch(e) {
+	}
+	return void(0);
+}
+ 
 // DOMÉmÅ[ÉhéÊìæ 
 	
 function _getDocument(aOwner) 
@@ -396,7 +407,7 @@ function readJSON(aTarget, aEncoding, aScope)
 	var input = this.readFrom(aTarget, aEncoding || this.getPref('extensions.uxu.defaultEncoding'));
 	if (aScope) input = this.processTemplate(input, aScope);
 	try {
-		eval('input = ('+input+')');
+		input = evalInSandbox('('+input+')');
 	}
 	catch(e) {
 		throw new Error(bundle.getFormattedString('error_utils_readJSON_error', [e]));
@@ -2191,8 +2202,7 @@ function parseTSV(aInput)
  
 function _parseParametersFrom2DArray(aArray) 
 {
-	var data;
-	eval('data = '+aArray.toSource()); // duplicate object for safe
+	var data = evalInSandbox(aArray.toSource()); // duplicate object for safe
 	var parameters;
 	var columns = data.shift();
 	var isHash = !columns[0];
@@ -2301,7 +2311,7 @@ function _convertParameterType(aInput, aType)
 		case 'boolean':
 		case 'bool':
 			try {
-				eval('data = !!('+(source || '""')+')');
+				data = evalInSandbox('!!('+(source || '""')+')');
 			}
 			catch(e) {
 				throw new Error(bundle.getFormattedString('error_utils_parameters_from_CSV_invalid_boolean', [aInput]));
@@ -2310,7 +2320,7 @@ function _convertParameterType(aInput, aType)
 		case 'object':
 		case 'json':
 			try {
-				eval('data = ('+(source || '""')+')');
+				data = evalInSandbox('('+(source || '""')+')');
 			}
 			catch(e) {
 				throw new Error(bundle.getFormattedString('error_utils_parameters_from_CSV_invalid_object', [aInput]));
