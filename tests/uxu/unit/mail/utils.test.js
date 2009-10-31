@@ -62,8 +62,7 @@ function testEmulateSendMessage()
 	assert.equals('uxu:mail:sent', observer.lastTopic);
 	assert.isTrue(observer.lastData);
 
-	var data ;
-	eval('data = '+observer.lastData);
+	var data = utils.evalInSandbox(observer.lastData);
 	assert.isTrue(data);
 
 	assert.equals('from@foobar', data.from);

@@ -21,7 +21,7 @@ function assertEventsCount(aCount, aOwner)
 	var events;
 	var result = $('log', aOwner).textContent;
 	if (result) {
-		eval('events = '+result);
+		events = utils.evalInSandbox(result);
 	}
 	else {
 		events = [];
