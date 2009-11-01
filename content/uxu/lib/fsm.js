@@ -20,10 +20,13 @@ function go(aStateName, aContext, aStateHandlers, aStateTransitions, aEventHandl
 
 			var nextState = aStateTransitions[aStateName][aExitResult];
 			if (nextState) {
-				if (++aNest.count < MAX_NEST)
+				if (++aNest.count < MAX_NEST) {
 					go(nextState, aContext, aStateHandlers, aStateTransitions, aEventHandlers, aNest);
-				else
-					window.setTimeout(go, 0, nextState, aContext, aStateHandlers, aStateTransitions, aEventHandlers);
+				}
+				else {
+					aNest.count = 0;
+					window.setTimeout(go, 0, nextState, aContext, aStateHandlers, aStateTransitions, aEventHandlers, aNest);
+				}
 			}
 		}
 	);
