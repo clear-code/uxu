@@ -417,29 +417,51 @@ function getChromeWindows(aOptions)
   
 // load page 
 	
-function _waitBrowserLoad(aBrowser, aLoadedFlag, aOnComplete) 
+function _waitBrowserLoad(aTab, aBrowser, aLoadedFlag, aOnComplete) 
 {
 	if (aBrowser.localName == 'tabbrowser') {
-		aBrowser = aBrowser.selectedTab.linkedBrowser;
+		aTab = aBrowser.selectedTab;
+		aBrowser = aTab.linkedBrowser;
 	}
 	var listener = {
 		started : false,
-		onProgressChange : function() {},
+		finished : false,
+		isTabComplete : function() {
+			return (aTab && aTab.getAttribuet('busy') != 'true');
+		},
+		onProgressChange : function() {
+			if (this.isTabComplete())
+				this.onFinish()
+		},
 		onStateChange : function(aWebProgress, aRequest, aStateFlags, aStatus)
 		{
 			if (aStateFlags & Ci.nsIWebProgressListener.STATE_START &&
 				aStateFlags & Ci.nsIWebProgressListener.STATE_IS_NETWORK) {
 				this.started = true;
 			}
-			if (this.started &&
-				aStateFlags & Ci.nsIWebProgressListener.STATE_STOP &&
-				aStateFlags & Ci.nsIWebProgressListener.STATE_IS_NETWORK) {
+			if (
+				(
+					this.started &&
+					aStateFlags & Ci.nsIWebProgressListener.STATE_STOP &&
+					aStateFlags & Ci.nsIWebProgressListener.STATE_IS_NETWORK
+				) ||
+				this.isTabComplete()
+				) {
 				this.onFinish();
 			}
 		},
-		onLocationChange : function() {},
-		onStatusChange : function() {},
-		onSecurityChange : function() {},
+		onLocationChange : function() {
+			if (this.isTabComplete())
+				this.onFinish()
+		},
+		onStatusChange : function() {
+			if (this.isTabComplete())
+				this.onFinish()
+		},
+		onSecurityChange : function() {
+			if (this.isTabComplete())
+				this.onFinish()
+		},
 		QueryInterface : function(aIID)
 		{
 			if (aIID.equals(Ci.nsIWebProgressListener) ||
@@ -451,6 +473,8 @@ function _waitBrowserLoad(aBrowser, aLoadedFlag, aOnComplete)
 		},
 		onFinish : function()
 		{
+			if (this.finished) return;
+			this.finished = true;
 			aBrowser.removeProgressListener(listener);
 			aLoadedFlag.value = true;
 			if (aOnComplete && typeof aOnComplete == 'function')
@@ -458,9 +482,12 @@ function _waitBrowserLoad(aBrowser, aLoadedFlag, aOnComplete)
 		}
 	};
 	aBrowser.addProgressListener(listener);
-	window.setTimeout(function() {
-		if (!listener.started) listener.onFinish();
-	}, 0);
+	var checkFinish = function() {
+		if (!listener.started || listener.isTabComplete())
+			listener.onFinish();
+	};
+	window.setTimeout(checkFinish, 0);
+	window.setTimeout(checkFinish, 500); // 0ミリ秒だと検出できない場合があるので念のため
 }
  
 // テスト用のFirefoxウィンドウの現在のタブにURIを読み込む 
@@ -481,7 +508,7 @@ function loadURI(aURI, aOptions)
 	if (!b) return { value : true };
 	b.stop();
 	window.setTimeout(function() {
-		_waitBrowserLoad(b, loadedFlag);
+		_waitBrowserLoad(null, b, loadedFlag);
 		b.loadURI(aURI, aOptions.referrer || null);
 	}, 0);
 
@@ -513,7 +540,7 @@ function addTab(aURI, aOptions)
 	var tab = win.gBrowser.addTab();
 	tab.linkedBrowser.stop();
 	window.setTimeout(function() {
-		_waitBrowserLoad(tab.linkedBrowser, loadedFlag, function() {
+		_waitBrowserLoad(tab, tab.linkedBrowser, loadedFlag, function() {
 			loadedFlag.tab = tab;
 			if (aOptions.selected) {
 				win.gBrowser.selectedTab = tab;
