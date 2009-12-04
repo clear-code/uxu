@@ -427,41 +427,30 @@ function _waitBrowserLoad(aTab, aBrowser, aLoadedFlag, aOnComplete)
 		started : false,
 		finished : false,
 		isTabComplete : function() {
-			return (aTab && aTab.getAttribuet('busy') != 'true');
+			return this.started && aTab && aTab.getAttribute('busy') != 'true';
 		},
-		onProgressChange : function() {
-			if (this.isTabComplete())
-				this.onFinish()
-		},
+		onProgressChange : function() {},
 		onStateChange : function(aWebProgress, aRequest, aStateFlags, aStatus)
 		{
 			if (aStateFlags & Ci.nsIWebProgressListener.STATE_START &&
 				aStateFlags & Ci.nsIWebProgressListener.STATE_IS_NETWORK) {
 				this.started = true;
 			}
-			if (
-				(
-					this.started &&
-					aStateFlags & Ci.nsIWebProgressListener.STATE_STOP &&
-					aStateFlags & Ci.nsIWebProgressListener.STATE_IS_NETWORK
-				) ||
-				this.isTabComplete()
-				) {
+			if (this.started &&
+				aStateFlags & Ci.nsIWebProgressListener.STATE_STOP &&
+				aStateFlags & Ci.nsIWebProgressListener.STATE_IS_NETWORK) {
 				this.onFinish();
 			}
+			else {
+				window.setTimeout(function(aSelf) {
+					if (aSelf.isTabComplete())
+						aSelf.onFinish();
+				}, 100, this);
+			}
 		},
-		onLocationChange : function() {
-			if (this.isTabComplete())
-				this.onFinish()
-		},
-		onStatusChange : function() {
-			if (this.isTabComplete())
-				this.onFinish()
-		},
-		onSecurityChange : function() {
-			if (this.isTabComplete())
-				this.onFinish()
-		},
+		onLocationChange : function() {},
+		onStatusChange : function() {},
+		onSecurityChange : function() {},
 		QueryInterface : function(aIID)
 		{
 			if (aIID.equals(Ci.nsIWebProgressListener) ||
@@ -482,12 +471,10 @@ function _waitBrowserLoad(aTab, aBrowser, aLoadedFlag, aOnComplete)
 		}
 	};
 	aBrowser.addProgressListener(listener);
-	var checkFinish = function() {
-		if (!listener.started || listener.isTabComplete())
+	window.setTimeout(function() {
+		if (!listener.started)
 			listener.onFinish();
-	};
-	window.setTimeout(checkFinish, 0);
-	window.setTimeout(checkFinish, 500); // 0ミリ秒だと検出できない場合があるので念のため
+	}, 0);
 }
  
 // テスト用のFirefoxウィンドウの現在のタブにURIを読み込む 
