@@ -38,13 +38,13 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 	ondragexit="nsDragAndDrop.dragExit(event, fileDNDObserver);"
 	ondragdrop="nsDragAndDrop.drop(event, fileDNDObserver);">
 
-	<script type="application/x-javascript" src="chrome://global/content/nsDragAndDrop.js"/>
-	<script type="application/x-javascript" src="chrome://global/content/nsTransferable.js"/>
-	<script type="application/x-javascript;version=1.7" src="chrome://uxu/content/lib/module_manager.js"/>
-	<script type="application/x-javascript;version=1.7" src="chrome://uxu/content/ui/runner.js"/>
+	<script type="application/javascript" src="chrome://global/content/nsDragAndDrop.js"/>
+	<script type="application/javascript" src="chrome://global/content/nsTransferable.js"/>
+	<script type="application/javascript" src="chrome://uxu/content/lib/module_manager.js"/>
+	<script type="application/javascript" src="chrome://uxu/content/ui/runner.js"/>
 
-	<script type="application/x-javascript" src="chrome://global/content/nsUserSettings.js"/>
-	<script type="application/x-javascript" src="chrome://uxu/content/commands.js"/>
+	<script type="application/javascript" src="chrome://global/content/nsUserSettings.js"/>
+	<script type="application/javascript" src="chrome://uxu/content/commands.js"/>
 
 	<!-- COMMANDS -->
 

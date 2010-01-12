@@ -657,7 +657,7 @@ function runScriptInFrame(aScript, aFrame, aVersion)
 {
 	if (!aVersion) aVersion = '1.7';
 	var script = aFrame.document.createElementNS('http://www.w3.org/1999/xhtml', 'script');
-	script.setAttribute('type', 'application/x-javascript; version='+aVersion);
+	script.setAttribute('type', 'application/javascript; version='+aVersion);
 	script.appendChild(aFrame.document.createTextNode(aScript));
 	aFrame.document.documentElement.appendChild(script);
 }
