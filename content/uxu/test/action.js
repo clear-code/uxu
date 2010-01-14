@@ -1211,26 +1211,48 @@ function inputTextToField(aElement, aValue, aAppend, aDontFireKeyEvents)
    
 /* ç¿ïWëÄçÏ */ 
 	
+const WindowMediator = Cc['@mozilla.org/appshell/window-mediator;1']
+							.getService(Ci.nsIWindowMediator);
 function _getWindowFromScreenPoint(aScreenX, aScreenY) 
 {
-	var windows = Cc['@mozilla.org/appshell/window-mediator;1']
-							.getService(Ci.nsIWindowMediator)
-							.getZOrderDOMWindowEnumerator(null, true);
+	var windows = WindowMediator.getZOrderDOMWindowEnumerator(null, true);
+	if (windows.hasMoreElements()) {
+		while (windows.hasMoreElements())
+		{
+			let w = windows.getNext().QueryInterface(Ci.nsIDOMWindowInternal);
+			if (_isInside({
+					x      : w.screenX,
+					y      : w.screenY,
+					width  : w.outerWidth,
+					height : w.outerHeight
+				}, aScreenX, aScreenY))
+				return w;
+		}
+		throw new Error('action._getWindowFromScreenPoint:: there is no window at '+aScreenX+', '+aScreenY+'!');
+	}
+	// By the bug 156333, we cannot find windows by their Z order on Linux.
+	// https://bugzilla.mozilla.org/show_bug.cgi?id=156333
+	// This is alternative way for failover.
+	windows = WindowMediator.getEnumerator(null);
+	var array = [];
 	while (windows.hasMoreElements())
 	{
-		let w = windows.getNext().QueryInterface(Ci.nsIDOMWindowInternal);
-		let left   = w.screenX;
-		let top    = w.screenY;
-		let right  = left + w.outerWidth;
-		let bottom = top + w.outerHeight;
-		if (
-				left   <= aScreenX &&
-				right  >= aScreenX &&
-				top    <= aScreenY &&
-				bottom >= aScreenY
-			)
-			return w;
+		array.push(windows.getNext().QueryInterface(Ci.nsIDOMWindowInternal));
 	}
+	var youngest;
+	array.reverse()
+		.some(function(aWindow) {
+			youngest = _isInside({
+						x      : aWindow.screenX,
+						y      : aWindow.screenY,
+						width  : aWindow.outerWidth,
+						height : aWindow.outerHeight
+					}, aScreenX, aScreenY) ?
+						aWindow :
+						null ;
+			return youngest;
+		});
+	if (youngest) return youngest;
 	throw new Error('action._getWindowFromScreenPoint:: there is no window at '+aScreenX+', '+aScreenY+'!');
 }
 function _getFrameAndScreenPointFromArguments(aArguments)
