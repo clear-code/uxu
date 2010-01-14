@@ -1231,7 +1231,7 @@ function _getWindowFromScreenPoint(aScreenX, aScreenY)
 			)
 			return w;
 	}
-	new Error('action._getWindowFromScreenPoint:: there is no window at '+aScreenX+', '+aScreenY+'!');
+	throw new Error('action._getWindowFromScreenPoint:: there is no window at '+aScreenX+', '+aScreenY+'!');
 }
 function _getFrameAndScreenPointFromArguments(aArguments)
 {
