@@ -7,7 +7,7 @@ var uri;
 var observer = {
 		observe : function(aSubject, aTopic, aData)
 		{
-			if (aTopic != 'uxu-redirect-check') return;
+			if (aTopic != 'uxu-mapping-check') return;
 			aSubject.QueryInterface(Ci.nsISupportsString)
 				.data = 'http://www.example.jp/';
 		}
@@ -53,40 +53,40 @@ function addObserver()
 {
 	Cc['@mozilla.org/observer-service;1']
 			.getService(Ci.nsIObserverService)
-			.addObserver(observer, 'uxu-redirect-check', false);
+			.addObserver(observer, 'uxu-mapping-check', false);
 }
 function removeObserver()
 {
 	Cc['@mozilla.org/observer-service;1']
 			.getService(Ci.nsIObserverService)
-			.removeObserver(observer, 'uxu-redirect-check');
+			.removeObserver(observer, 'uxu-mapping-check');
 }
 
 
-function test_redirectURI_noredirect()
+function test_mapURI_nomapping()
 {
-	assert.isNull(handler.redirectURI(uri));
+	assert.isNull(handler.mapURI(uri));
 }
 
-test_redirectURI_redirected.setUp = function() { addObserver(); };
-test_redirectURI_redirected.tearDown = function() { removeObserver(); };
-function test_redirectURI_redirected()
+test_mapURI_mapped.setUp = function() { addObserver(); };
+test_mapURI_mapped.tearDown = function() { removeObserver(); };
+function test_mapURI_mapped()
 {
-	var newURI = handler.redirectURI(uri);
+	var newURI = handler.mapURI(uri);
 	assert.isNotNull(newURI);
 	assert.equals('http://www.example.jp/', newURI.spec);
 }
 
 
-function test_newChannel_noredirect()
+function test_newChannel_nomapping()
 {
 	var channel = handler.newChannel(uri);
 	assert.equals(uri.spec, channel.URI.spec);
 }
 
-test_newChannel_redirected.setUp = function() { addObserver(); };
-test_newChannel_redirected.tearDown = function() { removeObserver(); };
-function test_newChannel_redirected()
+test_newChannel_mapped.setUp = function() { addObserver(); };
+test_newChannel_mapped.tearDown = function() { removeObserver(); };
+function test_newChannel_mapped()
 {
 	var channel = handler.newChannel(uri);
 	assert.equals('http://www.example.jp/', channel.URI.spec);

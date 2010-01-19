@@ -813,7 +813,7 @@ ProtocolHandlerProxy.prototype = {
 	newChannel: function(aURI)
 	{
 		if (Pref.getBoolPref(kUXU_TEST_RUNNING)) {
-			var uri = this.redirectURI(aURI);
+			var uri = this.mapURI(aURI);
 			if (uri)
 				return this.getNativeProtocolHandler(uri.scheme).newChannel(uri);
 		}
@@ -824,7 +824,7 @@ ProtocolHandlerProxy.prototype = {
 	newProxiedChannel : function(aURI, aProxyInfo)
 	{
 		if (Pref.getBoolPref(kUXU_TEST_RUNNING)) {
-			var uri = this.redirectURI(aURI);
+			var uri = this.mapURI(aURI);
 			if (uri) {
 				var handler = this.getNativeProtocolHandler(uri.scheme);
 				try {
@@ -851,13 +851,13 @@ ProtocolHandlerProxy.prototype = {
 		return this.mProtocolHandler.GetWeakReference();
 	},
  
-	redirectURI : function(aURI) 
+	mapURI : function(aURI) 
 	{
 		if (Pref.getBoolPref(kUXU_TEST_RUNNING)) {
 			var uri = Cc['@mozilla.org/supports-string;1']
 						.createInstance(Ci.nsISupportsString);
 			uri.data = aURI.spec;
-			ObserverService.notifyObservers(uri, 'uxu-redirect-check', null);
+			ObserverService.notifyObservers(uri, 'uxu-mapping-check', null);
 			if (uri.data && uri.data != aURI.spec) {
 				var schemer = uri.data.split(':')[0];
 				var handler = this.getNativeProtocolHandler(schemer);

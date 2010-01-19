@@ -193,15 +193,15 @@ function constructor(aTitle, aOptions)
 
 	this.done = false;
 
-	this._redirect = aOptions.redirect || null;
+	this._mapping = aOptions.mapping || aOptions.redirect || null;
 	this.__defineSetter__(
-		'redirect', function(aRedirect) {
-			this._redirect = aRedirect;
-			return aRedirect;
+		'mapping', function(aMapping) {
+			this._mapping = aMapping;
+			return aMapping;
 		});
 	this.__defineGetter__(
-		'redirect', function() {
-			return this._redirect;
+		'mapping', function() {
+			return this._mapping;
 		});
 
 	this.notifications = [];
@@ -305,7 +305,7 @@ function onStart()
 {
 	this.addListener(this.environment.__proto__);
 	this.environment.__proto__.addListener(this);
-	if (this._redirect) {
+	if (this._mapping) {
 		if (
 			!('{3d04c1d0-4e6c-11de-8a39-0800200c9a66}' in Components.classesByID) ||
 			(Cc['@mozilla.org/network/protocol;1?name=http'].getService() !=
@@ -320,17 +320,17 @@ function onStart()
 				this.fireEvent('Error', bundle.getString('error_proxy_disabled_pref'));
 		}
 		else {
-			ObserverService.addObserver(this , 'uxu-redirect-check', false);
-			this._redirectObserverRegistered = true;
+			ObserverService.addObserver(this , 'uxu-mapping-check', false);
+			this._mappingObserverRegistered = true;
 		}
 	}
 }
  
 function onFinish() 
 {
-	if (this._redirectObserverRegistered) {
-		ObserverService.removeObserver(this , 'uxu-redirect-check');
-		this._redirectObserverRegistered = false;
+	if (this._mappingObserverRegistered) {
+		ObserverService.removeObserver(this , 'uxu-mapping-check');
+		this._mappingObserverRegistered = false;
 	}
 	this.environment.__proto__.removeListener(this);
 	this.removeAllListeners();
@@ -362,15 +362,15 @@ function onWarning(aEvent)
 function observe(aSubject, aTopic, aData)
 {
 	if (
-		aTopic != 'uxu-redirect-check' ||
-		!this._redirect
+		aTopic != 'uxu-mapping-check' ||
+		!this._mapping
 		)
 		return;
 
 	aSubject = aSubject.QueryInterface(Ci.nsISupportsString);
 
 	var currentURI = aSubject.data;
-	var newURI = utils.redirectURI(currentURI, this._redirect);
+	var newURI = utils.mapURI(currentURI, this._mapping);
 	if (newURI && newURI != currentURI)
 		aSubject.data = newURI;
 }

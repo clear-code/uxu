@@ -2147,32 +2147,32 @@ function sha256FromFile(aFile) { return computeHashFromFile(this.normalizeToFile
 function sha384FromFile(aFile) { return computeHashFromFile(this.normalizeToFile(aFile), 'sha384'); }
 function sha512FromFile(aFile) { return computeHashFromFile(this.normalizeToFile(aFile), 'sha512'); }
  
-function redirectURI(aURI, aRedirectDefinition) 
+function mapURI(aURI, aMappingDefinition) 
 {
-	if (!aRedirectDefinition) return aURI;
+	if (!aMappingDefinition) return aURI;
 
 	var newURI;
 
-	if (typeof aRedirectDefinition == 'function')
-		return aRedirectDefinition(makeURIFromSpec(aURI));
+	if (typeof aMappingDefinition == 'function')
+		return aMappingDefinition(makeURIFromSpec(aURI));
 
 	var matchers = [];
 	var targets  = [];
-	if (isArray(aRedirectDefinition)) {
-		if (aRedirectDefinition.length % 2)
-			throw new Error(bundle.getString('error_utils_invalid_redirect_definition'));
+	if (isArray(aMappingDefinition)) {
+		if (aMappingDefinition.length % 2)
+			throw new Error(bundle.getString('error_utils_invalid_mapping_definition'));
 
-		for (var i = 0, maxi = aRedirectDefinition.length; i < maxi; i = i+2)
+		for (var i = 0, maxi = aMappingDefinition.length; i < maxi; i = i+2)
 		{
-			matchers.push(aRedirectDefinition[i]);
-			targets.push(aRedirectDefinition[i+1]);
+			matchers.push(aMappingDefinition[i]);
+			targets.push(aMappingDefinition[i+1]);
 		}
 	}
 	else {
-		for (var prop in aRedirectDefinition)
+		for (var prop in aMappingDefinition)
 		{
 			matchers.push(prop);
-			targets.push(aRedirectDefinition[prop]);
+			targets.push(aMappingDefinition[prop]);
 		}
 	}
 	var regexp = new RegExp();
@@ -2193,6 +2193,10 @@ function redirectURI(aURI, aRedirectDefinition)
 		return false;
 	});
 	return newURI || aURI;
+}
+function redirectURI(aURI, aMappingDefinition)
+{
+	return mapURI.call(this, aURI, aMappingDefinition)
 }
  
 // http://liosk.blog103.fc2.com/blog-entry-75.html

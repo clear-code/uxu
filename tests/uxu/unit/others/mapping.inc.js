@@ -14,7 +14,7 @@ function tearDown()
 	yield 300;
 }
 
-function assertRedirected(aURI, aRedirectToFile)
+function assertMapped(aURI, aMapToFile)
 {
 	var referrer = aURI.indexOf('about:') > -1 ?
 				null :
@@ -23,7 +23,7 @@ function assertRedirected(aURI, aRedirectToFile)
 	assert.equals(aURI, content.location.href);
 	assert.equals('test', content.document.title);
 	if (referrer) {
-		if (aRedirectToFile)
+		if (aMapToFile)
 			assert.equals('', content.document.referrer);
 		else
 			assert.equals(referrer.spec, content.document.referrer);
@@ -47,7 +47,7 @@ function assertRedirected(aURI, aRedirectToFile)
 	assert.equals('foobar', match[3]);
 }
 
-function assertNotRedirected(aURI)
+function assertNotMapped(aURI)
 {
 	var referrer = aURI.indexOf('about:') > -1 ?
 				null :
@@ -58,7 +58,7 @@ function assertNotRedirected(aURI)
 	if (referrer) assert.equals(referrer.spec, content.document.referrer);
 }
 
-function assertRedirectedXMLHttpRequest(aURI)
+function assertMappedXMLHttpRequest(aURI)
 {
 	var request = Cc['@mozilla.org/xmlextras/xmlhttprequest;1']
 				.createInstance(Ci.nsIXMLHttpRequest)
@@ -71,7 +71,7 @@ function assertRedirectedXMLHttpRequest(aURI)
 	);
 }
 
-function assertRedirectedImageRequest(aURI)
+function assertMappedImageRequest(aURI)
 {
 	var loaded = { value : false };
 	var image = new Image();

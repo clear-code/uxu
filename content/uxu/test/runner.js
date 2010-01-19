@@ -123,7 +123,7 @@ function _getTestsFromSuite(aSuite)
 					shouldSkip    : aSuite.shouldSkip,
 					context       : aSuite.testContext,
 					targetProduct : aSuite.targetProduct,
-					redirect      : aSuite.redirect
+					mapping       : aSuite.mapping || aSuite.redirect
 				}
 			);
 
