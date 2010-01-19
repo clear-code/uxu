@@ -121,22 +121,66 @@ function $X()
 // タイマー操作 
 	
 // http://d.hatena.ne.jp/fls/20090224/p1
-const isSleepAvailable = '@mozilla.org/thread-manager;1' in Cc;
+const isThreadManagerAvailable = '@mozilla.org/thread-manager;1' in Cc; 
+ 
 function sleep(aWait) 
 {
-	if (!isSleepAvailable) {
+	if (!isThreadManagerAvailable)
 		throw new Error(bundle.getString('error_utils_sleep_is_not_available'));
+	wait(aWait);
+}
+ 
+function wait(aWaitCondition) 
+{
+	if (!isThreadManagerAvailable)
+		throw new Error(bundle.getString('error_utils_wait_is_not_available'));
+
+	var finished = { value : false };
+	switch (typeof aWaitCondition)
+	{
+		default:
+			break;
+
+		case 'number':
+			var timer = window.setTimeout(function() {
+					finished.value = true;
+					window.clearTimeout(timer);
+				}, aWaitCondition);
+			break;
+
+		case 'function':
+			var retVal = aWaitCondition();
+			if (isGeneratedIterator(retVal)) {
+				finished = doIteration(retVal);
+			}
+			else if (retVal) {
+				finished.value = true;
+			}
+			else {
+				let timer = window.setInterval(function() {
+						finished.value = aWaitCondition();
+						if (finished.value)
+							window.clearInterval(timer);
+					}, 10);
+			}
+			break;
+
+		case 'object':
+			finished = isGeneratedIterator(aWaitCondition) ?
+						doIteration(aWaitCondition) :
+						aWaitCondition ;
+			break;
 	}
-	var timer = { timeup: false };
-	var interval = window.setInterval(function() {
-			timer.timeup = true;
-		}, aWait);
+
+	var lastRun = Date.now();
+	var timeout = Math.max(0, getPref('extensions.uxu.run.timeout'));
 	var thread = Cc['@mozilla.org/thread-manager;1'].getService().mainThread;
-	while (!timer.timeup)
+	while (!finished.value)
 	{
 		thread.processNextEvent(true);
+		if (Date.now() - lastRun >= timeout)
+			throw new Error(bundle.getFormattedString('error_utils_wait_timeout', [parseInt(timeout / 1000)]));
 	}
-	window.clearInterval(interval);
 }
   
 // ファイル操作 

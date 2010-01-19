@@ -103,6 +103,32 @@ function test_sleep()
 	assert.inDelta(500, Date.now() - before, 200);
 }
 
+if (utils.checkAppVersion('3.0') < 0) test_wait.priority = 'never';
+function test_wait()
+{
+	function assertWait(aCondition, aTimeout)
+	{
+		var before = Date.now();
+		utilsModule.wait(aCondition);
+		assert.inDelta(aTimeout, Date.now() - before, 200);
+	}
+
+	assertWait(500, 500);
+
+	var object = { value : false };
+	window.setTimeout(function() {
+		object.value = true;
+	}, 500);
+	assertWait(object, 500);
+
+	var finished = false;
+	var func = function() { return finished; };
+	window.setTimeout(function() {
+		finished = true;
+	}, 500);
+	assertWait(func, 500);
+}
+
 
 function test_isGeneratedIterator()
 {
