@@ -106,27 +106,43 @@ function test_sleep()
 if (utils.checkAppVersion('3.0') < 0) test_wait.priority = 'never';
 function test_wait()
 {
-	function assertWait(aCondition, aTimeout)
+	function assertWaitSuccess(aCondition, aTimeout)
 	{
 		var before = Date.now();
 		utilsModule.wait(aCondition);
 		assert.inDelta(aTimeout, Date.now() - before, 200);
 	}
 
-	assertWait(500, 500);
+	function assertWaitFail(aCondition, aTimeout)
+	{
+		assert.raises(
+			bundle.getFormattedString('error_utils_wait_unknown_condition', [String(aCondition)]),
+			function() {
+				utilsModule.wait(aCondition);
+			}
+		);
+	}
+
+	assertWaitSuccess(500, 500);
 
 	var object = { value : false };
 	window.setTimeout(function() {
 		object.value = true;
 	}, 500);
-	assertWait(object, 500);
+	assertWaitSuccess(object, 500);
 
 	var finished = false;
 	var func = function() { return finished; };
 	window.setTimeout(function() {
 		finished = true;
 	}, 500);
-	assertWait(func, 500);
+	assertWaitSuccess(func, 500);
+
+	assertWaitFail(true);
+	assertWaitFail(false);
+	assertWaitFail('string');
+	assertWaitFail(null);
+	assertWaitFail(undefined);
 }
 
 

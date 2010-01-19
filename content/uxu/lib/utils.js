@@ -139,7 +139,7 @@ function wait(aWaitCondition)
 	switch (typeof aWaitCondition)
 	{
 		default:
-			break;
+			throw new Error(bundle.getFormattedString('error_utils_wait_unknown_condition', [String(aWaitCondition)]));
 
 		case 'number':
 			var timer = window.setTimeout(function() {
@@ -166,9 +166,14 @@ function wait(aWaitCondition)
 			break;
 
 		case 'object':
-			finished = isGeneratedIterator(aWaitCondition) ?
-						doIteration(aWaitCondition) :
-						aWaitCondition ;
+			if (isGeneratedIterator(aWaitCondition)) {
+				finished = doIteration(aWaitCondition);
+			}
+			else {
+				if (!aWaitCondition)
+					throw new Error(bundle.getFormattedString('error_utils_wait_unknown_condition', [String(aWaitCondition)]));
+				finished = aWaitCondition;
+			}
 			break;
 	}
 
