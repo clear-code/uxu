@@ -1,8 +1,48 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
 utils.include('utils_common.inc.js');
+utils.include('prefread.inc.js');
+
+var Pref = Cc['@mozilla.org/preferences;1'] 
+		.getService(Ci.nsIPrefBranch);
+
+var prefKeyRoot;
+
+function clearPref(aKey)
+{
+	try {
+		Pref.clearUserPref(aKey);
+	}
+	catch(e) {
+		Application.console.log(aKey+'\n'+e);
+	}
+}
+
+function prefsSetUp()
+{
+	prefKeyRoot = 'uxu.testing.'+parseInt(Math.random() * 65000)+'.';
+	Pref.setBoolPref(prefKeyRoot+'bool', true);
+	Pref.setIntPref(prefKeyRoot+'int', 1);
+	Pref.setCharPref(prefKeyRoot+'string', 'foobar');
+}
+
+function prefsTearDown()
+{
+	clearPref(prefKeyRoot+'bool');
+	clearPref(prefKeyRoot+'int');
+	clearPref(prefKeyRoot+'string');
+
+	defaultPrefs.forEach(function(aItem) {
+		clearPref(aItem.name);
+	});
+	userPrefs.forEach(function(aItem) {
+		clearPref(aItem.name);
+	});
+}
 
 
+test_getPref.setUp = prefsSetUp;
+test_getPref.tearDown = prefsTearDown;
 function test_getPref()
 {
 	var value;
@@ -23,6 +63,8 @@ function test_getPref()
 	assert.isNull(value);
 }
 
+test_setAndClearPref.setUp = prefsSetUp;
+test_setAndClearPref.tearDown = prefsTearDown;
 function test_setAndClearPref()
 {
 	var key = 'undefined.pref.'+parseInt(Math.random() * 65000);
@@ -56,6 +98,8 @@ function test_setAndClearPref()
 	assert.isNull(utils.getPref(key+'.string'));
 }
 
+test_loadPrefs.setUp = prefsSetUp;
+test_loadPrefs.tearDown = prefsTearDown;
 function test_loadPrefs()
 {
 	var hash;

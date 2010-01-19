@@ -1,7 +1,5 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
-utils.include('prefread.inc.js');
-
 var topDir = baseURL+'../../../../';
 
 var utilsModule;
@@ -33,10 +31,6 @@ function simpleMakeURIFromSpec(aURI)
 	return null;
 }
 
-var Pref = Cc['@mozilla.org/preferences;1'] 
-		.getService(Ci.nsIPrefBranch);
-var prefKeyRoot;
-
 function setUp()
 {
 	onWindows = /win/i.test(navigator.platform);
@@ -51,27 +45,12 @@ function setUp()
 	tempFile.append('tmp' + parseInt(Math.random() * 650000) + '.tmp');
 
 	yield 0; // to run tests progressively
-
-	prefKeyRoot = 'uxu.testing.'+parseInt(Math.random() * 65000)+'.';
-	Pref.setBoolPref(prefKeyRoot+'bool', true);
-	Pref.setIntPref(prefKeyRoot+'int', 1);
-	Pref.setCharPref(prefKeyRoot+'string', 'foobar');
 }
 
 function tearDown()
 {
 	if (tempFile.exists())
 		tempFile.remove(true);
-	utils.clearPref(prefKeyRoot+'bool', true);
-	utils.clearPref(prefKeyRoot+'int', 1);
-	utils.clearPref(prefKeyRoot+'string', 'foobar');
-
-	defaultPrefs.forEach(function(aItem) {
-		utils.clearPref(aItem.name);
-	});
-	userPrefs.forEach(function(aItem) {
-		utils.clearPref(aItem.name);
-	});
 }
 
 function $(aId)
