@@ -4625,6 +4625,10 @@ Request.prototype =
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var utils = lib_module.require('package', 'utils');
 
+var ThreadManager = 'nsIThreadManager' in Ci ?
+		Cc['@mozilla.org/thread-manager;1'].getService(Ci.nsIThreadManager) :
+		null ;
+
 function constructor(aPort, aBasePath)
 {
 	this.port = aPort;
@@ -4634,11 +4638,16 @@ function constructor(aPort, aBasePath)
 		this.mServer.registerDirectory('/', aBasePath);
 	this.mServer.registerContentType('sjs', SJS_TYPE);
 	this.mServer.identity.setPrimary('http', 'localhost', aPort);
-	this.mServer.start(aPort);
+
+	if (ThreadManager)
+		this.startInAntoherThread();
+	else
+		this.mServer.start(aPort);
 }
 
 function stop()
 {
+	if (ThreadManager) this.thread.shutdown();
 	var stopped = { value : false };
 	this.mServer.stop(function() {
 		stopped.value = true;
@@ -4650,4 +4659,26 @@ function stop()
 function isStopped()
 {
 	return !this.mServer || this.mServer.isStopped();
+}
+
+
+
+function startInAntoherThread()
+{
+	this.thread = ThreadManager.newThread(0);
+	this.thread.dispatch(this, this.thread.DISPATCH_NORMAL);
+}
+
+// nsIRunnable 
+function run()
+{
+	this.mServer.start(this.port);
+}
+
+function QueryInterface(aIID)
+{
+	if (aIID.equals(Components.interfaces.nsIRunnable) ||
+		aIID.equals(Components.interfaces.nsISupports))
+		return this;
+	throw Components.results.NS_ERROR_NO_INTERFACE;
 }
