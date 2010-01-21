@@ -101,7 +101,7 @@ function tearDownHttpServer(aPort)
 			server = aServer;
 			this._HTTPServerInstances.splice(aIndex, 1);
 			return true;
-		});
+		}, this);
 	}
 	else {
 		server = this._HTTPServerInstances.pop();
