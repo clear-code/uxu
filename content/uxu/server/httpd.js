@@ -2257,9 +2257,14 @@ ServerHandler.prototype =
   //
   registerPathHandler: function(path, handler)
   {
-    // XXX true path validation!
-    if (path.charAt(0) != "/")
-      throw Cr.NS_ERROR_INVALID_ARG;
+    // ***************************************************************************
+    // COMMENTED OUT FOR UXU
+    // ***************************************************************************
+    // By this change, UxU's httpd can work as an HTTP proxy.
+    //
+    // // XXX true path validation!
+    // if (path.charAt(0) != "/")
+    //   throw Cr.NS_ERROR_INVALID_ARG;
 
     this._handlerToField(handler, this._overridePaths, path);
   },
@@ -4661,6 +4666,21 @@ function isStopped()
 	return !this.mServer || this.mServer.isStopped();
 }
 
+
+function registerDirectory(aPath, aLocalDirectory)
+{
+	this.mServer.registerDirectory(aPath, aLocalDirectory);
+}
+
+function registerFile(aPath, aLocalFile)
+{
+	this.mServer.registerFile(aPath, aLocalFile);
+}
+
+function registerContentType(aExtension, aContentType)
+{
+	this.mServer.registerContentType(aExtension, aContentType);
+}
 
 
 function startInAntoherThread()
