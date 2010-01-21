@@ -4644,16 +4644,16 @@ function constructor(aPort, aBasePath)
 	this.mServer.registerContentType('sjs', SJS_TYPE);
 	this.mServer.identity.setPrimary('http', 'localhost', aPort);
 
-	if (ThreadManager)
-		this.startInAntoherThread();
-	else
+//	if (ThreadManager)
+//		this.startInAntoherThread();
+//	else
 		this.mServer.start(aPort);
 }
 
 function stop()
 {
-	if (ThreadManager) this.thread.shutdown();
 	var stopped = { value : false };
+//	if (ThreadManager) this.thread.shutdown();
 	this.mServer.stop(function() {
 		stopped.value = true;
 	});
