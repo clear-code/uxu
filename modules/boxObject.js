@@ -2,13 +2,21 @@ var EXPORTED_SYMBOLS = ['window'];
 var window = {};
 
 /*
- lisence: The MIT License, Copyright (c) 2009 SHIMODA "Piro" Hiroshi
+ "getBoxObjectFor()" compatibility library for Firefox 3.6 or later
+
+ Usage:
+   // use instead of HTMLDocument.getBoxObjectFor(HTMLElement)
+   var boxObject = window['piro.sakura.ne.jp']
+                         .boxObject
+                         .getBoxObjectFor(HTMLElement);
+
+ lisence: The MIT License, Copyright (c) 2009-2010 SHIMODA "Piro" Hiroshi
    http://www.cozmixng.org/repos/piro/fx3-compatibility-lib/trunk/license.txt
  original:
-   https://www.cozmixng.org/repos/piro/fx3-compatibility-lib/trunk/boxObject.js
+   http://www.cozmixng.org/repos/piro/fx3-compatibility-lib/trunk/boxObject.js
 */
 (function() {
-	const currentRevision = 2;
+	const currentRevision = 6;
 
 	if (!('piro.sakura.ne.jp' in window)) window['piro.sakura.ne.jp'] = {};
 
@@ -19,6 +27,7 @@ var window = {};
 		return;
 	}
 
+	var Cc = Components.classes;
 	var Ci = Components.interfaces;
 
 	window['piro.sakura.ne.jp'].boxObject = {
@@ -40,7 +49,8 @@ var window = {};
 					width   : boxObject.width,
 					height  : boxObject.height,
 					screenX : boxObject.screenX,
-					screenY : boxObject.screenY
+					screenY : boxObject.screenY,
+					element : aNode
 				};
 			if (!aUnify) return box;
 
@@ -65,9 +75,12 @@ var window = {};
 					width   : 0,
 					height  : 0,
 					screenX : 0,
-					screenY : 0
+					screenY : 0,
+					element : aNode
 				};
 			try {
+				var zoom = this.getZoom(aNode.ownerDocument.defaultView);
+
 				var rect = aNode.getBoundingClientRect();
 				if (aUnify) {
 					box.left   = rect.left;
@@ -88,46 +101,24 @@ var window = {};
 				}
 
 				// "width" and "height" are sizes of the "border-box".
-				box.width  = rect.right-rect.left;
-				box.height = rect.bottom-rect.top;
+				box.width  = rect.right - rect.left;
+				box.height = rect.bottom - rect.top;
 
-				// "screenX" and "screenY" are absolute positions of the "border-box".
-				box.screenX = rect.left;
-				box.screenY = rect.top;
-				var owner = aNode;
-				while (true)
-				{
-					frame = owner.ownerDocument.defaultView;
-					owner = this._getFrameOwnerFromFrame(frame);
+				box.screenX = rect.left * zoom;
+				box.screenY = rect.top * zoom;
 
-					let style = this._getComputedStyle(owner);
-					box.screenX += this._getPropertyPixelValue(style, 'border-left-width');
-					box.screenY += this._getPropertyPixelValue(style, 'border-top-width');
-
-					if (!owner) {
-						box.screenX += frame.screenX;
-						box.screenY += frame.screenY;
-						break;
-					}
-					if (owner.ownerDocument instanceof Ci.nsIDOMXULDocument) {
-						let ownerBox = owner.ownerDocument.getBoxObjectFor(owner);
-						box.screenX += ownerBox.screenX;
-						box.screenY += ownerBox.screenY;
-						break;
-					}
-
-					let ownerRect = owner.getBoundingClientRect();
-					box.screenX += ownerRect.left;
-					box.screenY += ownerRect.top;
-				}
+				box.screenX += frame.mozInnerScreenX * zoom;
+				box.screenY += frame.mozInnerScreenY * zoom;
 			}
 			catch(e) {
 			}
 
-			for (let i in box)
-			{
-				box[i] = Math.round(box[i]);
-			}
+			'x,y,screenX,screenY,width,height,left,top,right,bottom'
+				.split(',')
+				.forEach(function(aProperty) {
+					if (aProperty in box)
+						box[aProperty] = Math.round(box[aProperty]);
+				});
 
 			return box;
 		},
@@ -142,44 +133,26 @@ var window = {};
 			return parseInt(aStyle.getPropertyValue(aProperty).replace('px', ''));
 		},
 
-		_getFrameOwnerFromFrame : function(aFrame)
+		Prefs : Cc['@mozilla.org/preferences;1']
+			.getService(Ci.nsIPrefBranch)
+			.QueryInterface(Ci.nsIPrefBranch2),
+
+		getZoom : function(aFrame)
 		{
-			var parentItem = aFrame
+			try {
+				if (!this.Prefs.getBoolPref('browser.zoom.full'))
+					return 1;
+			}
+			catch(e) {
+				return 1;
+			}
+			var markupDocumentViewer = aFrame.top
 					.QueryInterface(Ci.nsIInterfaceRequestor)
 					.getInterface(Ci.nsIWebNavigation)
 					.QueryInterface(Ci.nsIDocShell)
-					.QueryInterface(Ci.nsIDocShellTreeNode)
-					.QueryInterface(Ci.nsIDocShellTreeItem)
-					.parent;
-			var isChrome = parentItem.itemType == parentItem.typeChrome;
-			var parentDocument = parentItem
-					.QueryInterface(Ci.nsIWebNavigation)
-					.document;
-			var nodes = parentDocument.evaluate(
-					'/descendant::*[contains(" frame FRAME iframe IFRAME browser tabbrowser ", concat(" ", local-name(), " "))]',
-					parentDocument,
-					null,
-					Ci.nsIDOMXPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
-					null
-				);
-			for (let i = 0, maxi = nodes.snapshotLength; i < maxi; i++)
-			{
-				let owner = nodes.snapshotItem(i);
-				if (isChrome && owner.wrappedJSObject) owner = owner.wrappedJSObject;
-				if (owner.localName == 'tabbrowser') {
-					let tabs = owner.mTabContainer.childNodes;
-					for (let i = 0, maxi = tabs.length; i < maxi; i++)
-					{
-						let browser = tabs[i].linkedBrowser;
-						if (browser.contentWindow == aFrame)
-							return browser;
-					}
-				}
-				else if (owner.contentWindow == aFrame) {
-					return owner;
-				}
-			}
-			return null;
+					.contentViewer
+					.QueryInterface(Ci.nsIMarkupDocumentViewer);
+			return markupDocumentViewer.fullZoom;
 		}
 
 	};
