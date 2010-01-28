@@ -242,47 +242,47 @@ function test_inputTextToField()
 	var events;
 	assert.equals('', input.value);
 
-	actionModule.inputTextToField(input, 'string');
-	assert.equals('string', input.value);
-	events = assertEventsCount(('string'.length * 3) + 1);
-	assert.equals(
-		{ type : 'keypress', target : 'input',
-		  keyCode : 0, charCode : 'g'.charCodeAt(0),
-		  altKey : false, ctrlKey : false, metaKey : false, shiftKey : false },
-		events[events.length-2]
-	);
-	assert.equals(
-		{ type : 'input', target : 'input' },
-		events[events.length-1]
-	);
+	var isGecko192 = utils.compareVersions(utils.platformVersion, '>=', '1.9.2');
+	// -Gecko 1.9:
+	//   keydown, keyup, keypress
+	// Gecko 1.9.2-:
+	//   keydown, keyup, keypress, input
+	var eventsCount = isGecko192 ? 4 : 3 ;
+	function assertStringInput(aInputString, aFinalString)
+	{
+		var append = aFinalString && aInputString != aFinalString;
+		actionModule.inputTextToField(input, aInputString, append);
+		assert.equals(aFinalString || aInputString, input.value);
+		events = assertEventsCount((aInputString.length * eventsCount) + 1);
+		if (isGecko192) {
+			assert.equals(
+				{ type : 'keypress', target : 'input',
+				  keyCode : 0, charCode : aInputString.charCodeAt(aInputString.length-1),
+				  altKey : false, ctrlKey : false, metaKey : false, shiftKey : false },
+				events[events.length-3]
+			);
+			assert.equals(
+				{ type : 'input', target : 'input' },
+				events[events.length-2]
+			);
+		}
+		else {
+			assert.equals(
+				{ type : 'keypress', target : 'input',
+				  keyCode : 0, charCode : aInputString.charCodeAt(aInputString.length-1).charCodeAt(0),
+				  altKey : false, ctrlKey : false, metaKey : false, shiftKey : false },
+				events[events.length-2]
+			);
+		}
+		assert.equals(
+			{ type : 'input', target : 'input' },
+			events[events.length-1]
+		);
+	}
 
-	actionModule.inputTextToField(input, 'moji');
-	assert.equals('moji', input.value);
-	events = assertEventsCount(('moji'.length * 3) + 1);
-	assert.equals(
-		{ type : 'keypress', target : 'input',
-		  keyCode : 0, charCode : 'i'.charCodeAt(0),
-		  altKey : false, ctrlKey : false, metaKey : false, shiftKey : false },
-		events[events.length-2]
-	);
-	assert.equals(
-		{ type : 'input', target : 'input' },
-		events[events.length-1]
-	);
-
-	actionModule.inputTextToField(input, 'retsu', true);
-	assert.equals('mojiretsu', input.value);
-	events = assertEventsCount(('retsu'.length * 3) + 1);
-	assert.equals(
-		{ type : 'keypress', target : 'input',
-		  keyCode : 0, charCode : 'u'.charCodeAt(0),
-		  altKey : false, ctrlKey : false, metaKey : false, shiftKey : false },
-		events[events.length-2]
-	);
-	assert.equals(
-		{ type : 'input', target : 'input' },
-		events[events.length-1]
-	);
+	assertStringInput('string');
+	assertStringInput('moji');
+	assertStringInput('retsu', 'mojiretsu');
 
 	actionModule.inputTextToField(input, 'foobar', false, true);
 	assert.equals('foobar', input.value);

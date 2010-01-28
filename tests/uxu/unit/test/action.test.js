@@ -272,14 +272,35 @@ function test_keyupOn()
 
 function assertInput(aInputString, aFinalString)
 {
+	var isGecko192 = utils.compareVersions(utils.platformVersion, '>=', '1.9.2');
+
 	assert.equals(aFinalString, target.value);
-	var events = assertEventsCount((aInputString.length * 3) + 1);
-	assert.equals(
-		{ type : 'keypress', target : 'input',
-		  keyCode : 0, charCode : aInputString.charCodeAt(aInputString.length-1),
-		  altKey : false, ctrlKey : false, metaKey : false, shiftKey : false },
-		events[events.length-2]
-	);
+	// -Gecko 1.9:
+	//   keydown, keyup, keypress
+	// Gecko 1.9.2-:
+	//   keydown, keyup, keypress, input
+	var eventsCount = isGecko192 ? 4 : 3 ;
+	var events = assertEventsCount((aInputString.length * eventsCount) + 1);
+	if (isGecko192) {
+		assert.equals(
+			{ type : 'keypress', target : 'input',
+			  keyCode : 0, charCode : aInputString.charCodeAt(aInputString.length-1),
+			  altKey : false, ctrlKey : false, metaKey : false, shiftKey : false },
+			events[events.length-3]
+		);
+		assert.equals(
+			{ type : 'input', target : 'input' },
+			events[events.length-2]
+		);
+	}
+	else {
+		assert.equals(
+			{ type : 'keypress', target : 'input',
+			  keyCode : 0, charCode : aInputString.charCodeAt(aInputString.length-1),
+			  altKey : false, ctrlKey : false, metaKey : false, shiftKey : false },
+			events[events.length-2]
+		);
+	}
 	assert.equals(
 		{ type : 'input', target : 'input' },
 		events[events.length-1]
