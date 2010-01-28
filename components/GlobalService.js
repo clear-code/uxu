@@ -193,9 +193,11 @@ GlobalService.prototype = {
  
 	checkInstallGlobal : function() 
 	{
-		var UpdateService = Cc['@mozilla.org/updates/update-service;1']
-							.getService(Ci.nsIApplicationUpdateService);
-		if (!UpdateService.canUpdate) {
+		var UpdateService = '@mozilla.org/updates/update-service;1' in Cc ?
+				Cc['@mozilla.org/updates/update-service;1']
+							.getService(Ci.nsIApplicationUpdateService) :
+				null ;
+		if (!UpdateService || !UpdateService.canUpdate) {
 			if (Pref.getBoolPref(kUXU_INSTALL_GLOBAL))
 				Pref.setBoolPref(kUXU_INSTALL_GLOBAL, false);
 			return;
