@@ -142,6 +142,9 @@ function wait(aWaitCondition)
 			throw new Error(bundle.getFormattedString('error_utils_wait_unknown_condition', [String(aWaitCondition)]));
 
 		case 'number':
+			if (aWaitCondition < 0)
+				throw new Error(bundle.getFormattedString('error_utils_wait_unknown_condition', [String(aWaitCondition)]));
+
 			var timer = window.setTimeout(function() {
 					finished.value = true;
 					window.clearTimeout(timer);
@@ -170,7 +173,7 @@ function wait(aWaitCondition)
 				finished = doIteration(aWaitCondition);
 			}
 			else {
-				if (!aWaitCondition)
+				if (!aWaitCondition || !('value' in aWaitCondition))
 					throw new Error(bundle.getFormattedString('error_utils_wait_unknown_condition', [String(aWaitCondition)]));
 				finished = aWaitCondition;
 			}
@@ -1488,17 +1491,31 @@ function doIteration(aGenerator, aCallbacks)
 			var returnedValue = iterator.next();
 			lastRun = Date.now();
 
-			if (!returnedValue ? false :
-				typeof returnedValue == 'object' ?
-					('value' in returnedValue || isGeneratedIterator(returnedValue)) :
-				typeof returnedValue == 'function'
-				) {
-				window.setTimeout(arguments.callee, 10, returnedValue);
-			}
-			else {
-				var wait = Number(returnedValue);
-				if (isNaN(wait)) wait = 0;
-				window.setTimeout(arguments.callee, wait, wait);
+			switch (typeof returnedValue)
+			{
+				default:
+					throw new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(returnedValue)]));
+
+				case 'number':
+					if (returnedValue >= 0) {
+						window.setTimeout(arguments.callee, wait, wait);
+						return;
+					}
+					throw new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(returnedValue)]));
+
+				case 'object':
+					if (
+						returnedValue &&
+						('value' in returnedValue || isGeneratedIterator(returnedValue))
+						) {
+						window.setTimeout(arguments.callee, 10, returnedValue);
+						return;
+					}
+					throw new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(returnedValue)]));
+
+				case 'function':
+					window.setTimeout(arguments.callee, 10, returnedValue);
+					return;
 			}
 		}
 		catch(e if e instanceof StopIteration) {
