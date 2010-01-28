@@ -1,4 +1,5 @@
 "UxU - UnitText.XUL" is released under the GPLv2 license.
+Copyright ©2010 SHIMODA Hiroshi, SUTOU Kouhei
 Contributor(s):
 	SHIMODA Hiroshi (piro@p.club.ne.jp / shimoda@clear-code.com)
 	SUTOU Kouhei (kou at cozmixng.org / kou@clear-code.com)
