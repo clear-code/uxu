@@ -737,6 +737,7 @@ UnicodeToUTF8
 UnicodeToX
 UTF8ToUCS2
 UTF8ToUnicode
+wait
 writeTo
 XToUCS2
 XToUnicode
