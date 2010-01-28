@@ -829,14 +829,14 @@ ProtocolHandlerProxy.prototype = {
 				var handler = this.getNativeProtocolHandler(uri.scheme);
 				try {
 					return handler.QueryInterface(Ci.nsIProxiedProtocolHandler)
-									.newProxiedChannel(uri);
+									.newProxiedChannel(uri, aProxyInfo);
 				}
 				catch(e) {
 					return handler.newChannel(uri);
 				}
 			}
 		}
-		return this.mProtocolHandler.newProxiedChannel(aURI);
+		return this.mProtocolHandler.newProxiedChannel(aURI, aProxyInfo);
 	},
 
 	// nsIObserver
