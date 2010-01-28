@@ -645,6 +645,8 @@ var _this = this;
 $X
 checkApplicationVersion
 checkAppVersion
+checkPlatformVersion
+checkProductVersion
 cleanUpTempFiles
 clearPref
 clearWindowsRegistry
@@ -698,6 +700,7 @@ openDatabase
 p
 parseCSV
 parseTSV
+platformVersion
 product
 productExecutable
 productVersion
