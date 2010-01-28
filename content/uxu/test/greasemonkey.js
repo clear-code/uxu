@@ -67,7 +67,7 @@ function open(aURI, aOptions)
 				b.removeAllTabsBut(tab);
 				b.stop();
 				win.setTimeout(function() {
-					_this.utils._waitBrowserLoad(b, loadedFlag, function() {
+					_this.utils._waitBrowserLoad(tab, b, loadedFlag, function() {
 						_this.frame = b;
 					});
 					b.loadURI(aURI);
