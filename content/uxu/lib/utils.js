@@ -2417,6 +2417,7 @@ var product = (function() {
  
 var productExecutable = getFileFromKeyword('XREExeF'); 
 var productVersion = XULAppInfo.version;
+var platformVersion = XULAppInfo.platformVersion;
  
 function restartApplication(aForce) 
 {
@@ -2613,13 +2614,22 @@ function compareVersions()
 	}
 }
  
-function checkAppVersion(aVersion) 
+function checkProductVersion(aVersion) 
 {
 	return compareVersions(XULAppInfo.version, aVersion);
 }
-function checkApplicationVersion(aVersion)
+function checkAppVersion(aVersion) // obsolete, for backward compatibility
 {
-	return checkAppVersion(aVersion);
+	return checkProductVersion(aVersion);
+}
+function checkApplicationVersion(aVersion) // obsolete, for backward compatibility
+{
+	return checkProductVersion(aVersion);
+}
+ 
+function checkPlatformVersion(aVersion) 
+{
+	return compareVersions(XULAppInfo.platformVersion, aVersion);
 }
   
 // デバッグ 
