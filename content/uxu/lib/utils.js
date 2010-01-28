@@ -1498,7 +1498,7 @@ function doIteration(aGenerator, aCallbacks)
 
 				case 'number':
 					if (returnedValue >= 0) {
-						window.setTimeout(arguments.callee, wait, wait);
+						window.setTimeout(arguments.callee, returnedValue, returnedValue);
 						return;
 					}
 					throw new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(returnedValue)]));
