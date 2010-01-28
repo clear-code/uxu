@@ -1488,9 +1488,6 @@ function doIteration(aGenerator, aCallbacks)
 			var returnedValue = iterator.next();
 			lastRun = Date.now();
 
-			if (returnedValue === void(0))
-				returnedValue = 0;
-
 			if (!returnedValue ? false :
 				typeof returnedValue == 'object' ?
 					('value' in returnedValue || isGeneratedIterator(returnedValue)) :
@@ -1499,7 +1496,7 @@ function doIteration(aGenerator, aCallbacks)
 				window.setTimeout(arguments.callee, 10, returnedValue);
 			}
 			else {
-				var wait = returnedValue;
+				var wait = Number(returnedValue);
 				if (isNaN(wait)) wait = 0;
 				window.setTimeout(arguments.callee, wait, wait);
 			}
