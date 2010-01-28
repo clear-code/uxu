@@ -139,7 +139,9 @@ function wait(aWaitCondition)
 	switch (typeof aWaitCondition)
 	{
 		default:
-			throw new Error(bundle.getFormattedString('error_utils_wait_unknown_condition', [String(aWaitCondition)]));
+			aWaitCondition = Number(aWaitCondition);
+			if (isNaN(aWaitCondition))
+				aWaitCondition = 0;
 
 		case 'number':
 			if (aWaitCondition < 0)
@@ -1494,7 +1496,9 @@ function doIteration(aGenerator, aCallbacks)
 			switch (typeof returnedValue)
 			{
 				default:
-					throw new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(returnedValue)]));
+					returnedValue = Number(returnedValue);
+					if (isNaN(returnedValue))
+						returnedValue = 0;
 
 				case 'number':
 					if (returnedValue >= 0) {

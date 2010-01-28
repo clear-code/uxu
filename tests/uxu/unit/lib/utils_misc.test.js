@@ -138,11 +138,14 @@ function test_wait()
 	}, 500);
 	assertWaitSuccess(func, 500);
 
-	assertWaitFail(true);
-	assertWaitFail(false);
-	assertWaitFail('string');
-	assertWaitFail(null);
-	assertWaitFail(undefined);
+	assertWaitSuccess(true, 100);
+	assertWaitSuccess(false, 100);
+	assertWaitSuccess('string', 100);
+	assertWaitSuccess(null, 100);
+	assertWaitSuccess(undefined, 100);
+
+	assertWaitFail({});
+	assertWaitFail(-100);
 }
 
 
