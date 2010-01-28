@@ -456,8 +456,11 @@ function fireMouseEventOnElement(aElement, aOptions)
 		case 'mouseup':
 			break;
 		case 'dblclick':
-			options = { type : 'mousedown', detail : detail };
-			options.__proto__ = aOptions;
+			options = {
+				type      : 'mousedown',
+				detail    : detail,
+				__proto__ : aOptions
+			};
 			fireMouseEventOnElement(aElement, options);
 			options.type = 'mouseup';
 			fireMouseEventOnElement(aElement, options);
@@ -470,8 +473,11 @@ function fireMouseEventOnElement(aElement, aOptions)
 			detail++;
 		case 'click':
 		default:
-			options = { type : 'mousedown', detail : detail };
-			options.__proto__ = aOptions;
+			options = {
+				type      : 'mousedown',
+				detail    : detail,
+				__proto__ : aOptions
+			};
 			fireMouseEventOnElement(aElement, options);
 			options.type = 'mouseup';
 			fireMouseEventOnElement(aElement, options);
@@ -856,8 +862,10 @@ function fireKeyEventOnElement(aElement, aOptions)
 			break;
 		case 'keypress':
 		default:
-			var options = { type : 'keydown' };
-			options.__proto__ = aOptions;
+			var options = {
+					type      : 'keydown',
+					__proto__ : aOptions
+				};
 			fireKeyEventOnElement(aElement, options);
 			options.type = 'keyup';
 			fireKeyEventOnElement(aElement, options);
