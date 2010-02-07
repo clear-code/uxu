@@ -92,6 +92,7 @@ const RESULT_SKIPPED = 'skip';
  
 const ERROR_NOT_INITIALIZED     = new Error('environment is not specified.'); 
 const ERROR_INVALID_ENVIRONMENT = new Error('environment must be an Environment.');
+const ERROR_NO_TEST             = new Error('there is no test.'); 
  
 /**
  * Invocation: 
@@ -738,6 +739,7 @@ function run(aStopper)
 {
 	try {
 		if (!this.environment) throw ERROR_NOT_INITIALIZED;
+		if (!this._tests.length) throw ERROR_NO_TEST;
 
 		this._stopper = aStopper;
 
