@@ -135,6 +135,8 @@ function wait(aWaitCondition)
 	if (!isThreadManagerAvailable)
 		throw new Error(bundle.getString('error_utils_wait_is_not_available'));
 
+	if (!aWaitCondition) aWaitCondition = 0;
+
 	var finished = { value : false };
 	switch (typeof aWaitCondition)
 	{
@@ -1493,6 +1495,7 @@ function doIteration(aGenerator, aCallbacks)
 			var returnedValue = iterator.next();
 			lastRun = Date.now();
 
+			if (!returnedValue) returnedValue = 0;
 			switch (typeof returnedValue)
 			{
 				default:
