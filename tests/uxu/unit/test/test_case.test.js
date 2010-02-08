@@ -78,7 +78,7 @@ function assertInitialized(aTest, aDescription)
 	assert.matches(/^test-\d+-\d+$/, aTest.id);
 }
 
-function testRegisterTestFunctions()
+function testFunctionsWithProperties()
 {
 	testcase.tests = {
 		'function式' : function() {},
@@ -135,7 +135,7 @@ function testRegisterTestFunctions()
 	assert.isNotNull(testcase.tests[7].tearDown);
 }
 
-function testNormalStyle1()
+function testRegisterFunctionCallStyle()
 {
 	clearCount();
 	testcase.setUp(function() { setUpCount++; });
@@ -148,7 +148,7 @@ function testNormalStyle1()
 	yield Do(assertDoneProcessCount(3, 3, 3, { priority : 'must' }));
 }
 
-function testNormalStyle2()
+function testRegisterOperationStyle()
 {
 	clearCount();
 	testcase.registerSetUp(function() { setUpCount++; });
@@ -161,7 +161,7 @@ function testNormalStyle2()
 	yield Do(assertDoneProcessCount(3, 3, 3, { priority : 'must' }));
 }
 
-function testNormalStyle3()
+function testRegisterHashStyle()
 {
 	clearCount();
 	testcase.tests = {
@@ -176,7 +176,7 @@ function testNormalStyle3()
 	yield Do(assertDoneProcessCount(3, 3, 3, { priority : 'must' }));
 }
 
-function testBDDStyle1()
+function testBDDFunctionCallStyle()
 {
 	clearCount();
 	testcase.given(function() { setUpCount++; });
@@ -188,7 +188,7 @@ function testBDDStyle1()
 	yield Do(assertDoneProcessCount(3, 0, 3, { priority : 'must', method : 'verify' }));
 }
 
-function testBDDStyle2()
+function testBDDHashStyle()
 {
 	clearCount();
 	testcase.stateThat = {
@@ -236,6 +236,29 @@ function testAsync()
 	var start = Date.now();
 	yield Do(assertDoneProcessCount(3, 3, 3, { priority : 'must' }));
 	assert.compare(Date.now() - start, '>=', (100 * 3) * 3);
+}
+
+function testReuseFunctions()
+{
+	clearCount();
+
+	var tests = {
+		setUp : function() { setUpCount++; },
+		tearDown : function() { tearDownCount++; },
+		'1' : function() { testCount++; },
+		'2' : function() { testCount++; },
+		'3' : function() { testCount++; }
+	};
+
+	testcase = new TestCaseClass('description1');
+	testcase.environment = new EnvironmentClass({}, baseURL, gBrowser);
+	testcase.tests = tests;
+	yield Do(assertDoneProcessCount(3, 3, 3, { priority : 'must' }));
+
+	testcase = new TestCaseClass('description2');
+	testcase.environment = new EnvironmentClass({}, baseURL, gBrowser);
+	testcase.tests = tests;
+	yield Do(assertDoneProcessCount(6, 6, 6, { priority : 'must' }));
 }
 
 function testPriority()

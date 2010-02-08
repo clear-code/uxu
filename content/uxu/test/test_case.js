@@ -117,6 +117,7 @@ function constructor(aTitle, aOptions)
 		});
 
 	this._tests = [];
+	this._registeredTests = [];
 	this.__defineSetter__(
 		'tests', function(aHash) {
 			this.setTests(aHash);
@@ -480,7 +481,7 @@ function registerTearDown(aFunction)
 function registerTest(aFunction) 
 {
 	if (typeof aFunction != 'function' ||
-		aFunction.__uxu__registered)
+		this._registeredTests.indexOf(aFunction) > -1)
 		return;
 
 	this._normalizeTest(aFunction);
@@ -508,7 +509,7 @@ function registerTest(aFunction)
 				' ('+(aIndex+1)+')'
 			));
 		}, this);
-		aFunction.__uxu__registered = true;
+		this._registeredTests.push(aFunction);
 	}
 	else {
 		for (let i in parameters)
@@ -519,7 +520,7 @@ function registerTest(aFunction)
 				' ('+i+')'
 			));
 		}
-		aFunction.__uxu__registered = true;
+		this._registeredTests.push(aFunction);
 	}
 }
 	
@@ -621,10 +622,10 @@ function _createNewTestWithParameter(aFunction, aParameter, aSuffix)
  
 function _registerSingleTest(aFunction) 
 {
-	if (aFunction.__uxu__registered)
+	if (this._registeredTests.indexOf(aFunction) > -1)
 		return;
 
-	aFunction.__uxu__registered = true;
+	this._registeredTests.push(aFunction);
 
 	var desc = aFunction.description;
 
