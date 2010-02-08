@@ -261,6 +261,18 @@ function testReuseFunctions()
 	yield Do(assertDoneProcessCount(6, 6, 6, { priority : 'must' }));
 }
 
+function testNoFunction()
+{
+	clearCount();
+
+	testcase.tests = {
+		setUp : function() { setUpCount++; },
+		tearDown : function() { tearDownCount++; }
+	};
+	assert.equals(0, testcase.tests.length);
+	yield Do(assertDoneProcessCount(0, 0, 0, { priority : 'must' }));
+}
+
 function testPriority()
 {
 	clearCount();
