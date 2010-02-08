@@ -739,8 +739,13 @@ function verify(aStopper)
 function run(aStopper)
 {
 	try {
-		if (!this.environment) throw ERROR_NOT_INITIALIZED;
-		if (!this._tests.length) throw ERROR_NO_TEST;
+		if (!this.environment)
+			throw ERROR_NOT_INITIALIZED;
+
+		if (!this._tests.length) {
+			this.done = true;
+			throw ERROR_NO_TEST;
+		}
 
 		this._stopper = aStopper;
 
