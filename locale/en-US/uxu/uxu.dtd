@@ -98,8 +98,6 @@
 <!ENTITY config.defaultEncoding        "Default character encoding of files read from utility methods:">
 <!ENTITY config.showInternalStacks "Show internal errors in stack traces">
 <!ENTITY config.protocolHandlerProxy.enabled "Enable URI mapping for testcases">
-<!ENTITY config.installGlobalLocation.caption "Install location of UnitTest.XUL">
-<!ENTITY config.installGlobalLocation.check   "Activate UnitTest.XUL for all users on this computer (*administrative privileges required)">
 
 
 <!ENTITY config.tabs.profile "Clean Profile Tests">

@@ -2,7 +2,6 @@
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
-const kUXU_INSTALL_GLOBAL = 'extensions.uxu.global';
 const kUXU_TEST_RUNNING   = 'extensions.uxu.running';
 const kUXU_PROXY_ENABLED  = 'extensions.uxu.protocolHandlerProxy.enabled';
 
@@ -105,9 +104,7 @@ GlobalService.prototype = {
 		Pref.setBoolPref(kUXU_TEST_RUNNING, false);
 
 		if (!this.skipInitializeFile.exists()) {
-			this.checkInstallGlobal();
 			this.checkProxyEnabled();
-			Pref.addObserver(kUXU_INSTALL_GLOBAL, this, false);
 			Pref.addObserver(kUXU_PROXY_ENABLED, this, false);
 		}
 
@@ -151,7 +148,6 @@ GlobalService.prototype = {
 		{
 			case kUXU_PROXY_ENABLED:
 				this.proxyEnabled = Pref.getBoolPref(aPrefName);
-			case kUXU_INSTALL_GLOBAL:
 				this.timer = Cc['@mozilla.org/timer;1']
 								.createInstance(Ci.nsITimer);
 				this.timer.init({
@@ -180,171 +176,7 @@ GlobalService.prototype = {
 				break;
 		}
 	},
- 
-	get profileDirectory() 
-	{
-		if (!this._profileDirectory)
-			this._profileDirectory = Cc['@mozilla.org/file/directory_service;1']
-				.getService(Ci.nsIProperties)
-				.get('ProfDS', Ci.nsIFile);
-		return this._profileDirectory;
-	},
-	_profileDirectory : null,
- 
-	checkInstallGlobal : function() 
-	{
-		var UpdateService = '@mozilla.org/updates/update-service;1' in Cc ?
-				Cc['@mozilla.org/updates/update-service;1']
-							.getService(Ci.nsIApplicationUpdateService) :
-				null ;
-		if (!UpdateService || !UpdateService.canUpdate) {
-			if (Pref.getBoolPref(kUXU_INSTALL_GLOBAL))
-				Pref.setBoolPref(kUXU_INSTALL_GLOBAL, false);
-			return;
-		}
-
-		var inGlobal = this.installedLocation.path == this.globalLocation.path;
-		if (Pref.getBoolPref(kUXU_INSTALL_GLOBAL)) {
-			if (inGlobal) return;
-			if (this.installToGlobal()) {
-				this.restart();
-			}
-			else {
-				Pref.setBoolPref(kUXU_INSTALL_GLOBAL, false);
-			}
-		}
-		else if (inGlobal) {
-			if (this.uninstallFromGlobal())
-				this.restart();
-		}
-		else if (this.globalLocation.exists()) {
-			this.globalLocation.remove(true);
-		}
-	},
 	
-	get installedLocation() 
-	{
-		if (!this._installedLocation) {
-			var id = 'uxu@clear-code.com';
-			var dir = Cc['@mozilla.org/extensions/manager;1']
-					.getService(Ci.nsIExtensionManager)
-					.getInstallLocation(id)
-					.getItemLocation(id);
-			this._installedLocation = dir;
-		}
-		return this._installedLocation;
-	},
-	_installedLocation : null,
-	
-	get globalLocation() 
-	{
-		if (!this._globalLocation) {
-			var dir = Cc['@mozilla.org/file/directory_service;1']
-					.getService(Ci.nsIProperties)
-					.get('CurProcD', Ci.nsIFile);
-			dir.append('extensions');
-			dir.append(kUXU_DIR_NAME);
-			this._globalLocation = dir;
-		}
-		return this._globalLocation;
-	},
-	_globalLocation : null,
- 
-	get userLocation() 
-	{
-		if (!this._userLocation) {
-			var dir = this.profileDirectory.clone(true);
-			dir.append('extensions');
-			dir.append(kUXU_DIR_NAME);
-			this._userLocation = dir;
-		}
-		return this._userLocation;
-	},
-	_userLocation : null,
-  
-	installToGlobal : function() 
-	{
-		try {
-			var source = this.installedLocation;
-			var dest = this.globalLocation;
-
-			if (dest.exists()) {
-				var sourceManifest = source.clone();
-				sourceManifest.append('install.rdf');
-				var sourceVersion = this.getVersionFromManifest(sourceManifest);
-
-				var destManifest = dest.clone();
-				destManifest.append('install.rdf');
-				var destVersion = this.getVersionFromManifest(destManifest);
-
-				var comparator = Cc['@mozilla.org/xpcom/version-comparator;1']
-									.getService(Ci.nsIVersionComparator);
-				if (
-					sourceVersion && destVersion &&
-					comparator.compare(destVersion, sourceVersion) > 0 &&
-					source.lastModifiedTime < dest.lastModifiedTime
-					) {
-					source.remove(true);
-					return true;
-				}
-				dest.remove(true);
-			}
-			source.moveTo(dest.parent, kUXU_DIR_NAME);
-		}
-		catch(e) {
-			dump(e);
-			return false;
-		}
-		return true;
-	},
-	
-	getVersionFromManifest : function(aFile) 
-	{
-		aFile = aFile.QueryInterface(Ci.nsILocalFile)
-		var stream = Cc['@mozilla.org/network/file-input-stream;1']
-					.createInstance(Ci.nsIFileInputStream);
-		try {
-			stream.init(aFile, 1, 0, false); // open as "read only"
-		}
-		catch(ex) {
-			return '';
-		}
-
-		var fileContents = null;
-		try {
-			var scriptableStream = Cc['@mozilla.org/scriptableinputstream;1']
-					.createInstance(Ci.nsIScriptableInputStream);
-			scriptableStream.init(stream);
-			fileContents = scriptableStream.read(scriptableStream.available());
-			scriptableStream.close();
-		}
-		finally {
-			stream.close();
-		}
-
-		if (fileContents) {
-			var match = fileContents.match(/<em:version>([^<]+)<\/em:version>/);
-			if (match) return match[1];
-			match = fileContents.match(/em:version=['"]([^'"]+)['"]/);
-			if (match) return match[1];
-		}
-		return '';
-	},
-  
-	uninstallFromGlobal : function() 
-	{
-		try {
-			var source = this.installedLocation;
-			var dest = this.userLocation;
-			source.copyTo(dest.parent, kUXU_DIR_NAME);
-		}
-		catch(e) {
-			dump(e);
-			return false;
-		}
-		return true;
-	},
- 
 	restart : function() 
 	{
 		const startup = Cc['@mozilla.org/toolkit/app-startup;1']
@@ -365,6 +197,16 @@ GlobalService.prototype = {
 			this.restart();
 	},
   
+	get profileDirectory() 
+	{
+		if (!this._profileDirectory)
+			this._profileDirectory = Cc['@mozilla.org/file/directory_service;1']
+				.getService(Ci.nsIProperties)
+				.get('ProfDS', Ci.nsIFile);
+		return this._profileDirectory;
+	},
+	_profileDirectory : null,
+ 
 	checkProxyEnabled : function() 
 	{
 		var proxyEnabled = Pref.getBoolPref(kUXU_PROXY_ENABLED);
@@ -593,7 +435,7 @@ GlobalService.prototype = {
 			'chrome://uxu/content/ui/config.xul',
 			('chrome,titlebar,toolbar,centerscreen' +
 				Pref.getBoolPref('browser.preferences.instantApply') ?
-					',dialog=no' : 
+					',dialog=no' :
 					',modal'
 			),
 			null
