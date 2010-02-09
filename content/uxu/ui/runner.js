@@ -1228,7 +1228,11 @@ function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine)
 				filter : Ci.nsIFilePicker.filterApps
 			});
 		if (!editor || !editor.path) return;
-		utils.setPref('extensions.uxu.runner.editor', '"'+editor.path+'" "%f"');
+		utils.setPref(
+			'extensions.uxu.runner.editor',
+			'"'+editor.path+'" '+
+			(utils.getPref('extensions.uxu.runner.editor.defaultOptions.'+editor.localName.toLowerCase() || '"%F"')
+		);
 		arguments.callee(aFilePath, aLineNumber, aColumnNumber);
 	}
 }

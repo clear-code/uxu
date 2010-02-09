@@ -23,7 +23,16 @@ pref("extensions.uxu.action.fireKeyEvent.useOldMethod", true);
 
 pref("extensions.uxu.runner.runMode", 0); // 0 = run by priority, 1 = run all
 pref("extensions.uxu.runner.runParallel", false);
-pref("extensions.uxu.runner.editor", "/usr/bin/gedit +%l %f");
+pref("extensions.uxu.runner.editor", "/usr/bin/gedit +%L %F");
+pref("extensions.uxu.runner.editor.defaultOptions.hidemaru.exe", "/j%L,%C \"%F\"");
+pref("extensions.uxu.runner.editor.defaultOptions.terapad.exe", "/j=%L \"%F\"");
+pref("extensions.uxu.runner.editor.defaultOptions.sakura.exe", "\"%F\" -X=%C -Y=%L");
+pref("extensions.uxu.runner.editor.defaultOptions.emeditor.exe", "/l %L /cl %C \"%F\"");
+pref("extensions.uxu.runner.editor.defaultOptions.xyzzycli.exe", "-l \"%F\" -g %L -c %C");
+pref("extensions.uxu.runner.editor.defaultOptions.moe.exe", "\"%F\" -m %L,%C");
+pref("extensions.uxu.runner.editor.defaultOptions.gedit", "+%L %F");
+pref("extensions.uxu.runner.editor.defaultOptions.vim", "+%L \"%F\"");
+pref("extensions.uxu.runner.editor.defaultOptions.gnuclient", "+%L \"%F\""); // Emacs
 pref("extensions.uxu.runner.alwaysRaised", false);
 pref("extensions.uxu.runner.autoShowContent", true);
 pref("extensions.uxu.runner.autoExpandWindow.sourceViewer", true);
