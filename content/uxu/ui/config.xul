@@ -34,6 +34,12 @@
 		<preference id="extensions.uxu.global"
 			name="extensions.uxu.global"
 			type="bool"/>
+		<preference id="extensions.uxu.runner.runParallel"
+			name="extensions.uxu.runner.runParallel"
+			type="bool"/>
+		<preference id="extensions.uxu.runner.runMode"
+			name="extensions.uxu.runner.runMode"
+			type="int"/>
 	</preferences>
 
 	<checkbox id="extensions.uxu.run.ignoreHiddenFiles-check"
@@ -78,6 +84,24 @@
 		<checkbox id="installGlobalLocation-check"
 			preference="extensions.uxu.global"
 			label="&config.installGlobalLocation.check;"/>
+	</groupbox>
+	<groupbox orient="vertical">
+		<caption label="&config.runner.runParallel;"/>
+		<radiogroup id="extensions.uxu.runner.runParallel-radio"
+			preference="extensions.uxu.runner.runParallel"
+			orient="horizontal">
+			<radio value="false" label="&config.runner.runParallel.false;"/>
+			<radio value="true"  label="&config.runner.runParallel.true;"/>
+		</radiogroup>
+	</groupbox>
+	<groupbox orient="vertical">
+		<caption label="&config.runner.runMode;"/>
+		<radiogroup id="extensions.uxu.runner.runMode-radio"
+			preference="extensions.uxu.runner.runMode"
+			orient="vertical">
+			<radio value="0" label="&config.runner.runMode.0;"/>
+			<radio value="1" label="&config.runner.runMode.1;"/>
+		</radiogroup>
 	</groupbox>
 
 </prefpane>
@@ -138,12 +162,6 @@
 		<preference id="extensions.uxu.runner.editor"
 			name="extensions.uxu.runner.editor"
 			type="string"/>
-		<preference id="extensions.uxu.runner.runParallel"
-			name="extensions.uxu.runner.runParallel"
-			type="bool"/>
-		<preference id="extensions.uxu.runner.runMode"
-			name="extensions.uxu.runner.runMode"
-			type="int"/>
 	</preferences>
 
 	<checkbox id="extensions.uxu.runner.autoStart-check"
@@ -174,24 +192,6 @@
 				flex="1"/>
 		</hbox>
 		<description value="&config.runner.editor.desctiption;"/>
-	</groupbox>
-	<groupbox orient="vertical">
-		<caption label="&config.runner.runParallel;"/>
-		<radiogroup id="extensions.uxu.runner.runParallel-radio"
-			preference="extensions.uxu.runner.runParallel"
-			orient="horizontal">
-			<radio value="false" label="&config.runner.runParallel.false;"/>
-			<radio value="true"  label="&config.runner.runParallel.true;"/>
-		</radiogroup>
-	</groupbox>
-	<groupbox orient="vertical">
-		<caption label="&config.runner.runMode;"/>
-		<radiogroup id="extensions.uxu.runner.runMode-radio"
-			preference="extensions.uxu.runner.runMode"
-			orient="vertical">
-			<radio value="0" label="&config.runner.runMode.0;"/>
-			<radio value="1" label="&config.runner.runMode.1;"/>
-		</radiogroup>
 	</groupbox>
 
 </prefpane>
