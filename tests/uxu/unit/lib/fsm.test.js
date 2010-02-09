@@ -157,6 +157,10 @@ function testTransitionsWithDelay()
 	);
 }
 
+
+// We must call the continuation function in every state handlers.
+// If it is not called, then "state exit" event doesn't dispatched.
+
 function testInvalidTransitions_noContinuation()
 {
 	var stateTransitions = {
