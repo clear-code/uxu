@@ -48,9 +48,10 @@ function go(aStateName, aContext, aStateHandlers, aStateTransitions, aEventHandl
 	}
 
 	var iterator = generate(aStateName, aContext, aStateHandlers, aStateTransitions, aEventHandlers);
+	var timer, canceller;
 	try {
 		iterator.next();
-		var timer = window.setInterval(function() {
+		timer = window.setInterval(function() {
 				try {
 					iterator.next();
 				}
@@ -58,8 +59,20 @@ function go(aStateName, aContext, aStateHandlers, aStateTransitions, aEventHandl
 					window.clearInterval(timer);
 				}
 			}, 1);
+		canceller = _createCanceller(timer);
 	}
 	catch(e if e instanceof StopIteration) {
 		// finished
+		canceller = _createCanceller();
 	}
+	return canceller;
+}
+
+function _createCanceller(aTimer)
+{
+	return function() {
+			if (!aTimer) return;
+			window.clearInterval(aTimer);
+			aTimer = null;
+		};
 }

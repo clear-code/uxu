@@ -1088,6 +1088,7 @@ function _run()
 				_this.done = true;
 				_this.fireEvent('Finish', testCaseReport.report);
 			}
+			aContinuation('ok');
 		}
 	};
 

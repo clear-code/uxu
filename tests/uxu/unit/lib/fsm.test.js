@@ -1,5 +1,6 @@
 var topDir = baseURL+'../../../../';
 var fsm;
+var canceller;
 
 var eventHandlers = {
 	'state/enter' : [
@@ -25,9 +26,20 @@ function setUp()
 
 function tearDown()
 {
+	if (canceller)
+		canceller();
+	canceller = null;
 }
 
-testSimpleTransitions.description = '前に進むだけ';
+
+function assertGo()
+{
+	eventHandlers.log = [];
+	canceller = fsm.go.apply(fsm, arguments);
+	assert.isFunction(canceller);
+	yield 500;
+}
+
 function testSimpleTransitions()
 {
 	var stateTransitions = {
@@ -50,17 +62,14 @@ function testSimpleTransitions()
 			aContinuation('ok');
 		}
 	};
-	eventHandlers.log = [];
-	fsm.go('state1', {}, stateHandlers, stateTransitions, eventHandlers);
-	yield 500;
+	yield Do(assertGo('state1', {}, stateHandlers, stateTransitions, eventHandlers));
 	assert.equals('abc', string);
-	assert.arrayEquals(
+	assert.equals(
 		'state1 enter,state1 exit,state2 enter,state2 exit,state3 enter,state3 exit'.split(','),
 		eventHandlers.log
 	);
 }
 
-testSimpleBackTransitions.description = '進んだり戻ったり';
 function testSimpleBackTransitions()
 {
 	var stateTransitions = {
@@ -104,18 +113,15 @@ function testSimpleBackTransitions()
 			}
 		}
 	};
-	eventHandlers.log = [];
-	fsm.go('state1', {}, stateHandlers, stateTransitions, eventHandlers);
-	yield 500;
+	yield Do(assertGo('state1', {}, stateHandlers, stateTransitions, eventHandlers));
 	assert.equals('aabbcc', string);
-	assert.arrayEquals(
+	assert.equals(
 		'state1 enter,state1 exit,state1 enter,state1 exit,state2 enter,state2 exit,state2 enter,state2 exit,state3 enter,state3 exit,state3 enter,state3 exit'.split(','),
 		eventHandlers.log
 	);
 }
 
-testDelayedTransitions.description = '処理待ち';
-function testDelayedTransitions()
+function testTransitionsWithDelay()
 {
 	var stateTransitions = {
 		state1 : { ok : 'state2' },
@@ -143,18 +149,15 @@ function testDelayedTransitions()
 			}, 100);
 		}
 	};
-	eventHandlers.log = [];
-	fsm.go('state1', {}, stateHandlers, stateTransitions, eventHandlers);
-	yield 500;
+	yield Do(assertGo('state1', {}, stateHandlers, stateTransitions, eventHandlers));
 	assert.equals('abc', string);
-	assert.arrayEquals(
+	assert.equals(
 		'state1 enter,state1 exit,state2 enter,state2 exit,state3 enter,state3 exit'.split(','),
 		eventHandlers.log
 	);
 }
 
-testFailedTransitions.description = '失敗例';
-function testFailedTransitions()
+function testInvalidTransitions_noContinuation()
 {
 	var stateTransitions = {
 		state1 : { ok : 'state2' },
@@ -173,11 +176,9 @@ function testFailedTransitions()
 			string += 'c';
 		}
 	};
-	eventHandlers.log = [];
-	fsm.go('state1', {}, stateHandlers, stateTransitions, eventHandlers);
-	yield 500;
+	yield Do(assertGo('state1', {}, stateHandlers, stateTransitions, eventHandlers));
 	assert.equals('a', string);
-	assert.arrayEquals(
+	assert.equals(
 		['state1 enter'],
 		eventHandlers.log
 	);
