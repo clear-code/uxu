@@ -86,7 +86,7 @@
 
 
 <!ENTITY config.title  "UnitTest.XULの設定">
-<!ENTITY config.size   "max-width: 40em;">
+<!ENTITY config.size   "max-width: 50em;">
 
 <!ENTITY config.tabs.general "全般">
 
