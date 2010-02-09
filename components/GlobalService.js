@@ -402,7 +402,18 @@ GlobalService.prototype = {
 				bag.setProperty(i, aOptions[i]);
 			}
 		}
-		WindowWatcher.openWindow(aOwner || null, aURI, '_blank', aFeatures, bag);
+
+		if (aOwner) {
+			aOwner = aOwner.QueryInterface(Ci.nsIDOMWindow)
+						.QueryInterface(Ci.nsIDOMWindowInternal);
+			if (bag)
+				aOwner.openDialog(aURI, '_blank', aFeatures, bag);
+			else
+				aOwner.openDialog(aURI, '_blank', aFeatures);
+		}
+		else {
+			WindowWatcher.openWindow(null, aURI, '_blank', aFeatures, bag);
+		}
 	},
  
 	startRunner : function(aOwner, aOptions) 
@@ -433,11 +444,11 @@ GlobalService.prototype = {
 			aOwner,
 			'uxu:config',
 			'chrome://uxu/content/ui/config.xul',
-			('chrome,titlebar,toolbar,centerscreen' +
-				Pref.getBoolPref('browser.preferences.instantApply') ?
+			'chrome,titlebar,toolbar,centerscreen' +
+				(Pref.getBoolPref('browser.preferences.instantApply') ?
 					',dialog=no' :
 					',modal'
-			),
+				),
 			null
 		);
 	},
