@@ -134,19 +134,19 @@ function testTransitionsWithDelay()
 			string += 'a';
 			window.setTimeout(function() {
 				aContinuation('ok');
-			}, 100);
+			}, 10);
 		},
 		state2 : function(aContinuation) {
 			string += 'b';
 			window.setTimeout(function() {
 				aContinuation('ok');
-			}, 100);
+			}, 10);
 		},
 		state3 : function(aContinuation) {
 			string += 'c';
 			window.setTimeout(function() {
 				aContinuation('ok');
-			}, 100);
+			}, 10);
 		}
 	};
 	yield Do(assertGo('state1', {}, stateHandlers, stateTransitions, eventHandlers));
@@ -180,6 +180,35 @@ function testInvalidTransitions_noContinuation()
 	assert.equals('a', string);
 	assert.equals(
 		['state1 enter'],
+		eventHandlers.log
+	);
+}
+
+function testInvalidTransitions_noContinuationOnLastState()
+{
+	var stateTransitions = {
+		state1 : { ok : 'state2' },
+		state2 : { ok : 'state3' },
+		state3 : {}
+	}
+	var string = '';
+	var stateHandlers = {
+		state1 : function(aContinuation) {
+			string += 'a';
+			aContinuation('ok');
+		},
+		state2 : function(aContinuation) {
+			string += 'b';
+			aContinuation('ok');
+		},
+		state3 : function(aContinuation) {
+			string += 'c';
+		}
+	};
+	yield Do(assertGo('state1', {}, stateHandlers, stateTransitions, eventHandlers));
+	assert.equals('abc', string);
+	assert.equals(
+		'state1 enter,state1 exit,state2 enter,state2 exit,state3 enter'.split(','),
 		eventHandlers.log
 	);
 }
