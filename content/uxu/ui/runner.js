@@ -1231,7 +1231,7 @@ function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine)
 		utils.setPref(
 			'extensions.uxu.runner.editor',
 			'"'+editor.path+'" '+
-			(utils.getPref('extensions.uxu.runner.editor.defaultOptions.'+editor.localName.toLowerCase() || '"%F"')
+			(utils.getPref('extensions.uxu.runner.editor.defaultOptions.'+editor.localName.toLowerCase()) || '"%F"')
 		);
 		arguments.callee(aFilePath, aLineNumber, aColumnNumber);
 	}
