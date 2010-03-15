@@ -581,8 +581,20 @@ var loader = Cc['@mozilla.org/moz/jssubscript-loader;1']
 
 function include(aSource, aEncoding, aScope)
 {
-	if (typeof aEncoding == 'object') { // for backward compatibility
-		var scope = aEncoding;
+	var allowOverrideConstants = false;
+
+	if (aSource &&
+		aEncoding === void(0) &&
+		aScope === void(0) &&
+		typeof aSource == 'object') { // hash style options
+		let options = aSource;
+		aSource = options.source || options.uri || options.url ;
+		aEncoding = options.encoding || options.charset;
+		aScope = options.scope || options.namespace || options.ns;
+		allowOverrideConstants = options.allowOverrideConstants;
+	}
+	else if (typeof aEncoding == 'object') { // for backward compatibility
+		let scope = aEncoding;
 		aEncoding = aScope;
 		aScope = scope;
 	}
@@ -592,6 +604,8 @@ function include(aSource, aEncoding, aScope)
 	var script;
 	try {
 		script = this.readFrom(aSource, encoding) || '';
+		if (allowOverrideConstants)
+			script = script.replace(/^\bconst\s+/gm, 'var ');
 	}
 	catch(e) {
 		throw new Error(bundle.getFormattedString('error_utils_include', [e]));

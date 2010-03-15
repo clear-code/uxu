@@ -578,12 +578,30 @@ function cleanUpModifiedPrefs()
 	
 function include(aSource, aEncoding, aScope) 
 {
-	if (typeof aEncoding == 'object') { // for backward compatibility
-		var scope = aEncoding;
+	var allowOverrideConstants = false;
+
+	if (aSource &&
+		aEncoding === void(0) &&
+		aScope === void(0) &&
+		typeof aSource == 'object') { // hash style options
+		let options = aSource;
+		aSource = options.source || options.uri || options.url ;
+		aEncoding = options.encoding || options.charset;
+		aScope = options.scope || options.namespace || options.ns;
+		allowOverrideConstants = options.allowOverrideConstants;
+	}
+	else if (typeof aEncoding == 'object') { // for backward compatibility
+		let scope = aEncoding;
 		aEncoding = aScope;
 		aScope = scope;
 	}
-	return utils.include.call(this, aSource, aEncoding, (aScope || this.environment));
+
+	return utils.include.call(this, {
+			uri : aSource,
+			encoding : aEncoding,
+			namespace : (aScope || this.environment),
+			allowOverrideConstants : allowOverrideConstants
+		});
 };
  
 function createDatabaseFromSQLFile(aFile, aEncoding, aScope) 

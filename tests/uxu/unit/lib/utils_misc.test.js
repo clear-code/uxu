@@ -441,6 +441,54 @@ function test_include_oldStyle()
 	assert.equals('文字列', namespace.string);
 }
 
+function test_include_hashStyle()
+{
+	var namespace = {};
+	utilsModule.include({
+		uri : '../../fixtures/test.js',
+		encoding : 'UTF-8',
+		namespace : namespace,
+		allowOverrideConstants : false
+	});
+
+	assert.isDefined(namespace.string);
+	assert.equals('文字列', namespace.string);
+
+	assert.isDefined(namespace.constant);
+	assert.equals('定数', namespace.constant);
+	assert.raises(
+		'TypeError: redeclaration of const constant',
+		function() {
+			namespace.__defineGetter__(
+				'constant',
+				function() { return 'foo'; }
+			);
+		}
+	);
+	assert.equals('定数', namespace.constant);
+
+	namespace = {};
+	utilsModule.include({
+		uri : '../../fixtures/test.js',
+		encoding : 'UTF-8',
+		namespace : namespace,
+		allowOverrideConstants : true
+	});
+
+	assert.isDefined(namespace.constant);
+	assert.equals('定数', namespace.constant);
+	assert.notRaises(
+		'TypeError: redeclaration of const constant',
+		function() {
+			namespace.__defineGetter__(
+				'constant',
+				function() { return 'foo'; }
+			);
+		}
+	);
+	assert.equals('foo', namespace.constant);
+}
+
 
 test_setAndGetClipBoard.setUp = function() {
 	if (utils.product == 'Firefox') {
