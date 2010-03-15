@@ -10,8 +10,8 @@
 	onunload="Shutdown()"
 	persist="width height screenX screenY">
 
-	<script type="application/javascript;version=1.7" src="chrome://uxu/content/lib/module_manager.js"/>
-	<script type="application/javascript;version=1.7" src="chrome://uxu/content/ui/uxu.js"/>
+	<script type="application/javascript" src="chrome://uxu/content/lib/module_manager.js"/>
+	<script type="application/javascript" src="chrome://uxu/content/ui/uxu.js"/>
 
 	<scrollbox id="log" orient="vertical" flex="1"
 		style="min-height: 10em; min-width: 20em; overflow: auto; border: thin -moz-bg-inset;">
