@@ -3,9 +3,9 @@
 <overlay id="uxu-overlay"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-<script type="application/javascript" src="chrome://global/content/nsUserSettings.js"/>
-<script type="application/javascript" src="chrome://uxu/content/commands.js"/>
-<script type="application/javascript" src="chrome://uxu/content/browserOverlay.js"/>
+<script type="application/javascript; version=1.7" src="chrome://global/content/nsUserSettings.js"/>
+<script type="application/javascript; version=1.7" src="chrome://uxu/content/commands.js"/>
+<script type="application/javascript; version=1.7" src="chrome://uxu/content/browserOverlay.js"/>
 
 <menupopup id="taskPopup">
 	<menu id="tools-uxu-menu"
