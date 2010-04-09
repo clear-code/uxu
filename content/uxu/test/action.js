@@ -17,6 +17,7 @@ function constructor(aEnvironment)
 	
 function destroy() 
 {
+//	this.cancelRediedActions();
 	delete this.utils;
 }
   
@@ -70,7 +71,7 @@ function getZoom(aWindow)
 	
 function _getMouseOptionsFor(aType, aButton, aArguments) 
 {
-	var options = _getMouseOptionsFromArguments(aArguments);
+	var options = this._getMouseOptionsFromArguments(aArguments);
 	var returnOptions = {
 		type : aType,
 		button : aButton,
@@ -114,12 +115,12 @@ function _getMouseOptionsFromArguments(aArguments)
 				modifiers = aArg;
 		}
 		return (x && y && w && modifiers && element);
-	});
+	}, this);
 
 	if (!w && x !== void(0) && y !== void(0)) {
-		w = _getWindowFromScreenPoint(x, y);
-		w = getFrameFromScreenPoint(w, x, y);
-		let root = getBoxObjectFor(w.document.documentElement);
+		w = this._getWindowFromScreenPoint(x, y);
+		w = this.getFrameFromScreenPoint(w, x, y);
+		let root = this.getBoxObjectFor(w.document.documentElement);
 		x = x - root.screenX - w.scrollX;
 		y = y - root.screenY - w.scrollY;
 	}
@@ -147,29 +148,29 @@ function _getMouseOptionsFromArguments(aArguments)
 	
 function clickOn() 
 {
-	var options = _getMouseOptionsFor('click', 0, arguments);
-	fireMouseEventOnElement(options.element, options);
+	var options = this._getMouseOptionsFor('click', 0, arguments);
+	this.fireMouseEventOnElement(options.element, options);
 }
 var leftClickOn = clickOn;
  
 function middleClickOn() 
 {
-	var options = _getMouseOptionsFor('click', 1, arguments);
-	fireMouseEventOnElement(options.element, options);
+	var options = this._getMouseOptionsFor('click', 1, arguments);
+	this.fireMouseEventOnElement(options.element, options);
 }
  
 function rightClickOn() 
 {
-	var options = _getMouseOptionsFor('click', 2, arguments);
-	fireMouseEventOnElement(options.element, options);
+	var options = this._getMouseOptionsFor('click', 2, arguments);
+	this.fireMouseEventOnElement(options.element, options);
 }
   
 // dblclick on element 
 	
 function doubleClickOn() 
 {
-	var options = _getMouseOptionsFor('dblclick', 0, arguments);
-	fireMouseEventOnElement(options.element, options);
+	var options = this._getMouseOptionsFor('dblclick', 0, arguments);
+	this.fireMouseEventOnElement(options.element, options);
 }
 var doubleclickOn = doubleClickOn;
 var dblClickOn = doubleClickOn;
@@ -181,8 +182,8 @@ var leftDblclickOn = doubleClickOn;
  
 function middleDoubleClickOn() 
 {
-	var options = _getMouseOptionsFor('dblclick', 1, arguments);
-	fireMouseEventOnElement(options.element, options);
+	var options = this._getMouseOptionsFor('dblclick', 1, arguments);
+	this.fireMouseEventOnElement(options.element, options);
 }
 var middleDoubleclickOn = middleDoubleClickOn;
 var middleDblClickOn = middleDoubleClickOn;
@@ -190,8 +191,8 @@ var middleDblclickOn = middleDoubleClickOn;
  
 function rightDoubleClickOn() 
 {
-	var options = _getMouseOptionsFor('dblclick', 2, arguments);
-	fireMouseEventOnElement(options.element, options);
+	var options = this._getMouseOptionsFor('dblclick', 2, arguments);
+	this.fireMouseEventOnElement(options.element, options);
 }
 var rightDoubleclickOn = rightDoubleClickOn;
 var rightDblClickOn = rightDoubleClickOn;
@@ -201,8 +202,8 @@ var rightDblclickOn = rightDoubleClickOn;
 	
 function mouseDownOn() 
 {
-	var options = _getMouseOptionsFor('mousedown', 0, arguments);
-	fireMouseEventOnElement(options.element, options);
+	var options = this._getMouseOptionsFor('mousedown', 0, arguments);
+	this.fireMouseEventOnElement(options.element, options);
 }
 var mousedownOn = mouseDownOn;
 var leftMouseDownOn = mouseDownOn;
@@ -210,22 +211,22 @@ var leftMousedownOn = mouseDownOn;
  
 function middleMouseDownOn() 
 {
-	var options = _getMouseOptionsFor('mousedown', 1, arguments);
-	fireMouseEventOnElement(options.element, options);
+	var options = this._getMouseOptionsFor('mousedown', 1, arguments);
+	this.fireMouseEventOnElement(options.element, options);
 }
 var middleMousedownOn = middleMouseDownOn;
  
 function rightMouseDownOn() 
 {
-	var options = _getMouseOptionsFor('mousedown', 2, arguments);
-	fireMouseEventOnElement(options.element, options);
+	var options = this._getMouseOptionsFor('mousedown', 2, arguments);
+	this.fireMouseEventOnElement(options.element, options);
 }
 var rightMousedownOn = rightMouseDownOn;
  
 function mouseUpOn() 
 {
-	var options = _getMouseOptionsFor('mouseup', 0, arguments);
-	fireMouseEventOnElement(options.element, options);
+	var options = this._getMouseOptionsFor('mouseup', 0, arguments);
+	this.fireMouseEventOnElement(options.element, options);
 }
 var mouseupOn = mouseUpOn;
 var leftMouseUpOn = mouseUpOn;
@@ -233,15 +234,15 @@ var leftMouseupOn = mouseUpOn;
  
 function middleMouseUpOn() 
 {
-	var options = _getMouseOptionsFor('mouseup', 1, arguments);
-	fireMouseEventOnElement(options.element, options);
+	var options = this._getMouseOptionsFor('mouseup', 1, arguments);
+	this.fireMouseEventOnElement(options.element, options);
 }
 var middleMouseupOn = middleMouseUpOn;
  
 function rightMouseUpOn() 
 {
-	var options = _getMouseOptionsFor('mouseup', 2, arguments);
-	fireMouseEventOnElement(options.element, options);
+	var options = this._getMouseOptionsFor('mouseup', 2, arguments);
+	this.fireMouseEventOnElement(options.element, options);
 }
 var rightMouseupOn = rightMouseUpOn;
   
@@ -249,29 +250,29 @@ var rightMouseupOn = rightMouseUpOn;
 	
 function clickAt() 
 {
-	var options = _getMouseOptionsFor('click', 0, arguments);
-	fireMouseEvent(options.window, options);
+	var options = this._getMouseOptionsFor('click', 0, arguments);
+	this.fireMouseEvent(options.window, options);
 }
 var leftClickAt = clickAt;
  
 function middleClickAt() 
 {
-	var options = _getMouseOptionsFor('click', 1, arguments);
-	fireMouseEvent(options.window, options);
+	var options = this._getMouseOptionsFor('click', 1, arguments);
+	this.fireMouseEvent(options.window, options);
 }
  
 function rightClickAt() 
 {
-	var options = _getMouseOptionsFor('click', 2, arguments);
-	fireMouseEvent(options.window, options);
+	var options = this._getMouseOptionsFor('click', 2, arguments);
+	this.fireMouseEvent(options.window, options);
 }
   
 // dblclick at position 
 	
 function doubleClickAt() 
 {
-	var options = _getMouseOptionsFor('dblclick', 0, arguments);
-	fireMouseEvent(options.window, options);
+	var options = this._getMouseOptionsFor('dblclick', 0, arguments);
+	this.fireMouseEvent(options.window, options);
 }
 var doubleclickAt = doubleClickAt;
 var dblClickAt = doubleClickAt;
@@ -281,8 +282,8 @@ var leftDoubleclickAt = doubleClickAt;
  
 function middleDoubleClickAt() 
 {
-	var options = _getMouseOptionsFor('dblclick', 1, arguments);
-	fireMouseEvent(options.window, options);
+	var options = this._getMouseOptionsFor('dblclick', 1, arguments);
+	this.fireMouseEvent(options.window, options);
 }
 var middleDoubleclickAt = middleDoubleClickAt;
 var middleDblClickAt = middleDoubleClickAt;
@@ -290,8 +291,8 @@ var middleDblclickAt = middleDoubleClickAt;
  
 function rightDoubleClickAt() 
 {
-	var options = _getMouseOptionsFor('dblclick', 2, arguments);
-	fireMouseEvent(options.window, options);
+	var options = this._getMouseOptionsFor('dblclick', 2, arguments);
+	this.fireMouseEvent(options.window, options);
 }
 var rightDoubleclickAt = rightDoubleClickAt;
 var rightDblClickAt = rightDoubleClickAt;
@@ -301,8 +302,8 @@ var rightDblclickAt = rightDoubleClickAt;
 	
 function mouseDownAt() 
 {
-	var options = _getMouseOptionsFor('mousedown', 0, arguments);
-	fireMouseEvent(options.window, options);
+	var options = this._getMouseOptionsFor('mousedown', 0, arguments);
+	this.fireMouseEvent(options.window, options);
 }
 var mousedownAt = mouseDownAt;
 var leftMouseDownAt = mouseDownAt;
@@ -310,22 +311,22 @@ var leftMousedownAt = mouseDownAt;
  
 function middleMouseDownAt() 
 {
-	var options = _getMouseOptionsFor('mousedown', 1, arguments);
-	fireMouseEvent(options.window, options);
+	var options = this._getMouseOptionsFor('mousedown', 1, arguments);
+	this.fireMouseEvent(options.window, options);
 }
 var middleMousedownAt = middleMouseDownAt;
  
 function rightMouseDownAt() 
 {
-	var options = _getMouseOptionsFor('mousedown', 2, arguments);
-	fireMouseEvent(options.window, options);
+	var options = this._getMouseOptionsFor('mousedown', 2, arguments);
+	this.fireMouseEvent(options.window, options);
 }
 var rightMousedownAt = rightMouseDownAt;
  
 function mouseUpAt() 
 {
-	var options = _getMouseOptionsFor('mouseup', 0, arguments);
-	fireMouseEvent(options.window, options);
+	var options = this._getMouseOptionsFor('mouseup', 0, arguments);
+	this.fireMouseEvent(options.window, options);
 }
 var mouseupAt = mouseUpAt;
 var leftMouseUpAt = mouseUpAt;
@@ -333,15 +334,15 @@ var leftMouseupAt = mouseUpAt;
  
 function middleMouseUpAt() 
 {
-	var options = _getMouseOptionsFor('mouseup', 1, arguments);
-	fireMouseEvent(options.window, options);
+	var options = this._getMouseOptionsFor('mouseup', 1, arguments);
+	this.fireMouseEvent(options.window, options);
 }
 var middleMouseupAt = middleMouseUpAt;
  
 function rightMouseUpAt() 
 {
-	var options = _getMouseOptionsFor('mouseup', 2, arguments);
-	fireMouseEvent(options.window, options);
+	var options = this._getMouseOptionsFor('mouseup', 2, arguments);
+	this.fireMouseEvent(options.window, options);
 }
 var rightMouseupAt = rightMouseUpAt;
   
@@ -355,24 +356,24 @@ function fireMouseEvent(aWindow, aOptions)
 
 	if (!aOptions) aOptions = {};
 
-	_normalizeScreenAndClientPoint(aOptions, aWindow);
+	this._normalizeScreenAndClientPoint(aOptions, aWindow);
 	var x = aOptions.x;
 	var y = aOptions.y;
 	var screenX = aOptions.screenX;
 	var screenY = aOptions.screenY;
 
-	var win = getFrameFromScreenPoint(aWindow, screenX, screenY);
+	var win = this.getFrameFromScreenPoint(aWindow, screenX, screenY);
 	if (!win ||
 		!(win instanceof Ci.nsIDOMWindow))
 		throw new Error('action.fireMouseEvent::there is no frame at ['+screenX+', '+screenY+']!');
 
-	var utils = _getWindowUtils(win);
-	var node = getElementFromScreenPoint(aWindow, screenX, screenY);
+	var utils = this._getWindowUtils(win);
+	var node = this.getElementFromScreenPoint(aWindow, screenX, screenY);
 
 	if (
 		'sendMouseEvent' in utils &&
 		!this.shouldEmulateMouseEvent &&
-		!_getOwnerPopup(node)
+		!this._getOwnerPopup(node)
 		) {
 		const nsIDOMNSEvent = Ci.nsIDOMNSEvent;
 		var flags = 0;
@@ -405,15 +406,15 @@ function fireMouseEvent(aWindow, aOptions)
 			default:
 				utils.sendMouseEvent('mousedown', x, y, button, detail, flags);
 				utils.sendMouseEvent('mouseup', x, y, button, detail, flags);
-//				_emulateClickOnXULElement(node, aOptions);
+//				this._emulateClickOnXULElement(node, aOptions);
 				break;
 		}
 		return;
 	}
 
 	if (node) {
-		fireMouseEventOnElement(node, aOptions);
-		_emulateClickOnXULElement(node, aOptions);
+		this.fireMouseEventOnElement(node, aOptions);
+		this._emulateClickOnXULElement(node, aOptions);
 	}
 	else
 		throw new Error('action.fireMouseEvent::there is no element at ['+x+','+y+']!');
@@ -422,7 +423,7 @@ function fireMouseEvent(aWindow, aOptions)
 function _emulateClickOnXULElement(aElement, aOptions) 
 {
 	if (!aOptions) aOptions = {};
-	_emulateActionOnXULElement(
+	this._emulateActionOnXULElement(
 		aElement,
 		aOptions,
 		aOptions.type == 'click' && aOptions.button == 0
@@ -446,15 +447,15 @@ function fireMouseEventOnElement(aElement, aOptions)
 		!(aElement instanceof Ci.nsIDOMElement))
 		throw new Error('action.fireMouseEventOnElement::['+aElement+'] is not an element!');
 
-	var utils = _getWindowUtils(aElement.ownerDocument.defaultView);
+	var utils = this._getWindowUtils(aElement.ownerDocument.defaultView);
 	if (!aOptions) aOptions = { type : 'click' };
 	if (
 		'sendMouseEvent' in utils &&
 		!this.shouldEmulateMouseEvent &&
-		!_getOwnerPopup(aElement)
+		!this._getOwnerPopup(aElement)
 		) {
-		_updateMouseEventOptionsOnElement(aOptions, aElement);
-		fireMouseEvent(aElement.ownerDocument.defaultView, aOptions);
+		this._updateMouseEventOptionsOnElement(aOptions, aElement);
+		this.fireMouseEvent(aElement.ownerDocument.defaultView, aOptions);
 		return;
 	}
 
@@ -471,13 +472,13 @@ function fireMouseEventOnElement(aElement, aOptions)
 				detail    : detail,
 				__proto__ : aOptions
 			};
-			fireMouseEventOnElement(aElement, options);
+			this.fireMouseEventOnElement(aElement, options);
 			options.type = 'mouseup';
-			fireMouseEventOnElement(aElement, options);
+			this.fireMouseEventOnElement(aElement, options);
 			// on Gecko 1.8, we have to fire click event manually!
 			if (!('sendMouseEvent' in utils)) {
 				options.type = 'click';
-				event = _createMouseEventOnElement(aElement, options);
+				event = this._createMouseEventOnElement(aElement, options);
 				if (event && aElement) aElement.dispatchEvent(event);
 			}
 			detail++;
@@ -488,24 +489,24 @@ function fireMouseEventOnElement(aElement, aOptions)
 				detail    : detail,
 				__proto__ : aOptions
 			};
-			fireMouseEventOnElement(aElement, options);
+			this.fireMouseEventOnElement(aElement, options);
 			options.type = 'mouseup';
-			fireMouseEventOnElement(aElement, options);
+			this.fireMouseEventOnElement(aElement, options);
 			// on Gecko 1.8, we have to fire click event manually!
 			if (!('sendMouseEvent' in utils) && aOptions.type == 'dblclick') {
 				options.type = 'click';
-				event = _createMouseEventOnElement(aElement, options);
+				event = this._createMouseEventOnElement(aElement, options);
 				if (event && aElement) aElement.dispatchEvent(event);
 			}
 			break;
 	}
-	event = _createMouseEventOnElement(aElement, aOptions);
+	event = this._createMouseEventOnElement(aElement, aOptions);
 	if (event && aElement)
 		aElement.dispatchEvent(event);
 	if (aOptions.type != 'mousedown' &&
 		aOptions.type != 'mouseup' &&
 		aOptions.type != 'dblclick')
-		_emulateClickOnXULElement(aElement, aOptions);
+		this._emulateClickOnXULElement(aElement, aOptions);
 };
 	
 function _createMouseEventOnElement(aElement, aOptions) 
@@ -516,7 +517,7 @@ function _createMouseEventOnElement(aElement, aOptions)
 
 	if (!aOptions) aOptions = {};
 	if (!aElement) return null;
-	_updateMouseEventOptionsOnElement(aOptions, aElement);
+	this._updateMouseEventOptionsOnElement(aOptions, aElement);
 
 	var event = aElement.ownerDocument.createEvent('MouseEvents');
 	event.initMouseEvent(
@@ -544,11 +545,11 @@ function _updateMouseEventOptionsOnElement(aOptions, aElement)
 	if (aElement.nodeType != aElement.ELEMENT_NODE) aElement = aElement.parentNode;
 	if (!aOptions) aOptions = {};
 
-	var doc = _getDocumentFromEventTarget(aElement);
+	var doc = this._getDocumentFromEventTarget(aElement);
 	var frame = doc.defaultView;
-	var box = getBoxObjectFor(aElement);
+	var box = this.getBoxObjectFor(aElement);
 	var root = doc.documentElement;
-	var rootBox = getBoxObjectFor(root);
+	var rootBox = this.getBoxObjectFor(root);
 
 	var frameX = frame.scrollX + rootBox.screenX;
 	var frameY = frame.scrollY + rootBox.screenY;
@@ -599,28 +600,28 @@ function dragStart(aWindow, aOptions)
 {
 	if (!aOptions) aOptions = {};
 	aOptions.type = 'mousedown';
-	fireMouseEvent(aWindow, aOptions);
+	this.fireMouseEvent(aWindow, aOptions);
 };
 	
 function dragStartOnElement(aElement, aOptions) 
 {
 	if (!aOptions) aOptions = {};
 	aOptions.type = 'mousedown';
-	fireMouseEventOnElement(aElement, aOptions);
+	this.fireMouseEventOnElement(aElement, aOptions);
 };
   
 function dragEnd(aWindow, aOptions) 
 {
 	if (!aOptions) aOptions = {};
 	aOptions.type = 'mouseup';
-	fireMouseEvent(aWindow, aOptions);
+	this.fireMouseEvent(aWindow, aOptions);
 };
 	
 function dragEndOnElement(aElement, aOptions) 
 {
 	if (!aOptions) aOptions = {};
 	aOptions.type = 'mouseup';
-	fireMouseEventOnElement(aElement, aOptions);
+	this.fireMouseEventOnElement(aElement, aOptions);
 };
   
 function dragMove(aWindow, aFromX, aFromY, aToX, aToY, aOptions) 
@@ -660,7 +661,7 @@ function dragMove(aWindow, aFromX, aFromY, aToX, aToY, aOptions)
 			aOptions.type = 'mousemove';
 			aOptions.screenX = x;
 			aOptions.screenY = y;
-			fireMouseEvent(aWindow, aOptions);
+			_this.fireMouseEvent(aWindow, aOptions);
 			yield;
 			if (x == aToX && y == aToY) break;
 		}
@@ -687,9 +688,9 @@ function dragMove(aFromElement, aToElement, aOptions)
 
 	var doc = aFromElement.ownerDocument;
 	var win = doc.defaultView;
-	var fromBox = getBoxObjectFor(aFromElement);
-	var toBox = getBoxObjectFor(aToElement);
-	return dragMove(
+	var fromBox = this.getBoxObjectFor(aFromElement);
+	var toBox = this.getBoxObjectFor(aToElement);
+	return this.dragMove(
 			win,
 			fromBox.screenX + Math.floor(fromBox.width / 2),
 			fromBox.screenY + Math.floor(fromBox.height / 2),
@@ -704,19 +705,19 @@ function dragAndDrop(aWindow, aFromX, aFromY, aToX, aToY, aOptions)
 	if (!aOptions) aOptions = {};
 	aOptions.screenX = aFromX;
 	aOptions.screenY = aFromY;
-	dragStart(aWindow, aOptions);
+	this.dragStart(aWindow, aOptions);
 	var dragEndFlag = { value : false };
 	var _this = this;
 	aWindow.setTimeout(function() {
-		var flag = dragMove(aWindow, aFromX, aFromY, aToX, aToY, aOptions);
+		var flag = aSelf.dragMove(aWindow, aFromX, aFromY, aToX, aToY, aOptions);
 		var timer = aWindow.setInterval(function() {
 			if (!flag.value) return;
 			aWindow.clearInterval(timer);
 			aOptions.screenX = aToX;
 			aOptions.screenY = aToY;
-			dragEnd(aWindow, aOptions);
+			aSelf.dragEnd(aWindow, aOptions);
 			dragEndFlag.value = true;
-		}, 10);
+		}, 10, this);
 	}, 0);
 	return dragEndFlag;
 };
@@ -730,9 +731,9 @@ function dragAndDropOnElement(aFromElement, aToElement, aOptions)
 
 	var doc = aFromElement.ownerDocument;
 	var win = doc.defaultView;
-	var fromBox = getBoxObjectFor(aFromElement);
-	var toBox = getBoxObjectFor(aToElement);
-	return dragAndDrop(
+	var fromBox = this.getBoxObjectFor(aFromElement);
+	var toBox = this.getBoxObjectFor(aToElement);
+	return this.dragAndDrop(
 			win,
 			fromBox.screenX + Math.floor(fromBox.width / 2),
 			fromBox.screenY + Math.floor(fromBox.height / 2),
@@ -777,7 +778,7 @@ function _getKeyOptionsFor(aType, aArguments)
 				modifiers = aArg;
 		}
 		return ((keyCode || charCode) && modifiers && element);
-	});
+	}, this);
 
 	if (modifiers) {
 		modifiers.altKey = modifiers.altKey || modifiers.alt;
@@ -806,22 +807,22 @@ function _getKeyOptionsFor(aType, aArguments)
   
 function keyPressOn() 
 {
-	var options = _getKeyOptionsFor('keypress', arguments);
-	fireKeyEventOnElement(options.element, options);
+	var options = this._getKeyOptionsFor('keypress', arguments);
+	this.fireKeyEventOnElement(options.element, options);
 }
 var keypressOn = keyPressOn;
  
 function keyDownOn(aElement, aKeyOrCharCode) 
 {
-	var options = _getKeyOptionsFor('keydown', arguments);
-	fireKeyEventOnElement(options.element, options);
+	var options = this._getKeyOptionsFor('keydown', arguments);
+	this.fireKeyEventOnElement(options.element, options);
 }
 var keydownOn = keyDownOn;
  
 function keyUpOn(aElement, aKeyOrCharCode) 
 {
-	var options = _getKeyOptionsFor('keyup', arguments);
-	fireKeyEventOnElement(options.element, options);
+	var options = this._getKeyOptionsFor('keyup', arguments);
+	this.fireKeyEventOnElement(options.element, options);
 }
 var keyupOn = keyUpOn;
  
@@ -834,7 +835,7 @@ function fireKeyEventOnElement(aElement, aOptions)
 		throw new Error('action.fireKeyEventOnElement::['+aElement+'] is not an element!');
 
 	if (aElement instanceof Ci.nsIDOMXULElement) {
-		let dispatcher = _getXULKeyEventDispatcher(aElement);
+		let dispatcher = this._getXULKeyEventDispatcher(aElement);
 		if (!dispatcher || dispatcher.getAttribute('disabled') == 'true')
 			return;
 	}
@@ -847,8 +848,8 @@ function fireKeyEventOnElement(aElement, aOptions)
 		aElement.inputField instanceof Ci.nsIDOMElement)
 		aElement = aElement.inputField;
 
-	var doc = _getDocumentFromEventTarget(aElement);
-	var utils = _getWindowUtils(doc.defaultView);
+	var doc = this._getDocumentFromEventTarget(aElement);
+	var utils = this._getWindowUtils(doc.defaultView);
 	if ('sendKeyEvent' in utils &&
 		!this.shouldEmulateKeyEvent) {
 		const nsIDOMNSEvent = Ci.nsIDOMNSEvent;
@@ -876,15 +877,15 @@ function fireKeyEventOnElement(aElement, aOptions)
 					type      : 'keydown',
 					__proto__ : aOptions
 				};
-			fireKeyEventOnElement(aElement, options);
+			this.fireKeyEventOnElement(aElement, options);
 			options.type = 'keyup';
-			fireKeyEventOnElement(aElement, options);
+			this.fireKeyEventOnElement(aElement, options);
 			break;
 	}
-	aElement.dispatchEvent(_createKeyEventOnElement(aElement, aOptions));
+	aElement.dispatchEvent(this._createKeyEventOnElement(aElement, aOptions));
 	if (aOptions.type != 'keydown' &&
 		aOptions.type != 'keyup')
-		_emulateEnterOnXULElement(aElement, aOptions);
+		this._emulateEnterOnXULElement(aElement, aOptions);
 };
 	
 function _createKeyEventOnElement(aElement, aOptions) 
@@ -904,7 +905,7 @@ function _createKeyEventOnElement(aElement, aOptions)
 	}
 
 	var node = aElement;
-	var doc = _getDocumentFromEventTarget(node);
+	var doc = this._getDocumentFromEventTarget(node);
 	var event = doc.createEvent('KeyEvents');
 	event.initKeyEvent(
 		(aOptions.type || 'keypress'),
@@ -924,7 +925,7 @@ function _createKeyEventOnElement(aElement, aOptions)
 function _emulateEnterOnXULElement(aElement, aOptions) 
 {
 	if (!aOptions) aOptions = {};
-	_emulateActionOnXULElement(
+	this._emulateActionOnXULElement(
 		aElement,
 		aOptions,
 		aOptions.type == 'keypress' &&
@@ -944,11 +945,11 @@ function fireXULCommandEvent(aWindow, aOptions)
 		throw new Error('action.fireXULCommandEvent::['+aWindow+'] is not a frame!');
 
 	if (!aOptions) aOptions = {};
-	_normalizeScreenAndClientPoint(aOptions, aWindow);
-	var node = getElementFromScreenPoint(aWindow, aOptions.screenX, aOptions.screenY);
+	this._normalizeScreenAndClientPoint(aOptions, aWindow);
+	var node = this.getElementFromScreenPoint(aWindow, aOptions.screenX, aOptions.screenY);
 	if (!node)
 		throw new Error('action.fireXULCommandEvent::there is no element at ['+aOptions.screenX+','+aOptions.screenY+']!');
-	return fireXULCommandEventOnElement(node, aOptions);
+	return this.fireXULCommandEventOnElement(node, aOptions);
 };
  
 function fireXULCommandEventOnElement(aElement, aOptions) 
@@ -957,13 +958,13 @@ function fireXULCommandEventOnElement(aElement, aOptions)
 		!(aElement instanceof Ci.nsIDOMElement))
 		throw new Error('action.fireXULCommandEventOnElement:['+aElement+'] is not an element!');
 
-	aElement = _getXULCommandEventDispatcher(aElement);
+	aElement = this._getXULCommandEventDispatcher(aElement);
 	if (!aElement || aElement.getAttribute('disabled') == 'true')
 		return false;
 
-	var event = _createMouseEventOnElement(aElement, aOptions);
+	var event = this._createMouseEventOnElement(aElement, aOptions);
 	if (event) {
-		aElement.dispatchEvent(_createXULCommandEvent(event));
+		aElement.dispatchEvent(this._createXULCommandEvent(event));
 		if (aElement.localName == 'menuitem') {
 			aElement.ownerDocument.defaultView.setTimeout(function(aSelf) {
 				var popup = aElement;
@@ -1028,7 +1029,7 @@ function _emulateActionOnXULElement(aElement, aOptions, aIsSimpleGesture)
 {
 	if (!aElement) return;
 
-	var target = _getXULCommandEventDispatcher(aElement);
+	var target = this._getXULCommandEventDispatcher(aElement);
 	if (!target || target.getAttribute('disabled') == 'true') return;
 
 	if (!aOptions) aOptions = {};
@@ -1121,7 +1122,7 @@ function _emulateActionOnXULElement(aElement, aOptions, aIsSimpleGesture)
 
 	if (!shouldSendXULCommandEvent) return;
 	try {
-		fireXULCommandEventOnElement(target, aOptions);
+		this.fireXULCommandEventOnElement(target, aOptions);
 	}
 	catch(e) {
 		dump(e+'\n');
@@ -1150,26 +1151,26 @@ function _getInputOptionsFor(aArguments)
   
 function inputTo() 
 {
-	var options = _getInputOptionsFor(arguments);
-	inputTextToField(options.element, options.input);
+	var options = this._getInputOptionsFor(arguments);
+	this.inputTextToField(options.element, options.input);
 }
  
 function appendTo() 
 {
-	var options = _getInputOptionsFor(arguments);
-	inputTextToField(options.element, options.input, true);
+	var options = this._getInputOptionsFor(arguments);
+	this.inputTextToField(options.element, options.input, true);
 }
  
 function pasteTo() 
 {
-	var options = _getInputOptionsFor(arguments);
-	inputTextToField(options.element, options.input, false, true);
+	var options = this._getInputOptionsFor(arguments);
+	this.inputTextToField(options.element, options.input, false, true);
 }
  
 function additionallyPasteTo() 
 {
-	var options = _getInputOptionsFor(arguments);
-	inputTextToField(options.element, options.input, true, true);
+	var options = this._getInputOptionsFor(arguments);
+	this.inputTextToField(options.element, options.input, true, true);
 }
  
 // lower level API 
@@ -1221,13 +1222,13 @@ function inputTextToField(aElement, aValue, aAppend, aDontFireKeyEvents)
 		aElement.value += (aValue || '');
 	}
 
-	var doc = _getDocumentFromEventTarget(aElement);
+	var doc = this._getDocumentFromEventTarget(aElement);
 	var event = doc.createEvent('UIEvents');
 	event.initUIEvent('input', true, true, doc.defaultView, 0);
 	aElement.dispatchEvent(event);
 };
    
-/* ç¿ïWëÄçÏ */ 
+/* Â∫ßÊ®ôÊìç‰Ωú */ 
 	
 const WindowMediator = Cc['@mozilla.org/appshell/window-mediator;1']
 							.getService(Ci.nsIWindowMediator);
@@ -1238,7 +1239,7 @@ function _getWindowFromScreenPoint(aScreenX, aScreenY)
 		while (windows.hasMoreElements())
 		{
 			let w = windows.getNext().QueryInterface(Ci.nsIDOMWindowInternal);
-			if (_isInside({
+			if (this._isInside({
 					x      : w.screenX,
 					y      : w.screenY,
 					width  : w.outerWidth,
@@ -1260,7 +1261,7 @@ function _getWindowFromScreenPoint(aScreenX, aScreenY)
 	var youngest;
 	array.reverse()
 		.some(function(aWindow) {
-			youngest = _isInside({
+			youngest = this._isInside({
 						x      : aWindow.screenX,
 						y      : aWindow.screenY,
 						width  : aWindow.outerWidth,
@@ -1269,7 +1270,7 @@ function _getWindowFromScreenPoint(aScreenX, aScreenY)
 						aWindow :
 						null ;
 			return youngest;
-		});
+		}, this);
 	if (youngest) return youngest;
 	throw new Error('action._getWindowFromScreenPoint:: there is no window at '+aScreenX+', '+aScreenY+'!');
 }
@@ -1290,21 +1291,21 @@ function _getFrameAndScreenPointFromArguments(aArguments)
 		return (x !== void(0) && y !== void(0));
 	});
 	if (!w)
-		w = _getWindowFromScreenPoint(x, y);
+		w = this._getWindowFromScreenPoint(x, y);
 	return [w, x, y];
 }
  
 function getElementFromScreenPoint() 
 {
-	var [aFrame, aScreenX, aScreenY] = _getFrameAndScreenPointFromArguments(arguments);
+	var [aFrame, aScreenX, aScreenY] = this._getFrameAndScreenPointFromArguments(arguments);
 	if (!aFrame ||
 		!(aFrame instanceof Ci.nsIDOMWindow))
 		throw new Error('action.getElementFromScreenPoint::['+aFrame+'] is not a frame!');
 
-	var popup = _getPopupElementFromScreenPoint(aFrame, aScreenX, aScreenY);
+	var popup = this._getPopupElementFromScreenPoint(aFrame, aScreenX, aScreenY);
 	if (popup) return popup;
 
-	var clientPos = _getClientPointFromScreenPoint(aFrame, aScreenX, aScreenY);
+	var clientPos = this._getClientPointFromScreenPoint(aFrame, aScreenX, aScreenY);
 	if ('elementFromPoint' in aFrame.document) {
 		var elem = aFrame.document.elementFromPoint(clientPos.x, clientPos.y);
 		if (
@@ -1312,20 +1313,20 @@ function getElementFromScreenPoint()
 			(
 				/^(i?frame|browser)$/i.test(elem.localName) ||
 				(elem.localName == 'tabbrowser' &&
-				_isInside(elem.mPanelContainer.boxObject, aScreenX, aScreenY))
+				this._isInside(elem.mPanelContainer.boxObject, aScreenX, aScreenY))
 			)
 			) {
-			var node = getElementFromScreenPoint(
+			var node = this.getElementFromScreenPoint(
 					elem.contentWindow,
 					aScreenX + aFrame.scrollX,
 					aScreenY + aFrame.scrollY
 				);
-			return _getOriginalTargetFromScreenPoint(node, aScreenX, aScreenY);
+			return this._getOriginalTargetFromScreenPoint(node, aScreenX, aScreenY);
 		}
-		return _getOriginalTargetFromScreenPoint(elem, aScreenX, aScreenY);
+		return this._getOriginalTargetFromScreenPoint(elem, aScreenX, aScreenY);
 	}
 
-	aFrame = getFrameFromScreenPoint(aFrame, aScreenX, aScreenY);
+	aFrame = this.getFrameFromScreenPoint(aFrame, aScreenX, aScreenY);
 	if (!aFrame) return null;
 
 	var doc = aFrame.document;
@@ -1346,13 +1347,13 @@ function getElementFromScreenPoint()
 	var walker = doc.createTreeWalker(startNode, NodeFilter.SHOW_ELEMENT, elementFilter, false);
 	for (var node = walker.firstChild(); node != null; node = walker.nextNode())
 	{
-		if (_isInside(getBoxObjectFor(node), aScreenX, aScreenY))
+		if (this._isInside(this.getBoxObjectFor(node), aScreenX, aScreenY))
 			nodes.push(node);
 	}
 
 	if (!nodes.length) return null;
 	if (nodes.length == 1)
-		return _getOriginalTargetFromScreenPoint(nodes[0], aScreenX, aScreenY);
+		return this._getOriginalTargetFromScreenPoint(nodes[0], aScreenX, aScreenY);
 
 	var smallest = [];
 	nodes.forEach(function(aNode) {
@@ -1360,9 +1361,9 @@ function getElementFromScreenPoint()
 			smallest.push(aNode);
 			return;
 		}
-		var box = getBoxObjectFor(aNode);
+		var box = this.getBoxObjectFor(aNode);
 		var size = box.width * box.height;
-		var smallestBox = getBoxObjectFor(smallest[0]);
+		var smallestBox = this.getBoxObjectFor(smallest[0]);
 		var smallestSize = smallestBox.width * smallestBox.height;
 		if (size == smallestSize) {
 			smallest.push(aNode);
@@ -1370,7 +1371,7 @@ function getElementFromScreenPoint()
 		else if (size < smallestSize) {
 			smallest = [aNode];
 		}
-	});
+	}, this);
 
 	var node;
 	if (smallest.length == 1) {
@@ -1395,10 +1396,10 @@ function getElementFromScreenPoint()
 				deepest = [aNode];
 				deepestNest = nest;
 			}
-		});
+		}, this);
 		node = (deepest.length == 1) ? deepest[0] : deepest[deepest.length-1] ;
 	}
-	return _getOriginalTargetFromScreenPoint(node, aScreenX, aScreenY);
+	return this._getOriginalTargetFromScreenPoint(node, aScreenX, aScreenY);
 };
 	
 function _getPopupElementFromScreenPoint(aFrame, aScreenX, aScreenY) 
@@ -1415,24 +1416,24 @@ function _getPopupElementFromScreenPoint(aFrame, aScreenX, aScreenY)
 	{
 		var popup = popups.snapshotItem(i);
 		if (popup.state != 'open') continue;
-		if (!_isInside(popup.boxObject, aScreenX, aScreenY)) continue;
+		if (!this._isInside(popup.boxObject, aScreenX, aScreenY)) continue;
 
 		var nodes = [];
 		var walker = doc.createTreeWalker(popup, NodeFilter.SHOW_ELEMENT, elementFilter, false);
 		for (var node = walker.firstChild(); node != null; node = walker.nextNode())
 		{
-			if (_isInside(getBoxObjectFor(node), aScreenX, aScreenY))
+			if (this._isInside(this.getBoxObjectFor(node), aScreenX, aScreenY))
 				nodes.push(node);
 		}
 		if (!nodes.length) continue;
-		return _getOriginalTargetFromScreenPoint(nodes[nodes.length-1], aScreenX, aScreenY);
+		return this._getOriginalTargetFromScreenPoint(nodes[nodes.length-1], aScreenX, aScreenY);
 	}
 	return null;
 }
  
 function _getOriginalTargetFromScreenPoint(aElement, aScreenX, aScreenY) 
 {
-	return _getOriginalTargetFromScreenPointInternal(aElement, aScreenX, aScreenY) || aElement;
+	return this._getOriginalTargetFromScreenPointInternal(aElement, aScreenX, aScreenY) || aElement;
 }
 	
 function _getOriginalTargetFromScreenPointInternal(aElement, aScreenX, aScreenY) 
@@ -1445,9 +1446,9 @@ function _getOriginalTargetFromScreenPointInternal(aElement, aScreenX, aScreenY)
 	for (var i = 0, maxi = nodes.length; i < maxi; i++)
 	{
 		if (nodes[i].nodeType != nodes[i].ELEMENT_NODE ||
-			!_isInside(getBoxObjectFor(nodes[i]), aScreenX, aScreenY))
+			!this._isInside(this.getBoxObjectFor(nodes[i]), aScreenX, aScreenY))
 			continue;
-		var node = _getOriginalTargetFromScreenPointInternal(nodes[i], aScreenX, aScreenY);
+		var node = this._getOriginalTargetFromScreenPointInternal(nodes[i], aScreenX, aScreenY);
 		if (node) return node;
 	}
 	return null;
@@ -1459,17 +1460,17 @@ var elementFilter = function(aNode) {
   
 function getFrameFromScreenPoint() 
 {
-	var [aFrame, aScreenX, aScreenY] = _getFrameAndScreenPointFromArguments(arguments);
+	var [aFrame, aScreenX, aScreenY] = this._getFrameAndScreenPointFromArguments(arguments);
 	if (!aFrame ||
 		!(aFrame instanceof Ci.nsIDOMWindow))
 		throw new Error('action.getFrameFromScreenPoint::['+aFrame+'] is not a frame!');
 
 	if ('elementFromPoint' in aFrame.document) {
-		var elem = getElementFromScreenPoint(aFrame, aScreenX, aScreenY);
+		var elem = this.getElementFromScreenPoint(aFrame, aScreenX, aScreenY);
 		return elem ? elem.ownerDocument.defaultView : null ;
 	}
 
-	var wins = _flattenFrames(aFrame);
+	var wins = this._flattenFrames(aFrame);
 	for (var i = wins.length - 1; i >= 0; i--) {
 		let win = wins[i];
 		let doc = win.document;
@@ -1487,11 +1488,11 @@ function getFrameFromScreenPoint()
 		for (let j = 0; j < arr.length; j++)
 			frameList.push(arr[j]);
 		for (let j = frameList.length - 1; j >= 0; j--) {
-			let box = getBoxObjectFor(frameList[j]);
-			if (_isInside(box, aScreenX, aScreenY))
+			let box = this.getBoxObjectFor(frameList[j]);
+			if (this._isInside(box, aScreenX, aScreenY))
 				return frameList[j].contentWindow;
 		}
-		if (_isInside(getBoxObjectFor(doc.documentElement), aScreenX, aScreenY))
+		if (this._isInside(this.getBoxObjectFor(doc.documentElement), aScreenX, aScreenY))
 			return win;
 	}
 	return null;
@@ -1506,7 +1507,7 @@ function _flattenFrames(aFrame)
 
 	var ret = [aFrame];
 	for (var i = 0; i < aFrame.frames.length; i++)
-		ret = ret.concat(_flattenFrames(aFrame.frames[i]));
+		ret = ret.concat(this._flattenFrames(aFrame.frames[i]));
 	return ret;
 };
   
@@ -1516,7 +1517,7 @@ function _getClientPointFromScreenPoint(aFrame, aScreenX, aScreenY)
 		!(aFrame instanceof Ci.nsIDOMWindow))
 		throw new Error('action._getClientPointFromScreenPoint::['+aFrame+'] is not a frame!');
 
-	var box = getBoxObjectFor(aFrame.document.documentElement);
+	var box = this.getBoxObjectFor(aFrame.document.documentElement);
 	return {
 		x : aScreenX - box.screenX - aFrame.scrollX,
 		y : aScreenY - box.screenY - aFrame.scrollY
@@ -1529,8 +1530,8 @@ function _normalizeScreenAndClientPoint(aOptions, aFrame)
 		!(aFrame instanceof Ci.nsIDOMWindow))
 		throw new Error('action._normalizeScreenAndClientPoint::['+aFrame+'] is not a frame!');
 
-	var zoom = isFullZoom() ? getZoom(aFrame) : 1 ;
-	var box = getBoxObjectFor(aFrame.document.documentElement);
+	var zoom = this.isFullZoom() ? this.getZoom(aFrame) : 1 ;
+	var box = this.getBoxObjectFor(aFrame.document.documentElement);
 
 	var x = ('x' in aOptions ?
 			aOptions.x :
