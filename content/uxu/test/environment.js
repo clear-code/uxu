@@ -427,6 +427,7 @@ function addWindowWatcher(aListener)
 	if (typeof aListener == 'function')
 		aListener = new WindowWatcherListener(aListener, this);
 
+	this.windowWatcherListeners.push(aListener);
 	WindowWatcher.registerNotification(aListener);
 };
  
@@ -451,24 +452,35 @@ function WindowWatcherListener(aFunction, aEnvironment)
 WindowWatcherListener.prototype = {
 	observe : function(aSubject, aTopic, aData)
 	{
-		if (
-			aTopic != 'domwindowopened' ||
-			aWindow != '[object ChromeWindow]'
-			)
+		if (aWindow != '[object ChromeWindow]')
 			return;
 
 		aWindow = aWindow.QueryInterface(Ci.nsIDOMWindow);
+		switch (aTopic)
+		{
+			case 'domwindowopened':
+				var self = this;
+				aWindow.addEventListener('load', function() {
+					aWindow.removeEventListener('load', arguments.callee, false);
+					self.onListen(aWindow);
+				}, false);
+				return;
 
-		var self = this;
-		aWindow.addEventListener('load', function() {
-			aWindow.removeEventListener('load', arguments.callee, false);
-			try {
-				self.callback.call(self.environment, aWindow);
-			}
-			catch(e) {
-				self.environment.log(e);
-			}
-		}, false);
+			case 'domwindowclosed':
+				return this.onListen(aWindow);
+
+			default:
+				return;
+		}
+	},
+	onListen : function(aWindow)
+	{
+		try {
+			this.callback.call(this.environment, aWindow);
+		}
+		catch(e) {
+			this.environment.log(e);
+		}
 	}
 };
 	
