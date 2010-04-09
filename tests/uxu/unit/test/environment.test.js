@@ -188,37 +188,41 @@ function test_parseTemplate()
 }
 
 
-var watcher = function(aWindow) {
-		if (aWindow.closed)
-			watcher.closed.push(aWindow);
-		else
-			watcher.opened.push(aWindow);
+var watcherFunc = function(aWindow, aEventType) {
+		watcherFunc.results.push([aWindow, aEventType]);
 	};
-test_addRemoveWindowWatcher.setUp = function() {
+test_addRemoveWindowWatcher_function.setUp = function() {
 	yield utils.tearDownTestWindow();
-	watcher.opened = [];
-	watcher.closed = [];
+	watcherFunc.results = [];
 }
-test_addRemoveWindowWatcher.tearDown = function() {
-	watcher.opened = [];
-	watcher.closed = [];
-	utils.removeWindowWatcher(watcher); // 念のため
+test_addRemoveWindowWatcher_function.tearDown = function() {
+	watcherFunc.results = [];
+	utils.removeWindowWatcher(watcherFunc); // 念のため
 }
-function test_addRemoveWindowWatcher()
+function test_addRemoveWindowWatcher_function()
 {
-	utils.addWindowWatcher(watcher);
+	utils.addWindowWatcher(watcherFunc);
 	yield utils.setUpTestWindow();
 	yield 100; // 念のため。
 
 	var win = utils.getTestWindow();
-	assert.equals([win], watcher.opened);
-	assert.equals([], watcher.closed);
+	assert.equals(
+		[[win, 'opened'],
+		 [win, 'DOMContentLoaded'],
+		 [win, 'load']],
+		watcherFunc.results
+	);
 
 	yield utils.tearDownTestWindow();
 
-	assert.equals([win], watcher.opened);
-	assert.equals([win], watcher.closed);
+	assert.equals(
+		[[win, 'opened'],
+		 [win, 'DOMContentLoaded'],
+		 [win, 'load'],
+		 [win, 'closed']],
+		watcherFunc.results
+	);
 
-	utils.removeWindowWatcher(watcher);
+	utils.removeWindowWatcher(watcherFunc);
 }
 
