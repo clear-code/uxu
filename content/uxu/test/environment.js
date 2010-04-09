@@ -23,6 +23,7 @@ var defaultURI, defaultType, defaultFeatures, defaultName;
 function constructor(aEnvironment, aURI, aBrowser) 
 {
 	this.tempFiles = [];
+	this.windowWatcherListeners = [];
 
 	this.__defineGetter__('utils', function() {
 		return this;
@@ -81,6 +82,9 @@ function destroy()
 	this.fireEvent('Destroy', null);
 	this.removeAllListeners();
 	this.assert.removeListener(this);
+	this.windowWatcherListeners.forEach(function(aWatcher) {
+		this.removeWindowWatcher(aWatcher);
+	}, this);
 }
 	
 function onFinish() 
@@ -257,6 +261,8 @@ function attachServerUtils()
 	
 var WindowManager = Cc['@mozilla.org/appshell/window-mediator;1'] 
 		.getService(Ci.nsIWindowMediator);
+var WindowWatcher = Cc['@mozilla.org/embedcomp/window-watcher;1']
+		.getService(Ci.nsIWindowWatcher);
  
 function normalizeTestWindowOption(aOptions) 
 {
@@ -414,7 +420,67 @@ function getChromeWindows(aOptions)
 
 	return result;
 };
-  
+ 
+function addWindowWatcher(aListener) 
+{
+	if (!aListener) return;
+	if (typeof aListener == 'function')
+		aListener = new WindowWatcherListener(aListener, this);
+
+	WindowWatcher.registerNotification(aListener);
+};
+ 
+function removeWindowWatcher(aListener) 
+{
+	if (aListener && typeof aListener == 'function')
+		aListener = WindowWatcherListener.find(aListener, this.windowWatcherListeners);
+	if (!aListener) return;
+	try {
+		WindowWatcher.unregisterNotification(aListener);
+	}
+	catch(e) {
+		this.log(e);
+	}
+};
+ 
+function WindowWatcherListener(aFunction, aEnvironment) 
+{
+	this.callback = aFunction;
+	this.environment = aEnvironment;
+}
+WindowWatcherListener.prototype = {
+	observe : function(aSubject, aTopic, aData)
+	{
+		if (
+			aTopic != 'domwindowopened' ||
+			aWindow != '[object ChromeWindow]'
+			)
+			return;
+
+		aWindow = aWindow.QueryInterface(Ci.nsIDOMWindow);
+
+		var self = this;
+		aWindow.addEventListener('load', function() {
+			aWindow.removeEventListener('load', arguments.callee, false);
+			try {
+				self.callback.call(self.environment, aWindow);
+			}
+			catch(e) {
+				self.environment.log(e);
+			}
+		}, false);
+	}
+};
+	
+WindowWatcherListener.find = function(aFunction, aListeners) { 
+	for (var i in aListeners)
+	{
+		if (aListeners[i].callback == aFunction)
+			return aListeners[i];
+	}
+	return null;
+};
+   
 // load page 
 	
 function _waitBrowserLoad(aTab, aBrowser, aLoadedFlag, aOnComplete) 
