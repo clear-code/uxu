@@ -421,11 +421,10 @@ function getChromeWindows(aOptions)
 	return result;
 };
  
-function addWindowWatcher(aListener) 
+function addWindowWatcher(aListener, aTargets) 
 {
 	if (!aListener) return;
-	if (!('observe' in aListener))
-		aListener = new WindowWatcherListener(aListener, this);
+	aListener = new WindowWatcherListener(aListener, aTargets, this);
 
 	this.windowWatcherListeners.push(aListener);
 	WindowWatcher.registerNotification(aListener);
@@ -433,8 +432,7 @@ function addWindowWatcher(aListener)
  
 function removeWindowWatcher(aListener) 
 {
-	if (aListener && !('observe' in aListener))
-		aListener = WindowWatcherListener.find(aListener, this.windowWatcherListeners);
+	aListener = WindowWatcherListener.find(aListener, this.windowWatcherListeners);
 	if (!aListener) return;
 	try {
 		WindowWatcher.unregisterNotification(aListener);
@@ -444,9 +442,12 @@ function removeWindowWatcher(aListener)
 	}
 };
  
-function WindowWatcherListener(aCallback, aEnvironment) 
+function WindowWatcherListener(aListener, aTargets, aEnvironment) 
 {
-	this.callback = aCallback;
+	this.listener = aListener;
+	this.targets = aTargets || this.defaultTargets;
+	if (typeof this.targets == 'string')
+		this.targets = [this.targets];
 	this.environment = aEnvironment;
 }
 WindowWatcherListener.prototype = {
@@ -459,50 +460,57 @@ WindowWatcherListener.prototype = {
 		switch (aTopic)
 		{
 			case 'domwindowopened':
-				var self = this;
-				aSubject.addEventListener('DOMContentLoaded', function(aEvent) {
-					aSubject.removeEventListener('DOMContentLoaded', arguments.callee, false);
-					self.onListen(aSubject, 'DOMContentLoaded', aEvent);
-				}, false);
-				aSubject.addEventListener('load', function(aEvent) {
-					aSubject.removeEventListener('load', arguments.callee, false);
-					self.onListen(aSubject, 'load', aEvent);
-				}, false);
-				return this.onListen(aSubject, 'opened');
+				aSubject.addEventListener('DOMContentLoaded', this, false);
+				aSubject.addEventListener('load', this, false);
+				return this.onListen(aSubject, aTopic, aData);
 
 			case 'domwindowclosed':
-				return this.onListen(aSubject, 'closed');
+				aSubject.removeEventListener('DOMContentLoaded', this, false);
+				aSubject.removeEventListener('load', this, false);
+				return this.onListen(aSubject, aTopic, aData);
 
 			default:
 				return;
 		}
 	},
-	onListen : function(aWindow, aEventType, aEvent)
+	handleEvent : function(aEvent)
 	{
+		aEvent.currentTarget.removeEventListener(aEvent.type, this, false);
+		this.onListen(aEvent.target.defaultView, aEvent.type, null, aEvent);
+	},
+	onListen : function(aWindow, aTopic, aData, aEvent)
+	{
+		if (this.targets.indexOf(aTopic) < 0)
+			return;
+
 		try {
-			if (typeof this.callback == 'function')
-				this.callback.call(this.environment, aWindow, aEventType);
-			else if ('handleEvent' in this.callback)
-				this.callback.handleEvent(
+			if (typeof this.listener == 'function')
+				this.listener.call(this.environment, aWindow, aTopic);
+			else if ('observe' in this.listener)
+				this.listener.observe(aWindow, aTopic, aData);
+			else if ('handleEvent' in this.listener)
+				this.listener.handleEvent(
 					aEvent ||
-					{ type : aEventType,
+					{ type : aTopic,
 					  target : aWindow,
 					  originalTarget : aWindow,
 					  currentTarget : aWindow }
 				);
-			else if ('on'+aEventType in this.callback)
-				this.callback['on'+aEventType]();
+			else if ('on'+aTopic in this.listener)
+				this.listener['on'+aTopic](aWindow);
 		}
 		catch(e) {
 			this.environment.log(e);
 		}
-	}
+	},
+	defaultTargets : ['load', 'domwindowclosed']
 };
 	
 WindowWatcherListener.find = function(aCallback, aListeners) { 
 	for (var i in aListeners)
 	{
-		if (aListeners[i].callback == aCallback)
+		if (aListeners[i] == aCallback ||
+			aListeners[i].callback == aCallback)
 			return aListeners[i];
 	}
 	return null;

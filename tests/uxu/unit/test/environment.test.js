@@ -1,11 +1,9 @@
 function setUp()
 {
-	yield utils.setUpTestWindow();
 }
 
 function tearDown()
 {
-	utils.tearDownTestWindow();
 }
 
 function test_properties()
@@ -21,6 +19,12 @@ function test_properties()
 }
 
 if (utils.product != 'Firefox') test_contentFrames.priority = 'never';
+test_contentFrames.setUp = function() {
+	yield utils.setUpTestWindow();
+}
+test_contentFrames.tearDown = function() {
+	yield utils.tearDownTestWindow();
+}
 function test_contentFrames()
 {
 	var win = utils.getTestWindow();
@@ -69,6 +73,12 @@ function test$()
 }
 
 if (utils.product != 'Firefox') test_addTab.priority = 'never';
+test_addTab.setUp = function() {
+	yield utils.setUpTestWindow();
+}
+test_addTab.tearDown = function() {
+	yield utils.tearDownTestWindow();
+}
 function test_addTab()
 {
 	var tabs = gBrowser.mTabs;
@@ -188,41 +198,143 @@ function test_parseTemplate()
 }
 
 
-var watcherFunc = function(aWindow, aEventType) {
-		watcherFunc.results.push([aWindow, aEventType]);
-	};
-test_addRemoveWindowWatcher_function.setUp = function() {
-	yield utils.tearDownTestWindow();
-	watcherFunc.results = [];
-}
+var watcherParameters = {
+	default          : { targets  : null,
+	                     expected : ['load', 'domwindowclosed'] },
+	domwindowopened  : { targets  : 'domwindowopened',
+	                     expected : ['domwindowopened'] },
+	DOMContentLoaded : { targets  : 'DOMContentLoaded',
+	                     expected : ['DOMContentLoaded'] },
+	load             : { targets  : 'load',
+	                     expected : ['load'] },
+	domwindowclosed  : { targets  : 'domwindowclosed',
+	                     expected : ['domwindowclosed'] },
+	all              : { targets  : ['domwindowopened', 'DOMContentLoaded', 'load',
+	                                 'domwindowclosed'],
+	                     expected : ['domwindowopened', 'DOMContentLoaded', 'load',
+	                                 'domwindowclosed'] }
+};
+var watcher;
+
 test_addRemoveWindowWatcher_function.tearDown = function() {
-	watcherFunc.results = [];
-	utils.removeWindowWatcher(watcherFunc); // 念のため
+	if (watcher)
+		utils.removeWindowWatcher(watcher);
 }
-function test_addRemoveWindowWatcher_function()
+test_addRemoveWindowWatcher_function.parameters = watcherParameters;
+function test_addRemoveWindowWatcher_function(aParameter)
 {
-	utils.addWindowWatcher(watcherFunc);
+	watcher = function(aWindow, aEventType) {
+		results.push([aWindow, aEventType]);
+	}
+	var results = [];
+	utils.addWindowWatcher(watcher, aParameter.targets);
 	yield utils.setUpTestWindow();
-	yield 100; // 念のため。
-
+	yield 200;
 	var win = utils.getTestWindow();
-	assert.equals(
-		[[win, 'opened'],
-		 [win, 'DOMContentLoaded'],
-		 [win, 'load']],
-		watcherFunc.results
-	);
-
+	yield 200;
+	var expected = aParameter.expected.map(function(aEventType) {
+			return [win, aEventType];
+		}).join('\n');
 	yield utils.tearDownTestWindow();
+	yield 200;
+	assert.equals(expected, results.join('\n'));
+	utils.removeWindowWatcher(watcher);
+	watcher = null;
+}
 
-	assert.equals(
-		[[win, 'opened'],
-		 [win, 'DOMContentLoaded'],
-		 [win, 'load'],
-		 [win, 'closed']],
-		watcherFunc.results
-	);
+test_addRemoveWindowWatcher_eventListener.tearDown = function() {
+	if (watcher)
+		utils.removeWindowWatcher(watcher);
+}
+test_addRemoveWindowWatcher_eventListener.parameters = watcherParameters;
+function test_addRemoveWindowWatcher_eventListener(aParameter)
+{
+	watcher = {
+		handleEvent : function(aEvent) {
+			results.push([aEvent.target, aEvent.type]);
+		}
+	};
+	var results = [];
+	utils.addWindowWatcher(watcher, aParameter.targets);
+	yield utils.setUpTestWindow();
+	yield 200;
+	var win = utils.getTestWindow();
+	yield 200;
+	var expected = aParameter.expected.map(function(aEventType) {
+			if (aEventType.indexOf('domwindow') == 0)
+				return [win, aEventType];
+			else
+				return [win.document, aEventType];
+		}).join('\n');
+	yield utils.tearDownTestWindow();
+	yield 200;
+	assert.equals(expected, results.join('\n'));
+	utils.removeWindowWatcher(watcher);
+	watcher = null;
+}
 
-	utils.removeWindowWatcher(watcherFunc);
+test_addRemoveWindowWatcher_observer.tearDown = function() {
+	if (watcher)
+		utils.removeWindowWatcher(watcher);
+}
+test_addRemoveWindowWatcher_observer.parameters = watcherParameters;
+function test_addRemoveWindowWatcher_observer(aParameter)
+{
+	watcher = {
+		observe : function(aSubject, aTopic, aData) {
+			results.push([aSubject, aTopic]);
+		}
+	};
+	var results = [];
+	utils.addWindowWatcher(watcher, aParameter.targets);
+	yield utils.setUpTestWindow();
+	yield 200;
+	var win = utils.getTestWindow();
+	yield 200;
+	var expected = aParameter.expected.map(function(aEventType) {
+			return [win, aEventType];
+		}).join('\n');
+	yield utils.tearDownTestWindow();
+	yield 200;
+	assert.equals(expected, results.join('\n'));
+	utils.removeWindowWatcher(watcher);
+	watcher = null;
+}
+
+test_addRemoveWindowWatcher_object.tearDown = function() {
+	if (watcher)
+		utils.removeWindowWatcher(watcher);
+}
+test_addRemoveWindowWatcher_object.parameters = watcherParameters;
+function test_addRemoveWindowWatcher_object(aParameter)
+{
+	watcher = {
+		ondomwindowopened : function(aWindow) {
+			results.push([aWindow, 'domwindowopened']);
+		},
+		onDOMContentLoaded : function(aWindow) {
+			results.push([aWindow, 'DOMContentLoaded']);
+		},
+		onload : function(aWindow) {
+			results.push([aWindow, 'load']);
+		},
+		ondomwindowclosed : function(aWindow) {
+			results.push([aWindow, 'domwindowclosed']);
+		}
+	};
+	var results = [];
+	utils.addWindowWatcher(watcher, aParameter.targets);
+	yield utils.setUpTestWindow();
+	yield 200;
+	var win = utils.getTestWindow();
+	yield 200;
+	var expected = aParameter.expected.map(function(aEventType) {
+			return [win, aEventType];
+		}).join('\n');
+	yield utils.tearDownTestWindow();
+	yield 200;
+	assert.equals(expected, results.join('\n'));
+	utils.removeWindowWatcher(watcher);
+	watcher = null;
 }
 
