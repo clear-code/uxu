@@ -1230,10 +1230,11 @@ function inputTextToField(aElement, aValue, aAppend, aDontFireKeyEvents)
    
 /* ダイアログ操作の予約 */ 
 var COMMON_DIALOG_URL = 'chrome://global/content/commonDialog.xul';
+var SELECT_DIALOG_URL = 'chrome://global/content/selectDialog.xul';
 	
-function readyToOK(aConditions) 
+function readyToOK(aOptions) 
 {
-	aConditions = aConditions || {};
+	aOptions = aOptions || {};
 
 	var self = this;
 	var listener = function(aWindow) {
@@ -1248,17 +1249,24 @@ function readyToOK(aConditions)
 				return;
 
 			var title = params.GetString(12);
-			if ('title' in aConditions && aConditions.title != title)
+			if ('title' in aOptions && aOptions.title != title)
 				return;
 
 			var message = params.GetString(0);
-			if ('message' in aConditions && aConditions.message != message)
+			if ('message' in aOptions && aOptions.message != message)
 				return;
 
 			self.cancelReadiedAction(listener);
 
 			aWindow.setTimeout(function() {
 				var doc = aWindow.document;
+
+				var checkbox = doc.getElementById('checkbox');
+				if (checkbox.boxObject.width && 'checked' in aOptions) {
+					checkbox.checked = aOptions.checked;
+					aWindow.onCheckboxClick();
+				}
+
 				doc.documentElement.getButton('accept').doCommand();
 			}, 0);
 		};
@@ -1267,13 +1275,9 @@ function readyToOK(aConditions)
 }
 var readyToOk = readyToOK;
  
-function readyToConfirm(aYes, aCheck, aConditions) 
+function readyToConfirm(aYes, aOptions) 
 {
-	if (aCheck !== void(0) && typeof aCheck != 'boolean') {
-		aConditions = aCheck;
-		aCheck = false;
-	}
-	aConditions = aConditions || {};
+	aOptions = aOptions || {};
 
 	var self = this;
 	var listener = function(aWindow) {
@@ -1287,11 +1291,11 @@ function readyToConfirm(aYes, aCheck, aConditions)
 				return;
 
 			var title = params.GetString(12);
-			if ('title' in aConditions && aConditions.title != title)
+			if ('title' in aOptions && aOptions.title != title)
 				return;
 
 			var message = params.GetString(0);
-			if ('message' in aConditions && aConditions.message != message)
+			if ('message' in aOptions && aOptions.message != message)
 				return;
 
 			self.cancelReadiedAction(listener);
@@ -1300,8 +1304,8 @@ function readyToConfirm(aYes, aCheck, aConditions)
 				var doc = aWindow.document;
 
 				var checkbox = doc.getElementById('checkbox');
-				if (checkbox.boxObject.width) { // ignore hidden checkbox
-					checkbox.checked = true;
+				if (checkbox.boxObject.width && 'checked' in aOptions) {
+					checkbox.checked = aOptions.checked;
 					aWindow.onCheckboxClick();
 				}
 
@@ -1325,9 +1329,9 @@ function readyToConfirm(aYes, aCheck, aConditions)
 	this.readiedActionListeners.push(listener);
 }
  
-function readyToPrompt(aInput, aConditions) 
+function readyToPrompt(aInput, aOptions) 
 {
-	aConditions = aConditions || {};
+	aOptions = aOptions || {};
 
 	var self = this;
 	var listener = function(aWindow) {
@@ -1337,19 +1341,21 @@ function readyToPrompt(aInput, aConditions)
 			var params = aWindow.gCommonDialogParam;
 
 			var inputFieldsCount = params.GetInt(3);
-			if (inputFieldsCount != 1)
+			if (aOptions.inputFieldsType == 'both' ?
+					(inputFieldsCount != 2) :
+					(inputFieldsCount != 1))
 				return;
 
-			var isPasswordType = params.GetInt(4) == 1;
-			if (isPasswordType)
+			var passwordType = params.GetInt(4) == 1;
+			if (passwordType != (aOptions.inputFieldsType == 'password'))
 				return;
 
 			var title = params.GetString(12);
-			if ('title' in aConditions && aConditions.title != title)
+			if ('title' in aOptions && aOptions.title != title)
 				return;
 
 			var message = params.GetString(0);
-			if ('message' in aConditions && aConditions.message != message)
+			if ('message' in aOptions && aOptions.message != message)
 				return;
 
 			self.cancelReadiedAction(listener);
@@ -1357,8 +1363,96 @@ function readyToPrompt(aInput, aConditions)
 			aWindow.setTimeout(function() {
 				var doc = aWindow.document;
 
-				var textbox = doc.getElementById('loginTextbox');
-				textbox.value = aInput;
+				var checkbox = doc.getElementById('checkbox');
+				if (checkbox.boxObject.width && 'checked' in aOptions) {
+					checkbox.checked = aOptions.checked;
+					aWindow.onCheckboxClick();
+				}
+
+				var usernameField = doc.getElementById('loginTextbox');
+				var password1Field = doc.getElementById('password1Textbox');
+				var password2Field = doc.getElementById('password2Textbox');
+
+				switch (aOptions.inputFieldsType)
+				{
+					default:
+						usernameField.value = aInput;
+						break;
+
+					case 'password':
+						password1Field.value = aOptions.password;
+						break;
+
+					case 'both':
+						usernameField.value = aOptions.username;
+						password1Field.value = aOptions.password;
+						break;
+				}
+
+				doc.documentElement.getButton('accept').doCommand();
+			}, 0);
+		};
+	this.utils.addWindowWatcher(listener, 'load');
+	this.readiedActionListeners.push(listener);
+}
+ 
+function readyToPromptPassword(aInput, aOptions)
+{
+	this.readyToPrompt(
+		null,
+		{
+			password : aPassword,
+			inputFieldsType : 'password',
+			__proto__ : aOptions
+		}
+	);
+}
+ 
+function readyToPromptUsernameAndPassword(aUsername, aPassword, aOptions)
+{
+	this.readyToPrompt(
+		null,
+		{
+			username : aUsername,
+			password : aPassword,
+			inputFieldsType : 'both',
+			__proto__ : aOptions
+		}
+	);
+}
+ 
+function readyToSelect(aSelectedIndexes, aOptions)
+{
+	aOptions = aOptions || {};
+	if (typeof aSelectedIndexes == 'number')
+		aSelectedIndexes = [aSelectedIndexes];
+
+	var self = this;
+	var listener = function(aWindow) {
+			if (aWindow.location.href != SELECT_DIALOG_URL ||
+				!aWindow.gCommonDialogParam)
+				return;
+			var params = aWindow.gCommonDialogParam;
+
+			var title = params.GetString(0);
+			if ('title' in aOptions && aOptions.title != title)
+				return;
+
+			var message = params.GetString(1);
+			if ('message' in aOptions && aOptions.message != message)
+				return;
+
+			self.cancelReadiedAction(listener);
+
+			aWindow.setTimeout(function() {
+				var doc = aWindow.document;
+
+				var list = doc.getElementById('list');
+				aSelectedIndexes.forEach(function(aIndex) {
+					var item = this.getItemAtIndex(aIndex);
+					if (item)
+						list.addItemToSelection(item);
+				});
 
 				doc.documentElement.getButton('accept').doCommand();
 			}, 0);
