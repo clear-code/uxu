@@ -10,7 +10,6 @@ var utils      = lib_module.require('package', 'utils');
 var inherits = lib_module.require('class', 'event_target');
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
-var action      = test_module.require('package', 'action');
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var mail_module = new ModuleManager(['chrome://uxu/content/mail']);
@@ -166,8 +165,9 @@ function attachAssertions()
  
 function attachActions() 
 {
+	var Actions = test_module.require('class', 'action');
 	var actionInstance = {};
-	actionInstance.__proto__ = action;
+	actionInstance.__proto__ = new Actions(this);
 	this.__defineGetter__('action', function() {
 		return actionInstance;
 	});
@@ -261,8 +261,6 @@ function attachServerUtils()
 	
 var WindowManager = Cc['@mozilla.org/appshell/window-mediator;1'] 
 		.getService(Ci.nsIWindowMediator);
-var WindowWatcher = Cc['@mozilla.org/embedcomp/window-watcher;1']
-		.getService(Ci.nsIWindowWatcher);
  
 function normalizeTestWindowOption(aOptions) 
 {
@@ -420,6 +418,11 @@ function getChromeWindows(aOptions)
 
 	return result;
 };
+  
+// window watcher 
+	
+var WindowWatcher = Cc['@mozilla.org/embedcomp/window-watcher;1'] 
+		.getService(Ci.nsIWindowWatcher);
  
 function addWindowWatcher(aListener, aTargets) 
 {

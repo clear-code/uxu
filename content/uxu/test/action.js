@@ -6,11 +6,21 @@ const Ci = Components.interfaces;
 var Prefs = Components.classes['@mozilla.org/preferences;1']
 		.getService(Ci.nsIPrefBranch)
 		.QueryInterface(Ci.nsIPrefBranch2);
-
-var shouldEmulateMouseEvent = Prefs.getBoolPref('extensions.uxu.action.fireMouseEvent.useOldMethod');
-var shouldEmulateKeyEvent = Prefs.getBoolPref('extensions.uxu.action.fireKeyEvent.useOldMethod');
-
-function getBoxObjectFor(aNode)
+ 
+function constructor(aEnvironment) 
+{
+	this.utils = aEnvironment;
+	this.shouldEmulateMouseEvent = Prefs.getBoolPref('extensions.uxu.action.fireMouseEvent.useOldMethod');
+	this.shouldEmulateKeyEvent = Prefs.getBoolPref('extensions.uxu.action.fireKeyEvent.useOldMethod');
+	this.readiedActionListeners = [];
+}
+	
+function destroy() 
+{
+	delete this.utils;
+}
+  
+function getBoxObjectFor(aNode) 
 {
 	if ('getBoxObjectFor' in aNode.ownerDocument)
 		return aNode.ownerDocument.getBoxObjectFor(aNode);
@@ -361,7 +371,7 @@ function fireMouseEvent(aWindow, aOptions)
 
 	if (
 		'sendMouseEvent' in utils &&
-		!shouldEmulateMouseEvent &&
+		!this.shouldEmulateMouseEvent &&
 		!_getOwnerPopup(node)
 		) {
 		const nsIDOMNSEvent = Ci.nsIDOMNSEvent;
@@ -440,7 +450,7 @@ function fireMouseEventOnElement(aElement, aOptions)
 	if (!aOptions) aOptions = { type : 'click' };
 	if (
 		'sendMouseEvent' in utils &&
-		!shouldEmulateMouseEvent &&
+		!this.shouldEmulateMouseEvent &&
 		!_getOwnerPopup(aElement)
 		) {
 		_updateMouseEventOptionsOnElement(aOptions, aElement);
@@ -840,7 +850,7 @@ function fireKeyEventOnElement(aElement, aOptions)
 	var doc = _getDocumentFromEventTarget(aElement);
 	var utils = _getWindowUtils(doc.defaultView);
 	if ('sendKeyEvent' in utils &&
-		!shouldEmulateKeyEvent) {
+		!this.shouldEmulateKeyEvent) {
 		const nsIDOMNSEvent = Ci.nsIDOMNSEvent;
 		var flags = 0;
 		if (aOptions.ctrlKey) flags |= nsIDOMNSEvent.CONTROL_MASK;
@@ -1575,4 +1585,4 @@ function _getDocumentFromEventTarget(aNode)
 	return !aNode ? null :
 		(aNode.document || aNode.ownerDocument || aNode );
 };
-  
+  	

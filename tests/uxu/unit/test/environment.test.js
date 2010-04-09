@@ -225,7 +225,7 @@ function test_addRemoveWindowWatcher_function(aParameter)
 {
 	watcher = function(aWindow, aEventType) {
 		results.push([aWindow, aEventType]);
-	}
+	};
 	var results = [];
 	utils.addWindowWatcher(watcher, aParameter.targets);
 	yield utils.setUpTestWindow();

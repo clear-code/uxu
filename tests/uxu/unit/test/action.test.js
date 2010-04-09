@@ -1,12 +1,16 @@
 var topDir = baseURL+'../../../../';
 utils.include('action.inc.js', 'Shift_JIS');
 
+utils.include(topDir+'content/uxu/lib/module_manager.js');
+
+var test_module = new ModuleManager([topDir+'content/uxu/test']);
+var ActionsClass = test_module.require('class', 'action');
+
 var actionModule;
 
 function setUp()
 {
-	actionModule = {};
-	utils.include(topDir+'content/uxu/test/action.js', actionModule);
+	actionModule = new ActionsClass(utils);
 	yield Do(utils.loadURI(topDir+'tests/uxu/fixtures/action.html'));
 	actionSetUp();
 }
@@ -15,6 +19,7 @@ function tearDown()
 {
 	actionTearDown();
 	yield Do(utils.loadURI('about:blank'));
+	actionModule.destroy();
 }
 
 
