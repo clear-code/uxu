@@ -239,6 +239,13 @@ function test_addRemoveWindowWatcher_function(aParameter)
 	yield 200;
 	assert.equals(expected, results.join('\n'));
 	utils.removeWindowWatcher(watcher);
+
+	yield utils.setUpTestWindow();
+	yield 200;
+	yield utils.tearDownTestWindow();
+	yield 200;
+	assert.equals(expected, results.join('\n'));
+
 	watcher = null;
 }
 
@@ -270,6 +277,13 @@ function test_addRemoveWindowWatcher_eventListener(aParameter)
 	yield 200;
 	assert.equals(expected, results.join('\n'));
 	utils.removeWindowWatcher(watcher);
+
+	yield utils.setUpTestWindow();
+	yield 200;
+	yield utils.tearDownTestWindow();
+	yield 200;
+	assert.equals(expected, results.join('\n'));
+
 	watcher = null;
 }
 
@@ -298,6 +312,13 @@ function test_addRemoveWindowWatcher_observer(aParameter)
 	yield 200;
 	assert.equals(expected, results.join('\n'));
 	utils.removeWindowWatcher(watcher);
+
+	yield utils.setUpTestWindow();
+	yield 200;
+	yield utils.tearDownTestWindow();
+	yield 200;
+	assert.equals(expected, results.join('\n'));
+
 	watcher = null;
 }
 
@@ -335,6 +356,13 @@ function test_addRemoveWindowWatcher_object(aParameter)
 	yield 200;
 	assert.equals(expected, results.join('\n'));
 	utils.removeWindowWatcher(watcher);
+
+	yield utils.setUpTestWindow();
+	yield 200;
+	yield utils.tearDownTestWindow();
+	yield 200;
+	assert.equals(expected, results.join('\n'));
+
 	watcher = null;
 }
 

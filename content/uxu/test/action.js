@@ -17,7 +17,7 @@ function constructor(aEnvironment)
 	
 function destroy() 
 {
-//	this.cancelRediedActions();
+	this.cancelReadiedActions();
 	delete this.utils;
 }
   
@@ -1228,6 +1228,161 @@ function inputTextToField(aElement, aValue, aAppend, aDontFireKeyEvents)
 	aElement.dispatchEvent(event);
 };
    
+/* ダイアログ操作の予約 */ 
+var COMMON_DIALOG_URL = 'chrome://global/content/commonDialog.xul';
+	
+function readyToOK(aConditions) 
+{
+	aConditions = aConditions || {};
+
+	var self = this;
+	var listener = function(aWindow) {
+			if (aWindow.location.href != COMMON_DIALOG_URL ||
+				!aWindow.gCommonDialogParam ||
+				self.readiedActionListeners.indexOf(listener) < 0)
+				return;
+			var params = aWindow.gCommonDialogParam;
+
+			var buttonsCount = params.GetInt(2);
+			if (buttonsCount != 1)
+				return;
+
+			var title = params.GetString(12);
+			if ('title' in aConditions && aConditions.title != title)
+				return;
+
+			var message = params.GetString(0);
+			if ('message' in aConditions && aConditions.message != message)
+				return;
+
+			self.cancelReadiedAction(listener);
+
+			aWindow.setTimeout(function() {
+				var doc = aWindow.document;
+				doc.documentElement.getButton('accept').doCommand();
+			}, 0);
+		};
+	this.utils.addWindowWatcher(listener, 'load');
+	this.readiedActionListeners.push(listener);
+}
+var readyToOk = readyToOK;
+ 
+function readyToConfirm(aYes, aCheck, aConditions) 
+{
+	if (aCheck !== void(0) && typeof aCheck != 'boolean') {
+		aConditions = aCheck;
+		aCheck = false;
+	}
+	aConditions = aConditions || {};
+
+	var self = this;
+	var listener = function(aWindow) {
+			if (aWindow.location.href != COMMON_DIALOG_URL ||
+				!aWindow.gCommonDialogParam)
+				return;
+			var params = aWindow.gCommonDialogParam;
+
+			var buttonsCount = params.GetInt(2);
+			if (buttonsCount != 2 && buttonsCount != 3)
+				return;
+
+			var title = params.GetString(12);
+			if ('title' in aConditions && aConditions.title != title)
+				return;
+
+			var message = params.GetString(0);
+			if ('message' in aConditions && aConditions.message != message)
+				return;
+
+			self.cancelReadiedAction(listener);
+
+			aWindow.setTimeout(function() {
+				var doc = aWindow.document;
+
+				var checkbox = doc.getElementById('checkbox');
+				if (checkbox.boxObject.width) { // ignore hidden checkbox
+					checkbox.checked = true;
+					aWindow.onCheckboxClick();
+				}
+
+				var button = (typeof aYes == 'number') ?
+						aYes :
+						(aYes ? 0 : 1 ) ;
+				button = Math.min(button, buttonsCount-1);
+				var buttonType;
+				switch (button)
+				{
+					default:
+					case 0: buttonType = 'accept'; break;
+					case 1: buttonType = 'cancel'; break;
+					case 2: buttonType = 'extra1'; break;
+				}
+
+				doc.documentElement.getButton(buttonType).doCommand();
+			}, 0);
+		};
+	this.utils.addWindowWatcher(listener, 'load');
+	this.readiedActionListeners.push(listener);
+}
+ 
+function readyToPrompt(aInput, aConditions) 
+{
+	aConditions = aConditions || {};
+
+	var self = this;
+	var listener = function(aWindow) {
+			if (aWindow.location.href != COMMON_DIALOG_URL ||
+				!aWindow.gCommonDialogParam)
+				return;
+			var params = aWindow.gCommonDialogParam;
+
+			var inputFieldsCount = params.GetInt(3);
+			if (inputFieldsCount != 1)
+				return;
+
+			var isPasswordType = params.GetInt(4) == 1;
+			if (isPasswordType)
+				return;
+
+			var title = params.GetString(12);
+			if ('title' in aConditions && aConditions.title != title)
+				return;
+
+			var message = params.GetString(0);
+			if ('message' in aConditions && aConditions.message != message)
+				return;
+
+			self.cancelReadiedAction(listener);
+
+			aWindow.setTimeout(function() {
+				var doc = aWindow.document;
+
+				var textbox = doc.getElementById('loginTextbox');
+				textbox.value = aInput;
+
+				doc.documentElement.getButton('accept').doCommand();
+			}, 0);
+		};
+	this.utils.addWindowWatcher(listener, 'load');
+	this.readiedActionListeners.push(listener);
+}
+ 
+function cancelReadiedActions(aInput) 
+{
+	this.readiedActionListeners.forEach(function(aListener) {
+		this.utils.removeWindowWatcher(aListener);
+	}, this);
+	this.readiedActionListeners = [];
+}
+	
+function cancelReadiedAction(aListener) 
+{
+	this.utils.removeWindowWatcher(aListener);
+	var index = this.readiedActionListeners.indexOf(aListener);
+	if (index > -1)
+		this.readiedActionListeners.splice(index, 1);
+}
+   
 /* 座標操作 */ 
 	
 const WindowMediator = Cc['@mozilla.org/appshell/window-mediator;1']
@@ -1586,4 +1741,4 @@ function _getDocumentFromEventTarget(aNode)
 	return !aNode ? null :
 		(aNode.document || aNode.ownerDocument || aNode );
 };
-  	
+  

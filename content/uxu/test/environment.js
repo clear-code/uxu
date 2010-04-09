@@ -509,11 +509,11 @@ WindowWatcherListener.prototype = {
 	defaultTargets : ['load', 'domwindowclosed']
 };
 	
-WindowWatcherListener.find = function(aCallback, aListeners) { 
+WindowWatcherListener.find = function(aListener, aListeners) { 
 	for (var i in aListeners)
 	{
-		if (aListeners[i] == aCallback ||
-			aListeners[i].callback == aCallback)
+		if (aListeners[i] == aListener ||
+			aListeners[i].listener == aListener)
 			return aListeners[i];
 	}
 	return null;
