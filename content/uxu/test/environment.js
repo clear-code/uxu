@@ -452,22 +452,23 @@ function WindowWatcherListener(aFunction, aEnvironment)
 WindowWatcherListener.prototype = {
 	observe : function(aSubject, aTopic, aData)
 	{
-		if (aWindow != '[object ChromeWindow]')
+		if (aSubject != '[object ChromeWindow]')
 			return;
 
-		aWindow = aWindow.QueryInterface(Ci.nsIDOMWindow);
+		aSubject = aSubject.QueryInterface(Ci.nsIDOMWindow);
 		switch (aTopic)
 		{
 			case 'domwindowopened':
+				return this.onListen(aSubject);
 				var self = this;
-				aWindow.addEventListener('load', function() {
-					aWindow.removeEventListener('load', arguments.callee, false);
-					self.onListen(aWindow);
+				aSubject.addEventListener('DOMContentLoaded', function() {
+					aSubject.removeEventListener('DOMContentLoaded', arguments.callee, false);
+					self.onListen(aSubject);
 				}, false);
 				return;
 
 			case 'domwindowclosed':
-				return this.onListen(aWindow);
+				return this.onListen(aSubject);
 
 			default:
 				return;

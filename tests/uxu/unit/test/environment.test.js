@@ -190,14 +190,14 @@ function test_parseTemplate()
 
 var watcher = function(aWindow) {
 		if (aWindow.closed)
-			watcher.opened.push(aWindow);
-		else
 			watcher.closed.push(aWindow);
+		else
+			watcher.opened.push(aWindow);
 	};
 test_addRemoveWindowWatcher.setUp = function() {
+	yield utils.tearDownTestWindow();
 	watcher.opened = [];
 	watcher.closed = [];
-	utils.addWindowWatcher(watcher);
 }
 test_addRemoveWindowWatcher.tearDown = function() {
 	watcher.opened = [];
@@ -206,8 +206,9 @@ test_addRemoveWindowWatcher.tearDown = function() {
 }
 function test_addRemoveWindowWatcher()
 {
+	utils.addWindowWatcher(watcher);
 	yield utils.setUpTestWindow();
-	yield 500; // 念のため。
+	yield 100; // 念のため。
 
 	var win = utils.getTestWindow();
 	assert.equals([win], watcher.opened);
