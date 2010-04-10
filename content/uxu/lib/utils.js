@@ -10,6 +10,10 @@ var prefread = lib_module.require('package', 'prefread');
 var IOService = Cc['@mozilla.org/network/io-service;1']
 		.getService(Ci.nsIIOService);
 	
+function constructor()
+{
+}
+ 
 function evalInSandbox(aCode, aOwner) 
 {
 	try {
