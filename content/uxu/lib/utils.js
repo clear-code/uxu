@@ -1933,11 +1933,28 @@ function _getRootScope(aObject)
 	if (aObject === null || aObject === void(0)) {
 		return aObject;
 	}
-	while (aObject.__parent__)
-	{
-		aObject = aObject.__parent__;
+	// https://bugzilla.mozilla.org/show_bug.cgi?id=552560
+	// "__parent__" is no longer available on Firefox 3.7 or later.
+	if (typeof aObject.valueOf == 'function')
+		return aObject.valueOf.call(null);
+	var parent = aObject;
+	do {
+		lastParent = parent;
 	}
-	return aObject;
+	while (parent = _getParent(parent));
+	return lastParent;
+}
+var _DOMWindowUtils = window.QueryInterface(Ci.nsIInterfaceRequestor)
+						.getInterface(Ci.nsIDOMWindowUtils);
+function _getParent(aObject)
+{
+	if (aObject.__parent__)
+		return aObject.__parent__;
+
+	if ('getParent' in _DOMWindowUtils)
+		_DOMWindowUtils.getParent(aObject);
+
+	return void(0);
 }
   
 // î‰är 
