@@ -7,7 +7,7 @@ utils.include('mailComposeStub.inc.js');
 var ObserverClass;
 var MailComposeProxy;
 
-function warmUp()
+function startUp()
 {
 	var lib_module = new ModuleManager([topDir+'content/uxu/lib']);
 	ObserverClass = lib_module.require('class', 'observer');

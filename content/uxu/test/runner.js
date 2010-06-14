@@ -97,11 +97,11 @@ function _getTestsFromSuite(aSuite)
 			continue;
 
 		// declaration style
-		if (/^warm[uU]p/.test(i) || obj.isWarmUp)
-			testObjects.warmUp = obj;
-		else if (/^(warm|cool)[dD]own/.test(i) ||
-			obj.isCoolDown || obj.isWarmDown)
-			testObjects.coolDown = obj;
+		if (/^(start|warm)[uU]p/.test(i) || obj.isStartUp || obj.isWarmUp)
+			testObjects.startUp = obj;
+		else if (/^(shut|warm|cool)[dD]own/.test(i) ||
+			obj.isShutDown || obj.isCoolDown || obj.isWarmDown)
+			testObjects.shutDown = obj;
 		else if (/^set[uU]p/.test(i) || obj.isSetUp)
 			testObjects.setUp = obj;
 		else if (/^tear[dD]own/.test(i) || obj.isTearDown)
@@ -127,10 +127,10 @@ function _getTestsFromSuite(aSuite)
 				}
 			);
 
-		if (testObjects.warmUp)
-			newTestCase.registerWarmUp(testObjects.warmUp);
-		if (testObjects.coolDown)
-			newTestCase.registerCoolDown(testObjects.coolDown);
+		if (testObjects.startUp)
+			newTestCase.registerStartUp(testObjects.startUp);
+		if (testObjects.shutDown)
+			newTestCase.registerShutDown(testObjects.shutDown);
 		if (testObjects.setUp)
 			newTestCase.registerSetUp(testObjects.setUp);
 		if (testObjects.tearDown)

@@ -426,12 +426,14 @@ function setTests(aHash)
 		if (typeof aHash[desc] != 'function') continue;
 		switch (desc.toLowerCase())
 		{
+			case 'startup'
 			case 'warmup':
-				this.registerWarmUp(aHash[desc]);
+				this.registerStartUp(aHash[desc]);
 				break;
+			case 'shutdown':
 			case 'cooldown':
 			case 'warmdown':
-				this.registerCoolDown(aHash[desc]);
+				this.registerShutDown(aHash[desc]);
 				break;
 			case 'setup':
 			case 'given':
@@ -450,21 +452,22 @@ function setTests(aHash)
  
 // for UxU declaration style syntax 
 	
-function registerWarmUp(aFunction) 
+function registerStartUp(aFunction) 
 {
 	if (typeof aFunction != 'function') return;
-	this._warmUp = aFunction;
+	this._startUp = aFunction;
 }
+// for backward compatibility
+function registerWarmUp(aFunction) { this.registerStartUp(aFunction); }
  
-function registerCoolDown(aFunction) 
+function registerShutDown(aFunction) 
 {
 	if (typeof aFunction != 'function') return;
-	this._coolDown = aFunction;
+	this._shutDown = aFunction;
 }
-function registerWarmDown(aFunction)
-{
-	this.registerCoolDown(aFunction);
-}
+// for backward compatibility
+function registerCoolDown(aFunction) { this.registerShutDown(aFunction); }
+function registerWarmDown(aFunction) { this.registerShutDown(aFunction); }
  
 function registerSetUp(aFunction) 
 {
@@ -792,8 +795,8 @@ function _run()
 
 	var stateTransitions = {
 		start             : { ok : 'setUpDaemons' },
-		setUpDaemons      : { ok : 'doWarmUp' },
-		doWarmUp          : { ok : 'prepareTest', ko: 'doCoolDown' },
+		setUpDaemons      : { ok : 'doStartUp' },
+		doStartUp         : { ok : 'prepareTest', ko: 'doShutDown' },
 		prepareTest       : { ok : 'checkDoOrSkip' },
 		checkDoOrSkip     : { ok : 'doSetUp', ko: 'skip' },
 		skip              : { ok : 'doReport' },
@@ -804,8 +807,8 @@ function _run()
 		doPrivTearDown    : { ok : 'doTearDown', ko: 'doTearDown' },
 		doTearDown        : { ok : 'doReport', ko: 'doReport' },
 		doReport          : { ok : 'nextTest' },
-		nextTest          : { ok : 'prepareTest', ko: 'doCoolDown' },
-		doCoolDown        : { ok : 'tearDownDaemons', ko: 'tearDownDaemons' },
+		nextTest          : { ok : 'prepareTest', ko: 'doShutDown' },
+		doShutDown        : { ok : 'tearDownDaemons', ko: 'tearDownDaemons' },
 		tearDownDaemons   : { ok : 'finished' },
 		finished          : { }
 	};
@@ -867,14 +870,14 @@ function _run()
 		{
 			aContinuation('ok');
 		},
-		doWarmUp : function(aContinuation)
+		doStartUp : function(aContinuation)
 		{
  			testCaseReport.report = new Report();
 			doPreOrPostProcess(
 				aContinuation,
-				_this._warmUp,
+				_this._startUp,
 				{
-					errorDescription : bundle.getFormattedString('report_description_warmup', [_this.title]),
+					errorDescription : bundle.getFormattedString('report_description_startup', [_this.title]),
 					report : testCaseReport
 				}
 			);
@@ -1054,13 +1057,13 @@ function _run()
 			testIndex += 1;
 			_this._tests[testIndex] ? aContinuation('ok') : aContinuation('ko');
 		},
-		doCoolDown : function(aContinuation)
+		doShutDown : function(aContinuation)
 		{
 			doPreOrPostProcess(
 				aContinuation,
-				_this._coolDown,
+				_this._shutDown,
 				{
-					errorDescription : bundle.getFormattedString('report_description_cooldown', [_this.title]),
+					errorDescription : bundle.getFormattedString('report_description_shutdown', [_this.title]),
 					report : testCaseReport
 				}
 			);

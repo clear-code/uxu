@@ -456,11 +456,11 @@ function testStopper()
 function testPrivSetUpTearDown()
 {
 	var steps = [];
-	testcase.registerWarmUp(function() {
-		steps.push('w');
+	testcase.registerStartUp(function() {
+		steps.push('SU');
 	});
-	testcase.registerCoolDown(function() {
-		steps.push('c');
+	testcase.registerShutDown(function() {
+		steps.push('SD');
 	});
 	testcase.registerSetUp(function() {
 		steps.push('s0');
@@ -525,7 +525,7 @@ function testStopper()
 	testcase.masterPriority = 'must';
 	testcase.run();
 	yield (function() { return testcase.done; });
-	assert.equals('w,s0,s1,t1,d1,d0,s0,d2,d0,s0,s3,d3,d0,s0,s4,t4,d0,c', steps.join(','));
+	assert.equals('SU,s0,s1,t1,d1,d0,s0,d2,d0,s0,s3,d3,d0,s0,s4,t4,d0,SD', steps.join(','));
 }
 
 function testAssertionsCount()
