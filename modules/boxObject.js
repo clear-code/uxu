@@ -1,6 +1,3 @@
-var EXPORTED_SYMBOLS = ['window'];
-var window = {};
-
 /*
  "getBoxObjectFor()" compatibility library for Firefox 3.6 or later
 
@@ -15,6 +12,16 @@ var window = {};
  original:
    http://www.cozmixng.org/repos/piro/fx3-compatibility-lib/trunk/boxObject.js
 */
+
+if ('window' in this && !window) { // work as a JS Code Module
+	var EXPORTED_SYMBOLS = ['window', 'boxObject'];
+
+	let ns = {};
+	Components.utils.import('resource://uxu-modules/namespace.jsm', ns);
+
+	var window = ns.getNamespaceFor('piro.sakura.ne.jp');
+}
+
 (function() {
 	const currentRevision = 6;
 
@@ -157,3 +164,7 @@ var window = {};
 
 	};
 })();
+
+if (window != this) { // work as a JS Code Module
+	var boxObject = window['piro.sakura.ne.jp'].boxObject;
+}
