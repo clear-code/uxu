@@ -426,7 +426,7 @@ function setTests(aHash)
 		if (typeof aHash[desc] != 'function') continue;
 		switch (desc.toLowerCase())
 		{
-			case 'startup'
+			case 'startup':
 			case 'warmup':
 				this.registerStartUp(aHash[desc]);
 				break;
