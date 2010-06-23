@@ -1903,6 +1903,9 @@ function p()
  
 function isArray(aObject) 
 {
+	if (typeof aObject != 'object')
+		return false;
+
 	var root = _getRootScope(aObject);
 	return aObject &&
 		(root && root.Array ?
@@ -1913,6 +1916,9 @@ function isArray(aObject)
  
 function isDate(aObject) 
 {
+	if (typeof aObject != 'object')
+		return false;
+
 	var root = _getRootScope(aObject);
 	return aObject &&
 		(root && root.Date ?
@@ -1950,11 +1956,15 @@ var _DOMWindowUtils = window.QueryInterface(Ci.nsIInterfaceRequestor)
 						.getInterface(Ci.nsIDOMWindowUtils);
 function _getParent(aObject)
 {
-	if (aObject.__parent__)
-		return aObject.__parent__;
+	try {
+		if (aObject.__parent__)
+			return aObject.__parent__;
 
-	if ('getParent' in _DOMWindowUtils)
-		_DOMWindowUtils.getParent(aObject);
+		if ('getParent' in _DOMWindowUtils)
+			return _DOMWindowUtils.getParent(aObject);
+	}
+	catch(e) {
+	}
 
 	return void(0);
 }
@@ -2520,11 +2530,6 @@ function _quitApplication(aForce, aOption)
 					.getService(Ci.nsIAppStartup);
 	startup.quit(quitSeverity);
 }
- 
-var installedUXU = Cc['@mozilla.org/extensions/manager;1'] 
-		.getService(Ci.nsIExtensionManager)
-		.getInstallLocation('uxu@clear-code.com')
-		.getItemLocation('uxu@clear-code.com');
  
 function getInstalledLocationOfProduct(aProduct) 
 {
