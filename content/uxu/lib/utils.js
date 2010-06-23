@@ -2531,6 +2531,11 @@ function _quitApplication(aForce, aOption)
 	startup.quit(quitSeverity);
 }
  
+var installedUXU = Cc['@mozilla.org/extensions/manager;1'] 
+		.getService(Ci.nsIExtensionManager)
+		.getInstallLocation('uxu@clear-code.com')
+		.getItemLocation('uxu@clear-code.com');
+ 
 function getInstalledLocationOfProduct(aProduct) 
 {
 	if (
