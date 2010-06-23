@@ -1933,10 +1933,12 @@ function _getRootScope(aObject)
 	if (aObject === null || aObject === void(0)) {
 		return aObject;
 	}
+/*
 	// https://bugzilla.mozilla.org/show_bug.cgi?id=552560
 	// "__parent__" is no longer available on Firefox 3.7 or later.
 	if (typeof aObject.valueOf == 'function')
 		return aObject.valueOf.call(null);
+*/
 	var parent = aObject;
 	do {
 		lastParent = parent;
