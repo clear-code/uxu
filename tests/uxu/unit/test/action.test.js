@@ -12,7 +12,6 @@ function setUp()
 {
 	actionModule = new ActionsClass(utils);
 	yield Do(utils.loadURI(topDir+'tests/uxu/fixtures/action.html'));
-	actionModule.constructor({});
 	actionSetUp();
 }
 

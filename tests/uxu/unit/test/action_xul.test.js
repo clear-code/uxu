@@ -17,7 +17,6 @@ function setUp()
 {
 	actionModule = {};
 	utils.include(topDir+'content/uxu/test/action.js', actionModule);
-	actionModule.constructor({});
 	yield Do(utils.setUpTestWindow(options));
 	win = utils.getTestWindow(options);
 	actionSetUp();

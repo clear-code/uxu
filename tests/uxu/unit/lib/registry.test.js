@@ -30,7 +30,7 @@ function clearWindowsRegistryKey(aRoot, aPath)
 				children.push(regKey.getChildName(i));
 			}
 			children.forEach(function(aName) {
-				_clearWindowsRegistry(aRoot, aPath+'\\'+aName);
+				clearWindowsRegistryKey(aRoot, aPath+'\\'+aName);
 			});
 		}
 		catch(e) {
@@ -76,6 +76,10 @@ function setUp()
 
 function tearDown()
 {
+	clearWindowsRegistryKey(
+		Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
+		'HKCU\\Software\\ClearCode Inc.\\UxU'
+	);
 }
 
 function test__splitRegistryKey()

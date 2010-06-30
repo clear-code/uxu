@@ -4,6 +4,7 @@ function actionSetUp()
 	target = null;
 	boxObject = null;
 	rootBoxObject = null;
+	actionModule.constructor(utils);
 }
 
 function actionTearDown()

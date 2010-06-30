@@ -8,7 +8,6 @@ function setUp()
 {
 	actionModule = {};
 	utils.include(topDir+'content/uxu/test/action.js', actionModule);
-	actionModule.constructor({});
 	yield Do(utils.loadURI(topDir+'tests/uxu/fixtures/action.html'));
 	actionSetUp();
 }
