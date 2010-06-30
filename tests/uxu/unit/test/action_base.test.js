@@ -39,7 +39,7 @@ function test_isFullZoom()
 	}
 }
 
-test_getZoom.shouldSkip = utils.checkAppVersion('3.0') < 0;
+test_getZoom.shouldSkip = utils.checkAppVersion('3.0') < 0 || utils.product == 'Thunderbird';
 test_getZoom.setUp = function() {
 	utils.setPref('browser.zoom.full', true);
 	yield Do(utils.setUpTestWindow('about:'));

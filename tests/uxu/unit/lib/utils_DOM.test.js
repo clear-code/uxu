@@ -29,7 +29,7 @@ function testInspectDOMNode()
 
 	p1 = content.document.getElementById('paragraph1');
 	assert.isNotNull(p1);
-	if (utils.checkAppVersion('3.6a1pre') >= 0) {
+	if (p1.localName == p1.localName.toLowerCase()) {
 		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em xmlns="http://www.w3.org/1999/xhtml" class="class" lang="en">em</em></p>', p1);
 	}
 	else {
@@ -38,7 +38,7 @@ function testInspectDOMNode()
 
 	p2 = content.document.getElementById('paragraph2');
 	assert.isNotNull(p2);
-	if (utils.checkAppVersion('3.6a1pre') >= 0) {
+	if (p2.localName == p1.localName.toLowerCase()) {
 		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em xmlns="http://www.w3.org/1999/xhtml" class="class" lang="en">em</em></p>', p2);
 	}
 	else {
@@ -48,7 +48,7 @@ function testInspectDOMNode()
 	fragment = content.document.createDocumentFragment();
 	fragment.appendChild(p1.cloneNode(true));
 	fragment.appendChild(p2.cloneNode(true));
-	if (utils.checkAppVersion('3.6a1pre') >= 0) {
+	if (p1.localName == p1.localName.toLowerCase()) {
 		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em xmlns="http://www.w3.org/1999/xhtml" class="class" lang="en">em</em></p><p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em xmlns="http://www.w3.org/1999/xhtml" class="class" lang="en">em</em></p>', fragment);
 	}
 	else {

@@ -286,7 +286,10 @@ function testBody()
 	var body = compose.body;
 	assert.equals(3, body.childNodes.length);
 	assert.equals('foobar', utils.inspectDOMNode(body.childNodes[0]));
-	assert.equals('<BR/>', utils.inspectDOMNode(body.childNodes[1]));
+	if (body.childNodes[1].localName == body.childNodes[1].localName.toLowerCase())
+		assert.equals('<br xmlns="http://www.w3.org/1999/xhtml"/>', utils.inspectDOMNode(body.childNodes[1]));
+	else
+		assert.equals('<BR/>', utils.inspectDOMNode(body.childNodes[1]));
 	assert.equals('hoge', utils.inspectDOMNode(body.childNodes[2]));
 
 	// node
@@ -308,7 +311,10 @@ function testBody()
 	body = compose.body;
 	assert.equals(3, body.childNodes.length);
 	assert.equals('first', utils.inspectDOMNode(body.childNodes[0]));
-	assert.equals('<BR/>', utils.inspectDOMNode(body.childNodes[1]));
+	if (body.childNodes[1].localName == body.childNodes[1].localName.toLowerCase())
+		assert.equals('<br xmlns="http://www.w3.org/1999/xhtml"/>', utils.inspectDOMNode(body.childNodes[1]));
+	else
+		assert.equals('<BR/>', utils.inspectDOMNode(body.childNodes[1]));
 	assert.equals('last', utils.inspectDOMNode(body.childNodes[2]));
 
 	// set
@@ -323,7 +329,10 @@ function testBody()
 	assert.equals(4, body.childNodes.length);
 	assert.equals('line', utils.inspectDOMNode(body.childNodes[0]));
 	assert.equals('foobar', utils.inspectDOMNode(body.childNodes[1]));
-	assert.equals('<BR/>', utils.inspectDOMNode(body.childNodes[2]));
+	if (body.childNodes[2].localName == body.childNodes[2].localName.toLowerCase())
+		assert.equals('<br xmlns="http://www.w3.org/1999/xhtml"/>', utils.inspectDOMNode(body.childNodes[2]));
+	else
+		assert.equals('<BR/>', utils.inspectDOMNode(body.childNodes[2]));
 	assert.equals('hoge', utils.inspectDOMNode(body.childNodes[3]));
 
 	compose.tearDown();
