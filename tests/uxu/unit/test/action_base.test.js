@@ -8,6 +8,7 @@ function setUp()
 {
 	actionModule = {};
 	utils.include(topDir+'content/uxu/test/action.js', actionModule);
+	actionModule.constructor({});
 	yield Do(utils.loadURI(topDir+'tests/uxu/fixtures/action.html'));
 	actionSetUp();
 }
@@ -242,8 +243,8 @@ function test_inputTextToField()
 	var events;
 	assert.equals('', input.value);
 
-	var isGecko192 = utils.compareVersions(utils.platformVersion, '>=', '1.9.2');
-	// -Gecko 1.9:
+	var isGecko192 = utils.checkPlatformVersion('1.9.2') >= 0;
+	// -Gecko 1.9.1:
 	//   keydown, keyup, keypress
 	// Gecko 1.9.2-:
 	//   keydown, keyup, keypress, input
