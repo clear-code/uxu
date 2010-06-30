@@ -62,26 +62,38 @@ function clearWindowsRegistryKey(aRoot, aPath)
 	}
 }
 
+function clearRoot()
+{
+	clearWindowsRegistryKey(
+		Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
+		'HKCU\\Software\\ClearCode Inc.\\UxU'
+	);
+}
+
+function startUp()
+{
+	clearRoot();
+}
+
+function shutDown()
+{
+	clearRoot();
+}
+
 
 function setUp()
 {
 	utilsModule = {};
 	utils.include(topDir+'content/uxu/lib/utils.js', utilsModule);
 
-	clearWindowsRegistryKey(
-		Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
-		'HKCU\\Software\\ClearCode Inc.\\UxU'
-	);
 }
 
 function tearDown()
 {
-	clearWindowsRegistryKey(
-		Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
-		'HKCU\\Software\\ClearCode Inc.\\UxU'
-	);
 }
 
+test__splitRegistryKey.setUp = clearRoot;
+test__splitRegistryKey.tearDown = clearRoot;
 function test__splitRegistryKey()
 {
 	function assertSplitRegistryKey(aExpected, aInput)
@@ -155,6 +167,8 @@ function test__splitRegistryKey()
 	);
 }
 
+test_getWindowsResigtory.setUp = clearRoot;
+test_getWindowsResigtory.tearDown = clearRoot;
 function test_getWindowsResigtory()
 {
 	function assertGetWindowsResigtory(aExpected, aKey)
@@ -238,22 +252,10 @@ var testData = [
 		                [{ value : true }, { value : false }]]) }
 	];
 
-test_setWindowsResigtory.setUp = function() {
-	if (isWindows) {
-		clearWindowsRegistryKey(
-			Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
-			'Software\\ClearCode Inc.\\UxU'
-		);
-	}
-};
-test_setWindowsResigtory.tearDown = function() {
-	if (isWindows) {
-		clearWindowsRegistryKey(
-			Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
-			'HKCU\\Software\\ClearCode Inc.\\UxU'
-		);
-	}
-};
+if (isWindows) {
+	test_setWindowsResigtory.setUp = clearRoot;
+	test_setWindowsResigtory.tearDown = clearRoot;
+}
 test_setWindowsResigtory.parameters = testData;
 function test_setWindowsResigtory(aData)
 {
@@ -286,6 +288,7 @@ function test_setWindowsResigtory(aData)
 
 test_clearWindowsRegistry.shouldSkip = !isWindows;
 test_clearWindowsRegistry.setUp = function() {
+	clearRoot();
 	testData.forEach(function(aData) {
 		if (aData.error) return;
 		utilsModule.setWindowsRegistry(aData.key, aData.value);
@@ -296,10 +299,7 @@ test_clearWindowsRegistry.setUp = function() {
 	});
 };
 test_clearWindowsRegistry.tearDown = function() {
-	clearWindowsRegistryKey(
-		Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
-		'HKCU\\Software\\ClearCode Inc.\\UxU'
-	);
+	clearRoot();
 };
 function test_clearWindowsRegistry()
 {
