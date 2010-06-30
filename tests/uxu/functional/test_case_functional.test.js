@@ -19,7 +19,7 @@ function tearDown()
 {
 }
 
-test_testCaseWithHttpDaemons.shouldSkip = utils.checkAppVersion('3.0') < 0;
+test_testCaseWithHttpDaemons.shouldSkip = utils.checkPlatformVersion('1.9') < 0;
 test_testCaseWithHttpDaemons.assertions = 7;
 function test_testCaseWithHttpDaemons()
 {

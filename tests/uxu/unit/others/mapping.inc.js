@@ -1,4 +1,4 @@
-var shouldSkip = utils.checkAppVersion('3.0') < 0;
+var shouldSkip = utils.checkPlatformVersion('1.9') < 0;
 
 function setUp()
 {

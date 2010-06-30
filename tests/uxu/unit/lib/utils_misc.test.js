@@ -95,7 +95,7 @@ function test$X()
 }
 
 
-if (utils.checkAppVersion('3.0') < 0) test_sleep.priority = 'never';
+if (utils.checkPlatformVersion('1.9') < 0) test_sleep.priority = 'never';
 function test_sleep()
 {
 	var before = Date.now();
@@ -103,7 +103,7 @@ function test_sleep()
 	assert.inDelta(500, Date.now() - before, 200);
 }
 
-if (utils.checkAppVersion('3.0') < 0) test_wait.priority = 'never';
+if (utils.checkPlatformVersion('1.9') < 0) test_wait.priority = 'never';
 function test_wait()
 {
 	function assertWaitSuccess(aCondition, aTimeout)
@@ -519,7 +519,7 @@ function test_setAndGetClipBoard()
 	var selection = content.getSelection();
 	selection.removeAllRanges();
 
-	if (utils.checkAppVersion('3.0') < 0) {
+	if (utils.checkPlatformVersion('1.9') < 0) {
 		let range = content.document.createRange();
 		range.selectNodeContents(content.document.getElementById('paragraph3'));
 		selection.addRange(range);
@@ -538,7 +538,7 @@ function test_setAndGetClipBoard()
 	assert.equals(random, utilsModule.getClipBoard());
 	selection.removeAllRanges();
 
-	if (utils.checkAppVersion('3.0') < 0) {
+	if (utils.checkPlatformVersion('1.9') < 0) {
 		let range = content.document.createRange();
 		range.selectNodeContents(content.document.getElementById('paragraph4'));
 		selection.addRange(range);

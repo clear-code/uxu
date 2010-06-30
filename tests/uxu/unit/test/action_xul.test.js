@@ -1,7 +1,7 @@
 var topDir = baseURL+'../../../../';
 utils.include('action.inc.js', 'Shift_JIS');
 
-var isGecko18 = utils.checkAppVersion('3.0') < 0;
+var isGecko18 = utils.checkPlatformVersion('1.9') < 0;
 
 var actionModule;
 var win;

@@ -50,7 +50,7 @@ function testSendAndReceiveMessage()
 }
 
 
-testHttpServer.shouldSkip = utils.checkAppVersion('3.0') < 0;
+testHttpServer.shouldSkip = utils.checkPlatformVersion('1.9') < 0;
 testHttpServer.tearDown = function() {
 	yield Do(utilsModule.tearDownAllHttpServers());
 };

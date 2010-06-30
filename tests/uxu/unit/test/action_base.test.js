@@ -26,7 +26,7 @@ test_isFullZoom.tearDown = function() {
 };
 function test_isFullZoom()
 {
-	if (utils.checkAppVersion('3.0') < 0) {
+	if (utils.checkPlatformVersion('1.9') < 0) {
 		assert.isFalse(actionModule.isFullZoom());
 	}
 	else {
@@ -39,7 +39,7 @@ function test_isFullZoom()
 	}
 }
 
-test_getZoom.shouldSkip = utils.checkAppVersion('3.0') < 0 || utils.product == 'Thunderbird';
+test_getZoom.shouldSkip = utils.checkPlatformVersion('1.9') < 0 || utils.product == 'Thunderbird';
 test_getZoom.setUp = function() {
 	utils.setPref('browser.zoom.full', true);
 	yield Do(utils.setUpTestWindow('about:'));
