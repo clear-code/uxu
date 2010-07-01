@@ -58,7 +58,6 @@ user_pref("mail.smtpserver.smtp1.username", "who");
 user_pref("mail.smtpservers", "smtp1");
 user_pref("mail.spam.version", 1);
 user_pref("mail.startup.enabledMailCheckOnce", true);
-user_pref("mail.winsearch.firstRunDone", true);
 user_pref("mailnews.quotingPrefs.version", 1);
 user_pref("mailnews.start_page_override.mstone", "3.0b3pre");
 user_pref("mailnews.tags.$label1.color", "#FF0000");
@@ -74,6 +73,14 @@ user_pref("mailnews.tags.$label5.tag", "Later");
 user_pref("mailnews.tags.version", 2);
 user_pref("mailnews.ui.threadpane.version", 7);
 user_pref("extensions.update.enabled", false);
+
+user_pref("mail.server.server2.check_new_mail", false);
+user_pref("mail.server.server2.login_at_startup", false);
 user_pref("mail.shell.checkDefaultClient", false);
 user_pref("mail.shell.checkDefaultMail", false);
-
+user_pref("mail.winsearch.firstRunDone", true);
+user_pref("mail.biff.show_alert", false);
+user_pref("mail.biff.show_tray_icon", false);
+user_pref("alerts.slideIncrement", 3000);
+user_pref("alerts.slideIncrementTime", 1);
+user_pref("alerts.totalOpenTime", 1);
