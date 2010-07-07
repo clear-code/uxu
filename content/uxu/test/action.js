@@ -475,12 +475,6 @@ function fireMouseEventOnElement(aElement, aOptions)
 			this.fireMouseEventOnElement(aElement, options);
 			options.type = 'mouseup';
 			this.fireMouseEventOnElement(aElement, options);
-			// on Gecko 1.8, we have to fire click event manually!
-			if (!('sendMouseEvent' in utils)) {
-				options.type = 'click';
-				event = this._createMouseEventOnElement(aElement, options);
-				if (event && aElement) aElement.dispatchEvent(event);
-			}
 			detail++;
 		case 'click':
 		default:
@@ -492,12 +486,6 @@ function fireMouseEventOnElement(aElement, aOptions)
 			this.fireMouseEventOnElement(aElement, options);
 			options.type = 'mouseup';
 			this.fireMouseEventOnElement(aElement, options);
-			// on Gecko 1.8, we have to fire click event manually!
-			if (!('sendMouseEvent' in utils) && aOptions.type == 'dblclick') {
-				options.type = 'click';
-				event = this._createMouseEventOnElement(aElement, options);
-				if (event && aElement) aElement.dispatchEvent(event);
-			}
 			break;
 	}
 	event = this._createMouseEventOnElement(aElement, aOptions);

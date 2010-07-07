@@ -1,8 +1,6 @@
 var topDir = baseURL+'../../../../';
 utils.include('action.inc.js', 'Shift_JIS');
 
-var isGecko18 = utils.checkPlatformVersion('1.9') < 0;
-
 var actionModule;
 var win;
 var options = {
@@ -84,22 +82,20 @@ function assertMouseEventFire(aFire, aToolbarButtonMenuShouldBeOpened)
 				yield 500;
 			}
 		));
-	if (!isGecko18) {
-		yield Do(aFire(
-				'button-in-panel',
-				function() {
-					$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
-					yield 500;
-				}
-			));
-		yield Do(aFire(
-				'button-in-panel-disabled',
-				function() {
-					$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
-					yield 500;
-				}
-			));
-	}
+	yield Do(aFire(
+			'button-in-panel',
+			function() {
+				$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
+				yield 500;
+			}
+		));
+	yield Do(aFire(
+			'button-in-panel-disabled',
+			function() {
+				$('panel', win).openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
+				yield 500;
+			}
+		));
 }
 
 function test_fireMouseEvent()
@@ -399,28 +395,25 @@ function assertXULCommandEventFireOrNotFire(aFire, aNotFire, aToolbarButtonMenuS
 		assert.notEquals([0, 0], [popup.boxObject.width, popup.boxObject.height]);
 	popup.hidePopup();
 
-	if (!isGecko18) {
-		popup = $('panel', win);
-		popup.openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
-		yield 300;
-		yield Do(aFire('button-in-panel'));
-//		if (popup.state)
-//			assert.equals('close', popup.state);
-//		else
-//			assert.equals([0, 0], [popup.boxObject.width, popup.boxObject.height]);
+	popup = $('panel', win);
+	popup.openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
+	yield 300;
+	yield Do(aFire('button-in-panel'));
+//	if (popup.state)
+//		assert.equals('close', popup.state);
+//	else
+//		assert.equals([0, 0], [popup.boxObject.width, popup.boxObject.height]);
 
-		popup.openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
-		yield 300;
-		yield Do(aNotFire('button-in-panel-disabled'));
-//		if (popup.state)
-//			assert.equals('open', popup.state);
-//		else
-//			assert.notEquals([0, 0], [popup.boxObject.width, popup.boxObject.height]);
-		popup.hidePopup();
-	}
+	popup.openPopup(win.document.documentElement, 'overlap', 0, 0, false, false);
+	yield 300;
+	yield Do(aNotFire('button-in-panel-disabled'));
+//	if (popup.state)
+//		assert.equals('open', popup.state);
+//	else
+//		assert.notEquals([0, 0], [popup.boxObject.width, popup.boxObject.height]);
+	popup.hidePopup();
 }
 
-test_fireXULCommandEvent.shouldSkip = isGecko18;
 function test_fireXULCommandEvent()
 {
 	function assertFire(aTargetId)
@@ -448,7 +441,6 @@ function test_fireXULCommandEvent()
 	yield Do(assertXULCommandEventFireOrNotFire(assertFire, assertNotFire, false));
 }
 
-test_fireXULCommandEventOnElement.shouldSkip = isGecko18;
 function test_fireXULCommandEventOnElement()
 {
 	function assertFire(aTargetId)
@@ -473,7 +465,6 @@ function test_fireXULCommandEventOnElement()
 	yield Do(assertXULCommandEventFireOrNotFire(assertFire, assertNotFire, false));
 }
 
-test_fireXULCommandEventByMouseEvent.shouldSkip = isGecko18;
 function test_fireXULCommandEventByMouseEvent()
 {
 	function assertFire(aTargetId)
@@ -521,7 +512,6 @@ function test_fireXULCommandEventByMouseEvent()
 	yield Do(assertXULCommandEventFireOrNotFire(assertFire, assertNotFire, true));
 }
 
-test_fireXULCommandEventByKeyEvent.shouldSkip = isGecko18;
 function test_fireXULCommandEventByKeyEvent()
 {
 	function assertFire(aTargetId, aKeyEventsShouldBeIgnored)

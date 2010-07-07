@@ -1,14 +1,14 @@
 // -*- indent-tabs-mode: t -*- 
-var Cc = Components.classes;
-var Ci = Components.interfaces;
+const Cc = Components.classes;
+const Ci = Components.interfaces;
+
+Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
 
 const kUXU_TEST_RUNNING   = 'extensions.uxu.running';
-const kUXU_PROXY_ENABLED  = 'extensions.uxu.protocolHandlerProxy.enabled';
 
 const kUXU_DIR_NAME = 'uxu@clear-code.com';
 const kCATEGORY = 'm-uxu';
 
-const kPROXY_ENABLED_FILE_NAME = '.uxu-protocol-handler-proxy-enabled';
 const kSKIP_INITIALIZE_FILE_NAME = '.uxu-skip-restart';
 
 // default "@mozilla.org/network/protocol;1?name=http" class id
@@ -22,6 +22,7 @@ const Pref = Cc['@mozilla.org/preferences;1']
 			.QueryInterface(Ci.nsIPrefBranch2);
 const IOService = Cc['@mozilla.org/network/io-service;1']
 			.getService(Components.interfaces.nsIIOService);
+
 var WindowWatcher;
 var WindowManager;
 
@@ -31,26 +32,34 @@ function GlobalService() {
 }
 GlobalService.prototype = {
 	
-	CID  : Components.ID('{dd385d40-9e6f-11dd-ad8b-0800200c9a66}'), 
-	ID   : '@clear-code.com/uxu/startup;1',
-	NAME : 'UxU Global Service',
+	classDescription : 'UxUGlobalService', 
+	contractID : '@clear-code.com/uxu/startup;1',
+	classID : Components.ID('{dd385d40-9e6f-11dd-ad8b-0800200c9a66}'),
+
+	_xpcom_categories : [
+		{ category : 'profile-after-change', service : true } // -Firefox 3.6
+	],
+
+	QueryInterface : XPCOMUtils.generateQI([
+		Ci.nsIObserver,
+		Ci.nsICommandLineHandler,
+		Ci.nsIFactory
+	]),
+
+	get wrappedJSObject() {
+		return this;
+	},
  
 	observe : function(aSubject, aTopic, aData) 
 	{
 		switch (aTopic)
 		{
-			case 'app-startup':
-				WindowWatcher = Cc['@mozilla.org/embedcomp/window-watcher;1']
-					.getService(Ci.nsIWindowWatcher);
-				WindowManager = Cc['@mozilla.org/appshell/window-mediator;1']
-					.getService(Ci.nsIWindowMediator);
-
-				ObserverService.addObserver(this, 'profile-after-change', false);
-				ObserverService.addObserver(this, 'final-ui-startup', false);
-				return;
-
 			case 'profile-after-change':
-				ObserverService.removeObserver(this, 'profile-after-change');
+				WindowWatcher = Cc['@mozilla.org/embedcomp/window-watcher;1']
+								.getService(Ci.nsIWindowWatcher);
+				WindowManager = Cc['@mozilla.org/appshell/window-mediator;1']
+								.getService(Ci.nsIWindowMediator);
+				ObserverService.addObserver(this, 'final-ui-startup', false);
 				this.upgradePrefs();
 				return;
 
@@ -103,11 +112,6 @@ GlobalService.prototype = {
 
 		Pref.setBoolPref(kUXU_TEST_RUNNING, false);
 
-		if (!this.skipInitializeFile.exists()) {
-			this.checkProxyEnabled();
-			Pref.addObserver(kUXU_PROXY_ENABLED, this, false);
-		}
-
 		Pref.addObserver('general.useragent', this, false);
 		ObserverService.addObserver(this, 'uxu-profile-setup', false);
 		ObserverService.addObserver(this, 'uxu-start-runner-request', false);
@@ -146,20 +150,6 @@ GlobalService.prototype = {
 	{
 		switch (aPrefName)
 		{
-			case kUXU_PROXY_ENABLED:
-				this.proxyEnabled = Pref.getBoolPref(aPrefName);
-				this.timer = Cc['@mozilla.org/timer;1']
-								.createInstance(Ci.nsITimer);
-				this.timer.init({
-					self : this,
-					observe : function() {
-						this.self.timer.cancel();
-						this.self.timer = null;
-						GlobalService.prototype.confirmRestartToApplyChange();
-					}
-				}, 100, Ci.nsITimer.TYPE_ONE_SHOT);
-				break;
-
 			default:
 				if (aPrefName.indexOf('general.useragent.') > -1) {
 					this.timer = Cc['@mozilla.org/timer;1']
@@ -207,62 +197,11 @@ GlobalService.prototype = {
 	},
 	_profileDirectory : null,
  
-	checkProxyEnabled : function() 
-	{
-		var proxyEnabled = Pref.getBoolPref(kUXU_PROXY_ENABLED);
-		if (proxyEnabled != this.proxyEnabled) {
-			this.proxyEnabled = proxyEnabled;
-			this.restart();
-		}
-	},
-	
-	get proxyEnabled() 
-	{
-		return this.proxyEnabledFile.exists();
-	},
- 
-	set proxyEnabled(aValue) 
-	{
-		var modified = false;
-		var proxyEnabled = this.proxyEnabledFile;
-		if (proxyEnabled.exists() && !aValue) {
-			proxyEnabled.remove(true);
-			modified = true;
-		}
-		else if (!proxyEnabled.exists() && aValue) {
-			proxyEnabled.create(proxyEnabled.NORMAL_FILE_TYPE, 0644);
-			modified = true;
-		}
-		if (modified) {
-			var autoreg = this.profileDirectory.clone(true);
-			autoreg.append('.autoreg');
-			if (!autoreg.exists())
-				autoreg.create(autoreg.NORMAL_FILE_TYPE, 0644);
-		}
-		return aValue;
-	},
- 
-	get proxyEnabledFile() 
-	{
-		if (!this._proxyEnabledFile) {
-			this._proxyEnabledFile = this.profileDirectory.clone(true);
-			this._proxyEnabledFile.append(kPROXY_ENABLED_FILE_NAME);
-		}
-		return this._proxyEnabledFile;
-	},
-	_proxyEnabledFile : null,
-  
 	setUpUXUPrefs : function(aProfile) 
 	{
 		var skipInitialize = aProfile.clone(true);
 		skipInitialize.append(kSKIP_INITIALIZE_FILE_NAME);
 		skipInitialize.create(skipInitialize.NORMAL_FILE_TYPE, 0644);
-
-		if (this.proxyEnabled) {
-			var proxyEnabled = aProfile.clone(true);
-			proxyEnabled.append(kPROXY_ENABLED_FILE_NAME);
-			proxyEnabled.create(proxyEnabled.NORMAL_FILE_TYPE, 0644);
-		}
 
 		var userJSFile = aProfile.clone(true);
 		userJSFile.append('user.js');
@@ -271,7 +210,6 @@ GlobalService.prototype = {
 
 		var lines = [];
 		var prefs = <![CDATA[
-				bool extensions.uxu.protocolHandlerProxy.enabled
 				bool extensions.uxu.profile.enableDebugOptions
 				bool extensions.uxu.profile.disableAutoUpdate
 				bool extensions.uxu.profile.disableExitWarning
@@ -586,19 +524,8 @@ GlobalService.prototype = {
  
 	lockFactory : function(aLock) 
 	{
-	},
-  
-	QueryInterface : function(aIID) 
-	{
-		if (!aIID.equals(Ci.nsIObserver) &&
-			!aIID.equals(Ci.nsICommandLineHandler) &&
-			!aIID.equals(Ci.nsIFactory) &&
-			!aIID.equals(Ci.nsISupports)) {
-			throw Components.results.NS_ERROR_NO_INTERFACE;
-		}
-		return this;
 	}
- 
+  
 }; 
   
 function ProtocolHandlerProxy() { 
@@ -606,6 +533,10 @@ function ProtocolHandlerProxy() {
 }
 ProtocolHandlerProxy.prototype = {
 	
+	get wrappedJSObject() { 
+		return this;
+	},
+ 
 	init : function() 
 	{
 		this.mDefaultHttpProtocolHandler = DEFAULT_HTTP_PROTOCOL_HANDLER
@@ -757,17 +688,17 @@ ProtocolHandlerProxy.prototype = {
  
 	QueryInterface : function(aIID) 
 	{
-		if (Pref.getBoolPref(kUXU_TEST_RUNNING) &&
-			(aIID.equals(Ci.nsIHttpProtocolHandler) ||
-			 aIID.equals(Ci.nsIProtocolHandler) ||
-			 aIID.equals(Ci.nsIProxiedProtocolHandler) ||
-			 aIID.equals(Ci.nsIObserver) ||
-			 aIID.equals(Ci.nsISupports) ||
-			 aIID.equals(Ci.nsISupportsWeakReference)))
-			return this;
-		else
-			return this.mProtocolHandler.QueryInterface(aIID);
-	}
+		if (Pref.getBoolPref(kUXU_TEST_RUNNING))
+			return this.QueryInterfaceInternal(aIID);
+		return this.mProtocolHandler.QueryInterface(aIID);
+	},
+	QueryInterfaceInternal : XPCOMUtils.generateQI([
+		Ci.nsIHttpProtocolHandler,
+		Ci.nsIProtocolHandler,
+		Ci.nsIProxiedProtocolHandler,
+		Ci.nsIObserver,
+		Ci.nsISupportsWeakReference
+	])
  
 }; 
 ProtocolHandlerProxy.prototype.initProperties();
@@ -777,9 +708,9 @@ function HttpProtocolHandlerProxy() {
 }
 HttpProtocolHandlerProxy.prototype = {
 	
-	CID  : Components.ID('{3d04c1d0-4e6c-11de-8a39-0800200c9a66}'), 
-	ID   : '@mozilla.org/network/protocol;1?name=http',
-	NAME : 'HTTP Protocol Handler Proxy'
+	classDescription : 'UxUHttpProtocolHandlerProxy', 
+	contractID : '@mozilla.org/network/protocol;1?name=http',
+	classID : Components.ID('{3d04c1d0-4e6c-11de-8a39-0800200c9a66}')
  
 }; 
 HttpProtocolHandlerProxy.prototype.__proto__ = ProtocolHandlerProxy.prototype;
@@ -789,131 +720,15 @@ function HttpsProtocolHandlerProxy() {
 }
 HttpsProtocolHandlerProxy.prototype = {
 	
-	CID  : Components.ID('{b81efa50-4e7d-11de-8a39-0800200c9a66}'), 
-	ID   : '@mozilla.org/network/protocol;1?name=https',
-	NAME : 'HTTPS Protocol Handler Proxy'
+	classDescription : 'UxUHttpsProtocolHandlerProxy', 
+	contractID : '@mozilla.org/network/protocol;1?name=https',
+	classID : Components.ID('{b81efa50-4e7d-11de-8a39-0800200c9a66}')
  
 }; 
 HttpsProtocolHandlerProxy.prototype.__proto__ = ProtocolHandlerProxy.prototype;
   
-var gModule = { 
-	registerSelf : function(aComponentManager, aFileSpec, aLocation, aType)
-	{
-		aComponentManager = aComponentManager.QueryInterface(Ci.nsIComponentRegistrar);
-		for (var key in this._objects)
-		{
-			var obj = this._objects[key];
-			if (!obj.enabled) continue;
-			aComponentManager.registerFactoryLocation(
-				obj.CID,
-				obj.NAME,
-				obj.ID,
-				aFileSpec,
-				aLocation,
-				aType
-			);
-			if ('onRegister' in obj)
-				obj.onRegister();
-		}
-	},
-
-	getClassObject : function(aComponentManager, aCID, aIID)
-	{
-		for (var key in this._objects)
-		{
-			if (aCID.equals(this._objects[key].CID))
-				return this._objects[key].factory;
-		}
-
-		throw Components.results.NS_ERROR_NO_INTERFACE;
-	},
-
-	_objects : {
-		global : {
-			CID  : GlobalService.prototype.CID,
-			NAME : GlobalService.prototype.NAME,
-			ID   : GlobalService.prototype.ID,
-			onRegister : function()
-			{
-				var catMgr = Cc['@mozilla.org/categorymanager;1']
-							.getService(Ci.nsICategoryManager);
-				catMgr.addCategoryEntry('app-startup', this.NAME, this.ID, true, true);
-				catMgr.addCategoryEntry('command-line-handler', kCATEGORY, this.ID, true, true);
-			},
-			factory : {
-				QueryInterface : function(aIID)
-				{
-					if (!aIID.equals(Ci.nsISupports) &&
-						!aIID.equals(Ci.nsIFactory)) {
-						throw Components.results.NS_ERROR_NO_INTERFACE;
-					}
-					return this;
-				},
-				createInstance : function (aOuter, aIID)
-				{
-					if (aOuter != null)
-						throw Components.results.NS_ERROR_NO_AGGREGATION;
-					return new GlobalService();
-				}
-			},
-			enabled : true
-		},
-		http : {
-			CID  : HttpProtocolHandlerProxy.prototype.CID,
-			NAME : HttpProtocolHandlerProxy.prototype.NAME,
-			ID   : HttpProtocolHandlerProxy.prototype.ID,
-			factory : {
-				QueryInterface : function(aIID)
-				{
-					if (!aIID.equals(Ci.nsISupports) &&
-						!aIID.equals(Ci.nsIFactory)) {
-						throw Components.results.NS_ERROR_NO_INTERFACE;
-					}
-					return this;
-				},
-				createInstance : function (aOuter, aIID)
-				{
-					if (aOuter != null)
-						throw Components.results.NS_ERROR_NO_AGGREGATION;
-					return new HttpProtocolHandlerProxy();
-				}
-			},
-			get enabled() {
-				return GlobalService.prototype.proxyEnabled;
-			}
-		},
-		https : {
-			CID  : HttpsProtocolHandlerProxy.prototype.CID,
-			NAME : HttpsProtocolHandlerProxy.prototype.NAME,
-			ID   : HttpsProtocolHandlerProxy.prototype.ID,
-			factory : {
-				QueryInterface : function(aIID)
-				{
-					if (!aIID.equals(Ci.nsISupports) &&
-						!aIID.equals(Ci.nsIFactory)) {
-						throw Components.results.NS_ERROR_NO_INTERFACE;
-					}
-					return this;
-				},
-				createInstance : function (aOuter, aIID)
-				{
-					if (aOuter != null)
-						throw Components.results.NS_ERROR_NO_AGGREGATION;
-					return new HttpsProtocolHandlerProxy();
-				}
-			},
-			get enabled() {
-				return GlobalService.prototype.proxyEnabled;
-			}
-		}
-	},
-
-	canUnload : function(aComponentManager)
-	{
-		return true;
-	}
-};
-function NSGetModule(aCompMgr, aFileSpec) {
-	return gModule;
-}
+if (XPCOMUtils.generateNSGetFactory) 
+	var NSGetFactory = XPCOMUtils.generateNSGetFactory([GlobalService, HttpProtocolHandlerProxy, HttpsProtocolHandlerProxy]);
+else
+	var NSGetModule = XPCOMUtils.generateNSGetModule([GlobalService, HttpProtocolHandlerProxy, HttpsProtocolHandlerProxy]);
  

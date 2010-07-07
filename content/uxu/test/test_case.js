@@ -59,15 +59,13 @@ function _initDB()
 	var db = utils.getDB();
 	if (!db.tableExists('result_history')) {
 		db.executeSimpleSQL(tableDefinitionSQL);
-		if ('schemaVersion' in db) // Firefox 3.0.x
-			db.schemaVersion = CURRENT_SCHEME;
+		db.schemaVersion = CURRENT_SCHEME;
 	}
 	else { // possibly old version, so we have to migrate.
 		var currentVersion = 'schemaVersion' in db ? db.schemaVersion : 0 ;
 		if (currentVersion < SCHEME_VERSION_HASH) {
 			db.executeSimpleSQL('ALTER TABLE result_history ADD hash TEXT');
-			if ('schemaVersion' in db) // Firefox 3.0.x
-				db.schemaVersion = SCHEME_VERSION_HASH;
+			db.schemaVersion = SCHEME_VERSION_HASH;
 		}
 	}
 }
@@ -316,10 +314,7 @@ function onStart()
 			(Cc['@mozilla.org/network/protocol;1?name=https'].getService() !=
 			 Components.classesByID['{b81efa50-4e7d-11de-8a39-0800200c9a66}'].getService())
 			) {
-			if (utils.getPref('extensions.uxu.protocolHandlerProxy.enabled'))
-				this.fireEvent('Error', bundle.getString('error_proxy_disabled_conflict'));
-			else
-				this.fireEvent('Error', bundle.getString('error_proxy_disabled_pref'));
+			this.fireEvent('Error', bundle.getString('error_proxy_disabled_conflict'));
 		}
 		else {
 			ObserverService.addObserver(this , 'uxu-mapping-check', false);

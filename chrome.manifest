@@ -10,9 +10,18 @@ locale	uxu	ja	jar:chrome/uxu.jar!/locale/ja/uxu/
 
 skin	uxu	classic/1.0	jar:chrome/uxu.jar!/skin/classic/uxu/
 
-style chrome://uxu/content/ui/runner.xul chrome://uxu/skin/style-fx3.css appversion>=3.0
-style chrome://uxu/content/ui/uxu.xul chrome://uxu/skin/style-fx3.css appversion>=3.0
 style chrome://uxu/content/ui/runner.xul chrome://uxu/skin/style-fx3.7.css appversion>=3.7a1pre
 style chrome://uxu/content/ui/uxu.xul chrome://uxu/skin/style-fx3.7.css appversion>=3.7a1pre
 
 resource uxu-modules modules/
+
+component	{dd385d40-9e6f-11dd-ad8b-0800200c9a66}	components/GlobalService.js
+contract	@clear-code.com/uxu/startup;1	{dd385d40-9e6f-11dd-ad8b-0800200c9a66}
+category	profile-after-change	UxUGlobalService	@clear-code.com/uxu/startup;1
+category	command-line-handler	m-uxu	@clear-code.com/uxu/startup;1
+
+component	{3d04c1d0-4e6c-11de-8a39-0800200c9a66}	components/GlobalService.js
+contract	@mozilla.org/network/protocol;1?name=http	{3d04c1d0-4e6c-11de-8a39-0800200c9a66}
+
+component	{b81efa50-4e7d-11de-8a39-0800200c9a66}	components/GlobalService.js
+contract	@mozilla.org/network/protocol;1?name=https	{b81efa50-4e7d-11de-8a39-0800200c9a66}

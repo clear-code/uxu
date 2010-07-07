@@ -5,8 +5,7 @@ html|span[class~="block"] {
 	-moz-user-focus: normal;
 	-moz-user-select: text;
 	cursor : text;
-	white-space: pre-wrap; /* Firefox 3.0 or later */
-	white-space: -moz-pre-wrap; /* Firefox 2.0.0.* */
+	white-space: pre-wrap;
 	font-family: monospace;
 	line-height: 1.2;
 }

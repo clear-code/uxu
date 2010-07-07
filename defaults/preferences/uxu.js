@@ -1,6 +1,5 @@
 pref("extensions.uxu.running", false);
 pref("extensions.uxu.global", false);
-pref("extensions.uxu.protocolHandlerProxy.enabled", false);
 
 pref("extensions.uxu.profile.enableDebugOptions", true);
 pref("extensions.uxu.profile.disableAutoUpdate", true);
