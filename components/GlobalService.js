@@ -7,7 +7,6 @@ Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
 const kUXU_TEST_RUNNING   = 'extensions.uxu.running';
 
 const kUXU_DIR_NAME = 'uxu@clear-code.com';
-const kCATEGORY = 'm-uxu';
 
 const kSKIP_INITIALIZE_FILE_NAME = '.uxu-skip-restart';
 
@@ -37,7 +36,8 @@ GlobalService.prototype = {
 	classID : Components.ID('{dd385d40-9e6f-11dd-ad8b-0800200c9a66}'),
 
 	_xpcom_categories : [
-		{ category : 'app-startup', service : true } // -Firefox 3.6
+		{ category : 'app-startup', service : true }, // -Firefox 3.6
+		{ category : 'command-line-handler', entry : 'm-uxu' }
 	],
 
 	QueryInterface : XPCOMUtils.generateQI([

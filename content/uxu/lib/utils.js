@@ -1718,6 +1718,11 @@ function inspect(aObject, aIndent)
 			StringClass    = aTarget.String;
 			toStringMethod = aTarget.Object.prototype.toString;
 		}
+		else if (aTarget instanceof Ci.nsISupports) {
+			ArrayClass     = Array;
+			StringClass    = String;
+			toStringMethod = Object.prototype.toString;
+		}
 		else {
 			ArrayClass     = eval('Array', aTarget);
 			StringClass    = eval('String', aTarget);
