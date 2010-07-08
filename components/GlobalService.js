@@ -37,7 +37,7 @@ GlobalService.prototype = {
 	classID : Components.ID('{dd385d40-9e6f-11dd-ad8b-0800200c9a66}'),
 
 	_xpcom_categories : [
-		{ category : 'profile-after-change', service : true } // -Firefox 3.6
+		{ category : 'app-startup', service : true } // -Firefox 3.6
 	],
 
 	QueryInterface : XPCOMUtils.generateQI([
@@ -54,7 +54,18 @@ GlobalService.prototype = {
 	{
 		switch (aTopic)
 		{
+			case 'app-startup':
+				if (!this.listeningProfileAfterChange) {
+					ObserverService.addObserver(this, 'profile-after-change', false);
+					this.listeningProfileAfterChange = true;
+				}
+				return;
+
 			case 'profile-after-change':
+				if (this.listeningProfileAfterChange) {
+					ObserverService.removeObserver(this, 'profile-after-change');
+					this.listeningProfileAfterChange = false;
+				}
 				WindowWatcher = Cc['@mozilla.org/embedcomp/window-watcher;1']
 								.getService(Ci.nsIWindowWatcher);
 				WindowManager = Cc['@mozilla.org/appshell/window-mediator;1']
