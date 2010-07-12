@@ -34,8 +34,7 @@ GlobalService.prototype = {
 
 	QueryInterface : XPCOMUtils.generateQI([
 		Ci.nsIObserver,
-		Ci.nsICommandLineHandler,
-		Ci.nsIFactory
+		Ci.nsICommandLineHandler
 	]),
 
 	get wrappedJSObject() {
@@ -468,19 +467,6 @@ GlobalService.prototype = {
 			}
 			Pref.clearUserPref(aPref);
 		}, this);
-	},
-  
-	/* nsIFactory */ 
-	
-	createInstance : function(aOuter, aIID) 
-	{
-		if (aOuter != null)
-			throw Components.results.NS_ERROR_NO_AGGREGATION;
-		return this.QueryInterface(aIID);
-	},
- 
-	lockFactory : function(aLock) 
-	{
 	}
   
 }; 
