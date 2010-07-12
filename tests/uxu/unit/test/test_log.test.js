@@ -1,5 +1,9 @@
 var topDir = baseURL+'../../../../';
 
+var ns = {};
+Components.utils.import('resource://uxu-modules/stringBundle.js', ns);
+var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
+
 utils.include(topDir+'content/uxu/lib/module_manager.js');
 
 var test_module   = new ModuleManager([topDir+'content/uxu/test']);
@@ -125,7 +129,6 @@ var log,
 	testcase2,
 	reports1,
 	reports2;
-var bundle;
 
 function startUp()
 {
@@ -135,9 +138,6 @@ function startUp()
 function setUp()
 {
 	utils.setPref('general.useragent.locale', 'ja');
-
-	bundle = {};
-	utils.include(topDir+'content/uxu/lib/bundle.js', bundle);
 
 	testcase1 = new TestCaseClass('test1');
 	testcase2 = new TestCaseClass('test2');
