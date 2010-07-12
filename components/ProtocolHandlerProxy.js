@@ -200,7 +200,15 @@ HttpProtocolHandlerProxy.prototype = {
 	
 	classDescription : 'UxUHttpProtocolHandlerProxy', 
 	contractID : '@mozilla.org/network/protocol;1?name=http',
-	classID : Components.ID('{3d04c1d0-4e6c-11de-8a39-0800200c9a66}')
+	classID : Components.ID('{3d04c1d0-4e6c-11de-8a39-0800200c9a66}'),
+ 
+	_xpcom_factory : {
+		createInstance: function(aOuter, aIID)
+		{
+			return (new HttpProtocolHandlerProxy()).QueryInterface(aIID);
+		},
+		QueryInterface: XPCOMUtils.generateQI([Components.interfaces.nsIFactory])
+	}
  
 }; 
 HttpProtocolHandlerProxy.prototype.__proto__ = ProtocolHandlerProxy.prototype;
@@ -212,7 +220,15 @@ HttpsProtocolHandlerProxy.prototype = {
 	
 	classDescription : 'UxUHttpsProtocolHandlerProxy', 
 	contractID : '@mozilla.org/network/protocol;1?name=https',
-	classID : Components.ID('{b81efa50-4e7d-11de-8a39-0800200c9a66}')
+	classID : Components.ID('{b81efa50-4e7d-11de-8a39-0800200c9a66}'),
+ 
+	_xpcom_factory : {
+		createInstance: function(aOuter, aIID)
+		{
+			return (new HttpsProtocolHandlerProxy()).QueryInterface(aIID);
+		},
+		QueryInterface: XPCOMUtils.generateQI([Components.interfaces.nsIFactory])
+	}
  
 }; 
 HttpsProtocolHandlerProxy.prototype.__proto__ = ProtocolHandlerProxy.prototype;
