@@ -4,8 +4,11 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
-var bundle = lib_module.require('package', 'bundle');
 var prefread = lib_module.require('package', 'prefread');
+
+var ns = {};
+Components.utils.import('resource://uxu-modules/stringBundle.js', ns);
+var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 var IOService = Cc['@mozilla.org/network/io-service;1']
 		.getService(Ci.nsIIOService);

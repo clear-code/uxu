@@ -116,9 +116,10 @@ GlobalService.prototype = {
  
 	init : function() 
 	{
-		bundle = Cc['@mozilla.org/intl/stringbundle;1']
-				.getService(Ci.nsIStringBundleService)
-				.createBundle('chrome://uxu/locale/uxu.properties');
+		var ns = {};
+		Components.utils.import('resource://uxu-modules/stringBundle.js', ns);
+		bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
+
 		PromptService = Cc['@mozilla.org/embedcomp/prompt-service;1']
 				.getService(Ci.nsIPromptService);
 
@@ -190,8 +191,8 @@ GlobalService.prototype = {
 	{
 		if (PromptService.confirmEx(
 				null,
-				bundle.GetStringFromName('confirm_changePref_restart_title'),
-				bundle.GetStringFromName('confirm_changePref_restart_text'),
+				bundle.getString('confirm_changePref_restart_title'),
+				bundle.getString('confirm_changePref_restart_text'),
 				Ci.nsIPromptService.BUTTON_TITLE_YES * Ci.nsIPromptService.BUTTON_POS_0 +
 				Ci.nsIPromptService.BUTTON_TITLE_NO * Ci.nsIPromptService.BUTTON_POS_1,
 				null, null, null, null, {}

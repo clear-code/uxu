@@ -20,9 +20,12 @@
 var Ci = Components.interfaces;
 
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
-var bundle = lib_module.require('package', 'bundle');
 var utils = lib_module.require('package', 'utils');
 var diff = lib_module.require('package', 'diff');
+
+var ns = {};
+Components.utils.import('resource://uxu-modules/stringBundle.js', ns);
+var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 var inherits = lib_module.require('class', 'event_target');
 

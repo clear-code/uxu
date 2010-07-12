@@ -4,7 +4,6 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
-var bundle     = lib_module.require('package', 'bundle');
 var utils      = lib_module.require('package', 'utils');
 
 var inherits = lib_module.require('class', 'event_target');
