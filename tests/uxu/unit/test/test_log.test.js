@@ -1,15 +1,15 @@
 var topDir = baseURL+'../../../../';
 
-var ns = {};
-Components.utils.import('resource://uxu-modules/stringBundle.js', ns);
-var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
-
 utils.include(topDir+'content/uxu/lib/module_manager.js');
 
 var test_module   = new ModuleManager([topDir+'content/uxu/test']);
 var TestLogClass  = test_module.require('class', 'test_log');
 var TestCaseClass = test_module.require('class', 'test_case');
 var ReportClass   = test_module.require('class', 'report');
+
+var ns = {};
+Components.utils.import('resource://uxu-modules/stringBundle.js', ns);
+var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 function createReports(aTestCase)
 {
