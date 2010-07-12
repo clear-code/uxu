@@ -3,6 +3,7 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
+Components.utils.import('resource://uxu-modules/CLHHelper.jsm');
 
 const kUXU_TEST_RUNNING   = 'extensions.uxu.running';
 
@@ -407,17 +408,17 @@ GlobalService.prototype = {
 	handle : function(aCommandLine) 
 	{
 		var arg = {
-				server     : this._getBooleanValueFromCommandLine('uxu-start-server', aCommandLine),
-				serverPort : this._getNumericValueFromCommandLine('uxu-listen-port', aCommandLine, 0),
-				outputHost : this._getValueFromCommandLine('uxu-output-host', aCommandLine, ''),
-				outputPort : this._getNumericValueFromCommandLine('uxu-output-port', aCommandLine, 0),
-				testcase   : this._getFullPathFromCommandLine('uxu-testcase', aCommandLine, ''),
-				priority   : this._getValueFromCommandLine('uxu-priority', aCommandLine, null),
-				log        : this._getFullPathFromCommandLine('uxu-log', aCommandLine, ''),
-				rawLog     : this._getFullPathFromCommandLine('uxu-rawlog', aCommandLine, ''),
-				autoQuit   : this._getBooleanValueFromCommandLine('uxu-autoquit', aCommandLine),
-				doNotQuit  : this._getBooleanValueFromCommandLine('uxu-do-not-quit', aCommandLine),
-				hidden     : this._getBooleanValueFromCommandLine('uxu-hidden', aCommandLine)
+				server     : CLHHelper.getBooleanValue('uxu-start-server', aCommandLine),
+				serverPort : CLHHelper.getNumericValue('uxu-listen-port', aCommandLine, 0),
+				outputHost : CLHHelper.getStringValue('uxu-output-host', aCommandLine, ''),
+				outputPort : CLHHelper.getNumericValue('uxu-output-port', aCommandLine, 0),
+				testcase   : CLHHelper.getFullPath('uxu-testcase', aCommandLine, ''),
+				priority   : CLHHelper.getStringValue('uxu-priority', aCommandLine, null),
+				log        : CLHHelper.getFullPath('uxu-log', aCommandLine, ''),
+				rawLog     : CLHHelper.getFullPath('uxu-rawlog', aCommandLine, ''),
+				autoQuit   : CLHHelper.getBooleanValue('uxu-autoquit', aCommandLine),
+				doNotQuit  : CLHHelper.getBooleanValue('uxu-do-not-quit', aCommandLine),
+				hidden     : CLHHelper.getBooleanValue('uxu-hidden', aCommandLine)
 			};
 
 		if (arg.testcase || arg.server) {
@@ -429,70 +430,17 @@ GlobalService.prototype = {
 		}
 	},
  
-	_getValueFromCommandLine : function(aOption, aCommandLine, aDefaultValue) 
-	{
-		if (aDefaultValue === void(0)) aDefaultValue = '';
-		try {
-			return aCommandLine.handleFlagWithParam(aOption, false);
-		}
-		catch(e) {
-		}
-		return aDefaultValue;
-	},
-	
-	_getFullPathFromCommandLine : function(aOption, aCommandLine, aDefaultValue) 
-	{
-		if (!aDefaultValue) aDefaultValue = '';
-		var value = this._getValueFromCommandLine(aOption, aCommandLine, aDefaultValue);
-		if (!value) return aDefaultValue;
-		if (value.indexOf('/') < 0) {
-			value = aCommandLine.resolveFile(value);
-			return value.path;
-		}
-		else {
-			value = aCommandLine.resolveURI(value);
-			return value.spec;
-		}
-	},
- 
-	_getNumericValueFromCommandLine : function(aOption, aCommandLine, aDefaultValue) 
-	{
-		if (!aDefaultValue) aDefaultValue = 0;
-		var value = this._getValueFromCommandLine(aOption, aCommandLine, aDefaultValue);
-		if (!value) return aDefaultValue;
-		value = parseInt(value);
-		return isNaN(value) ? aDefaultValue : value ;
-	},
- 
-	_getBooleanValueFromCommandLine : function(aOption, aCommandLine) 
-	{
-		try {
-			if (aCommandLine.handleFlag(aOption, false)) {
-				return true;
-			}
-		}
-		catch(e) {
-		}
-		return false;
-	},
-  
 	helpInfo : 
-		'  -uxu-start-server    Starts UnitTest.XUL Server instead of Firefox\n'+
-		'  -uxu-listen-port <port>\n'+
-		'                       Listening port of UnitTest.XUL Server\n'+
-		'  -uxu-output-host <host>\n'+
-		'                       Output the result of the testcase\n'+
-		'                       to the host in raw format\n'+
-		'  -uxu-output-port <port>\n'+
-		'                       Listening port of the host specified by the\n'+
-		'                       "-uxu-output-host" option\n'+
-		'  -uxu-testcase <url>  Run the testcase in UnitTest.XUL\n'+
-		'  -uxu-priority <priority>\n'+
-		'                       Run all tests in the testcase with the priority\n'+
-		'  -uxu-log <url>       Output the result of the testcase\n'+
-		'                       in human readable format\n'+
-		'  -uxu-rawlog <url>    Output the result of the testcase\n'+
-		'                       in raw format\n',
+		CLHHelper.formatHelpInfo({
+			'uxu-start-server' : 'Starts UnitTest.XUL Server instead of Firefox.',
+			'uxu-listen-port <port>' : 'Listening port of UnitTest.XUL Server.',
+			'uxu-output-host <host>' : 'Output the result of the testcase to the host in raw format.',
+			'uxu-output-port <port>' : 'Listening port of the host specified by the "-uxu-output-host" option.',
+			'uxu-testcase <url>' :  'Run the testcase in UnitTest.XUL.',
+			'uxu-priority <priority>' : 'Run all tests in the testcase with the priority.',
+			'uxu-log <url>' : 'Output the result of the testcase.',
+			'uxu-rawlog <url>' : 'Output the result of the testcase in raw format.'
+		}),
   
 	/* backward compatibility */ 
 	
