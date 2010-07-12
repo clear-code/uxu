@@ -11,15 +11,24 @@
    http://www.cozmixng.org/repos/piro/fx3-compatibility-lib/trunk/license.txt
  original:
    http://www.cozmixng.org/repos/piro/fx3-compatibility-lib/trunk/boxObject.js
+   http://www.cozmixng.org/repos/piro/fx3-compatibility-lib/trunk/boxObject.test.js
+   http://www.cozmixng.org/repos/piro/fx3-compatibility-lib/trunk/fixtures/box.html
 */
 
-if ('window' in this && !window) { // work as a JS Code Module
-	var EXPORTED_SYMBOLS = ['window', 'boxObject'];
+/* To work as a JS Code Module */
+if (typeof window == 'undefined') {
+	this.EXPORTED_SYMBOLS = ['boxObject'];
 
-	let ns = {};
-	Components.utils.import('resource://uxu-modules/namespace.jsm', ns);
-
-	var window = ns.getNamespaceFor('piro.sakura.ne.jp');
+	// If namespace.jsm is available, export symbols to the shared namespace.
+	// See: http://www.cozmixng.org/repos/piro/fx3-compatibility-lib/trunk/namespace.jsm
+	try {
+		let ns = {};
+		Components.utils.import('resource://uxu-modules/namespace.jsm', ns);
+		/* var */ window = ns.getNamespaceFor('piro.sakura.ne.jp');
+	}
+	catch(e) {
+		window = {};
+	}
 }
 
 (function() {
@@ -166,5 +175,5 @@ if ('window' in this && !window) { // work as a JS Code Module
 })();
 
 if (window != this) { // work as a JS Code Module
-	var boxObject = window['piro.sakura.ne.jp'].boxObject;
+	this.boxObject = window['piro.sakura.ne.jp'].boxObject;
 }
