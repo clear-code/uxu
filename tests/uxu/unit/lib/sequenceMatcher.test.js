@@ -2,14 +2,13 @@
 
 var topDir = baseURL+'../../../../';
 
-utils.include(topDir+'content/uxu/lib/module_manager.js');
-
 var SequenceMatcher;
 
 function setUp()
 {
-    var lib = new ModuleManager([topDir+'content/uxu/lib']);
-    SequenceMatcher = lib.require('class', 'sequenceMatcher');
+    var ns = {};
+    utils.include(topDir+'modules/diff.js', ns);
+    SequenceMatcher = ns.SequenceMatcher;
 }
 
 function testToIndexes()

@@ -1,11 +1,14 @@
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
-var bundle = lib_module.require('package', 'bundle');
 var EventTarget = lib_module.require('class', 'event_target');
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var Server = server_module.require('class', 'server');
 var Message = server_module.require('class', 'message');
 var HTTPServer = server_module.require('class', 'httpd');
+
+var ns = {};
+Components.utils.import('resource://uxu-modules/stringBundle.js', ns);
+var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 function constructor()
 {

@@ -3,7 +3,6 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
-Components.utils.import('resource://uxu-modules/CLHHelper.jsm');
 
 const kUXU_TEST_RUNNING   = 'extensions.uxu.running';
 
@@ -71,6 +70,7 @@ GlobalService.prototype = {
 								.getService(Ci.nsIWindowWatcher);
 				WindowManager = Cc['@mozilla.org/appshell/window-mediator;1']
 								.getService(Ci.nsIWindowMediator);
+				Components.utils.import('resource://uxu-modules/CLHHelper.jsm');
 				ObserverService.addObserver(this, 'final-ui-startup', false);
 				this.upgradePrefs();
 				return;
@@ -431,17 +431,22 @@ GlobalService.prototype = {
 		}
 	},
  
-	helpInfo : 
-		CLHHelper.formatHelpInfo({
-			'uxu-start-server' : 'Starts UnitTest.XUL Server instead of Firefox.',
-			'uxu-listen-port <port>' : 'Listening port of UnitTest.XUL Server.',
-			'uxu-output-host <host>' : 'Output the result of the testcase to the host in raw format.',
-			'uxu-output-port <port>' : 'Listening port of the host specified by the "-uxu-output-host" option.',
-			'uxu-testcase <url>' :  'Run the testcase in UnitTest.XUL.',
-			'uxu-priority <priority>' : 'Run all tests in the testcase with the priority.',
-			'uxu-log <url>' : 'Output the result of the testcase.',
-			'uxu-rawlog <url>' : 'Output the result of the testcase in raw format.'
-		}),
+	get helpInfo() 
+	{
+		if (!this._helpInfo)
+			this._helpInfo =CLHHelper.formatHelpInfo({
+				'uxu-start-server' : 'Starts UnitTest.XUL Server instead of Firefox.',
+				'uxu-listen-port <port>' : 'Listening port of UnitTest.XUL Server.',
+				'uxu-output-host <host>' : 'Output the result of the testcase to the host in raw format.',
+				'uxu-output-port <port>' : 'Listening port of the host specified by the "-uxu-output-host" option.',
+				'uxu-testcase <url>' :  'Run the testcase in UnitTest.XUL.',
+				'uxu-priority <priority>' : 'Run all tests in the testcase with the priority.',
+				'uxu-log <url>' : 'Output the result of the testcase.',
+				'uxu-rawlog <url>' : 'Output the result of the testcase in raw format.'
+			});
+		return this._helpInfo;
+	},
+	_helpInfo : null,
   
 	/* backward compatibility */ 
 	

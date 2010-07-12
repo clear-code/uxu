@@ -1,38 +1,39 @@
 var topDir = baseURL+'../../../../';
-var diff;
+var Diff;
 
 function setUp()
 {
-    diff = {};
-    utils.include(topDir+'content/uxu/lib/diff.js', diff);
+    var ns = {};
+    utils.include(topDir+'modules/diff.js', ns);
+    Diff = ns.Diff;
 }
 
 function testIsInterested()
 {
-    assertFalse(diff.isInterested());
-    assertFalse(diff.isInterested(""));
-    assertFalse(diff.isInterested(" a\n" +
+    assertFalse(Diff.isInterested());
+    assertFalse(Diff.isInterested(""));
+    assertFalse(Diff.isInterested(" a\n" +
                                   " b\n" +
                                   " c"));
-    assertFalse(diff.isInterested("- abc\n" +
+    assertFalse(Diff.isInterested("- abc\n" +
                                   "+ abc"));
-    assertTrue(diff.isInterested("- a\n" +
+    assertTrue(Diff.isInterested("- a\n" +
                                  "+ b\n" +
                                  "+ c"));
-    assertTrue(diff.isInterested("- abc\n" +
+    assertTrue(Diff.isInterested("- abc\n" +
                                  "+ abc\n" +
                                  "  xyz"));
-    assertTrue(diff.isInterested("- abc def ghi xyz\n" +
+    assertTrue(Diff.isInterested("- abc def ghi xyz\n" +
                                  "?     ^^^\n" +
                                  "+ abc DEF ghi xyz\n" +
                                  "?     ^^^"));
-    assertTrue(diff.isInterested("  a\n" +
+    assertTrue(Diff.isInterested("  a\n" +
                                  "- abc def ghi xyz\n" +
                                  "?     ^^^\n" +
                                  "+ abc DEF ghi xyz\n" +
                                  "?     ^^^"));
 
-    assertFalse(diff.isInterested("- 23456789" +
+    assertFalse(Diff.isInterested("- 23456789" +
                                   "1123456789" +
                                   "2123456789" +
                                   "3123456789" +
@@ -48,7 +49,7 @@ function testIsInterested()
                                   "5123456789" +
                                   "6123456789" +
                                   "712345678"));
-    assertTrue(diff.isInterested("- 23456789" +
+    assertTrue(Diff.isInterested("- 23456789" +
                                  "1123456789" +
                                  "2123456789" +
                                  "3123456789" +
@@ -68,15 +69,15 @@ function testIsInterested()
 
 function testReadableEmpty()
 {
-    assertEquals("", diff.readable("", ""));
-    assertEquals("", diff.readable("", "", true));
+    assertEquals("", Diff.readable("", ""));
+    assertEquals("", Diff.readable("", "", true));
 }
 
 function testNeedFold()
 {
-    assertFalse(diff.needFold());
-    assertFalse(diff.needFold(""));
-    assertFalse(diff.needFold("0123456789" +
+    assertFalse(Diff.needFold());
+    assertFalse(Diff.needFold(""));
+    assertFalse(Diff.needFold("0123456789" +
                               "1123456789" +
                               "2123456789" +
                               "3123456789" +
@@ -85,7 +86,7 @@ function testNeedFold()
                               "6123456789" +
                               "7123456789"));
 
-    assertFalse(diff.needFold("- 23456789" +
+    assertFalse(Diff.needFold("- 23456789" +
                               "1123456789" +
                               "2123456789" +
                               "3123456789" +
@@ -93,7 +94,7 @@ function testNeedFold()
                               "5123456789" +
                               "6123456789" +
                               "712345678"));
-    assertFalse(diff.needFold("+ 23456789" +
+    assertFalse(Diff.needFold("+ 23456789" +
                               "1123456789" +
                               "2123456789" +
                               "3123456789" +
@@ -102,7 +103,7 @@ function testNeedFold()
                               "6123456789" +
                               "712345678"));
 
-    assertTrue(diff.needFold("- 23456789" +
+    assertTrue(Diff.needFold("- 23456789" +
                              "1123456789" +
                              "2123456789" +
                              "3123456789" +
@@ -110,7 +111,7 @@ function testNeedFold()
                              "5123456789" +
                              "6123456789" +
                              "7123456789"));
-    assertTrue(diff.needFold("+ 23456789" +
+    assertTrue(Diff.needFold("+ 23456789" +
                              "1123456789" +
                              "2123456789" +
                              "3123456789" +
@@ -119,7 +120,7 @@ function testNeedFold()
                              "6123456789" +
                              "7123456789"));
 
-    assertTrue(diff.needFold("\n" +
+    assertTrue(Diff.needFold("\n" +
                              "+ 23456789" +
                              "1123456789" +
                              "2123456789" +
@@ -143,7 +144,7 @@ function testFold()
                  "71234567\n" +
                  "89" +
                  "8123456789",
-                 diff._fold("0123456789" +
+                 Diff._fold("0123456789" +
                             "1123456789" +
                             "2123456789" +
                             "3123456789" +
@@ -176,7 +177,7 @@ function testFoldedReadable()
                  "?  ^^^^^^^^^\n" +
                  "  89" +
                  "8123456789",
-                 diff.foldedReadable("0123456789" +
+                 Diff.foldedReadable("0123456789" +
                                      "1123456789" +
                                      "2123456789" +
                                      "3123456789" +
@@ -217,7 +218,7 @@ function testFoldedReadable()
                      '8123456789'+
                    '</span>'+
                  '</span>',
-                 diff.foldedReadable("0123456789" +
+                 Diff.foldedReadable("0123456789" +
                                      "1123456789" +
                                      "2123456789" +
                                      "3123456789" +

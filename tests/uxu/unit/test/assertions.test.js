@@ -8,13 +8,15 @@ var test_module = new ModuleManager([topDir+'content/uxu/test']);
 var Assertions = test_module.require('class', 'assertions');
 
 var assertionsModule;
-var diff;
+var Diff;
 
 function setUp()
 {
 	assertionsModule = new Assertions();
-	diff = {};
-	utils.include(topDir+'content/uxu/lib/diff.js', diff);
+
+    var ns = {};
+    utils.include(topDir+'modules/diff.js', ns);
+    Diff = ns.Diff;
 }
 
 function tearDown()
@@ -1049,8 +1051,8 @@ function test_fail()
 	assert.equals('1aaaaaaaaaa', exception.actualRaw);
 	assert.equals(2, exception.expected);
 	assert.equals(3, exception.actual);
-	assert.equals(diff.readable('0aaaaaaaaaa', '1aaaaaaaaaa'), exception.diff);
-	assert.equals(diff.foldedReadable('0aaaaaaaaaa', '1aaaaaaaaaa'), exception.foldedDiff);
+	assert.equals(Diff.readable('0aaaaaaaaaa', '1aaaaaaaaaa'), exception.diff);
+	assert.equals(Diff.foldedReadable('0aaaaaaaaaa', '1aaaaaaaaaa'), exception.foldedDiff);
 	assert.equals('6\n5\n4', exception.message);
 }
 

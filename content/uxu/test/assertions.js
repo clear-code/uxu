@@ -21,10 +21,11 @@ var Ci = Components.interfaces;
 
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var utils = lib_module.require('package', 'utils');
-var diff = lib_module.require('package', 'diff');
 
 var ns = {};
 Components.utils.import('resource://uxu-modules/stringBundle.js', ns);
+Components.utils.import('resource://uxu-modules/diff.js', ns);
+
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 var inherits = lib_module.require('class', 'event_target');
@@ -835,16 +836,16 @@ function fail()
 	error.expected = results.expected;
 	error.actual = results.actual;
 	if ('expectedRaw' in results && 'actualRaw' in results) {
-		var _diff = diff.readable(error.expectedRaw, error.actualRaw);
-		if (diff.isInterested(_diff)) {
+		var _diff = ns.Diff.readable(error.expectedRaw, error.actualRaw);
+		if (ns.Diff.isInterested(_diff)) {
 			error.diff = _diff;
-			if (diff.needFold(_diff)) {
-				error.foldedDiff = diff.foldedReadable(error.expectedRaw,
-													   error.actualRaw);
+			if (ns.Diff.needFold(_diff)) {
+				error.foldedDiff = ns.Diff.foldedReadable(error.expectedRaw,
+													      error.actualRaw);
 			}
-			error.encodedDiff = diff.readable(error.expectedRaw,
-											  error.actualRaw,
-											  true);
+			error.encodedDiff = ns.Diff.readable(error.expectedRaw,
+											     error.actualRaw,
+											     true);
 		}
 	}
 	if (!('diff' in error)) error.diff = '';
