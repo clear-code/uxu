@@ -5,6 +5,10 @@ var isWindows = navigator.platform.toLowerCase().indexOf('win32') > -1;
 var topDir = baseURL+'../../../../';
 var utilsModule;
 
+var ns = {};
+Components.utils.import('resource://uxu-modules/stringBundle.js', ns);
+var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
+
 function clearWindowsRegistryKey(aRoot, aPath)
 {
 	try {
@@ -202,8 +206,6 @@ function test_getWindowsResigtory()
 	);
 }
 
-var bundle = {};
-utils.include(topDir+'content/uxu/lib/bundle.js', bundle);
 var testData = [
 		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-string',
 		  value    : 'string' },

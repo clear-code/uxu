@@ -2,8 +2,9 @@
 
 utils.include('utils_common.inc.js');
 
-var bundle = {};
-utils.include(topDir+'content/uxu/lib/bundle.js', bundle);
+var ns = {};
+Components.utils.import('resource://uxu-modules/stringBundle.js', ns);
+var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 
 test_formatError.priority = 'never';

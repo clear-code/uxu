@@ -2,6 +2,10 @@
 
 utils.include('utils_common.inc.js');
 
+var ns = {};
+Components.utils.import('resource://uxu-modules/stringBundle.js', ns);
+var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
+
 var testDir;
 function tearDown()
 {
@@ -265,8 +269,6 @@ function test_cosmeticClone_folder()
 	);
 }
 
-var bundle;
-utils.include(topDir+'content/uxu/lib/bundle.js', bundle);
 test_cosmeticClone_invalidInput.parameters = {
 	notExistOrignal : function() {
 		var orig = tempDir.clone();

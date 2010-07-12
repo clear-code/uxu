@@ -1,4 +1,4 @@
-utils.include('../../../../components/GlobalService.js');
+utils.include({ url : '../../../../components/GlobalService.js', allowOverrideConstants : true });
 
 var service;
 

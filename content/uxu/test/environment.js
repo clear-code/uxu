@@ -741,14 +741,13 @@ function getBoxObjectFor(aNode)
 	if ('getBoxObjectFor' in aNode.ownerDocument)
 		return aNode.ownerDocument.getBoxObjectFor(aNode);
 
-	if (!('window' in _boxObjectModule)) {
+	if (!('boxObject' in _boxObjectModule)) {
 		Components.utils.import(
 			'resource://uxu-modules/boxObject.js',
 			_boxObjectModule
 		);
 	}
 	return _boxObjectModule
-				.window['piro.sakura.ne.jp']
 				.boxObject
 				.getBoxObjectFor(aNode);
 }
