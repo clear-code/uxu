@@ -66,7 +66,7 @@ if (typeof namespace == 'undefined') {
 			
 		UTF8ToUnicode : function(aInput) 
 		{
-			return UTF8ToUCS2(aInput);
+			return this.UTF8ToUCS2(aInput);
 		},
 		  
 		UCS2ToUTF8 : function(aInput) 
@@ -76,12 +76,12 @@ if (typeof namespace == 'undefined') {
 			
 		UnicodeToUTF8 : function(aInput) 
 		{
-			return UCS2ToUTF8(aInput);
+			return this.UCS2ToUTF8(aInput);
 		},
 		  
 		XToUCS2 : function(aInput, aEncoding) 
 		{
-			if (aEncoding == 'UTF-8') return UTF8ToUnicode(aInput);
+			if (aEncoding == 'UTF-8') return this.UTF8ToUnicode(aInput);
 			try {
 				UCONV.charset = aEncoding;
 				return UCONV.ConvertToUnicode(aInput);
@@ -93,12 +93,12 @@ if (typeof namespace == 'undefined') {
 			
 		XToUnicode : function(aInput, aEncoding) 
 		{
-			return XToUCS2(aInput, aEncoding);
+			return this.XToUCS2(aInput, aEncoding);
 		},
 		  
 		UCS2ToX : function(aInput, aEncoding) 
 		{
-			if (aEncoding == 'UTF-8') return UnicodeToUTF8(aInput);
+			if (aEncoding == 'UTF-8') return this.UnicodeToUTF8(aInput);
 
 			try {
 				UCONV.charset = aEncoding;
@@ -111,7 +111,7 @@ if (typeof namespace == 'undefined') {
 			
 		UnicodeToX : function(aInput, aEncoding) 
 		{
-			return UCS2ToX(aInput, aEncoding);
+			return this.UCS2ToX(aInput, aEncoding);
 		},
 
 		export : function(aNamespace)
