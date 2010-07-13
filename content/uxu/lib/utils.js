@@ -9,7 +9,7 @@ var prefread = lib_module.require('package', 'prefread');
 var ns = {};
 Components.utils.import('resource://uxu-modules/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/prefs.js', ns);
-Components.utils.import('resource://uxu-modules/encoding.js', ns);
+Components.utils.import('resource://uxu-modules/encoding.jsm', ns);
 
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 ns.encoding.export(this);

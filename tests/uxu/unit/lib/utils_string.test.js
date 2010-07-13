@@ -24,15 +24,14 @@ function test_makeStackLine()
 
 function test_convertEncoding()
 {
-	var utf8String = utilsModule.readFrom('../../fixtures/utf8.txt');
-	var ucs2String = utilsModule.readFrom('../../fixtures/utf8.txt', 'UTF-8');
+	var utf8String = atob('5pel5pys6Kqe');
+	var sjisString = atob('k/qWe4zq');
+	var ucs2String = decodeURIComponent(escape(utf8String));
 
 	assert.equals(ucs2String, UTF8ToUnicode(utf8String));
 	assert.equals(ucs2String, UTF8ToUCS2(utf8String));
 	assert.equals(utf8String, UnicodeToUTF8(ucs2String));
 	assert.equals(utf8String, UCS2ToUTF8(ucs2String));
-
-	var sjisString = utilsModule.readFrom('../../fixtures/shift_jis.txt');
 
 	assert.equals('日本語', XToUnicode(sjisString, 'Shift_JIS'));
 	assert.equals('日本語', XToUCS2(sjisString, 'Shift_JIS'));

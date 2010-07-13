@@ -2,29 +2,24 @@
  String Encoding Converter Library for Firefox 3.5 or later
 
  Usage:
-   Components.utils.import('resource://my-modules/encoding.js');
-   var utf8 = UCS2ToUTF8('source string (Unicode, UCS-2');
-   var ucs2 = UTF8ToUCS2(utf8);
-   var sjis = UCS2ToX(ucs2, 'Shift_JIS');
-   var euc  = UCS2ToX(ucs2, 'EUC-JP');
-   ucs2 = XToUCS2(sjis, 'Shift_JIS');
+   Components.utils.import('resource://my-modules/encoding.jsm');
+   var utf8 = encoding.UCS2ToUTF8('source string (Unicode, UCS-2');
+   var ucs2 = encoding.UTF8ToUCS2(utf8);
+   var sjis = encoding.UCS2ToX(ucs2, 'Shift_JIS');
+   var euc  = encoding.UCS2ToX(ucs2, 'EUC-JP');
+   ucs2     = encoding.XToUCS2(sjis, 'Shift_JIS');
+   encoding.export(this);
 
  lisence: The MIT License, Copyright (c) 2010 ClearCode Inc.
    http://www.clear-code.com/repos/svn/js-codemodules/license.txt
  original:
-   http://www.clear-code.com/repos/svn/js-codemodules/encoding.js
+   http://www.clear-code.com/repos/svn/js-codemodules/encoding.jsm
    http://www.clear-code.com/repos/svn/js-codemodules/encoding.test.js
 */
 
 
 if (typeof window == 'undefined')
-	this.EXPORTED_SYMBOLS = [
-			'encoding',
-			'UTF8ToUCS2', 'UTF8ToUnicode',
-			'UCS2ToUTF8', 'UnicodeToUTF8',
-			'XToUCS2', 'XToUnicode',
-			'UCS2ToX', 'UnicodeToX'
-		];
+	this.EXPORTED_SYMBOLS = ['encoding'];
 
 // var namespace;
 if (typeof namespace == 'undefined') {
@@ -116,6 +111,11 @@ if (typeof namespace == 'undefined') {
 
 		export : function(aNamespace)
 		{
+			if (!aNamespace)
+				aNamespace = (function() { return this; })();
+			if (!aNamespace)
+				return;
+
 			var self = this;
 			'UTF8ToUCS2,UTF8ToUnicode,UCS2ToUTF8,UnicodeToUTF8,XToUCS2,XToUnicode,UCS2ToX,UnicodeToX'
 				.split(',')
