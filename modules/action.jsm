@@ -3,6 +3,9 @@
 
  Usage:
    Components.utils.import('resource://my-modules/action.jsm');
+   action.clickOn(someDOMElement);
+   // See: http://www.clear-code.com/software/uxu/helpers.html.en#actions
+   // (ja: http://www.clear-code.com/software/uxu/helpers.html#actions )
 
  lisence: The MIT License, Copyright (c) 2010 ClearCode Inc.
    http://www.clear-code.com/repos/svn/js-codemodules/license.txt
