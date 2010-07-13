@@ -12,8 +12,8 @@
  lisence: The MIT License, Copyright (c) 2010 ClearCode Inc.
    http://www.clear-code.com/repos/svn/js-codemodules/license.txt
  original:
-   http://www.clear-code.com/repos/svn/js-codemodules/uconv.js
-   http://www.clear-code.com/repos/svn/js-codemodules/uconv.test.js
+   http://www.clear-code.com/repos/svn/js-codemodules/encoding.js
+   http://www.clear-code.com/repos/svn/js-codemodules/encoding.test.js
 */
 
 
@@ -116,14 +116,14 @@ if (typeof namespace == 'undefined') {
 
 		export : function(aNamespace)
 		{
-			aNamespace.UTF8ToUCS2    = this.UTF8ToUCS2;
-			aNamespace.UTF8ToUnicode = this.UTF8ToUnicode;
-			aNamespace.UCS2ToUTF8    = this.UCS2ToUTF8;
-			aNamespace.UnicodeToUTF8 = this.UnicodeToUTF8;
-			aNamespace.XToUCS2       = this.XToUCS2;
-			aNamespace.XToUnicode    = this.XToUnicode;
-			aNamespace.UCS2ToX       = this.UCS2ToX;
-			aNamespace.UnicodeToX    = this.UnicodeToX;
+			var self = this;
+			'UTF8ToUCS2,UTF8ToUnicode,UCS2ToUTF8,UnicodeToUTF8,XToUCS2,XToUnicode,UCS2ToX,UnicodeToX'
+				.split(',')
+				.forEach(function(aSymbol) {
+					aNamespace[aSymbol] = function() {
+						return self[aSymbol].apply(self, arguments);
+					};
+				});
 		}
 	};
 
