@@ -202,8 +202,6 @@ GlobalService.prototype = {
 				char extensions.uxu.priority.normal
 				char extensions.uxu.priority.low
 				bool extensions.uxu.warnOnNoAssertion
-				bool extensions.uxu.action.fireMouseEvent.useOldMethod
-				bool extensions.uxu.action.fireKeyEvent.useOldMethod
 				char extensions.uxu.runner.runMode
 				bool extensions.uxu.runner.runParallel
 				bool extensions.uxu.runner.autoShowContent

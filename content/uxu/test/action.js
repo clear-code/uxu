@@ -10,8 +10,6 @@ var Prefs = Components.classes['@mozilla.org/preferences;1']
 function constructor(aEnvironment) 
 {
 	this.utils = aEnvironment;
-	this.shouldEmulateMouseEvent = Prefs.getBoolPref('extensions.uxu.action.fireMouseEvent.useOldMethod');
-	this.shouldEmulateKeyEvent = Prefs.getBoolPref('extensions.uxu.action.fireKeyEvent.useOldMethod');
 	this.readiedActionListeners = [];
 }
 	
@@ -366,14 +364,11 @@ function fireMouseEvent(aWindow, aOptions)
 		!(win instanceof Ci.nsIDOMWindow))
 		throw new Error('action.fireMouseEvent::there is no frame at ['+screenX+', '+screenY+']!');
 
-	var utils = this._getWindowUtils(win);
 	var node = this.getElementFromScreenPoint(aWindow, screenX, screenY);
 
-	if (
-		'sendMouseEvent' in utils &&
-		!this.shouldEmulateMouseEvent &&
-		!this._getOwnerPopup(node)
-		) {
+	if (!this._getOwnerPopup(node)) {
+		var utils = this._getWindowUtils(win);
+
 		const nsIDOMNSEvent = Ci.nsIDOMNSEvent;
 		var flags = 0;
 		if (aOptions.ctrlKey) flags |= nsIDOMNSEvent.CONTROL_MASK;
@@ -411,12 +406,15 @@ function fireMouseEvent(aWindow, aOptions)
 		return;
 	}
 
+	// DOMWindowUtils.sendMouseEvent() fails to send events in popups, so I emulate it manually.
+
 	if (node) {
 		this.fireMouseEventOnElement(node, aOptions);
 		this._emulateClickOnXULElement(node, aOptions);
 	}
-	else
+	else {
 		throw new Error('action.fireMouseEvent::there is no element at ['+x+','+y+']!');
+	}
 };
 	
 function _emulateClickOnXULElement(aElement, aOptions) 
@@ -448,15 +446,13 @@ function fireMouseEventOnElement(aElement, aOptions)
 
 	var utils = this._getWindowUtils(aElement.ownerDocument.defaultView);
 	if (!aOptions) aOptions = { type : 'click' };
-	if (
-		'sendMouseEvent' in utils &&
-		!this.shouldEmulateMouseEvent &&
-		!this._getOwnerPopup(aElement)
-		) {
+	if (!this._getOwnerPopup(aElement)) {
 		this._updateMouseEventOptionsOnElement(aOptions, aElement);
 		this.fireMouseEvent(aElement.ownerDocument.defaultView, aOptions);
 		return;
 	}
+
+	// DOMWindowUtils.sendMouseEvent() fails to send events in popups, so I emulate it manually.
 
 	var detail = 1;
 	var options, event;
@@ -836,22 +832,23 @@ function fireKeyEventOnElement(aElement, aOptions)
 		aElement = aElement.inputField;
 
 	var doc = this._getDocumentFromEventTarget(aElement);
-	var utils = this._getWindowUtils(doc.defaultView);
-	if ('sendKeyEvent' in utils &&
-		!this.shouldEmulateKeyEvent) {
-		const nsIDOMNSEvent = Ci.nsIDOMNSEvent;
-		var flags = 0;
-		if (aOptions.ctrlKey) flags |= nsIDOMNSEvent.CONTROL_MASK;
-		if (aOptions.altKey) flags |= nsIDOMNSEvent.ALT_MASK;
-		if (aOptions.shiftKey) flags |= nsIDOMNSEvent.SHIFT_MASK;
-		if (aOptions.metaKey) flags |= nsIDOMNSEvent.META_MASK;
 
-		var keyCode = ('keyCode' in aOptions ? aOptions.keyCode : 0 );
-		var charCode = ('charCode' in aOptions ? aOptions.charCode : 0 );
-		utils.focus(aElement);
-		utils.sendKeyEvent((aOptions.type || 'keypress'), keyCode, charCode, flags);
-		return;
-	}
+// nsIDOMWindowUtils.sendKeyEvent() doesn't emulate events fired by user's actual operations.
+// So, I don't use it, and I have to emulate events manually.
+
+//	var utils = this._getWindowUtils(doc.defaultView);
+//
+//	const nsIDOMNSEvent = Ci.nsIDOMNSEvent;
+//	var flags = 0;
+//	if (aOptions.ctrlKey) flags |= nsIDOMNSEvent.CONTROL_MASK;
+//	if (aOptions.altKey) flags |= nsIDOMNSEvent.ALT_MASK;
+//	if (aOptions.shiftKey) flags |= nsIDOMNSEvent.SHIFT_MASK;
+//	if (aOptions.metaKey) flags |= nsIDOMNSEvent.META_MASK;
+//
+//	var keyCode = ('keyCode' in aOptions ? aOptions.keyCode : 0 );
+//	var charCode = ('charCode' in aOptions ? aOptions.charCode : 0 );
+//	utils.focus(aElement);
+//	utils.sendKeyEvent(aOptions.type || 'keypress', keyCode, charCode, flags);
 
 	switch (aOptions.type)
 	{
