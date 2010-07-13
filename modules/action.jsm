@@ -1484,7 +1484,7 @@ if (typeof namespace == 'undefined') {
 				return;
 
 			var self = this;
-			_exportedSymbols.forEach(function(aSymbol) {
+			this._exportedSymbols.forEach(function(aSymbol) {
 				aNamespace[aSymbol] = function() {
 					return self[aSymbol].apply(self, arguments);
 				};
