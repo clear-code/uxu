@@ -4,7 +4,7 @@
  Usage:
    Components.utils.import('resource://my-modules/ejs.jsm');
    var source = 'Happy new year <%= (new Date()).getFullYear() %>!';
-   var result = (new EJS(source)).result;
+   var result = (new EJS(source)).result();
    // Just same to EJS.result(source);
 
  lisence: The MIT License, Copyright (c) 2010 ClearCode Inc.
