@@ -11,7 +11,7 @@ var GMUtils;
 
 function setUp()
 {
-	utils.setPref('browser.tabs.maxOpenBeforeWarn', false);
+	utils.setPref('browser.tabs.maxOpenBeforeWarn', 9999);
 	utils.setPref('browser.tabs.warnOnClose', false);
 	utils.setPref('browser.tabs.warnOnOpen', false);
 	utils.setPref('browser.warnOnQuit', false);
