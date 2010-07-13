@@ -8,12 +8,15 @@ var prefread = lib_module.require('package', 'prefread');
 
 var ns = {};
 Components.utils.import('resource://uxu-modules/stringBundle.js', ns);
+Components.utils.import('resource://uxu-modules/prefs.js', ns);
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
+
+Components.utils.import('resource://uxu-modules/uconv.js', this);
 
 var IOService = Cc['@mozilla.org/network/io-service;1']
 		.getService(Ci.nsIIOService);
 	
-function constructor()
+function constructor() 
 {
 }
  
@@ -192,7 +195,7 @@ function wait(aWaitCondition)
 	}
 
 	var lastRun = Date.now();
-	var timeout = Math.max(0, getPref('extensions.uxu.run.timeout'));
+	var timeout = Math.max(0, this.getPref('extensions.uxu.run.timeout'));
 	var thread = Cc['@mozilla.org/thread-manager;1'].getService().mainThread;
 	while (!finished.value)
 	{
@@ -770,7 +773,7 @@ function normalizeError(e)
 function formatError(e) 
 {
 	var lines = formatStackTrace(e, { onlyFile : true, onlyExternal : true, onlyTraceLine : true });
-	if (!lines || utils.getPref('extensions.uxu.showInternalStacks'))
+	if (!lines || this.getPref('extensions.uxu.showInternalStacks'))
 		lines = formatStackTrace(e, { onlyFile : true, onlyTraceLine : true });
 	return e.toString() + '\n' + lines;
 }
@@ -786,7 +789,7 @@ function formatStackTraceForDisplay(aException)
 	var lines = formatStackTrace(aException, { onlyTraceLine : true, onlyExternal : true }).split('\n');
 	if (!lines.length ||
 		(lines.length == 1 && !lines[0]) ||
-		utils.getPref('extensions.uxu.showInternalStacks'))
+		this.getPref('extensions.uxu.showInternalStacks'))
 		lines = formatStackTrace(aException, { onlyTraceLine : true }).split('\n');
 	lines = lines.filter(function(aLine) {
 		return aLine;
@@ -904,75 +907,25 @@ function unformatStackLine(aLine)
 }
    
 // 設定読み書き 
-var Pref = Cc['@mozilla.org/preferences;1']
-		.getService(Ci.nsIPrefBranch)
-		.QueryInterface(Ci.nsIPrefBranch2);
-
 var backupPrefs = {};
 	
 function getPref(aKey) 
 {
-	try {
-		switch (Pref.getPrefType(aKey))
-		{
-			case Pref.PREF_STRING:
-				return UTF8ToUnicode(Pref.getCharPref(aKey));
-				break;
-			case Pref.PREF_INT:
-				return Pref.getIntPref(aKey);
-				break;
-			default:
-				return Pref.getBoolPref(aKey);
-				break;
-		}
-	}
-	catch(e) {
-	}
-	return null;
+	return ns.prefs.getPref(aKey);
 }
  
 function setPref(aKey, aValue) 
 {
-	var type;
-	try {
-		type = typeof aValue;
-	}
-	catch(e) {
-		type = null;
-	}
-
 	if (!(aKey in this.backupPrefs))
 		this.backupPrefs[aKey] = this.getPref(aKey);
-
-	try {
-		switch (type)
-		{
-			case 'string':
-				Pref.setCharPref(aKey, UnicodeToUTF8(aValue));
-				break;
-			case 'number':
-				Pref.setIntPref(aKey, parseInt(aValue));
-				break;
-			default:
-				Pref.setBoolPref(aKey, aValue);
-				break;
-		}
-	}
-	catch(e) {
-		dump('Fail to set pref.\n'+e+'\n');
-	}
-	return aValue;
+	return ns.prefs.setPref(aKey, aValue);
 }
  
 function clearPref(aKey) 
 {
 	if (!(aKey in this.backupPrefs))
 		this.backupPrefs[aKey] = this.getPref(aKey);
-	try {
-		Pref.clearUserPref(aKey);
-	}
-	catch(e) {
-	}
+	ns.prefs.clearPref(aKey);
 }
  
 function loadPrefs(aFile, aHash) 
@@ -1349,65 +1302,6 @@ function setClipBoard(aString)
 		.copyString(aString);
 }
   
-// エンコーディング変換 
-var UCONV = Cc['@mozilla.org/intl/scriptableunicodeconverter']
-		.getService(Ci.nsIScriptableUnicodeConverter);
-	
-function UTF8ToUCS2(aInput) 
-{
-	return decodeURIComponent(escape(aInput));
-}
-	
-function UTF8ToUnicode(aInput) 
-{
-	return UTF8ToUCS2(aInput);
-}
-  
-function UCS2ToUTF8(aInput) 
-{
-	return unescape(encodeURIComponent(aInput));
-}
-	
-function UnicodeToUTF8(aInput) 
-{
-	return UCS2ToUTF8(aInput);
-}
-  
-function XToUCS2(aInput, aEncoding) 
-{
-	if (aEncoding == 'UTF-8') return UTF8ToUnicode(aInput);
-	try {
-		UCONV.charset = aEncoding;
-		return UCONV.ConvertToUnicode(aInput);
-	}
-	catch(e) {
-	}
-	return aInput;
-}
-	
-function XToUnicode(aInput, aEncoding) 
-{
-	return XToUCS2(aInput, aEncoding);
-}
-  
-function UCS2ToX(aInput, aEncoding) 
-{
-	if (aEncoding == 'UTF-8') return UnicodeToUTF8(aInput);
-
-	try {
-		UCONV.charset = aEncoding;
-		return UCONV.ConvertFromUnicode(aInput);
-	}
-	catch(e) {
-	}
-	return aInput;
-}
-	
-function UnicodeToX(aInput, aEncoding) 
-{
-	return UCS2ToX(aInput, aEncoding);
-}
-   
 function fixupIncompleteURI(aURIOrPart) 
 {
 	if (!this.baseURL ||
