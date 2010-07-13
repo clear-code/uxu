@@ -5,7 +5,10 @@ const EXPORTED_SYMBOLS = [
 			'UCS2ToX', 'UnicodeToX'
 		];
 
-var UCONV = Cc['@mozilla.org/intl/scriptableunicodeconverter']
+const Cc = Components.classes;
+const Ci = Components.interfaces;
+
+const UCONV = Cc['@mozilla.org/intl/scriptableunicodeconverter']
 		.getService(Ci.nsIScriptableUnicodeConverter);
 	
 function UTF8ToUCS2(aInput) 
