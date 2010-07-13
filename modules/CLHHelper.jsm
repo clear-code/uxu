@@ -36,7 +36,7 @@ if (typeof namespace == 'undefined') {
 		namespace = ns.getNamespaceFor('clear-code.com');
 	}
 	catch(e) {
-		namespace = window || {};
+		namespace = (typeof window != 'undefined' ? window : null ) || {};
 	}
 }
 

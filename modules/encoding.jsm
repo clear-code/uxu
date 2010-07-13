@@ -31,7 +31,7 @@ if (typeof namespace == 'undefined') {
 		namespace = ns.getNamespaceFor('clear-code.com');
 	}
 	catch(e) {
-		namespace = window || {};
+		namespace = (typeof window != 'undefined' ? window : null ) || {};
 	}
 }
 
@@ -48,11 +48,14 @@ if (typeof namespace == 'undefined') {
 	const Cc = Components.classes;
 	const Ci = Components.interfaces;
 
-	const UCONV = Cc['@mozilla.org/intl/scriptableunicodeconverter']
-			.getService(Ci.nsIScriptableUnicodeConverter);
-
 	namespace.encoding = {
 		revision : currentRevision,
+
+		get UCONV()
+		{
+			delete this.UCONV;
+			return this.UCONV = Cc['@mozilla.org/intl/scriptableunicodeconverter'].getService(Ci.nsIScriptableUnicodeConverter);
+		},
 
 		UTF8ToUCS2 : function(aInput) 
 		{
@@ -78,8 +81,8 @@ if (typeof namespace == 'undefined') {
 		{
 			if (aEncoding == 'UTF-8') return this.UTF8ToUnicode(aInput);
 			try {
-				UCONV.charset = aEncoding;
-				return UCONV.ConvertToUnicode(aInput);
+				this.UCONV.charset = aEncoding;
+				return this.UCONV.ConvertToUnicode(aInput);
 			}
 			catch(e) {
 			}
@@ -96,8 +99,8 @@ if (typeof namespace == 'undefined') {
 			if (aEncoding == 'UTF-8') return this.UnicodeToUTF8(aInput);
 
 			try {
-				UCONV.charset = aEncoding;
-				return UCONV.ConvertFromUnicode(aInput);
+				this.UCONV.charset = aEncoding;
+				return this.UCONV.ConvertFromUnicode(aInput);
 			}
 			catch(e) {
 			}

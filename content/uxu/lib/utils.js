@@ -11,9 +11,11 @@ Components.utils.import('resource://uxu-modules/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/prefs.js', ns);
 Components.utils.import('resource://uxu-modules/encoding.jsm', ns);
 Components.utils.import('resource://uxu-modules/ejs.jsm', ns);
+Components.utils.import('resource://uxu-modules/hash.jsm', ns);
 
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 ns.encoding.export(this);
+ns.hash.export(this);
 
 var IOService = Cc['@mozilla.org/network/io-service;1']
 		.getService(Ci.nsIIOService);
@@ -2041,45 +2043,18 @@ function processTemplate(aCode, aScope) {
 };
 var parseTemplate = processTemplate;
  
-var hasher = Cc['@mozilla.org/security/hash;1'] 
-		.createInstance(Ci.nsICryptoHash);
- 
 function computeHash(aData, aHashAlgorithm) 
 {
-	var algorithm = String(aHashAlgorithm).toUpperCase().replace('-', '');
-	if (algorithm in hasher) {
-		hasher.init(hasher[algorithm])
+	try {
+		return ns.hash.computeHash(aData, aHashAlgorithm);
 	}
-	else {
-		throw new Error(bundle.getFormattedString('error_utils_unknown_hash_algorithm', [aHashAlgorithm]));
+	catch(e) {
+		if (e.message.indexOf('unknown hash algorithm: ') == 0)
+			throw new Error(bundle.getFormattedString('error_utils_unknown_hash_algorithm', [aHashAlgorithm]));
+		else
+			throw e;
 	}
-
-	if (aData instanceof Ci.nsIFile) {
-		var stream = Cc['@mozilla.org/network/file-input-stream;1']
-						.createInstance(Ci.nsIFileInputStream);
-		stream.init(aData, 0x01, 0444, 0);
-		const PR_UINT32_MAX = 0xffffffff;
-		hasher.updateFromStream(stream, PR_UINT32_MAX);
-	}
-	else {
-		var array = aData.split('').map(function(aChar) {
-						return aChar.charCodeAt(0);
-					});
-		hasher.update(array, array.length);
-	}
-	return hasher.finish(false)
-		.split('')
-		.map(function(aChar) {
-			return ('0' + aChar.charCodeAt(0).toString(16)).slice(-2);
-		}).join('').toUpperCase();
 }
- 
-function md2(aData) { return computeHash(aData, 'md2'); } 
-function md5(aData) { return computeHash(aData, 'md5'); }
-function sha1(aData) { return computeHash(aData, 'sha1'); }
-function sha256(aData) { return computeHash(aData, 'sha256'); }
-function sha384(aData) { return computeHash(aData, 'sha384'); }
-function sha512(aData) { return computeHash(aData, 'sha512'); }
  
 function computeHashFromFile(aFile, aHashAlgorithm) 
 {

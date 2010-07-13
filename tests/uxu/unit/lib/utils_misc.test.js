@@ -631,7 +631,7 @@ function test_isDate()
 	assert.isFalse(utilsModule.isDate(isDateTestWindow.testUndefined));
 }
 
-function test_hash()
+function test_computeHash()
 {
 	function assertHash(aExpected, aSource, aAlgorithm)
 	{
@@ -653,7 +653,7 @@ function test_hash()
 	           'hello world', 'sha512');
 }
 
-function test_hashFromFile()
+function test_computeHashFromFile()
 {
 	function assertHash(aExpected, aSource, aAlgorithm)
 	{
@@ -661,7 +661,7 @@ function test_hashFromFile()
 		assert.equals(aExpected, utilsModule[aAlgorithm+'FromFile'](aSource));
 	}
 
-	var source = utils.normalizeToFile('../../fixtures/hash.txt');
+	var source = '../../fixtures/hash.txt';
 	assertHash('4D8F010D437637D3D72E8D935A660757', source, 'md2');
 	assertHash('2609A2251E2A1A934A99539BA54D6E55', source, 'md5');
 	assertHash('7BD6E50A060F9D63CDD89082CC215025A800333E',
