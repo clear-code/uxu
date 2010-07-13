@@ -48,10 +48,7 @@ var PrefObserver = {
  
 }; 
  
-Cc['@mozilla.org/preferences;1'] 
-	.getService(Ci.nsIPrefBranch)
-	.QueryInterface(Ci.nsIPrefBranch2)
-	.addObserver('general.useragent', PrefObserver, false);
+Pref.addObserver('general.useragent', PrefObserver, false); 
   
 function ProtocolHandlerProxy() { 
 	this.initNonSecure();
