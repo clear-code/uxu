@@ -71,10 +71,6 @@ GlobalService.prototype = {
 				this.init();
 				return;
 
-			case 'nsPref:changed':
-				this.onPrefChange(aData)
-				return;
-
 			case 'uxu-profile-setup':
 				this.setUpUXUPrefs(aSubject.QueryInterface(Ci.nsILocalFile));
 				return;
@@ -116,7 +112,6 @@ GlobalService.prototype = {
 
 		Pref.setBoolPref(kUXU_TEST_RUNNING, false);
 
-		Pref.addObserver('general.useragent', this, false);
 		ObserverService.addObserver(this, 'uxu-profile-setup', false);
 		ObserverService.addObserver(this, 'uxu-start-runner-request', false);
 		ObserverService.addObserver(this, 'uxu-start-server-request', false);
@@ -150,27 +145,6 @@ GlobalService.prototype = {
 		}
 	},
  
-	onPrefChange : function(aPrefName) 
-	{
-		switch (aPrefName)
-		{
-			default:
-				if (aPrefName.indexOf('general.useragent.') > -1) {
-					this.timer = Cc['@mozilla.org/timer;1']
-									.createInstance(Ci.nsITimer);
-					this.timer.init({
-						self : this,
-						observe : function() {
-							ProtocolHandlerProxy.prototype.initProperties();
-							this.self.timer.cancel();
-							this.self.timer = null;
-						}
-					}, 100, Ci.nsITimer.TYPE_ONE_SHOT);
-				}
-				break;
-		}
-	},
-	
 	restart : function() 
 	{
 		const startup = Cc['@mozilla.org/toolkit/app-startup;1']
@@ -190,7 +164,7 @@ GlobalService.prototype = {
 			) == 0)
 			this.restart();
 	},
-  
+ 
 	get profileDirectory() 
 	{
 		if (!this._profileDirectory)

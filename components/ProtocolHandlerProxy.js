@@ -18,6 +18,41 @@ const Pref = Cc['@mozilla.org/preferences;1']
 const IOService = Cc['@mozilla.org/network/io-service;1']
 			.getService(Components.interfaces.nsIIOService);
  
+var PrefObserver = { 
+	
+	observe : function(aSubject, aTopic, aData) 
+	{
+		switch (aTopic)
+		{
+			case 'nsPref:changed':
+				this.onPrefChange(aData)
+				return;
+		}
+	},
+ 
+	onPrefChange : function(aPrefName) 
+	{
+		if (aPrefName.indexOf('general.useragent.') > -1) {
+			this.timer = Cc['@mozilla.org/timer;1']
+							.createInstance(Ci.nsITimer);
+			this.timer.init({
+				self : this,
+				observe : function() {
+					ProtocolHandlerProxy.prototype.initProperties();
+					this.self.timer.cancel();
+					this.self.timer = null;
+				}
+			}, 100, Ci.nsITimer.TYPE_ONE_SHOT);
+		}
+	}
+ 
+}; 
+ 
+Cc['@mozilla.org/preferences;1'] 
+	.getService(Ci.nsIPrefBranch)
+	.QueryInterface(Ci.nsIPrefBranch2)
+	.addObserver('general.useragent', PrefObserver, false);
+  
 function ProtocolHandlerProxy() { 
 	this.initNonSecure();
 }
@@ -176,13 +211,7 @@ ProtocolHandlerProxy.prototype = {
 		}
 	},
  
-	QueryInterface : function(aIID) 
-	{
-		if (Pref.getBoolPref(kUXU_TEST_RUNNING))
-			return this.QueryInterfaceInternal(aIID);
-		return this.mProtocolHandler.QueryInterface(aIID);
-	},
-	QueryInterfaceInternal : XPCOMUtils.generateQI([
+	QueryInterface : XPCOMUtils.generateQI([ 
 		Ci.nsIHttpProtocolHandler,
 		Ci.nsIProtocolHandler,
 		Ci.nsIProxiedProtocolHandler,
@@ -202,7 +231,7 @@ HttpProtocolHandlerProxy.prototype = {
 	contractID : '@mozilla.org/network/protocol;1?name=http',
 	classID : Components.ID('{3d04c1d0-4e6c-11de-8a39-0800200c9a66}'),
  
-	_xpcom_factory : {
+	_xpcom_factory : { 
 		createInstance: function(aOuter, aIID)
 		{
 			return (new HttpProtocolHandlerProxy()).QueryInterface(aIID);
@@ -222,7 +251,7 @@ HttpsProtocolHandlerProxy.prototype = {
 	contractID : '@mozilla.org/network/protocol;1?name=https',
 	classID : Components.ID('{b81efa50-4e7d-11de-8a39-0800200c9a66}'),
  
-	_xpcom_factory : {
+	_xpcom_factory : { 
 		createInstance: function(aOuter, aIID)
 		{
 			return (new HttpsProtocolHandlerProxy()).QueryInterface(aIID);

@@ -240,7 +240,7 @@ function handleEvent(aEvent)
 			this._cleanUpModifications(aEvent.target);
 			aEvent.target.removeListener(this);
 			if (this._current == this._testsCount) {
-				utils.setPref('extensions.uxu.running', false);
+				utils.setPref(RUNNING, false);
 				this.fireEvent('Finish');
 			}
 			break;
