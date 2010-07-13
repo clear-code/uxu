@@ -10,6 +10,7 @@ var ns = {};
 Components.utils.import('resource://uxu-modules/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/prefs.js', ns);
 Components.utils.import('resource://uxu-modules/encoding.jsm', ns);
+Components.utils.import('resource://uxu-modules/ejs.jsm', ns);
 
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 ns.encoding.export(this);
@@ -444,7 +445,7 @@ function writeTo(aContent, aTarget, aEncoding)
 function readCSV(aTarget, aEncoding, aScope, aDelimiter) 
 {
 	var input = this.readFrom(aTarget, aEncoding || this.getPref('extensions.uxu.defaultEncoding'));
-	if (aScope) input = this.processTemplate(input, aScope);
+	if (aScope) input = processTemplate(input, aScope);
 	return parseCSV(input, aDelimiter);
 }
  
@@ -472,7 +473,7 @@ var readParamFromTSV = readParametersFromTSV;
 function readJSON(aTarget, aEncoding, aScope) 
 {
 	var input = this.readFrom(aTarget, aEncoding || this.getPref('extensions.uxu.defaultEncoding'));
-	if (aScope) input = this.processTemplate(input, aScope);
+	if (aScope) input = processTemplate(input, aScope);
 	try {
 		input = evalInSandbox('('+input+')');
 	}
@@ -1577,7 +1578,7 @@ function createDatabaseFromSQLFile(aSQLFile, aEncoding, aScope)
 	catch(e) {
 		throw new Error(bundle.getFormattedString('error_utils_cannot_read_sql_file', [aSQLFile, e]));
 	}
-	if (aScope) input = this.processTemplate(sql, aScope);
+	if (aScope) input = processTemplate(sql, aScope);
 	return this.createDatabaseFromSQL(sql);
 }
   
@@ -2034,32 +2035,11 @@ function isTargetInSubTree(aTarget, aNode)
   
 // •¶Žš—ñˆ— 
 	
-function processTemplate(aCode, aScope) 
-{
-	var __processTemplate__codes = [];
-	aCode.split('%>').forEach(function(aPart) {
-		let strPart, codePart;
-		[strPart, codePart] = aPart.split('<%');
-		__processTemplate__codes.push('__processTemplate__results.push('+
-		                            strPart.toSource()+
-		                            ');');
-		if (!codePart) return;
-		if (codePart.charAt(0) == '=') {
-			__processTemplate__codes.push('__processTemplate__results.push(('+
-			                            codePart.substring(1)+
-			                            ') || "");');
-		}
-		else {
-			__processTemplate__codes.push(codePart);
-		}
-	});
-	var sandbox = new Components.utils.Sandbox(window);
-	sandbox.__proto__ = { __processTemplate__results : [] };
-	if (aScope) sandbox.__proto__.__proto__ = aScope;
-	Components.utils.evalInSandbox(__processTemplate__codes.join('\n'), sandbox);
-	return sandbox.__processTemplate__results.join('');
-}
-var parseTemplate = processTemplate; // for backward compatibility
+// for backward compatibility 
+function processTemplate(aCode, aScope) {
+	return ns.EJS.result(aCode, aScope);
+};
+var parseTemplate = processTemplate;
  
 var hasher = Cc['@mozilla.org/security/hash;1'] 
 		.createInstance(Ci.nsICryptoHash);
