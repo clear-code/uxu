@@ -1,4 +1,4 @@
-utils.include({ url : '../../../../components/GlobalService.js', allowOverrideConstants : true });
+utils.include({ url : '../../../../components/ProtocolHandlerProxy.js', allowOverrideConstants : true });
 ENABLE_PROXY_ANYTIME = true;
 
 var handler;
