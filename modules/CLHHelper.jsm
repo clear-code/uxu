@@ -23,7 +23,8 @@
    http://www.clear-code.com/repos/svn/js-codemodules/CLHHelper.test.js
 */
 
-const EXPORTED_SYMBOLS = ['CLHHelper'];
+if (typeof window == 'undefined')
+	this.EXPORTED_SYMBOLS = ['CLHHelper'];
 
 // var namespace;
 if (typeof namespace == 'undefined') {
@@ -35,7 +36,7 @@ if (typeof namespace == 'undefined') {
 		namespace = ns.getNamespaceFor('clear-code.com');
 	}
 	catch(e) {
-		namespace = {};
+		namespace = window || {};
 	}
 }
 

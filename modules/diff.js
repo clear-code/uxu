@@ -1,7 +1,7 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
 if (typeof window == 'undefined')
-	var EXPORTED_SYMBOLS = ['Diff', 'ReadableDiffer', 'SequenceMatcher'];
+	this.EXPORTED_SYMBOLS = ['Diff', 'ReadableDiffer', 'SequenceMatcher'];
 
 var Diff = {
 
