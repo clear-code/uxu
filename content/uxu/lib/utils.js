@@ -12,6 +12,7 @@ Components.utils.import('resource://uxu-modules/prefs.js', ns);
 Components.utils.import('resource://uxu-modules/encoding.jsm', ns);
 Components.utils.import('resource://uxu-modules/ejs.jsm', ns);
 Components.utils.import('resource://uxu-modules/hash.jsm', ns);
+Components.utils.import('resource://uxu-modules/registry.jsm', ns);
 
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 ns.encoding.export(this);
@@ -955,306 +956,42 @@ function loadPrefs(aFile, aHash)
   
 // WindowsÉåÉWÉXÉgÉäì«Ç›èëÇ´ 
 	
-function _splitRegistryKey(aKey) 
-{
-	var root = -1, path = '', name = '';
-	if (!('nsIWindowsRegKey' in Ci))
-		throw new Error(bundle.getString('error_utils_platform_is_not_windows'));
-
-	path = aKey.replace(/\\([^\\]+)$/, '');
-	name = RegExp.$1;
-
-	path = path.replace(/^([^\\]+)\\/, '');
-	root = RegExp.$1.toUpperCase();
-	switch (root)
-	{
-		case 'HKEY_CLASSES_ROOT':
-		case 'HKCR':
-			root = Ci.nsIWindowsRegKey.ROOT_KEY_CLASSES_ROOT;
-			break;
-
-		case 'HKEY_CURRENT_USER':
-		case 'HKCU':
-			root = Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER;
-			break;
-
-		case 'HKEY_LOCAL_MACHINE':
-		case 'HKLM':
-			root = Ci.nsIWindowsRegKey.ROOT_KEY_LOCAL_MACHINE;
-			break;
-
-		default:
-			root = -1;
-			break;
-	}
-
-	return [root, path, name];
-}
- 
 function getWindowsRegistry(aKey) 
 {
-	var value = null;
-
-	var root, path, name;
-	[root, path, name] = _splitRegistryKey(aKey);
-	if (root < 0 || !path || !name) return value;
-
-	var regKey = Cc['@mozilla.org/windows-registry-key;1']
-					.createInstance(Ci.nsIWindowsRegKey);
 	try {
-		regKey.open(root, path, Ci.nsIWindowsRegKey.ACCESS_READ);
+		return ns.registry.getValue(aKey);
 	}
 	catch(e) {
-		regKey.close();
-		return value;
+		if (e.message == ns.registry.ERROR_NOT_WINDOWS)
+			throw new Error(bundle.getString('error_utils_platform_is_not_windows'));
+		else
+			throw e;
 	}
-
-	if (regKey.hasValue(name)) {
-		switch (regKey.getValueType(name))
-		{
-			case Ci.nsIWindowsRegKey.TYPE_NONE:
-				value = true;
-				break;
-			case Ci.nsIWindowsRegKey.TYPE_STRING:
-				value = regKey.readStringValue(name);
-				break;
-			case Ci.nsIWindowsRegKey.TYPE_BINARY:
-				value = regKey.readBinaryValue(name);
-				value = value.split('').map(function(aChar) {
-					return aChar.charCodeAt(0);
-				});
-				break;
-			case Ci.nsIWindowsRegKey.TYPE_INT:
-				value = regKey.readIntValue(name);
-				break;
-			case Ci.nsIWindowsRegKey.TYPE_INT64:
-				value = regKey.readInt64Value(name);
-				break;
-		}
-	}
-
-	regKey.close();
-	return value;
 }
  
 function setWindowsRegistry(aKey, aValue) 
 {
-	var root, path, name;
-	[root, path, name] = _splitRegistryKey(aKey);
-	if (root < 0 || !path || !name)
-		throw new Error(bundle.getFormattedString('error_utils_failed_to_write_registry', [aKey, aValue]));
-
-	// create upper level items automatically
-	var ancestors = [];
-	var ancestor = path;
-	do {
-		ancestors.push(ancestor);
-	}
-	while (ancestor = ancestor.replace(/\\?[^\\]+$/, ''));
-	ancestors.reverse().slice(1).forEach(function(aPath) {
-		aPath = aPath.replace(/\\([^\\]+)$/, '');
-		var name = RegExp.$1;
-		var regKey = Cc['@mozilla.org/windows-registry-key;1']
-						.createInstance(Ci.nsIWindowsRegKey);
-		try {
-			regKey.open(root, aPath, Ci.nsIWindowsRegKey.ACCESS_WRITE);
-		}
-		catch(e) {
-			regKey.close();
-			return;
-		}
-		try {
-			if (!regKey.hasChild(name))
-				regKey.createChild(name, Ci.nsIWindowsRegKey.ACCESS_WRITE);
-		}
-		catch(e) {
-			regKey.close();
-			throw e;
-		}
-		regKey.close();
-	});
-
-	var regKey = Cc['@mozilla.org/windows-registry-key;1']
-					.createInstance(Ci.nsIWindowsRegKey);
-	regKey.open(root, path, Ci.nsIWindowsRegKey.ACCESS_ALL);
-
-	function closeAndThrowError(aError)
-	{
-		regKey.close();
-		throw aError || new Error(bundle.getFormattedString('error_utils_failed_to_write_registry', [aKey, aValue]));
-	}
-
 	try {
-		var type;
-		if (regKey.hasValue(name)) {
-			type = regKey.getValueType(name);
-		}
-		else {
-			switch (typeof aValue)
-			{
-				case 'string':
-					type = Ci.nsIWindowsRegKey.TYPE_STRING;
-					break;
-				case 'boolean':
-					type = Ci.nsIWindowsRegKey.TYPE_INT;
-					break;
-				case 'number':
-					type = Ci.nsIWindowsRegKey.TYPE_INT;
-					break;
-				case 'object':
-					if (isArray(aValue)) {
-						type = Ci.nsIWindowsRegKey.TYPE_BINARY;
-					}
-					else {
-						closeAndThrowError();
-					}
-					break;
-			}
-		}
-
-		switch (type)
-		{
-			case Ci.nsIWindowsRegKey.TYPE_NONE:
-				closeAndThrowError();
-				break;
-			case Ci.nsIWindowsRegKey.TYPE_STRING:
-				regKey.writeStringValue(name, String(aValue));
-				break;
-			case Ci.nsIWindowsRegKey.TYPE_BINARY:
-				switch (typeof aValue)
-				{
-					case 'boolean':
-						aValue = String.fromCharCode(aValue ? 1 : 0 );
-						break;
-					case 'string':
-						aValue = UCS2ToUTF8(aValue);
-						break;
-					case 'number':
-						aValue = String.fromCharCode(parseInt(aValue));
-						break;
-					case 'object':
-						if (isArray(aValue)) {
-							aValue = aValue.map(function(aCode) {
-								if (typeof aCode != 'number') closeAndThrowError();
-								return String.fromCharCode(aCode);
-							}).join('');
-						}
-						else {
-							closeAndThrowError();
-						}
-						break;
-				}
-				regKey.writeBinaryValue(name, aValue);
-				break;
-			case Ci.nsIWindowsRegKey.TYPE_INT:
-				switch (typeof aValue)
-				{
-					case 'boolean':
-						aValue = aValue ? 1 : 0 ;
-						break;
-					case 'string':
-					case 'number':
-						aValue = parseInt(aValue);
-						if (isNaN(aValue)) closeAndThrowError();
-						break;
-					case 'object':
-						closeAndThrowError();
-						break;
-				}
-				regKey.writeIntValue(name, aValue);
-				break;
-			case Ci.nsIWindowsRegKey.TYPE_INT64:
-				switch (typeof aValue)
-				{
-					case 'boolean':
-						aValue = aValue ? 1 : 0 ;
-						break;
-					case 'string':
-					case 'number':
-						aValue = parseInt(aValue);
-						if (isNaN(aValue)) closeAndThrowError();
-						break;
-					case 'object':
-						closeAndThrowError();
-						break;
-				}
-				regKey.writeInt64Value(name, aValue);
-				break;
-		}
+		return ns.registry.setValue(aKey, aValue);
 	}
 	catch(e) {
-		closeAndThrowError(e);
+		if (e.message == ns.registry.ERROR_WRITE_FAILED)
+			throw new Error(bundle.getFormattedString('error_utils_failed_to_write_registry', [aKey, aValue]));
+		else
+			throw e;
 	}
-
-	regKey.close();
-	return aValue;
 }
  
 function clearWindowsRegistry(aKey) 
 {
-	var root, path, name;
-	[root, path, name] = _splitRegistryKey(aKey);
-	if (root < 0 || !path || !name)
-		throw new Error(bundle.getFormattedString('error_utils_failed_to_clear_registry', [aKey]));
-
-	_clearWindowsRegistry(root, path+'\\'+name);
-}
-function _clearWindowsRegistry(aRoot, aPath)
-{
 	try {
-		var regKey = Cc['@mozilla.org/windows-registry-key;1']
-						.createInstance(Ci.nsIWindowsRegKey);
-		regKey.open(aRoot, aPath, Ci.nsIWindowsRegKey.ACCESS_ALL);
-		try {
-			let values = [];
-			for (let i = 0, maxi = regKey.valueCount; i < maxi; i++)
-			{
-				values.push(regKey.getValueName(i));
-			}
-			values.forEach(function(aName) {
-				regKey.removeValue(aName);
-			});
-		}
-		catch(e) {
-		}
-		try {
-			let children = [];
-			for (let i = 0, maxi = regKey.childCount; i < maxi; i++)
-			{
-				children.push(regKey.getChildName(i));
-			}
-			children.forEach(function(aName) {
-				_clearWindowsRegistry(aRoot, aPath+'\\'+aName);
-			});
-		}
-		catch(e) {
-		}
-		regKey.close();
+		ns.registry.clear(aKey);
 	}
 	catch(e) {
-	}
-
-	aPath = aPath.replace(/\\([^\\]+)$/, '');
-	var name = RegExp.$1;
-	var parentRegKey = Cc['@mozilla.org/windows-registry-key;1']
-					.createInstance(Ci.nsIWindowsRegKey);
-	try {
-		parentRegKey.open(aRoot, aPath, Ci.nsIWindowsRegKey.ACCESS_ALL);
-		try {
-			if (parentRegKey.hasValue(name))
-				parentRegKey.removeValue(name);
-			if (parentRegKey.hasChild(name))
-				parentRegKey.removeChild(name);
-		}
-		catch(e) {
-			parentRegKey.close();
+		if (e.message == ns.registry.ERROR_CLEAR_FAILED)
+			throw new Error(bundle.getFormattedString('error_utils_failed_to_clear_registry', [aKey]));
+		else
 			throw e;
-		}
-		finally {
-			parentRegKey.close();
-		}
-	}
-	catch(e) {
 	}
 }
   
