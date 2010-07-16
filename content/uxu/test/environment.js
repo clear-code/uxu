@@ -373,6 +373,13 @@ function setUpTestWindow(aContinuation, aOptions)
 		}
 		aContinuation = void(0);
 	}
+	var completedFlag = this.setUpTestWindowInternal(aContinuation, aOptions);
+	if (!aOptions.async) utils.wait(completedFlag);
+	return completedFlag;
+};
+	
+function setUpTestWindowInternal(aContinuation, aOptions) 
+{
 	var loadedFlag = { value : false };
 	if (this.getTestWindow(aOptions)) {
 		if (aContinuation) aContinuation("ok");
@@ -391,7 +398,7 @@ function setUpTestWindow(aContinuation, aOptions)
 	}
 	return loadedFlag;
 };
- 
+  
 var tearDownTestWindow = closeTestWindow; 
  
 function getChromeWindow(aOptions) 
@@ -588,6 +595,13 @@ function loadURI(aURI, aOptions)
 	if (!aURI) aURI = 'about:blank';
 	aURI = this.fixupIncompleteURI(aURI);
 
+	var completedFlag = this.loadURIInternal(aURI, aOptions);
+	if (!aOptions.async) utils.wait(completedFlag);
+	return completedFlag;
+};
+	
+function loadURIInternal(aURI, aOptions) 
+{
 	var loadedFlag = { value : false };
 
 	var b = this._testFrame;
@@ -604,7 +618,7 @@ function loadURI(aURI, aOptions)
 
 	return loadedFlag;
 };
- 
+  
 function loadURIInTestFrame(aURI, aOptions) 
 {
 	if (!aOptions) aOptions = {};
@@ -622,6 +636,13 @@ function addTab(aURI, aOptions)
 	if (!aURI) aURI = 'about:blank';
 	aURI = this.fixupIncompleteURI(aURI);
 
+	var completedFlag = this.addTabInternal(aURI, aOptions);
+	if (!aOptions.async) utils.wait(completedFlag);
+	return completedFlag;
+};
+	
+function addTabInternal(aURI, aOptions) 
+{
 	var loadedFlag = { value : false, tab : null };
 
 	var win = this.getTestWindow(aOptions);
@@ -641,7 +662,7 @@ function addTab(aURI, aOptions)
 
 	return loadedFlag;
 };
- 
+  
 function getBrowser(aOptions) 
 {
 	if (utils.product != 'Firefox') return null;
