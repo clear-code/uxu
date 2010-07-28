@@ -2,7 +2,10 @@ var targetProduct = 'Thunderbird';
 
 var topDir = baseURL+'../../../../';
 
-var ComposeClass;
+var Compose = {};
+utils.include(topDir+'modules/mail/compose.js', Compose);
+Compose = Compose.Compose;
+
 var compose;
 var composeWindow;
 
@@ -19,11 +22,7 @@ function setUp()
 {
 	closeAllComposeWindows();
 
-	ComposeClass = {};
-	utils.include(topDir+'modules/mail/compose.js', ComposeClass);
-	ComposeClass = ComposeClass.Compose;
-
-	compose = new ComposeClass(utils.mail, utils);
+	compose = new Compose(utils.mail, utils);
 	yield Do(compose.setUp());
 	composeWindow = compose.window;
 	mail.clear();
