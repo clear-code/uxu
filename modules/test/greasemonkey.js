@@ -9,7 +9,7 @@ const Ci = Components.interfaces;
 
 function GreasemonkeyUtils(aEnvironment)
 {
-	this.utils = aUtils;
+	this.utils = aEnvironment;
 	this.frame = this.utils._testFrame;
 	this.testWindow = null;
 	this.commands = [];
