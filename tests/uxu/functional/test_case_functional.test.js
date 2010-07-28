@@ -11,7 +11,7 @@ var testcase;
 function setUp()
 {
 	testcase = new TestCaseClass('description');
-	testcase.environment = new ns.TestEnvironment({}, baseURL, gBrowser);
+	testcase.environment = new ns.TestEnvironment(null, baseURL, gBrowser);
 	yield 0; // to run tests progressively
 }
 

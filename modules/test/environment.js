@@ -41,7 +41,12 @@ function TestEnvironment(aEnvironment, aURI, aBrowser)
 		return baseURL;
 	});
 
-	this.environment = aEnvironment || {};
+	if (!aEnvironment) {
+		let global = aBrowser.ownerDocument.defaultView;
+		aEnvironment = new global.Object();
+		aEnvironment.window = global;
+	}
+	this.environment = aEnvironment;
 	this.environment.__proto__ = this;
     this.uniqueID = parseInt(Math.random() * 10000000000);
 
