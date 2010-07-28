@@ -1,6 +1,9 @@
 if (typeof window == 'undefined')
 	this.EXPORTED_SYMBOLS = ['fsm'];
 
+var ns = {};
+Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
+
 var fsm = {
 
 // from MozLab
@@ -56,12 +59,12 @@ var fsm = {
 	var timer, canceller;
 	try {
 		iterator.next();
-		timer = window.setInterval(function() {
+		timer = ns.setInterval(function() {
 				try {
 					iterator.next();
 				}
 				catch(e if e instanceof StopIteration) {
-					window.clearInterval(timer);
+					ns.clearInterval(timer);
 				}
 			}, 1);
 		canceller = _createCanceller(timer);
@@ -79,7 +82,7 @@ function _createCanceller(aTimer)
 {
 	return function() {
 			if (!aTimer) return;
-			window.clearInterval(aTimer);
+			ns.clearInterval(aTimer);
 			aTimer = null;
 		};
 }
