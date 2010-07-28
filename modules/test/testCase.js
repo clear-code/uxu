@@ -1323,7 +1323,7 @@ TestCase.prototype = {
 	_checkPriorityToExec : function(aTest) 
 	{
 		var priority = 0.5;
-		var forceNever = _equalsToNever(aTest.priority) || _equalsToNever(this._masterPriority);
+		var forceNever = this._equalsToNever(aTest.priority) || this._equalsToNever(this._masterPriority);
 		if (forceNever) {
 			priority = 'never';
 		}

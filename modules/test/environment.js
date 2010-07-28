@@ -46,6 +46,7 @@ function TestEnvironment(aEnvironment, aURI, aBrowser)
 	});
 
 	this.environment = aEnvironment || {};
+	this.environment.__proto__ = this;
     this.uniqueID = parseInt(Math.random() * 10000000000);
 
 	this.__defineGetter__('_testFrame', function() {

@@ -91,12 +91,13 @@ TestRunner.prototype = {
 		var obj;
 
 		var name;
-		for (var i in aSuite)
+		var env = aSuite.environment;
+		for (var i in env)
 		{
-			obj = aSuite[i];
-			if (!aSuite.hasOwnProperty(i) || !obj) continue;
+			obj = env[i];
+			if (!env.hasOwnProperty(i) || !obj) continue;
 			if (obj.__proto__ == ns.TestCase.prototype) {
-				obj.environment = aSuite;
+				obj.environment = env;
 				tests.push(obj);
 				continue;
 			}
@@ -121,17 +122,17 @@ TestRunner.prototype = {
 
 		if (testObjects.tests.length) {
 			var newTestCase = new ns.TestCase(
-					aSuite.description || String(aSuite.fileURL.match(/[^\/]+$/)),
+					env.description || String(env.fileURL.match(/[^\/]+$/)),
 					{
-						source        : aSuite.fileURL,
-						profile       : aSuite.profile,
-						application   : aSuite.application,
-						options       : aSuite.options,
-						priority      : aSuite.priority,
-						shouldSkip    : aSuite.shouldSkip,
-						context       : aSuite.testContext,
-						targetProduct : aSuite.targetProduct,
-						mapping       : aSuite.mapping || aSuite.redirect
+						source        : env.fileURL,
+						profile       : env.profile,
+						application   : env.application,
+						options       : env.options,
+						priority      : env.priority,
+						shouldSkip    : env.shouldSkip,
+						context       : env.testContext,
+						targetProduct : env.targetProduct,
+						mapping       : env.mapping || env.redirect
 					}
 				);
 
@@ -148,8 +149,8 @@ TestRunner.prototype = {
 				newTestCase.registerTest(aTest);
 			});
 
-			newTestCase.context = aSuite;
-			newTestCase.environment = aSuite;
+			newTestCase.context = env;
+			newTestCase.environment = env;
 			tests.push(newTestCase);
 		}
 
@@ -387,7 +388,7 @@ TestRunner.prototype = {
 	
 	_createTestSuite : function(aURL) 
 	{
-		var suite = { __proto__ : new ns.TestEnvironment(suite, aURL, this._browser) };
+		var suite = new ns.TestEnvironment({}, aURL, this._browser);
 
 		/* backward compatibility for MozLab/MozUnit testcases */
 		suite.TestCase      = ns.TestCase;
@@ -400,7 +401,7 @@ TestRunner.prototype = {
 			}
 		};
 
-		suite.include(suite.fileURL);
+		suite.include(suite.fileURL, suite.environment);
 
 		return suite;
 	}
