@@ -5,7 +5,7 @@ var MixColor;
 function setUp()
 {
     var color = {};
-    utils.include(topDir+'content/uxu/lib/color.js', color);
+    utils.include(topDir+'modules/color.js', color);
     Color = color.Color;
     MixColor = color.MixColor;
 }

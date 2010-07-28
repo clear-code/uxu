@@ -5,7 +5,9 @@ const Ci = Components.interfaces;
 
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var utils = lib_module.require('package', 'utils');
-var color = lib_module.require('package', 'color');
+
+var color = {};
+Components.utils.import('resource://uxu-modules/color.js', color);
 const Color = color.Color;
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);

@@ -24,8 +24,11 @@
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
+var fsm = {};
+Components.utils.import('resource://uxu-modules/fsm.js', fsm);
+fsm = fsm.fsm;
+
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']); 
-var fsm    = lib_module.require('package', 'fsm');
 var utils  = {};
 utils.__proto__ = lib_module.require('package', 'utils');
 

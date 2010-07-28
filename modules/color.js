@@ -1,3 +1,6 @@
+if (typeof window == 'undefined')
+	this.EXPORTED_SYMBOLS = ['Color', 'MixColor'];
+
 var NAMES = ["black", "red", "green", "yellow",
              "blue", "magenta", "cyan", "white"];
 

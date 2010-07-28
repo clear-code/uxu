@@ -1,5 +1,10 @@
+if (typeof window == 'undefined')
+	this.EXPORTED_SYMBOLS = ['fsm'];
+
+var fsm = {
+
 // from MozLab
-function go(aStateName, aContext, aStateHandlers, aStateTransitions, aEventHandlers)
+'go' : function(aStateName, aContext, aStateHandlers, aStateTransitions, aEventHandlers)
 {
 	function generate(aStateName, aContext, aStateHandlers, aStateTransitions, aEventHandlers)
 	{
@@ -67,6 +72,8 @@ function go(aStateName, aContext, aStateHandlers, aStateTransitions, aEventHandl
 	}
 	return canceller;
 }
+
+};
 
 function _createCanceller(aTimer)
 {
