@@ -406,7 +406,7 @@ GreasemonkeyUtils.prototype = {
 		head.appendChild(style);
 	},
 
-	this.kRESOURCE : /^([^\s]+)\s+(.+)$/,
+	kRESOURCE : /^([^\s]+)\s+(.+)$/,
 
 	_getResourceURI : function(aKey, aHeaders)
 	{
@@ -446,7 +446,7 @@ GreasemonkeyUtils.prototype = {
 		return '';
 	},
 
-	GM_getResourceURL : functionaKey, aHeaders)
+	GM_getResourceURL : function(aKey, aHeaders)
 	{
 		this.fireEvent({ type : 'GM_getResourceURLCall', key : aKey });
 		var uri = this._getResourceURI(aKey, aHeaders);
