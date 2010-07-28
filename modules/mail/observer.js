@@ -3,13 +3,11 @@
 if (typeof window == 'undefined')
 	this.EXPORTED_SYMBOLS = ['MailObserver'];
 
-var utils = {};
-Components.utils.import('resource://uxu-modules/utils.js', utils);
-utils = utils.utils;
+var ns = {};
+Components.utils.import('resource://uxu-modules/utils.js', ns);
+Components.utils.import('resource://uxu-modules/observer.js', ns);
 
-var Observer = {};
-Components.utils.import('resource://uxu-modules/observer.jsm', Observer);
-Observer = Observer.Observer;
+var utils = ns.utils;
 
 function MailObserver()
 {
@@ -18,7 +16,7 @@ function MailObserver()
 }
 
 MailObserver.prototype = {
-	__proto__ : Observer.prototype,
+	__proto__ : ns.Observer.prototype,
 
 	destroy : function()
 	{
