@@ -323,7 +323,11 @@ openTestWindow : function(aOptions, aCallback)
 		var info = this.normalizeTestWindowOption(aOptions);
 		var args = Cc['@mozilla.org/supports-array;1'].createInstance(Ci.nsISupportsArray);
 		info.arguments.forEach(function(aArg) {
-			args.AppendElement(aArg);
+			var variant = Cc['@mozilla.org/variant;1']
+							.createInstance(Ci.nsIVariant)
+							.QueryInterface(Ci.nsIWritableVariant);
+			variant.setFromVariant(aArg);
+			args.AppendElement(variant);
 		});
 		win = WindowWatcher.openWindow(null, info.uri, info.name, info.features, args);
 		win[key] = this.uniqueID;
