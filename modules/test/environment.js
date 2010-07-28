@@ -34,10 +34,6 @@ function TestEnvironment(aEnvironment, aURI, aBrowser)
 
 	this.windowWatcherListeners = [];
 
-	this.__defineGetter__('utils', function() {
-		return this;
-	});
-
 	this.__defineGetter__('fileURL', function() {
 		return aURI;
 	});
@@ -128,7 +124,8 @@ initVariables : function()
 	this.environment.Ci = Ci;
 },
  
-get gBrowser() { return this.getTestFrameOwner(); }, 
+get utils() { return this; }, 
+get gBrowser() { return this.getTestFrameOwner(); },
 get contentWindow() { return this.getTestFrameOwner().contentWindow; },
 get content() { return this.getTestFrameOwner().contentWindow; },
 get contentDocument() { return this.getTestFrameOwner().contentDocument; },
