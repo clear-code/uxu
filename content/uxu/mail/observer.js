@@ -3,11 +3,13 @@
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var utils  = lib_module.require('package', 'utils');
 
-var inherits = lib_module.require('class', 'observer');
+var Observer = {};
+Components.utils.import('resource://uxu-modules/observer.jsm', Observer);
+Observer = Observer.Observer;
 
 function constructor() 
 {
-	this._init();
+	this.__proto__.__proto__ = Observer.prototype;
 	this.clear();
 	this.startObserve('uxu:mail:sent');
 }

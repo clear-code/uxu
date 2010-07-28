@@ -2,10 +2,9 @@
 
 var topDir = baseURL+'../../../../';
 
-utils.include(topDir+'content/uxu/lib/module_manager.js');
-
-var lib_module = new ModuleManager([topDir+'content/uxu/lib']);
-var ObserverClass = lib_module.require('class', 'observer');
+var ObserverClass = {};
+utils.include(topDir+'modules/observer.js', ObserverClass);
+ObserverClass = ObserverClass.Observer;
 
 var observer;
 
