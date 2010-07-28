@@ -372,8 +372,8 @@ Compose.prototype = {
 		const ENTER_KEY = { type : 'keypress', keyCode : Ci.nsIDOMKeyEvent.DOM_VK_RETURN };
 
 		if (!aAppend) {
-			var types = _getAddressTypes(aComposeWindow)
-			_getAddressFields(aComposeWindow).forEach(function(aField, aIndex) {
+			var types = this._getAddressTypes(aComposeWindow)
+			this._getAddressFields(aComposeWindow).forEach(function(aField, aIndex) {
 				types[aIndex].value = 'addr_to';
 				aField.focus();
 				aField.value = '';
