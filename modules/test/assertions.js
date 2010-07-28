@@ -294,7 +294,7 @@ Assertions.prototype = {
 		if (typeof aExpectedInterface == 'string')
 			aExpectedInterface = Ci[aExpectedInterface];
 
-		if (Ci[aExpectedInterface] != aExpectedInterface)
+		if (Ci[String(aExpectedInterface)] != String(aExpectedInterface))
 			throw new Error(bundle.getFormattedString('assert_implement_interface_not_interface', [this.appendTypeString(aExpectedInterface)]));
 
 		if (!(aActualInstance instanceof Ci.nsISupports))
