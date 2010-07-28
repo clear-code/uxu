@@ -1,14 +1,19 @@
-function constructor()
+if (typeof window == 'undefined')
+	this.EXPORTED_SYMBOLS = ['EventTarget'];
+
+function EventTarget()
 {
 	this.initListeners();
 }
 
-function initListeners()
+EventTarget.prototype = {
+
+initListeners : function()
 {
 	this._listeners = [];
-}
+},
  
-function inheritListeners(aOriginal) 
+inheritListeners : function(aOriginal) 
 {
 	this._ensureHasOwnListeners();
 	aOriginal._ensureHasOwnListeners();
@@ -18,30 +23,30 @@ function inheritListeners(aOriginal)
 			'addListener' in aListener)
 			aListener.addListener(this);
 	}, this);
-}
+},
 
-function _ensureHasOwnListeners()
+_ensureHasOwnListeners : function()
 {
 	if (this.hasOwnProperty('_listeners')) return;
 	this.initListeners();
-}
+},
 
-function addListener(aListener) 
+addListener : function(aListener) 
 {
 	this._ensureHasOwnListeners();
 	if (this._listeners.indexOf(aListener) < 0)
 		this._listeners.push(aListener);
-}
+},
  
-function removeListener(aListener) 
+removeListener : function(aListener) 
 {
 	this._ensureHasOwnListeners();
 	var index = this._listeners.indexOf(aListener);
 	if (index > -1)
 		this._listeners.splice(index, 1);
-}
+},
  
-function removeAllListeners() 
+removeAllListeners : function() 
 {
 	this._ensureHasOwnListeners();
 	this._listeners.forEach(function(aListener) {
@@ -49,9 +54,9 @@ function removeAllListeners()
 			aListener.removeListener(this);
 	}, this);
 	this._listeners = [];
-}
+},
  
-function fireEvent(aType, aData) 
+fireEvent : function(aType, aData) 
 {
 //	this._ensureHasOwnListeners();
 	var event = {
@@ -78,3 +83,5 @@ function fireEvent(aType, aData)
 		}
 	});
 }
+
+};

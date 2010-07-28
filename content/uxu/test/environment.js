@@ -3,10 +3,12 @@
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
+var EventTarget = {};
+Components.utils.import('resource://uxu-modules/eventTarget.js', EventTarget);
+EventTarget = EventTarget.EventTarget;
+
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var utils      = lib_module.require('package', 'utils');
-
-var inherits = lib_module.require('class', 'event_target');
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 
@@ -20,6 +22,9 @@ var defaultURI, defaultType, defaultFeatures, defaultName;
  
 function constructor(aEnvironment, aURI, aBrowser) 
 {
+	this.__proto__.__proto__ = EventTarget.prototype;
+	this.initListeners();
+
 	this.tempFiles = [];
 	this.windowWatcherListeners = [];
 

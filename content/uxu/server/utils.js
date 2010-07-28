@@ -1,5 +1,6 @@
-var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
-var EventTarget = lib_module.require('class', 'event_target');
+var EventTarget = {};
+Components.utils.import('resource://uxu-modules/eventTarget.js', EventTarget);
+EventTarget = EventTarget.EventTarget;
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var Server = server_module.require('class', 'server');
@@ -12,6 +13,9 @@ var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 function constructor()
 {
+	this.__proto__.__proto__ = EventTarget.prototype;
+	this.initListeners();
+
 	this._HTTPServerInstances = [];
 }
 

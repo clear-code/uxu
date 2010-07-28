@@ -3,12 +3,15 @@
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
-
-var inherits = lib_module.require('class', 'event_target');
+var EventTarget = {};
+Components.utils.import('resource://uxu-modules/eventTarget.js', EventTarget);
+EventTarget = EventTarget.EventTarget;
 
 function constructor(aInput, aOutput)
 {
+	this.__proto__.__proto__ = EventTarget.prototype;
+	this.initListeners();
+
 	var scriptableInput = Cc['@mozilla.org/scriptableinputstream;1']
 			.createInstance(Ci.nsIScriptableInputStream);
 	var pump = Cc['@mozilla.org/network/input-stream-pump;1']

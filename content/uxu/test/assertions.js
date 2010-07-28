@@ -28,10 +28,15 @@ Components.utils.import('resource://uxu-modules/diff.js', ns);
 
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
-var inherits = lib_module.require('class', 'event_target');
+var EventTarget = {};
+Components.utils.import('resource://uxu-modules/eventTarget.js', EventTarget);
+EventTarget = EventTarget.EventTarget;
 
 function constructor()
 {
+	this.__proto__.__proto__ = EventTarget.prototype;
+	this.initListeners();
+
 	this.resetSuccessCount();
 	this.__defineGetter__('successCount', function() {
 		return this._successCount;

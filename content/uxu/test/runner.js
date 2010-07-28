@@ -9,7 +9,9 @@ var ns = {};
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
-var inherits = lib_module.require('class', 'event_target');
+var EventTarget = {};
+Components.utils.import('resource://uxu-modules/eventTarget.js', EventTarget);
+EventTarget = EventTarget.EventTarget;
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var TestCase    = test_module.require('class', 'test_case');
@@ -20,6 +22,9 @@ const RUNNING = 'extensions.uxu.running';
 	 
 function constructor(aBrowser/*, aFile, ...*/) 
 {
+	this.__proto__.__proto__ = EventTarget.prototype;
+	this.initListeners();
+
 	this.runningCount = 0;
 	this.files = Array.slice(arguments, 1);
 	if (utils.isArray(this.files[0])) this.files = this.files[0];

@@ -3,16 +3,21 @@
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
+var EventTarget = {};
+Components.utils.import('resource://uxu-modules/eventTarget.js', EventTarget);
+EventTarget = EventTarget.EventTarget;
+
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var utils = lib_module.require('package', 'utils');
-
-var inherits = lib_module.require('class', 'event_target');
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var Handler = server_module.require('class', 'handler');
 
 function constructor(aPort)
 {
+	this.__proto__.__proto__ = EventTarget.prototype;
+	this.initListeners();
+
 	this._port  = (typeof aPort == 'number') ? aPort : -1 ;
 	this.__defineGetter__('port', function() {
 		return this.socket ? this.socket.port : this._port ;

@@ -3,10 +3,12 @@
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
+var EventTarget = {};
+Components.utils.import('resource://uxu-modules/eventTarget.js', EventTarget);
+EventTarget = EventTarget.EventTarget;
+
 var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var utils = lib_module.require('package', 'utils');
-
-var inherits = lib_module.require('class', 'event_target');
 
 var mail_module = new ModuleManager(['chrome://uxu/content/mail']);
 var MailObserver = mail_module.require('class', 'observer');
@@ -14,6 +16,9 @@ var Compose = mail_module.require('class', 'compose');
 
 function constructor(aEnvironment)
 {
+	this.__proto__.__proto__ = EventTarget.prototype;
+	this.initListeners();
+
 	this._observer = new MailObserver();
 	this.__defineGetter__('deliveries', function() {
 		return this._observer.data;

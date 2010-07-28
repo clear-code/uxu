@@ -36,7 +36,9 @@ var ns = {};
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
-var inherits = lib_module.require('class', 'event_target');
+var EventTarget = {};
+Components.utils.import('resource://uxu-modules/eventTarget.js', EventTarget);
+EventTarget = EventTarget.EventTarget;
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var Server        = server_module.require('class', 'server');
@@ -110,6 +112,9 @@ const ERROR_NO_TEST             = new Error('there is no test.');
 function constructor(aTitle, aOptions) 
 {
 	if (!aOptions) aOptions = {};
+
+	this.__proto__.__proto__ = EventTarget.prototype;
+	this.initListeners();
 
 	this._initSource(aOptions);
 	this._initRemote(aOptions);
