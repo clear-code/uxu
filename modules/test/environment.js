@@ -7,6 +7,7 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 var ns = {};
+Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
 Components.utils.import('resource://uxu-modules/eventTarget.js', ns);
 Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/test/assertions.js', ns);
@@ -320,7 +321,11 @@ openTestWindow : function(aOptions, aCallback)
 	}
 	else {
 		var info = this.normalizeTestWindowOption(aOptions);
-		win = window.openDialog.apply(window, [info.uri, info.name, info.features].concat(info.arguments));
+		var args = Cc['@mozilla.org/supports-array;1'].createInstance(Ci.nsISupportsArray);
+		info.arguments.forEach(function(aArg) {
+			args.AppendElement(aArg);
+		});
+		win = WindowWatcher.openWindow(null, info.uri, info.name, info.features, args);
 		win[key] = this.uniqueID;
 		var id = info.uri+'?'+this.uniqueID;
 		win.addEventListener('load', function() {
@@ -380,7 +385,7 @@ setUpTestWindowInternal : function(aContinuation, aOptions)
 		this.openTestWindow(
 			aOptions,
 			function(win) {
-				window.setTimeout(function() {
+				ns.setTimeout(function() {
 					if (aContinuation) aContinuation('ok');
 					loadedFlag.value = true;
 				}, 0);
@@ -466,7 +471,7 @@ _waitBrowserLoad : function(aTab, aBrowser, aLoadedFlag, aOnComplete)
 				this.onFinish();
 			}
 			else {
-				window.setTimeout(function(aSelf) {
+				ns.setTimeout(function(aSelf) {
 					if (aSelf.isTabComplete())
 						aSelf.onFinish();
 				}, 100, this);
@@ -495,7 +500,7 @@ _waitBrowserLoad : function(aTab, aBrowser, aLoadedFlag, aOnComplete)
 		}
 	};
 	aBrowser.addProgressListener(listener);
-	window.setTimeout(function() {
+	ns.setTimeout(function() {
 		if (!listener.started)
 			listener.onFinish();
 	}, 0);
@@ -525,7 +530,7 @@ loadURIInternal : function(aURI, aOptions)
 	}
 	if (!b) return { value : true };
 	b.stop();
-	window.setTimeout(function(aSelf) {
+	ns.setTimeout(function(aSelf) {
 		aSelf._waitBrowserLoad(null, b, loadedFlag);
 		b.loadURI(aURI, aOptions.referrer || null);
 	}, 0, this);
@@ -564,7 +569,7 @@ addTabInternal : function(aURI, aOptions)
 
 	var tab = win.gBrowser.addTab();
 	tab.linkedBrowser.stop();
-	window.setTimeout(function(aSelf) {
+	ns.setTimeout(function(aSelf) {
 		aSelf._waitBrowserLoad(tab, tab.linkedBrowser, loadedFlag, function() {
 			loadedFlag.tab = tab;
 			if (aOptions.selected) {
