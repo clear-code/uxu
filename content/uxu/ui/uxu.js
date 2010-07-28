@@ -7,15 +7,13 @@ var ns = {};
 Components.utils.import('resource://uxu-modules/utils.js', utils);
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/server/server.js', ns);
+Components.utils.import('resource://uxu-modules/server/context.js', ns);
 Components.utils.import('resource://uxu-modules/test/testCase.js', ns);
 
 var utils = ns.utils;
 utils.exportToDocument(document);
 
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
-
-var server_module = new ModuleManager(['chrome://uxu/content/server']);
-var Context = server_module.require('class', 'context');
 
 var gServer;
 var gLog;
@@ -51,7 +49,7 @@ function Startup() {
 		}
 	}
 
-	var context = new Context(window.document.getElementById("content"));
+	var context = new ns.Context(window.document.getElementById("content"));
 	context.addRunnerListener(testRunnerlistener);
 
 	gServer = new ns.Server(gOptions.serverPort || utils.getPref('extensions.uxu.port'));
