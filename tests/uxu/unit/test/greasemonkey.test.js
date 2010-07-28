@@ -2,10 +2,8 @@ var targetProduct = 'Firefox';
 
 var topDir = baseURL+'../../../../';
 
-utils.include(topDir+'content/uxu/lib/module_manager.js');
-
-var test_module = new ModuleManager([topDir+'content/uxu/test']);
-var GMUtilsClass = test_module.require('class', 'greasemonkey');
+var ns = {};
+utils.include(topDir+'modules/test/greasemonkey.js', ns);
 
 var GMUtils;
 
@@ -19,7 +17,7 @@ function setUp()
 
 	yield Do(utils.loadURI('about:blank'));
 	assert.equals('about:blank', content.location.href);
-	GMUtils = new GMUtilsClass(utils);
+	GMUtils = new ns.GreasemonkeyUtils(utils);
 }
 
 function tearDown()

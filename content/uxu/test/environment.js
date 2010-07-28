@@ -141,9 +141,9 @@ function attachFrames()
  
 function attachAssertions() 
 {
-	var Assertions  = test_module.require('class', 'assertions');
-	var assert = {};
-	assert.__proto__ = new Assertions();
+	var ns = {};
+	Components.utils.import('resource://uxu-modules/test/assertions.js', ns);
+	var assert = new ns.Assertions();
 	this.__defineGetter__('assert', function() {
 		return assert;
 	});
@@ -192,9 +192,9 @@ function attachActions()
  
 function attachGMUtils() 
 {
-	var GMUtils = test_module.require('class', 'greasemonkey');
-	var greasemonkey = {};
-	greasemonkey.__proto__ = new GMUtils(this);
+	var ns = {};
+	Components.utils.import('resource://uxu-modules/test/greasemonkey.js', ns);
+	var greasemonkey = new ns.GreasemonkeyUtils(this);
 	this.__defineGetter__('greasemonkey', function() {
 		return greasemonkey;
 	});

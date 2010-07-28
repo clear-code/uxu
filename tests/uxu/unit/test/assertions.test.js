@@ -2,21 +2,17 @@
 
 var topDir = baseURL+'../../../../';
 
-utils.include(topDir+'content/uxu/lib/module_manager.js');
+var ns = {};
+utils.include(topDir+'modules/test/assertions.js', ns);
+utils.include(topDir+'modules/diff.js', ns);
 
-var test_module = new ModuleManager([topDir+'content/uxu/test']);
-var Assertions = test_module.require('class', 'assertions');
+var Diff = ns.Diff;
 
 var assertionsModule;
-var Diff;
 
 function setUp()
 {
-	assertionsModule = new Assertions();
-
-    var ns = {};
-    utils.include(topDir+'modules/diff.js', ns);
-    Diff = ns.Diff;
+	assertionsModule = new ns.Assertions();
 }
 
 function tearDown()

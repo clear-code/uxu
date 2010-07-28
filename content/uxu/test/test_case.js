@@ -24,21 +24,17 @@
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-var fsm = {};
-Components.utils.import('resource://uxu-modules/fsm.js', fsm);
-fsm = fsm.fsm;
-
-var utils = {}; 
-Components.utils.import('resource://uxu-modules/utils.js', utils);
-utils = { __proto__ : utils.utils };
-
 var ns = {};
+Components.utils.import('resource://uxu-modules/fsm.js', ns);
+Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
-var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
+Components.utils.import('resource://uxu-modules/eventTarget.js', ns);
+Components.utils.import('resource://uxu-modules/test/assertions.js', ns);
 
-var EventTarget = {};
-Components.utils.import('resource://uxu-modules/eventTarget.js', EventTarget);
-EventTarget = EventTarget.EventTarget;
+var fsm = ns.fsm;
+var utils = { __proto__ : ns.utils };
+var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
+var Assertions  = ns.Assertions;
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var Server        = server_module.require('class', 'server');
@@ -47,7 +43,6 @@ var ServerUtils   = server_module.require('class', 'utils');
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var Report      = test_module.require('class', 'report');
 var Environment = test_module.require('class', 'environment');
-var Assertions  = test_module.require('class', 'assertions');
 
 var ObserverService = Cc['@mozilla.org/observer-service;1']
 					.getService(Ci.nsIObserverService);
@@ -113,7 +108,7 @@ function constructor(aTitle, aOptions)
 {
 	if (!aOptions) aOptions = {};
 
-	this.__proto__.__proto__ = EventTarget.prototype;
+	this.__proto__.__proto__ = ns.EventTarget.prototype;
 	this.initListeners();
 
 	this._initSource(aOptions);
