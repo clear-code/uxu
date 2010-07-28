@@ -690,20 +690,6 @@ function getTabs(aOptions)
 	return this._utils.$X('descendant::*[local-name()="tab"]', win.gBrowser.mTabContainer);
 };
   
-// prefs 
-	
-function cleanUpModifiedPrefs() 
-{
-	for (var i in this.backupPrefs)
-	{
-		if (this.backupPrefs[i] === null)
-			this.clearPref(i);
-		else
-			this.setPref(i, this.backupPrefs[i]);
-	}
-	this.backupPrefs = {};
-};
-  
 // override some functions of utils 
 	
 function include(aSource, aEncoding, aScope) 

@@ -271,7 +271,7 @@ function _onTestCaseEvent(aEvent)
 	 
 function _cleanUpModifications(aTestCase) 
 {
-	aTestCase.environment.utils.cleanUpModifiedPrefs();
+	aTestCase.environment.utils.rollbackPrefs();
 	aTestCase.environment.utils.cleanUpTempFiles(true);
 }
   	

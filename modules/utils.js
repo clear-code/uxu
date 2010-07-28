@@ -968,6 +968,18 @@ clearPref : function(aKey)
 	ns.prefs.clearPref(aKey);
 },
  
+rollbackPrefs : function() 
+{
+	for (var i in this.backupPrefs)
+	{
+		if (this.backupPrefs[i] === null)
+			this.clearPref(i);
+		else
+			this.setPref(i, this.backupPrefs[i]);
+	}
+	this.backupPrefs = {};
+},
+ 
 loadPrefs : function(aFile, aHash) 
 {
 	if (aHash && typeof aHash != 'object') aHash = null;
