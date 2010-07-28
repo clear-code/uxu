@@ -61,7 +61,7 @@ evalInSandbox : function(aCode, aOwner)
 _getDocument : function(aOwner) 
 {
 	var doc = !aOwner ?
-				document :
+				null :
 			aOwner instanceof Ci.nsIDOMDocument ?
 				aOwner :
 			aOwner instanceof Ci.nsIDOMNode ?
@@ -151,6 +151,27 @@ $X : function()
 			return result.singleNodeValue;
 	}
 	return null;
+},
+ 
+exportToDocument : function(aDOMDocument) 
+{
+	var self = this;
+	aDOMDocument.defaultView.$ = function(aNodeOrID, aOwner) {
+		return self.$(aNodeOrID, aOwner || aDOMDocument);
+	};
+	aDOMDocument.defaultView.$X = function() {
+		var args = Array.slice(arguments);
+		if (args.every(function(aArg) {
+				try {
+					return !self._getDocument(aArg)
+				}
+				catch(e) {
+					return true;
+				}
+			}))
+			args.splice(1, 0, aDOMDocument);
+		return self.$X.apply(self, args);
+	};
 },
   
 // タイマー操作 

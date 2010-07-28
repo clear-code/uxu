@@ -6,6 +6,7 @@ const Ci = Components.interfaces;
 var utils = {};
 Components.utils.import('resource://uxu-modules/utils.js', utils);
 utils = utils.utils;
+utils.exportToDocument(document);
 
 var ns = {};
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);

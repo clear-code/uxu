@@ -1,6 +1,7 @@
 var utils = {}; 
 Components.utils.import('resource://uxu-modules/utils.js', utils);
 utils = utils.utils;
+utils.exportToDocument(document);
 
 var ns = {};
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
@@ -27,12 +28,12 @@ var gLog;
 	 
 function _(idOrElement, subCriteria) 
 {
-	var element = utils.$(idOrElement);
+	var element = $(idOrElement);
 	if (subCriteria) {
 		if (typeof(subCriteria) == 'object') {
 			for (var attributeName in subCriteria)
 			{
-				return utils.$X(
+				return $X(
 						'.//*[@'+attributeName+'="'+subCriteria[attributeName]+'"]',
 						element,
 						XPathResult.ANY_UNORDERED_NODE_TYPE
@@ -40,7 +41,7 @@ function _(idOrElement, subCriteria)
 			}
 		}
 		else {
-			return utils.$X(
+			return $X(
 					'.//*[@role="'+subCriteria+'"]',
 					element,
 					XPathResult.ANY_UNORDERED_NODE_TYPE
@@ -425,7 +426,7 @@ function getFocusedFile()
 	var info = { path : null, line : 0 };
 	var node = document.popupNode;
 	if (node) {
-		node = utils.$X(
+		node = $X(
 				'ancestor-or-self::*[(@role="testcase-report" or local-name()="listitem") and starts-with(@source, "file:")][1]',
 				node,
 				XPathResult.FIRST_ORDERED_NODE_TYPE
@@ -1121,7 +1122,7 @@ function updateContextMenu()
  
 function stopAllProgressMeters() 
 {
-	utils.$X(
+	$X(
 		'/descendant::*[local-name()="progressmeter" and @mode="undetermined" and not(ancestor::*[@id="blueprints"])]',
 		document
 	).forEach(function(aNode) {
