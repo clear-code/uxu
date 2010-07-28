@@ -1,7 +1,16 @@
 var topDir = baseURL+'../../../../';
 
 var ns = {};
-utils.include(topDir+'modules/test/report.js', ns);
+[
+	topDir+'modules/test/report.js'
+].forEach(function(aURI) {
+	utils.include({
+		uri                    : aURI,
+		encoding               : 'Shift_JIS',
+		allowOverrideConstants : true,
+		namespace              : ns
+	});
+}, this);
 
 var report;
 

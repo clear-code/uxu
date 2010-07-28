@@ -2,13 +2,21 @@
 
 var topDir = baseURL+'../../../../';
 
-var ReadableDiffer;
+var ns = {};
+[
+	topDir+'modules/diff.js'
+].forEach(function(aURI) {
+	utils.include({
+		uri                    : aURI,
+		encoding               : 'Shift_JIS',
+		allowOverrideConstants : true,
+		namespace              : ns
+	});
+}, this);
+var ReadableDiffer = ns.ReadableDiffer;
 
 function setUp()
 {
-    var ns = {};
-    utils.include(topDir+'modules/diff.js', ns);
-    ReadableDiffer = ns.ReadableDiffer;
 }
 
 function testDiffLines()

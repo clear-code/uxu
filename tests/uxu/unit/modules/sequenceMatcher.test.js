@@ -2,13 +2,21 @@
 
 var topDir = baseURL+'../../../../';
 
-var SequenceMatcher;
+var ns = {};
+[
+	topDir+'modules/diff.js'
+].forEach(function(aURI) {
+	utils.include({
+		uri                    : aURI,
+		encoding               : 'Shift_JIS',
+		allowOverrideConstants : true,
+		namespace              : ns
+	});
+}, this);
+var SequenceMatcher = ns.SequenceMatcher;
 
 function setUp()
 {
-    var ns = {};
-    utils.include(topDir+'modules/diff.js', ns);
-    SequenceMatcher = ns.SequenceMatcher;
 }
 
 function testToIndexes()

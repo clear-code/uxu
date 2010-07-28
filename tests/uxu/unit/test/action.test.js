@@ -1,8 +1,17 @@
 var topDir = baseURL+'../../../../';
 
-var ActionsClass = {};
-utils.include(topDir+'modules/test/action.js', ActionsClass);
-ActionsClass = ActionsClass.Action;
+var ns = {};
+[
+	topDir+'modules/test/action.js'
+].forEach(function(aURI) {
+	utils.include({
+		uri                    : aURI,
+		encoding               : 'Shift_JIS',
+		allowOverrideConstants : true,
+		namespace              : ns
+	});
+}, this);
+var ActionsClass = ns.Action;
 
 var actionModule;
 

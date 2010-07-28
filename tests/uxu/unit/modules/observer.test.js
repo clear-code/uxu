@@ -2,9 +2,18 @@
 
 var topDir = baseURL+'../../../../';
 
-var ObserverClass = {};
-utils.include(topDir+'modules/observer.js', ObserverClass);
-ObserverClass = ObserverClass.Observer;
+var ns = {};
+[
+	topDir+'modules/observer.js'
+].forEach(function(aURI) {
+	utils.include({
+		uri                    : aURI,
+		encoding               : 'Shift_JIS',
+		allowOverrideConstants : true,
+		namespace              : ns
+	});
+}, this);
+var ObserverClass = ns.Observer;
 
 var observer;
 

@@ -6,7 +6,16 @@ var priority = 'must';
 var topDir = baseURL+'../../';
 
 var ns = {};
-Components.utils.import('resource://uxu-modules/diff.js', ns);
+[
+	topDir+'modules/diff.js'
+].forEach(function(aURI) {
+	utils.include({
+		uri                    : aURI,
+		encoding               : 'Shift_JIS',
+		allowOverrideConstants : true,
+		namespace              : ns
+	});
+}, this);
 var ReadableDiffer = ns.ReadableDiffer;
 
 function setUp()

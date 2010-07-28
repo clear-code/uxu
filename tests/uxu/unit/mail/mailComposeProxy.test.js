@@ -3,18 +3,23 @@ var topDir = baseURL+'../../../../';
 
 utils.include('mailComposeStub.inc.js');
 
-var ObserverClass;
-var MailComposeProxy;
+var ns = {};
+[
+	topDir+'modules/observer.js',
+	topDir+'modules/mail/mailComposeProxy.js'
+].forEach(function(aURI) {
+	utils.include({
+		uri                    : aURI,
+		encoding               : 'Shift_JIS',
+		allowOverrideConstants : true,
+		namespace              : ns
+	});
+}, this);
+var ObserverClass = ns.Observer;
+var MailComposeProxy = ns.MailComposeProxy;
 
 function startUp()
 {
-	ObserverClass = {};
-	utils.include(topDir+'modules/observer.js', ObserverClass);
-	ObserverClass = ObserverClass.Observer;
-
-	MailComposeProxy = {};
-	utils.include(topDir+'modules/mail/mailComposeProxy.js', MailComposeProxy);
-	MailComposeProxy = MailComposeProxy.MailComposeProxy;
 }
 
 var proxy;

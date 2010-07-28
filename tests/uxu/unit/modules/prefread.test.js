@@ -4,12 +4,21 @@ utils.include('prefread.inc.js');
 
 var topDir = baseURL+'../../../../';
 
-var prefreadModule;
+var ns = {};
+[
+	topDir+'modules/diff.js'
+].forEach(function(aURI) {
+	utils.include({
+		uri                    : aURI,
+		encoding               : 'Shift_JIS',
+		allowOverrideConstants : true,
+		namespace              : ns
+	});
+}, this);
+var prefreadModule = { prefread : ns.prefread };
 
 function setUp()
 {
-	prefreadModule = {};
-	utils.include(topDir+'modules/prefread.js', prefreadModule);
 }
 
 function tearDown()

@@ -1,11 +1,19 @@
 var topDir = baseURL+'../../../../';
-var Diff;
+var ns = {};
+[
+	topDir+'modules/diff.js'
+].forEach(function(aURI) {
+	utils.include({
+		uri                    : aURI,
+		encoding               : 'Shift_JIS',
+		allowOverrideConstants : true,
+		namespace              : ns
+	});
+}, this);
+var Diff = ns.Diff;
 
 function setUp()
 {
-    var ns = {};
-    utils.include(topDir+'modules/diff.js', ns);
-    Diff = ns.Diff;
 }
 
 function testIsInterested()

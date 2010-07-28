@@ -3,7 +3,16 @@ var targetProduct = 'Firefox';
 var topDir = baseURL+'../../../../';
 
 var ns = {};
-utils.include(topDir+'modules/test/greasemonkey.js', ns);
+[
+	topDir+'modules/test/greasemonkey.js'
+].forEach(function(aURI) {
+	utils.include({
+		uri                    : aURI,
+		encoding               : 'Shift_JIS',
+		allowOverrideConstants : true,
+		namespace              : ns
+	});
+}, this);
 
 var GMUtils;
 

@@ -2,22 +2,26 @@ var targetProduct = 'Thunderbird';
 
 var topDir = baseURL+'../../../../';
 
-var ObserverClass;
-var UtilsClass;
+var ns = {};
+[
+	topDir+'modules/observer.js',
+	topDir+'modules/mail/utils.js'
+].forEach(function(aURI) {
+	utils.include({
+		uri                    : aURI,
+		encoding               : 'Shift_JIS',
+		allowOverrideConstants : true,
+		namespace              : ns
+	});
+}, this);
+var ObserverClass = ns.Observer;
+var UtilsClass = ns.MailUtils;
 var utilsModule;
 
 var observer;
 
 function setUp()
 {
-	ObserverClass = {};
-	utils.include(topDir+'modules/observer.js', ObserverClass);
-	ObserverClass = ObserverClass.Observer;
-
-	UtilsClass = {};
-	utils.include(topDir+'modules/mail/utils.js', UtilsClass);
-	UtilsClass = UtilsClass.MailUtils;
-
 	utilsModule = new UtilsClass(this);
 }
 

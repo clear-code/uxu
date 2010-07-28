@@ -4,7 +4,8 @@ var ns = {};
 [
 	topDir+'modules/test/report.js',
 	topDir+'modules/test/log.js',
-	topDir+'modules/test/testCase.js'
+	topDir+'modules/test/testCase.js',
+	topDir+'modules/lib/stringBundle.js'
 ].forEach(function(aURI) {
 	utils.include({
 		uri                    : aURI,
@@ -18,9 +19,7 @@ var Report = ns.Report;
 var TestLogClass = ns.TestLog;
 var TestCaseClass = ns.TestCase;
 
-var ns = {};
-Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
-var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
+var bundle = ns.stringBundle.get(topDir+'locale/ja/uxu/uxu.properties');
 
 function createReports(aTestCase)
 {

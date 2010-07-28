@@ -6,8 +6,13 @@ var topDir = baseURL+'../../../../';
 var utilsModule;
 
 var ns = {};
-Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
-var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
+utils.include({
+	uri                    : topDir+'modules/lib/stringBundle.js',
+	encoding               : 'Shift_JIS',
+	allowOverrideConstants : true,
+	namespace              : ns
+});
+var bundle = ns.stringBundle.get(topDir+'locale/ja/uxu/uxu.properties');
 
 function clearWindowsRegistryKey(aRoot, aPath)
 {

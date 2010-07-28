@@ -3,7 +3,16 @@
 var topDir = baseURL+'../../../../';
 
 var ns = {};
-utils.include(topDir+'modules/test/runner.js', ns);
+[
+	topDir+'modules/test/runner.js'
+].forEach(function(aURI) {
+	utils.include({
+		uri                    : aURI,
+		encoding               : 'Shift_JIS',
+		allowOverrideConstants : true,
+		namespace              : ns
+	});
+}, this);
 var Runner = ns.TestRunner;
 
 var declarationStyleTest = topDir+'tests/samples/declaration.test.js';

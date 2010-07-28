@@ -1,13 +1,20 @@
 var topDir = baseURL+'../../../../';
-var Color;
-var MixColor;
+var ns = {};
+[
+	topDir+'modules/color.js'
+].forEach(function(aURI) {
+	utils.include({
+		uri                    : aURI,
+		encoding               : 'Shift_JIS',
+		allowOverrideConstants : true,
+		namespace              : ns
+	});
+}, this);
+var Color = ns.Color;
+var MixColor = ns.MixColor;
 
 function setUp()
 {
-    var color = {};
-    utils.include(topDir+'modules/color.js', color);
-    Color = color.Color;
-    MixColor = color.MixColor;
 }
 
 function testColorEscapeSequence()
