@@ -742,7 +742,7 @@ createTempFolder : function() { return this.makeTempFolder.apply(this, arguments
  
 cleanUpTempFiles : function(aDelayed) 
 {
-	_cleanUpTempFiles(aDelayed, null, this);
+	this._cleanUpTempFiles(aDelayed, null, this);
 },
 _cleanUpTempFiles : function(aDelayed, aTempFiles, aSelf)
 {
