@@ -1,8 +1,9 @@
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
-var lib_module = new ModuleManager(['chrome://uxu/content/lib']); 
-var utils  = lib_module.require('package', 'utils');
+var utils = {}; 
+Components.utils.import('resource://uxu-modules/utils.js', utils);
+utils = utils.utils;
 
 var mail_module = new ModuleManager(['chrome://uxu/content/mail']); 
 var mailUtils = mail_module.require('package', 'utils');

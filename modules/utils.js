@@ -1,6 +1,9 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*- 
 
-const Cc = Components.classes;
+if (typeof window == 'undefined')
+	this.EXPORTED_SYMBOLS = ['utils', 'Utils'];
+	
+const Cc = Components.classes; 
 const Ci = Components.interfaces;
 
 var ns = {};
@@ -10,6 +13,7 @@ Components.utils.import('resource://uxu-modules/lib/encoding.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/ejs.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/hash.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/registry.jsm', ns);
+Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
 
 var prefread = {};
 Components.utils.import('resource://uxu-modules/prefread.js', prefread);
@@ -19,14 +23,29 @@ var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 ns.encoding.export(this);
 ns.hash.export(this);
 
-var IOService = Cc['@mozilla.org/network/io-service;1']
-		.getService(Ci.nsIIOService);
-	
-function constructor() 
-{
-}
+const IOService = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
+
+const XULAppInfo = Cc['@mozilla.org/xre/app-info;1'].getService(Ci.nsIXULAppInfo);
+const Comparator = Cc['@mozilla.org/xpcom/version-comparator;1'].getService(Ci.nsIVersionComparator);
+
+var Application = '@mozilla.org/fuel/application;1' in Cc ?
+			Cc['@mozilla.org/fuel/application;1'].getService(Ci.fuelIApplication) :
+		'@mozilla.org/steel/application;1' in Cc ?
+			Cc['@mozilla.org/steel/application;1'].getService(Ci.steelIApplication) :
+			null ;
+
+const isThreadManagerAvailable = '@mozilla.org/thread-manager;1' in Cc;
+
+var _db = null;
  
-function evalInSandbox(aCode, aOwner) 
+function Utils() 
+{
+	this.tempFiles = [];
+	this.backupPrefs = {};
+}
+Utils.prototype = {
+	
+evalInSandbox : function(aCode, aOwner) 
 {
 	try {
 		var sandbox = new Components.utils.Sandbox(aOwner || 'about:blank');
@@ -35,11 +54,11 @@ function evalInSandbox(aCode, aOwner)
 	catch(e) {
 	}
 	return void(0);
-}
+},
  
 // DOMノード取得 
 	
-function _getDocument(aOwner) 
+_getDocument : function(aOwner) 
 {
 	var doc = !aOwner ?
 				document :
@@ -52,19 +71,19 @@ function _getDocument(aOwner)
 				null;
 	if (!doc) throw new Error(bundle.getFormattedString('error_utils_invalid_owner', [aOwner]));
 	return doc;
-}
+},
  
-function $(aNodeOrID, aOwner) 
+$ : function(aNodeOrID, aOwner) 
 {
 	if (typeof aNodeOrID == 'string') {
-		var doc = _getDocument(aOwner);
+		var doc = this._getDocument(aOwner);
 		return doc.getElementById(aNodeOrID);
 	}
 	return aNodeOrID;
-}
+},
  
 // http://lowreal.net/logs/2006/03/16/1
-function $X() 
+$X : function() 
 {
 	if (!arguments || !arguments.length)
 		throw new Error(bundle.getString('error_utils_no_xpath_expression'));
@@ -92,61 +111,59 @@ function $X()
 
 	if (!expression) throw new Error(bundle.getString('error_utils_no_xpath_expression'));
 
-	var doc = _getDocument(context);
+	var doc = this._getDocument(context);
 	if (!context) context = doc;
 
 	var result = doc.evaluate(
 			expression,
 			context,
 			resolver,
-			type || XPathResult.ANY_TYPE,
+			type || Ci.nsIDOMXPathResult.ANY_TYPE,
 			null
 		);
 	switch (type || result.resultType)
 	{
-		case XPathResult.STRING_TYPE:
+		case Ci.nsIDOMXPathResult.STRING_TYPE:
 			return result.stringValue;
-		case XPathResult.NUMBER_TYPE:
+		case Ci.nsIDOMXPathResult.NUMBER_TYPE:
 			return result.numberValue;
-		case XPathResult.BOOLEAN_TYPE:
+		case Ci.nsIDOMXPathResult.BOOLEAN_TYPE:
 			return result.booleanValue;
-		case XPathResult.UNORDERED_NODE_ITERATOR_TYPE:
-		case XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE:
-		case XPathResult.ORDERED_NODE_ITERATOR_TYPE:
+		case Ci.nsIDOMXPathResult.UNORDERED_NODE_ITERATOR_TYPE:
+		case Ci.nsIDOMXPathResult.UNORDERED_NODE_SNAPSHOT_TYPE:
+		case Ci.nsIDOMXPathResult.ORDERED_NODE_ITERATOR_TYPE:
 			result = doc.evaluate(
 				expression,
 				context,
 				resolver,
-				XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+				Ci.nsIDOMXPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
 				null
 			);
-		case XPathResult.ORDERED_NODE_SNAPSHOT_TYPE:
+		case Ci.nsIDOMXPathResult.ORDERED_NODE_SNAPSHOT_TYPE:
 			var nodes = [];
 			for (let i = 0, maxi = result.snapshotLength; i < maxi; i++)
 			{
 				nodes.push(result.snapshotItem(i));
 			}
 			return nodes;
-		case XPathResult.ANY_UNORDERED_NODE_TYPE:
-		case XPathResult.FIRST_ORDERED_NODE_TYPE:
+		case Ci.nsIDOMXPathResult.ANY_UNORDERED_NODE_TYPE:
+		case Ci.nsIDOMXPathResult.FIRST_ORDERED_NODE_TYPE:
 			return result.singleNodeValue;
 	}
 	return null;
-}
+},
   
 // タイマー操作 
 	
 // http://d.hatena.ne.jp/fls/20090224/p1
-const isThreadManagerAvailable = '@mozilla.org/thread-manager;1' in Cc; 
- 
-function sleep(aWait) 
+sleep : function(aWait) 
 {
 	if (!isThreadManagerAvailable)
 		throw new Error(bundle.getString('error_utils_sleep_is_not_available'));
-	wait(aWait);
-}
+	this.wait(aWait);
+},
  
-function wait(aWaitCondition) 
+wait : function(aWaitCondition) 
 {
 	if (!isThreadManagerAvailable)
 		throw new Error(bundle.getString('error_utils_wait_is_not_available'));
@@ -165,32 +182,32 @@ function wait(aWaitCondition)
 			if (aWaitCondition < 0)
 				throw new Error(bundle.getFormattedString('error_utils_wait_unknown_condition', [String(aWaitCondition)]));
 
-			var timer = window.setTimeout(function() {
+			var timer = ns.setTimeout(function() {
 					finished.value = true;
-					window.clearTimeout(timer);
+					ns.clearTimeout(timer);
 				}, aWaitCondition);
 			break;
 
 		case 'function':
 			var retVal = aWaitCondition();
-			if (isGeneratedIterator(retVal)) {
-				finished = doIteration(retVal);
+			if (this.isGeneratedIterator(retVal)) {
+				finished = this.doIteration(retVal);
 			}
 			else if (retVal) {
 				finished.value = true;
 			}
 			else {
-				let timer = window.setInterval(function() {
+				let timer = ns.setInterval(function() {
 						finished.value = aWaitCondition();
 						if (finished.value)
-							window.clearInterval(timer);
+							ns.clearInterval(timer);
 					}, 10);
 			}
 			break;
 
 		case 'object':
-			if (isGeneratedIterator(aWaitCondition)) {
-				finished = doIteration(aWaitCondition);
+			if (this.isGeneratedIterator(aWaitCondition)) {
+				finished = this.doIteration(aWaitCondition);
 			}
 			else {
 				if (!aWaitCondition || !('value' in aWaitCondition))
@@ -209,31 +226,31 @@ function wait(aWaitCondition)
 		if (Date.now() - lastRun >= timeout)
 			throw new Error(bundle.getFormattedString('error_utils_wait_timeout', [parseInt(timeout / 1000)]));
 	}
-}
+},
   
 // ファイル操作 
 	
-function normalizeToFile(aFile) 
+normalizeToFile : function(aFile) 
 {
 	if (typeof aFile == 'string') {
 		aFile = this.fixupIncompleteURI(aFile);
 		if (aFile.match(/^\w+:\/\//))
-			aFile = makeURIFromSpec(aFile);
+			aFile = this.makeURIFromSpec(aFile);
 		else
-			aFile = makeFileWithPath(aFile);
+			aFile = this.makeFileWithPath(aFile);
 	}
 	try {
 		aFile = aFile.QueryInterface(Ci.nsILocalFile)
 	}
 	catch(e) {
 		aFile = aFile.QueryInterface(Ci.nsIURI);
-		aFile = getFileFromURLSpec(aFile.spec);
+		aFile = this.getFileFromURLSpec(aFile.spec);
 	}
 	return aFile;
-}
+},
  
 // URI文字列からnsIURIのオブジェクトを生成 
-function makeURIFromSpec(aURI)
+makeURIFromSpec : function(aURI)
 {
 	try {
 		var newURI;
@@ -254,29 +271,28 @@ function makeURIFromSpec(aURI)
 	catch(e){
 	}
 	return null;
-}
+},
  
-// ファイルのパスからnsIFileのオブジェクトを生成 
-function makeFileWithPath(aPath)
+makeFileWithPath : function(aPath) 
 {
 	var newFile = Cc['@mozilla.org/file/local;1']
 					.createInstance(Ci.nsILocalFile);
 	newFile.initWithPath(aPath);
 	return newFile;
-}
-function getFileFromPath(aPath) // alias
+},
+getFileFromPath : function(aPath) // alias
 {
-	return makeFileWithPath(aPath);
-}
+	return this.makeFileWithPath(aPath);
+},
  
 // URL→ファイル 
 	
-function getFileFromURL(aURI) 
+getFileFromURL : function(aURI) 
 {
-	return getFileFromURLSpec(aURI.spec);
-}
+	return this.getFileFromURLSpec(aURI.spec);
+},
  
-function getFileFromURLSpec(aURI) 
+getFileFromURLSpec : function(aURI) 
 {
 	if (!aURI)
 		aURI = '';
@@ -284,7 +300,7 @@ function getFileFromURLSpec(aURI)
 	if (aURI.indexOf('chrome://') == 0) {
 		var ChromeRegistry = Cc["@mozilla.org/chrome/chrome-registry;1"]
 			.getService(Ci.nsIChromeRegistry);
-		aURI = ChromeRegistry.convertChromeURL(makeURIFromSpec(aURI)).spec;
+		aURI = ChromeRegistry.convertChromeURL(this.makeURIFromSpec(aURI)).spec;
 	}
 
 	if (aURI.indexOf('file://') != 0) return null;
@@ -292,63 +308,62 @@ function getFileFromURLSpec(aURI)
 	var fileHandler = IOService.getProtocolHandler('file')
 						.QueryInterface(Ci.nsIFileProtocolHandler);
 	return fileHandler.getFileFromURLSpec(aURI);
-}
+},
  
-function getFilePathFromURL(aURI) 
+getFilePathFromURL : function(aURI) 
 {
-	return getFileFromURLSpec(aURI.spec).path;
-}
+	return this.getFileFromURLSpec(aURI.spec).path;
+},
  
-function getFilePathFromURLSpec(aURI) 
+getFilePathFromURLSpec : function(aURI) 
 {
-	return getFileFromURLSpec(aURI).path;
-}
+	return this.getFileFromURLSpec(aURI).path;
+},
   
 // キーワード→ファイル 
-var DirectoryService = Cc['@mozilla.org/file/directory_service;1']
-		.getService(Ci.nsIProperties);
 	
-function getFileFromKeyword(aKeyword) 
+getFileFromKeyword : function(aKeyword) 
 {
 	try {
+		const DirectoryService = Cc['@mozilla.org/file/directory_service;1'].getService(Ci.nsIProperties);
 		return DirectoryService.get(aKeyword, Ci.nsIFile);
 	}
 	catch(e) {
 	}
 	return null;
-}
+},
  
-function getFilePathFromKeyword(aKeyword) 
+getFilePathFromKeyword : function(aKeyword) 
 {
-	var file = getFileFromKeyword(aKeyword);
+	var file = this.getFileFromKeyword(aKeyword);
 	return file ? file.path : null ;
-}
+},
   
 // ファイル→URL 
 	
-function getURLFromFile(aFile) 
+getURLFromFile : function(aFile) 
 {
 	return IOService.newFileURI(aFile);
-}
+},
  
-function getURLFromFilePath(aPath) 
+getURLFromFilePath : function(aPath) 
 {
-	var tempLocalFile = makeFileWithPath(aPath);
-	return getURLFromFile(tempLocalFile);
-}
+	var tempLocalFile = this.makeFileWithPath(aPath);
+	return this.getURLFromFile(tempLocalFile);
+},
  
-function getURLSpecFromFile(aFile) 
+getURLSpecFromFile : function(aFile) 
 {
 	return IOService.newFileURI(aFile).spec;
-}
+},
  
-function getURLSpecFromFilePath(aPath) 
+getURLSpecFromFilePath : function(aPath) 
 {
-	return getURLFromFilePath(aPath).spec;
-}
+	return this.getURLFromFilePath(aPath).spec;
+},
   
 // ファイルまたはURIで示された先のリソースを読み込み、文字列として返す 
-function readFrom(aTarget, aEncoding)
+readFrom : function(aTarget, aEncoding)
 {
 	var target = this.normalizeToFile(aTarget);
 	if (!target)
@@ -398,10 +413,10 @@ function readFrom(aTarget, aEncoding)
 	}
 
 	return fileContents;
-}
+},
  
 // ファイルパスまたはURLで示された先のテキストファイルに文字列を書き出す 
-function writeTo(aContent, aTarget, aEncoding)
+writeTo : function(aContent, aTarget, aEncoding)
 {
 	target = this.normalizeToFile(aTarget);
 	if (!target)
@@ -418,7 +433,7 @@ function writeTo(aContent, aTarget, aEncoding)
 		}
 	})(target.parent);
 
-	var tempFile = getFileFromKeyword('TmpD');
+	var tempFile = this.getFileFromKeyword('TmpD');
 	tempFile.append(target.localName+'.writing');
 	tempFile.createUnique(tempFile.NORMAL_FILE_TYPE, 0666);
 
@@ -444,51 +459,51 @@ function writeTo(aContent, aTarget, aEncoding)
 	tempFile.moveTo(target.parent, target.leafName);
 
 	return target;
-}
+},
  
-function readCSV(aTarget, aEncoding, aScope, aDelimiter) 
+readCSV : function(aTarget, aEncoding, aScope, aDelimiter) 
 {
 	var input = this.readFrom(aTarget, aEncoding || this.getPref('extensions.uxu.defaultEncoding'));
-	if (aScope) input = processTemplate(input, aScope);
-	return parseCSV(input, aDelimiter);
-}
+	if (aScope) input = this.processTemplate(input, aScope);
+	return this.parseCSV(input, aDelimiter);
+},
  
-function readTSV(aTarget, aEncoding, aScope) 
+readTSV : function(aTarget, aEncoding, aScope) 
 {
 	return this.readCSV(aTarget, aEncoding, aScope, '\t');
-}
+},
  
-function readParametersFromCSV(aTarget, aEncoding, aScope) 
+readParametersFromCSV : function(aTarget, aEncoding, aScope) 
 {
-	return _parseParametersFrom2DArray(this.readCSV(aTarget, aEncoding, aScope));
-}
-var readParameterFromCSV = readParametersFromCSV;
-var readParamsFromCSV = readParametersFromCSV;
-var readParamFromCSV = readParametersFromCSV;
+	return this._parseParametersFrom2DArray(this.readCSV(aTarget, aEncoding, aScope));
+},
+readParameterFromCSV : function() { return this.readParametersFromCSV.apply(this, arguments); },
+readParamsFromCSV : function() { return this.readParametersFromCSV.apply(this, arguments); },
+readParamFromCSV : function() { return this.readParametersFromCSV.apply(this, arguments); },
  
-function readParametersFromTSV(aTarget, aEncoding, aScope) 
+readParametersFromTSV : function(aTarget, aEncoding, aScope) 
 {
-	return _parseParametersFrom2DArray(this.readTSV(aTarget, aEncoding, aScope));
-}
-var readParameterFromTSV = readParametersFromTSV;
-var readParamsFromTSV = readParametersFromTSV;
-var readParamFromTSV = readParametersFromTSV;
+	return this._parseParametersFrom2DArray(this.readTSV(aTarget, aEncoding, aScope));
+},
+readParameterFromTSV : function() { return this.readParametersFromTSV.apply(this, arguments); },
+readParamsFromTSV : function() { return this.readParametersFromTSV.apply(this, arguments); },
+readParamFromTSV : function() { return this.readParametersFromTSV.apply(this, arguments); },
  
-function readJSON(aTarget, aEncoding, aScope) 
+readJSON : function(aTarget, aEncoding, aScope) 
 {
 	var input = this.readFrom(aTarget, aEncoding || this.getPref('extensions.uxu.defaultEncoding'));
-	if (aScope) input = processTemplate(input, aScope);
+	if (aScope) input = this.processTemplate(input, aScope);
 	try {
-		input = evalInSandbox('('+input+')');
+		input = this.evalInSandbox('('+input+')');
 	}
 	catch(e) {
 		throw new Error(bundle.getFormattedString('error_utils_readJSON_error', [e]));
 	}
 	return input;
-}
+},
  
 // Subversionが作る不可視のファイルなどを除外して、普通に目に見えるファイルだけを複製する 
-function cosmeticClone(aOriginal, aDest, aName, aInternalCall)
+cosmeticClone : function(aOriginal, aDest, aName, aInternalCall)
 {
 	var orig = this.normalizeToFile(aOriginal);
 	var dest = this.normalizeToFile(aDest);
@@ -533,14 +548,14 @@ function cosmeticClone(aOriginal, aDest, aName, aInternalCall)
 		orig.copyTo(dest, aName);
 		return destFile;
 	}
-}
+},
  
 // 遅延削除 
 	
-function scheduleToRemove(aFile) 
+scheduleToRemove : function(aFile) 
 {
 	if (!this.scheduledFiles) this.scheduledFiles = {};
-	aFile = normalizeToFile(aFile);
+	aFile = this.normalizeToFile(aFile);
 	if (aFile.path in this.scheduledFiles) return;
 
 	this.scheduledFiles[aFile.path] = {
@@ -550,19 +565,19 @@ function scheduleToRemove(aFile)
 
 	if (!this.scheduledRemoveTimer)
 		this.startScheduledRemove(this);
-}
+},
  
-function startScheduledRemove(aThis) 
+startScheduledRemove : function(aSelf) 
 {
-	if (!aThis) aThis = this;
-	if (aThis.scheduledRemoveTimer) aThis.stopScheduledRemove();
-	aThis.scheduledRemoveTimer = window.setTimeout(function(aThis) {
-		if (aThis.scheduledFiles) {
+	if (!aSelf) aSelf = this;
+	if (aSelf.scheduledRemoveTimer) aSelf.stopScheduledRemove();
+	aSelf.scheduledRemoveTimer = ns.setTimeout(function(aSelf) {
+		if (aSelf.scheduledFiles) {
 			var incomplete = false;
 			var incompleted = {};
-			for (var i in aThis.scheduledFiles)
+			for (var i in aSelf.scheduledFiles)
 			{
-				schedule = aThis.scheduledFiles[i];
+				schedule = aSelf.scheduledFiles[i];
 				try {
 					if (schedule.count < 100)
 						schedule.file.remove(true);
@@ -574,28 +589,25 @@ function startScheduledRemove(aThis)
 				}
 			}
 			if (incomplete) {
-				aThis.scheduledFiles = incompleted;
-				aThis.scheduledRemoveTimer = window.setTimeout(arguments.callee, 500, aThis)
+				aSelf.scheduledFiles = incompleted;
+				aSelf.scheduledRemoveTimer = ns.setTimeout(arguments.callee, 500, aSelf)
 				return;
 			}
-			aThis.scheduledFiles = {};
+			aSelf.scheduledFiles = {};
 		}
-		aThis.stopScheduledRemove();
-		// aThis.scheduledRemoveTimer = window.setTimeout(arguments.callee, 5000, aThis)
-	}, 5000, aThis);
-}
+		aSelf.stopScheduledRemove();
+		// aSelf.scheduledRemoveTimer = ns.setTimeout(arguments.callee, 5000, aSelf)
+	}, 5000, aSelf);
+},
  
-function stopScheduledRemove() 
+stopScheduledRemove : function() 
 {
 	if (!this.scheduledRemoveTimer) return;
-	window.clearTimeout(this.scheduledRemoveTimer);
+	ns.clearTimeout(this.scheduledRemoveTimer);
 	this.scheduledRemoveTimer = null;
-}
+},
   
-var loader = Cc['@mozilla.org/moz/jssubscript-loader;1'] 
-		.getService(Ci.mozIJSSubScriptLoader);
-
-function include(aSource, aEncoding, aScope)
+include : function(aSource, aEncoding, aScope) 
 {
 	var allowOverrideConstants = false;
 
@@ -628,19 +640,20 @@ function include(aSource, aEncoding, aScope)
 	}
 	aScope = aScope || {};
 	aScope._lastEvaluatedScript = script;
-	loader.loadSubScript(
-		'chrome://uxu/content/lib/subScriptRunner.js?includeSource='+
-			encodeURIComponent(aSource)+
-			';encoding='+encoding,
-		aScope
-	);
+	Cc['@mozilla.org/moz/jssubscript-loader;1']
+		.getService(Ci.mozIJSSubScriptLoader)
+		.loadSubScript(
+			'chrome://uxu/content/lib/subScriptRunner.js?includeSource='+
+				encodeURIComponent(aSource)+
+				';encoding='+encoding,
+			aScope
+		);
 	return script;
-};
+},
  
 // テンポラリファイル 
-var tempFiles = [];
 	
-function makeTempFile(aOriginal, aCosmetic) 
+makeTempFile : function(aOriginal, aCosmetic) 
 {
 	var temp = this.getFileFromKeyword('TmpD');
 	if (aOriginal) {
@@ -688,31 +701,31 @@ function makeTempFile(aOriginal, aCosmetic)
 		this.tempFiles.push(temp);
 		return temp;
 	}
-};
-var createTempFile = makeTempFile;
+},
+createTempFile : function() { return this.makeTempFile.apply(this, arguments); },
  
-function makeTempFolder(aOriginal, aCosmetic) 
+makeTempFolder : function(aOriginal, aCosmetic) 
 {
 	if (aOriginal)
-		return makeTempFile(aOriginal, aCosmetic);
+		return this.makeTempFile(aOriginal, aCosmetic);
 
 	var temp = this.getFileFromKeyword('TmpD');
 	temp.append('uxu.tmp_dir');
 	temp.createUnique(temp.DIRECTORY_TYPE, 0777);
 	this.tempFiles.push(temp);
 	return temp;
-};
-var makeTempDir = makeTempFolder;
-var makeTempDirectory = makeTempFolder;
-var createTempDir = makeTempFolder;
-var createTempDirectory = makeTempFolder;
-var createTempFolder = makeTempFolder;
+},
+makeTempDir : function() { return this.makeTempFolder.apply(this, arguments); },
+makeTempDirectory : function() { return this.makeTempFolder.apply(this, arguments); },
+createTempDir : function() { return this.makeTempFolder.apply(this, arguments); },
+createTempDirectory : function() { return this.makeTempFolder.apply(this, arguments); },
+createTempFolder : function() { return this.makeTempFolder.apply(this, arguments); },
  
-function cleanUpTempFiles(aDelayed) 
+cleanUpTempFiles : function(aDelayed) 
 {
 	_cleanUpTempFiles(aDelayed, null, this);
-};
-function _cleanUpTempFiles(aDelayed, aTempFiles, aSelf)
+},
+_cleanUpTempFiles : function(aDelayed, aTempFiles, aSelf)
 {
 	if (!aSelf) aSelf = this;
 	if (!aTempFiles) {
@@ -720,7 +733,7 @@ function _cleanUpTempFiles(aDelayed, aTempFiles, aSelf)
 		aSelf.tempFiles.splice(0, aSelf.tempFiles.length);
 	}
 	if (aDelayed) {
-		window.setTimeout(arguments.callee, 1000, false, aTempFiles, aSelf);
+		ns.setTimeout(arguments.callee, 1000, false, aTempFiles, aSelf);
 		return;
 	}
 	aTempFiles.forEach(function(aFile) {
@@ -730,91 +743,87 @@ function _cleanUpTempFiles(aDelayed, aTempFiles, aSelf)
 		}
 		catch(e) {
 			var message = 'failed to remove temporary file:\n'+aFile.path+'\n'+e;
-			if ('Application' in window)
+			if (Application)
 				Application.console.log(message);
 			else
-				window.dump(message+'\n');
+				dump(message+'\n');
+
 			aSelf.scheduleToRemove(aFile);
 		}
 	});
-};
+},
   
-function runScriptInFrame(aScript, aFrame, aVersion) 
+runScriptInFrame : function(aScript, aFrame, aVersion) 
 {
 	if (!aVersion) aVersion = '1.7';
 	var script = aFrame.document.createElementNS('http://www.w3.org/1999/xhtml', 'script');
 	script.setAttribute('type', 'application/javascript; version='+aVersion);
 	script.appendChild(aFrame.document.createTextNode(aScript));
 	aFrame.document.documentElement.appendChild(script);
-}
+},
   
 // エラー・スタックトレース整形 
 	
-function normalizeError(e) 
+normalizeError : function(e) 
 {
 	switch (typeof e)
 	{
 		case 'number':
 			var msg = bundle.getFormattedString('unknown_exception', [e]);
-			for (var i in Components.results)
+			for (let i in Components.results)
 			{
 				if (Components.results[i] != e) continue;
 				msg = i+' ('+e+')';
 				break;
 			}
 			e = new Error(msg);
-			e.stack = getStackTrace();
+			e.stack = this.getStackTrace();
 			break;
 
 		case 'string':
 		case 'boolean':
 			var msg = bundle.getFormattedString('unknown_exception', [e]);
 			e = new Error(msg);
-			e.stack = getStackTrace();
+			e.stack = this.getStackTrace();
 			break;
 	}
 	return e;
-}
+},
  
-function formatError(e) 
+formatError : function(e) 
 {
-	var lines = formatStackTrace(e, { onlyFile : true, onlyExternal : true, onlyTraceLine : true });
+	var lines = this.formatStackTrace(e, { onlyFile : true, onlyExternal : true, onlyTraceLine : true });
 	if (!lines || this.getPref('extensions.uxu.showInternalStacks'))
-		lines = formatStackTrace(e, { onlyFile : true, onlyTraceLine : true });
+		lines = this.formatStackTrace(e, { onlyFile : true, onlyTraceLine : true });
 	return e.toString() + '\n' + lines;
-}
+},
  
-function hasStackTrace(aException) 
+hasStackTrace : function(aException) 
 {
 	return aException.stack ||
-		(aException.location && JSFrameLocationRegExp.test(aException.location));
-}
+		(aException.location && this.JSFrameLocationRegExp.test(aException.location));
+},
  
-function formatStackTraceForDisplay(aException) 
+formatStackTraceForDisplay : function(aException) 
 {
-	var lines = formatStackTrace(aException, { onlyTraceLine : true, onlyExternal : true }).split('\n');
+	var lines = this.formatStackTrace(aException, { onlyTraceLine : true, onlyExternal : true }).split('\n');
 	if (!lines.length ||
 		(lines.length == 1 && !lines[0]) ||
 		this.getPref('extensions.uxu.showInternalStacks'))
-		lines = formatStackTrace(aException, { onlyTraceLine : true }).split('\n');
+		lines = this.formatStackTrace(aException, { onlyTraceLine : true }).split('\n');
 	lines = lines.filter(function(aLine) {
 		return aLine;
 	});
 	return lines;
-}
+},
  
-var lineRegExp = /@\w+:.+:\d+/; 
-var JSFrameLocationRegExp = /JS frame :: (.+) :: .+ :: line (\d+)/;
-var subScriptRegExp = /@chrome:\/\/uxu\/content\/lib\/subScriptRunner\.js(?:\?includeSource=([^;,:]+)(?:;encoding=[^;,:]+)?|\?code=([^;,:]+))?:(\d+)$/i;
-function formatStackTrace(aException, aOptions)
+lineRegExp : /@\w+:.+:\d+/, 
+JSFrameLocationRegExp : /JS frame :: (.+) :: .+ :: line (\d+)/,
+subScriptRegExp : /@chrome:\/\/uxu\/content\/lib\/subScriptRunner\.js(?:\?includeSource=([^;,:]+)(?:;encoding=[^;,:]+)?|\?code=([^;,:]+))?:(\d+)$/i,
+ 
+formatStackTrace : function(aException, aOptions) 
 {
 	if (!aOptions) aOptions = {};
-	function comesFromFramework(aLine)
-	{
-		return (/@chrome:\/\/uxu\/content\//.test(aLine) ||
-				// Following is VERY kludgy
-				/\(function \(aExitResult\) \{if \(aEventHandlers/.test(aLine))
-	}
 
 	var trace = '';
 	var stackLines = [];
@@ -824,7 +833,7 @@ function formatStackTrace(aException, aOptions)
 		exceptionPosition = "@" + aException.fileName;
 		exceptionPosition += ":" + aException.lineNumber;
 
-		if (exceptionPosition.match(subScriptRegExp)) {
+		if (exceptionPosition.match(this.subScriptRegExp)) {
 			var i;
 			var lines = (aException.stack || "").split("\n");
 
@@ -847,7 +856,7 @@ function formatStackTrace(aException, aOptions)
 	if (aException.stack) {
 		stackLines = stackLines.concat(String(aException.stack).split('\n'));
 	}
-	if (aException.location && JSFrameLocationRegExp.test(aException.location)) {
+	if (aException.location && this.JSFrameLocationRegExp.test(aException.location)) {
 		stackLines = stackLines.concat(['()@' + RegExp.$1 + ':' + RegExp.$2]);
 	}
 
@@ -860,81 +869,87 @@ function formatStackTrace(aException, aOptions)
 			aLine.length > aOptions.maxLength)
 			aLine = aLine.substr(0, aOptions.maxLength) + '[...]\n';
 
-		if (aLine.match(subScriptRegExp)) {
+		if (aLine.match(this.subScriptRegExp)) {
 			var lineNum = RegExp.$3;
 			if (RegExp.$1) {
 				var includeSource = decodeURIComponent(RegExp.$1);
-				aLine = aLine.replace(subScriptRegExp, '@'+includeSource+':'+lineNum);
+				aLine = aLine.replace(this.subScriptRegExp, '@'+includeSource+':'+lineNum);
 			}
 			else if (RegExp.$2) {
 				if (aOptions.onlyFile) return;
 				var code = decodeURIComponent(RegExp.$2);
 				aLine = '(eval):' +
-					aLine.replace(subScriptRegExp, '') +
+					aLine.replace(this.subScriptRegExp, '') +
 					lineNum + ':' + code;
 			}
 		}
 		if (
-			(aOptions.onlyExternal && comesFromFramework(aLine)) ||
-			(aOptions.onlyTraceLine && !lineRegExp.test(aLine))
+			(aOptions.onlyExternal && this._comesFromFramework(aLine)) ||
+			(aOptions.onlyTraceLine && !this.lineRegExp.test(aLine))
 			)
 			return;
 		trace += aLine + '\n';
-	});
+	}, this);
 
 	return trace;
-}
+},
 	
-function makeStackLine(aStack) 
+_comesFromFramework : function(aLine) 
+{
+	return (/@chrome:\/\/uxu\/content\//.test(aLine) ||
+			// Following is VERY kludgy
+			/\(function \(aExitResult\) \{if \(aEventHandlers/.test(aLine))
+},
+ 
+makeStackLine : function(aStack) 
 {
 	if (typeof aStack == 'string') return aStack;
 	return '()@' + aStack.filename + ':' + aStack.lineNumber + '\n';
-}
+},
  
-function getStackTrace() 
+getStackTrace : function() 
 {
 	var callerStack = '';
 	var caller = Components.stack;
 	while (caller)
 	{
-		callerStack += makeStackLine(caller);
+		callerStack += this.makeStackLine(caller);
 		caller = caller.caller;
 	}
 	return callerStack;
-}
+},
  
-function unformatStackLine(aLine) 
+unformatStackLine : function(aLine) 
 {
 	/@(\w+:.*)?:(\d+)/.test(aLine);
 	return {
 		source : (RegExp.$1 || ''),
 		line   : (RegExp.$2 || '')
 	};
-}
+},
    
 // 設定読み書き 
-var backupPrefs = {};
 	
-function getPref(aKey) 
+getPref : function(aKey) 
 {
 	return ns.prefs.getPref(aKey);
-}
+},
  
-function setPref(aKey, aValue) 
+setPref : function(aKey, aValue) 
 {
 	if (!(aKey in this.backupPrefs))
 		this.backupPrefs[aKey] = this.getPref(aKey);
 	return ns.prefs.setPref(aKey, aValue);
-}
+},
  
-function clearPref(aKey) 
+clearPref : function(aKey) 
 {
 	if (!(aKey in this.backupPrefs))
 		this.backupPrefs[aKey] = this.getPref(aKey);
 	ns.prefs.clearPref(aKey);
-}
+},
  
-function loadPrefs(aFile, aHash) 
+loadPrefs : function(aFile, aHash) 
 {
 	if (aHash && typeof aHash != 'object') aHash = null;
 
@@ -953,11 +968,11 @@ function loadPrefs(aFile, aHash)
 	);
 
 	return result;
-}
+},
   
 // Windowsレジストリ読み書き 
 	
-function getWindowsRegistry(aKey) 
+getWindowsRegistry : function(aKey) 
 {
 	try {
 		return ns.registry.getValue(aKey);
@@ -968,9 +983,9 @@ function getWindowsRegistry(aKey)
 		else
 			throw e;
 	}
-}
+},
  
-function setWindowsRegistry(aKey, aValue) 
+setWindowsRegistry : function(aKey, aValue) 
 {
 	try {
 		return ns.registry.setValue(aKey, aValue);
@@ -981,9 +996,9 @@ function setWindowsRegistry(aKey, aValue)
 		else
 			throw e;
 	}
-}
+},
  
-function clearWindowsRegistry(aKey) 
+clearWindowsRegistry : function(aKey) 
 {
 	try {
 		ns.registry.clear(aKey);
@@ -994,28 +1009,28 @@ function clearWindowsRegistry(aKey)
 		else
 			throw e;
 	}
-}
+},
   
 // クリップボード 
-var Clipboard = Cc['@mozilla.org/widget/clipboard;1'].getService(Ci.nsIClipboard)
 	
-function getClipBoard() 
+getClipBoard : function() 
 {
-	return _getClipBoard(false);
-}
+	return this._getClipBoard(false);
+},
  
-function getSelectionClipBoard() 
+getSelectionClipBoard : function() 
 {
-	return _getClipBoard(true);
-}
+	return this._getClipBoard(true);
+},
  
-function _getClipBoard(aSelection) 
+_getClipBoard : function(aSelection) 
 {
 	var string = '';
 
 	var trans = Cc['@mozilla.org/widget/transferable;1'].createInstance(Ci.nsITransferable);
 	trans.addDataFlavor('text/unicode');
 	try {
+		const Clipboard = Cc['@mozilla.org/widget/clipboard;1'].getService(Ci.nsIClipboard);
 		if (aSelection)
 			Clipboard.getData(trans, Clipboard.kSelectionClipboard);
 		else
@@ -1035,16 +1050,16 @@ function _getClipBoard(aSelection)
 	string = data.data.substring(0, dataLength.value / 2);
 
 	return string;
-}
+},
  
-function setClipBoard(aString) 
+setClipBoard : function(aString) 
 {
 	Cc['@mozilla.org/widget/clipboardhelper;1']
 		.getService(Ci.nsIClipboardHelper)
 		.copyString(aString);
-}
+},
   
-function fixupIncompleteURI(aURIOrPart) 
+fixupIncompleteURI : function(aURIOrPart) 
 {
 	if (!this.baseURL ||
 		/^(about|data|javascript|view-source|jar):/.test(aURIOrPart))
@@ -1054,27 +1069,27 @@ function fixupIncompleteURI(aURIOrPart)
 
 	try {
 		if (/^file:\/\//.test(uri))
-			getFileFromURLSpec(uri);
+			this.getFileFromURLSpec(uri);
 		if (/^\w+:\/\//.test(uri))
-			makeURIFromSpec(uri);
+			this.makeURIFromSpec(uri);
 		else
-			getURLSpecFromFilePath(uri);
+			this.getURLSpecFromFilePath(uri);
 	}
 	catch(e) {
 		uri = this.baseURL + uri;
 		try {
-			getFileFromURLSpec(uri);
+			this.getFileFromURLSpec(uri);
 		}
 		catch(e) {
 			throw new Error(bundle.getFormattedString('error_utils_failed_to_fixup_incomplete_uri', [aURIOrPart]));
 		}
 	}
 	return uri;
-}
+},
  
 // イテレータ操作 
 	
-function isGeneratedIterator(aObject) 
+isGeneratedIterator : function(aObject) 
 {
 	try {
 		return (
@@ -1089,9 +1104,9 @@ function isGeneratedIterator(aObject)
 	catch(e) {
 	}
 	return false;
-}
+},
  
-function doIteration(aGenerator, aCallbacks) 
+doIteration : function(aGenerator, aCallbacks) 
 {
 	if (!aGenerator)
 		throw new Error(bundle.getString('error_utils_no_generator'));
@@ -1099,15 +1114,15 @@ function doIteration(aGenerator, aCallbacks)
 	var iterator = aGenerator;
 	if (typeof aGenerator == 'function')
 		iterator = aGenerator();
-	if (!isGeneratedIterator(iterator))
+	if (!this.isGeneratedIterator(iterator))
 		throw new Error(bundle.getFormattedString('error_utils_invalid_generator', [aGenerator]));
 
-	var callerStack = getStackTrace();
+	var callerStack = this.getStackTrace();
 
 	var retVal = { value : false };
 	var lastRun = Date.now();
 	var timeout = Math.max(0, getPref('extensions.uxu.run.timeout'));
-	(function(aObject) {
+	(function(aObject, aSelf) {
 		try {
 			if (Date.now() - lastRun >= timeout)
 				throw new Error(bundle.getFormattedString('error_generator_timeout', [parseInt(timeout / 1000)]));
@@ -1122,8 +1137,8 @@ function doIteration(aGenerator, aCallbacks)
 					continueAfterDelay = (Date.now() - lastRun < aObject);
 				}
 				else if (typeof aObject == 'object') {
-					if (isGeneratedIterator(aObject))
-						return window.setTimeout(arguments.callee, 0, doIteration(aObject));
+					if (aSelf.isGeneratedIterator(aObject))
+						return ns.setTimeout(arguments.callee, 0, aSelf.doIteration(aObject), aSelf);
 					else if ('error' in aObject && aObject.error instanceof Error)
 						throw aObject.error;
 					else if (!aObject.value)
@@ -1142,11 +1157,11 @@ function doIteration(aGenerator, aCallbacks)
 						continueAfterDelay = true;
 					else if (val instanceof Error)
 						throw val;
-					else if (isGeneratedIterator(val))
-						return window.setTimeout(arguments.callee, 0, doIteration(val));
+					else if (aSelf.isGeneratedIterator(val))
+						return ns.setTimeout(arguments.callee, 0, aSelf.doIteration(val), aSelf);
 				}
 				if (continueAfterDelay)
-					return window.setTimeout(arguments.callee, 10, aObject);
+					return ns.setTimeout(arguments.callee, 10, aObject, aSelf);
 			}
 
 			var returnedValue = iterator.next();
@@ -1162,7 +1177,7 @@ function doIteration(aGenerator, aCallbacks)
 
 				case 'number':
 					if (returnedValue >= 0) {
-						window.setTimeout(arguments.callee, returnedValue, returnedValue);
+						ns.setTimeout(arguments.callee, returnedValue, returnedValue, aSelf);
 						return;
 					}
 					throw new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(returnedValue)]));
@@ -1170,15 +1185,15 @@ function doIteration(aGenerator, aCallbacks)
 				case 'object':
 					if (
 						returnedValue &&
-						('value' in returnedValue || isGeneratedIterator(returnedValue))
+						('value' in returnedValue || aSelf.isGeneratedIterator(returnedValue))
 						) {
-						window.setTimeout(arguments.callee, 10, returnedValue);
+						ns.setTimeout(arguments.callee, 10, returnedValue, aSelf);
 						return;
 					}
 					throw new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(returnedValue)]));
 
 				case 'function':
-					window.setTimeout(arguments.callee, 10, returnedValue);
+					ns.setTimeout(arguments.callee, 10, returnedValue, aSelf);
 					return;
 			}
 		}
@@ -1223,7 +1238,7 @@ function doIteration(aGenerator, aCallbacks)
 			}
 		}
 		catch(e) {
-			e = normalizeError(e);
+			e = aSelf.normalizeError(e);
 			try {
 				e.stack += callerStack;
 			}
@@ -1243,57 +1258,59 @@ function doIteration(aGenerator, aCallbacks)
 				retVal.error = e;
 			}
 		}
-	})();
+	})(null, this);
 
 	return retVal;
-}
+},
  
-function Do(aObject) 
+Do : function(aObject) 
 {
 	if (!aObject)
 		return aObject;
-	if (isGeneratedIterator(aObject))
-		return doIteration(aObject);
+	if (this.isGeneratedIterator(aObject))
+		return this.doIteration(aObject);
 	if (typeof aObject != 'function')
 		return aObject;
 
 	var retVal = aObject();
-	return (isGeneratedIterator(retVal)) ?
-				doIteration(retVal) :
+	return (this.isGeneratedIterator(retVal)) ?
+				this.doIteration(retVal) :
 				retVal;
-}
+},
   
 // データベース操作 
-var _db = null;
 	
-var dbFile = (function() { 
-		var file = getFileFromKeyword('ProfD');
-		file.append('uxu.sqlite');
-		return file;
-	})();
+get dbFile() { 
+	if (!this._dbFile) {
+		this._dbFile = this.getFileFromKeyword('ProfD');
+		this._dbFile.append('uxu.sqlite');
+	}
+	return this._dbFile;
+},
+_dbFile : null,
  
-function getDB() 
+getDB : function() 
 {
 	if (_db) return _db;
-	_db = this.openDatabase(dbFile);
+	_db = this.openDatabase(this.dbFile);
 	return _db;
-}
+},
  
-function openDatabase(aFile) 
+openDatabase : function(aFile) 
 {
 	aFile = this.normalizeToFile(aFile);
 	const StorageService = Cc['@mozilla.org/storage/service;1']
 		.getService(Ci.mozIStorageService);
 	return StorageService.openDatabase(aFile);
-}
+},
  
-function createDatabase() 
+createDatabase : function() 
 {
 	var file = this.makeTempFile();
 	return this.openDatabase(file);
-}
+},
  
-function createDatabaseFromSQL(aSQL) 
+createDatabaseFromSQL : function(aSQL) 
 {
 	var connection = this.createDatabase();
 	if (aSQL) {
@@ -1306,9 +1323,9 @@ function createDatabaseFromSQL(aSQL)
 			connection.commitTransaction();
 	}
 	return connection;
-}
+},
  
-function createDatabaseFromSQLFile(aSQLFile, aEncoding, aScope) 
+createDatabaseFromSQLFile : function(aSQLFile, aEncoding, aScope) 
 {
 	aSQLFile = this.normalizeToFile(aSQLFile);
 	var sql;
@@ -1318,13 +1335,13 @@ function createDatabaseFromSQLFile(aSQLFile, aEncoding, aScope)
 	catch(e) {
 		throw new Error(bundle.getFormattedString('error_utils_cannot_read_sql_file', [aSQLFile, e]));
 	}
-	if (aScope) input = processTemplate(sql, aScope);
+	if (aScope) input = this.processTemplate(sql, aScope);
 	return this.createDatabaseFromSQL(sql);
-}
+},
   
 // 解析 
 	
-function inspect(aObject, aIndent) 
+inspect : function(aObject, aIndent) 
 {
 	var inspectedObjects = [];
 	var inspectedResults = {};
@@ -1335,6 +1352,7 @@ function inspect(aObject, aIndent)
 			count      : 0
 		};
 
+	var self = this;
 	function _inspect(aTarget, aIndent)
 	{
 		var index;
@@ -1351,24 +1369,18 @@ function inspect(aObject, aIndent)
 		if (!aTarget.__proto__)
 			return aTarget.toString();
 
-		var ArrayClass, StringClass, toStringMethod;
+		var toStringMethod;
 		if (aTarget instanceof Ci.nsIDOMWindow) {
-			ArrayClass     = aTarget.Array;
-			StringClass    = aTarget.String;
 			toStringMethod = aTarget.Object.prototype.toString;
 		}
 		else if (aTarget instanceof Ci.nsISupports) {
-			ArrayClass     = Array;
-			StringClass    = String;
 			toStringMethod = Object.prototype.toString;
 		}
 		else {
-			ArrayClass     = eval('Array', aTarget);
-			StringClass    = eval('String', aTarget);
 			toStringMethod = eval('Object.prototype.toString', aTarget);
 		}
 
-		if (aTarget instanceof ArrayClass) {
+		if (self.isArray(aTarget)) {
 			index = inspectedObjects.length;
 			inspectedObjects.push(aTarget);
 			inspectedResults[index] = aTarget.toString();
@@ -1390,8 +1402,7 @@ function inspect(aObject, aIndent)
 			}
 			return inspectedResults[index];
 		}
-		else if (typeof aTarget == 'string' ||
-		           aTarget instanceof StringClass) {
+		else if (self.isString(aTarget)) {
 			return '"' + aTarget.replace(/\"/g, '\\"') + '"';
 		}
 		else if (aTarget.__proto__.toString == toStringMethod) {
@@ -1449,9 +1460,9 @@ function inspect(aObject, aIndent)
 	}
 
 	return _inspect(aObject, aIndent);
-}
+},
  
-function inspectType(aObject) 
+inspectType : function(aObject) 
 {
 	var type = typeof aObject;
 
@@ -1461,23 +1472,23 @@ function inspectType(aObject)
 	var objectType = Object.prototype.toString.apply(aObject);
 	return objectType.substring("[object ".length,
 								objectType.length - "]".length);
-}
+},
  
-function inspectDOMNode(aNode) 
+inspectDOMNode : function(aNode) 
 {
 	var self = arguments.callee;
 	var result;
 	switch (aNode.nodeType)
 	{
-		case Node.ELEMENT_NODE:
-		case Node.DOCUMENT_NODE:
-		case Node.DOCUMENT_FRAGMENT_NODE:
+		case Ci.nsIDOMNode.ELEMENT_NODE:
+		case Ci.nsIDOMNode.DOCUMENT_NODE:
+		case Ci.nsIDOMNode.DOCUMENT_FRAGMENT_NODE:
 			result = Array.slice(aNode.childNodes).map(function(aNode) {
 					return self(aNode);
 				}).join('');
 			break;
 
-		case Node.TEXT_NODE:
+		case Ci.nsIDOMNode.TEXT_NODE:
 			result = aNode.nodeValue
 						.replace(/&/g, '&ampt;')
 						.replace(/</g, '&lt;')
@@ -1485,15 +1496,15 @@ function inspectDOMNode(aNode)
 						.replace(/"/g, '&quot;');
 			break;
 
-		case Node.CDATA_SECTION_NODE:
+		case Ci.nsIDOMNode.CDATA_SECTION_NODE:
 			result = '<![CDATA['+aNode.nodeValue+']]>';
 			break;
 
-		case Node.COMMENT_NODE:
+		case Ci.nsIDOMNode.COMMENT_NODE:
 			result = '<!--'+aNode.nodeValue+'-->';
 			break;
 
-		case Node.ATTRIBUTE_NODE:
+		case Ci.nsIDOMNode.ATTRIBUTE_NODE:
 			result = aNode.name+'="'+
 						aNode.value
 							.replace(/&/g, '&ampt;')
@@ -1503,25 +1514,25 @@ function inspectDOMNode(aNode)
 						'"';
 			break;
 
-		case Node.PROCESSING_INSTRUCTION_NODE:
+		case Ci.nsIDOMNode.PROCESSING_INSTRUCTION_NODE:
 			result = '<?'+aNode.target+' '+aNode.data+'?>';
 			break;
 
-		case Node.DOCUMENT_TYPE_NODE:
+		case Ci.nsIDOMNode.DOCUMENT_TYPE_NODE:
 			result = '<!DOCTYPE'+aNode.name+
 						(aNode.publicId ? ' '+aNode.publicId : '' )+
 						(aNode.systemId ? ' '+aNode.systemId : '' )+
 						'>';
 			break;
 
-		case Node.ENTITY_NODE:
-		case Node.ENTITY_REFERENCE_NODE:
-		case Node.NOTATION_NODE:
+		case Ci.nsIDOMNode.ENTITY_NODE:
+		case Ci.nsIDOMNode.ENTITY_REFERENCE_NODE:
+		case Ci.nsIDOMNode.NOTATION_NODE:
 		default:
 			return '';
 	}
 
-	if (aNode.nodeType == Node.ELEMENT_NODE) {
+	if (aNode.nodeType == Ci.nsIDOMNode.ELEMENT_NODE) {
 		result = '<'+
 			aNode.localName+
 			(aNode.namespaceURI ? ' xmlns="'+aNode.namespaceURI+'"' : '' )+
@@ -1532,129 +1543,112 @@ function inspectDOMNode(aNode)
 			(result ? result+'</'+aNode.localName+'>' : '' );
 	}
 	return result;
-}
+},
  
-function p() 
+p : function() 
 {
-	var i;
-	for (i = 0; i < arguments.length; i++) {
-		var inspected = inspect(arguments[i]);
+	for (var i = 0; i < arguments.length; i++) {
+		var inspected = this.inspect(arguments[i]);
 		if (!/\n$/.test(inspected))
 			inspected += "\n";
-		dump(inspected);
+		this.dump(inspected);
 	}
-}
+},
  
-function isArray(aObject) 
+isString : function(aObject) 
 {
-	if (typeof aObject != 'object')
-		return false;
+	if (typeof aObject == 'string')
+		return true;
 
-	var root = _getRootScope(aObject);
-	return aObject &&
-		(root && root.Array ?
-			(aObject instanceof root.Array) :
-			(aObject instanceof eval('Array', aObject))
-		);
-}
+	return (
+		aObject &&
+		typeof aObject == 'object' &&
+		aObject.constructor &&
+		aObject.constructor.toSource().indexOf('function String()') == 0
+	);
+},
  
-function isDate(aObject) 
+isArray : function(aObject) 
 {
-	if (typeof aObject != 'object')
-		return false;
-
-	var root = _getRootScope(aObject);
-	return aObject &&
-		(root && root.Date ?
-			(aObject instanceof root.Date) :
-			(aObject instanceof eval('Date', aObject))
-		);
-}
+	return (
+		aObject &&
+		typeof aObject == 'object' &&
+		aObject.constructor &&
+		aObject.constructor.toSource().indexOf('function Array()') == 0
+	);
+},
  
-function isObject(aObject) 
+isDate : function(aObject) 
 {
-	return (aObject &&
-			typeof aObject == "object" &&
-			aObject == '[object Object]');
-}
+	return (
+		aObject &&
+		typeof aObject == 'object' &&
+		aObject.constructor &&
+		aObject.constructor.toSource().indexOf('function Date()') == 0
+	);
+},
  
-function _getRootScope(aObject) 
+isObject : function(aObject) 
 {
-	if (aObject === null || aObject === void(0)) {
-		return aObject;
-	}
-/*
-	// https://bugzilla.mozilla.org/show_bug.cgi?id=552560
-	// "__parent__" is no longer available on Firefox 3.7 or later.
-	if (typeof aObject.valueOf == 'function')
-		return aObject.valueOf.call(null);
-*/
-	var parent = aObject;
-	do {
-		lastParent = parent;
-	}
-	while (parent = _getParent(parent));
-	return lastParent;
-}
-var _DOMWindowUtils = window.QueryInterface(Ci.nsIInterfaceRequestor)
-						.getInterface(Ci.nsIDOMWindowUtils);
-function _getParent(aObject)
-{
-	try {
-		if (aObject.__parent__)
-			return aObject.__parent__;
-
-		if ('getParent' in _DOMWindowUtils)
-			return _DOMWindowUtils.getParent(aObject);
-	}
-	catch(e) {
-	}
-
-	return void(0);
-}
+	return typeof aObject == 'object';
+},
   
 // 比較 
 	
-function _equals(aCompare, aObject1, aObject2, aStrict, aAltTable) 
+equals : function(aObject1, aObject2) 
+{
+	return this._equals(function (aObj1, aObj2) {return aObj1 == aObj2},
+				        aObject1, aObject2,
+				        false);
+},
+ 
+strictlyEquals : function(aObject1, aObject2) 
+{
+	return this._equals(function (aObj1, aObj2) {return aObj1 === aObj2},
+				        aObject1, aObject2,
+				        true);
+},
+ 
+_equals : function(aCompare, aObject1, aObject2, aStrict, aAltTable) 
 {
 	if (aCompare(aObject1, aObject2))
 		return true;
 
-	aAltTable = _createAltTable(aAltTable);
-	aObject1 = _getAltTextForCircularReference(aObject1, aStrict, aAltTable);
-	aObject2 = _getAltTextForCircularReference(aObject2, aStrict, aAltTable);
+	aAltTable = this._createAltTable(aAltTable);
+	aObject1 = this._getAltTextForCircularReference(aObject1, aStrict, aAltTable);
+	aObject2 = this._getAltTextForCircularReference(aObject2, aStrict, aAltTable);
 
-	if (isArray(aObject1) && isArray(aObject2)) {
+	if (this.isArray(aObject1) && this.isArray(aObject2)) {
 		var length = aObject1.length;
 		if (length != aObject2.length)
 			return false;
 		for (var i = 0; i < length; i++) {
-			if (!_equals(aCompare, aObject1[i], aObject2[i], aStrict, aAltTable))
+			if (!this._equals(aCompare, aObject1[i], aObject2[i], aStrict, aAltTable))
 				return false;
 		}
 		return true;
 	}
 
-	if (isDate(aObject1) && isDate(aObject2)) {
-		return _equals(aCompare, aObject1.getTime(), aObject2.getTime(), aStrict, aAltTable);
+	if (this.isDate(aObject1) && this.isDate(aObject2)) {
+		return this._equals(aCompare, aObject1.getTime(), aObject2.getTime(), aStrict, aAltTable);
 	}
 
-	if (isObject(aObject1) && isObject(aObject2)) {
-		return _equalObject(aCompare, aObject1, aObject2, aStrict, aAltTable);
+	if (this.isObject(aObject1) && this.isObject(aObject2)) {
+		return this._equalObject(aCompare, aObject1, aObject2, aStrict, aAltTable);
 	}
 
 	return false;
-}
+},
  
-function _equalObject(aCompare, aObject1, aObject2, aStrict, aAltTable) 
+_equalObject : function(aCompare, aObject1, aObject2, aStrict, aAltTable) 
 {
 	if (!aCompare(aObject1.__proto__, aObject2.__proto__))
 
-	aAltTable = _createAltTable(aAltTable);
-	aObject1 = _getAltTextForCircularReference(aObject1, aStrict, aAltTable);
-	aObject2 = _getAltTextForCircularReference(aObject2, aStrict, aAltTable);
+	aAltTable = this._createAltTable(aAltTable);
+	aObject1 = this._getAltTextForCircularReference(aObject1, aStrict, aAltTable);
+	aObject2 = this._getAltTextForCircularReference(aObject2, aStrict, aAltTable);
 	if (typeof aObject1 == 'string' || typeof aObject2 == 'string') {
-		return _equals(aCompare, aObject1, aObject2, aStrict, aAltTable);
+		return this._equals(aCompare, aObject1, aObject2, aStrict, aAltTable);
 	}
 
 	var name;
@@ -1663,7 +1657,7 @@ function _equalObject(aCompare, aObject1, aObject2, aStrict, aAltTable)
 		names1.push(name);
 		if (!(name in aObject2))
 			return false;
-		if (!_equals(aCompare, aObject1[name], aObject2[name], aStrict, aAltTable))
+		if (!this._equals(aCompare, aObject1[name], aObject2[name], aStrict, aAltTable))
 			return false;
 	}
 	for (name in aObject2) {
@@ -1671,33 +1665,19 @@ function _equalObject(aCompare, aObject1, aObject2, aStrict, aAltTable)
 	}
 	names1.sort();
 	names2.sort();
-	return _equals(aCompare, names1, names2, aStrict, aAltTable);
-}
+	return this._equals(aCompare, names1, names2, aStrict, aAltTable);
+},
  
-function equals(aObject1, aObject2) 
-{
-	return _equals(function (aObj1, aObj2) {return aObj1 == aObj2},
-				   aObject1, aObject2,
-				   false);
-}
- 
-function strictlyEquals(aObject1, aObject2) 
-{
-	return _equals(function (aObj1, aObj2) {return aObj1 === aObj2},
-				   aObject1, aObject2,
-				   true);
-}
- 
-function _createAltTable(aAltTable) 
+_createAltTable : function(aAltTable) 
 {
 	return aAltTable || { objects : [], alt : [], count : [] };
-}
+},
  
-var CIRCULAR_REFERENCE_MAX_COUNT = 500; 
+CIRCULAR_REFERENCE_MAX_COUNT : 500, 
  
-function _getAltTextForCircularReference(aObject, aStrict, aAltTable) 
+_getAltTextForCircularReference : function(aObject, aStrict, aAltTable) 
 {
-	if (CIRCULAR_REFERENCE_MAX_COUNT < 0 ||
+	if (this.CIRCULAR_REFERENCE_MAX_COUNT < 0 ||
 		typeof aObject != 'object') {
 		return aObject;
 	}
@@ -1712,15 +1692,15 @@ function _getAltTextForCircularReference(aObject, aStrict, aAltTable)
 		);
 		aAltTable.count.push(0);
 	}
-	else if (aAltTable.count[index]++ > CIRCULAR_REFERENCE_MAX_COUNT) {
+	else if (aAltTable.count[index]++ > this.CIRCULAR_REFERENCE_MAX_COUNT) {
 		aObject = aAltTable.alt[index];
 	}
 	return aObject;
-}
+},
   
 // DOMノード調査 
 	
-function isTargetInRange(aTarget, aRange) 
+isTargetInRange : function(aTarget, aRange) 
 {
 	var targetRangeCreated = false;
 	if (aTarget instanceof Ci.nsIDOMNode) {
@@ -1747,41 +1727,41 @@ function isTargetInRange(aTarget, aRange)
 		return false;
 	}
 	return aRange.toString().indexOf(aTarget.toString()) > -1;
-}
+},
  
-function isTargetInSelection(aTarget, aSelection) 
+isTargetInSelection : function(aTarget, aSelection) 
 {
 	for (var i = 0, maxi = aSelection.rangeCount; i < maxi; i++)
 	{
-		if (isTargetInRange(aTarget, aSelection.getRangeAt(i)))
+		if (this.isTargetInRange(aTarget, aSelection.getRangeAt(i)))
 			return true;
 	}
 	return false;
-}
+},
  
-function isTargetInSubTree(aTarget, aNode) 
+isTargetInSubTree : function(aTarget, aNode) 
 {
 	try {
 		var range = aNode.ownerDocument.createRange();
 		range.selectNode(aNode);
-		var result = isTargetInRange(aTarget, range);
+		var result = this.isTargetInRange(aTarget, range);
 		range.detach();
 		return result;
 	}
 	catch(e) {
 	}
 	return false;
-}
+},
   
 // 文字列処理 
 	
 // for backward compatibility 
-function processTemplate(aCode, aScope) {
+processTemplate : function(aCode, aScope) {
 	return ns.EJS.result(aCode, aScope);
-};
-var parseTemplate = processTemplate;
+},
+parseTemplate : function() { return this.processTemplate.apply(this, arguments); },
  
-function computeHash(aData, aHashAlgorithm) 
+computeHash : function(aData, aHashAlgorithm) 
 {
 	try {
 		return ns.hash.computeHash(aData, aHashAlgorithm);
@@ -1792,9 +1772,9 @@ function computeHash(aData, aHashAlgorithm)
 		else
 			throw e;
 	}
-}
+},
  
-function computeHashFromFile(aFile, aHashAlgorithm) 
+computeHashFromFile : function(aFile, aHashAlgorithm) 
 {
 	var file = this.normalizeToFile(aFile);
 	if (!file)
@@ -1804,24 +1784,24 @@ function computeHashFromFile(aFile, aHashAlgorithm)
 	if (file.isDirectory())
 		throw new Error(bundle.getFormattedString('error_utils_compute_hash_from_file_directory', [aFile]));
 
-	return computeHash(file, aHashAlgorithm);
-}
+	return this.computeHash(file, aHashAlgorithm);
+},
  
-function md2FromFile(aFile) { return computeHashFromFile(this.normalizeToFile(aFile), 'md2'); } 
-function md5FromFile(aFile) { return computeHashFromFile(this.normalizeToFile(aFile), 'md5'); }
-function sha1FromFile(aFile) { return computeHashFromFile(this.normalizeToFile(aFile), 'sha1'); }
-function sha256FromFile(aFile) { return computeHashFromFile(this.normalizeToFile(aFile), 'sha256'); }
-function sha384FromFile(aFile) { return computeHashFromFile(this.normalizeToFile(aFile), 'sha384'); }
-function sha512FromFile(aFile) { return computeHashFromFile(this.normalizeToFile(aFile), 'sha512'); }
+md2FromFile : function(aFile) { return this.computeHashFromFile(this.normalizeToFile(aFile), 'md2'); }, 
+md5FromFile : function(aFile) { return this.computeHashFromFile(this.normalizeToFile(aFile), 'md5'); },
+sha1FromFile : function(aFile) { return this.computeHashFromFile(this.normalizeToFile(aFile), 'sha1'); },
+sha256FromFile : function(aFile) { return this.computeHashFromFile(this.normalizeToFile(aFile), 'sha256'); },
+sha384FromFile : function(aFile) { return this.computeHashFromFile(this.normalizeToFile(aFile), 'sha384'); },
+sha512FromFile : function(aFile) { return this.computeHashFromFile(this.normalizeToFile(aFile), 'sha512'); },
  
-function mapURI(aURI, aMappingDefinition) 
+mapURI : function(aURI, aMappingDefinition) 
 {
 	if (!aMappingDefinition) return aURI;
 
 	var newURI;
 
 	if (typeof aMappingDefinition == 'function')
-		return aMappingDefinition(makeURIFromSpec(aURI));
+		return aMappingDefinition(this.makeURIFromSpec(aURI));
 
 	var matchers = [];
 	var targets  = [];
@@ -1860,15 +1840,15 @@ function mapURI(aURI, aMappingDefinition)
 		return false;
 	});
 	return newURI || aURI;
-}
-function redirectURI(aURI, aMappingDefinition)
+},
+redirectURI : function(aURI, aMappingDefinition)
 {
-	return mapURI.call(this, aURI, aMappingDefinition)
-}
+	return this.mapURI.call(this, aURI, aMappingDefinition)
+},
  
 // http://liosk.blog103.fc2.com/blog-entry-75.html
 // CSV parser based on RFC4180
-function parseCSV(aInput, aDelimiter) 
+parseCSV : function(aInput, aDelimiter) 
 {
 	var delimiter = aDelimiter || ',';
 	var tokenizer = new RegExp(
@@ -1880,18 +1860,19 @@ function parseCSV(aInput, aDelimiter)
 		data = [['']],
 		qq = /""/g,
 		longest = 0;
+	var self = this;
 	aInput.replace(/\r?\n$/, '')
 		.replace(tokenizer, function(aToken) {
 			switch (aToken) {
 				case delimiter:
-					data[record][field] = _normalizeCSVField(data[record][field]);
+					data[record][field] = self._normalizeCSVField(data[record][field]);
 					data[record][++field] = '';
 					if (field > longest) longest = field;
 					break;
 
 				case '\n':
 				case '\r\n':
-					data[record][field] = _normalizeCSVField(data[record][field]);
+					data[record][field] = self._normalizeCSVField(data[record][field]);
 					data[++record] = [''];
 					field = 0;
 					break;
@@ -1902,7 +1883,7 @@ function parseCSV(aInput, aDelimiter)
 						aToken.slice(1, -1).replace(qq, '"') ;
 			}
 		});
-	data[record][field] = _normalizeCSVField(data[record][field]);
+	data[record][field] = this._normalizeCSVField(data[record][field]);
 	data.forEach(function(aRecord) {
 		while (aRecord.length <= longest)
 		{
@@ -1910,19 +1891,19 @@ function parseCSV(aInput, aDelimiter)
 		}
 	});
 	return data;
-}
-function _normalizeCSVField(aSource)
+},
+_normalizeCSVField : function(aSource)
 {
 	return aSource.replace(/\r\n/g, '\n');
-}
-function parseTSV(aInput)
+},
+parseTSV : function(aInput)
 {
-	return parseCSV(aInput, '\t');
-}
+	return this.parseCSV(aInput, '\t');
+},
  
-function _parseParametersFrom2DArray(aArray) 
+_parseParametersFrom2DArray : function(aArray) 
 {
-	var data = evalInSandbox(aArray.toSource()); // duplicate object for safe
+	var data = this.evalInSandbox(aArray.toSource()); // duplicate object for safe
 	var parameters;
 	var columns = data.shift();
 	var isHash = !columns[0];
@@ -1941,7 +1922,7 @@ function _parseParametersFrom2DArray(aArray)
 		else {
 			types.push('auto');
 		}
-		return _ensureUniquieName(aColumn, columnNames);
+		return this._ensureUniquieName(aColumn, columnNames);
 	});
 
 	if (isHash) {
@@ -1951,24 +1932,24 @@ function _parseParametersFrom2DArray(aArray)
 			let name = aRecord.shift();
 			let record = {};
 			aRecord.forEach(function(aField, aIndex) {
-				record[columns[aIndex]] = _convertParameterType(aField, types[aIndex]);
-			});
-			name = _ensureUniquieName(name, names);
+				record[columns[aIndex]] = this._convertParameterType(aField, types[aIndex]);
+			}, this);
+			name = this._ensureUniquieName(name, names);
 			parameters[name] = record;
-		});
+		}, this);
 		return parameters;
 	}
 	else {
 		return data.map(function(aRecord) {
 			let record = {};
 			aRecord.forEach(function(aField, aIndex) {
-				record[columns[aIndex]] = _convertParameterType(aField, types[aIndex]);
-			});
+				record[columns[aIndex]] = this._convertParameterType(aField, types[aIndex]);
+			}, this);
 			return record;
-		});
+		}, this);
 	}
-}
-function _ensureUniquieName(aName, aDatabase)
+},
+_ensureUniquieName : function(aName, aDatabase)
 {
 	if (aName in aDatabase) {
 		aName = aName+'('+(++aDatabase[aName])+')';
@@ -1978,8 +1959,8 @@ function _ensureUniquieName(aName, aDatabase)
 		aDatabase[aName] = 1;
 		return aName;
 	}
-}
-function _convertParameterType(aInput, aType)
+},
+_convertParameterType : function(aInput, aType)
 {
 	var source = aInput;
 	aType = String(aType || '').toLowerCase();
@@ -2031,7 +2012,7 @@ function _convertParameterType(aInput, aType)
 		case 'boolean':
 		case 'bool':
 			try {
-				data = evalInSandbox('!!('+(source || '""')+')');
+				data = this.evalInSandbox('!!('+(source || '""')+')');
 			}
 			catch(e) {
 				throw new Error(bundle.getFormattedString('error_utils_parameters_from_CSV_invalid_boolean', [aInput]));
@@ -2040,7 +2021,7 @@ function _convertParameterType(aInput, aType)
 		case 'object':
 		case 'json':
 			try {
-				data = evalInSandbox('('+(source || '""')+')');
+				data = this.evalInSandbox('('+(source || '""')+')');
 			}
 			catch(e) {
 				throw new Error(bundle.getFormattedString('error_utils_parameters_from_CSV_invalid_object', [aInput]));
@@ -2053,47 +2034,74 @@ function _convertParameterType(aInput, aType)
 			break;
 	}
 	return data;
-}
+},
   
 // アプリケーション 
-var XULAppInfo = Cc['@mozilla.org/xre/app-info;1']
-		.getService(Ci.nsIXULAppInfo);
 	
-var product = (function() { 
+get product() { 
+	if (this._product)
+		return this._product;
+
 	switch (XULAppInfo.ID)
 	{
 		case '{ec8030f7-c20a-464f-9b0e-13a3a9e97384}':
-			return 'Firefox';
+			this._product = 'Firefox';
+			break;
 		case '{3550f703-e582-4d05-9a08-453d09bdfdc6}':
-			return 'Thunderbird';
+			this._product = 'Thunderbird';
+			break;
 		case '{86c18b42-e466-45a9-ae7a-9b95ba6f5640}':
-			return 'Mozilla'; // Application Suite
+			this._product = 'Mozilla'; // Application Suite
+			break;
 		case '{92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}':
-			return 'Seamonkey';
+			this._product = 'Seamonkey';
+			break;
 		case '{718e30fb-e89b-41dd-9da7-e25a45638b28}':
-			return 'Sunbird';
+			this._product = 'Sunbird';
+			break;
 		case '{a23983c0-fd0e-11dc-95ff-0800200c9a66}':
-			return 'Fennec';
+			this._product = 'Fennec';
+			break;
 		default:
-			return '';
+			this._product = '';
+			break;
 	}
-})();
+	return this._product;
+},
+_product : null,
  
-var productExecutable = getFileFromKeyword('XREExeF'); 
-var productVersion = XULAppInfo.version;
-var platformVersion = XULAppInfo.platformVersion;
+get productExecutable() { 
+	if (!this._productExecutable)
+		this._productExecutable = this.getFileFromKeyword('XREExeF');
+	return this._productExecutable;
+},
+_productExecutable : null,
  
-function restartApplication(aForce) 
+get productVersion() { 
+	if (!this._productVersion)
+		this._productVersion = XULAppInfo.version;
+	return this._productVersion;
+},
+_productVersion : null,
+ 
+get platformVersion() { 
+	if (!this._platformVersion)
+		this._platformVersion = XULAppInfo.platformVersion;
+	return this._platformVersion;
+},
+_platformVersion : null,
+ 
+restartApplication : function(aForce) 
 {
-	_quitApplication(aForce, Ci.nsIAppStartup.eRestart);
-}
+	this._quitApplication(aForce, Ci.nsIAppStartup.eRestart);
+},
  
-function quitApplication(aForce) 
+quitApplication : function(aForce) 
 {
-	_quitApplication(aForce);
-}
+	this._quitApplication(aForce);
+},
  
-function _quitApplication(aForce, aOption) 
+_quitApplication : function(aForce, aOption) 
 {
 	var quitSeverity;
 	if (aForce) {
@@ -2125,48 +2133,46 @@ function _quitApplication(aForce, aOption)
 	const startup = Cc['@mozilla.org/toolkit/app-startup;1']
 					.getService(Ci.nsIAppStartup);
 	startup.quit(quitSeverity);
-}
+},
  
-var installedUXU = Cc['@mozilla.org/extensions/manager;1'] 
-		.getService(Ci.nsIExtensionManager)
-		.getInstallLocation('uxu@clear-code.com')
-		.getItemLocation('uxu@clear-code.com');
+get installedUXU() { 
+	if (!this._installedUXU)
+		this._installedUXU = Cc['@mozilla.org/extensions/manager;1']
+								.getService(Ci.nsIExtensionManager)
+								.getInstallLocation('uxu@clear-code.com')
+								.getItemLocation('uxu@clear-code.com');
+	return this._installedUXU;
+},
  
-function getInstalledLocationOfProduct(aProduct) 
+getInstalledLocationOfProduct : function(aProduct) 
 {
-	if (
-		!aProduct ||
-		navigator.platform.toLowerCase().indexOf('win32') < 0
-		)
+	if (!aProduct || XULAppInfo.OS.toLowerCase().indexOf('win') < 0)
 		return null;
 
 	aProduct = String(aProduct).toLowerCase();
 
 	var file = this.getPref('extensions.uxu.product.'+aProduct);
 	if (file) {
-		file = makeFileWithPath(file);
+		file = this.makeFileWithPath(file);
 		if (file.exists()) return file;
 	}
 
 	switch (aProduct)
 	{
 		case 'firefox':
-			return _getInstalledLocationOfMozillaProduct('Firefox') ||
-					_getInstalledLocationOfMozillaProduct('Minefield');
+			return this._getInstalledLocationOfMozillaProduct('Firefox') ||
+					this._getInstalledLocationOfMozillaProduct('Minefield');
 		case 'thunderbird':
-			return _getInstalledLocationOfMozillaProduct('Thunderbird') ||
-					_getInstalledLocationOfMozillaProduct('Shredder');
+			return this._getInstalledLocationOfMozillaProduct('Thunderbird') ||
+					this._getInstalledLocationOfMozillaProduct('Shredder');
 		default:
-			return _getInstalledLocationOfMozillaProduct(aProduct);
+			return this._getInstalledLocationOfMozillaProduct(aProduct);
 	}
-}
+},
 	
-function _getInstalledLocationOfMozillaProduct(aProduct) 
+_getInstalledLocationOfMozillaProduct : function(aProduct) 
 {
-	if (
-		!aProduct ||
-		navigator.platform.toLowerCase().indexOf('win32') < 0
-		)
+	if (!aProduct || XULAppInfo.OS.toLowerCase().indexOf('win') < 0)
 		return null;
 
 	var key;
@@ -2212,18 +2218,16 @@ function _getInstalledLocationOfMozillaProduct(aProduct)
 		curVerKey.close();
 		productKey.close();
 
-		return makeFileWithPath(path);
+		return this.makeFileWithPath(path);
 	}
 	catch(e) {
 	}
 	return null;
-}
+},
    
 // バージョン比較 
-var _comparator = Cc['@mozilla.org/xpcom/version-comparator;1']
-					.getService(Ci.nsIVersionComparator);
 	
-function compareVersions() 
+compareVersions : function() 
 {
 	var aA, aB, aOperator;
 	switch (arguments.length)
@@ -2234,7 +2238,7 @@ function compareVersions()
 			aOperator = arguments[1];
 			var result;
 			try {
-				result = _comparator.compare(aA, aB);
+				result = Comparator.compare(aA, aB);
 			}
 			catch(e) {
 				throw new Error(bundle.getFormattedString('error_utils_compareVersions_failed_to_compare', [aA, aB, e]));
@@ -2267,7 +2271,7 @@ function compareVersions()
 			aA = arguments[0];
 			aB = arguments[1];
 			try {
-				return _comparator.compare(aA, aB);
+				return Comparator.compare(aA, aB);
 			}
 			catch(e) {
 				throw new Error(bundle.getFormattedString('error_utils_compareVersions_failed_to_compare', [aA, aB, e]));
@@ -2276,45 +2280,47 @@ function compareVersions()
 		default:
 			throw new Error(bundle.getFormattedString('error_utils_compareVersions_invalid_arguments', [Array.slice(arguments).join(', ')]));
 	}
-}
+},
  
-function checkProductVersion(aVersion) 
+checkProductVersion : function(aVersion) 
 {
-	return compareVersions(XULAppInfo.version, aVersion);
-}
-function checkAppVersion(aVersion) // obsolete, for backward compatibility
+	return this.compareVersions(XULAppInfo.version, aVersion);
+},
+checkAppVersion : function(aVersion) // obsolete, for backward compatibility
 {
-	return checkProductVersion(aVersion);
-}
-function checkApplicationVersion(aVersion) // obsolete, for backward compatibility
+	return this.checkProductVersion(aVersion);
+},
+checkApplicationVersion : function(aVersion) // obsolete, for backward compatibility
 {
-	return checkProductVersion(aVersion);
-}
+	return this.checkProductVersion(aVersion);
+},
  
-function checkPlatformVersion(aVersion) 
+checkPlatformVersion : function(aVersion) 
 {
-	return compareVersions(XULAppInfo.platformVersion, aVersion);
-}
+	return this.compareVersions(XULAppInfo.platformVersion, aVersion);
+},
   
 // デバッグ 
-var _console = Cc['@mozilla.org/consoleservice;1']
-		.getService(Ci.nsIConsoleService);
 	
-function log() 
+log : function() 
 {
 	var message = Array.slice(arguments).join('\n');
-	_console.logStringMessage(message);
-}
+	const Console = Cc['@mozilla.org/consoleservice;1'].getService(Ci.nsIConsoleService);
+	Console.logStringMessage(message);
+},
  
-function dump() 
+dump : function() 
 {
 	this.log.apply(this, arguments);
-}
+},
   
-const ObserverService = Cc['@mozilla.org/observer-service;1'] 
-			.getService(Ci.nsIObserverService);
-function notify(aSubject, aTopic, aData)
+notify : function(aSubject, aTopic, aData) 
 {
+	const ObserverService = Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService);
 	ObserverService.notifyObservers(aSubject, aTopic, aData);
 }
-  
+ 
+}; 
+
+var utils = new Utils();
+   

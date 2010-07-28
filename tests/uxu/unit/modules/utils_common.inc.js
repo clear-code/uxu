@@ -35,7 +35,8 @@ function setUp()
 {
 	onWindows = /win/i.test(navigator.platform);
 	utilsModule = {};
-	utils.include(topDir+'content/uxu/lib/utils.js', utilsModule);
+	utils.include(topDir+'modules/utils.js', utilsModule);
+	utilsModule = new utilsModule.Utils();
 	utilsModule.fileURL = utils.fileURL;
 	utilsModule.baseURL = utils.baseURL;
 

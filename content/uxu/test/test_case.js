@@ -28,9 +28,9 @@ var fsm = {};
 Components.utils.import('resource://uxu-modules/fsm.js', fsm);
 fsm = fsm.fsm;
 
-var lib_module = new ModuleManager(['chrome://uxu/content/lib']); 
-var utils  = {};
-utils.__proto__ = lib_module.require('package', 'utils');
+var utils = {}; 
+Components.utils.import('resource://uxu-modules/utils.js', utils);
+utils = { __proto__ : utils.utils };
 
 var ns = {};
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);

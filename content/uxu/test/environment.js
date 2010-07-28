@@ -7,8 +7,9 @@ var EventTarget = {};
 Components.utils.import('resource://uxu-modules/eventTarget.js', EventTarget);
 EventTarget = EventTarget.EventTarget;
 
-var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
-var utils      = lib_module.require('package', 'utils');
+var utils = {};
+Components.utils.import('resource://uxu-modules/utils.js', utils);
+utils = utils.utils;
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 
