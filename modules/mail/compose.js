@@ -49,8 +49,8 @@ Compose.prototype = {
 	get firstBlankAddressField() { return this._getFirstBlankAddressField(); },
 	get lastBlankAddressField() { return this._getLastBlankAddressField(); },
 
-	get addressTypes() { return this._getLastAddressType(); },
-	get firstAddressType() { return this._getAddressTypes(); },
+	get addressTypes() { return this._getAddressTypes(); },
+	get firstAddressType() { return this._getFirstAddressType(); },
 	get lastAddressType() { return this._getLastAddressType(); },
 
 	get dummyRows() { return this._getDummyRows(); },
