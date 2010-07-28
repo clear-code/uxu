@@ -68,7 +68,7 @@ Assertions.prototype = {
 			     aMessage);
 		this._onSuccess();
 	},
-	equals : function() { return this.equals.apply(this, arguments); },
+	equal : function() { return this.equals.apply(this, arguments); },
 	arrayEquals : function() { return this.equals.apply(this, arguments); },
 	arrayEqual : function() { return this.equals.apply(this, arguments); },
 

@@ -8,7 +8,7 @@ var TestCaseClass = test_module.require('class', 'test_case');
 
 var ns = {};
 utils.include(topDir+'modules/test/report.js', ns);
-var Report ns.Report;
+var Report = ns.Report;
 
 var ns = {};
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
