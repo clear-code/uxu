@@ -88,7 +88,8 @@ function shutDown()
 function setUp()
 {
 	utilsModule = {};
-	utils.include(topDir+'content/uxu/lib/utils.js', utilsModule);
+	utils.include(topDir+'modules/utils.js', utilsModule);
+	utilsModule = utilsModule.utils;
 
 }
 
