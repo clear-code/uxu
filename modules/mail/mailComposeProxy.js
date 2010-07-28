@@ -1,23 +1,52 @@
+if (typeof window == 'undefined')
+	this.EXPORTED_SYMBOLS = ['MailComposeProxy'];
+
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
-var utils = {}; 
-Components.utils.import('resource://uxu-modules/utils.js', utils);
-utils = utils.utils;
+var ns = {}; 
+Components.utils.import('resource://uxu-modules/utils.js', ns);
+Components.utils.import('resource://uxu-modules/mail/utils.js', ns);
 
-var mail_module = new ModuleManager(['chrome://uxu/content/mail']); 
-var mailUtils = mail_module.require('package', 'utils');
+var utils = ns.utils;
+var mailUtils = ns.mailUtils;
 
-
-function constructor(aReal)
+function MailComposeProxy(aReal)
 {
 	this._real = aReal;
-	this._init();
+
+	properties
+		.replace(/^\s+|\s+$/g, '')
+		.replace(/^\s*\/\/.+$/mg, '')
+		.split(/\s+/)
+		.forEach(function(aProp) {
+			if (aProp in this || !(aProp in this._real)) return;
+			this.__defineGetter__(aProp, function() {
+				return this._real[aProp];
+			});
+			this.__defineSetter__(aProp, function(aValue) {
+				return this._real[aProp] = aValue;
+			});
+		}, this);
+	(readOnlyProperties+methods)
+		.replace(/^\s+|\s+$/g, '')
+		.replace(/^\s*\/\/.+$/mg, '')
+		.split(/\s+/)
+		.forEach(function(aProp) {
+			if (aProp in this || !(aProp in this._real)) return;
+			this.__defineGetter__(aProp, function() {
+				return this._real[aProp];
+			});
+		}, this);
+
+
 	this.DEBUG = false;
 }
 
+MailComposeProxy.prototype = {
 
-function SendMsg(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgress)
+
+SendMsg : function(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgress)
 {
 	if (this.DEBUG ||
 		utils.getPref('extensions.uxu.running')) {
@@ -26,9 +55,9 @@ function SendMsg(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgress)
 	else {
 		return this._real.SendMsg.apply(this._real, arguments);
 	}
-}
+},
 
-function _fakeSendMsg(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgress)
+_fakeSendMsg : function(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgress)
 {
 	var compFields = this._real.compFields;
 	try {
@@ -101,15 +130,27 @@ function _fakeSendMsg(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgres
 	catch(e) {
 		if (!this.DEBUG) throw e;
 	}
-}
+},
 
 /*
-function abort()
+abort : function()
 {
-}
+},
 */
 
-var _properties = <![CDATA[
+// fallback
+__noSuchMethod__ : function(aName, aArgs)
+{
+	if (!(aName in this._real)) {
+		throw 'MailComposeProxy: the property "'+aName+'" is undefined.';
+	}
+	return this._real[aName].apply(this._real, aArgs);
+}
+
+};
+
+
+var properties = <![CDATA[
 		type
 		bodyModified
 		savedFolderURI
@@ -118,7 +159,7 @@ var _properties = <![CDATA[
 		deleteDraft
 		insertingQuotedContent
 	]]>.toString();
-var _readOnlyProperties = <![CDATA[
+var readOnlyProperties = <![CDATA[
 		messageSend
 		editor
 		domWindow
@@ -128,7 +169,7 @@ var _readOnlyProperties = <![CDATA[
 		progress
 		originalMsgURI
 	]]>.toString();
-var _methods = <![CDATA[
+var methods = <![CDATA[
 		Initialize 
 		SetDocumentCharset
 		RegisterStateListener
@@ -155,39 +196,3 @@ var _methods = <![CDATA[
 		onSendNotPerformed
 	]]>.toString();
 
-// fallback
-var __noSuchMethod__ = function(aName, aArgs)
-{
-	if (!(aName in this._real)) {
-		throw 'MailComposeProxy: the property "'+aName+'" is undefined.';
-	}
-	return this._real[aName].apply(this._real, aArgs);
-}
-
-
-function _init()
-{
-	_properties
-		.replace(/^\s+|\s+$/g, '')
-		.replace(/^\s*\/\/.+$/mg, '')
-		.split(/\s+/)
-		.forEach(function(aProp) {
-			if (aProp in this || !(aProp in this._real)) return;
-			this.__defineGetter__(aProp, function() {
-				return this._real[aProp];
-			});
-			this.__defineSetter__(aProp, function(aValue) {
-				return this._real[aProp] = aValue;
-			});
-		}, this);
-	(_readOnlyProperties+_methods)
-		.replace(/^\s+|\s+$/g, '')
-		.replace(/^\s*\/\/.+$/mg, '')
-		.split(/\s+/)
-		.forEach(function(aProp) {
-			if (aProp in this || !(aProp in this._real)) return;
-			this.__defineGetter__(aProp, function() {
-				return this._real[aProp];
-			});
-		}, this);
-}

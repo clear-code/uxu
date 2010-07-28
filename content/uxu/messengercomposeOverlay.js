@@ -1,5 +1,6 @@
-var UXUMailModule = new ModuleManager(['chrome://uxu/content/mail']);
-var UXUMailComposeProxy = UXUMailModule.require('class', 'mailComposeProxy');
+var ns = {};
+Components.utils.import('resource://uxu-modules/mail/mailComposeProxy.js', ns);
+var UXUMailComposeProxy = ns.MailComposeProxy;
 
 function UXUSimpleEnumeratorFromArray(aArray)
 {

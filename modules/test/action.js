@@ -1,32 +1,33 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*- 
 
-var ns = {};
-Components.utils.import('resource://uxu-modules/lib/action.jsm', ns);
-ns.action.export(this);
+if (typeof window == 'undefined')
+	this.EXPORTED_SYMBOLS = ['Action'];
  
-function constructor(aEnvironment) 
+function Action(aEnvironment) 
 {
 	this.utils = aEnvironment;
 	this.readiedActionListeners = [];
 }
  
-function destroy() 
+Action.prototype = { 
+	
+destroy : function() 
 {
 	this.cancelReadiedActions();
 	delete this.utils;
-}
+},
  
-/* „ÉÄ„Ç§„Ç¢„É≠„Ç∞Êìç‰Ωú„ÅÆ‰∫àÁ¥Ñ */ 
-var COMMON_DIALOG_URL = 'chrome://global/content/commonDialog.xul';
-var SELECT_DIALOG_URL = 'chrome://global/content/selectDialog.xul';
+/* É_ÉCÉAÉçÉOëÄçÏÇÃó\ñÒ */ 
+COMMON_DIALOG_URL : 'chrome://global/content/commonDialog.xul',
+SELECT_DIALOG_URL : 'chrome://global/content/selectDialog.xul',
 	
-function readyToOK(aOptions) 
+readyToOK : function(aOptions) 
 {
 	aOptions = aOptions || {};
 
 	var self = this;
 	var listener = function(aWindow) {
-			if (aWindow.location.href != COMMON_DIALOG_URL ||
+			if (aWindow.location.href != self.COMMON_DIALOG_URL ||
 				!aWindow.gCommonDialogParam ||
 				self.readiedActionListeners.indexOf(listener) < 0)
 				return;
@@ -60,16 +61,16 @@ function readyToOK(aOptions)
 		};
 	this.utils.addWindowWatcher(listener, 'load');
 	this.readiedActionListeners.push(listener);
-}
-var readyToOk = readyToOK;
+},
+readyToOk : function(aOptions) { return this.readyToOK(aOptions); },
  
-function readyToConfirm(aYes, aOptions) 
+readyToConfirm : function(aYes, aOptions) 
 {
 	aOptions = aOptions || {};
 
 	var self = this;
 	var listener = function(aWindow) {
-			if (aWindow.location.href != COMMON_DIALOG_URL ||
+			if (aWindow.location.href != self.COMMON_DIALOG_URL ||
 				!aWindow.gCommonDialogParam)
 				return;
 			var params = aWindow.gCommonDialogParam;
@@ -115,15 +116,15 @@ function readyToConfirm(aYes, aOptions)
 		};
 	this.utils.addWindowWatcher(listener, 'load');
 	this.readiedActionListeners.push(listener);
-}
+},
  
-function readyToPrompt(aInput, aOptions) 
+readyToPrompt : function(aInput, aOptions) 
 {
 	aOptions = aOptions || {};
 
 	var self = this;
 	var listener = function(aWindow) {
-			if (aWindow.location.href != COMMON_DIALOG_URL ||
+			if (aWindow.location.href != self.COMMON_DIALOG_URL ||
 				!aWindow.gCommonDialogParam)
 				return;
 			var params = aWindow.gCommonDialogParam;
@@ -182,9 +183,9 @@ function readyToPrompt(aInput, aOptions)
 		};
 	this.utils.addWindowWatcher(listener, 'load');
 	this.readiedActionListeners.push(listener);
-}
+},
  
-function readyToPromptPassword(aInput, aOptions) 
+readyToPromptPassword : function(aInput, aOptions) 
 {
 	this.readyToPrompt(
 		null,
@@ -194,9 +195,9 @@ function readyToPromptPassword(aInput, aOptions)
 			__proto__ : aOptions
 		}
 	);
-}
+},
  
-function readyToPromptUsernameAndPassword(aUsername, aPassword, aOptions) 
+readyToPromptUsernameAndPassword : function(aUsername, aPassword, aOptions) 
 {
 	this.readyToPrompt(
 		null,
@@ -207,9 +208,9 @@ function readyToPromptUsernameAndPassword(aUsername, aPassword, aOptions)
 			__proto__ : aOptions
 		}
 	);
-}
+},
  
-function readyToSelect(aSelectedIndexes, aOptions) 
+readyToSelect : function(aSelectedIndexes, aOptions) 
 {
 	aOptions = aOptions || {};
 	if (typeof aSelectedIndexes == 'number')
@@ -217,7 +218,7 @@ function readyToSelect(aSelectedIndexes, aOptions)
 
 	var self = this;
 	var listener = function(aWindow) {
-			if (aWindow.location.href != SELECT_DIALOG_URL ||
+			if (aWindow.location.href != self.SELECT_DIALOG_URL ||
 				!aWindow.gCommonDialogParam)
 				return;
 			var params = aWindow.gCommonDialogParam;
@@ -247,17 +248,17 @@ function readyToSelect(aSelectedIndexes, aOptions)
 		};
 	this.utils.addWindowWatcher(listener, 'load');
 	this.readiedActionListeners.push(listener);
-}
+},
  
-function cancelReadiedActions(aInput) 
+cancelReadiedActions : function(aInput) 
 {
 	this.readiedActionListeners.forEach(function(aListener) {
 		this.utils.removeWindowWatcher(aListener);
 	}, this);
 	this.readiedActionListeners = [];
-}
+},
 	
-function cancelReadiedAction(aListener) 
+cancelReadiedAction : function(aListener) 
 {
 	this.utils.removeWindowWatcher(aListener);
 	var index = this.readiedActionListeners.indexOf(aListener);
@@ -265,3 +266,9 @@ function cancelReadiedAction(aListener)
 		this.readiedActionListeners.splice(index, 1);
 }
    
+}; 
+
+var ns = {};
+Components.utils.import('resource://uxu-modules/lib/action.jsm', ns);
+ns.action.export(Action.prototype);
+  

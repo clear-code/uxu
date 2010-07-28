@@ -3,14 +3,13 @@
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-var EventTarget = {};
-Components.utils.import('resource://uxu-modules/eventTarget.js', EventTarget);
-EventTarget = EventTarget.EventTarget;
+var ns = {};
+Components.utils.import('resource://uxu-modules/eventTarget.js', ns);
+var EventTarget = ns.EventTarget;
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
-var mail_module = new ModuleManager(['chrome://uxu/content/mail']);
 var ServerUtils = server_module.require('class', 'utils');
 	
 var key = 'uxu-test-window-id'; 
@@ -170,9 +169,9 @@ function attachAssertions()
  
 function attachActions() 
 {
-	var Actions = test_module.require('class', 'action');
-	var actionInstance = {};
-	actionInstance.__proto__ = new Actions(this);
+	var ns = {};
+	Components.utils.import('resource://uxu-modules/test/action.js', ns);
+	var actionInstance = new ns.Action(this);
 	this.__defineGetter__('action', function() {
 		return actionInstance;
 	});
@@ -221,9 +220,9 @@ function attachGMUtils()
  
 function attachMailUtils() 
 {
-	var MailUtils = mail_module.require('class', 'utils');
-	var mail = {};
-	mail.__proto__ = new MailUtils(this);
+	var ns = {};
+	Components.utils.import('resource://uxu-modules/mail/utils.js', ns);
+	var mail = new ns.MailUtils(this);
 	this.__defineGetter__('mail', function() {
 		return mail;
 	});
