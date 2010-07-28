@@ -2,9 +2,6 @@ var targetProduct = 'Thunderbird';
 
 var topDir = baseURL+'../../../../';
 
-utils.include(topDir+'content/uxu/lib/module_manager.js');
-
-var mail_module = new ModuleManager([topDir+'content/uxu/mail']);
 var ComposeClass;
 var compose;
 var composeWindow;
@@ -22,7 +19,10 @@ function setUp()
 {
 	closeAllComposeWindows();
 
-	ComposeClass = mail_module.require('class', 'compose');
+	ComposeClass = {};
+	utils.include(topDir+'modules/mail/compose.js', ComposeClass);
+	ComposeClass = ComposeClass.Compose;
+
 	compose = new ComposeClass(utils.mail, utils);
 	yield Do(compose.setUp());
 	composeWindow = compose.window;

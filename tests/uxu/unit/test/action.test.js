@@ -1,16 +1,14 @@
 var topDir = baseURL+'../../../../';
 
-utils.include(topDir+'content/uxu/lib/module_manager.js');
-
-var test_module = new ModuleManager([topDir+'content/uxu/test']);
-var ActionsClass = test_module.require('class', 'action');
+var ActionsClass = {};
+utils.include(topDir+'modules/test/action.js', ActionsClass);
+ActionsClass = ActionsClass.Action;
 
 var actionModule;
 
 function setUp()
 {
 	actionModule = new ActionsClass(utils);
-	actionModule.constructor(utils);
 }
 
 function tearDown()

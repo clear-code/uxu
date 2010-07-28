@@ -1,7 +1,6 @@
 var targetProduct = 'Thunderbird';
 var topDir = baseURL+'../../../../';
 
-utils.include(topDir+'content/uxu/lib/module_manager.js');
 utils.include('mailComposeStub.inc.js');
 
 var ObserverClass;
@@ -9,10 +8,13 @@ var MailComposeProxy;
 
 function startUp()
 {
-	var lib_module = new ModuleManager([topDir+'content/uxu/lib']);
-	ObserverClass = lib_module.require('class', 'observer');
-	var mail_module = new ModuleManager([topDir+'content/uxu/mail']);
-	MailComposeProxy = mail_module.require('class', 'mailComposeProxy');
+	ObserverClass = {};
+	utils.include(topDir+'modules/observer.js', ObserverClass);
+	ObserverClass = ObserverClass.Observer;
+
+	MailComposeProxy = {};
+	utils.include(topDir+'modules/mail/mailComposeProxy.js', MailComposeProxy);
+	MailComposeProxy = MailComposeProxy.MailComposeProxy;
 }
 
 var proxy;

@@ -2,12 +2,7 @@ var targetProduct = 'Thunderbird';
 
 var topDir = baseURL+'../../../../';
 
-utils.include(topDir+'content/uxu/lib/module_manager.js');
-
-var lib_module = new ModuleManager([topDir+'content/uxu/lib']);
 var ObserverClass;
-
-var mail_module = new ModuleManager([topDir+'content/uxu/mail']);
 var UtilsClass;
 var utilsModule;
 
@@ -15,8 +10,14 @@ var observer;
 
 function setUp()
 {
-	ObserverClass = lib_module.require('class', 'observer');
-	UtilsClass = mail_module.require('class', 'utils');
+	ObserverClass = {};
+	utils.include(topDir+'modules/observer.js', ObserverClass);
+	ObserverClass = ObserverClass.Observer;
+
+	UtilsClass = {};
+	utils.include(topDir+'modules/mail/utils.js', UtilsClass);
+	UtilsClass = UtilsClass.MailUtils;
+
 	utilsModule = new UtilsClass(this);
 }
 
