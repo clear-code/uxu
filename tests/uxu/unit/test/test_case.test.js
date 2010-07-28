@@ -1,8 +1,17 @@
 var topDir = baseURL+'../../../../';
 
 var ns = {};
-utils.include(topDir+'modules/test/environment.js', ns);
-utils.include(topDir+'modules/test/testCase.js', ns);
+[
+	topDir+'modules/test/environment.js',
+	topDir+'modules/test/testCase.js'
+].forEach(function(aURI) {
+	utils.include({
+		uri                    : aURI,
+		encoding               : 'Shift_JIS',
+		allowOverrideConstants : true,
+		namespace              : ns
+	});
+}, this);
 
 var TestCaseClass = ns.TestCase;
 

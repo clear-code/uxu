@@ -1,9 +1,19 @@
 var topDir = baseURL+'../../../../';
 
 var ns = {};
-utils.include(topDir+'modules/test/report.js', ns);
-utils.include(topDir+'modules/test/log.js', ns);
-utils.include(topDir+'modules/test/testCase.js', ns);
+[
+	topDir+'modules/test/report.js',
+	topDir+'modules/test/log.js',
+	topDir+'modules/test/testCase.js'
+].forEach(function(aURI) {
+	utils.include({
+		uri                    : aURI,
+		encoding               : 'Shift_JIS',
+		allowOverrideConstants : true,
+		namespace              : ns
+	});
+}, this);
+
 var Report = ns.Report;
 var TestLogClass = ns.TestLog;
 var TestCaseClass = ns.TestCase;

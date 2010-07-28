@@ -3,8 +3,17 @@
 var topDir = baseURL+'../../../../';
 
 var ns = {};
-utils.include(topDir+'modules/test/assertions.js', ns);
-utils.include(topDir+'modules/diff.js', ns);
+[
+	topDir+'modules/test/assertions.js',
+	topDir+'modules/diff.js'
+].forEach(function(aURI) {
+	utils.include({
+		uri                    : aURI,
+		encoding               : 'Shift_JIS',
+		allowOverrideConstants : true,
+		namespace              : ns
+	});
+}, this);
 
 var Diff = ns.Diff;
 
