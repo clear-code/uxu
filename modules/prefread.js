@@ -17,7 +17,7 @@
   * The Original Code is Mozilla.
   *
   * The Initial Developer of the Original Code is Darin Fisher.
-  * Portions created by the Initial Developer are Copyright (C) 2003-2009
+  * Portions created by the Initial Developer are Copyright (C) 2003-2010
   * the Initial Developer. All Rights Reserved.
   *
   * Contributor(s):
@@ -38,12 +38,15 @@
   *
   * ***** END LICENSE BLOCK ***** */
 
+if (typeof window == 'undefined')
+	this.EXPORTED_SYMBOLS = ['prefread'];
+
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-const ERROR_MALFORMED_PREF_FILE = new Error('malformed pref file');
-const ERROR_NO_NAME             = new Error('invalid pref: no name');
-const ERROR_INVALID_TYPE        = new Error('invalid pref: invalid type');
+const ERROR_MALFORMED_PREF_FILE = 'malformed pref file';
+const ERROR_NO_NAME             = 'invalid pref: no name';
+const ERROR_INVALID_TYPE        = 'invalid pref: invalid type';
 
 const PREF_PARSE_INIT                    = 0;
 const PREF_PARSE_MATCH_STRING            = 1 << 0;
@@ -77,11 +80,14 @@ const kPref     = 'pref';
 const kTrue     = 'true';
 const kFalse    = 'false';
 
+const IOService = Cc['@mozilla.org/network/io-service;1']
+		.getService(Ci.nsIIOService);
+
 function read(aFile)
 {
 	var result = [];
 
-	var bytes = this.readBinaryFrom(aFile);
+	var bytes = readBinaryFrom(aFile);
 
 	var c;
 	var code;
@@ -99,12 +105,12 @@ function read(aFile)
 	function pref_DoCallback()
 	{
 		if (!name) {
-			throw ERROR_NO_NAME;
+			throw new Error(ERROR_NO_NAME);
 		}
 		switch (type)
 		{
 			case PREF_INVALID:
-				throw ERROR_INVALID_TYPE;
+				throw new Error(ERROR_INVALID_TYPE);
 				return;
 
 			case PREF_BOOL:
@@ -168,7 +174,7 @@ function read(aFile)
 					/* else wait for next char */
 				}
 				else {
-					throw ERROR_MALFORMED_PREF_FILE;
+					throw new Error(ERROR_MALFORMED_PREF_FILE);
 				}
 				break;
 
@@ -200,7 +206,7 @@ function read(aFile)
 					state = PREF_PARSE_COMMENT_MAYBE_START;
 				}
 				else if (!spaceRegExp.test(c)) {
-					throw ERROR_MALFORMED_PREF_FILE;
+					throw new Error(ERROR_MALFORMED_PREF_FILE);
 				}
 				break;
 
@@ -216,7 +222,7 @@ function read(aFile)
 					state = PREF_PARSE_COMMENT_MAYBE_START;
 				}
 				else if (!spaceRegExp.test(c)) {
-					throw ERROR_MALFORMED_PREF_FILE;
+					throw new Error(ERROR_MALFORMED_PREF_FILE);
 				}
 				break;
 
@@ -249,7 +255,7 @@ function read(aFile)
 					state = PREF_PARSE_COMMENT_MAYBE_START;
 				}
 				else if (!spaceRegExp.test(c)) {
-					throw ERROR_MALFORMED_PREF_FILE;
+					throw new Error(ERROR_MALFORMED_PREF_FILE);
 				}
 				break;
 			case PREF_PARSE_INT_VALUE:
@@ -270,7 +276,7 @@ function read(aFile)
 						state = PREF_PARSE_UNTIL_CLOSE_PAREN;
 					}
 					else {
-						throw ERROR_MALFORMED_PREF_FILE;
+						throw new Error(ERROR_MALFORMED_PREF_FILE);
 					}
 				}
 				break;
@@ -287,7 +293,7 @@ function read(aFile)
 						break;
 					default:
 						/* pref file is malformed */
-						throw ERROR_MALFORMED_PREF_FILE;
+						throw new Error(ERROR_MALFORMED_PREF_FILE);
 				}
 				break;
 			case PREF_PARSE_COMMENT_BLOCK:
@@ -414,7 +420,7 @@ function read(aFile)
 					state = PREF_PARSE_COMMENT_MAYBE_START;
 				}
 				else if (!spaceRegExp.test(c)) {
-					throw ERROR_MALFORMED_PREF_FILE;
+					throw new Error(ERROR_MALFORMED_PREF_FILE);
 				}
 				break;
 			case PREF_PARSE_UNTIL_CLOSE_PAREN:
@@ -427,7 +433,7 @@ function read(aFile)
 					state = PREF_PARSE_COMMENT_MAYBE_START;
 				}
 				else if (!spaceRegExp.test(c)) {
-					throw ERROR_MALFORMED_PREF_FILE;
+					throw new Error(ERROR_MALFORMED_PREF_FILE);
 				}
 				break;
 
@@ -447,7 +453,7 @@ function read(aFile)
 					state = PREF_PARSE_COMMENT_MAYBE_START;
 				}
 				else if (!spaceRegExp.test(c)) {
-					throw ERROR_MALFORMED_PREF_FILE;
+					throw new Error(ERROR_MALFORMED_PREF_FILE);
 				}
 				break;
 
@@ -466,10 +472,6 @@ function read(aFile)
 
 	return result;
 }
-
-
-var IOService = Cc['@mozilla.org/network/io-service;1']
-		.getService(Ci.nsIIOService);
 
 function readBinaryFrom(aTarget)
 {
@@ -500,4 +502,9 @@ function readBinaryFrom(aTarget)
 	stream.close();
 
 	return array;
+}
+
+function prefread()
+{
+	return read.apply(this, arguments);
 }

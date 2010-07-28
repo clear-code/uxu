@@ -9,7 +9,7 @@ var prefreadModule;
 function setUp()
 {
 	prefreadModule = {};
-	utils.include(topDir+'content/uxu/lib/prefread.js', prefreadModule);
+	utils.include(topDir+'modules/prefread.js', prefreadModule);
 }
 
 function tearDown()

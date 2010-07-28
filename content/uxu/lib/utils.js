@@ -3,9 +3,6 @@
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
-var prefread = lib_module.require('package', 'prefread');
-
 var ns = {};
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/lib/prefs.js', ns);
@@ -13,6 +10,10 @@ Components.utils.import('resource://uxu-modules/lib/encoding.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/ejs.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/hash.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/registry.jsm', ns);
+
+var prefread = {};
+Components.utils.import('resource://uxu-modules/prefread.js', prefread);
+prefread = prefread.prefread;
 
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 ns.encoding.export(this);
@@ -938,7 +939,7 @@ function loadPrefs(aFile, aHash)
 	if (aHash && typeof aHash != 'object') aHash = null;
 
 	var result = {};
-	prefread.read(this.normalizeToFile(aFile)).forEach(
+	prefread(this.normalizeToFile(aFile)).forEach(
 		(aHash ?
 			function(aItem) {
 				aHash[aItem.name] = aItem.value;
