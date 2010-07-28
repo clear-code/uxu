@@ -1709,7 +1709,7 @@ _getAltTextForCircularReference : function(aObject, aStrict, aAltTable)
 		aAltTable.alt.push(
 			aStrict ?
 				String(aObject)+'(#'+(aAltTable.alt.length+1)+')' :
-				inspect(aObject)
+				this.inspect(aObject)
 		);
 		aAltTable.count.push(0);
 	}
