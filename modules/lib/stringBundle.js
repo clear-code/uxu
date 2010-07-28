@@ -22,7 +22,7 @@ if (typeof window == 'undefined') {
 	// See: http://www.cozmixng.org/repos/piro/fx3-compatibility-lib/trunk/namespace.jsm
 	try {
 		let ns = {};
-		Components.utils.import('resource://uxu-modules/namespace.jsm', ns);
+		Components.utils.import('resource://uxu-modules/lib/namespace.jsm', ns);
 		/* var */ window = ns.getNamespaceFor('piro.sakura.ne.jp');
 	}
 	catch(e) {

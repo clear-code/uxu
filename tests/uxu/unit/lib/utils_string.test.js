@@ -3,7 +3,7 @@
 utils.include('utils_common.inc.js');
 
 var ns = {};
-Components.utils.import('resource://uxu-modules/stringBundle.js', ns);
+Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 

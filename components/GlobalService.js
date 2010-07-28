@@ -61,7 +61,7 @@ GlobalService.prototype = {
 								.getService(Ci.nsIWindowWatcher);
 				WindowManager = Cc['@mozilla.org/appshell/window-mediator;1']
 								.getService(Ci.nsIWindowMediator);
-				Components.utils.import('resource://uxu-modules/CLHHelper.jsm');
+				Components.utils.import('resource://uxu-modules/lib/CLHHelper.jsm');
 				ObserverService.addObserver(this, 'final-ui-startup', false);
 				this.upgradePrefs();
 				return;
@@ -104,7 +104,7 @@ GlobalService.prototype = {
 	init : function() 
 	{
 		var ns = {};
-		Components.utils.import('resource://uxu-modules/stringBundle.js', ns);
+		Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 		bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 		PromptService = Cc['@mozilla.org/embedcomp/prompt-service;1']

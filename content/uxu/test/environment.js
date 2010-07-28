@@ -764,7 +764,7 @@ function getBoxObjectFor(aNode)
 
 	if (!('boxObject' in _boxObjectModule)) {
 		Components.utils.import(
-			'resource://uxu-modules/boxObject.js',
+			'resource://uxu-modules/lib/boxObject.js',
 			_boxObjectModule
 		);
 	}

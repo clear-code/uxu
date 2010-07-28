@@ -2,7 +2,7 @@ var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var utils  = lib_module.require('package', 'utils');
 
 var ns = {};
-Components.utils.import('resource://uxu-modules/stringBundle.js', ns);
+Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);

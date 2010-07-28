@@ -1,7 +1,7 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*- 
 
 var ns = {};
-Components.utils.import('resource://uxu-modules/action.jsm', ns);
+Components.utils.import('resource://uxu-modules/lib/action.jsm', ns);
 ns.action.export(this);
  
 function constructor(aEnvironment) 

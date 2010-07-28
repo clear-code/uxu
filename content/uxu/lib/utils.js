@@ -7,12 +7,12 @@ var lib_module = new ModuleManager(['chrome://uxu/content/lib']);
 var prefread = lib_module.require('package', 'prefread');
 
 var ns = {};
-Components.utils.import('resource://uxu-modules/stringBundle.js', ns);
-Components.utils.import('resource://uxu-modules/prefs.js', ns);
-Components.utils.import('resource://uxu-modules/encoding.jsm', ns);
-Components.utils.import('resource://uxu-modules/ejs.jsm', ns);
-Components.utils.import('resource://uxu-modules/hash.jsm', ns);
-Components.utils.import('resource://uxu-modules/registry.jsm', ns);
+Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
+Components.utils.import('resource://uxu-modules/lib/prefs.js', ns);
+Components.utils.import('resource://uxu-modules/lib/encoding.jsm', ns);
+Components.utils.import('resource://uxu-modules/lib/ejs.jsm', ns);
+Components.utils.import('resource://uxu-modules/lib/hash.jsm', ns);
+Components.utils.import('resource://uxu-modules/lib/registry.jsm', ns);
 
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 ns.encoding.export(this);

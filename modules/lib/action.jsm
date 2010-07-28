@@ -19,7 +19,7 @@ if (typeof window == 'undefined')
 
 // This depends on boxObject.js
 // http://www.cozmixng.org/repos/piro/fx3-compatibility-lib/trunk/boxObject.js
-const BOX_OBJECT_MODULE = 'resource://uxu-modules/boxObject.js';
+const BOX_OBJECT_MODULE = 'resource://uxu-modules/lib/boxObject.js';
 
 // var namespace;
 if (typeof namespace == 'undefined') {
@@ -27,7 +27,7 @@ if (typeof namespace == 'undefined') {
 	// See: http://www.cozmixng.org/repos/piro/fx3-compatibility-lib/trunk/namespace.jsm
 	try {
 		let ns = {};
-		Components.utils.import('resource://uxu-modules/namespace.jsm', ns);
+		Components.utils.import('resource://uxu-modules/lib/namespace.jsm', ns);
 		namespace = ns.getNamespaceFor('clear-code.com');
 	}
 	catch(e) {
