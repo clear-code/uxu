@@ -75,7 +75,7 @@ Assertions.prototype = {
 	notEquals : function(aExpected, aActual, aMessage)
 	{
 		if (utils.equals(aExpected, aActual))
-			this.this.fail({
+			this.fail({
 			     	expectedRaw : this.appendTypeString(aExpected),
 			     	actualRaw   : this.appendTypeString(aActual),
 			     	expected    : bundle.getFormattedString('assert_not_equals_expected', [this.appendTypeString(aExpected)]),

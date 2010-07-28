@@ -1836,7 +1836,7 @@ mapURI : function(aURI, aMappingDefinition)
 
 	var matchers = [];
 	var targets  = [];
-	if (isArray(aMappingDefinition)) {
+	if (this.isArray(aMappingDefinition)) {
 		if (aMappingDefinition.length % 2)
 			throw new Error(bundle.getString('error_utils_invalid_mapping_definition'));
 
