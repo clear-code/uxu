@@ -2,10 +2,9 @@
 
 var topDir = baseURL+'../../../../';
 
-utils.include(topDir+'content/uxu/lib/module_manager.js');
-
-var test_module = new ModuleManager([topDir+'content/uxu/test']);
-var Runner = test_module.require('class', 'runner');
+var ns = {};
+utils.include(topDir+'modules/test/runner.js', ns);
+var Runner = ns.TestRunner;
 
 var declarationStyleTest = topDir+'tests/samples/declaration.test.js';
 var mozLabStyleTest = topDir+'tests/samples/mozlab.test.js';

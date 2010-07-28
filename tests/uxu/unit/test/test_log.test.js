@@ -1,14 +1,12 @@
 var topDir = baseURL+'../../../../';
 
-utils.include(topDir+'content/uxu/lib/module_manager.js');
-
-var test_module   = new ModuleManager([topDir+'content/uxu/test']);
-var TestLogClass  = test_module.require('class', 'test_log');
-var TestCaseClass = test_module.require('class', 'test_case');
-
 var ns = {};
 utils.include(topDir+'modules/test/report.js', ns);
+utils.include(topDir+'modules/test/log.js', ns);
+utils.include(topDir+'modules/test/testCase.js', ns);
 var Report = ns.Report;
+var TestLogClass = ns.TestLog;
+var TestCaseClass = ns.TestCase;
 
 var ns = {};
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);

@@ -2,11 +2,9 @@ var topDir = baseURL+'../../../';
 
 var ns = {};
 utils.include(topDir+'modules/test/environment.js', ns);
+utils.include(topDir+'modules/test/testCase.js', ns);
 
-utils.include(topDir+'content/uxu/lib/module_manager.js');
-
-var test_module = new ModuleManager([topDir+'content/uxu/test']);
-var TestCaseClass = test_module.require('class', 'test_case');
+var TestCaseClass = ns.TestCase;
 
 var testcase;
 

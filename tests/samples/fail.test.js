@@ -5,14 +5,12 @@ var priority = 'must';
 
 var topDir = baseURL+'../../';
 
-utils.include(topDir+'content/uxu/lib/module_manager.js');
-
-var ReadableDiffer;
+var ns = {};
+Components.utils.import('resource://uxu-modules/diff.js', ns);
+var ReadableDiffer = ns.ReadableDiffer;
 
 function setUp()
 {
-    var lib = new ModuleManager([topDir+'content/uxu/lib']);
-    ReadableDiffer = lib.require('class', 'readableDiffer');
 }
 
 function testDiffLines()
