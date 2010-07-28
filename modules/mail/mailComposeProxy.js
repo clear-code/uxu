@@ -9,7 +9,7 @@ Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/mail/utils.js', ns);
 
 var utils = ns.utils;
-var mailUtils = ns.mailUtils;
+var mailUtils = new ns.MailUtils({ __proto__ : utils, utils : utils });
 
 function MailComposeProxy(aReal)
 {

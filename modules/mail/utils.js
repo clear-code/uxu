@@ -1,7 +1,7 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
 if (typeof window == 'undefined')
-	this.EXPORTED_SYMBOLS = ['mailUtils', 'MailUtils'];
+	this.EXPORTED_SYMBOLS = ['MailUtils'];
 
 var Cc = Components.classes;
 var Ci = Components.interfaces;
@@ -95,7 +95,7 @@ hankakuZenkakuCharacters.forEach(function(aChar, aIndex) {
 	zenkakuHankakuTable[hankakuZenkakuCharacters[aIndex]] = hankakuZenkakuCharacters[aIndex-1];
 });
 
-function MailUtils()
+function MailUtils(aEnvironment)
 {
 	this.initListeners();
 	this._observer = new MailObserver();
@@ -327,5 +327,3 @@ MailUtils.prototype = {
 	*/
 
 };
-
-var mailUtils = new MailUtils();
