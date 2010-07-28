@@ -1,16 +1,13 @@
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-var utils = {};
-Components.utils.import('resource://uxu-modules/utils.js', utils);
-utils = utils.utils;
-
 var ns = {};
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
-var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
+Components.utils.import('resource://uxu-modules/utils.js', ns);
+Components.utils.import('resource://uxu-modules/testCase.js', ns);
+var utils = ns.utils;
 
-var test_module = new ModuleManager(['chrome://uxu/content/test']);
-var TestCase = test_module.require('class', 'test_case');
+var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 
 var FORMAT_RAW  = 1;
@@ -82,10 +79,10 @@ function _toText(aFormat)
 			count[aResult.type]++;
 			count.total++;
 			if (aFormat & IGNORE_SKIPPED &&
-				aResult.type == TestCase.prototype.RESULT_SKIPPED)
+				aResult.type == ns.TestCase.prototype.RESULT_SKIPPED)
 				return;
 			if (aFormat & IGNORE_SUCCESS &&
-				aResult.type == TestCase.prototype.RESULT_SUCCESS)
+				aResult.type == ns.TestCase.prototype.RESULT_SUCCESS)
 				return;
 
 			if (outputCount) result.push(bundle.getString('log_separator_test'));
@@ -253,7 +250,7 @@ function _createResultFromReport(aReport, aTimestamp)
 
 function onFinish(aEvent)
 {
-	if (aEvent.data.result == TestCase.prototype.RESULT_ERROR) {
+	if (aEvent.data.result == ns.TestCase.prototype.RESULT_ERROR) {
 		var results = this._createResultsFromReport(aEvent.data);
 		results.forEach(function(aResult) {
 			aResult.index = -1;

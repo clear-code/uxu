@@ -1,5 +1,8 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*- 
 
+if (typeof window == 'undefined')
+	this.EXPORTED_SYMBOLS = ['TestEnvironment'];
+
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
@@ -11,16 +14,17 @@ Components.utils.import('resource://uxu-modules/test/action.js', ns);
 Components.utils.import('resource://uxu-modules/test/greasemonkey.js', ns);
 Components.utils.import('resource://uxu-modules/server/utils.js', ns);
 Components.utils.import('resource://uxu-modules/mail/utils.js', ns);
-	
+
+var WindowManager = Cc['@mozilla.org/appshell/window-mediator;1'].getService(Ci.nsIWindowMediator);
+var WindowWatcher = Cc['@mozilla.org/embedcomp/window-watcher;1'].getService(Ci.nsIWindowWatcher);
+
 var key = 'uxu-test-window-id'; 
- 
 var defaultURI, defaultType, defaultFeatures, defaultName; 
- 
-function constructor(aEnvironment, aURI, aBrowser) 
+	
+function TestEnvironment(aEnvironment, aURI, aBrowser) 
 {
 	var baseURL = aURI.replace(/[^/]*$/, '');
 
-	this.__proto__.__proto__ = ns.EventTarget.prototype;
 	this.initListeners();
 
 	this._utils = new ns.Utils();
@@ -71,13 +75,15 @@ function constructor(aEnvironment, aURI, aBrowser)
 	}
 
 	this.initVariables();
-	this.attachFrames();
 	this.attachAssertions();
 	this.attachActions();
 	this.attachServerUtils();
 }
+
+TestEnvironment.prototype = {
+	__proto__ : ns.EventTarget.prototype,
 	
-function destroy() 
+destroy : function() 
 {
 	if (this.greasemonkey) this.greasemonkey.destroy();
 	this.fireEvent('Destroy', null);
@@ -86,19 +92,19 @@ function destroy()
 	this.windowWatcherListeners.forEach(function(aWatcher) {
 		this.removeWindowWatcher(aWatcher);
 	}, this);
-}
+},
 	
-function onFinish() 
+onFinish : function() 
 {
 	this.destroy();
-}
+},
  
-function onAssertionWarning(aEvent) 
+onAssertionWarning : function(aEvent) 
 {
 	this.fireEvent('Warning', aEvent.data);
-}
+},
   
-function initVariables() 
+initVariables : function() 
 {
 	// __proto__で定義されたゲッタと同名の変数を定義できなくなってしまうため
 	// ゲッタとセッタを自動設定するようにして問題を回避
@@ -119,25 +125,14 @@ function initVariables()
 
 	this.environment.Cc = Cc;
 	this.environment.Ci = Ci;
-}
+},
  
-function attachFrames() 
-{
-	this.__defineGetter__('gBrowser', function() {
-		return this.getTestFrameOwner();
-	});
-	this.__defineGetter__('contentWindow', function() {
-		return this.getTestFrameOwner().contentWindow;
-	});
-	this.__defineGetter__('content', function() {
-		return this.getTestFrameOwner().contentWindow;
-	});
-	this.__defineGetter__('contentDocument', function() {
-		return this.getTestFrameOwner().contentDocument;
-	});
-}
+get gBrowser() { return this.getTestFrameOwner(); }, 
+get contentWindow() { return this.getTestFrameOwner().contentWindow; },
+get content() { return this.getTestFrameOwner().contentWindow; },
+get contentDocument() { return this.getTestFrameOwner().contentDocument; },
  
-function attachAssertions() 
+attachAssertions : function() 
 {
 	var assert = new ns.Assertions();
 	this.__defineGetter__('assert', function() {
@@ -155,15 +150,17 @@ function attachAssertions()
 					return aObj[aMethod].apply(aObj, arguments);
 				};
 			aSelf[aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)] = func;
-			if (aMethod.indexOf('is') == 0 && aMethod.substring(2))
+			if (aMethod.indexOf('is') == 0 &&
+				aMethod.substring(2) &&
+				!(aMethod.substring(2) in aSelf))
 				aSelf[aPrefix+aMethod.substring(2)] = func;
 		})(aMethod, this, assert, 'assert');
 	}
 	this.ok = function() { assert.ok.apply(this, arguments); };
 	this.is = function() { assert.is.apply(this, arguments); };
-}
+},
  
-function attachActions() 
+attachActions : function() 
 {
 	var actionInstance = new ns.Action(this);
 	this.__defineGetter__('action', function() {
@@ -182,9 +179,9 @@ function attachActions()
 			aSelf[aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)] = func;
 		})(aMethod, this, actionInstance, 'action');
 	}
-}
+},
  
-function attachGMUtils() 
+attachGMUtils : function() 
 {
 	var greasemonkey = new ns.GreasemonkeyUtils(this);
 	this.__defineGetter__('greasemonkey', function() {
@@ -208,9 +205,9 @@ function attachGMUtils()
 			] = func;
 		})(aMethod, this, greasemonkey, 'greasemonkey');
 	}
-}
+},
  
-function attachMailUtils() 
+attachMailUtils : function() 
 {
 	var mail = new ns.MailUtils(this);
 	this.__defineGetter__('mail', function() {
@@ -220,9 +217,9 @@ function attachMailUtils()
 		return aValue;
 	});
 	this.addListener(mail);
-}
+},
  
-function attachServerUtils() 
+attachServerUtils : function() 
 {
 	var serverUtils = new ns.ServerUtils();
 	this.__defineGetter__('serverUtils', function() {
@@ -248,14 +245,11 @@ function attachServerUtils()
 	this.tearDownAllHttpServers = function(aPort) {
 		return serverUtils.tearDownAllHttpServers();
 	};
-}
-  
+},
+ 
 // window management 
 	
-var WindowManager = Cc['@mozilla.org/appshell/window-mediator;1'] 
-		.getService(Ci.nsIWindowMediator);
- 
-function normalizeTestWindowOption(aOptions) 
+normalizeTestWindowOption : function(aOptions) 
 {
 	if (!aOptions) aOptions = {};
 	if (!aOptions.uri && !aOptions.type) {
@@ -285,10 +279,10 @@ function normalizeTestWindowOption(aOptions)
 		while (aOptions.uri != (aOptions.uri = aOptions.uri.replace(/[^\/]+\/\.\.\//, ''))) {}
 
 	return aOptions;
-};
+},
  
 // テスト用のFirefoxウィンドウを取得する 
-function getTestWindow(aOptions)
+getTestWindow : function(aOptions)
 {
 	var info = this.normalizeTestWindowOption(aOptions);
 	var targets = WindowManager.getEnumerator(info.type),
@@ -303,18 +297,18 @@ function getTestWindow(aOptions)
 	}
 
 	return null;
-};
+},
  
 // テスト用のFirefoxウィンドウを開き直す 
-function reopenTestWindow(aOptions, aCallback)
+reopenTestWindow : function(aOptions, aCallback)
 {
 	var win = this.getTestWindow(aOptions);
 	if (win) win.close();
 	return this.openTestWindow(aOptions, aCallback);
-};
+},
  
 // テスト用のFirefoxウィンドウを開く 
-function openTestWindow(aOptions, aCallback)
+openTestWindow : function(aOptions, aCallback)
 {
 	var win = this.getTestWindow(aOptions);
 	if (win) {
@@ -348,16 +342,16 @@ function openTestWindow(aOptions, aCallback)
 		}, false);
 	}
 	return win;
-};
+},
  
 // テスト用のFirefoxウィンドウを閉じる 
-function closeTestWindow(aOptions)
+closeTestWindow : function(aOptions)
 {
 	var win = this.getTestWindow(aOptions);
 	if (win) win.close();
-};
+},
  
-function setUpTestWindow(aContinuation, aOptions) 
+setUpTestWindow : function(aContinuation, aOptions) 
 {
 	if (!aOptions) aOptions = {};
 	if (aContinuation && typeof aContinuation != 'function') {
@@ -370,9 +364,9 @@ function setUpTestWindow(aContinuation, aOptions)
 	var completedFlag = this.setUpTestWindowInternal(aContinuation, aOptions);
 	if (!aOptions.async) this._utils.wait(completedFlag);
 	return completedFlag;
-};
+},
 	
-function setUpTestWindowInternal(aContinuation, aOptions) 
+setUpTestWindowInternal : function(aContinuation, aOptions) 
 {
 	var loadedFlag = { value : false };
 	if (this.getTestWindow(aOptions)) {
@@ -391,17 +385,17 @@ function setUpTestWindowInternal(aContinuation, aOptions)
 		);
 	}
 	return loadedFlag;
-};
+},
   
-var tearDownTestWindow = closeTestWindow; 
+tearDownTestWindow : function() { return this.closeTestWindow.apply(this, arguments); }, 
  
-function getChromeWindow(aOptions) 
+getChromeWindow : function(aOptions) 
 {
 	var windows = this.getChromeWindows(aOptions);
 	return windows.length ? windows[0] : null ;
-};
+},
  
-function getChromeWindows(aOptions) 
+getChromeWindows : function(aOptions) 
 {
 	var info = this.normalizeTestWindowOption(aOptions);
 	var targets = WindowManager.getEnumerator(info.type);
@@ -417,23 +411,20 @@ function getChromeWindows(aOptions)
 	}
 
 	return result;
-};
+},
   
 // window watcher 
 	
-var WindowWatcher = Cc['@mozilla.org/embedcomp/window-watcher;1'] 
-		.getService(Ci.nsIWindowWatcher);
- 
-function addWindowWatcher(aListener, aTargets) 
+addWindowWatcher : function(aListener, aTargets) 
 {
 	if (!aListener) return;
 	aListener = new WindowWatcherListener(aListener, aTargets, this);
 
 	this.windowWatcherListeners.push(aListener);
 	WindowWatcher.registerNotification(aListener);
-};
+},
  
-function removeWindowWatcher(aListener) 
+removeWindowWatcher : function(aListener) 
 {
 	aListener = WindowWatcherListener.find(aListener, this.windowWatcherListeners);
 	if (!aListener) return;
@@ -443,8 +434,251 @@ function removeWindowWatcher(aListener)
 	catch(e) {
 		this.log(e);
 	}
-};
+},
+  
+// load page 
+	
+_waitBrowserLoad : function(aTab, aBrowser, aLoadedFlag, aOnComplete) 
+{
+	if (aBrowser.localName == 'tabbrowser') {
+		aTab = aBrowser.selectedTab;
+		aBrowser = aTab.linkedBrowser;
+	}
+	var listener = {
+		started : false,
+		finished : false,
+		isTabComplete : function() {
+			return this.started && aTab && aTab.getAttribute('busy') != 'true';
+		},
+		onProgressChange : function() {},
+		onStateChange : function(aWebProgress, aRequest, aStateFlags, aStatus)
+		{
+			if (aStateFlags & Ci.nsIWebProgressListener.STATE_START &&
+				aStateFlags & Ci.nsIWebProgressListener.STATE_IS_NETWORK) {
+				this.started = true;
+			}
+			if (this.started &&
+				aStateFlags & Ci.nsIWebProgressListener.STATE_STOP &&
+				aStateFlags & Ci.nsIWebProgressListener.STATE_IS_NETWORK) {
+				this.onFinish();
+			}
+			else {
+				window.setTimeout(function(aSelf) {
+					if (aSelf.isTabComplete())
+						aSelf.onFinish();
+				}, 100, this);
+			}
+		},
+		onLocationChange : function() {},
+		onStatusChange : function() {},
+		onSecurityChange : function() {},
+		QueryInterface : function(aIID)
+		{
+			if (aIID.equals(Ci.nsIWebProgressListener) ||
+				aIID.equals(Ci.nsISupportsWeakReference) ||
+				aIID.equals(Ci.nsISupports)) {
+				return this;
+			}
+			throw Components.results.NS_NOINTERFACE;
+		},
+		onFinish : function()
+		{
+			if (this.finished) return;
+			this.finished = true;
+			aBrowser.removeProgressListener(listener);
+			aLoadedFlag.value = true;
+			if (aOnComplete && typeof aOnComplete == 'function')
+				aOnComplete();
+		}
+	};
+	aBrowser.addProgressListener(listener);
+	window.setTimeout(function() {
+		if (!listener.started)
+			listener.onFinish();
+	}, 0);
+},
  
+// テスト用のFirefoxウィンドウの現在のタブにURIを読み込む 
+loadURI : function(aURI, aOptions)
+{
+	if (!aOptions) aOptions = {};
+
+	if (!aURI) aURI = 'about:blank';
+	aURI = this.fixupIncompleteURI(aURI);
+
+	var completedFlag = this.loadURIInternal(aURI, aOptions);
+	if (!aOptions.async) this._utils.wait(completedFlag);
+	return completedFlag;
+},
+	
+loadURIInternal : function(aURI, aOptions) 
+{
+	var loadedFlag = { value : false };
+
+	var b = this._testFrame;
+	if (!aOptions.inFrame) {
+		var win = this.getTestWindow(aOptions);
+		if (win) b = win.gBrowser;
+	}
+	if (!b) return { value : true };
+	b.stop();
+	window.setTimeout(function(aSelf) {
+		aSelf._waitBrowserLoad(null, b, loadedFlag);
+		b.loadURI(aURI, aOptions.referrer || null);
+	}, 0, this);
+
+	return loadedFlag;
+},
+  
+loadURIInTestFrame : function(aURI, aOptions) 
+{
+	if (!aOptions) aOptions = {};
+	aOptions.inFrame = true;
+	return this.loadURI(aURI, aOptions);
+},
+ 
+// テスト用のFirefoxウィンドウで新しいタブを開く 
+addTab : function(aURI, aOptions)
+{
+	if (!aOptions) aOptions = {};
+
+	if (this._utils.product != 'Firefox') return { value : true, tab : null };
+
+	if (!aURI) aURI = 'about:blank';
+	aURI = this.fixupIncompleteURI(aURI);
+
+	var completedFlag = this.addTabInternal(aURI, aOptions);
+	if (!aOptions.async) this._utils.wait(completedFlag);
+	return completedFlag;
+},
+	
+addTabInternal : function(aURI, aOptions) 
+{
+	var loadedFlag = { value : false, tab : null };
+
+	var win = this.getTestWindow(aOptions);
+	if (!win) return null;
+
+	var tab = win.gBrowser.addTab();
+	tab.linkedBrowser.stop();
+	window.setTimeout(function(aSelf) {
+		aSelf._waitBrowserLoad(tab, tab.linkedBrowser, loadedFlag, function() {
+			loadedFlag.tab = tab;
+			if (aOptions.selected) {
+				win.gBrowser.selectedTab = tab;
+			}
+		});
+		tab.linkedBrowser.loadURI(aURI, aOptions.referrer || null);
+	}, 0, this);
+
+	return loadedFlag;
+},
+  
+getBrowser : function(aOptions) 
+{
+	if (this._utils.product != 'Firefox') return null;
+	return this.getTestFrameOwner(aOptions);
+},
+ 
+getTestFrameOwner : function(aOptions) 
+{
+	var win = this.getTestWindow(aOptions);
+	if (!win || !win.gBrowser) return this._testFrame;
+	return win.gBrowser;
+},
+ 
+getTabs : function(aOptions) 
+{
+	if (this._utils.product != 'Firefox') return [];
+	var win = this.getTestWindow(aOptions);
+	if (!win) return [];
+	return this._utils.$X('descendant::*[local-name()="tab"]', win.gBrowser.mTabContainer);
+},
+  
+// override some functions of utils 
+	
+include : function(aSource, aEncoding, aScope) 
+{
+	var allowOverrideConstants = false;
+
+	if (aSource &&
+		aEncoding === void(0) &&
+		aScope === void(0) &&
+		typeof aSource == 'object') { // hash style options
+		let options = aSource;
+		aSource = options.source || options.uri || options.url ;
+		aEncoding = options.encoding || options.charset;
+		aScope = options.scope || options.namespace || options.ns;
+		allowOverrideConstants = options.allowOverrideConstants;
+	}
+	else if (typeof aEncoding == 'object') { // for backward compatibility
+		let scope = aEncoding;
+		aEncoding = aScope;
+		aScope = scope;
+	}
+
+	return this._utils.include({
+			uri : aSource,
+			encoding : aEncoding,
+			namespace : (aScope || this.environment),
+			allowOverrideConstants : allowOverrideConstants
+		});
+},
+ 
+createDatabaseFromSQLFile : function(aFile, aEncoding, aScope) 
+{
+	if (aEncoding === void(0)) aEncoding = this._utils.getPref('extensions.uxu.defaultEncoding');
+	return this._utils.createDatabaseFromSQLFile.call(this, aFile, aEncoding);
+},
+ 
+processTemplate : function(aCode, aScope) 
+{
+	var env = {};
+	if (aScope) {
+		for (var i in aScope)
+		{
+			if (aScope.hasOwnProperty(i))
+				env[i] = aScope[i];
+		}
+	}
+	env.__proto__ = this.environment;
+	var result = this._utils.processTemplate(aCode, env);
+	env.__proto__ = void(0);
+	env = null;
+	return result;
+},
+parseTemplate : function() { return this.processTemplate.apply(this, arguments); } // for backward compatibility
+ 
+$ : function(aNodeOrID, aOwner) 
+{
+	return this._utils.$(aNodeOrID, aOwner || this.getTestWindow() || this.content);
+},
+ 
+getBoxObjectFor : function(aNode) 
+{
+	if ('getBoxObjectFor' in aNode.ownerDocument)
+		return aNode.ownerDocument.getBoxObjectFor(aNode);
+
+	if (!('boxObject' in ns)) {
+		Components.utils.import(
+			'resource://uxu-modules/lib/boxObject.js',
+			ns
+		);
+	}
+	return ns
+				.boxObject
+				.getBoxObjectFor(aNode);
+},
+ 
+log : function() 
+{
+	var message = Array.slice(arguments).join('\n');
+	this._utils.log(message);
+	this.fireEvent('Notify', message);
+}
+  
+}; 
+  
 function WindowWatcherListener(aListener, aTargets, aEnvironment) 
 {
 	this.listener = aListener;
@@ -453,6 +687,7 @@ function WindowWatcherListener(aListener, aTargets, aEnvironment)
 		this.targets = [this.targets];
 	this.environment = aEnvironment;
 }
+
 WindowWatcherListener.prototype = {
 	observe : function(aSubject, aTopic, aData)
 	{
@@ -518,246 +753,4 @@ WindowWatcherListener.find = function(aListener, aListeners) {
 	}
 	return null;
 };
-   
-// load page 
-	
-function _waitBrowserLoad(aTab, aBrowser, aLoadedFlag, aOnComplete) 
-{
-	if (aBrowser.localName == 'tabbrowser') {
-		aTab = aBrowser.selectedTab;
-		aBrowser = aTab.linkedBrowser;
-	}
-	var listener = {
-		started : false,
-		finished : false,
-		isTabComplete : function() {
-			return this.started && aTab && aTab.getAttribute('busy') != 'true';
-		},
-		onProgressChange : function() {},
-		onStateChange : function(aWebProgress, aRequest, aStateFlags, aStatus)
-		{
-			if (aStateFlags & Ci.nsIWebProgressListener.STATE_START &&
-				aStateFlags & Ci.nsIWebProgressListener.STATE_IS_NETWORK) {
-				this.started = true;
-			}
-			if (this.started &&
-				aStateFlags & Ci.nsIWebProgressListener.STATE_STOP &&
-				aStateFlags & Ci.nsIWebProgressListener.STATE_IS_NETWORK) {
-				this.onFinish();
-			}
-			else {
-				window.setTimeout(function(aSelf) {
-					if (aSelf.isTabComplete())
-						aSelf.onFinish();
-				}, 100, this);
-			}
-		},
-		onLocationChange : function() {},
-		onStatusChange : function() {},
-		onSecurityChange : function() {},
-		QueryInterface : function(aIID)
-		{
-			if (aIID.equals(Ci.nsIWebProgressListener) ||
-				aIID.equals(Ci.nsISupportsWeakReference) ||
-				aIID.equals(Ci.nsISupports)) {
-				return this;
-			}
-			throw Components.results.NS_NOINTERFACE;
-		},
-		onFinish : function()
-		{
-			if (this.finished) return;
-			this.finished = true;
-			aBrowser.removeProgressListener(listener);
-			aLoadedFlag.value = true;
-			if (aOnComplete && typeof aOnComplete == 'function')
-				aOnComplete();
-		}
-	};
-	aBrowser.addProgressListener(listener);
-	window.setTimeout(function() {
-		if (!listener.started)
-			listener.onFinish();
-	}, 0);
-}
- 
-// テスト用のFirefoxウィンドウの現在のタブにURIを読み込む 
-function loadURI(aURI, aOptions)
-{
-	if (!aOptions) aOptions = {};
-
-	if (!aURI) aURI = 'about:blank';
-	aURI = this.fixupIncompleteURI(aURI);
-
-	var completedFlag = this.loadURIInternal(aURI, aOptions);
-	if (!aOptions.async) this._utils.wait(completedFlag);
-	return completedFlag;
-};
-	
-function loadURIInternal(aURI, aOptions) 
-{
-	var loadedFlag = { value : false };
-
-	var b = this._testFrame;
-	if (!aOptions.inFrame) {
-		var win = this.getTestWindow(aOptions);
-		if (win) b = win.gBrowser;
-	}
-	if (!b) return { value : true };
-	b.stop();
-	window.setTimeout(function() {
-		_waitBrowserLoad(null, b, loadedFlag);
-		b.loadURI(aURI, aOptions.referrer || null);
-	}, 0);
-
-	return loadedFlag;
-};
-  
-function loadURIInTestFrame(aURI, aOptions) 
-{
-	if (!aOptions) aOptions = {};
-	aOptions.inFrame = true;
-	return this.loadURI(aURI, aOptions);
-}
- 
-// テスト用のFirefoxウィンドウで新しいタブを開く 
-function addTab(aURI, aOptions)
-{
-	if (!aOptions) aOptions = {};
-
-	if (this._utils.product != 'Firefox') return { value : true, tab : null };
-
-	if (!aURI) aURI = 'about:blank';
-	aURI = this.fixupIncompleteURI(aURI);
-
-	var completedFlag = this.addTabInternal(aURI, aOptions);
-	if (!aOptions.async) this._utils.wait(completedFlag);
-	return completedFlag;
-};
-	
-function addTabInternal(aURI, aOptions) 
-{
-	var loadedFlag = { value : false, tab : null };
-
-	var win = this.getTestWindow(aOptions);
-	if (!win) return null;
-
-	var tab = win.gBrowser.addTab();
-	tab.linkedBrowser.stop();
-	window.setTimeout(function() {
-		_waitBrowserLoad(tab, tab.linkedBrowser, loadedFlag, function() {
-			loadedFlag.tab = tab;
-			if (aOptions.selected) {
-				win.gBrowser.selectedTab = tab;
-			}
-		});
-		tab.linkedBrowser.loadURI(aURI, aOptions.referrer || null);
-	}, 0);
-
-	return loadedFlag;
-};
-  
-function getBrowser(aOptions) 
-{
-	if (this._utils.product != 'Firefox') return null;
-	return this.getTestFrameOwner(aOptions);
-};
- 
-function getTestFrameOwner(aOptions) 
-{
-	var win = this.getTestWindow(aOptions);
-	if (!win || !win.gBrowser) return this._testFrame;
-	return win.gBrowser;
-};
- 
-function getTabs(aOptions) 
-{
-	if (this._utils.product != 'Firefox') return [];
-	var win = this.getTestWindow(aOptions);
-	if (!win) return [];
-	return this._utils.$X('descendant::*[local-name()="tab"]', win.gBrowser.mTabContainer);
-};
-  
-// override some functions of utils 
-	
-function include(aSource, aEncoding, aScope) 
-{
-	var allowOverrideConstants = false;
-
-	if (aSource &&
-		aEncoding === void(0) &&
-		aScope === void(0) &&
-		typeof aSource == 'object') { // hash style options
-		let options = aSource;
-		aSource = options.source || options.uri || options.url ;
-		aEncoding = options.encoding || options.charset;
-		aScope = options.scope || options.namespace || options.ns;
-		allowOverrideConstants = options.allowOverrideConstants;
-	}
-	else if (typeof aEncoding == 'object') { // for backward compatibility
-		let scope = aEncoding;
-		aEncoding = aScope;
-		aScope = scope;
-	}
-
-	return this._utils.include({
-			uri : aSource,
-			encoding : aEncoding,
-			namespace : (aScope || this.environment),
-			allowOverrideConstants : allowOverrideConstants
-		});
-};
- 
-function createDatabaseFromSQLFile(aFile, aEncoding, aScope) 
-{
-	if (aEncoding === void(0)) aEncoding = this._utils.getPref('extensions.uxu.defaultEncoding');
-	return this._utils.createDatabaseFromSQLFile.call(this, aFile, aEncoding);
-};
- 
-function processTemplate(aCode, aScope) 
-{
-	var env = {};
-	if (aScope) {
-		for (var i in aScope)
-		{
-			if (aScope.hasOwnProperty(i))
-				env[i] = aScope[i];
-		}
-	}
-	env.__proto__ = this.environment;
-	var result = this._utils.processTemplate(aCode, env);
-	env.__proto__ = void(0);
-	env = null;
-	return result;
-}
-var parseTemplate = processTemplate; // for backward compatibility
- 
-function $(aNodeOrID, aOwner) 
-{
-	return this._utils.$(aNodeOrID, aOwner || this.getTestWindow() || this.content);
-}
- 
-function getBoxObjectFor(aNode) 
-{
-	if ('getBoxObjectFor' in aNode.ownerDocument)
-		return aNode.ownerDocument.getBoxObjectFor(aNode);
-
-	if (!('boxObject' in _boxObjectModule)) {
-		Components.utils.import(
-			'resource://uxu-modules/lib/boxObject.js',
-			_boxObjectModule
-		);
-	}
-	return _boxObjectModule
-				.boxObject
-				.getBoxObjectFor(aNode);
-}
-var _boxObjectModule = {};
- 
-function log() 
-{
-	var message = Array.slice(arguments).join('\n');
-	this._utils.log(message);
-	this.fireEvent('Notify', message);
-}
    

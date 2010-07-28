@@ -25,9 +25,10 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 var ns = {};
+Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
+Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
 Components.utils.import('resource://uxu-modules/fsm.js', ns);
 Components.utils.import('resource://uxu-modules/utils.js', ns);
-Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/eventTarget.js', ns);
 Components.utils.import('resource://uxu-modules/test/assertions.js', ns);
 Components.utils.import('resource://uxu-modules/test/report.js', ns);
@@ -39,9 +40,6 @@ var utils = { __proto__ : ns.utils };
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 var Assertions  = ns.Assertions;
 var Report  = ns.Report;
-
-var test_module = new ModuleManager(['chrome://uxu/content/test']);
-var Environment = test_module.require('class', 'environment');
 
 var ObserverService = Cc['@mozilla.org/observer-service;1']
 					.getService(Ci.nsIObserverService);
@@ -1296,7 +1294,7 @@ function _exec(aTest, aContext, aContinuation, aReport)
 		if (utils.isGeneratedIterator(result)) {
 			aReport.report = report;
 			var _this = this;
-			window.setTimeout(function() {
+			ns.setTimeout(function() {
 				utils.doIteration(result, {
 					onEnd : function(e) {
 						aReport.report.onDetailedFinish();

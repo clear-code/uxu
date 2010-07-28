@@ -13,7 +13,6 @@ var action = new ns.Action({ __proto__ : utils, utils : utils });
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var Runner      = test_module.require('class', 'runner');
-var Environment = test_module.require('class', 'environment');
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var Reporter    = server_module.require('class', 'reporter');

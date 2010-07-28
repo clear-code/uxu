@@ -6,14 +6,12 @@ var ns = {};
 Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/eventTarget.js', ns);
+Components.utils.import('resource://uxu-modules/test/environment.js', ns);
+Components.utils.import('resource://uxu-modules/test/testCase.js', ns);
+Components.utils.import('resource://uxu-modules/test/testLog.js', ns);
 
 var utils = ns.utils;
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
-
-var test_module = new ModuleManager(['chrome://uxu/content/test']);
-var TestCase    = test_module.require('class', 'test_case');
-var TestLog     = test_module.require('class', 'test_log');
-var Environment = test_module.require('class', 'environment');
 
 const RUNNING = 'extensions.uxu.running';
 	 
@@ -27,7 +25,7 @@ function constructor(aBrowser/*, aFile, ...*/)
 	if (utils.isArray(this.files[0])) this.files = this.files[0];
 	this._browser = aBrowser;
 	this._filters = [];
-	this._log = new TestLog();
+	this._log = new ns.TestLog();
 }
  
 function run(aReporter, aMasterPriority) 
@@ -92,7 +90,7 @@ function _getTestsFromSuite(aSuite)
 	{
 		obj = aSuite[i];
 		if (!aSuite.hasOwnProperty(i) || !obj) continue;
-		if (obj.__proto__ == TestCase.prototype) {
+		if (obj.__proto__ == ns.TestCase.prototype) {
 			obj.environment = aSuite;
 			tests.push(obj);
 			continue;
@@ -117,7 +115,7 @@ function _getTestsFromSuite(aSuite)
 	}
 
 	if (testObjects.tests.length) {
-		var newTestCase = new TestCase(
+		var newTestCase = new ns.TestCase(
 				aSuite.description || String(aSuite.fileURL.match(/[^\/]+$/)),
 				{
 					source        : aSuite.fileURL,
@@ -385,15 +383,15 @@ function loadFile(aFile)
 function _createTestSuite(aURL) 
 {
 	var suite = {};
-	suite.__proto__ = new Environment(suite, aURL, this._browser);
+	suite.__proto__ = new ns.TestEnvironment(suite, aURL, this._browser);
 
 	/* backward compatibility for MozLab/MozUnit testcases */
-	suite.TestCase      = TestCase;
-	suite.Specification = TestCase;
+	suite.TestCase      = ns.TestCase;
+	suite.Specification = ns.TestCase;
 	suite.mozlab = {
 		mozunit : {
-			TestCase      : TestCase,
-			Specification : TestCase,
+			TestCase      : ns.TestCase,
+			Specification : ns.TestCase,
 			assertions    : suite.assert
 		}
 	};

@@ -7,6 +7,7 @@ var ns = {};
 Components.utils.import('resource://uxu-modules/utils.js', utils);
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/server/server.js', ns);
+Components.utils.import('resource://uxu-modules/test/testCase.js', ns);
 
 var utils = ns.utils;
 utils.exportToDocument(document);
@@ -15,9 +16,6 @@ var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var Context = server_module.require('class', 'context');
-
-var test_module = new ModuleManager(['chrome://uxu/content/test']);
-var TestCase = test_module.require('class', 'test_case');
 
 var gServer;
 var gLog;
@@ -140,16 +138,16 @@ var testRunnerlistener = {
 		var color;
 		switch (report.result)
 		{
-			case TestCase.prototype.RESULT_SUCCESS:
+			case ns.TestCase.prototype.RESULT_SUCCESS:
 				color = 'background: green; color: white; ';
 				break;
-			case TestCase.prototype.RESULT_FAILURE:
+			case ns.TestCase.prototype.RESULT_FAILURE:
 				color = 'background: red; color: white;';
 				break;
-			case TestCase.prototype.RESULT_ERROR:
+			case ns.TestCase.prototype.RESULT_ERROR:
 				color = 'background: yellow; color: black;';
 				break;
-			case TestCase.prototype.RESULT_SKIPPED:
+			case ns.TestCase.prototype.RESULT_SKIPPED:
 				color = 'background: gray; color: white;';
 				break;
 		}

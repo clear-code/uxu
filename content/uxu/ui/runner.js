@@ -2,16 +2,14 @@ var ns = {};
 Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/server/message.js', ns);
+Components.utils.import('resource://uxu-modules/test/runner.js', ns);
+Components.utils.import('resource://uxu-modules/test/testLog.js', ns);
+Components.utils.import('resource://uxu-modules/test/testCase.js', ns);
 
 var utils = ns.utils;
 utils.exportToDocument(document);
 
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
-
-var test_module = new ModuleManager(['chrome://uxu/content/test']);
-var Runner = test_module.require('class', 'runner');
-var TestLog = test_module.require('class', 'test_log');
-var TestCase = test_module.require('class', 'test_case');
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -90,13 +88,13 @@ function scrollReportsTo(aTarget)
 function getFailureReports() 
 {
 	var reports = _('testcase-reports');
-	return Array.slice(reports.getElementsByAttribute('report-type', TestCase.prototype.RESULT_FAILURE));
+	return Array.slice(reports.getElementsByAttribute('report-type', ns.TestCase.prototype.RESULT_FAILURE));
 }
  
 function getErrorReports() 
 {
 	var reports = _('testcase-reports');
-	return Array.slice(reports.getElementsByAttribute('report-type', TestCase.prototype.RESULT_ERROR));
+	return Array.slice(reports.getElementsByAttribute('report-type', ns.TestCase.prototype.RESULT_ERROR));
 }
   
 /* file picker */ 
@@ -227,7 +225,7 @@ const fileDNDObserver =
 	 
 function startup() 
 {
-	gLog = new TestLog();
+	gLog = new ns.TestLog();
 
 	if (!isLinux()) {
 		ObserverService.addObserver(alwaysRaisedObserver, 'xul-window-registered', false);
@@ -531,15 +529,15 @@ var gRemoteRun = {
 		switch (aType)
 		{
 			case 'start':
-				this.addMessage(TestCase.prototype.TESTCASE_STARTED);
+				this.addMessage(ns.TestCase.prototype.TESTCASE_STARTED);
 				break;
 			case 'finish':
 				this.addMessage(gLog.toString(gLog.FORMAT_RAW));
-				this.addMessage(TestCase.prototype.TESTCASE_FINISED);
+				this.addMessage(ns.TestCase.prototype.TESTCASE_FINISED);
 				break;
 			case 'finish-all':
 				this.addMessage(gLog.toString(gLog.FORMAT_RAW));
-				this.addMessage(TestCase.prototype.ALL_TESTS_FINISHED);
+				this.addMessage(ns.TestCase.prototype.ALL_TESTS_FINISHED);
 				break;
 			default:
 				this.addMessage(gLog.toString(gLog.FORMAT_RAW));
@@ -565,7 +563,7 @@ var gRemoteRun = {
 	{
 		this.sending = false;
 
-		if (aResponseText.indexOf(TestCase.prototype.TESTCASE_ABORTED) == 0) {
+		if (aResponseText.indexOf(ns.TestCase.prototype.TESTCASE_ABORTED) == 0) {
 			if (gRunner) {
 				stop();
 			}
@@ -582,7 +580,7 @@ var gRemoteRun = {
 		var sent = this.messages.shift();
 		if (sent) {
 			sent.destroy();
-			if (sent.message.indexOf(TestCase.prototype.ALL_TESTS_FINISHED) == 0) {
+			if (sent.message.indexOf(ns.TestCase.prototype.ALL_TESTS_FINISHED) == 0) {
 				this.onFinish();
 				return;
 			}
@@ -630,7 +628,7 @@ var gRemoteRun = {
 		this.stopPinging();
 		this._pingTimer = window.setInterval(function(aSelf) {
 			aSelf.ping();
-		}, TestCase.prototype.PING_INTERVAL, this);
+		}, ns.TestCase.prototype.PING_INTERVAL, this);
 	},
 	stopPinging : function()
 	{
@@ -640,7 +638,7 @@ var gRemoteRun = {
 	},
 	ping : function()
 	{
-		var message = new ns.Message(TestCase.prototype.PING, gOptions.outputHost, gOptions.outputPort, this);
+		var message = new ns.Message(ns.TestCase.prototype.PING, gOptions.outputHost, gOptions.outputPort, this);
 		message.send();
 	},
 	_pingTimer : null
@@ -767,7 +765,7 @@ function run(aMasterPriority)
 {
 	reset();
 
-	gRunner = new Runner(_('content'), _('file').value);
+	gRunner = new ns.Runner(_('content'), _('file').value);
 
 	gRunner.addListener(runnerListener);
 
@@ -808,7 +806,7 @@ function runFailed()
 
 	reset();
 
-	gRunner = new Runner(_('content'), _('file').value);
+	gRunner = new ns.Runner(_('content'), _('file').value);
 
 	gRunner.addListener(runnerListener);
 
@@ -869,7 +867,7 @@ function fillReportFromResult(aTestCase, aResult)
 	gTotalCount++;
 	switch (aResult.type)
 	{
-		case TestCase.prototype.RESULT_SUCCESS:
+		case ns.TestCase.prototype.RESULT_SUCCESS:
 			gSuccessCount++;
 			var successes = parseInt(_(reportNode, 'success-counter').value);
 			_(reportNode, 'success-counter').value = successes + 1;
@@ -877,16 +875,16 @@ function fillReportFromResult(aTestCase, aResult)
 			if (!aResult.notifications || !aResult.notifications.length)
 				return;
 			break;
-		case TestCase.prototype.RESULT_SKIPPED:
+		case ns.TestCase.prototype.RESULT_SKIPPED:
 			gSkipCount++;
 			var skip = parseInt(_(reportNode, 'skip-counter').value);
 			_(reportNode, 'skip-counter').value = skip + 1;
 			_(reportNode).appendChild(dummyTestReport);
 			return;
-		case TestCase.prototype.RESULT_FAILURE:
+		case ns.TestCase.prototype.RESULT_FAILURE:
 			gFailureCount++;
 			break;
-		case TestCase.prototype.RESULT_ERROR:
+		case ns.TestCase.prototype.RESULT_ERROR:
 			gErrorCount++;
 			break;
 		default:
@@ -907,8 +905,8 @@ function fillReportFromResult(aTestCase, aResult)
 		_(wTestReport, 'parameter-container').removeAttribute('collapsed');
 	}
 
-	if (aResult.type == TestCase.prototype.RESULT_ERROR ||
-		aResult.type == TestCase.prototype.RESULT_FAILURE) {
+	if (aResult.type == ns.TestCase.prototype.RESULT_ERROR ||
+		aResult.type == ns.TestCase.prototype.RESULT_FAILURE) {
 		_(reportNode, 'bar').setAttribute('class', 'testcase-problems');
 
 		var wTestReportPart = clone('test-report-part');
