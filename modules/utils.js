@@ -20,8 +20,6 @@ Components.utils.import('resource://uxu-modules/prefread.js', prefread);
 prefread = prefread.prefread;
 
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
-ns.encoding.export(this);
-ns.hash.export(this);
 
 const IOService = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
 
@@ -2374,6 +2372,8 @@ export : function(aNamespace, aForce)
 }
  
 }; 
+ns.encoding.export(Utils.prototype);
+ns.hash.export(Utils.prototype);
 
 var utils = new Utils();
    

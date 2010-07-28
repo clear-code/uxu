@@ -5,6 +5,13 @@ utils.include('utils_common.inc.js');
 
 test$.setUp = function()
 {
+	var orig = utilsModule._getDocument;
+	utilsModule._getDocument = function(aContext) {
+		if (!aContext)
+			return document;
+
+		return orig.call(this, aContext);
+	};
 	yield Do(utils.loadURI('../../fixtures/html.html'));
 }
 function test$()
@@ -25,6 +32,13 @@ function test$()
 
 test$X.setUp = function()
 {
+	var orig = utilsModule._getDocument;
+	utilsModule._getDocument = function(aContext) {
+		if (!aContext)
+			return document;
+
+		return orig.call(this, aContext);
+	};
 	yield Do(utils.loadURI('../../fixtures/html.xml'));
 }
 function test$X()
