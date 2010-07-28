@@ -21,6 +21,9 @@
 
 // Modified by SHIMODA Hiroshi <shimoda@clear-code.com>
  
+if (typeof window == 'undefined') 
+	this.EXPORTED_SYMBOLS = ['TestCase'];
+
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
@@ -35,11 +38,7 @@ Components.utils.import('resource://uxu-modules/test/report.js', ns);
 Components.utils.import('resource://uxu-modules/server/server.js', ns);
 Components.utils.import('resource://uxu-modules/server/utils.js', ns);
 
-var fsm = ns.fsm;
-var utils = { __proto__ : ns.utils };
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
-var Assertions  = ns.Assertions;
-var Report  = ns.Report;
 
 var ObserverService = Cc['@mozilla.org/observer-service;1']
 					.getService(Ci.nsIObserverService);
@@ -56,7 +55,7 @@ function _initDB()
 		     date        DATETIME,
 		     hash        TEXT)
 		]]>.toString();
-	var db = utils.getDB();
+	var db = ns.utils.getDB();
 	if (!db.tableExists('result_history')) {
 		db.executeSimpleSQL(tableDefinitionSQL);
 		db.schemaVersion = CURRENT_SCHEME;
@@ -75,23 +74,6 @@ try {
 catch(e) {
 }
  
-const REMOTE_PROFILE_PREFIX = 'uxu-test-profile'; 
-const TESTCASE_STARTED      = '/* uxu-testcase-started */';
-const TESTCASE_FINISED      = '/* uxu-testcase-finished */';
-const TESTCASE_ABORTED      = '/* uxu-testcase-aborted */';
-const ALL_TESTS_FINISHED    = '/* uxu-all-testcases-finished */';
-const PING                  = ' ';
-const PING_INTERVAL         = 3000;
- 
-const RESULT_SUCCESS = 'success'; 
-const RESULT_FAILURE = 'failure';
-const RESULT_ERROR   = 'error';
-const RESULT_SKIPPED = 'skip';
- 
-const ERROR_NOT_INITIALIZED     = new Error('environment is not specified.'); 
-const ERROR_INVALID_ENVIRONMENT = new Error('environment must be an Environment.');
-const ERROR_NO_TEST             = new Error('there is no test.'); 
- 
 /**
  * Invocation: 
  *     var case = new TestCase('Widget tests');
@@ -101,279 +83,279 @@ const ERROR_NO_TEST             = new Error('there is no test.');
  *
  */
  
-function constructor(aTitle, aOptions) 
+function TestCase(aTitle, aOptions) 
 {
 	if (!aOptions) aOptions = {};
 
-	this.__proto__.__proto__ = ns.EventTarget.prototype;
+	this._utils = { __proto__ : ns.utils };
+
 	this.initListeners();
 
 	this._initSource(aOptions);
 	this._initRemote(aOptions);
 
 	this._title = aTitle;
-	this.__defineGetter__(
-		'title', function() {
-			return this._title;
-		});
-
 	this._tests = [];
 	this._registeredTests = [];
-	this.__defineSetter__(
-		'tests', function(aHash) {
-			this.setTests(aHash);
-			return aHash;
-		});
-	this.__defineGetter__(
-		'tests', function() {
-			return this._tests;
-		});
-	this.__defineSetter__(
-		'stateThat', function(aHash) {
-			this.setTests(aHash);
-			return aHash;
-		});
-
 	this._masterPriority = aOptions.priority || null;
-	this.__defineSetter__(
-		'masterPriority', function(aPriority) {
-			this._masterPriority = aPriority;
-			return aPriority;
-		});
-	this.__defineGetter__(
-		'masterPriority', function() {
-			return this._masterPriority;
-		});
-
 	this._shouldSkip = aOptions.shouldSkip || false;
-	this.__defineSetter__(
-		'shouldSkip', function(aSkip) {
-			this._shouldSkip = aSkip;
-			return aSkip;
-		});
-	this.__defineGetter__(
-		'shouldSkip', function() {
-			return this._shouldSkip;
-		});
-
-	this.__defineGetter__('neverRun', function() {
-		return this._equalsToNever(this._masterPriority);
-	});
-
 	this._context = aOptions.context || {};
-	this.__defineSetter__(
-		'context', function(aContext) {
-			this._context = aContext;
-			return aContext;
-		});
-	this.__defineGetter__(
-		'context', function() {
-			return this._context;
-		});
-
 	this._targetProduct = aOptions.targetProduct || null;
-	this.__defineSetter__(
-		'targetProduct', function(aProduct) {
-			this._targetProduct = aProduct;
-			return aProduct;
-		});
-	this.__defineGetter__(
-		'targetProduct', function() {
-			return this._targetProduct;
-		});
-
 	this._environment = null;
-	this.__defineSetter__(
-		'environment', function(aEnvironment) {
-			if (!aEnvironment) throw ERROR_INVALID_ENVIRONMENT;
-			this._environment = aEnvironment;
-			return aEnvironment;
-		});
-	this.__defineGetter__(
-		'environment', function() {
-			return this._environment;
-		});
 
 	this.done = false;
 
 	this._mapping = aOptions.mapping || aOptions.redirect || null;
-	this.__defineSetter__(
-		'mapping', function(aMapping) {
-			this._mapping = aMapping;
-			return aMapping;
-		});
-	this.__defineGetter__(
-		'mapping', function() {
-			return this._mapping;
-		});
 
 	this.notifications = [];
 	this.addListener(this);
 }
+TestCase.prototype = {
+	__proto__ : ns.EventTarget.prototype,
 	
-function _initSource(aOptions) 
-{
-	var source = aOptions.source;
-	if (!source || typeof source != 'string') {
-		var path;
-		var stack = Components.stack;
-		while (stack)
-		{
-			path = stack.filename || '';
-			if (path.indexOf('chrome://uxu/content/lib/subScriptRunner.js?') != 0) {
-				stack = stack.caller
-				continue;
-			}
-			/.+includeSource=([^;]+)/.test(path);
-			source = decodeURIComponent(RegExp.$1);
-			break;
-		}
-	}
-	this._source = source;
-	this.__defineGetter__(
-		'source', function() {
-			return this._source;
-		});
+	REMOTE_PROFILE_PREFIX : 'uxu-test-profile', 
+	TESTCASE_STARTED      : '/* uxu-testcase-started */',
+	TESTCASE_FINISED      : '/* uxu-testcase-finished */',
+	TESTCASE_ABORTED      : '/* uxu-testcase-aborted */',
+	ALL_TESTS_FINISHED    : '/* uxu-all-testcases-finished */',
+	PING                  : ' ',
+	PING_INTERVAL         : 3000,
 
-	utils.baseURL = source.replace(/[^\/]*$/, '');
-}
+	RESULT_SUCCESS : 'success', 
+	RESULT_FAILURE : 'failure',
+	RESULT_ERROR   : 'error',
+	RESULT_SKIPPED : 'skip',
+
+	ERROR_NOT_INITIALIZED     : 'environment is not specified.', 
+	ERROR_INVALID_ENVIRONMENT : 'environment must be an Environment.',
+	ERROR_NO_TEST             : 'there is no test.',
  
-function _initRemote(aOptions) 
-{
-	var runningProfile = utils.getURLSpecFromFile(utils.getFileFromKeyword('ProfD'));
-	runningProfile = runningProfile.replace(/([^\/])$/, '$1/');
-	runningProfile = utils.getFileFromURLSpec(runningProfile);
+	get title() {
+		return this._title;
+	},
 
-	this._profile = null;
-	this.__defineSetter__(
-		'profile', function(aValue) {
-			this._profile = aValue ? utils.normalizeToFile(aValue) : null ;
-			if (
-				!this._profile ||
-				!this._profile.exists() ||
-				!this._profile.isDirectory()
-				)
-				this._profile = null;
-			return this._profile;
-		});
-	this.__defineGetter__(
-		'profile', function() {
-			return this._profile;
-		});
-	this.__defineGetter__(
-		'shouldRunInRemote', function() {
-			var tmp = utils.getFileFromKeyword('TmpD');
-			return this._profile &&
-				this._profile.path != runningProfile.path &&
-				!runningProfile.parent.equals(tmp);
-		});
+	set tests(aHash) {
+		this.setTests(aHash);
+		return aHash;
+	},
+	get tests() {
+		return this._tests;
+	},
+	set stateThat(aHash) {
+		this.setTests(aHash);
+		return aHash;
+	},
 
-	this._application = null;
-	this.__defineSetter__(
-		'application', function(aValue) {
-			this._application = aValue ? utils.normalizeToFile(aValue) : null ;
-			if (
-				!this._application ||
-				!this._application.exists() ||
-				this._application.isDirectory()
-				)
-				this._application = null;
-			return this._application;
-		});
-	this.__defineGetter__(
-		'application', function() {
-			return this._application;
-		});
+	set masterPriority(aPriority) {
+		this._masterPriority = aPriority;
+		return aPriority;
+	},
+	get masterPriority() {
+		return this._masterPriority;
+	},
 
-	this._options = [];
-	this.__defineSetter__(
-		'options', function(aValue) {
-			this._options = aValue || [];
-			if (!utils.isArray(aValue)) {
-				this._options = [];
+	set shouldSkip(aSkip) {
+		this._shouldSkip = aSkip;
+		return aSkip;
+	},
+	get shouldSkip() {
+		return this._shouldSkip;
+	},
+
+	get neverRun() {
+		return this._equalsToNever(this._masterPriority);
+	},
+
+	set context(aContext) {
+		this._context = aContext;
+		return aContext;
+	},
+	get context() {
+		return this._context;
+	},
+
+	set targetProduct(aProduct) {
+		this._targetProduct = aProduct;
+		return aProduct;
+	},
+	get targetProduct() {
+		return this._targetProduct;
+	},
+
+	set environment(aEnvironment) {
+		if (!aEnvironment) throw new Error(this.ERROR_INVALID_ENVIRONMENT);
+		this._environment = aEnvironment;
+		return aEnvironment;
+	},
+	get environment() {
+		return this._environment;
+	},
+
+	set mapping(aMapping) {
+		this._mapping = aMapping;
+		return aMapping;
+	},
+	get mapping() {
+		return this._mapping;
+	},
+ 
+	_initSource : function(aOptions) 
+	{
+		var source = aOptions.source;
+		if (!source || typeof source != 'string') {
+			var path;
+			var stack = Components.stack;
+			while (stack)
+			{
+				path = stack.filename || '';
+				if (path.indexOf('chrome://uxu/content/lib/subScriptRunner.js?') != 0) {
+					stack = stack.caller
+					continue;
+				}
+				/.+includeSource=([^;]+)/.test(path);
+				source = decodeURIComponent(RegExp.$1);
+				break;
 			}
-			return this._options;
-		});
-	this.__defineGetter__(
-		'options', function() {
-			return this._options;
-		});
+		}
+		this._source = source;
 
-	this.profile = aOptions.profile;
-	this.application = aOptions.application;
-	this.options = aOptions.options;
-}
-  
-function onStart() 
-{
-	this.addListener(this.environment.__proto__);
-	this.environment.__proto__.addListener(this);
-	if (this._mapping) {
+		this._utils.baseURL = source.replace(/[^\/]*$/, '');
+	},
+
+	get source() {
+		return this._source;
+	},
+ 
+	_initRemote : function(aOptions) 
+	{
+		var runningProfile = this._utils.getURLSpecFromFile(this._utils.getFileFromKeyword('ProfD'));
+		runningProfile = runningProfile.replace(/([^\/])$/, '$1/');
+		runningProfile = this._utils.getFileFromURLSpec(runningProfile);
+
+		this._profile = null;
+		this._application = null;
+		this._options = [];
+
+		this.profile = aOptions.profile;
+		this.application = aOptions.application;
+		this.options = aOptions.options;
+	},
+
+	set profile(aValue) {
+		this._profile = aValue ? this._utils.normalizeToFile(aValue) : null ;
 		if (
-			!('{3d04c1d0-4e6c-11de-8a39-0800200c9a66}' in Components.classesByID) ||
-			(Cc['@mozilla.org/network/protocol;1?name=http'].getService() !=
-			 Components.classesByID['{3d04c1d0-4e6c-11de-8a39-0800200c9a66}'].getService()) ||
-			!('{b81efa50-4e7d-11de-8a39-0800200c9a66}' in Components.classesByID) ||
-			(Cc['@mozilla.org/network/protocol;1?name=https'].getService() !=
-			 Components.classesByID['{b81efa50-4e7d-11de-8a39-0800200c9a66}'].getService())
-			) {
-			this.fireEvent('Error', bundle.getString('error_proxy_disabled_conflict'));
+			!this._profile ||
+			!this._profile.exists() ||
+			!this._profile.isDirectory()
+			)
+			this._profile = null;
+		return this._profile;
+	},
+	get profile() {
+		return this._profile;
+	},
+	get shouldRunInRemote() {
+		var tmp = this._utils.getFileFromKeyword('TmpD');
+		return this._profile &&
+			this._profile.path != runningProfile.path &&
+			!runningProfile.parent.equals(tmp);
+	},
+
+	set application(aValue) {
+		this._application = aValue ? this._utils.normalizeToFile(aValue) : null ;
+		if (
+			!this._application ||
+			!this._application.exists() ||
+			this._application.isDirectory()
+			)
+			this._application = null;
+		return this._application;
+	},
+	get application() {
+		return this._application;
+	},
+
+	set options(aValue) {
+		this._options = aValue || [];
+		if (!this._utils.isArray(aValue)) {
+			this._options = [];
 		}
-		else {
-			ObserverService.addObserver(this , 'uxu-mapping-check', false);
-			this._mappingObserverRegistered = true;
+		return this._options;
+	},
+	get options() {
+		return this._options;
+	},
+ 
+	onStart : function() 
+	{
+		this.addListener(this.environment.__proto__);
+		this.environment.__proto__.addListener(this);
+		if (this._mapping) {
+			if (
+				!('{3d04c1d0-4e6c-11de-8a39-0800200c9a66}' in Components.classesByID) ||
+				(Cc['@mozilla.org/network/protocol;1?name=http'].getService() !=
+				 Components.classesByID['{3d04c1d0-4e6c-11de-8a39-0800200c9a66}'].getService()) ||
+				!('{b81efa50-4e7d-11de-8a39-0800200c9a66}' in Components.classesByID) ||
+				(Cc['@mozilla.org/network/protocol;1?name=https'].getService() !=
+				 Components.classesByID['{b81efa50-4e7d-11de-8a39-0800200c9a66}'].getService())
+				) {
+				this.fireEvent('Error', bundle.getString('error_proxy_disabled_conflict'));
+			}
+			else {
+				ObserverService.addObserver(this , 'uxu-mapping-check', false);
+				this._mappingObserverRegistered = true;
+			}
 		}
-	}
-}
+	},
  
-function onFinish() 
-{
-	if (this._mappingObserverRegistered) {
-		ObserverService.removeObserver(this , 'uxu-mapping-check');
-		this._mappingObserverRegistered = false;
-	}
-	this.environment.__proto__.removeListener(this);
-	this.removeAllListeners();
-}
+	onFinish : function() 
+	{
+		if (this._mappingObserverRegistered) {
+			ObserverService.removeObserver(this , 'uxu-mapping-check');
+			this._mappingObserverRegistered = false;
+		}
+		this.environment.__proto__.removeListener(this);
+		this.removeAllListeners();
+	},
  
-function onAbort(aEvent) 
-{
-	this.onFinish();
-}
+	onAbort : function(aEvent) 
+	{
+		this.onFinish();
+	},
  
-function onNotify(aEvent) 
-{
-	this.notifications.push({
-		type    : 'notification',
-		message : aEvent.data,
-		stack   : utils.getStackTrace()
-	});
-}
-function onWarning(aEvent)
-{
-	this.notifications.push({
-		type    : 'warning',
-		message : aEvent.data,
-		stack   : utils.getStackTrace()
-	});
-}
+	onNotify : function(aEvent) 
+	{
+		this.notifications.push({
+			type    : 'notification',
+			message : aEvent.data,
+			stack   : this._utils.getStackTrace()
+		});
+	},
+	onWarning : function(aEvent)
+	{
+		this.notifications.push({
+			type    : 'warning',
+			message : aEvent.data,
+			stack   : this._utils.getStackTrace()
+		});
+	},
  
 // nsIObserver 
-function observe(aSubject, aTopic, aData)
-{
-	if (
-		aTopic != 'uxu-mapping-check' ||
-		!this._mapping
-		)
-		return;
+	observe : function(aSubject, aTopic, aData)
+	{
+		if (
+			aTopic != 'uxu-mapping-check' ||
+			!this._mapping
+			)
+			return;
 
-	aSubject = aSubject.QueryInterface(Ci.nsISupportsString);
+		aSubject = aSubject.QueryInterface(Ci.nsISupportsString);
 
-	var currentURI = aSubject.data;
-	var newURI = utils.mapURI(currentURI, this._mapping);
-	if (newURI && newURI != currentURI)
-		aSubject.data = newURI;
-}
+		var currentURI = aSubject.data;
+		var newURI = this._utils.mapURI(currentURI, this._mapping);
+		if (newURI && newURI != currentURI)
+			aSubject.data = newURI;
+	},
  
 /**
  * Define test cases, optionally with setup and teardown. 
@@ -416,285 +398,285 @@ function observe(aSubject, aTopic, aData)
  *     }
  */
 	
-function setTests(aHash) 
-{
-	this.context = aHash;
-	for (var desc in aHash)
+	setTests : function(aHash) 
 	{
-		if (typeof aHash[desc] != 'function') continue;
-		switch (desc.toLowerCase())
+		this.context = aHash;
+		for (var desc in aHash)
 		{
-			case 'startup':
-			case 'warmup':
-				this.registerStartUp(aHash[desc]);
-				break;
-			case 'shutdown':
-			case 'cooldown':
-			case 'warmdown':
-				this.registerShutDown(aHash[desc]);
-				break;
-			case 'setup':
-			case 'given':
-				this.registerSetUp(aHash[desc]);
-				break;
-			case 'teardown':
-				this.registerTearDown(aHash[desc]);
-				break;
-			default:
-				aHash[desc].description = desc;
-				this.registerTest(aHash[desc]);
-				break;
+			if (typeof aHash[desc] != 'function') continue;
+			switch (desc.toLowerCase())
+			{
+				case 'startup':
+				case 'warmup':
+					this.registerStartUp(aHash[desc]);
+					break;
+				case 'shutdown':
+				case 'cooldown':
+				case 'warmdown':
+					this.registerShutDown(aHash[desc]);
+					break;
+				case 'setup':
+				case 'given':
+					this.registerSetUp(aHash[desc]);
+					break;
+				case 'teardown':
+					this.registerTearDown(aHash[desc]);
+					break;
+				default:
+					aHash[desc].description = desc;
+					this.registerTest(aHash[desc]);
+					break;
+			}
 		}
-	}
-}
+	},
  
 // for UxU declaration style syntax 
 	
-function registerStartUp(aFunction) 
-{
-	if (typeof aFunction != 'function') return;
-	this._startUp = aFunction;
-}
-// for backward compatibility
-function registerWarmUp(aFunction) { this.registerStartUp(aFunction); }
- 
-function registerShutDown(aFunction) 
-{
-	if (typeof aFunction != 'function') return;
-	this._shutDown = aFunction;
-}
-// for backward compatibility
-function registerCoolDown(aFunction) { this.registerShutDown(aFunction); }
-function registerWarmDown(aFunction) { this.registerShutDown(aFunction); }
- 
-function registerSetUp(aFunction) 
-{
-	if (typeof aFunction != 'function') return;
-	this._setUp = aFunction;
-}
- 
-function registerTearDown(aFunction) 
-{
-	if (typeof aFunction != 'function') return;
-	this._tearDown = aFunction;
-}
- 
-function registerTest(aFunction) 
-{
-	if (typeof aFunction != 'function' ||
-		this._registeredTests.indexOf(aFunction) > -1)
-		return;
-
-	this._normalizeTest(aFunction);
-
-	var parameters = aFunction.parameters;
-	if (!parameters) {
-		this._registerSingleTest(aFunction);
-		return;
-	}
-
-	switch (typeof parameters)
+	registerStartUp : function(aFunction) 
 	{
-		case 'number':
-		case 'boolean':
-		case 'string':
-			parameters = [parameters];
-			break;
-	}
+		if (typeof aFunction != 'function') return;
+		this._startUp = aFunction;
+	},
+	// for backward compatibility
+	registerWarmUp : function(aFunction) { this.registerStartUp(aFunction); },
+ 
+	registerShutDown : function(aFunction) 
+	{
+		if (typeof aFunction != 'function') return;
+		this._shutDown = aFunction;
+	},
+	// for backward compatibility
+	registerCoolDown : function(aFunction) { this.registerShutDown(aFunction); },
+	registerWarmDown : function(aFunction) { this.registerShutDown(aFunction); },
+ 
+	registerSetUp : function(aFunction) 
+	{
+		if (typeof aFunction != 'function') return;
+		this._setUp = aFunction;
+	},
+ 
+	registerTearDown : function(aFunction) 
+	{
+		if (typeof aFunction != 'function') return;
+		this._tearDown = aFunction;
+	},
+ 
+	registerTest : function(aFunction) 
+	{
+		if (typeof aFunction != 'function' ||
+			this._registeredTests.indexOf(aFunction) > -1)
+			return;
 
-	if (utils.isArray(parameters)) {
-		parameters.forEach(function(aParameter, aIndex) {
-			this._registerSingleTest(this._createNewTestWithParameter(
-				aFunction,
-				aParameter,
-				' ('+(aIndex+1)+')'
-			));
-		}, this);
-		this._registeredTests.push(aFunction);
-	}
-	else {
-		for (let i in parameters)
+		this._normalizeTest(aFunction);
+
+		var parameters = aFunction.parameters;
+		if (!parameters) {
+			this._registerSingleTest(aFunction);
+			return;
+		}
+
+		switch (typeof parameters)
 		{
-			this._registerSingleTest(this._createNewTestWithParameter(
-				aFunction,
-				parameters[i],
-				' ('+i+')'
-			));
+			case 'number':
+			case 'boolean':
+			case 'string':
+				parameters = [parameters];
+				break;
 		}
-		this._registeredTests.push(aFunction);
-	}
-}
+
+		if (this._utils.isArray(parameters)) {
+			parameters.forEach(function(aParameter, aIndex) {
+				this._registerSingleTest(this._createNewTestWithParameter(
+					aFunction,
+					aParameter,
+					' ('+(aIndex+1)+')'
+				));
+			}, this);
+			this._registeredTests.push(aFunction);
+		}
+		else {
+			for (let i in parameters)
+			{
+				this._registerSingleTest(this._createNewTestWithParameter(
+					aFunction,
+					parameters[i],
+					' ('+i+')'
+				));
+			}
+			this._registeredTests.push(aFunction);
+		}
+	},
 	
-function _normalizeTest(aFunction) 
-{
-	var desc = aFunction.description;
-	if (!desc) {
-		var source = aFunction.toSource();
-		if (source.match(/\(?function ([^\(]+)\s*\(/))
-			desc = RegExp.$1;
-		else
-			desc = source.substring(0, 30);
-	}
-	aFunction.description = desc;
-
-	var privSetUp;
-	var privTearDown;
-	var shouldSkip;
-	for (let i in aFunction)
+	_normalizeTest : function(aFunction) 
 	{
-		if (
-			!privSetUp &&
-			/^set[uU]p/.test(i) &&
-			typeof aFunction[i] == 'function'
-			) {
-			privSetUp = aFunction[i];
+		var desc = aFunction.description;
+		if (!desc) {
+			var source = aFunction.toSource();
+			if (source.match(/\(?function ([^\(]+)\s*\(/))
+				desc = RegExp.$1;
+			else
+				desc = source.substring(0, 30);
 		}
-		else if (
-			!privTearDown &&
-			/^tear[dD]own/.test(i) &&
-			typeof aFunction[i] == 'function'
-			) {
-			privTearDown = aFunction[i];
+		aFunction.description = desc;
+
+		var privSetUp;
+		var privTearDown;
+		var shouldSkip;
+		for (let i in aFunction)
+		{
+			if (
+				!privSetUp &&
+				/^set[uU]p/.test(i) &&
+				typeof aFunction[i] == 'function'
+				) {
+				privSetUp = aFunction[i];
+			}
+			else if (
+				!privTearDown &&
+				/^tear[dD]own/.test(i) &&
+				typeof aFunction[i] == 'function'
+				) {
+				privTearDown = aFunction[i];
+			}
+			else if (
+				!shouldSkip &&
+				/^should[sS]kip/.test(i)
+				) {
+				shouldSkip = aFunction[i];
+			}
+			if (privSetUp && privTearDown && shouldSkip) break;
 		}
-		else if (
-			!shouldSkip &&
-			/^should[sS]kip/.test(i)
-			) {
-			shouldSkip = aFunction[i];
-		}
-		if (privSetUp && privTearDown && shouldSkip) break;
-	}
 
-	aFunction.setUp = privSetUp;
-	aFunction.tearDown = privTearDown;
-	aFunction.shouldSkip = shouldSkip;
+		aFunction.setUp = privSetUp;
+		aFunction.tearDown = privTearDown;
+		aFunction.shouldSkip = shouldSkip;
 
-	aFunction.priority = (
-			(aFunction.priority === null ||
-			 aFunction.priority === void(0) ||
-			 typeof aFunction.priority == 'number') ?
-				aFunction.priority :
-				(String(aFunction.priority || '').toLowerCase() || null)
-		);
+		aFunction.priority = (
+				(aFunction.priority === null ||
+				 aFunction.priority === void(0) ||
+				 typeof aFunction.priority == 'number') ?
+					aFunction.priority :
+					(String(aFunction.priority || '').toLowerCase() || null)
+			);
 
-	aFunction.assertions = aFunction.assertions || aFunction.assertionsCount;
-	aFunction.minAssertions = aFunction.minAssertions || aFunction.minAssertionsCount;
-	aFunction.maxAssertions = aFunction.maxAssertions || aFunction.maxAssertionsCount;
+		aFunction.assertions = aFunction.assertions || aFunction.assertionsCount;
+		aFunction.minAssertions = aFunction.minAssertions || aFunction.minAssertionsCount;
+		aFunction.maxAssertions = aFunction.maxAssertions || aFunction.maxAssertionsCount;
 
-	aFunction.parameters = aFunction.parameters || aFunction.params;
+		aFunction.parameters = aFunction.parameters || aFunction.params;
 
-	return aFunction;
-}
+		return aFunction;
+	},
  
-function _createNewTestWithParameter(aFunction, aParameter, aSuffix) 
-{
-	var test = function() {
-			return aFunction.call(this, aParameter);
-		};
-
-	for (let i in aFunction)
+	_createNewTestWithParameter : function(aFunction, aParameter, aSuffix) 
 	{
-		test[i] = aFunction[i];
-	}
-	test.description = aFunction.description + aSuffix;
-	test.__uxu__original = aFunction;
+		var test = function() {
+				return aFunction.call(this, aParameter);
+			};
 
-	var setUp = aFunction.setUp;
-	if (setUp) {
-		test.setUp = function() {
-			return setUp.call(this, aParameter);
-		};
-		test.setUp.__uxu__original = setUp;
-	}
+		for (let i in aFunction)
+		{
+			test[i] = aFunction[i];
+		}
+		test.description = aFunction.description + aSuffix;
+		test.__uxu__original = aFunction;
 
-	var tearDown = aFunction.tearDown;
-	if (tearDown) {
-		test.tearDown = function() {
-			return tearDown.call(this, aParameter);
-		};
-		test.tearDown.__uxu__original = tearDown;
-	}
+		var setUp = aFunction.setUp;
+		if (setUp) {
+			test.setUp = function() {
+				return setUp.call(this, aParameter);
+			};
+			test.setUp.__uxu__original = setUp;
+		}
 
-	test.parameter = utils.inspect(aParameter);
-	test.formattedParameter = utils.inspect(aParameter, '  ');
+		var tearDown = aFunction.tearDown;
+		if (tearDown) {
+			test.tearDown = function() {
+				return tearDown.call(this, aParameter);
+			};
+			test.tearDown.__uxu__original = tearDown;
+		}
 
-	return test;
-}
+		test.parameter = this._utils.inspect(aParameter);
+		test.formattedParameter = this._utils.inspect(aParameter, '  ');
+
+		return test;
+	},
  
-function _registerSingleTest(aFunction) 
-{
-	if (this._registeredTests.indexOf(aFunction) > -1)
-		return;
+	_registerSingleTest : function(aFunction) 
+	{
+		if (this._registeredTests.indexOf(aFunction) > -1)
+			return;
 
-	this._registeredTests.push(aFunction);
+		this._registeredTests.push(aFunction);
 
-	var desc = aFunction.description;
+		var desc = aFunction.description;
 
-	var test = {
-		id          : 'test-'+Date.now()+'-'+parseInt(Math.random() * 65000),
-		description : desc,
-		title       : desc,
-		parameter   : aFunction.parameter,
-		formattedParameter : aFunction.formattedParameter,
+		var test = {
+			id          : 'test-'+Date.now()+'-'+parseInt(Math.random() * 65000),
+			description : desc,
+			title       : desc,
+			parameter   : aFunction.parameter,
+			formattedParameter : aFunction.formattedParameter,
 
-		code          : aFunction,
-		priority      : aFunction.priority,
-		shouldSkip    : aFunction.shouldSkip,
-		targetProduct : aFunction.targetProduct,
-		setUp         : aFunction.setUp,
-		tearDown      : aFunction.tearDown,
-		assertions    : aFunction.assertions,
-		minAssertions : aFunction.minAssertions,
-		maxAssertions : aFunction.maxAssertions,
+			code          : aFunction,
+			priority      : aFunction.priority,
+			shouldSkip    : aFunction.shouldSkip,
+			targetProduct : aFunction.targetProduct,
+			setUp         : aFunction.setUp,
+			tearDown      : aFunction.tearDown,
+			assertions    : aFunction.assertions,
+			minAssertions : aFunction.minAssertions,
+			maxAssertions : aFunction.maxAssertions,
 
-		report : null
-	};
+			report : null
+		};
 
-	var sources = [];
+		var sources = [];
 
-	sources.push(desc);
+		sources.push(desc);
 
-	if (test.parameter)
-		sources.push('parameter:'+test.parameter);
+		if (test.parameter)
+			sources.push('parameter:'+test.parameter);
 
-	if (test.setUp)
-		sources.push((test.setUp.__uxu__original || test.setUp).toSource());
+		if (test.setUp)
+			sources.push((test.setUp.__uxu__original || test.setUp).toSource());
 
-	sources.push((aFunction.__uxu__original || aFunction).toSource());
+		sources.push((aFunction.__uxu__original || aFunction).toSource());
 
-	if (test.tearDown)
-		sources.push((test.tearDown.__uxu__original || test.tearDown).toSource());
+		if (test.tearDown)
+			sources.push((test.tearDown.__uxu__original || test.tearDown).toSource());
 
-	sources.push('assertions:'+test.assertions);
-	sources.push('minAssertions:'+test.minAssertions);
+		sources.push('assertions:'+test.assertions);
+		sources.push('minAssertions:'+test.minAssertions);
 
-	test.hash = utils.computeHash(sources.join('\n'), 'MD5');
-	test.name = this._source + '::' + this.title + '::' + (desc || test.hash);
+		test.hash = this._utils.computeHash(sources.join('\n'), 'MD5');
+		test.name = this._source + '::' + this.title + '::' + (desc || test.hash);
 
-	this._tests.push(test);
-}
+		this._tests.push(test);
+	},
    
 /**
  * Alternative style for defining setup. 
  *
  */
 	
-function setUp(aFunction) 
-{
-	this.registerSetUp(aFunction);
-}
+	setUp : function(aFunction) 
+	{
+		this.registerSetUp(aFunction);
+	},
  
-function tearDown(aFunction) 
-{
-	this.registerTearDown(aFunction);
-}
+	tearDown : function(aFunction) 
+	{
+		this.registerTearDown(aFunction);
+	},
  
-function test(aDescription, aCode) 
-{
-	if (typeof aCode != 'function') return;
-	aCode.description = aDescription;
-	this.registerTest(aCode);
-}
+	test : function(aDescription, aCode) 
+	{
+		if (typeof aCode != 'function') return;
+		aCode.description = aDescription;
+		this.registerTest(aCode);
+	},
   
 // BDD-style alias 
 	
@@ -702,19 +684,19 @@ function test(aDescription, aCode)
  * BDD-alias for setUp(). 
  *
  */
-function given(aFunction)
-{
-	this.setUp(aFunction);
-}
+	given : function(aFunction)
+	{
+		this.setUp(aFunction);
+	},
  
 /**
  * BDD-style alias for test(). 
  *
  */
-function states(aDescription, aFunction)
-{
-	this.test(aDescription, aFunction);
-}
+	states : function(aDescription, aFunction)
+	{
+		this.test(aDescription, aFunction);
+	},
  
 /**
  * BDD-style alias for run(). 
@@ -724,10 +706,10 @@ function states(aDescription, aFunction)
  *    spec.verify();
  *
  */
-function verify(aStopper)
-{
-	this.run(aStopper);
-}
+	verify : function(aStopper)
+	{
+		this.run(aStopper);
+	},
    
 /**
  * Runs tests with strategy defined at construction time. 
@@ -737,724 +719,726 @@ function verify(aStopper)
  *    case.run();
  *
  */
-function run(aStopper)
-{
-	try {
-		if (!this.environment)
-			throw ERROR_NOT_INITIALIZED;
+	run : function(aStopper)
+	{
+		try {
+			if (!this.environment)
+				throw new Error(this.ERROR_NOT_INITIALIZED);
 
-		if (!this._tests.length) {
-			this.done = true;
-			throw ERROR_NO_TEST;
+			if (!this._tests.length) {
+				this.done = true;
+				throw new Error(this.ERROR_NO_TEST);
+			}
+
+			this._stopper = aStopper;
+
+			this.done = false;
+			this._aborted = false;
+
+			if (this.shouldRunInRemote)
+				this._runByRemote();
+			else
+				this._run();
+		}
+		catch(e) {
+			var report = new ns.Report();
+			report.result = this.RESULT_ERROR;
+			report.exception = this._utils.normalizeError(e);
+			report.description = bundle.getString('report_fatal_error');
+			report.onFinish();
+			this.fireEvent('Finish', report);
+		}
+	},
+	_run : function()
+	{
+		var context = this.context || {};
+		if (
+			(
+				this._targetProduct &&
+				String(this._targetProduct).toLowerCase() != this._utils.product.toLowerCase()
+			) ||
+			(
+				this._shouldSkip &&
+				(
+					(typeof this._shouldSkip != 'function') ||
+					this._shouldSkip.call(context)
+				)
+			)
+			) {
+			this._masterPriority = 'never';
 		}
 
-		this._stopper = aStopper;
+		var testIndex = 0;
+		var current;
+		var testReport = { report : null };
+		var testCaseReport = { report : null };
 
-		this.done = false;
-		this._aborted = false;
-
-		if (this.shouldRunInRemote)
-			this._runByRemote();
-		else
-			this._run();
-	}
-	catch(e) {
-		var report = new Report();
-		report.result = RESULT_ERROR;
-		report.exception = utils.normalizeError(e);
-		report.description = bundle.getString('report_fatal_error');
-		report.onFinish();
-		this.fireEvent('Finish', report);
-	}
-}
-function _run()
-{
-	var context = this.context || {};
-	if (
-		(
-			this._targetProduct &&
-			String(this._targetProduct).toLowerCase() != utils.product.toLowerCase()
-		) ||
-		(
-			this._shouldSkip &&
-			(
-				(typeof this._shouldSkip != 'function') ||
-				this._shouldSkip.call(context)
-			)
-		)
-		) {
-		this._masterPriority = 'never';
-	}
-
-	var testIndex = 0;
-	var current;
-	var testReport = { report : null };
-	var testCaseReport = { report : null };
-
-	var stateTransitions = {
-		start             : { ok : 'setUpDaemons' },
-		setUpDaemons      : { ok : 'doStartUp' },
-		doStartUp         : { ok : 'prepareTest', ko: 'doShutDown' },
-		prepareTest       : { ok : 'checkDoOrSkip' },
-		checkDoOrSkip     : { ok : 'doSetUp', ko: 'skip' },
-		skip              : { ok : 'doReport' },
-		doSetUp           : { ok : 'doPrivSetUp', ko: 'doPrivTearDown' },
-		doPrivSetUp       : { ok : 'doTest', ko: 'doPrivTearDown' },
-		doTest            : { ok : 'checkSuccessCount' },
-		checkSuccessCount : { ok : 'doPrivTearDown', ko: 'doPrivTearDown' },
-		doPrivTearDown    : { ok : 'doTearDown', ko: 'doTearDown' },
-		doTearDown        : { ok : 'doReport', ko: 'doReport' },
-		doReport          : { ok : 'nextTest' },
-		nextTest          : { ok : 'prepareTest', ko: 'doShutDown' },
-		doShutDown        : { ok : 'tearDownDaemons', ko: 'tearDownDaemons' },
-		tearDownDaemons   : { ok : 'finished' },
-		finished          : { }
-	};
-
-	var doPreOrPostProcess = function(aContinuation, aFunction, aOptions)
-		{
-			if (!aFunction || _this.neverRun) {
-				aOptions.report.report.onFinish();
-				aContinuation('ok');
-				return;
-			}
-			var usesContinuation = aOptions.useContinuation && aFunction.arity > 0;
-			try {
-				var result = usesContinuation ?
-						aFunction.call(context, aContinuation) :
-						aFunction.call(context) ;
-				if (utils.isGeneratedIterator(result)) {
-					utils.doIteration(result, {
-						onEnd : function(e) {
-							aOptions.report.report.onFinish();
-							if (!usesContinuation) aContinuation('ok');
-						},
-						onError : function(e) {
-							if (aOptions.onError) aOptions.onError();
-							aOptions.report.report.result = RESULT_ERROR;
-							aOptions.report.report.exception = utils.normalizeError(e);
-							aOptions.report.report.description = aOptions.errorDescription;
-							aOptions.report.report.parameter = aOptions.parameter;
-							aOptions.report.report.formattedParameter = aOptions.formattedParameter;
-							aOptions.report.report.onFinish();
-							aContinuation('ko');
-						}
-					});
-				}
-				else {
-					aOptions.report.report.onFinish();
-					if (!usesContinuation) aContinuation('ok');
-				}
-			}
-			catch(e) {
-				aOptions.report.report.result = RESULT_ERROR;
-				aOptions.report.report.exception = utils.normalizeError(e);
-				aOptions.report.report.description = aOptions.errorDescription;
-				aOptions.report.report.parameter = aOptions.parameter;
-				aOptions.report.report.formattedParameter = aOptions.formattedParameter;
-				aOptions.report.report.onFinish();
-				aContinuation('ko');
-			}
+		var stateTransitions = {
+			start             : { ok : 'setUpDaemons' },
+			setUpDaemons      : { ok : 'doStartUp' },
+			doStartUp         : { ok : 'prepareTest', ko: 'doShutDown' },
+			prepareTest       : { ok : 'checkDoOrSkip' },
+			checkDoOrSkip     : { ok : 'doSetUp', ko: 'skip' },
+			skip              : { ok : 'doReport' },
+			doSetUp           : { ok : 'doPrivSetUp', ko: 'doPrivTearDown' },
+			doPrivSetUp       : { ok : 'doTest', ko: 'doPrivTearDown' },
+			doTest            : { ok : 'checkSuccessCount' },
+			checkSuccessCount : { ok : 'doPrivTearDown', ko: 'doPrivTearDown' },
+			doPrivTearDown    : { ok : 'doTearDown', ko: 'doTearDown' },
+			doTearDown        : { ok : 'doReport', ko: 'doReport' },
+			doReport          : { ok : 'nextTest' },
+			nextTest          : { ok : 'prepareTest', ko: 'doShutDown' },
+			doShutDown        : { ok : 'tearDownDaemons', ko: 'tearDownDaemons' },
+			tearDownDaemons   : { ok : 'finished' },
+			finished          : { }
 		};
 
-	var _this = this;
-	var stateHandlers = {
-		start : function(aContinuation)
-		{
-			_this.fireEvent('Start');
-			aContinuation('ok')
-		},
-		setUpDaemons : function(aContinuation)
-		{
-			aContinuation('ok');
-		},
-		doStartUp : function(aContinuation)
-		{
- 			testCaseReport.report = new Report();
-			doPreOrPostProcess(
-				aContinuation,
-				_this._startUp,
-				{
-					errorDescription : bundle.getFormattedString('report_description_startup', [_this.title]),
-					report : testCaseReport
+		var doPreOrPostProcess = function(aContinuation, aFunction, aOptions)
+			{
+				if (!aFunction || _this.neverRun) {
+					aOptions.report.report.onFinish();
+					aContinuation('ok');
+					return;
 				}
-			);
-		},
-		prepareTest : function(aContinuation)
-		{
-			testReport.report = new Report();
-			current = _this._tests[testIndex];
-			_this.fireEvent('TestStart', current);
-			aContinuation('ok');
-		},
-		checkDoOrSkip : function(aContinuation)
-		{
-			if (current.targetProduct &&
-				String(current.targetProduct).toLowerCase() != utils.product.toLowerCase()) {
-				aContinuation('ko');
-				return;
-			}
-			if (!_this._checkPriorityToExec(current)) {
-				aContinuation('ko');
-				return;
-			}
-			var shouldSkip = current.shouldSkip;
-			if (shouldSkip !== void(0)) {
-				if (typeof shouldSkip == 'function') {
-					try {
-						shouldSkip = shouldSkip.call(context);
+				var usesContinuation = aOptions.useContinuation && aFunction.arity > 0;
+				try {
+					var result = usesContinuation ?
+							aFunction.call(context, aContinuation) :
+							aFunction.call(context) ;
+					if (_this._utils.isGeneratedIterator(result)) {
+						_this._utils.doIteration(result, {
+							onEnd : function(e) {
+								aOptions.report.report.onFinish();
+								if (!usesContinuation) aContinuation('ok');
+							},
+							onError : function(e) {
+								if (aOptions.onError) aOptions.onError();
+								aOptions.report.report.result = _this.RESULT_ERROR;
+								aOptions.report.report.exception = _this._utils.normalizeError(e);
+								aOptions.report.report.description = aOptions.errorDescription;
+								aOptions.report.report.parameter = aOptions.parameter;
+								aOptions.report.report.formattedParameter = aOptions.formattedParameter;
+								aOptions.report.report.onFinish();
+								aContinuation('ko');
+							}
+						});
 					}
-					catch(e) {
-						testReport.report.result = RESULT_ERROR;
-						testReport.report.exception = utils.normalizeError(e);
-						testReport.report.description =  bundle.getFormattedString('report_description_check_to_skip', [current.description]);
-						shouldSkip = true;
+					else {
+						aOptions.report.report.onFinish();
+						if (!usesContinuation) aContinuation('ok');
 					}
 				}
-				if (shouldSkip) {
+				catch(e) {
+					aOptions.report.report.result = _this.RESULT_ERROR;
+					aOptions.report.report.exception = _this._utils.normalizeError(e);
+					aOptions.report.report.description = aOptions.errorDescription;
+					aOptions.report.report.parameter = aOptions.parameter;
+					aOptions.report.report.formattedParameter = aOptions.formattedParameter;
+					aOptions.report.report.onFinish();
+					aContinuation('ko');
+				}
+			};
+
+		var _this = this;
+		var stateHandlers = {
+			start : function(aContinuation)
+			{
+				_this.fireEvent('Start');
+				aContinuation('ok')
+			},
+			setUpDaemons : function(aContinuation)
+			{
+				aContinuation('ok');
+			},
+			doStartUp : function(aContinuation)
+			{
+	 			testCaseReport.report = new ns.Report();
+				doPreOrPostProcess(
+					aContinuation,
+					_this._startUp,
+					{
+						errorDescription : bundle.getFormattedString('report_description_startup', [_this.title]),
+						report : testCaseReport
+					}
+				);
+			},
+			prepareTest : function(aContinuation)
+			{
+				testReport.report = new ns.Report();
+				current = _this._tests[testIndex];
+				_this.fireEvent('TestStart', current);
+				aContinuation('ok');
+			},
+			checkDoOrSkip : function(aContinuation)
+			{
+				if (current.targetProduct &&
+					String(current.targetProduct).toLowerCase() != _this._utils.product.toLowerCase()) {
 					aContinuation('ko');
 					return;
 				}
-			}
-			aContinuation('ok');
-		},
-		skip : function(aContinuation)
-		{
-			if (!testReport.report.result) {
-				testReport.report.result = RESULT_SKIPPED;
-				testReport.report.description = current.description;
-			}
-			aContinuation('ok');
-		},
-		doSetUp : function(aContinuation)
-		{
-			_this.notifications = [];
-			testReport.report = new Report();
-			doPreOrPostProcess(
-				aContinuation,
-				_this._setUp,
-				{
-					errorDescription : bundle.getFormattedString('report_description_setup', [current.description]),
-					report : testReport,
-					useContinuation : true
+				if (!_this._checkPriorityToExec(current)) {
+					aContinuation('ko');
+					return;
 				}
-			);
-		},
-		doPrivSetUp : function(aContinuation)
-		{
-			if (!current.setUp) {
+				var shouldSkip = current.shouldSkip;
+				if (shouldSkip !== void(0)) {
+					if (typeof shouldSkip == 'function') {
+						try {
+							shouldSkip = shouldSkip.call(context);
+						}
+						catch(e) {
+							testReport.report.result = _this.RESULT_ERROR;
+							testReport.report.exception = _this._utils.normalizeError(e);
+							testReport.report.description =  bundle.getFormattedString('report_description_check_to_skip', [current.description]);
+							shouldSkip = true;
+						}
+					}
+					if (shouldSkip) {
+						aContinuation('ko');
+						return;
+					}
+				}
 				aContinuation('ok');
-				return;
-			}
-			doPreOrPostProcess(
-				aContinuation,
-				current.setUp,
-				{
-					errorDescription : bundle.getFormattedString('report_description_priv_setup', [current.description]),
-					parameter : current.parameter,
-					formattedParameter : current.formattedParameter,
-					report : testReport
+			},
+			skip : function(aContinuation)
+			{
+				if (!testReport.report.result) {
+					testReport.report.result = _this.RESULT_SKIPPED;
+					testReport.report.description = current.description;
 				}
-			);
-		},
-		doTest : function(aContinuation)
-		{
-			Assertions.prototype.resetSuccessCount.call(_this.environment.assert);
-			testReport.report.onDetailedStart();
-			var newReport = _this._exec(current, context, aContinuation, testReport);
-			if (newReport.result) {
-				testReport.report = newReport;
-				testReport.report.description = current.description;
+				aContinuation('ok');
+			},
+			doSetUp : function(aContinuation)
+			{
+				_this.notifications = [];
+				testReport.report = new ns.Report();
+				doPreOrPostProcess(
+					aContinuation,
+					_this._setUp,
+					{
+						errorDescription : bundle.getFormattedString('report_description_setup', [current.description]),
+						report : testReport,
+						useContinuation : true
+					}
+				);
+			},
+			doPrivSetUp : function(aContinuation)
+			{
+				if (!current.setUp) {
+					aContinuation('ok');
+					return;
+				}
+				doPreOrPostProcess(
+					aContinuation,
+					current.setUp,
+					{
+						errorDescription : bundle.getFormattedString('report_description_priv_setup', [current.description]),
+						parameter : current.parameter,
+						formattedParameter : current.formattedParameter,
+						report : testReport
+					}
+				);
+			},
+			doTest : function(aContinuation)
+			{
+				ns.Assertions.prototype.resetSuccessCount.call(_this.environment.assert);
+				testReport.report.onDetailedStart();
+				var newReport = _this._exec(current, context, aContinuation, testReport);
+				if (newReport.result) {
+					testReport.report = newReport;
+					testReport.report.description = current.description;
+					testReport.report.parameter = current.parameter;
+					testReport.report.formattedParameter = current.formattedParameter;
+					testReport.report.onDetailedFinish();
+					aContinuation('ok');
+				}
+				else {
+					testReport.report.description = current.description;
+				}
+			},
+			checkSuccessCount : function(aContinuation)
+			{
+				try {
+					if (testReport.report.result == _this.RESULT_SUCCESS) {
+						ns.Assertions.prototype.validSuccessCount.call(
+							_this.environment.assert,
+							current.assertions,
+							current.minAssertions,
+							current.maxAssertions
+						);
+					}
+					aContinuation('ok');
+				}
+				catch(e) {
+					testReport.report = new ns.Report();
+					testReport.report.result = _this.RESULT_FAILURE;
+					testReport.report.exception = _this._utils.normalizeError(e);
+					testReport.report.description = bundle.getFormattedString('report_description_check_success_count', [current.description]);
+					aContinuation('ko');
+				}
+			},
+			doPrivTearDown : function(aContinuation)
+			{
+				if (!current.tearDown) {
+					aContinuation('ok');
+					return;
+				}
+				doPreOrPostProcess(
+					aContinuation,
+					current.tearDown,
+					{
+						errorDescription : bundle.getFormattedString('report_description_priv_teardown', [current.description]),
+						parameter : current.parameter,
+						formattedParameter : current.formattedParameter,
+						report : testReport,
+						onError : function() {
+							_this._onFinish(current, _this.RESULT_ERROR);
+						}
+					}
+				);
+			},
+			doTearDown : function(aContinuation)
+			{
+				doPreOrPostProcess(
+					aContinuation,
+					_this._tearDown,
+					{
+						errorDescription : bundle.getFormattedString('report_description_teardown', [current.description]),
+						report : testReport,
+						onError : function() {
+							_this._onFinish(current, _this.RESULT_ERROR);
+						},
+						useContinuation : true
+					}
+				);
+			},
+			doReport : function(aContinuation)
+			{
+				current.report = testReport.report;
+				_this._onFinish(current, testReport.report.result);
+				testReport.report.testOwner = _this;
+				testReport.report.testIndex = testIndex;
+				testReport.report.testID    = current.name;
 				testReport.report.parameter = current.parameter;
 				testReport.report.formattedParameter = current.formattedParameter;
-				testReport.report.onDetailedFinish();
+				testReport.report.notifications = _this.notifications;
+				_this.notifications = [];
+				_this.fireEvent('TestFinish', testReport.report);
 				aContinuation('ok');
+			},
+			nextTest : function(aContinuation)
+			{
+				if (_this._stopper && _this._stopper()) {
+					_this._aborted = true;
+					_this.fireEvent('Abort');
+					aContinuation('ko');
+					return;
+				}
+				testIndex += 1;
+				_this._tests[testIndex] ? aContinuation('ok') : aContinuation('ko');
+			},
+			doShutDown : function(aContinuation)
+			{
+				doPreOrPostProcess(
+					aContinuation,
+					_this._shutDown,
+					{
+						errorDescription : bundle.getFormattedString('report_description_shutdown', [_this.title]),
+						report : testCaseReport
+					}
+				);
+			},
+			tearDownDaemons : function(aContinuation)
+			{
+				if (!ns.ServerUtils.prototype.isHttpServerRunning.call(_this.environment.serverUtils)) {
+					aContinuation('ok');
+					return;
+				}
+				_this._utils.doIteration(
+					function() {
+						yield ns.ServerUtils.prototype.tearDownAllHttpServers.call(_this.environment.serverUtils);
+					},
+					{
+						onEnd : function(e) {
+							aContinuation('ok');
+						}
+					}
+				);
+			},
+			finished : function(aContinuation)
+			{
+				if (!_this._aborted) {
+					_this.done = true;
+					_this.fireEvent('Finish', testCaseReport.report);
+				}
+				aContinuation('ok');
+			}
+		};
+
+		ns.fsm.go('start', {}, stateHandlers, stateTransitions, []);
+	},
+	
+	_runByRemote : function() 
+	{
+		if (
+			!this._profile ||
+			!this._profile.exists() ||
+			this.neverRun
+			)
+			return false;
+
+		if (this._targetProduct &&
+			String(this._targetProduct).toLowerCase() != this._utils.product.toLowerCase() &&
+			!this._application) {
+			var application = this._utils.getInstalledLocationOfProduct(this._targetProduct);
+			if (application) {
+				this._application = application;
 			}
 			else {
-				testReport.report.description = current.description;
+				return false;
 			}
-		},
-		checkSuccessCount : function(aContinuation)
-		{
-			try {
-				if (testReport.report.result == RESULT_SUCCESS) {
-					Assertions.prototype.validSuccessCount.call(
-						_this.environment.assert,
-						current.assertions,
-						current.minAssertions,
-						current.maxAssertions
-					);
-				}
-				aContinuation('ok');
-			}
-			catch(e) {
-				testReport.report = new Report();
-				testReport.report.result = RESULT_FAILURE;
-				testReport.report.exception = utils.normalizeError(e);
-				testReport.report.description = bundle.getFormattedString('report_description_check_success_count', [current.description]);
-				aContinuation('ko');
-			}
-		},
-		doPrivTearDown : function(aContinuation)
-		{
-			if (!current.tearDown) {
-				aContinuation('ok');
-				return;
-			}
-			doPreOrPostProcess(
-				aContinuation,
-				current.tearDown,
-				{
-					errorDescription : bundle.getFormattedString('report_description_priv_teardown', [current.description]),
-					parameter : current.parameter,
-					formattedParameter : current.formattedParameter,
-					report : testReport,
-					onError : function() {
-						_this._onFinish(current, RESULT_ERROR);
-					}
-				}
-			);
-		},
-		doTearDown : function(aContinuation)
-		{
-			doPreOrPostProcess(
-				aContinuation,
-				_this._tearDown,
-				{
-					errorDescription : bundle.getFormattedString('report_description_teardown', [current.description]),
-					report : testReport,
-					onError : function() {
-						_this._onFinish(current, RESULT_ERROR);
-					},
-					useContinuation : true
-				}
-			);
-		},
-		doReport : function(aContinuation)
-		{
-			current.report = testReport.report;
-			_this._onFinish(current, testReport.report.result);
-			testReport.report.testOwner = _this;
-			testReport.report.testIndex = testIndex;
-			testReport.report.testID    = current.name;
-			testReport.report.parameter = current.parameter;
-			testReport.report.formattedParameter = current.formattedParameter;
-			testReport.report.notifications = _this.notifications;
-			_this.notifications = [];
-			_this.fireEvent('TestFinish', testReport.report);
-			aContinuation('ok');
-		},
-		nextTest : function(aContinuation)
-		{
-			if (_this._stopper && _this._stopper()) {
-				_this._aborted = true;
-				_this.fireEvent('Abort');
-				aContinuation('ko');
-				return;
-			}
-			testIndex += 1;
-			_this._tests[testIndex] ? aContinuation('ok') : aContinuation('ko');
-		},
-		doShutDown : function(aContinuation)
-		{
-			doPreOrPostProcess(
-				aContinuation,
-				_this._shutDown,
-				{
-					errorDescription : bundle.getFormattedString('report_description_shutdown', [_this.title]),
-					report : testCaseReport
-				}
-			);
-		},
-		tearDownDaemons : function(aContinuation)
-		{
-			if (!ns.ServerUtils.prototype.isHttpServerRunning.call(_this.environment.serverUtils)) {
-				aContinuation('ok');
-				return;
-			}
-			utils.doIteration(
-				function() {
-					yield ns.ServerUtils.prototype.tearDownAllHttpServers.call(_this.environment.serverUtils);
-				},
-				{
-					onEnd : function(e) {
-						aContinuation('ok');
-					}
-				}
-			);
-		},
-		finished : function(aContinuation)
-		{
-			if (!_this._aborted) {
-				_this.done = true;
-				_this.fireEvent('Finish', testCaseReport.report);
-			}
-			aContinuation('ok');
 		}
-	};
 
-	fsm.go('start', {}, stateHandlers, stateTransitions, []);
-}
+		this.fireEvent('Start');
+
+		var profile = this._utils.getFileFromKeyword('TmpD');
+		profile.append(this.REMOTE_PROFILE_PREFIX);
+		profile.createUnique(profile.DIRECTORY_TYPE, 0777);
+	//	this._profile.copyTo(profile.parent, profile.leafName);
+		profile.remove(true);
+		this._utils.cosmeticClone(this._profile, profile.parent, profile.leafName);
+
+		// 実行時の優先度計算のために必要
+		this._utils.dbFile.copyTo(profile, this._utils.dbFile.leafName);
+
+		if (!this._utils.getPref('extensions.uxu.global')) {
+			var extensions = profile.clone();
+			extensions.append('extensions');
+			if (!extensions.exists()) extensions.create(extensions.DIRECTORY_TYPE, 0777);
+			this._utils.installedUXU.copyTo(extensions, this._utils.installedUXU.leafName);
+		}
+
+		ObserverService.notifyObservers(profile, 'uxu-profile-setup', null);
+
+		this._remoteResultBuffer = '';
+		this._lastRemoteResponse = Date.now();
+		this._remoteReady = false;
+
+		var server = new ns.Server();
+		server.addListener(this);
+		this.addListener(server);
+		server.start();
+
+		var args = [
+				'-no-remote',
+				'-profile',
+				profile.path,
+				'-uxu-testcase',
+				this._source,
+				'-uxu-output-host',
+				'localhost',
+				'-uxu-output-port',
+				server.port,
+				'-uxu-hidden'
+			];
+		if (this._masterPriority) {
+			args = args.concat(['-uxu-priority', this._masterPriority]);
+		}
+		args = args.concat(this.options);
+
+		var process = Cc['@mozilla.org/process/util;1']
+					.createInstance(Ci.nsIProcess);
+		process.init(this._application || this._utils.productExecutable);
+		process.run(false, args, args.length);
+
+		var _this = this;
+		var beforeReadyTimeout = Math.max(0, this._utils.getPref('extensions.uxu.run.timeout.application'));
+		var beforeReadyInterval = 500;
+		var afterReadyTimeout = this.PING_INTERVAL + Math.max(0, this._utils.getPref('extensions.uxu.run.timeout'));
+		var afterReadyInterval = 50;
+		var report = new ns.Report();
+		this._utils.doIteration(
+			function() {
+				var last = Date.now();
+				var current;
+				var timeout;
+				var interval;
+				while (!_this.done)
+				{
+					timeout = _this._remoteReady ? afterReadyTimeout : beforeReadyTimeout ;
+					interval = _this._remoteReady ? afterReadyInterval : beforeReadyInterval ;
+					if (!_this._aborted && _this._stopper && _this._stopper()) {
+						_this._aborted = true;
+					}
+					if (Date.now() - _this._lastRemoteResponse > timeout) {
+						throw new Error(bundle.getFormattedString('error_remote_timeout', [parseInt(timeout / 1000)]));
+					}
+					yield interval;
+				}
+			},
+			{
+				onEnd : function(e) {
+					report.result = _this.RESULT_SUCCESS;
+					report.onFinish();
+					_this._onFinishRemoteResult(report);
+
+					server.destroy();
+					server = null;
+					_this._utils.scheduleToRemove(profile);
+				},
+				onError : function(e) {
+					report.result = _this.RESULT_ERROR;
+					report.exception = e;
+					report.description = bundle.getFormattedString('report_description_remote', [_this.title]);
+					report.onFinish();
+					_this._onFinishRemoteResult(report);
+
+					server.destroy();
+					server = null;
+					_this._utils.scheduleToRemove(profile);
+				}
+			}
+		);
+
+		return true;
+	},
 	
-function _runByRemote() 
-{
-	if (
-		!this._profile ||
-		!this._profile.exists() ||
-		this.neverRun
-		)
-		return false;
-
-	if (this._targetProduct &&
-		String(this._targetProduct).toLowerCase() != utils.product.toLowerCase() &&
-		!this._application) {
-		var application = utils.getInstalledLocationOfProduct(this._targetProduct);
-		if (application) {
-			this._application = application;
+	onServerInput : function(aEvent) 
+	{
+		this._lastRemoteResponse = Date.now();
+		var input = aEvent.data;
+		var responseId = '/* '+Date.now()+'-'+parseInt(Math.random() * 65000)+' */';
+		if (/[\r\n]+$/.test(input)) {
+			if (this._remoteResultBuffer) {
+				input = this._remoteResultBuffer + input;
+				this._remoteResultBuffer = '';
+			}
+			input = input.replace(/[\r\n]+$/, '');
 		}
 		else {
-			return false;
+			this._remoteResultBuffer += input;
+			return;
 		}
-	}
-
-	this.fireEvent('Start');
-
-	var profile = utils.getFileFromKeyword('TmpD');
-	profile.append(REMOTE_PROFILE_PREFIX);
-	profile.createUnique(profile.DIRECTORY_TYPE, 0777);
-//	this._profile.copyTo(profile.parent, profile.leafName);
-	profile.remove(true);
-	utils.cosmeticClone(this._profile, profile.parent, profile.leafName);
-
-	// 実行時の優先度計算のために必要
-	utils.dbFile.copyTo(profile, utils.dbFile.leafName);
-
-	if (!utils.getPref('extensions.uxu.global')) {
-		var extensions = profile.clone();
-		extensions.append('extensions');
-		if (!extensions.exists()) extensions.create(extensions.DIRECTORY_TYPE, 0777);
-		utils.installedUXU.copyTo(extensions, utils.installedUXU.leafName);
-	}
-
-	ObserverService.notifyObservers(profile, 'uxu-profile-setup', null);
-
-	this._remoteResultBuffer = '';
-	this._lastRemoteResponse = Date.now();
-	this._remoteReady = false;
-
-	var server = new ns.Server();
-	server.addListener(this);
-	this.addListener(server);
-	server.start();
-
-	var args = [
-			'-no-remote',
-			'-profile',
-			profile.path,
-			'-uxu-testcase',
-			this._source,
-			'-uxu-output-host',
-			'localhost',
-			'-uxu-output-port',
-			server.port,
-			'-uxu-hidden'
-		];
-	if (this._masterPriority) {
-		args = args.concat(['-uxu-priority', this._masterPriority]);
-	}
-	args = args.concat(this.options);
-
-	var process = Cc['@mozilla.org/process/util;1']
-				.createInstance(Ci.nsIProcess);
-	process.init(this._application || utils.productExecutable);
-	process.run(false, args, args.length);
-
-	var _this = this;
-	var beforeReadyTimeout = Math.max(0, utils.getPref('extensions.uxu.run.timeout.application'));
-	var beforeReadyInterval = 500;
-	var afterReadyTimeout = PING_INTERVAL + Math.max(0, utils.getPref('extensions.uxu.run.timeout'));
-	var afterReadyInterval = 50;
-	var report = new Report();
-	utils.doIteration(
-		function() {
-			var last = Date.now();
-			var current;
-			var timeout;
-			var interval;
-			while (!_this.done)
-			{
-				timeout = _this._remoteReady ? afterReadyTimeout : beforeReadyTimeout ;
-				interval = _this._remoteReady ? afterReadyInterval : beforeReadyInterval ;
-				if (!_this._aborted && _this._stopper && _this._stopper()) {
-					_this._aborted = true;
-				}
-				if (Date.now() - _this._lastRemoteResponse > timeout) {
-					throw new Error(bundle.getFormattedString('error_remote_timeout', [parseInt(timeout / 1000)]));
-				}
-				yield interval;
-			}
-		},
-		{
-			onEnd : function(e) {
-				report.result = RESULT_SUCCESS;
-				report.onFinish();
-				_this._onFinishRemoteResult(report);
-
-				server.destroy();
-				server = null;
-				utils.scheduleToRemove(profile);
-			},
-			onError : function(e) {
-				report.result = RESULT_ERROR;
-				report.exception = e;
-				report.description = bundle.getFormattedString('report_description_remote', [_this.title]);
-				report.onFinish();
-				_this._onFinishRemoteResult(report);
-
-				server.destroy();
-				server = null;
-				utils.scheduleToRemove(profile);
-			}
+		if (this._aborted) {
+			this.fireEvent('ResponseRequest', this.TESTCASE_ABORTED+responseId+'\n');
+			this.fireEvent('Abort');
+			return;
 		}
-	);
-
-	return true;
-}
-	
-function onServerInput(aEvent) 
-{
-	this._lastRemoteResponse = Date.now();
-	var input = aEvent.data;
-	var responseId = '/* '+Date.now()+'-'+parseInt(Math.random() * 65000)+' */';
-	if (/[\r\n]+$/.test(input)) {
-		if (this._remoteResultBuffer) {
-			input = this._remoteResultBuffer + input;
-			this._remoteResultBuffer = '';
+		if (input.indexOf(this.TESTCASE_STARTED) == 0) {
+			this._remoteReady = true;
+			this.fireEvent('ResponseRequest', responseId+'\n');
+			return;
 		}
-		input = input.replace(/[\r\n]+$/, '');
-	}
-	else {
-		this._remoteResultBuffer += input;
-		return;
-	}
-	if (this._aborted) {
-		this.fireEvent('ResponseRequest', TESTCASE_ABORTED+responseId+'\n');
-		this.fireEvent('Abort');
-		return;
-	}
-	if (input.indexOf(TESTCASE_STARTED) == 0) {
-		this._remoteReady = true;
+		if (input.indexOf(this.TESTCASE_FINISED) == 0) {
+			this.done = true;
+			this.fireEvent('ResponseRequest', responseId+'\n');
+			return;
+		}
+		this._onReceiveRemoteResult(input);
 		this.fireEvent('ResponseRequest', responseId+'\n');
-		return;
-	}
-	if (input.indexOf(TESTCASE_FINISED) == 0) {
+	},
+ 
+	_onReceiveRemoteResult : function(aResult) 
+	{
+		var result;
+		try {
+			result = this._utils.evalInSandbox(aResult);
+			result[result.length-1].results.forEach(function(aResult) {
+				this._onFinish(this._tests[aResult.index], aResult.type);
+			}, this);
+		}
+		catch(e) {
+			result = [];
+		}
+		this.fireEvent('RemoteTestFinish', result);
+	},
+ 
+	_onFinishRemoteResult : function(aReport) 
+	{
 		this.done = true;
-		this.fireEvent('ResponseRequest', responseId+'\n');
-		return;
-	}
-	this._onReceiveRemoteResult(input);
-	this.fireEvent('ResponseRequest', responseId+'\n');
-}
- 
-function _onReceiveRemoteResult(aResult) 
-{
-	var result;
-	try {
-		result = utils.evalInSandbox(aResult);
-		result[result.length-1].results.forEach(function(aResult) {
-			this._onFinish(this._tests[aResult.index], aResult.type);
-		}, this);
-	}
-	catch(e) {
-		result = [];
-	}
-	this.fireEvent('RemoteTestFinish', result);
-}
- 
-function _onFinishRemoteResult(aReport) 
-{
-	this.done = true;
-	if (!this._aborted) {
-		this.fireEvent('Finish', aReport);
-	}
-}
+		if (!this._aborted) {
+			this.fireEvent('Finish', aReport);
+		}
+	},
   
-function _exec(aTest, aContext, aContinuation, aReport) 
-{
-	var report = new Report();
+	_exec : function(aTest, aContext, aContinuation, aReport) 
+	{
+		var report = new ns.Report();
 
-	if (this._stopper && this._stopper()) {
-		report.result = RESULT_SKIPPED;
-		return report;
-	}
-
-	try {
-		var result = aTest.code.call(aContext);
-
-		if (utils.isGeneratedIterator(result)) {
-			aReport.report = report;
-			var _this = this;
-			ns.setTimeout(function() {
-				utils.doIteration(result, {
-					onEnd : function(e) {
-						aReport.report.onDetailedFinish();
-						aReport.report.result = RESULT_SUCCESS;
-						_this._onFinish(aTest, aReport.report.result);
-						aContinuation('ok');
-					},
-					onFail : function(e) {
-						aReport.report.onDetailedFinish();
-						aReport.report.result = RESULT_FAILURE;
-						aReport.report.exception = e;
-						_this._onFinish(aTest, aReport.report.result);
-						aContinuation('ok');
-					},
-					onError : function(e) {
-						aReport.report.onDetailedFinish();
-						aReport.report.result = RESULT_ERROR;
-						aReport.report.exception = e;
-						_this._onFinish(aTest, aReport.report.result);
-						aContinuation('ok');
-					}
-				});
-			}, 0);
+		if (this._stopper && this._stopper()) {
+			report.result = this.RESULT_SKIPPED;
 			return report;
 		}
 
-		report.result = RESULT_SUCCESS;
-		this._onFinish(aTest, report.result);
-	}
-	catch(exception if exception.name == 'AssertionFailed') {
-		report.result = RESULT_FAILURE;
-		report.exception = exception;
-		this._onFinish(aTest, report.result);
-	}
-	catch(exception) {
-		report.result = RESULT_ERROR;
-		report.exception = utils.normalizeError(exception);;
-		this._onFinish(aTest, report.result);
-	}
-
-	return report;
-}
- 
-function _checkPriorityToExec(aTest) 
-{
-	var priority = 0.5;
-	var forceNever = _equalsToNever(aTest.priority) || _equalsToNever(this._masterPriority);
-	if (forceNever) {
-		priority = 'never';
-	}
-	else {
-		if (this._masterPriority !== null && this._masterPriority !== void(0))
-			priority = this._masterPriority;
-		if (aTest.priority !== null && aTest.priority !== void(0))
-			priority = aTest.priority;
-	}
-
-	if (typeof priority == 'number') {
-		priority = Math.min(1, Math.max(0, priority));
-		switch (priority)
-		{
-			case 1:
-				shouldDo = true;
-				break;
-			case 0:
-				shouldDo = false;
-				break;
-			default:
-				shouldDo = (Math.random() <= priority);
-				break;
-		}
-	}
-	else {
-		priority = priority.toLowerCase();
-		switch (priority)
-		{
-			case 'must':
-				shouldDo = true;
-				break;
-			case 'never':
-				shouldDo = false;
-				break;
-			default:
-				priority = Number(utils.getPref('extensions.uxu.priority.'+priority));
-				priority = Math.min(1, Math.max(0, priority));
-				shouldDo = (Math.random() <= priority);
-				break;
-		}
-	}
-	if (!shouldDo && !forceNever) {
-		var db, statement;
-		var lastResult;
-		var lastHash;
 		try {
-			db = utils.getDB();
-			statement = db.createStatement(
-				  'SELECT result, hash FROM result_history WHERE name = ?1'
-				);
-			statement.bindStringParameter(0, aTest.name);
-			while (statement.executeStep())
-			{
-				lastResult = statement.getString(0);
-				lastHash   = statement.getString(1);
+			var result = aTest.code.call(aContext);
+
+			if (this._utils.isGeneratedIterator(result)) {
+				aReport.report = report;
+				var _this = this;
+				ns.setTimeout(function() {
+					_this._utils.doIteration(result, {
+						onEnd : function(e) {
+							aReport.report.onDetailedFinish();
+							aReport.report.result = _this.RESULT_SUCCESS;
+							_this._onFinish(aTest, aReport.report.result);
+							aContinuation('ok');
+						},
+						onFail : function(e) {
+							aReport.report.onDetailedFinish();
+							aReport.report.result = _this.RESULT_FAILURE;
+							aReport.report.exception = e;
+							_this._onFinish(aTest, aReport.report.result);
+							aContinuation('ok');
+						},
+						onError : function(e) {
+							aReport.report.onDetailedFinish();
+							aReport.report.result = _this.RESULT_ERROR;
+							aReport.report.exception = e;
+							_this._onFinish(aTest, aReport.report.result);
+							aContinuation('ok');
+						}
+					});
+				}, 0);
+				return report;
 			}
+
+			report.result = this.RESULT_SUCCESS;
+			this._onFinish(aTest, report.result);
+		}
+		catch(exception if exception.name == 'AssertionFailed') {
+			report.result = this.RESULT_FAILURE;
+			report.exception = exception;
+			this._onFinish(aTest, report.result);
+		}
+		catch(exception) {
+			report.result = this.RESULT_ERROR;
+			report.exception = this._utils.normalizeError(exception);;
+			this._onFinish(aTest, report.result);
+		}
+
+		return report;
+	},
+ 
+	_checkPriorityToExec : function(aTest) 
+	{
+		var priority = 0.5;
+		var forceNever = _equalsToNever(aTest.priority) || _equalsToNever(this._masterPriority);
+		if (forceNever) {
+			priority = 'never';
+		}
+		else {
+			if (this._masterPriority !== null && this._masterPriority !== void(0))
+				priority = this._masterPriority;
+			if (aTest.priority !== null && aTest.priority !== void(0))
+				priority = aTest.priority;
+		}
+
+		if (typeof priority == 'number') {
+			priority = Math.min(1, Math.max(0, priority));
+			switch (priority)
+			{
+				case 1:
+					shouldDo = true;
+					break;
+				case 0:
+					shouldDo = false;
+					break;
+				default:
+					shouldDo = (Math.random() <= priority);
+					break;
+			}
+		}
+		else {
+			priority = priority.toLowerCase();
+			switch (priority)
+			{
+				case 'must':
+					shouldDo = true;
+					break;
+				case 'never':
+					shouldDo = false;
+					break;
+				default:
+					priority = Number(this._utils.getPref('extensions.uxu.priority.'+priority));
+					priority = Math.min(1, Math.max(0, priority));
+					shouldDo = (Math.random() <= priority);
+					break;
+			}
+		}
+		if (!shouldDo && !forceNever) {
+			var db, statement;
+			var lastResult;
+			var lastHash;
+			try {
+				db = this._utils.getDB();
+				statement = db.createStatement(
+					  'SELECT result, hash FROM result_history WHERE name = ?1'
+					);
+				statement.bindStringParameter(0, aTest.name);
+				while (statement.executeStep())
+				{
+					lastResult = statement.getString(0);
+					lastHash   = statement.getString(1);
+				}
+			}
+			finally {
+				statement.reset();
+			}
+			if ((lastHash != aTest.hash) ||
+	                    (lastResult != this.RESULT_SUCCESS && lastResult != this.RESULT_SKIPPED)) {
+				shouldDo = true;
+			}
+		}
+		return shouldDo;
+	},
+	_equalsToNever : function(aPriority)
+	{
+		return (
+			(aPriority == 'never') ||
+			(typeof aPriority == 'number' && Math.max(0, aPriority) == 0)
+		);
+	},
+ 
+	_onFinish : function(aTest, aResult) 
+	{
+		var db, statement;
+		try {
+			db = this._utils.getDB();
+			statement = db.createStatement(<![CDATA[
+			  INSERT OR REPLACE INTO result_history
+			          (name, description, result, date, hash)
+			    VALUES(?1, ?2, ?3, ?4, ?5)
+			]]>.toString());
+		}
+		catch(e) {
+			return;
+		}
+
+		try {
+			statement.bindStringParameter(0, aTest.name);
+			statement.bindStringParameter(1, aTest.description);
+			statement.bindStringParameter(2, aResult);
+			statement.bindDoubleParameter(3, Date.now());
+			statement.bindStringParameter(4, aTest.hash);
+			while (statement.executeStep()) {}
 		}
 		finally {
 			statement.reset();
 		}
-		if ((lastHash != aTest.hash) ||
-                    (lastResult != RESULT_SUCCESS && lastResult != RESULT_SKIPPED)) {
-			shouldDo = true;
+
+		var days = this._utils.getPref('extensions.uxu.run.history.expire.days');
+		if (days < 0) return;
+
+		var cleanUpStatement = db.createStatement('DELETE FROM result_history WHERE date < ?1');
+		try {
+			cleanUpStatement.bindDoubleParameter(0, Date.now() - (1000 * 60 * 60 * 24 * days));
+			while (cleanUpStatement.executeStep()) {}
+		}
+		finally {
+			cleanUpStatement.reset();
 		}
 	}
-	return shouldDo;
-}
-function _equalsToNever(aPriority)
-{
-	return (
-		(aPriority == 'never') ||
-		(typeof aPriority == 'number' && Math.max(0, aPriority) == 0)
-	);
-}
+   
+}; 
  
-function _onFinish(aTest, aResult) 
-{
-	var db, statement;
-	try {
-		db = utils.getDB();
-		statement = db.createStatement(<![CDATA[
-		  INSERT OR REPLACE INTO result_history
-		          (name, description, result, date, hash)
-		    VALUES(?1, ?2, ?3, ?4, ?5)
-		]]>.toString());
-	}
-	catch(e) {
-		return;
-	}
-
-	try {
-		statement.bindStringParameter(0, aTest.name);
-		statement.bindStringParameter(1, aTest.description);
-		statement.bindStringParameter(2, aResult);
-		statement.bindDoubleParameter(3, Date.now());
-		statement.bindStringParameter(4, aTest.hash);
-		while (statement.executeStep()) {}
-	}
-	finally {
-		statement.reset();
-	}
-
-	var days = utils.getPref('extensions.uxu.run.history.expire.days');
-	if (days < 0) return;
-
-	var cleanUpStatement = db.createStatement('DELETE FROM result_history WHERE date < ?1');
-	try {
-		cleanUpStatement.bindDoubleParameter(0, Date.now() - (1000 * 60 * 60 * 24 * days));
-		while (cleanUpStatement.executeStep()) {}
-	}
-	finally {
-		cleanUpStatement.reset();
-	}
-}
-  

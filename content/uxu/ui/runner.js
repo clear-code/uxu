@@ -3,7 +3,7 @@ Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/server/message.js', ns);
 Components.utils.import('resource://uxu-modules/test/runner.js', ns);
-Components.utils.import('resource://uxu-modules/test/testLog.js', ns);
+Components.utils.import('resource://uxu-modules/test/log.js', ns);
 Components.utils.import('resource://uxu-modules/test/testCase.js', ns);
 
 var utils = ns.utils;
@@ -765,7 +765,7 @@ function run(aMasterPriority)
 {
 	reset();
 
-	gRunner = new ns.Runner(_('content'), _('file').value);
+	gRunner = new ns.TestRunner(_('content'), _('file').value);
 
 	gRunner.addListener(runnerListener);
 
@@ -806,7 +806,7 @@ function runFailed()
 
 	reset();
 
-	gRunner = new ns.Runner(_('content'), _('file').value);
+	gRunner = new ns.TestRunner(_('content'), _('file').value);
 
 	gRunner.addListener(runnerListener);
 

@@ -647,7 +647,7 @@ processTemplate : function(aCode, aScope)
 	env = null;
 	return result;
 },
-parseTemplate : function() { return this.processTemplate.apply(this, arguments); } // for backward compatibility
+parseTemplate : function() { return this.processTemplate.apply(this, arguments); }, // for backward compatibility
  
 $ : function(aNodeOrID, aOwner) 
 {
