@@ -11,11 +11,7 @@ Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/test/action.js', ns);
 var utils = ns.utils;
 
-const ERROR_NO_COMPOSE_WINDOW = 'no compose window';
-
-const ADDRESS_TYPE = '//*[@id="addressingWidget"]/descendant::*[local-name()="menulist" and starts-with(@value, "addr_")]';
-const ADDRESS_FIELD = ADDRESS_TYPE+'/ancestor::*[local-name()="listitem"]/descendant::*[local-name()="textbox"]';
-const DUMMY_ROW = '//*[@id="addressingWidget"]/descendant::*[@class="dummy-row"]';
+const ADDRESS_TYPE_FRAGMENT = '//*[@id="addressingWidget"]/descendant::*[local-name()="menulist" and starts-with(@value, "addr_")]';
 	
 function Compose(aMailUtils, aEnvironment) 
 {
@@ -24,6 +20,11 @@ function Compose(aMailUtils, aEnvironment)
 	this.action = new ns.Action(aEnvironment);
 }
 Compose.prototype = {
+	ERROR_NO_COMPOSE_WINDOW : 'no compose window',
+
+	ADDRESS_TYPE : ADDRESS_TYPE_FRAGMENT,
+	ADDRESS_FIELD : ADDRESS_TYPE_FRAGMENT+'/ancestor::*[local-name()="listitem"]/descendant::*[local-name()="textbox"]',
+	DUMMY_ROW : '//*[@id="addressingWidget"]/descendant::*[@class="dummy-row"]',
 	
 	get window() { return this._getWindow(); }, 
 	get windows() { return this._getWindows(); },
@@ -103,7 +104,7 @@ Compose.prototype = {
 			aComposeWindow = this._getWindow();
 		}
 		if (!aComposeWindow) {
-			throw new Error(ERROR_NO_COMPOSE_WINDOW);
+			throw new Error(this.ERROR_NO_COMPOSE_WINDOW);
 		}
 		return aComposeWindow;
 	},
@@ -175,7 +176,7 @@ Compose.prototype = {
 	_getAddressFields : function(aComposeWindow) 
 	{
 		aComposeWindow = this._ensureWindowReady(aComposeWindow);
-		return utils.$X(ADDRESS_FIELD, aComposeWindow.document);
+		return utils.$X(this.ADDRESS_FIELD, aComposeWindow.document);
 	},
 	_getFirstAddressField : function(aComposeWindow)
 	{
@@ -217,7 +218,7 @@ Compose.prototype = {
 	_getAddressTypes : function(aComposeWindow) 
 	{
 		aComposeWindow = this._ensureWindowReady(aComposeWindow);
-		return utils.$X(ADDRESS_TYPE, aComposeWindow.document);
+		return utils.$X(this.ADDRESS_TYPE, aComposeWindow.document);
 	},
 	_getFirstAddressType : function(aComposeWindow)
 	{
@@ -241,12 +242,12 @@ Compose.prototype = {
 	_getDummyRows : function(aComposeWindow) 
 	{
 		aComposeWindow = this._ensureWindowReady(aComposeWindow);
-		return utils.$X(DUMMY_ROW, aComposeWindow.document);
+		return utils.$X(this.DUMMY_ROW, aComposeWindow.document);
 	},
 	_getFirstDummyRow : function(aComposeWindow)
 	{
 		aComposeWindow = this._ensureWindowReady(aComposeWindow);
-		return utils.$X(DUMMY_ROW, aComposeWindow.document, Ci.nsIDOMXPathResult.FIRST_ORDERED_NODE_TYPE);
+		return utils.$X(this.DUMMY_ROW, aComposeWindow.document, Ci.nsIDOMXPathResult.FIRST_ORDERED_NODE_TYPE);
 	},
  
 	_getBodyFrame : function(aComposeWindow) 
