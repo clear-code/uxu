@@ -32,6 +32,17 @@ function tearDown()
 function test_loadAndUnload()
 {
 	var retVal = GMUtils.load('about:');
+	assert.isTrue(retVal.value);
+	assert.equals('about:', content.location.href);
+
+	retVal = GMUtils.unload();
+	assert.isTrue(retVal.value);
+	assert.equals('about:blank', content.location.href);
+}
+
+function test_loadAndUnload_async()
+{
+	var retVal = GMUtils.load('about:', { async: true });
 	assert.isDefined(retVal.value);
 	assert.isFalse(retVal.value);
 	assert.notEquals('about:', content.location.href);
@@ -40,7 +51,7 @@ function test_loadAndUnload()
 	assert.isTrue(retVal.value);
 	assert.equals('about:', content.location.href);
 
-	retVal = GMUtils.unload();
+	retVal = GMUtils.unload({ async: true });
 	assert.isDefined(retVal.value);
 	assert.isFalse(retVal.value);
 	assert.notEquals('about:blank', content.location.href);
@@ -57,6 +68,23 @@ test_openAndClose.tearDown = function() {
 function test_openAndClose()
 {
 	var retVal = GMUtils.open('about:');
+	assert.isTrue(retVal.value);
+	assert.isNotNull(retVal.window);
+	assert.isTrue(retVal.window instanceof Ci.nsIDOMWindow);
+	assert.isTrue(retVal.window instanceof Ci.nsIDOMChromeWindow);
+	assert.equals('about:', retVal.window.content.location.href);
+
+	GMUtils.close();
+	yield 300;
+	assert.isTrue(retVal.window.closed);
+}
+
+test_openAndClose_async.tearDown = function() {
+	utils.tearDownTestWindow();
+};
+function test_openAndClose_async()
+{
+	var retVal = GMUtils.open('about:', { async : true });
 	assert.isDefined(retVal.value);
 	assert.isFalse(retVal.value);
 	assert.isDefined(retVal.window);

@@ -31,18 +31,18 @@ function destroy()
 	this.sandboxes = null;
 }
 
-function load(aURI)
+function load(aURI, aOptions)
 {
 	this.listeners = [];
 	this.sandboxes = {};
-	return this.utils.loadURIInTestFrame(aURI);
+	return this.utils.loadURIInTestFrame(aURI, aOptions);
 }
 
-function unload()
+function unload(aOptions)
 {
 	this.listeners = [];
 	this.sandboxes = {};
-	return this.utils.loadURIInTestFrame('about:blank');
+	return this.utils.loadURIInTestFrame('about:blank', aOptions);
 }
 
 function open(aURI, aOptions)
@@ -75,6 +75,7 @@ function open(aURI, aOptions)
 			}, 0);
 		}
 	);
+	if (!aOptions || !aOptions.async) this.utils.wait(loadedFlag);
 	return loadedFlag;
 }
 
