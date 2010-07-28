@@ -388,7 +388,11 @@ TestRunner.prototype = {
 	
 	_createTestSuite : function(aURL) 
 	{
-		var suite = new ns.TestEnvironment({}, aURL, this._browser);
+		var suite = new ns.TestEnvironment(
+				new this._browser.ownerDocument.defaultView.Object(),
+				aURL,
+				this._browser
+			);
 
 		/* backward compatibility for MozLab/MozUnit testcases */
 		suite.TestCase      = ns.TestCase;
