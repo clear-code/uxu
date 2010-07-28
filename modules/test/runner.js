@@ -322,6 +322,7 @@ TestRunner.prototype = {
 	testFileNamePattern : /\.test\.js$/im,
 	unitTestPattern : /\bunit/i,
 	functionalTestPattern : /\bfunctional/i,
+	integrationTestPattern : /\bintegration/i,
 	_getTestFilesInternal : function(aFolder, aIgnoreHiddenFiles)
 	{
 		var files = aFolder.directoryEntries;
@@ -333,6 +334,7 @@ TestRunner.prototype = {
 		var tests = [];
 		var unitTests = [];
 		var functionalTests = [];
+		var integrationTests = [];
 		while (files.hasMoreElements())
 		{
 			file = files.getNext().QueryInterface(Ci.nsILocalFile);
@@ -349,16 +351,28 @@ TestRunner.prototype = {
 					functionalTests.push(file);
 					continue;
 				}
+				else if (this.integrationTestPattern.test(file.leafName)) {
+					integrationTests.push(file);
+					continue;
+				}
 			}
 			tests.push(file);
 		}
 
-		tests = tests.concat(unitTests).concat(functionalTests);
-		if (!unitTests.length || !functionalTests.length) {
-			tests.sort(function(aA, aB) {
+		[
+			tests,
+			unitTests,
+			functionalTests,
+			integrationTests
+		].forEach(function(aTests) {
+			aTests.sort(function(aA, aB) {
 				return aA.leafName - aB.leafName;
 			});
-		}
+		});
+		tests = tests
+				.concat(unitTests)
+				.concat(functionalTests)
+				.concat(integrationTests);
 
 		tests.forEach(function(aFile) {
 			if (aFile.isDirectory()) {
