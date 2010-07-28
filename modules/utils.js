@@ -24,7 +24,6 @@ var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 const IOService = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
 
 const XULAppInfo = Cc['@mozilla.org/xre/app-info;1'].getService(Ci.nsIXULAppInfo);
-const Comparator = Cc['@mozilla.org/xpcom/version-comparator;1'].getService(Ci.nsIVersionComparator);
 
 var Application = '@mozilla.org/fuel/application;1' in Cc ?
 			Cc['@mozilla.org/fuel/application;1'].getService(Ci.fuelIApplication) :
@@ -1736,8 +1735,8 @@ isTargetInRange : function(aTarget, aRange)
 	if (aTarget instanceof Ci.nsIDOMRange) {
 		try {
 			var inRange = (
-					aTarget.compareBoundaryPoints(Range.START_TO_START, aRange) >= 0 &&
-					aTarget.compareBoundaryPoints(Range.END_TO_END, aRange) <= 0
+					aTarget.compareBoundaryPoints(Ci.nsIDOMRange.START_TO_START, aRange) >= 0 &&
+					aTarget.compareBoundaryPoints(Ci.nsIDOMRange.END_TO_END, aRange) <= 0
 				);
 			if (targetRangeCreated) aTarget.detach();
 			return inRange;
@@ -2250,6 +2249,7 @@ _getInstalledLocationOfMozillaProduct : function(aProduct)
 compareVersions : function() 
 {
 	var aA, aB, aOperator;
+	const Comparator = Cc['@mozilla.org/xpcom/version-comparator;1'].getService(Ci.nsIVersionComparator);
 	switch (arguments.length)
 	{
 		case 3:
