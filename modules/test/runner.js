@@ -309,7 +309,7 @@ TestRunner.prototype = {
 	
 	_getTestFiles : function(aFolder, aIgnoreHiddenFiles) 
 	{
-		var filesMayBeTest = _getTestFilesInternal(aFolder, aIgnoreHiddenFiles);
+		var filesMayBeTest = this._getTestFilesInternal(aFolder, aIgnoreHiddenFiles);
 		var nameList = filesMayBeTest.map(function(aFile) {
 				return aFile.leafName;
 			}).join('\n');
