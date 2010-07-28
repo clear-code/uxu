@@ -3,18 +3,17 @@
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-var EventTarget = {};
-Components.utils.import('resource://uxu-modules/eventTarget.js', EventTarget);
-EventTarget = EventTarget.EventTarget;
+var ns = {};
+Components.utils.import('resource://uxu-modules/eventTarget.js', ns);
+Components.utils.import('resource://uxu-modules/utils.js', ns);
+Components.utils.import('resource://uxu-modules/test/action.js', ns);
 
-var utils = {};
-Components.utils.import('resource://uxu-modules/utils.js', utils);
-utils = utils.utils;
+var utils = ns.utils;
+var action = new ns.Action({ __proto__ : utils, utils : utils });
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var Runner      = test_module.require('class', 'runner');
 var Environment = test_module.require('class', 'environment');
-var action = test_module.require('package', 'action');
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var Reporter    = server_module.require('class', 'reporter');
@@ -24,7 +23,7 @@ var WindowManager = Cc['@mozilla.org/appshell/window-mediator;1']
 
 function constructor(aBrowser)
 {
-	this.__proto__.__proto__ = EventTarget.prototype;
+	this.__proto__.__proto__ = ns.EventTarget.prototype;
 	this.initListeners();
 
 	this._browser = aBrowser;

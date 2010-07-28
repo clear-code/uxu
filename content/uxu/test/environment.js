@@ -6,9 +6,11 @@ const Ci = Components.interfaces;
 var ns = {};
 Components.utils.import('resource://uxu-modules/eventTarget.js', ns);
 Components.utils.import('resource://uxu-modules/utils.js', ns);
-
-var server_module = new ModuleManager(['chrome://uxu/content/server']);
-var ServerUtils = server_module.require('class', 'utils');
+Components.utils.import('resource://uxu-modules/test/assertions.js', ns);
+Components.utils.import('resource://uxu-modules/test/action.js', ns);
+Components.utils.import('resource://uxu-modules/test/greasemonkey.js', ns);
+Components.utils.import('resource://uxu-modules/server/utils.js', ns);
+Components.utils.import('resource://uxu-modules/mail/utils.js', ns);
 	
 var key = 'uxu-test-window-id'; 
  
@@ -137,8 +139,6 @@ function attachFrames()
  
 function attachAssertions() 
 {
-	var ns = {};
-	Components.utils.import('resource://uxu-modules/test/assertions.js', ns);
 	var assert = new ns.Assertions();
 	this.__defineGetter__('assert', function() {
 		return assert;
@@ -165,8 +165,6 @@ function attachAssertions()
  
 function attachActions() 
 {
-	var ns = {};
-	Components.utils.import('resource://uxu-modules/test/action.js', ns);
 	var actionInstance = new ns.Action(this);
 	this.__defineGetter__('action', function() {
 		return actionInstance;
@@ -188,8 +186,6 @@ function attachActions()
  
 function attachGMUtils() 
 {
-	var ns = {};
-	Components.utils.import('resource://uxu-modules/test/greasemonkey.js', ns);
 	var greasemonkey = new ns.GreasemonkeyUtils(this);
 	this.__defineGetter__('greasemonkey', function() {
 		return greasemonkey;
@@ -216,8 +212,6 @@ function attachGMUtils()
  
 function attachMailUtils() 
 {
-	var ns = {};
-	Components.utils.import('resource://uxu-modules/mail/utils.js', ns);
 	var mail = new ns.MailUtils(this);
 	this.__defineGetter__('mail', function() {
 		return mail;
@@ -230,8 +224,7 @@ function attachMailUtils()
  
 function attachServerUtils() 
 {
-	var serverUtils = {};
-	serverUtils.__proto__ = new ServerUtils();
+	var serverUtils = new ns.ServerUtils();
 	this.__defineGetter__('serverUtils', function() {
 		return serverUtils;
 	});

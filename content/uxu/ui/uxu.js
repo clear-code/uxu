@@ -3,17 +3,17 @@
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-var utils = {};
+var ns = {};
 Components.utils.import('resource://uxu-modules/utils.js', utils);
-utils = utils.utils;
+Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
+Components.utils.import('resource://uxu-modules/server/server.js', ns);
+
+var utils = ns.utils;
 utils.exportToDocument(document);
 
-var ns = {};
-Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
-var Server = server_module.require('class', 'server');
 var Context = server_module.require('class', 'context');
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
@@ -56,7 +56,7 @@ function Startup() {
 	var context = new Context(window.document.getElementById("content"));
 	context.addRunnerListener(testRunnerlistener);
 
-	gServer = new Server(gOptions.serverPort || utils.getPref('extensions.uxu.port'));
+	gServer = new ns.Server(gOptions.serverPort || utils.getPref('extensions.uxu.port'));
 	gServer.addListener(context);
 	context.addListener(gServer);
 	gServer.start();

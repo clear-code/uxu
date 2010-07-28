@@ -1,19 +1,17 @@
-var utils = {}; 
-Components.utils.import('resource://uxu-modules/utils.js', utils);
-utils = utils.utils;
+var ns = {}; 
+Components.utils.import('resource://uxu-modules/utils.js', ns);
+Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
+Components.utils.import('resource://uxu-modules/server/message.js', ns);
+
+var utils = ns.utils;
 utils.exportToDocument(document);
 
-var ns = {};
-Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var Runner = test_module.require('class', 'runner');
 var TestLog = test_module.require('class', 'test_log');
 var TestCase = test_module.require('class', 'test_case');
-
-var server_module = new ModuleManager(['chrome://uxu/content/server']);
-var Message = server_module.require('class', 'message');
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -552,7 +550,7 @@ var gRemoteRun = {
 
 	addMessage : function(aMessage)
 	{
-		this.messages.push(new Message(aMessage, gOptions.outputHost, gOptions.outputPort, this));
+		this.messages.push(new ns.Message(aMessage, gOptions.outputHost, gOptions.outputPort, this));
 	},
 	sendMessage : function()
 	{
@@ -642,7 +640,7 @@ var gRemoteRun = {
 	},
 	ping : function()
 	{
-		var message = new Message(TestCase.prototype.PING, gOptions.outputHost, gOptions.outputPort, this);
+		var message = new ns.Message(TestCase.prototype.PING, gOptions.outputHost, gOptions.outputPort, this);
 		message.send();
 	},
 	_pingTimer : null

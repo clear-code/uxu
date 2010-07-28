@@ -31,16 +31,14 @@ Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/eventTarget.js', ns);
 Components.utils.import('resource://uxu-modules/test/assertions.js', ns);
 Components.utils.import('resource://uxu-modules/test/report.js', ns);
+Components.utils.import('resource://uxu-modules/server/server.js', ns);
+Components.utils.import('resource://uxu-modules/server/utils.js', ns);
 
 var fsm = ns.fsm;
 var utils = { __proto__ : ns.utils };
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 var Assertions  = ns.Assertions;
 var Report  = ns.Report;
-
-var server_module = new ModuleManager(['chrome://uxu/content/server']);
-var Server        = server_module.require('class', 'server');
-var ServerUtils   = server_module.require('class', 'utils');
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var Environment = test_module.require('class', 'environment');
@@ -1072,13 +1070,13 @@ function _run()
 		},
 		tearDownDaemons : function(aContinuation)
 		{
-			if (!ServerUtils.prototype.isHttpServerRunning.call(_this.environment.serverUtils)) {
+			if (!ns.ServerUtils.prototype.isHttpServerRunning.call(_this.environment.serverUtils)) {
 				aContinuation('ok');
 				return;
 			}
 			utils.doIteration(
 				function() {
-					yield ServerUtils.prototype.tearDownAllHttpServers.call(_this.environment.serverUtils);
+					yield ns.ServerUtils.prototype.tearDownAllHttpServers.call(_this.environment.serverUtils);
 				},
 				{
 					onEnd : function(e) {
@@ -1146,7 +1144,7 @@ function _runByRemote()
 	this._lastRemoteResponse = Date.now();
 	this._remoteReady = false;
 
-	var server = new Server();
+	var server = new ns.Server();
 	server.addListener(this);
 	this.addListener(server);
 	server.start();

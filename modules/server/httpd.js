@@ -4458,167 +4458,163 @@ Request.prototype =
 };
 
 
-// ***************************************************************************
-// COMMENTED OUT FOR UXU
-// ***************************************************************************
-// 
-// // XPCOM trappings
-// 
-// /**
-//  * Creates a factory for instances of an object created using the passed-in
-//  * constructor.
-//  */
-// function makeFactory(ctor)
-// {
-//   function ci(outer, iid)
-//   {
-//     if (outer != null)
-//       throw Components.results.NS_ERROR_NO_AGGREGATION;
-//     return (new ctor()).QueryInterface(iid);
-//   } 
-// 
-//   return {
-//            createInstance: ci,
-//            lockFactory: function(lock) { },
-//            QueryInterface: function(aIID)
-//            {
-//              if (Ci.nsIFactory.equals(aIID) ||
-//                  Ci.nsISupports.equals(aIID))
-//                return this;
-//              throw Cr.NS_ERROR_NO_INTERFACE;
-//            }
-//          };
-// }
-// 
-// /** The XPCOM module containing the HTTP server. */
-// const module =
-// {
-//   // nsISupports
-//   QueryInterface: function(aIID)
-//   {
-//     if (Ci.nsIModule.equals(aIID) ||
-//         Ci.nsISupports.equals(aIID))
-//       return this;
-//     throw Cr.NS_ERROR_NO_INTERFACE;
-//   },
-// 
-//   // nsIModule
-//   registerSelf: function(compMgr, fileSpec, location, type)
-//   {
-//     compMgr = compMgr.QueryInterface(Ci.nsIComponentRegistrar);
-//     
-//     for (var key in this._objects)
-//     {
-//       var obj = this._objects[key];
-//       compMgr.registerFactoryLocation(obj.CID, obj.className, obj.contractID,
-//                                                fileSpec, location, type);
-//     }
-//   },
-//   unregisterSelf: function (compMgr, location, type)
-//   {
-//     compMgr = compMgr.QueryInterface(Ci.nsIComponentRegistrar);
-// 
-//     for (var key in this._objects)
-//     {
-//       var obj = this._objects[key];
-//       compMgr.unregisterFactoryLocation(obj.CID, location);
-//     }
-//   },
-//   getClassObject: function(compMgr, cid, iid)
-//   {
-//     if (!iid.equals(Ci.nsIFactory))
-//       throw Cr.NS_ERROR_NOT_IMPLEMENTED;
-// 
-//     for (var key in this._objects)
-//     {
-//       if (cid.equals(this._objects[key].CID))
-//         return this._objects[key].factory;
-//     }
-//     
-//     throw Cr.NS_ERROR_NO_INTERFACE;
-//   },
-//   canUnload: function(compMgr)
-//   {
-//     return true;
-//   },
-// 
-//   // private implementation
-//   _objects:
-//   {
-//     server:
-//     {
-//       CID:         Components.ID("{54ef6f81-30af-4b1d-ac55-8ba811293e41}"),
-//       contractID:  "@mozilla.org/server/jshttp;1",
-//       className:   "httpd.js server",
-//       factory:     makeFactory(nsHttpServer)
-//     }
-//   }
-// };
-// 
-// 
-// /** NSGetModule, so this code can be used as a JS component. */
-// function NSGetModule(compMgr, fileSpec)
-// {
-//   return module;
-// }
-// 
-// 
-// /**
-//  * Creates a new HTTP server listening for loopback traffic on the given port,
-//  * starts it, and runs the server until the server processes a shutdown request,
-//  * spinning an event loop so that events posted by the server's socket are
-//  * processed.
-//  *
-//  * This method is primarily intended for use in running this script from within
-//  * xpcshell and running a functional HTTP server without having to deal with
-//  * non-essential details.
-//  *
-//  * Note that running multiple servers using variants of this method probably
-//  * doesn't work, simply due to how the internal event loop is spun and stopped.
-//  *
-//  * @note
-//  *   This method only works with Mozilla 1.9 (i.e., Firefox 3 or trunk code);
-//  *   you should use this server as a component in Mozilla 1.8.
-//  * @param port
-//  *   the port on which the server will run, or -1 if there exists no preference
-//  *   for a specific port; note that attempting to use some values for this
-//  *   parameter (particularly those below 1024) may cause this method to throw or
-//  *   may result in the server being prematurely shut down
-//  * @param basePath
-//  *   a local directory from which requests will be served (i.e., if this is
-//  *   "/home/jwalden/" then a request to /index.html will load
-//  *   /home/jwalden/index.html); if this is omitted, only the default URLs in
-//  *   this server implementation will be functional
-//  */
-// function server(port, basePath)
-// {
-//   if (basePath)
-//   {
-//     var lp = Cc["@mozilla.org/file/local;1"]
-//                .createInstance(Ci.nsILocalFile);
-//     lp.initWithPath(basePath);
-//   }
-// 
-//   // if you're running this, you probably want to see debugging info
-//   DEBUG = true;
-// 
-//   var srv = new nsHttpServer();
-//   if (lp)
-//     srv.registerDirectory("/", lp);
-//   srv.registerContentType("sjs", SJS_TYPE);
-//   srv.identity.setPrimary("http", "localhost", port);
-//   srv.start(port);
-// 
-//   var thread = gThreadManager.currentThread;
-//   while (!srv.isStopped())
-//     thread.processNextEvent(true);
-// 
-//   // get rid of any pending requests
-//   while (thread.hasPendingEvents())
-//     thread.processNextEvent(true);
-// 
-//   DEBUG = false;
-// }
+// XPCOM trappings
+
+/**
+ * Creates a factory for instances of an object created using the passed-in
+ * constructor.
+ */
+function makeFactory(ctor)
+{
+  function ci(outer, iid)
+  {
+    if (outer != null)
+      throw Components.results.NS_ERROR_NO_AGGREGATION;
+    return (new ctor()).QueryInterface(iid);
+  } 
+
+  return {
+           createInstance: ci,
+           lockFactory: function(lock) { },
+           QueryInterface: function(aIID)
+           {
+             if (Ci.nsIFactory.equals(aIID) ||
+                 Ci.nsISupports.equals(aIID))
+               return this;
+             throw Cr.NS_ERROR_NO_INTERFACE;
+           }
+         };
+}
+
+/** The XPCOM module containing the HTTP server. */
+const module =
+{
+  // nsISupports
+  QueryInterface: function(aIID)
+  {
+    if (Ci.nsIModule.equals(aIID) ||
+        Ci.nsISupports.equals(aIID))
+      return this;
+    throw Cr.NS_ERROR_NO_INTERFACE;
+  },
+
+  // nsIModule
+  registerSelf: function(compMgr, fileSpec, location, type)
+  {
+    compMgr = compMgr.QueryInterface(Ci.nsIComponentRegistrar);
+    
+    for (var key in this._objects)
+    {
+      var obj = this._objects[key];
+      compMgr.registerFactoryLocation(obj.CID, obj.className, obj.contractID,
+                                               fileSpec, location, type);
+    }
+  },
+  unregisterSelf: function (compMgr, location, type)
+  {
+    compMgr = compMgr.QueryInterface(Ci.nsIComponentRegistrar);
+
+    for (var key in this._objects)
+    {
+      var obj = this._objects[key];
+      compMgr.unregisterFactoryLocation(obj.CID, location);
+    }
+  },
+  getClassObject: function(compMgr, cid, iid)
+  {
+    if (!iid.equals(Ci.nsIFactory))
+      throw Cr.NS_ERROR_NOT_IMPLEMENTED;
+
+    for (var key in this._objects)
+    {
+      if (cid.equals(this._objects[key].CID))
+        return this._objects[key].factory;
+    }
+    
+    throw Cr.NS_ERROR_NO_INTERFACE;
+  },
+  canUnload: function(compMgr)
+  {
+    return true;
+  },
+
+  // private implementation
+  _objects:
+  {
+    server:
+    {
+      CID:         Components.ID("{54ef6f81-30af-4b1d-ac55-8ba811293e41}"),
+      contractID:  "@mozilla.org/server/jshttp;1",
+      className:   "httpd.js server",
+      factory:     makeFactory(nsHttpServer)
+    }
+  }
+};
+
+
+/** NSGetModule, so this code can be used as a JS component. */
+function NSGetModule(compMgr, fileSpec)
+{
+  return module;
+}
+
+
+/**
+ * Creates a new HTTP server listening for loopback traffic on the given port,
+ * starts it, and runs the server until the server processes a shutdown request,
+ * spinning an event loop so that events posted by the server's socket are
+ * processed.
+ *
+ * This method is primarily intended for use in running this script from within
+ * xpcshell and running a functional HTTP server without having to deal with
+ * non-essential details.
+ *
+ * Note that running multiple servers using variants of this method probably
+ * doesn't work, simply due to how the internal event loop is spun and stopped.
+ *
+ * @note
+ *   This method only works with Mozilla 1.9 (i.e., Firefox 3 or trunk code);
+ *   you should use this server as a component in Mozilla 1.8.
+ * @param port
+ *   the port on which the server will run, or -1 if there exists no preference
+ *   for a specific port; note that attempting to use some values for this
+ *   parameter (particularly those below 1024) may cause this method to throw or
+ *   may result in the server being prematurely shut down
+ * @param basePath
+ *   a local directory from which requests will be served (i.e., if this is
+ *   "/home/jwalden/" then a request to /index.html will load
+ *   /home/jwalden/index.html); if this is omitted, only the default URLs in
+ *   this server implementation will be functional
+ */
+function server(port, basePath)
+{
+  if (basePath)
+  {
+    var lp = Cc["@mozilla.org/file/local;1"]
+               .createInstance(Ci.nsILocalFile);
+    lp.initWithPath(basePath);
+  }
+
+  // if you're running this, you probably want to see debugging info
+  DEBUG = true;
+
+  var srv = new nsHttpServer();
+  if (lp)
+    srv.registerDirectory("/", lp);
+  srv.registerContentType("sjs", SJS_TYPE);
+  srv.identity.setPrimary("http", "localhost", port);
+  srv.start(port);
+
+  var thread = gThreadManager.currentThread;
+  while (!srv.isStopped())
+    thread.processNextEvent(true);
+
+  // get rid of any pending requests
+  while (thread.hasPendingEvents())
+    thread.processNextEvent(true);
+
+  DEBUG = false;
+}
 
 
 
@@ -4626,6 +4622,9 @@ Request.prototype =
 // ***************************************************************************
 // APPENDED FOR UXU
 // ***************************************************************************
+
+if (typeof window == 'undefined')
+	this.EXPORTED_SYMBOLS = ['HTTPServer'];
 
 var utils = {};
 Components.utils.import('resource://uxu-modules/utils.js', utils);
@@ -4635,7 +4634,7 @@ var ThreadManager = 'nsIThreadManager' in Ci ?
 		Cc['@mozilla.org/thread-manager;1'].getService(Ci.nsIThreadManager) :
 		null ;
 
-function constructor(aPort, aBasePath)
+function HTTPServer(aPort, aBasePath)
 {
 	this.port = aPort;
 	this.mServer = new nsHttpServer();
@@ -4651,55 +4650,58 @@ function constructor(aPort, aBasePath)
 		this.mServer.start(aPort);
 }
 
-function stop()
-{
-	var stopped = { value : false };
-//	if (ThreadManager) this.thread.shutdown();
-	this.mServer.stop(function() {
-		stopped.value = true;
-	});
-	delete this.mServer;
-	return stopped;
-}
+HTTPServer.prototype = {
 
-function isStopped()
-{
-	return !this.mServer || this.mServer.isStopped();
-}
+	stop : function()
+	{
+		var stopped = { value : false };
+	//	if (ThreadManager) this.thread.shutdown();
+		this.mServer.stop(function() {
+			stopped.value = true;
+		});
+		delete this.mServer;
+		return stopped;
+	},
 
-
-function registerDirectory(aPath, aLocalDirectory)
-{
-	this.mServer.registerDirectory(aPath, aLocalDirectory);
-}
-
-function registerFile(aPath, aLocalFile)
-{
-	this.mServer.registerFile(aPath, aLocalFile);
-}
-
-function registerContentType(aExtension, aContentType)
-{
-	this.mServer.registerContentType(aExtension, aContentType);
-}
+	isStopped : function()
+	{
+		return !this.mServer || this.mServer.isStopped();
+	},
 
 
-function startInAntoherThread()
-{
-	this.thread = ThreadManager.newThread(0);
-	this.thread.dispatch(this, this.thread.DISPATCH_NORMAL);
-}
+	registerDirectory : function(aPath, aLocalDirectory)
+	{
+		this.mServer.registerDirectory(aPath, aLocalDirectory);
+	},
 
-// nsIRunnable 
-function run()
-{
-	this.mServer.start(this.port);
-}
+	registerFile : function(aPath, aLocalFile)
+	{
+		this.mServer.registerFile(aPath, aLocalFile);
+	},
 
-function QueryInterface(aIID)
-{
-	if (aIID.equals(Components.interfaces.nsIRunnable) ||
-		aIID.equals(Components.interfaces.nsISupports))
-		return this;
-	throw Components.results.NS_ERROR_NO_INTERFACE;
-}
+	registerContentType : function(aExtension, aContentType)
+	{
+		this.mServer.registerContentType(aExtension, aContentType);
+	},
+
+
+	startInAntoherThread : function()
+	{
+		this.thread = ThreadManager.newThread(0);
+		this.thread.dispatch(this, this.thread.DISPATCH_NORMAL);
+	},
+
+	// nsIRunnable 
+	run : function()
+	{
+		this.mServer.start(this.port);
+	},
+
+	QueryInterface : function(aIID)
+	{
+		if (aIID.equals(Components.interfaces.nsIRunnable) ||
+			aIID.equals(Components.interfaces.nsISupports))
+			return this;
+		throw Components.results.NS_ERROR_NO_INTERFACE;
+	}
+};

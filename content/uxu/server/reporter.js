@@ -3,13 +3,12 @@
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-var utils = {};
-Components.utils.import('resource://uxu-modules/utils.js', utils);
-utils = utils.utils;
+var ns = {};
+Components.utils.import('resource://uxu-modules/utils.js', ns);
+Components.utils.import('resource://uxu-modules/color.js', ns);
 
-var color = {};
-Components.utils.import('resource://uxu-modules/color.js', color);
-const Color = color.Color;
+var utils = ns.utils;
+const Color = ns.Color;
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var TestCase = test_module.require('class', 'test_case');

@@ -1,18 +1,14 @@
 var topDir = baseURL+'../../../../';
 
-utils.include(topDir+'content/uxu/lib/module_manager.js');
+var ns = {};
+utils.include(topDir+'modules/server/utils.js', ns);
 
-var lib_module = new ModuleManager([topDir+'content/uxu/lib']);
-
-var server_module = new ModuleManager([topDir+'content/uxu/server']);
-var ServerUtils = server_module.require('class', 'utils');;
 var utilsModule;
-
 var observer;
 
 function setUp()
 {
-	utilsModule = new ServerUtils();
+	utilsModule = new ns.ServerUtils();
 }
 
 function tearDown()
