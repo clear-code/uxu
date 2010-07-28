@@ -230,7 +230,7 @@ TestCase.prototype = {
 	{
 		var runningProfile = this._utils.getURLSpecFromFile(this._utils.getFileFromKeyword('ProfD'));
 		runningProfile = runningProfile.replace(/([^\/])$/, '$1/');
-		runningProfile = this._utils.getFileFromURLSpec(runningProfile);
+		this._runningProfile = this._utils.getFileFromURLSpec(runningProfile);
 
 		this._profile = null;
 		this._application = null;
@@ -257,8 +257,8 @@ TestCase.prototype = {
 	get shouldRunInRemote() {
 		var tmp = this._utils.getFileFromKeyword('TmpD');
 		return this._profile &&
-			this._profile.path != runningProfile.path &&
-			!runningProfile.parent.equals(tmp);
+			this._profile.path != this._runningProfile.path &&
+			!this._runningProfile.parent.equals(tmp);
 	},
 
 	set application(aValue) {

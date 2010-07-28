@@ -23,7 +23,7 @@ var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 const IOService = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
 
-const XULAppInfo = Cc['@mozilla.org/xre/app-info;1'].getService(Ci.nsIXULAppInfo);
+const XULAppInfo = Cc['@mozilla.org/xre/app-info;1'].getService(Ci.nsIXULAppInfo).QueryInterface(Ci.nsIXULRuntime);
 
 var Application = '@mozilla.org/fuel/application;1' in Cc ?
 			Cc['@mozilla.org/fuel/application;1'].getService(Ci.fuelIApplication) :
