@@ -319,8 +319,9 @@ Compose.prototype = {
 	sendByButtonClick : function(aAsync, aComposeWindow) 
 	{
 		aComposeWindow = this._ensureWindowReady(aComposeWindow);
+		var action = this.action;
 		this._send(function() {
-			this.action.fireMouseEventOnElement(aComposeWindow.document.getElementById('button-send'));
+			action.fireMouseEventOnElement(aComposeWindow.document.getElementById('button-send'));
 		}, aAsync);
 	},
    
