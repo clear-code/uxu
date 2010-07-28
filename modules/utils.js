@@ -1142,7 +1142,7 @@ doIteration : function(aGenerator, aCallbacks)
 
 	var retVal = { value : false };
 	var lastRun = Date.now();
-	var timeout = Math.max(0, getPref('extensions.uxu.run.timeout'));
+	var timeout = Math.max(0, this.getPref('extensions.uxu.run.timeout'));
 	(function(aObject, aSelf) {
 		try {
 			if (Date.now() - lastRun >= timeout)
@@ -1157,7 +1157,7 @@ doIteration : function(aGenerator, aCallbacks)
 					// TraceMonkeyのバグなのかなんなのか、指定時間経つ前にタイマーが発動することがあるようだ……
 					continueAfterDelay = (Date.now() - lastRun < aObject);
 				}
-				else if (typeof aObject == 'object') {
+				else if (aObject && typeof aObject == 'object') {
 					if (aSelf.isGeneratedIterator(aObject))
 						return ns.setTimeout(arguments.callee, 0, aSelf.doIteration(aObject), aSelf);
 					else if ('error' in aObject && aObject.error instanceof Error)
@@ -1944,7 +1944,7 @@ _parseParametersFrom2DArray : function(aArray)
 			types.push('auto');
 		}
 		return this._ensureUniquieName(aColumn, columnNames);
-	});
+	}, this);
 
 	if (isHash) {
 		var parameters = {};
@@ -2339,6 +2339,38 @@ notify : function(aSubject, aTopic, aData)
 {
 	const ObserverService = Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService);
 	ObserverService.notifyObservers(aSubject, aTopic, aData);
+},
+ 
+export : function(aNamespace, aForce) 
+{
+	if (!aNamespace) return;
+
+	var prototype = Utils.prototype;
+	var self = this;
+	for (var i in prototype)
+	{
+		if (
+			!prototype.hasOwnProperty(i) ||
+			i.indexOf('_') == 0 ||
+			(!aForce && i in aNamespace)
+			)
+			continue;
+
+		if (typeof prototype[i] == 'function') {
+			aNamespace[i] = (function(aMethod) {
+				return function() {
+					return self[aMethod].apply(self, arguments);
+				};
+			})(i);
+		}
+		else {
+			aNamespace.__defineGetter__(i, (function(aProperty) {
+				return function() {
+					return self[aProperty];
+				};
+			})(i));
+		}
+	}
 }
  
 }; 

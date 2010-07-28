@@ -7,10 +7,6 @@ var EventTarget = {};
 Components.utils.import('resource://uxu-modules/eventTarget.js', EventTarget);
 EventTarget = EventTarget.EventTarget;
 
-var utils = {};
-Components.utils.import('resource://uxu-modules/utils.js', utils);
-utils = utils.utils;
-
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
@@ -23,10 +19,18 @@ var defaultURI, defaultType, defaultFeatures, defaultName;
  
 function constructor(aEnvironment, aURI, aBrowser) 
 {
+	var baseURL = aURI.replace(/[^/]*$/, '');
+
 	this.__proto__.__proto__ = EventTarget.prototype;
 	this.initListeners();
 
-	this.tempFiles = [];
+	var utils = {};
+	Components.utils.import('resource://uxu-modules/utils.js', utils);
+	this._utils = new utils.Utils();
+	this._utils.fileURL = aURI;
+	this._utils.baseURL = baseURL;
+	this._utils.export(this, false);
+
 	this.windowWatcherListeners = [];
 
 	this.__defineGetter__('utils', function() {
@@ -36,7 +40,6 @@ function constructor(aEnvironment, aURI, aBrowser)
 	this.__defineGetter__('fileURL', function() {
 		return aURI;
 	});
-	var baseURL = aURI.replace(/[^/]*$/, '');
 	this.__defineGetter__('baseURL', function() {
 		return baseURL;
 	});
@@ -48,7 +51,7 @@ function constructor(aEnvironment, aURI, aBrowser)
 		return aBrowser;
 	});
 
-	switch (utils.product)
+	switch (this._utils.product)
 	{
 		case 'Firefox':
 			defaultURI      = 'chrome://browser/content/browser.xul';
@@ -69,9 +72,6 @@ function constructor(aEnvironment, aURI, aBrowser)
 		default:
 			break;
 	}
-
-	this.tempFiles = [];
-	this.backupPrefs = {};
 
 	this.initVariables();
 	this.attachFrames();
@@ -380,7 +380,7 @@ function setUpTestWindow(aContinuation, aOptions)
 		aContinuation = void(0);
 	}
 	var completedFlag = this.setUpTestWindowInternal(aContinuation, aOptions);
-	if (!aOptions.async) utils.wait(completedFlag);
+	if (!aOptions.async) this._utils.wait(completedFlag);
 	return completedFlag;
 };
 	
@@ -602,7 +602,7 @@ function loadURI(aURI, aOptions)
 	aURI = this.fixupIncompleteURI(aURI);
 
 	var completedFlag = this.loadURIInternal(aURI, aOptions);
-	if (!aOptions.async) utils.wait(completedFlag);
+	if (!aOptions.async) this._utils.wait(completedFlag);
 	return completedFlag;
 };
 	
@@ -637,13 +637,13 @@ function addTab(aURI, aOptions)
 {
 	if (!aOptions) aOptions = {};
 
-	if (utils.product != 'Firefox') return { value : true, tab : null };
+	if (this._utils.product != 'Firefox') return { value : true, tab : null };
 
 	if (!aURI) aURI = 'about:blank';
 	aURI = this.fixupIncompleteURI(aURI);
 
 	var completedFlag = this.addTabInternal(aURI, aOptions);
-	if (!aOptions.async) utils.wait(completedFlag);
+	if (!aOptions.async) this._utils.wait(completedFlag);
 	return completedFlag;
 };
 	
@@ -671,7 +671,7 @@ function addTabInternal(aURI, aOptions)
   
 function getBrowser(aOptions) 
 {
-	if (utils.product != 'Firefox') return null;
+	if (this._utils.product != 'Firefox') return null;
 	return this.getTestFrameOwner(aOptions);
 };
  
@@ -684,10 +684,10 @@ function getTestFrameOwner(aOptions)
  
 function getTabs(aOptions) 
 {
-	if (utils.product != 'Firefox') return [];
+	if (this._utils.product != 'Firefox') return [];
 	var win = this.getTestWindow(aOptions);
 	if (!win) return [];
-	return utils.$X('descendant::*[local-name()="tab"]', win.gBrowser.mTabContainer);
+	return this._utils.$X('descendant::*[local-name()="tab"]', win.gBrowser.mTabContainer);
 };
   
 // prefs 
@@ -704,7 +704,7 @@ function cleanUpModifiedPrefs()
 	this.backupPrefs = {};
 };
   
-// utils 
+// override some functions of utils 
 	
 function include(aSource, aEncoding, aScope) 
 {
@@ -726,7 +726,7 @@ function include(aSource, aEncoding, aScope)
 		aScope = scope;
 	}
 
-	return utils.include.call(this, {
+	return this._utils.include({
 			uri : aSource,
 			encoding : aEncoding,
 			namespace : (aScope || this.environment),
@@ -736,8 +736,8 @@ function include(aSource, aEncoding, aScope)
  
 function createDatabaseFromSQLFile(aFile, aEncoding, aScope) 
 {
-	if (aEncoding === void(0)) aEncoding = utils.getPref('extensions.uxu.defaultEncoding');
-	return utils.createDatabaseFromSQLFile.call(this, aFile, aEncoding);
+	if (aEncoding === void(0)) aEncoding = this._utils.getPref('extensions.uxu.defaultEncoding');
+	return this._utils.createDatabaseFromSQLFile.call(this, aFile, aEncoding);
 };
  
 function processTemplate(aCode, aScope) 
@@ -751,7 +751,7 @@ function processTemplate(aCode, aScope)
 		}
 	}
 	env.__proto__ = this.environment;
-	var result = utils.processTemplate(aCode, env);
+	var result = this._utils.processTemplate(aCode, env);
 	env.__proto__ = void(0);
 	env = null;
 	return result;
@@ -760,7 +760,7 @@ var parseTemplate = processTemplate; // for backward compatibility
  
 function $(aNodeOrID, aOwner) 
 {
-	return utils.$(aNodeOrID, aOwner || this.getTestWindow() || this.content);
+	return this._utils.$(aNodeOrID, aOwner || this.getTestWindow() || this.content);
 }
  
 function getBoxObjectFor(aNode) 
@@ -783,122 +783,7 @@ var _boxObjectModule = {};
 function log() 
 {
 	var message = Array.slice(arguments).join('\n');
-	utils.log(message);
+	this._utils.log(message);
 	this.fireEvent('Notify', message);
 }
-  
-var _this = this; 
-<><![CDATA[
-$X
-checkApplicationVersion
-checkAppVersion
-checkPlatformVersion
-checkProductVersion
-cleanUpTempFiles
-clearPref
-clearWindowsRegistry
-compareVersions
-computeHash
-computeHashFromFile
-cosmeticClone
-createDatabase
-createDatabaseFromSQL
-createTempDir
-createTempDirectory
-createTempFile
-createTempFolder
-Do
-doIteration
-dump
-evalInSandbox
-fixupIncompleteURI
-getClipBoard
-getFileFromKeyword
-getFileFromPath
-getFileFromURL
-getFileFromURLSpec
-getFilePathFromKeyword
-getFilePathFromURL
-getFilePathFromURLSpec
-getInstalledLocationOfProduct
-getPref
-getStackTrace
-getURLFromFile
-getURLFromFilePath
-getURLSpecFromFile
-getURLSpecFromFilePath
-getWindowsRegistry
-inspect
-inspectDOMNode
-loadPrefs
-makeFileWithPath
-makeTempDir
-makeTempDirectory
-makeTempFile
-makeTempFolder
-makeURIFromSpec
-md2
-md2FromFile
-md5
-md5FromFile
-normalizeToFile
-notify
-openDatabase
-p
-parseCSV
-parseTSV
-platformVersion
-product
-productExecutable
-productVersion
-readCSV
-readTSV
-readFrom
-readJSON
-readParamFromCSV
-readParamFromTSV
-readParamsFromCSV
-readParamsFromTSV
-readParameterFromCSV
-readParameterFromTSV
-readParametersFromCSV
-readParametersFromTSV
-scheduleToRemove
-setClipBoard
-setPref
-setWindowsRegistry
-sha1
-sha1FromFile
-sha256
-sha256FromFile
-sha384
-sha384FromFile
-sha512
-sha512FromFile
-sleep
-startScheduledRemove
-stopScheduledRemove
-UCS2ToUTF8
-UCS2ToX
-UnicodeToUTF8
-UnicodeToX
-UTF8ToUCS2
-UTF8ToUnicode
-wait
-writeTo
-XToUCS2
-XToUnicode
-]]></>.toString()
-.replace(/^\s+|\s+$/g, '')
-.split('\n')
-.forEach(function(aFunc) {
-	if (typeof utils[aFunc] == 'function') {
-		_this[aFunc] = utils[aFunc];
-	}
-	else {
-		_this.__defineGetter__(aFunc, function() {
-			return utils[aFunc];
-		});
-	}
-});
-  
+   
