@@ -114,35 +114,35 @@ GreasemonkeyUtils.prototype = {
 			},
 			XPathResult : Ci.nsIDOMXPathResult,
 			GM_log : function() {
-				return GM_log.apply(env, arguments);
+				return env.GM_log.apply(env, arguments);
 			},
 			GM_getValue : function() {
-				return GM_getValue.apply(env, arguments);
+				return env.GM_getValue.apply(env, arguments);
 			},
 			GM_setValue : function() {
-				return GM_setValue.apply(env, arguments);
+				return env.GM_setValue.apply(env, arguments);
 			},
 			GM_registerMenuCommand : function() {
-				return GM_registerMenuCommand.apply(env, arguments);
+				return env.GM_registerMenuCommand.apply(env, arguments);
 			},
 			GM_xmlhttpRequest : function(aDetails) {
-				return GM_xmlhttpRequest.apply(env, arguments);
+				return env.GM_xmlhttpRequest.apply(env, arguments);
 			},
 			GM_addStyle : function() {
-				return GM_addStyle.apply(env, arguments);
+				return env.GM_addStyle.apply(env, arguments);
 			},
 			GM_getResourceURL : function(aKey) {
-				return GM_getResourceURL.call(env, aKey, headers);
+				return env.GM_getResourceURL.call(env, aKey, headers);
 			},
 			GM_getResourceText : function(aKey) {
-				return GM_getResourceText.call(env, aKey, headers);
+				return env.GM_getResourceText.call(env, aKey, headers);
 			},
 			GM_openInTab : function() {
-				return GM_openInTab.apply(env, arguments);
+				return env.GM_openInTab.apply(env, arguments);
 			},
 			console : {
 				log : function() {
-					return GM_log.apply(env, arguments);
+					return env.GM_log.apply(env, arguments);
 				}
 			},
 			get GM_headers() {
