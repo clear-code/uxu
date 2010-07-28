@@ -3,20 +3,13 @@ var topDir = baseURL+'../../../../';
 
 utils.include('mailComposeStub.inc.js');
 
-var ns = {};
-[
-	topDir+'modules/observer.js',
-	topDir+'modules/mail/mailComposeProxy.js'
-].forEach(function(aURI) {
-	utils.include({
-		uri                    : aURI,
-		encoding               : 'Shift_JIS',
-		allowOverrideConstants : true,
-		namespace              : ns
-	});
-}, this);
-var ObserverClass = ns.Observer;
-var MailComposeProxy = ns.MailComposeProxy;
+var Observer = {};
+utils.include(topDir+'modules/observer.js', 'Shift_JIS', Observer);
+Observer = Observer.Observer;
+
+var MailComposeProxy = {};
+utils.include(topDir+'modules/mail/mailComposeProxy.js', 'Shift_JIS', MailComposeProxy);
+MailComposeProxy = MailComposeProxy.MailComposeProxy;
 
 function startUp()
 {
@@ -104,7 +97,7 @@ function testSendMessage()
 			body : 'BODY'
 		};
 
-	observer = new ObserverClass();
+	observer = new Observer();
 	assert.equals(0, observer.count);
 
 	observer.startObserve('uxu:mail:sent');

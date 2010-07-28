@@ -1,23 +1,15 @@
 var topDir = baseURL+'../../../../';
 
-var ns = {};
-[
-	topDir+'modules/server/utils.js'
-].forEach(function(aURI) {
-	utils.include({
-		uri                    : aURI,
-		encoding               : 'Shift_JIS',
-		allowOverrideConstants : true,
-		namespace              : ns
-	});
-}, this);
+var ServerUtils = {};
+utils.include(topDir+'modules/server/utils.js', 'Shift_JIS', ServerUtils);
+ServerUtils = ServerUtils.ServerUtils;
 
 var utilsModule;
 var observer;
 
 function setUp()
 {
-	utilsModule = new ns.ServerUtils();
+	utilsModule = new ServerUtils();
 }
 
 function tearDown()

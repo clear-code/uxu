@@ -5,14 +5,9 @@ var isWindows = navigator.platform.toLowerCase().indexOf('win32') > -1;
 var topDir = baseURL+'../../../../';
 var utilsModule;
 
-var ns = {};
-utils.include({
-	uri                    : topDir+'modules/lib/stringBundle.js',
-	encoding               : 'Shift_JIS',
-	allowOverrideConstants : true,
-	namespace              : ns
-});
-var bundle = ns.stringBundle.get(topDir+'locale/ja/uxu/uxu.properties');
+var bundle = {};
+utils.include(topDir+'modules/lib/stringBundle.js', 'Shift_JIS', bundle);
+bundle = bundle.stringBundle.get(topDir+'locale/ja/uxu/uxu.properties');
 
 function clearWindowsRegistryKey(aRoot, aPath)
 {

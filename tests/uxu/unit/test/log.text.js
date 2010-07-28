@@ -1,25 +1,20 @@
 var topDir = baseURL+'../../../../';
 
-var ns = {};
-[
-	topDir+'modules/test/report.js',
-	topDir+'modules/test/log.js',
-	topDir+'modules/test/testCase.js',
-	topDir+'modules/lib/stringBundle.js'
-].forEach(function(aURI) {
-	utils.include({
-		uri                    : aURI,
-		encoding               : 'Shift_JIS',
-		allowOverrideConstants : true,
-		namespace              : ns
-	});
-}, this);
+var Report = {};
+utils.include(topDir+'modules/test/report.js', 'Shift_JIS', Report);
+Report = Report.Report;
 
-var Report = ns.Report;
-var TestLogClass = ns.TestLog;
-var TestCaseClass = ns.TestCase;
+var TestLog = {};
+utils.include(topDir+'modules/test/testCase.js', 'Shift_JIS', TestLog);
+TestLog = TestLog.TestLog;
 
-var bundle = ns.stringBundle.get(topDir+'locale/ja/uxu/uxu.properties');
+var TestCase = {};
+utils.include(topDir+'modules/test/testCase.js', 'Shift_JIS', TestCase);
+TestCase = TestCase.TestCase;
+
+var bundle = {};
+utils.include(topDir+'modules/lib/stringBundle.js', 'Shift_JIS', bundle);
+bundle = bundle.stringBundle.get(topDir+'locale/ja/uxu/uxu.properties');
 
 function createReports(aTestCase)
 {
@@ -35,7 +30,7 @@ function createReports(aTestCase)
 	return [
 		(function() {
 			var r = new Report();
-			r.result = TestCaseClass.prototype.RESULT_SUCCESS;
+			r.result = TestCase.prototype.RESULT_SUCCESS;
 			r.description = 'Success';
 			r.testOwner = aTestCase;
 			r.testID    = 'success';
@@ -44,7 +39,7 @@ function createReports(aTestCase)
 		})(),
 		(function() {
 			var r = new Report();
-			r.result = TestCaseClass.prototype.RESULT_SUCCESS;
+			r.result = TestCase.prototype.RESULT_SUCCESS;
 			r.description = 'Success with notifications';
 			r.notifications = notifications;
 			r.testOwner = aTestCase;
@@ -54,7 +49,7 @@ function createReports(aTestCase)
 		})(),
 		(function() {
 			var r = new Report();
-			r.result = TestCaseClass.prototype.RESULT_FAILURE;
+			r.result = TestCase.prototype.RESULT_FAILURE;
 			r.description = 'Failure';
 			r.exception = new Error('Failure');
 			r.testOwner = aTestCase;
@@ -64,7 +59,7 @@ function createReports(aTestCase)
 		})(),
 		(function() {
 			var r = new Report();
-			r.result = TestCaseClass.prototype.RESULT_FAILURE;
+			r.result = TestCase.prototype.RESULT_FAILURE;
 			r.description = 'Failure with notifications';
 			r.exception = new Error('Failure');
 			r.notifications = notifications;
@@ -75,7 +70,7 @@ function createReports(aTestCase)
 		})(),
 		(function() {
 			var r = new Report();
-			r.result = TestCaseClass.prototype.RESULT_SKIPPED;
+			r.result = TestCase.prototype.RESULT_SKIPPED;
 			r.description = 'Skipped';
 			r.testOwner = aTestCase;
 			r.testID    = 'success';
@@ -84,7 +79,7 @@ function createReports(aTestCase)
 		})(),
 		(function() {
 			var r = new Report();
-			r.result = TestCaseClass.prototype.RESULT_ERROR;
+			r.result = TestCase.prototype.RESULT_ERROR;
 			r.description = 'Error';
 			r.exception = new Error('Error');
 			r.testOwner = aTestCase;
@@ -94,7 +89,7 @@ function createReports(aTestCase)
 		})(),
 		(function() {
 			var r = new Report();
-			r.result = TestCaseClass.prototype.RESULT_ERROR;
+			r.result = TestCase.prototype.RESULT_ERROR;
 			r.description = 'Error with notifications';
 			r.exception = new Error('Error');
 			r.notifications = notifications;
@@ -149,11 +144,11 @@ function setUp()
 {
 	utils.setPref('general.useragent.locale', 'ja');
 
-	testcase1 = new TestCaseClass('test1');
-	testcase2 = new TestCaseClass('test2');
+	testcase1 = new TestCase('test1');
+	testcase2 = new TestCase('test2');
 	reports1 = createReports(testcase1);
 	reports2 = createReports(testcase2);
-	log = new TestLogClass();
+	log = new TestLog();
 }
 
 function tearDown()

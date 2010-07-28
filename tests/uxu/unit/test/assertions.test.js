@@ -2,26 +2,19 @@
 
 var topDir = baseURL+'../../../../';
 
-var ns = {};
-[
-	topDir+'modules/test/assertions.js',
-	topDir+'modules/diff.js'
-].forEach(function(aURI) {
-	utils.include({
-		uri                    : aURI,
-		encoding               : 'Shift_JIS',
-		allowOverrideConstants : true,
-		namespace              : ns
-	});
-}, this);
+var Assertions = {};
+utils.include(topDir+'modules/test/assertions.js', 'Shift_JIS', Assertions);
+Assertions = Assertions.Assertions;
 
-var Diff = ns.Diff;
+var Diff = {};
+utils.include(topDir+'modules/diff.js', 'Shift_JIS', Diff);
+Diff = Diff.Diff;
 
 var assertionsModule;
 
 function setUp()
 {
-	assertionsModule = new ns.Assertions();
+	assertionsModule = new Assertions();
 }
 
 function tearDown()

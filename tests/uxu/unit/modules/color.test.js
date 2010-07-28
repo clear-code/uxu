@@ -1,17 +1,9 @@
 var topDir = baseURL+'../../../../';
-var ns = {};
-[
-	topDir+'modules/color.js'
-].forEach(function(aURI) {
-	utils.include({
-		uri                    : aURI,
-		encoding               : 'Shift_JIS',
-		allowOverrideConstants : true,
-		namespace              : ns
-	});
-}, this);
-var Color = ns.Color;
-var MixColor = ns.MixColor;
+
+var color = {};
+utils.include(topDir+'modules/color.js', 'Shift_JIS', color);
+var Color = color.Color;
+var MixColor = color.MixColor;
 
 function setUp()
 {

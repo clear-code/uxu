@@ -2,17 +2,9 @@ var targetProduct = 'Firefox';
 
 var topDir = baseURL+'../../../../';
 
-var ns = {};
-[
-	topDir+'modules/test/greasemonkey.js'
-].forEach(function(aURI) {
-	utils.include({
-		uri                    : aURI,
-		encoding               : 'Shift_JIS',
-		allowOverrideConstants : true,
-		namespace              : ns
-	});
-}, this);
+var GreasemonkeyUtils = {};
+utils.include(topDir+'modules/test/greasemonkey.js', 'Shift_JIS', GreasemonkeyUtils);
+GreasemonkeyUtils = GreasemonkeyUtils.GreasemonkeyUtils;
 
 var GMUtils;
 
@@ -26,7 +18,7 @@ function setUp()
 
 	yield Do(utils.loadURI('about:blank'));
 	assert.equals('about:blank', content.location.href);
-	GMUtils = new ns.GreasemonkeyUtils(utils);
+	GMUtils = new GreasemonkeyUtils(utils);
 }
 
 function tearDown()

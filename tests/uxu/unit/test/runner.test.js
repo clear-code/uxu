@@ -2,18 +2,9 @@
 
 var topDir = baseURL+'../../../../';
 
-var ns = {};
-[
-	topDir+'modules/test/runner.js'
-].forEach(function(aURI) {
-	utils.include({
-		uri                    : aURI,
-		encoding               : 'Shift_JIS',
-		allowOverrideConstants : true,
-		namespace              : ns
-	});
-}, this);
-var Runner = ns.TestRunner;
+var TestRunner = {};
+utils.include(topDir+'modules/test/runner.js', 'Shift_JIS', TestRunner);
+TestRunner = TestRunner.TestRunner;
 
 var declarationStyleTest = topDir+'tests/samples/declaration.test.js';
 var mozLabStyleTest = topDir+'tests/samples/mozlab.test.js';
@@ -25,7 +16,7 @@ var tempPrefs;
 
 function setUp()
 {
-	runner = new Runner(gBrowser);
+	runner = new TestRunner(gBrowser);
 	tempFiles = [];
 	tempPrefs = [];
 }
@@ -55,8 +46,8 @@ function test_createTestSuite()
 	assert.isFunction(suite.Specification.prototype.verify);
 	assert.equals(suite.TestCase, suite.Specification);
 
-	assert.equals('このテストの説明', suite.description);
-	assert.isFunction(suite.testSomething1);
+	assert.equals('このテストの説明', suite.environment.description);
+	assert.isFunction(suite.environment.testSomething1);
 	assert.isDefined(suite.utils);
 	assert.isFunction(suite.utils.readFrom);
 	assert.isFunction(suite.utils.include);

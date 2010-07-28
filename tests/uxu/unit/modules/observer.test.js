@@ -2,24 +2,15 @@
 
 var topDir = baseURL+'../../../../';
 
-var ns = {};
-[
-	topDir+'modules/observer.js'
-].forEach(function(aURI) {
-	utils.include({
-		uri                    : aURI,
-		encoding               : 'Shift_JIS',
-		allowOverrideConstants : true,
-		namespace              : ns
-	});
-}, this);
-var ObserverClass = ns.Observer;
+var Observer = {};
+utils.include(topDir+'modules/observer.js', 'Shift_JIS', Observer);
+Observer = Observer.Observer;
 
 var observer;
 
 function setUp()
 {
-	observer = new ObserverClass();
+	observer = new Observer();
 	assert.equals(0, observer.count);
 	assert.equals(0, observer.subjects.length);
 	assert.equals(0, observer.topics.length);

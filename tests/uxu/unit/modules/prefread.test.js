@@ -4,18 +4,8 @@ utils.include('prefread.inc.js');
 
 var topDir = baseURL+'../../../../';
 
-var ns = {};
-[
-	topDir+'modules/diff.js'
-].forEach(function(aURI) {
-	utils.include({
-		uri                    : aURI,
-		encoding               : 'Shift_JIS',
-		allowOverrideConstants : true,
-		namespace              : ns
-	});
-}, this);
-var prefreadModule = { prefread : ns.prefread };
+var prefread = {};
+utils.include(topDir+'modules/prefread.js', 'Shift_JIS', prefread);
 
 function setUp()
 {
@@ -30,27 +20,27 @@ function test_read()
 	var file;
 
 	file = this.normalizeToFile('../../fixtures/default.js');
-	assert.equals(defaultPrefs, prefreadModule.read(file));
+	assert.equals(defaultPrefs, prefread.read(file));
 
 	file = this.normalizeToFile('../../fixtures/user.js');
-	assert.equals(userPrefs, prefreadModule.read(file));
+	assert.equals(userPrefs, prefread.read(file));
 
 	file = this.normalizeToFile('../../fixtures/invalid_calculate.js');
 	assert.raises(
-		prefreadModule.ERROR_MALFORMED_PREF_FILE,
-		function() { prefreadModule.read(file); }
+		prefread.ERROR_MALFORMED_PREF_FILE,
+		function() { prefread.read(file); }
 	);
 
 	file = this.normalizeToFile('../../fixtures/invalid_variable.js');
 	assert.raises(
-		prefreadModule.ERROR_MALFORMED_PREF_FILE,
-		function() { prefreadModule.read(file); }
+		prefread.ERROR_MALFORMED_PREF_FILE,
+		function() { prefread.read(file); }
 	);
 
 	file = this.normalizeToFile('../../fixtures/invalid_array.js');
 	assert.raises(
-		prefreadModule.ERROR_MALFORMED_PREF_FILE,
-		function() { prefreadModule.read(file); }
+		prefread.ERROR_MALFORMED_PREF_FILE,
+		function() { prefread.read(file); }
 	);
 
 }

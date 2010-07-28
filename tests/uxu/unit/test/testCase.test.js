@@ -1,26 +1,19 @@
 var topDir = baseURL+'../../../../';
 
-var ns = {};
-[
-	topDir+'modules/test/environment.js',
-	topDir+'modules/test/testCase.js'
-].forEach(function(aURI) {
-	utils.include({
-		uri                    : aURI,
-		encoding               : 'Shift_JIS',
-		allowOverrideConstants : true,
-		namespace              : ns
-	});
-}, this);
+var TestCase = {};
+utils.include(topDir+'modules/test/testCase.js', 'Shift_JIS', TestCase);
+TestCase = TestCase.TestCase;
 
-var TestCaseClass = ns.TestCase;
+var TestEnvironment = {};
+utils.include(topDir+'modules/test/environment.js', 'Shift_JIS', TestEnvironment);
+TestEnvironment = TestEnvironment.TestEnvironment;
 
 var testcase;
 
 function setUp()
 {
-	testcase = new TestCaseClass('description');
-	testcase.environment = new ns.TestEnvironment(null, baseURL, gBrowser);
+	testcase = new TestCase('description');
+	testcase.environment = new TestEnvironment(null, baseURL, gBrowser);
 	yield 0; // to run tests progressively
 }
 
@@ -259,13 +252,13 @@ function testReuseFunctions()
 		'3' : function() { testCount++; }
 	};
 
-	testcase = new TestCaseClass('description1');
-	testcase.environment = new EnvironmentClass({}, baseURL, gBrowser);
+	testcase = new TestCase('description1');
+	testcase.environment = new TestEnvironment({}, baseURL, gBrowser);
 	testcase.tests = tests;
 	yield Do(assertDoneProcessCount(3, 3, 3, { priority : 'must' }));
 
-	testcase = new TestCaseClass('description2');
-	testcase.environment = new EnvironmentClass({}, baseURL, gBrowser);
+	testcase = new TestCase('description2');
+	testcase.environment = new TestEnvironment({}, baseURL, gBrowser);
 	testcase.tests = tests;
 	yield Do(assertDoneProcessCount(6, 6, 6, { priority : 'must' }));
 }

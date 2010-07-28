@@ -1,22 +1,14 @@
 var topDir = baseURL+'../../../../';
 
-var ns = {};
-[
-	topDir+'modules/test/report.js'
-].forEach(function(aURI) {
-	utils.include({
-		uri                    : aURI,
-		encoding               : 'Shift_JIS',
-		allowOverrideConstants : true,
-		namespace              : ns
-	});
-}, this);
+var Report = {};
+utils.include(topDir+'modules/test/report.js', 'Shift_JIS', Report);
+Report = Report.Report;
 
 var report;
 
 function setUp()
 {
-	report = new ns.Report();
+	report = new Report();
 }
 
 function tearDown()

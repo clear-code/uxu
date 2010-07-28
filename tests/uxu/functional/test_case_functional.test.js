@@ -1,17 +1,19 @@
 var topDir = baseURL+'../../../';
 
-var ns = {};
-utils.include(topDir+'modules/test/environment.js', ns);
-utils.include(topDir+'modules/test/testCase.js', ns);
+var TestCase = {};
+utils.include(topDir+'modules/test/testCase.js', 'Shift_JIS', TestCase);
+TestCase = TestCase.TestCase;
 
-var TestCaseClass = ns.TestCase;
+var TestEnvironment = {};
+utils.include(topDir+'modules/test/environment.js', 'Shift_JIS', TestEnvironment);
+TestEnvironment = TestEnvironment.TestEnvironment;
 
 var testcase;
 
 function setUp()
 {
-	testcase = new TestCaseClass('description');
-	testcase.environment = new ns.TestEnvironment(null, baseURL, gBrowser);
+	testcase = new TestCase('description');
+	testcase.environment = new TestEnvironment(null, baseURL, gBrowser);
 	yield 0; // to run tests progressively
 }
 

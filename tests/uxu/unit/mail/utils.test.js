@@ -2,27 +2,21 @@ var targetProduct = 'Thunderbird';
 
 var topDir = baseURL+'../../../../';
 
-var ns = {};
-[
-	topDir+'modules/observer.js',
-	topDir+'modules/mail/utils.js'
-].forEach(function(aURI) {
-	utils.include({
-		uri                    : aURI,
-		encoding               : 'Shift_JIS',
-		allowOverrideConstants : true,
-		namespace              : ns
-	});
-}, this);
-var ObserverClass = ns.Observer;
-var UtilsClass = ns.MailUtils;
+var Observer = {};
+utils.include(topDir+'modules/observer.js', 'Shift_JIS', Observer);
+Observer = Observer.Observer;
+
+var MailUtils = {};
+utils.include(topDir+'modules/mail/utils.js', 'Shift_JIS', MailUtils);
+MailUtils = MailUtils.MailUtils;
+
 var utilsModule;
 
 var observer;
 
 function setUp()
 {
-	utilsModule = new UtilsClass(this);
+	utilsModule = new MailUtils(this);
 }
 
 function tearDown()
@@ -55,7 +49,7 @@ function testEmulateSendMessage()
 {
 	assert.isFunction(utilsModule.emulateSendMessage);
 
-	observer = new ObserverClass();
+	observer = new Observer();
 	assert.equals(0, observer.count);
 
 	observer.startObserve('uxu:mail:sent');
