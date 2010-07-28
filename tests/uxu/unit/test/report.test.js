@@ -1,15 +1,13 @@
 var topDir = baseURL+'../../../../';
 
-utils.include(topDir+'content/uxu/lib/module_manager.js');
-
-var test_module = new ModuleManager([topDir+'content/uxu/test']);
-var ReportClass = test_module.require('class', 'report');
+var ns = {};
+utils.include(topDir+'modules/test/report.js', ns);
 
 var report;
 
 function setUp()
 {
-	report = new ReportClass();
+	report = new ns.Report();
 }
 
 function tearDown()

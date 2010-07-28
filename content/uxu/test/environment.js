@@ -5,9 +5,7 @@ const Ci = Components.interfaces;
 
 var ns = {};
 Components.utils.import('resource://uxu-modules/eventTarget.js', ns);
-var EventTarget = ns.EventTarget;
-
-var test_module = new ModuleManager(['chrome://uxu/content/test']);
+Components.utils.import('resource://uxu-modules/utils.js', ns);
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var ServerUtils = server_module.require('class', 'utils');
@@ -20,12 +18,10 @@ function constructor(aEnvironment, aURI, aBrowser)
 {
 	var baseURL = aURI.replace(/[^/]*$/, '');
 
-	this.__proto__.__proto__ = EventTarget.prototype;
+	this.__proto__.__proto__ = ns.EventTarget.prototype;
 	this.initListeners();
 
-	var utils = {};
-	Components.utils.import('resource://uxu-modules/utils.js', utils);
-	this._utils = new utils.Utils();
+	this._utils = new ns.Utils();
 	this._utils.fileURL = aURI;
 	this._utils.baseURL = baseURL;
 	this._utils.export(this, false);

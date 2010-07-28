@@ -5,7 +5,10 @@ utils.include(topDir+'content/uxu/lib/module_manager.js');
 var test_module   = new ModuleManager([topDir+'content/uxu/test']);
 var TestLogClass  = test_module.require('class', 'test_log');
 var TestCaseClass = test_module.require('class', 'test_case');
-var ReportClass   = test_module.require('class', 'report');
+
+var ns = {};
+utils.include(topDir+'modules/test/report.js', ns);
+var Report ns.Report;
 
 var ns = {};
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
@@ -24,7 +27,7 @@ function createReports(aTestCase)
 
 	return [
 		(function() {
-			var r = new ReportClass();
+			var r = new Report();
 			r.result = TestCaseClass.prototype.RESULT_SUCCESS;
 			r.description = 'Success';
 			r.testOwner = aTestCase;
@@ -33,7 +36,7 @@ function createReports(aTestCase)
 			return r;
 		})(),
 		(function() {
-			var r = new ReportClass();
+			var r = new Report();
 			r.result = TestCaseClass.prototype.RESULT_SUCCESS;
 			r.description = 'Success with notifications';
 			r.notifications = notifications;
@@ -43,7 +46,7 @@ function createReports(aTestCase)
 			return r;
 		})(),
 		(function() {
-			var r = new ReportClass();
+			var r = new Report();
 			r.result = TestCaseClass.prototype.RESULT_FAILURE;
 			r.description = 'Failure';
 			r.exception = new Error('Failure');
@@ -53,7 +56,7 @@ function createReports(aTestCase)
 			return r;
 		})(),
 		(function() {
-			var r = new ReportClass();
+			var r = new Report();
 			r.result = TestCaseClass.prototype.RESULT_FAILURE;
 			r.description = 'Failure with notifications';
 			r.exception = new Error('Failure');
@@ -64,7 +67,7 @@ function createReports(aTestCase)
 			return r;
 		})(),
 		(function() {
-			var r = new ReportClass();
+			var r = new Report();
 			r.result = TestCaseClass.prototype.RESULT_SKIPPED;
 			r.description = 'Skipped';
 			r.testOwner = aTestCase;
@@ -73,7 +76,7 @@ function createReports(aTestCase)
 			return r;
 		})(),
 		(function() {
-			var r = new ReportClass();
+			var r = new Report();
 			r.result = TestCaseClass.prototype.RESULT_ERROR;
 			r.description = 'Error';
 			r.exception = new Error('Error');
@@ -83,7 +86,7 @@ function createReports(aTestCase)
 			return r;
 		})(),
 		(function() {
-			var r = new ReportClass();
+			var r = new Report();
 			r.result = TestCaseClass.prototype.RESULT_ERROR;
 			r.description = 'Error with notifications';
 			r.exception = new Error('Error');

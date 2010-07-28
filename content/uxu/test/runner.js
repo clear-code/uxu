@@ -2,17 +2,13 @@
 
 const Ci = Components.interfaces;
 
-var utils = {};
-Components.utils.import('resource://uxu-modules/utils.js', utils);
-utils = utils.utils;
-
 var ns = {};
+Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
-var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
+Components.utils.import('resource://uxu-modules/eventTarget.js', ns);
 
-var EventTarget = {};
-Components.utils.import('resource://uxu-modules/eventTarget.js', EventTarget);
-EventTarget = EventTarget.EventTarget;
+var utils = ns.utils;
+var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
 var TestCase    = test_module.require('class', 'test_case');
@@ -23,7 +19,7 @@ const RUNNING = 'extensions.uxu.running';
 	 
 function constructor(aBrowser/*, aFile, ...*/) 
 {
-	this.__proto__.__proto__ = EventTarget.prototype;
+	this.__proto__.__proto__ = ns.EventTarget.prototype;
 	this.initListeners();
 
 	this.runningCount = 0;

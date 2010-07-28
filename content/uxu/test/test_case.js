@@ -30,18 +30,19 @@ Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/eventTarget.js', ns);
 Components.utils.import('resource://uxu-modules/test/assertions.js', ns);
+Components.utils.import('resource://uxu-modules/test/report.js', ns);
 
 var fsm = ns.fsm;
 var utils = { __proto__ : ns.utils };
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 var Assertions  = ns.Assertions;
+var Report  = ns.Report;
 
 var server_module = new ModuleManager(['chrome://uxu/content/server']);
 var Server        = server_module.require('class', 'server');
 var ServerUtils   = server_module.require('class', 'utils');
 
 var test_module = new ModuleManager(['chrome://uxu/content/test']);
-var Report      = test_module.require('class', 'report');
 var Environment = test_module.require('class', 'environment');
 
 var ObserverService = Cc['@mozilla.org/observer-service;1']
