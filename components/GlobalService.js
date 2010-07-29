@@ -346,7 +346,7 @@ GlobalService.prototype = {
 		this.openWindow(
 			aOwner,
 			'uxu:server',
-			'chrome://uxu/content/ui/uxu.xul',
+			'chrome://uxu/content/ui/server.xul',
 			'chrome,all,dialog=no,resizable=yes',
 			aOptions
 		);
