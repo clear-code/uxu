@@ -18,10 +18,6 @@ function Server(aPort)
 	this.initListeners();
 
 	this._port  = (typeof aPort == 'number') ? aPort : -1 ;
-	this.__defineGetter__('port', function() {
-		return this.socket ? this.socket.port : this._port ;
-	});
-
 	this._allowAccessesFromRemote = utils.getPref('extensions.uxu.allowAccessesFromRemote');
 
 	this.socket = null;
@@ -30,6 +26,10 @@ function Server(aPort)
 
 Server.prototype = {
 	__proto__ : ns.EventTarget.prototype,
+
+	get port() {
+		return this.socket ? this.socket.port : this._port ;
+	},
 
 	start : function()
 	{

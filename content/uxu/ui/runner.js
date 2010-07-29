@@ -245,9 +245,8 @@ function startup()
 	if ('arguments' in window &&
 		window.arguments &&
 		window.arguments.length) {
-		gOptions = window.arguments[0];
 		try {
-			gOptions = gOptions.QueryInterface(Ci.nsIPropertyBag);
+			gOptions = window.arguments[0].QueryInterface(Ci.nsIPropertyBag);
 			var jsobj = {};
 			jsobj.testcase   = gOptions.getProperty('testcase');
 			jsobj.outputHost = gOptions.getProperty('outputHost');
@@ -261,6 +260,7 @@ function startup()
 			gOptions = jsobj;
 		}
 		catch(e) {
+			gOptions = {};
 		}
 
 		if (gOptions.testcase) {
@@ -303,6 +303,7 @@ function startup()
 			var step = 20;
 			var progress = _('initializingProgress');
 			progress.setAttribute('mode', 'determined');
+
 			var lastResultTimer = window.setInterval(function() {
 					var items = gLog.items.slice(current, step);
 					current += step;

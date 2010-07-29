@@ -4,7 +4,7 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 var ns = {};
-Components.utils.import('resource://uxu-modules/utils.js', utils);
+Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/server/server.js', ns);
 Components.utils.import('resource://uxu-modules/server/context.js', ns);
@@ -40,19 +40,19 @@ function Startup() {
 	if ('arguments' in window &&
 		window.arguments &&
 		window.arguments.length) {
-		gOptions = window.arguments[0];
 		try {
-			gOptions = gOptions.QueryInterface(Ci.nsIPropertyBag);
+			gOptions = window.arguments[0].QueryInterface(Ci.nsIPropertyBag);
 			var jsobj = {};
 			jsobj.serverPort = gOptions.getProperty('serverPort');
 			jsobj.hidden     = gOptions.getProperty('hidden');
 			gOptions = jsobj;
 		}
 		catch(e) {
+			gOptions = {};
 		}
 	}
 
-	var context = new ns.Context(window.document.getElementById("content"));
+	var context = new ns.Context(document.getElementById("content"));
 	context.addRunnerListener(testRunnerlistener);
 
 	gServer = new ns.Server(gOptions.serverPort || utils.getPref('extensions.uxu.port'));

@@ -113,7 +113,7 @@ Context.prototype = {
 		this.print(this.formatError(aException));
 	},
 
-	load(aURI, aContext)
+	load : function(aURI, aContext)
 	{
 		var loader = Cc['@mozilla.org/moz/jssubscript-loader;1']
 			.getService(Ci.mozIJSSubScriptLoader);
