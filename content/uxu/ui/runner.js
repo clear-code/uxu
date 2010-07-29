@@ -246,7 +246,8 @@ function startup()
 		window.arguments &&
 		window.arguments.length) {
 		gOptions = window.arguments[0];
-		if (gOptions instanceof Ci.nsIPropertyBag) {
+		try {
+			gOptions = gOptions.QueryInterface(Ci.nsIPropertyBag);
 			var jsobj = {};
 			jsobj.testcase   = gOptions.getProperty('testcase');
 			jsobj.outputHost = gOptions.getProperty('outputHost');
@@ -258,6 +259,8 @@ function startup()
 			jsobj.doNotQuit  = gOptions.getProperty('doNotQuit');
 			jsobj.hidden     = gOptions.getProperty('hidden');
 			gOptions = jsobj;
+		}
+		catch(e) {
 		}
 
 		if (gOptions.testcase) {

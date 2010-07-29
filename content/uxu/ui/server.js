@@ -41,11 +41,14 @@ function Startup() {
 		window.arguments &&
 		window.arguments.length) {
 		gOptions = window.arguments[0];
-		if (gOptions instanceof Ci.nsIPropertyBag) {
+		try {
+			gOptions = gOptions.QueryInterface(Ci.nsIPropertyBag);
 			var jsobj = {};
 			jsobj.serverPort = gOptions.getProperty('serverPort');
 			jsobj.hidden     = gOptions.getProperty('hidden');
 			gOptions = jsobj;
+		}
+		catch(e) {
 		}
 	}
 
