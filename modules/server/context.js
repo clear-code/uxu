@@ -12,6 +12,7 @@ Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/test/action.js', ns);
 Components.utils.import('resource://uxu-modules/test/runner.js', ns);
 Components.utils.import('resource://uxu-modules/server/reporter.js', ns);
+Components.utils.import('resource://uxu-modules/lib/ijs.js', ns);
 
 var utils = ns.utils;
 var action = new ns.Action({ __proto__ : utils, utils : utils });
@@ -29,29 +30,14 @@ function Context(aBrowser)
 	this._browser = aBrowser;
 	this._runnerListeners = [];
 
-	// bufferにコードからアクセスできないようにするため、クロージャを使用する
-	var buffer = '';
-	var _this = this;
-	this.onServerInput = function(aEvent) {
-		var code = aEvent.data;
-		if (/[\r\n]+$/.test(code)) {
-			if (buffer) {
-				code = buffer + code;
-				buffer = '';
-			}
-		}
-		else {
-			buffer += code;
-			return;
-		}
-		var result = _this.evaluate(code);
-		if (result !== undefined)
-			_this.puts(result);
-	}
+	this._buffer = '';
+	this._lastEvaluatedScript = '';
 }
 
 Context.prototype = {
 	__proto__ : ns.EventTarget.prototype,
+
+	RETURNABLE_SYNTAX_ERROR : 'returnable syntax error',
 
 	addRunnerListener : function(aListener)
 	{
@@ -130,6 +116,15 @@ Context.prototype = {
 			return this.load('chrome://uxu/content/lib/subScriptRunner.js?code='+encodeURIComponent(aCode));
 		}
 		catch(e) {
+			let parser;
+			try {
+				parser = new ns.Parser(aCode);
+				parser.parse();
+			}
+			catch(e) {
+				if (parser.token === ns.Lexer.EOS && e === ns.Parser.SYNTAX)
+					throw new Error(this.RETURNABLE_SYNTAX_ERROR);
+			}
 			return utils.formatError(utils.normalizeError(e));
 		}
 	},
@@ -147,6 +142,30 @@ Context.prototype = {
 			var target;
 			target = targets.getNext().QueryInterface(Ci.nsIDOMWindowInternal);
 			target.close();
+		}
+	},
+
+
+	onServerInput : function(aEvent) {
+		var code = aEvent.data;
+		if (/[\r\n]+$/.test(code)) {
+			if (this._buffer) {
+				code = this._buffer + code;
+				this._buffer = '';
+			}
+		}
+		else {
+			this._buffer += code;
+			return;
+		}
+		try {
+			var result = this.evaluate(code);
+			if (result !== undefined)
+				this.puts(result);
+		}
+		catch(e) {
+			if (e.message == this.RETURNABLE_SYNTAX_ERROR)
+				this._buffer = code;
 		}
 	}
 };
