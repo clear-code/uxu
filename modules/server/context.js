@@ -23,6 +23,9 @@ function Context(aBrowser)
 {
 	this.initListeners();
 
+	this.environment = new aBrowser.ownerDocument.defaultView.Object();
+	this.environment.__proto__ = this;
+
 	this._browser = aBrowser;
 	this._runnerListeners = [];
 
@@ -117,7 +120,7 @@ Context.prototype = {
 	{
 		var loader = Cc['@mozilla.org/moz/jssubscript-loader;1']
 			.getService(Ci.mozIJSSubScriptLoader);
-		return loader.loadSubScript(aURI, aContext || this || {});
+		return loader.loadSubScript(aURI, aContext || this.environment);
 	},
 
 	evaluate : function(aCode)
