@@ -79,6 +79,11 @@ Server.prototype = {
 		this.fireEvent('ServerInput', aEvent.data);
 	},
 
+	onQuitRequest : function(aEvent)
+	{
+		this.fireEvent('QuitRequest', aEvent.data);
+	},
+
 
 	// nsIServerSocketListener
 
