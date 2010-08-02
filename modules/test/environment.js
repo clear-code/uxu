@@ -24,36 +24,27 @@ var defaultURI, defaultType, defaultFeatures, defaultName;
 	
 function TestEnvironment(aEnvironment, aURI, aBrowser) 
 {
-	var baseURL = aURI.replace(/[^/]*$/, '');
-
-	this.initListeners();
-
-	this._utils = new ns.Utils();
-	this._utils.fileURL = aURI;
-	this._utils.baseURL = baseURL;
-	this._utils.export(this, false);
-
-	this.windowWatcherListeners = [];
-
-	this.__defineGetter__('fileURL', function() {
-		return aURI;
-	});
-	this.__defineGetter__('baseURL', function() {
-		return baseURL;
-	});
-
 	if (!aEnvironment) {
 		let global = aBrowser.ownerDocument.defaultView;
 		aEnvironment = new global.Object();
 		aEnvironment.window = global;
 	}
 	this.environment = aEnvironment;
-	this.environment.__proto__ = this;
-    this.uniqueID = parseInt(Math.random() * 10000000000);
+	this.environment.__proto__ = this.environment.utils = {};
 
-	this.__defineGetter__('_testFrame', function() {
-		return aBrowser;
-	});
+	var baseURL = aURI.replace(/[^/]*$/, '');
+
+	this.initListeners();
+
+	this._utils = new ns.Utils();
+	this._utils.fileURL = this.fileURL = aURI;
+	this._utils.baseURL = this.baseURL = baseURL;
+	this._utils.export(this, false);
+
+	this.windowWatcherListeners = [];
+
+    this.uniqueID = parseInt(Math.random() * 10000000000);
+    this._testFrame = aBrowser;
 
 	switch (this._utils.product)
 	{
@@ -81,6 +72,9 @@ function TestEnvironment(aEnvironment, aURI, aBrowser)
 	this.attachAssertions();
 	this.attachActions();
 	this.attachServerUtils();
+
+	this._utils.export(this.environment.utils, false, this, this.__proto__);
+	this._utils.export(this.environment.utils, false, this, this);
 }
 
 TestEnvironment.prototype = {
@@ -130,8 +124,7 @@ initVariables : function()
 	this.environment.Ci = Ci;
 },
  
-get utils() { return this; }, 
-get gBrowser() { return this.getTestFrameOwner(); },
+get gBrowser() { return this.getTestFrameOwner(); }, 
 get contentWindow() { return this.getTestFrameOwner().contentWindow; },
 get content() { return this.getTestFrameOwner().contentWindow; },
 get contentDocument() { return this.getTestFrameOwner().contentDocument; },

@@ -2409,34 +2409,39 @@ notify : function(aSubject, aTopic, aData)
 	ObserverService.notifyObservers(aSubject, aTopic, aData);
 },
  
-export : function(aNamespace, aForce) 
+export : function(aNamespace, aForce, aSelf, aSource) 
 {
 	if (!aNamespace) return;
 
-	var prototype = Utils.prototype;
-	var self = this;
-	for (var i in prototype)
+	if (!aSelf) aSource = null;
+
+	aSelf = aSelf || this;
+	aSource = aSource || this.__proto__;
+	for (var i in aSource)
 	{
 		if (
-			!prototype.hasOwnProperty(i) ||
+			!aSource.hasOwnProperty(i) ||
 			i.indexOf('_') == 0 ||
 			(!aForce && i in aNamespace)
 			)
 			continue;
 
-		if (typeof prototype[i] == 'function') {
-			aNamespace[i] = (function(aMethod) {
-				return function() {
-					return self[aMethod].apply(self, arguments);
-				};
+		if (aSource.__lookupGetter__(i) || (typeof aSource[i] != 'function')) {
+			(function(aProperty) {
+				aNamespace.__defineGetter__(aProperty, function() {
+					return aSelf[aProperty];
+				});
+				// aNamespace.__defineSetter__(aProperty, function(aValue) {
+				// 	return aSelf[aProperty] = aValue;
+				// });
 			})(i);
 		}
 		else {
-			aNamespace.__defineGetter__(i, (function(aProperty) {
-				return function() {
-					return self[aProperty];
+			(function(aMethod) {
+				aNamespace[aMethod] = function() {
+					return aSelf[aMethod].apply(aSelf, arguments);
 				};
-			})(i));
+			})(i);
 		}
 	}
 }
