@@ -1631,6 +1631,16 @@ isDate : function(aObject)
 	);
 },
  
+isRegExp : function(aObject) 
+{
+	return (
+		aObject &&
+		typeof aObject == 'object' &&
+		aObject.constructor &&
+		aObject.constructor.toSource().indexOf('function RegExp()') == 0
+	);
+},
+ 
 isObject : function(aObject) 
 {
 	return typeof aObject == 'object';
@@ -1867,7 +1877,7 @@ mapURI : function(aURI, aMappingDefinition)
 	}
 	var regexp = new RegExp();
 	matchers.some(function(aMatcher, aIndex) {
-		var matcher = aMatcher instanceof RegExp ?
+		var matcher = utils.isRegExp(aMatcher) ?
 				aMatcher :
 				regexp.compile(
 					'^'+
