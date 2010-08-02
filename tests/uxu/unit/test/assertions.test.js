@@ -1184,6 +1184,7 @@ function testExport()
 	assertionsModule.export(namespace);
 
 	assert.isFunction(namespace.assert);
+	assert.equals(assertionsModule, namespace.assert._source);
 
 	assert.isFunction(namespace.assert.equals);
 	assert.isFunction(namespace.assert.equal);
