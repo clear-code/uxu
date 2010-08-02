@@ -1,7 +1,7 @@
 var topDir = baseURL+'../../../';
 
 var TestCase = utils.import(topDir+'modules/test/testCase.js', 'Shift_JIS', {}).TestCase;
-var TestSuite = utils.import(topDir+'modules/test/sutie.js', {}).TestSuite;
+var TestSuite = utils.import(topDir+'modules/test/suite.js', {}).TestSuite;
 
 var testcase;
 

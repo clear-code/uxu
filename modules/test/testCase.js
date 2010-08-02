@@ -722,8 +722,10 @@ TestCase.prototype = {
 	run : function(aStopper)
 	{
 		try {
-			if (!this.suite)
+			if (!this.suite) {
+				this.done = true;
 				throw new Error(this.ERROR_NOT_INITIALIZED);
+			}
 
 			if (!this._tests.length) {
 				this.done = true;

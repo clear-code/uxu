@@ -8,7 +8,7 @@ var testcase;
 function setUp()
 {
 	testcase = new TestCase('description');
-	testcase.sutie = new TestSuite(null, baseURL, gBrowser);
+	testcase.suite = new TestSuite(null, baseURL, gBrowser);
 	yield 0; // to run tests progressively
 }
 
@@ -42,7 +42,7 @@ function assertDoneProcessCount(aSetUp, aTearDown, aTestCount, aParameters)
 	if (!aParameters.doNotRun) {
 		assert.isFalse(testcase.done);
 		testcase[aParameters.method || 'run']();
-		yield (function() { return testcase.done; });
+		utils.wait(function() { return testcase.done; });
 	}
 	assert.equals({ setUpCount    : aSetUp,
 	                tearDownCount : aTearDown,
@@ -142,7 +142,7 @@ function testRegisterFunctionCallStyle()
 	testcase.test(3, function() { testCount++; });
 	assert.equals(3, testcase.tests.length);
 	assertInitialized(testcase.tests[0], '1');
-	yield Do(assertDoneProcessCount(3, 3, 3, { priority : 'must' }));
+	assertDoneProcessCount(3, 3, 3, { priority : 'must' });
 }
 
 function testRegisterOperationStyle()
@@ -155,7 +155,7 @@ function testRegisterOperationStyle()
 	testcase.registerTest(function test3() { testCount++; });
 	assert.equals(3, testcase.tests.length);
 	assertInitialized(testcase.tests[0], 'test1');
-	yield Do(assertDoneProcessCount(3, 3, 3, { priority : 'must' }));
+	assertDoneProcessCount(3, 3, 3, { priority : 'must' });
 }
 
 function testRegisterHashStyle()
@@ -170,7 +170,7 @@ function testRegisterHashStyle()
 	};
 	assert.equals(3, testcase.tests.length);
 	assertInitialized(testcase.tests[0], '1');
-	yield Do(assertDoneProcessCount(3, 3, 3, { priority : 'must' }));
+	assertDoneProcessCount(3, 3, 3, { priority : 'must' });
 }
 
 function testBDDFunctionCallStyle()
@@ -182,7 +182,7 @@ function testBDDFunctionCallStyle()
 	testcase.states(3, function() { testCount++; });
 	assert.equals(3, testcase.tests.length);
 	assertInitialized(testcase.tests[0], '1');
-	yield Do(assertDoneProcessCount(3, 0, 3, { priority : 'must', method : 'verify' }));
+	assertDoneProcessCount(3, 0, 3, { priority : 'must', method : 'verify' });
 }
 
 function testBDDHashStyle()
@@ -196,7 +196,7 @@ function testBDDHashStyle()
 	};
 	assert.equals(3, testcase.tests.length);
 	assertInitialized(testcase.tests[0], '1');
-	yield Do(assertDoneProcessCount(3, 0, 3, { priority : 'must', method : 'verify' }));
+	assertDoneProcessCount(3, 0, 3, { priority : 'must', method : 'verify' });
 }
 
 function testAsync()
@@ -231,7 +231,7 @@ function testAsync()
 	};
 	assert.equals(3, testcase.tests.length);
 	var start = Date.now();
-	yield Do(assertDoneProcessCount(3, 3, 3, { priority : 'must' }));
+	assertDoneProcessCount(3, 3, 3, { priority : 'must' });
 	assert.compare(Date.now() - start, '>=', (100 * 3) * 3);
 }
 
@@ -250,12 +250,12 @@ function testReuseFunctions()
 	testcase = new TestCase('description1');
 	testcase.suite = new TestSuite({}, baseURL, gBrowser);
 	testcase.tests = tests;
-	yield Do(assertDoneProcessCount(3, 3, 3, { priority : 'must' }));
+	assertDoneProcessCount(3, 3, 3, { priority : 'must' });
 
 	testcase = new TestCase('description2');
 	testcase.suite = new TestSuite({}, baseURL, gBrowser);
 	testcase.tests = tests;
-	yield Do(assertDoneProcessCount(6, 6, 6, { priority : 'must' }));
+	assertDoneProcessCount(6, 6, 6, { priority : 'must' });
 }
 
 function testNoFunction()
@@ -267,7 +267,7 @@ function testNoFunction()
 		tearDown : function() { tearDownCount++; }
 	};
 	assert.equals(0, testcase.tests.length);
-	yield Do(assertDoneProcessCount(0, 0, 0, { priority : 'must' }));
+	assertDoneProcessCount(0, 0, 0, { priority : 'must' });
 }
 
 function testPriority()
@@ -313,11 +313,11 @@ function testMasterPriority()
 	assert.equals(2, testcase.tests.length);
 
 	clearCount();
-	yield Do(assertDoneProcessCount(2, 2, 2, { priority : 'must' }));
+	assertDoneProcessCount(2, 2, 2, { priority : 'must' });
 
 	clearCount();
 	testcase.done = false;
-	yield Do(assertDoneProcessCount(0, 0, 0, { priority : 'never' }));
+	assertDoneProcessCount(0, 0, 0, { priority : 'never' });
 
 	clearCount();
 	testcase.done = false;
@@ -326,7 +326,7 @@ function testMasterPriority()
 	tests[1].priority = 'never';
 	testcase.tests = tests;
 	assert.equals(4, testcase.tests.length);
-	yield Do(assertDoneProcessCount(3, 3, 3, { priority : 'must' }));
+	assertDoneProcessCount(3, 3, 3, { priority : 'must' });
 }
 
 function testForceRetry()
@@ -340,11 +340,11 @@ function testForceRetry()
 	assert.equals(2, testcase.tests.length);
 
 	clearCount();
-	yield Do(assertDoneProcessCount(2, 2, 1, { priority : 'must' }));
+	assertDoneProcessCount(2, 2, 1, { priority : 'must' });
 
 	clearCount();
 	testcase.done = false;
-	yield Do(assertDoneProcessCount(0, 0, 0, { priority : 'never' }));
+	assertDoneProcessCount(0, 0, 0, { priority : 'never' });
 }
 
 function testContext()
@@ -361,7 +361,7 @@ function testContext()
 
 	clearCount();
 	assert.equals(0, tests.count);
-	yield Do(assertDoneProcessCount(2, 2, 0, { priority : 'must' }));
+	assertDoneProcessCount(2, 2, 0, { priority : 'must' });
 	assert.equals(2, tests.count);
 
 	clearCount();
@@ -369,7 +369,7 @@ function testContext()
 	var context = { count : 0 };
 	testcase.context = context;
 	assert.equals(0, context.count);
-	yield Do(assertDoneProcessCount(2, 2, 0));
+	assertDoneProcessCount(2, 2, 0);
 	assert.equals(2, context.count);
 }
 
@@ -404,7 +404,7 @@ function testListener()
 	assert.equals(3, testcase.tests.length);
 
 	clearCount();
-	yield Do(assertDoneProcessCount(3, 3, 1, { priority : 'must' }));
+	assertDoneProcessCount(3, 3, 1, { priority : 'must' });
 	assert.equals(1, failCount);
 	assert.equals(1, errorCount);
 
@@ -414,7 +414,7 @@ function testListener()
 	testcase.done = false;
 	errorCount = 0;
 	failCount  = 0;
-	yield Do(assertDoneProcessCount(3, 3, 1, { priority : 'must' }));
+	assertDoneProcessCount(3, 3, 1, { priority : 'must' });
 	assert.equals(1, failCount);
 	assert.equals(1, errorCount);
 }
@@ -439,7 +439,7 @@ function testStopper()
 	testcase.masterPriority = 'must';
 	testcase.run(stopper);
 	yield 5000;
-	yield Do(assertDoneProcessCount(3, 3, 3, { doNotRun : true }));
+	assertDoneProcessCount(3, 3, 3, { doNotRun : true });
 
 	clearCount();
 	testcase.done = false;
@@ -448,7 +448,7 @@ function testStopper()
 	yield 500;
 	shouldStop = true;
 	yield 5000;
-	yield Do(assertDoneProcessCount(1, 1, 1, { doNotRun : true, done : false }));
+	assertDoneProcessCount(1, 1, 1, { doNotRun : true, done : false });
 }
 function testPrivSetUpTearDown()
 {
