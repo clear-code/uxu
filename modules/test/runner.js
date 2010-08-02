@@ -150,7 +150,7 @@ TestRunner.prototype = {
 			});
 
 			newTestCase.context = env;
-			newTestCase.environment = env;
+			newTestCase.environment = aSuite;
 			tests.push(newTestCase);
 		}
 

@@ -127,7 +127,7 @@ TestCase.prototype = {
 	RESULT_SKIPPED : 'skip',
 
 	ERROR_NOT_INITIALIZED     : 'environment is not specified.', 
-	ERROR_INVALID_ENVIRONMENT : 'environment must be an Environment.',
+	ERROR_INVALID_ENVIRONMENT : 'environment must be an object.',
 	ERROR_NO_TEST             : 'there is no test.',
  
 	get title() {
@@ -288,8 +288,8 @@ TestCase.prototype = {
  
 	onStart : function() 
 	{
-		this.addListener(this.environment.__proto__);
-		this.environment.__proto__.addListener(this);
+		this.addListener(this._environment);
+		this._environment.addListener(this);
 		if (this._mapping) {
 			if (
 				!('{3d04c1d0-4e6c-11de-8a39-0800200c9a66}' in Components.classesByID) ||
@@ -314,7 +314,7 @@ TestCase.prototype = {
 			ObserverService.removeObserver(this , 'uxu-mapping-check');
 			this._mappingObserverRegistered = false;
 		}
-		this.environment.__proto__.removeListener(this);
+		this._environment.removeListener(this);
 		this.removeAllListeners();
 	},
  
