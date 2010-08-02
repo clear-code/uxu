@@ -2422,7 +2422,7 @@ export : function(aNamespace, aForce, aSelf, aSource)
 		if (
 			!aSource.hasOwnProperty(i) ||
 			i.indexOf('_') == 0 ||
-			(!aForce && i in aNamespace)
+			(!aForce && (aNamespace.__lookupGetter__(i) || i in aNamespace))
 			)
 			continue;
 
