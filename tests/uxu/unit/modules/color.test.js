@@ -1,7 +1,6 @@
 var topDir = baseURL+'../../../../';
 
-var color = {};
-utils.include(topDir+'modules/color.js', 'Shift_JIS', color);
+var color = utils.import(topDir+'modules/color.js', {});
 var Color = color.Color;
 var MixColor = color.MixColor;
 

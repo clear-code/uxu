@@ -2,9 +2,7 @@
 
 var topDir = baseURL+'../../../../';
 
-var ReadableDiffer = {};
-utils.include(topDir+'modules/diff.js', 'Shift_JIS', ReadableDiffer);
-ReadableDiffer = ReadableDiffer.ReadableDiffer;
+var ReadableDiffer = utils.import(topDir+'modules/diff.js', {}).ReadableDiffer;
 
 function setUp()
 {

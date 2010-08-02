@@ -2,13 +2,8 @@
 
 var topDir = baseURL+'../../../../';
 
-var Assertions = {};
-utils.include(topDir+'modules/test/assertions.js', 'Shift_JIS', Assertions);
-Assertions = Assertions.Assertions;
-
-var Diff = {};
-utils.include(topDir+'modules/diff.js', 'Shift_JIS', Diff);
-Diff = Diff.Diff;
+var Assertions = utils.import(topDir+'modules/test/assertions.js', {}).Assertions;
+var Diff = utils.import(topDir+'modules/diff.js', {}).Diff;
 
 var assertionsModule;
 

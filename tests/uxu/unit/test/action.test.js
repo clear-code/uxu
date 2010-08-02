@@ -1,8 +1,6 @@
 var topDir = baseURL+'../../../../';
 
-var Action = {};
-utils.include(topDir+'modules/test/action.js', 'Shift_JIS', Action);
-Action = Action.Action;
+var Action = utils.import(topDir+'modules/test/action.js', {}).Action;
 
 
 var actionModule;

@@ -2,9 +2,7 @@
 
 var topDir = baseURL+'../../../../';
 
-var TestRunner = {};
-utils.include(topDir+'modules/test/runner.js', 'Shift_JIS', TestRunner);
-TestRunner = TestRunner.TestRunner;
+var TestRunner = utils.import(topDir+'modules/test/runner.js', {}).TestRunner;
 
 var declarationStyleTest = topDir+'tests/samples/declaration.test.js';
 var mozLabStyleTest = topDir+'tests/samples/mozlab.test.js';

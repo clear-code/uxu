@@ -4,8 +4,7 @@ utils.include('prefread.inc.js');
 
 var topDir = baseURL+'../../../../';
 
-var prefread = {};
-utils.include(topDir+'modules/prefread.js', 'Shift_JIS', prefread);
+var prefread = utils.import(topDir+'modules/prefread.js', {});
 
 function setUp()
 {

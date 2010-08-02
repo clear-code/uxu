@@ -1,8 +1,6 @@
 var topDir = baseURL+'../../../../';
 
-var ServerUtils = {};
-utils.include(topDir+'modules/server/utils.js', 'Shift_JIS', ServerUtils);
-ServerUtils = ServerUtils.ServerUtils;
+var ServerUtils = utils.import(topDir+'modules/server/utils.js', {}).ServerUtils;
 
 var utilsModule;
 var observer;

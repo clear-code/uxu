@@ -1,7 +1,5 @@
 var topDir = baseURL+'../../../../';
-var Diff = {};
-utils.include(topDir+'modules/diff.js', 'Shift_JIS', Diff);
-Diff = Diff.Diff;
+var Diff = utils.import(topDir+'modules/diff.js', {}).Diff;
 
 function setUp()
 {

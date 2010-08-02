@@ -2,9 +2,7 @@ var targetProduct = 'Thunderbird';
 
 var topDir = baseURL+'../../../../';
 
-var Compose = {};
-utils.include(topDir+'modules/mail/compose.js', Compose);
-Compose = Compose.Compose;
+var Compose = utils.import(topDir+'modules/mail/compose.js', {}).Compose;
 
 var compose;
 var composeWindow;

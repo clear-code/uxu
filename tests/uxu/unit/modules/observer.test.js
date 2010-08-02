@@ -2,9 +2,7 @@
 
 var topDir = baseURL+'../../../../';
 
-var Observer = {};
-utils.include(topDir+'modules/observer.js', 'Shift_JIS', Observer);
-Observer = Observer.Observer;
+var Observer = utils.import(topDir+'modules/observer.js', {}).Observer;
 
 var observer;
 

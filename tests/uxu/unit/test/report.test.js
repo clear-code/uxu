@@ -1,8 +1,6 @@
 var topDir = baseURL+'../../../../';
 
-var Report = {};
-utils.include(topDir+'modules/test/report.js', 'Shift_JIS', Report);
-Report = Report.Report;
+var Report = utils.import(topDir+'modules/test/report.js', {}).Report;
 
 var report;
 

@@ -1,12 +1,7 @@
 var topDir = baseURL+'../../../../';
 
-var TestCase = {};
-utils.include(topDir+'modules/test/testCase.js', 'Shift_JIS', TestCase);
-TestCase = TestCase.TestCase;
-
-var TestEnvironment = {};
-utils.include(topDir+'modules/test/environment.js', 'Shift_JIS', TestEnvironment);
-TestEnvironment = TestEnvironment.TestEnvironment;
+var TestCase = utils.import(topDir+'modules/test/testCase.js', {}).TestCase;
+var TestEnvironment = utils.import(topDir+'modules/test/environment.js', {}).TestEnvironment;
 
 var testcase;
 

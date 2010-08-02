@@ -2,13 +2,8 @@ var targetProduct = 'Thunderbird';
 
 var topDir = baseURL+'../../../../';
 
-var Observer = {};
-utils.include(topDir+'modules/observer.js', 'Shift_JIS', Observer);
-Observer = Observer.Observer;
-
-var MailUtils = {};
-utils.include(topDir+'modules/mail/utils.js', 'Shift_JIS', MailUtils);
-MailUtils = MailUtils.MailUtils;
+var Observer = utils.import(topDir+'modules/observer.js', {}).Observer;
+var MailUtils = utils.import(topDir+'modules/mail/utils.js', {}).MailUtils;
 
 var utilsModule;
 

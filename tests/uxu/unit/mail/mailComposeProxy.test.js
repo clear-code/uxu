@@ -3,13 +3,8 @@ var topDir = baseURL+'../../../../';
 
 utils.include('mailComposeStub.inc.js');
 
-var Observer = {};
-utils.include(topDir+'modules/observer.js', 'Shift_JIS', Observer);
-Observer = Observer.Observer;
-
-var MailComposeProxy = {};
-utils.include(topDir+'modules/mail/mailComposeProxy.js', 'Shift_JIS', MailComposeProxy);
-MailComposeProxy = MailComposeProxy.MailComposeProxy;
+var Observer = utils.import(topDir+'modules/observer.js', {}).Observer;
+var MailComposeProxy = utils.import(topDir+'modules/mail/mailComposeProxy.js', {}).MailComposeProxy;
 
 function startUp()
 {

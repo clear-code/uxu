@@ -20,9 +20,7 @@ var eventHandlers = {
 
 function setUp()
 {
-	fsm = {};
-	utils.include(topDir+'modules/fsm.js', fsm);
-	fsm = fsm.fsm;
+	fsm = utils.import(topDir+'modules/fsm.js', {}).fsm;
 }
 
 function tearDown()

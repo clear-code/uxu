@@ -2,14 +2,8 @@
 
 utils.include('utils_common.inc.js');
 
-var ns = {};
-utils.include({
-	uri                    : topDir+'modules/lib/stringBundle.js',
-	encoding               : 'Shift_JIS',
-	allowOverrideConstants : true,
-	namespace              : ns
-});
-var bundle = ns.stringBundle.get(topDir+'locale/ja/uxu/uxu.properties');
+var bundle = utils.import(topDir+'modules/lib/stringBundle.js', {})
+				.stringBundle.get(topDir+'locale/ja/uxu/uxu.properties');
 
 
 test_formatError.priority = 'never';

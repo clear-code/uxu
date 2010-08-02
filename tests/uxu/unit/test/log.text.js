@@ -1,20 +1,11 @@
 var topDir = baseURL+'../../../../';
 
-var Report = {};
-utils.include(topDir+'modules/test/report.js', 'Shift_JIS', Report);
-Report = Report.Report;
+var Report = utils.import(topDir+'modules/test/report.js', {}).Report;
+var TestLog = utils.import(topDir+'modules/test/testCase.js', {}).TestLog;
+var TestCase = utils.import(topDir+'modules/test/testCase.js', {}).TestCase;
 
-var TestLog = {};
-utils.include(topDir+'modules/test/testCase.js', 'Shift_JIS', TestLog);
-TestLog = TestLog.TestLog;
-
-var TestCase = {};
-utils.include(topDir+'modules/test/testCase.js', 'Shift_JIS', TestCase);
-TestCase = TestCase.TestCase;
-
-var bundle = {};
-utils.include(topDir+'modules/lib/stringBundle.js', 'Shift_JIS', bundle);
-bundle = bundle.stringBundle.get(topDir+'locale/ja/uxu/uxu.properties');
+var bundle = utils.import(topDir+'modules/lib/stringBundle.js', {})
+				.stringBundle.get(topDir+'locale/ja/uxu/uxu.properties');
 
 function createReports(aTestCase)
 {

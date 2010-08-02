@@ -2,9 +2,7 @@
 
 var topDir = baseURL+'../../../../';
 
-var SequenceMatcher = {};
-utils.include(topDir+'modules/diff.js', 'Shift_JIS', SequenceMatcher);
-SequenceMatcher = SequenceMatcher.SequenceMatcher;
+var SequenceMatcher = utils.import(topDir+'modules/diff.js', {}).SequenceMatcher;
 
 function setUp()
 {

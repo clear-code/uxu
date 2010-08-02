@@ -2,9 +2,7 @@ var targetProduct = 'Firefox';
 
 var topDir = baseURL+'../../../../';
 
-var GreasemonkeyUtils = {};
-utils.include(topDir+'modules/test/greasemonkey.js', 'Shift_JIS', GreasemonkeyUtils);
-GreasemonkeyUtils = GreasemonkeyUtils.GreasemonkeyUtils;
+var GreasemonkeyUtils = utils.import(topDir+'modules/test/greasemonkey.js', {}).GreasemonkeyUtils;
 
 var GMUtils;
 
