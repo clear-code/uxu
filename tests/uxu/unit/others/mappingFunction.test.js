@@ -9,13 +9,13 @@ var mapping = function(aURI) {
 
 function testMapping()
 {
-	yield Do(assertMapped('http://localhost:4445/notfound.html', false));
-	yield Do(assertNotMapped('about:blank'));
-	yield Do(assertNotMapped('http://www.example.com/'));
-	yield Do(assertNotMapped('about:blank'));
-	yield Do(assertMapped('http://www.google.com/', true));
+	assertMapped('http://localhost:4445/notfound.html', false);
+	assertNotMapped('about:blank');
+	assertNotMapped('http://www.example.com/');
+	assertNotMapped('about:blank');
+	assertMapped('http://www.google.com/', true);
 
-	yield Do(assertMappedXMLHttpRequest('http://www.google.com/'));
-	yield Do(assertMappedImageRequest('http://www.example.jp/test.jpg'));
+	assertMappedXMLHttpRequest('http://www.google.com/');
+	assertMappedImageRequest('http://www.example.jp/test.jpg');
 }
 

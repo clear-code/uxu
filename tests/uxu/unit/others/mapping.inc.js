@@ -3,15 +3,14 @@ var shouldSkip = utils.checkPlatformVersion('1.9') < 0;
 function setUp()
 {
 	utils.clearPref('general.useragent.security');
-	yield Do(utils.setUpHttpServer(4445, baseURL+'../../fixtures/'));
-	yield 300;
+	utils.setUpHttpServer(4445, baseURL+'../../fixtures/');
+	utils.wait(300);
 }
 
 function tearDown()
 {
-	yield Do(utils.tearDownAllHttpServers());
+	utils.tearDownAllHttpServers();
 	utils.clearPref('general.useragent.security');
-	yield 300;
 }
 
 function assertMapped(aURI, aMapToFile)
@@ -19,7 +18,7 @@ function assertMapped(aURI, aMapToFile)
 	var referrer = aURI.indexOf('about:') > -1 ?
 				null :
 				utils.makeURIFromSpec('http://www.example.com/referer?'+Date.now());
-	yield Do(utils.loadURI(aURI, { referrer : referrer }));
+	utils.loadURI(aURI, { referrer : referrer });
 	assert.equals(aURI, content.location.href);
 	assert.equals('test', content.document.title);
 	if (referrer) {
@@ -39,10 +38,10 @@ function assertMapped(aURI, aMapToFile)
 	assert.match(/^1\.[89]\.[0-9]/, match[6]);
 	assert.equals(utils.getPref('general.useragent.security'), match[3]);
 	utils.setPref('general.useragent.security', 'foobar');
-	yield 300;
+	utils.wait(300);
 	// force reload
-	yield Do(utils.loadURI('about:blank'));
-	yield Do(utils.loadURI(aURI));
+	utils.loadURI('about:blank');
+	utils.loadURI(aURI);
 	match = $('script').textContent.match(regexp);
 	assert.equals('foobar', match[3]);
 }
@@ -52,7 +51,7 @@ function assertNotMapped(aURI)
 	var referrer = aURI.indexOf('about:') > -1 ?
 				null :
 				utils.makeURIFromSpec('http://www.example.com/referer?'+Date.now());
-	yield Do(utils.loadURI(aURI, { referrer : referrer }));
+	utils.loadURI(aURI, { referrer : referrer });
 	assert.equals(aURI, content.location.href);
 	assert.notEquals('test', content.document.title);
 	if (referrer) assert.equals(referrer.spec, content.document.referrer);
@@ -79,6 +78,6 @@ function assertMappedImageRequest(aURI)
 	image.onload = function() {
 		loaded.value = true;
 	};
-	yield loaded;
+	utils.wait(loaded);
 	assert.equals([48, 48], [image.width, image.height]);
 }

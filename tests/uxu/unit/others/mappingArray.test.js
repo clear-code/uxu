@@ -12,19 +12,19 @@ var mapping = [
 
 function testMapping()
 {
-	yield Do(assertMapped('http://localhost:4445/notfound.html', false));
-	yield Do(assertNotMapped('about:blank'));
-	yield Do(assertMapped('http://www.example.com/', false));
-	yield Do(assertNotMapped('about:blank'));
-	yield Do(assertMapped('http://www.example.jp/test/foobar', false));
-	yield Do(assertNotMapped('about:blank'));
-	yield Do(assertMapped('https://addons.mozilla.org/firefox/', true));
-	yield Do(assertNotMapped('about:blank'));
-	yield Do(assertMapped('http://www.google.com/', true));
-	yield Do(assertNotMapped('about:blank'));
-	yield Do(assertNotMapped('about:config')); // not supported
+	assertMapped('http://localhost:4445/notfound.html', false);
+	assertNotMapped('about:blank');
+	assertMapped('http://www.example.com/', false)
+	assertNotMapped('about:blank');
+	assertMapped('http://www.example.jp/test/foobar', false);
+	assertNotMapped('about:blank');
+	assertMapped('https://addons.mozilla.org/firefox/', true);
+	assertNotMapped('about:blank');
+	assertMapped('http://www.google.com/', true);
+	assertNotMapped('about:blank');
+	assertNotMapped('about:config'); // not supported
 
-	yield Do(assertMappedXMLHttpRequest('http://www.example.com/'));
-	yield Do(assertMappedImageRequest('http://www.example.jp/test.jpg'));
+	assertMappedXMLHttpRequest('http://www.example.com/');
+	assertMappedImageRequest('http://www.example.jp/test.jpg');
 }
 

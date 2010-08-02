@@ -3,6 +3,7 @@ if (typeof window == 'undefined')
 
 var ns = {};
 Components.utils.import('resource://uxu-modules/eventTarget.js', ns);
+Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/server/httpd.js', ns);
 Components.utils.import('resource://uxu-modules/server/message.js', ns);
 Components.utils.import('resource://uxu-modules/server/server.js', ns);
@@ -84,7 +85,7 @@ ServerUtils.prototype = {
 		return listener;
 	},
 
-	setUpHttpServer : function(aPort, aBasePath)
+	setUpHttpServer : function(aPort, aBasePath, aAsync)
 	{
 		if (!aPort) throw new Error(ERROR_INVALID_PORT);
 		if (this._HTTPServerInstances.some(function(aServer) {
@@ -94,9 +95,16 @@ ServerUtils.prototype = {
 
 		var server = new ns.HTTPServer(aPort, aBasePath);
 		this._HTTPServerInstances.push(server);
-		return function() {
+
+		var completedCheck = function() {
 				return !server.isStopped();
 			};
+
+		if (aAsync)
+			return completedCheck;
+
+		ns.utils.wait(completedCheck);
+		return { value : true };
 	},
 
 	tearDownHttpServer : function(aPort)
@@ -116,18 +124,24 @@ ServerUtils.prototype = {
 		return server ? server.stop() : { value : true } ;
 	},
 
-	tearDownAllHttpServers : function()
+	tearDownAllHttpServers : function(aAsync)
 	{
 		var stopped = [];
 		while (this._HTTPServerInstances.length)
 		{
 			stopped.push(this.tearDownHttpServer());
 		}
-		return function() {
+		var completedCheck = function() {
 				return stopped.every(function(aStopped) {
 						return aStopped.value;
 					});
 			};
+
+		if (aAsync)
+			return completedCheck;
+
+		ns.utils.wait(completedCheck);
+		return { value : true };
 	},
 
 	isHttpServerRunning : function()
