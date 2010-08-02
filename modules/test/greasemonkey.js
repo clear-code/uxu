@@ -107,32 +107,32 @@ GreasemonkeyUtils.prototype = {
 		aURI = this._suite.fixupIncompleteURI(aURI);
 		if (aURI in this.sandboxes) return this.sandboxes[aURI];
 
-		var env = this;
+		var self = this;
 		var win = (this.frame || this.frameInTestRunner).contentWindow;
 		var headers = [];
 		var sandbox = {
 			__proto__ : win,
 			get window() {
-				return env.frame.contentWindow;
+				return self.frame.contentWindow;
 			},
 			get unsafeWindow() {
-				return env.frame.contentWindow.wrappedJSObject;
+				return self.frame.contentWindow.wrappedJSObject;
 			},
 			get document() {
-				return env.frame.contentDocument;
+				return self.frame.contentDocument;
 			},
 			XPathResult : Ci.nsIDOMXPathResult,
-			GM_log                 : ns.utils.bind(this.GM_log, env),
-			GM_getValue            : ns.utils.bind(this.GM_getValue, env),
-			GM_setValue            : ns.utils.bind(this.GM_setValue, env),
-			GM_registerMenuCommand : ns.utils.bind(this.GM_registerMenuCommand, env),
-			GM_xmlhttpRequest      : ns.utils.bind(this.GM_xmlhttpRequest, env),
-			GM_addStyle            : ns.utils.bind(this.GM_addStyle, env),
-			GM_getResourceURL      : ns.utils.bind(this.GM_getResourceURL, env),
-			GM_getResourceText     : ns.utils.bind(this.GM_getResourceText, env),
-			GM_openInTab           : ns.utils.bind(this.GM_openInTab, env),
+			GM_log                 : ns.utils.bind(this.GM_log, self),
+			GM_getValue            : ns.utils.bind(this.GM_getValue, self),
+			GM_setValue            : ns.utils.bind(this.GM_setValue, self),
+			GM_registerMenuCommand : ns.utils.bind(this.GM_registerMenuCommand, self),
+			GM_xmlhttpRequest      : ns.utils.bind(this.GM_xmlhttpRequest, self),
+			GM_addStyle            : ns.utils.bind(this.GM_addStyle, self),
+			GM_getResourceURL      : function(aKey) { return self.GM_getResourceURL.call(self, aKey, headers); },
+			GM_getResourceText     : function(aKey) { return self.GM_getResourceText.call(self, aKey, headers); },
+			GM_openInTab           : ns.utils.bind(this.GM_openInTab, self),
 			console : {
-				log : ns.utils.bind(this.GM_log, env)
+				log : ns.utils.bind(this.GM_log, self)
 			},
 			get GM_headers() {
 				return headers;

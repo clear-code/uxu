@@ -19,6 +19,7 @@ function assertMapped(aURI, aMapToFile)
 				null :
 				utils.makeURIFromSpec('http://www.example.com/referer?'+Date.now());
 	utils.loadURI(aURI, { referrer : referrer });
+	utils.wait(100);
 	assert.equals(aURI, content.location.href);
 	assert.equals('test', content.document.title);
 	if (referrer) {
