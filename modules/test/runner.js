@@ -10,7 +10,7 @@ Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
 Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/eventTarget.js', ns);
-Components.utils.import('resource://uxu-modules/test/environment.js', ns);
+Components.utils.import('resource://uxu-modules/test/suite.js', ns);
 Components.utils.import('resource://uxu-modules/test/testCase.js', ns);
 Components.utils.import('resource://uxu-modules/test/log.js', ns);
 
@@ -150,7 +150,7 @@ TestRunner.prototype = {
 			});
 
 			newTestCase.context = env;
-			newTestCase.environment = aSuite;
+			newTestCase.suite = aSuite;
 			tests.push(newTestCase);
 		}
 
@@ -271,8 +271,8 @@ TestRunner.prototype = {
 	
 	_cleanUpModifications : function(aTestCase) 
 	{
-		aTestCase.environment.utils.rollbackPrefs();
-		aTestCase.environment.utils.cleanUpTempFiles(true);
+		aTestCase.suite.rollbackPrefs();
+		aTestCase.suite.cleanUpTempFiles(true);
 	},
   
 	addTestFilter : function(aFilter) 
@@ -402,7 +402,7 @@ TestRunner.prototype = {
 	
 	_createTestSuite : function(aURL) 
 	{
-		var suite = new ns.TestEnvironment(null, aURL, this._browser);
+		var suite = new ns.TestSuite(null, aURL, this._browser);
 		suite.include(suite.fileURL, suite.environment);
 		return suite;
 	}

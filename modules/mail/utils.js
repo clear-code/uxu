@@ -95,11 +95,11 @@ hankakuZenkakuCharacters.forEach(function(aChar, aIndex) {
 	zenkakuHankakuTable[hankakuZenkakuCharacters[aIndex]] = hankakuZenkakuCharacters[aIndex-1];
 });
 
-function MailUtils(aEnvironment)
+function MailUtils(aSuite)
 {
 	this.initListeners();
 	this._observer = new MailObserver();
-	this.compose = new Compose(this, aEnvironment);
+	this.compose = new Compose(this, aSuite);
 }
 
 MailUtils.prototype = {

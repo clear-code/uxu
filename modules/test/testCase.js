@@ -101,7 +101,7 @@ function TestCase(aTitle, aOptions)
 	this._shouldSkip = aOptions.shouldSkip || false;
 	this._context = aOptions.context || {};
 	this._targetProduct = aOptions.targetProduct || null;
-	this._environment = null;
+	this._suite = null;
 
 	this.done = false;
 
@@ -126,9 +126,9 @@ TestCase.prototype = {
 	RESULT_ERROR   : 'error',
 	RESULT_SKIPPED : 'skip',
 
-	ERROR_NOT_INITIALIZED     : 'environment is not specified.', 
-	ERROR_INVALID_ENVIRONMENT : 'environment must be an object.',
-	ERROR_NO_TEST             : 'there is no test.',
+	ERROR_NOT_INITIALIZED : 'test suite is not specified.', 
+	ERROR_INVALID_SUITE   : 'test suite must be a TestSuite.',
+	ERROR_NO_TEST         : 'there is no test.',
  
 	get title() {
 		return this._title;
@@ -182,13 +182,13 @@ TestCase.prototype = {
 		return this._targetProduct;
 	},
 
-	set environment(aEnvironment) {
-		if (!aEnvironment) throw new Error(this.ERROR_INVALID_ENVIRONMENT);
-		this._environment = aEnvironment;
-		return aEnvironment;
+	set suite(aSuite) {
+		if (!aSuite) throw new Error(this.ERROR_INVALID_SUITE);
+		this._suite = aSuite;
+		return aSuite;
 	},
-	get environment() {
-		return this._environment;
+	get suite() {
+		return this._suite;
 	},
 
 	set mapping(aMapping) {
@@ -288,8 +288,8 @@ TestCase.prototype = {
  
 	onStart : function() 
 	{
-		this.addListener(this._environment);
-		this._environment.addListener(this);
+		this.addListener(this._suite);
+		this._suite.addListener(this);
 		if (this._mapping) {
 			if (
 				!('{3d04c1d0-4e6c-11de-8a39-0800200c9a66}' in Components.classesByID) ||
@@ -314,7 +314,7 @@ TestCase.prototype = {
 			ObserverService.removeObserver(this , 'uxu-mapping-check');
 			this._mappingObserverRegistered = false;
 		}
-		this._environment.removeListener(this);
+		this._suite.removeListener(this);
 		this.removeAllListeners();
 	},
  
@@ -722,7 +722,7 @@ TestCase.prototype = {
 	run : function(aStopper)
 	{
 		try {
-			if (!this.environment)
+			if (!this.suite)
 				throw new Error(this.ERROR_NOT_INITIALIZED);
 
 			if (!this._tests.length) {
@@ -795,7 +795,7 @@ TestCase.prototype = {
 
 		var doPreOrPostProcess = function(aContinuation, aFunction, aOptions)
 			{
-				if (!aFunction || _this.neverRun) {
+				if (!aFunction || self.neverRun) {
 					aOptions.report.report.onFinish();
 					aContinuation('ok');
 					return;
@@ -805,16 +805,16 @@ TestCase.prototype = {
 					var result = usesContinuation ?
 							aFunction.call(context, aContinuation) :
 							aFunction.call(context) ;
-					if (_this._utils.isGeneratedIterator(result)) {
-						_this._utils.doIteration(result, {
+					if (self._utils.isGeneratedIterator(result)) {
+						self._utils.doIteration(result, {
 							onEnd : function(e) {
 								aOptions.report.report.onFinish();
 								if (!usesContinuation) aContinuation('ok');
 							},
 							onError : function(e) {
 								if (aOptions.onError) aOptions.onError();
-								aOptions.report.report.result = _this.RESULT_ERROR;
-								aOptions.report.report.exception = _this._utils.normalizeError(e);
+								aOptions.report.report.result = self.RESULT_ERROR;
+								aOptions.report.report.exception = self._utils.normalizeError(e);
 								aOptions.report.report.description = aOptions.errorDescription;
 								aOptions.report.report.parameter = aOptions.parameter;
 								aOptions.report.report.formattedParameter = aOptions.formattedParameter;
@@ -829,8 +829,8 @@ TestCase.prototype = {
 					}
 				}
 				catch(e) {
-					aOptions.report.report.result = _this.RESULT_ERROR;
-					aOptions.report.report.exception = _this._utils.normalizeError(e);
+					aOptions.report.report.result = self.RESULT_ERROR;
+					aOptions.report.report.exception = self._utils.normalizeError(e);
 					aOptions.report.report.description = aOptions.errorDescription;
 					aOptions.report.report.parameter = aOptions.parameter;
 					aOptions.report.report.formattedParameter = aOptions.formattedParameter;
@@ -839,11 +839,11 @@ TestCase.prototype = {
 				}
 			};
 
-		var _this = this;
+		var self = this;
 		var stateHandlers = {
 			start : function(aContinuation)
 			{
-				_this.fireEvent('Start');
+				self.fireEvent('Start');
 				aContinuation('ok')
 			},
 			setUpDaemons : function(aContinuation)
@@ -855,9 +855,9 @@ TestCase.prototype = {
 	 			testCaseReport.report = new ns.Report();
 				doPreOrPostProcess(
 					aContinuation,
-					_this._startUp,
+					self._startUp,
 					{
-						errorDescription : bundle.getFormattedString('report_description_startup', [_this.title]),
+						errorDescription : bundle.getFormattedString('report_description_startup', [self.title]),
 						report : testCaseReport
 					}
 				);
@@ -865,18 +865,18 @@ TestCase.prototype = {
 			prepareTest : function(aContinuation)
 			{
 				testReport.report = new ns.Report();
-				current = _this._tests[testIndex];
-				_this.fireEvent('TestStart', current);
+				current = self._tests[testIndex];
+				self.fireEvent('TestStart', current);
 				aContinuation('ok');
 			},
 			checkDoOrSkip : function(aContinuation)
 			{
 				if (current.targetProduct &&
-					String(current.targetProduct).toLowerCase() != _this._utils.product.toLowerCase()) {
+					String(current.targetProduct).toLowerCase() != self._utils.product.toLowerCase()) {
 					aContinuation('ko');
 					return;
 				}
-				if (!_this._checkPriorityToExec(current)) {
+				if (!self._checkPriorityToExec(current)) {
 					aContinuation('ko');
 					return;
 				}
@@ -887,8 +887,8 @@ TestCase.prototype = {
 							shouldSkip = shouldSkip.call(context);
 						}
 						catch(e) {
-							testReport.report.result = _this.RESULT_ERROR;
-							testReport.report.exception = _this._utils.normalizeError(e);
+							testReport.report.result = self.RESULT_ERROR;
+							testReport.report.exception = self._utils.normalizeError(e);
 							testReport.report.description =  bundle.getFormattedString('report_description_check_to_skip', [current.description]);
 							shouldSkip = true;
 						}
@@ -903,18 +903,18 @@ TestCase.prototype = {
 			skip : function(aContinuation)
 			{
 				if (!testReport.report.result) {
-					testReport.report.result = _this.RESULT_SKIPPED;
+					testReport.report.result = self.RESULT_SKIPPED;
 					testReport.report.description = current.description;
 				}
 				aContinuation('ok');
 			},
 			doSetUp : function(aContinuation)
 			{
-				_this.notifications = [];
+				self.notifications = [];
 				testReport.report = new ns.Report();
 				doPreOrPostProcess(
 					aContinuation,
-					_this._setUp,
+					self._setUp,
 					{
 						errorDescription : bundle.getFormattedString('report_description_setup', [current.description]),
 						report : testReport,
@@ -941,9 +941,9 @@ TestCase.prototype = {
 			},
 			doTest : function(aContinuation)
 			{
-				ns.Assertions.prototype.resetSuccessCount.call(_this.environment.assert._source);
+				ns.Assertions.prototype.resetSuccessCount.call(self.suite.assert._source);
 				testReport.report.onDetailedStart();
-				var newReport = _this._exec(current, context, aContinuation, testReport);
+				var newReport = self._exec(current, context, aContinuation, testReport);
 				if (newReport.result) {
 					testReport.report = newReport;
 					testReport.report.description = current.description;
@@ -959,9 +959,9 @@ TestCase.prototype = {
 			checkSuccessCount : function(aContinuation)
 			{
 				try {
-					if (testReport.report.result == _this.RESULT_SUCCESS) {
+					if (testReport.report.result == self.RESULT_SUCCESS) {
 						ns.Assertions.prototype.validSuccessCount.call(
-							_this.environment.assert._source,
+							self.suite.assert._source,
 							current.assertions,
 							current.minAssertions,
 							current.maxAssertions
@@ -971,8 +971,8 @@ TestCase.prototype = {
 				}
 				catch(e) {
 					testReport.report = new ns.Report();
-					testReport.report.result = _this.RESULT_FAILURE;
-					testReport.report.exception = _this._utils.normalizeError(e);
+					testReport.report.result = self.RESULT_FAILURE;
+					testReport.report.exception = self._utils.normalizeError(e);
 					testReport.report.description = bundle.getFormattedString('report_description_check_success_count', [current.description]);
 					aContinuation('ko');
 				}
@@ -992,7 +992,7 @@ TestCase.prototype = {
 						formattedParameter : current.formattedParameter,
 						report : testReport,
 						onError : function() {
-							_this._onFinish(current, _this.RESULT_ERROR);
+							self._onFinish(current, self.RESULT_ERROR);
 						}
 					}
 				);
@@ -1001,12 +1001,12 @@ TestCase.prototype = {
 			{
 				doPreOrPostProcess(
 					aContinuation,
-					_this._tearDown,
+					self._tearDown,
 					{
 						errorDescription : bundle.getFormattedString('report_description_teardown', [current.description]),
 						report : testReport,
 						onError : function() {
-							_this._onFinish(current, _this.RESULT_ERROR);
+							self._onFinish(current, self.RESULT_ERROR);
 						},
 						useContinuation : true
 					}
@@ -1015,48 +1015,48 @@ TestCase.prototype = {
 			doReport : function(aContinuation)
 			{
 				current.report = testReport.report;
-				_this._onFinish(current, testReport.report.result);
-				testReport.report.testOwner = _this;
+				self._onFinish(current, testReport.report.result);
+				testReport.report.testOwner = self;
 				testReport.report.testIndex = testIndex;
 				testReport.report.testID    = current.name;
 				testReport.report.parameter = current.parameter;
 				testReport.report.formattedParameter = current.formattedParameter;
-				testReport.report.notifications = _this.notifications;
-				_this.notifications = [];
-				_this.fireEvent('TestFinish', testReport.report);
+				testReport.report.notifications = self.notifications;
+				self.notifications = [];
+				self.fireEvent('TestFinish', testReport.report);
 				aContinuation('ok');
 			},
 			nextTest : function(aContinuation)
 			{
-				if (_this._stopper && _this._stopper()) {
-					_this._aborted = true;
-					_this.fireEvent('Abort');
+				if (self._stopper && self._stopper()) {
+					self._aborted = true;
+					self.fireEvent('Abort');
 					aContinuation('ko');
 					return;
 				}
 				testIndex += 1;
-				_this._tests[testIndex] ? aContinuation('ok') : aContinuation('ko');
+				self._tests[testIndex] ? aContinuation('ok') : aContinuation('ko');
 			},
 			doShutDown : function(aContinuation)
 			{
 				doPreOrPostProcess(
 					aContinuation,
-					_this._shutDown,
+					self._shutDown,
 					{
-						errorDescription : bundle.getFormattedString('report_description_shutdown', [_this.title]),
+						errorDescription : bundle.getFormattedString('report_description_shutdown', [self.title]),
 						report : testCaseReport
 					}
 				);
 			},
 			tearDownDaemons : function(aContinuation)
 			{
-				if (!ns.ServerUtils.prototype.isHttpServerRunning.call(_this.environment.serverUtils)) {
+				if (!ns.ServerUtils.prototype.isHttpServerRunning.call(self.suite.serverUtils)) {
 					aContinuation('ok');
 					return;
 				}
-				_this._utils.doIteration(
+				self._utils.doIteration(
 					function() {
-						yield ns.ServerUtils.prototype.tearDownAllHttpServers.call(_this.environment.serverUtils);
+						yield ns.ServerUtils.prototype.tearDownAllHttpServers.call(self.suite.serverUtils);
 					},
 					{
 						onEnd : function(e) {
@@ -1067,9 +1067,9 @@ TestCase.prototype = {
 			},
 			finished : function(aContinuation)
 			{
-				if (!_this._aborted) {
-					_this.done = true;
-					_this.fireEvent('Finish', testCaseReport.report);
+				if (!self._aborted) {
+					self.done = true;
+					self.fireEvent('Finish', testCaseReport.report);
 				}
 				aContinuation('ok');
 			}
@@ -1151,7 +1151,7 @@ TestCase.prototype = {
 		process.init(this._application || this._utils.productExecutable);
 		process.run(false, args, args.length);
 
-		var _this = this;
+		var self = this;
 		var beforeReadyTimeout = Math.max(0, this._utils.getPref('extensions.uxu.run.timeout.application'));
 		var beforeReadyInterval = 500;
 		var afterReadyTimeout = this.PING_INTERVAL + Math.max(0, this._utils.getPref('extensions.uxu.run.timeout'));
@@ -1163,14 +1163,14 @@ TestCase.prototype = {
 				var current;
 				var timeout;
 				var interval;
-				while (!_this.done)
+				while (!self.done)
 				{
-					timeout = _this._remoteReady ? afterReadyTimeout : beforeReadyTimeout ;
-					interval = _this._remoteReady ? afterReadyInterval : beforeReadyInterval ;
-					if (!_this._aborted && _this._stopper && _this._stopper()) {
-						_this._aborted = true;
+					timeout = self._remoteReady ? afterReadyTimeout : beforeReadyTimeout ;
+					interval = self._remoteReady ? afterReadyInterval : beforeReadyInterval ;
+					if (!self._aborted && self._stopper && self._stopper()) {
+						self._aborted = true;
 					}
-					if (Date.now() - _this._lastRemoteResponse > timeout) {
+					if (Date.now() - self._lastRemoteResponse > timeout) {
 						throw new Error(bundle.getFormattedString('error_remote_timeout', [parseInt(timeout / 1000)]));
 					}
 					yield interval;
@@ -1178,24 +1178,24 @@ TestCase.prototype = {
 			},
 			{
 				onEnd : function(e) {
-					report.result = _this.RESULT_SUCCESS;
+					report.result = self.RESULT_SUCCESS;
 					report.onFinish();
-					_this._onFinishRemoteResult(report);
+					self._onFinishRemoteResult(report);
 
 					server.destroy();
 					server = null;
-					_this._utils.scheduleToRemove(profile);
+					self._utils.scheduleToRemove(profile);
 				},
 				onError : function(e) {
-					report.result = _this.RESULT_ERROR;
+					report.result = self.RESULT_ERROR;
 					report.exception = e;
-					report.description = bundle.getFormattedString('report_description_remote', [_this.title]);
+					report.description = bundle.getFormattedString('report_description_remote', [self.title]);
 					report.onFinish();
-					_this._onFinishRemoteResult(report);
+					self._onFinishRemoteResult(report);
 
 					server.destroy();
 					server = null;
-					_this._utils.scheduleToRemove(profile);
+					self._utils.scheduleToRemove(profile);
 				}
 			}
 		);
@@ -1275,27 +1275,27 @@ TestCase.prototype = {
 
 			if (this._utils.isGeneratedIterator(result)) {
 				aReport.report = report;
-				var _this = this;
+				var self = this;
 				ns.setTimeout(function() {
-					_this._utils.doIteration(result, {
+					self._utils.doIteration(result, {
 						onEnd : function(e) {
 							aReport.report.onDetailedFinish();
-							aReport.report.result = _this.RESULT_SUCCESS;
-							_this._onFinish(aTest, aReport.report.result);
+							aReport.report.result = self.RESULT_SUCCESS;
+							self._onFinish(aTest, aReport.report.result);
 							aContinuation('ok');
 						},
 						onFail : function(e) {
 							aReport.report.onDetailedFinish();
-							aReport.report.result = _this.RESULT_FAILURE;
+							aReport.report.result = self.RESULT_FAILURE;
 							aReport.report.exception = e;
-							_this._onFinish(aTest, aReport.report.result);
+							self._onFinish(aTest, aReport.report.result);
 							aContinuation('ok');
 						},
 						onError : function(e) {
 							aReport.report.onDetailedFinish();
-							aReport.report.result = _this.RESULT_ERROR;
+							aReport.report.result = self.RESULT_ERROR;
 							aReport.report.exception = e;
-							_this._onFinish(aTest, aReport.report.result);
+							self._onFinish(aTest, aReport.report.result);
 							aContinuation('ok');
 						}
 					});

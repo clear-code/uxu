@@ -3,9 +3,9 @@
 if (typeof window == 'undefined')
 	this.EXPORTED_SYMBOLS = ['Action'];
  
-function Action(aEnvironment) 
+function Action(aSuite) 
 {
-	this.utils = aEnvironment;
+	this._suite = aSuite;
 	this.readiedActionListeners = [];
 }
  
@@ -14,7 +14,7 @@ Action.prototype = {
 destroy : function() 
 {
 	this.cancelReadiedActions();
-	delete this.utils;
+	delete this._suite;
 },
  
 /* ダイアログ操作の予約 */ 
@@ -59,7 +59,7 @@ readyToOK : function(aOptions)
 				doc.documentElement.getButton('accept').doCommand();
 			}, 0);
 		};
-	this.utils.addWindowWatcher(listener, 'load');
+	this._suite.addWindowWatcher(listener, 'load');
 	this.readiedActionListeners.push(listener);
 },
 readyToOk : function(aOptions) { return this.readyToOK(aOptions); },
@@ -114,7 +114,7 @@ readyToConfirm : function(aYes, aOptions)
 				doc.documentElement.getButton(buttonType).doCommand();
 			}, 0);
 		};
-	this.utils.addWindowWatcher(listener, 'load');
+	this._suite.addWindowWatcher(listener, 'load');
 	this.readiedActionListeners.push(listener);
 },
  
@@ -181,7 +181,7 @@ readyToPrompt : function(aInput, aOptions)
 				doc.documentElement.getButton('accept').doCommand();
 			}, 0);
 		};
-	this.utils.addWindowWatcher(listener, 'load');
+	this._suite.addWindowWatcher(listener, 'load');
 	this.readiedActionListeners.push(listener);
 },
  
@@ -246,21 +246,21 @@ readyToSelect : function(aSelectedIndexes, aOptions)
 				doc.documentElement.getButton('accept').doCommand();
 			}, 0);
 		};
-	this.utils.addWindowWatcher(listener, 'load');
+	this._suite.addWindowWatcher(listener, 'load');
 	this.readiedActionListeners.push(listener);
 },
  
 cancelReadiedActions : function(aInput) 
 {
 	this.readiedActionListeners.forEach(function(aListener) {
-		this.utils.removeWindowWatcher(aListener);
+		this._suite.removeWindowWatcher(aListener);
 	}, this);
 	this.readiedActionListeners = [];
 },
 	
 cancelReadiedAction : function(aListener) 
 {
-	this.utils.removeWindowWatcher(aListener);
+	this._suite.removeWindowWatcher(aListener);
 	var index = this.readiedActionListeners.indexOf(aListener);
 	if (index > -1)
 		this.readiedActionListeners.splice(index, 1);

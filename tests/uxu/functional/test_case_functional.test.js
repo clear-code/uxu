@@ -1,19 +1,14 @@
 var topDir = baseURL+'../../../';
 
-var TestCase = {};
-utils.include(topDir+'modules/test/testCase.js', 'Shift_JIS', TestCase);
-TestCase = TestCase.TestCase;
-
-var TestEnvironment = {};
-utils.include(topDir+'modules/test/environment.js', 'Shift_JIS', TestEnvironment);
-TestEnvironment = TestEnvironment.TestEnvironment;
+var TestCase = utils.import(topDir+'modules/test/testCase.js', 'Shift_JIS', {}).TestCase;
+var TestSuite = utils.import(topDir+'modules/test/sutie.js', {}).TestSuite;
 
 var testcase;
 
 function setUp()
 {
 	testcase = new TestCase('description');
-	testcase.environment = new TestEnvironment(null, baseURL, gBrowser);
+	testcase.suite = new TestSuite(null, baseURL, gBrowser);
 	yield 0; // to run tests progressively
 }
 
@@ -42,5 +37,5 @@ function test_testCaseWithHttpDaemons()
 	testcase.run();
 	yield 1500;
 	assert.isTrue(testcase.done);
-	assert.isFalse(testcase.environment.serverUtils.isHttpServerRunning());
+	assert.isFalse(testcase.suite.serverUtils.isHttpServerRunning());
 }

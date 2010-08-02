@@ -1,14 +1,14 @@
 var topDir = baseURL+'../../../../';
 
 var TestCase = utils.import(topDir+'modules/test/testCase.js', {}).TestCase;
-var TestEnvironment = utils.import(topDir+'modules/test/environment.js', {}).TestEnvironment;
+var TestSuite = utils.import(topDir+'modules/test/suite.js', {}).TestSuite;
 
 var testcase;
 
 function setUp()
 {
 	testcase = new TestCase('description');
-	testcase.environment = new TestEnvironment(null, baseURL, gBrowser);
+	testcase.sutie = new TestSuite(null, baseURL, gBrowser);
 	yield 0; // to run tests progressively
 }
 
@@ -248,12 +248,12 @@ function testReuseFunctions()
 	};
 
 	testcase = new TestCase('description1');
-	testcase.environment = new TestEnvironment({}, baseURL, gBrowser);
+	testcase.suite = new TestSuite({}, baseURL, gBrowser);
 	testcase.tests = tests;
 	yield Do(assertDoneProcessCount(3, 3, 3, { priority : 'must' }));
 
 	testcase = new TestCase('description2');
-	testcase.environment = new TestEnvironment({}, baseURL, gBrowser);
+	testcase.suite = new TestSuite({}, baseURL, gBrowser);
 	testcase.tests = tests;
 	yield Do(assertDoneProcessCount(6, 6, 6, { priority : 'must' }));
 }
@@ -529,24 +529,24 @@ function testAssertionsCount()
 {
 	testcase.registerTest((function() {
 		var f = function() {
-			testcase.environment.assert.isTrue(true);
-			testcase.environment.assert.isTrue(true);
+			testcase.suite.assert.isTrue(true);
+			testcase.suite.assert.isTrue(true);
 		};
 		f.assertions = 2;
 		return f;
 	})());
 	testcase.registerTest((function() {
 		var f = function() {
-			testcase.environment.assert.isTrue(true);
-			testcase.environment.assert.isTrue(true);
-			testcase.environment.assert.isTrue(true);
+			testcase.suite.assert.isTrue(true);
+			testcase.suite.assert.isTrue(true);
+			testcase.suite.assert.isTrue(true);
 		};
 		f.assertions = 2;
 		return f;
 	})());
 	testcase.registerTest((function() {
 		var f = function() {
-			testcase.environment.assert.isTrue(true);
+			testcase.suite.assert.isTrue(true);
 		};
 		f.assertions = 2;
 		return f;
@@ -565,15 +565,15 @@ function testMinAssertionsCount()
 	})());
 	testcase.registerTest((function() {
 		var f = function() {
-			testcase.environment.assert.isTrue(true);
+			testcase.suite.assert.isTrue(true);
 		};
 		f.minAssertions = 1;
 		return f;
 	})());
 	testcase.registerTest((function() {
 		var f = function() {
-			testcase.environment.assert.isTrue(true);
-			testcase.environment.assert.isTrue(true);
+			testcase.suite.assert.isTrue(true);
+			testcase.suite.assert.isTrue(true);
 		};
 		f.minAssertions = 1;
 		return f;
@@ -592,15 +592,15 @@ function testMaxAssertionsCount()
 	})());
 	testcase.registerTest((function() {
 		var f = function() {
-			testcase.environment.assert.isTrue(true);
+			testcase.suite.assert.isTrue(true);
 		};
 		f.maxAssertions = 1;
 		return f;
 	})());
 	testcase.registerTest((function() {
 		var f = function() {
-			testcase.environment.assert.isTrue(true);
-			testcase.environment.assert.isTrue(true);
+			testcase.suite.assert.isTrue(true);
+			testcase.suite.assert.isTrue(true);
 		};
 		f.maxAssertions = 1;
 		return f;
@@ -700,7 +700,7 @@ var privateTearDownWithParametersResults;
 function createNewTestForParameters(aDescription)
 {
 	var test = function(aParameter) {
-			testcase.environment.assert.isTrue(aParameter);
+			testcase.suite.assert.isTrue(aParameter);
 		};
 	test.description = aDescription;
 	test.setUp = function(aParameter) {

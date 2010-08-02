@@ -10,9 +10,9 @@ var ns = {};
 Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
 Components.utils.import('resource://uxu-modules/utils.js', ns);
 
-function GreasemonkeyUtils(aEnvironment)
+function GreasemonkeyUtils(aSuite)
 {
-	this.utils = aEnvironment;
+	this._suite = aSuite;
 	this.frame = this.frameInTestRunner;
 	this.testWindow = null;
 	this.commands = [];
@@ -26,7 +26,7 @@ function GreasemonkeyUtils(aEnvironment)
 GreasemonkeyUtils.prototype = {
 
 	get frameInTestRunner() {
-		return this.utils.testFrame;
+		return this._suite.testFrame;
 	},
 
 	destroy : function()
@@ -43,33 +43,33 @@ GreasemonkeyUtils.prototype = {
 	{
 		this.listeners = [];
 		this.sandboxes = {};
-		return this.utils.loadURIInTestFrame(aURI, aOptions);
+		return this._suite.loadURIInTestFrame(aURI, aOptions);
 	},
 
 	unload : function(aOptions)
 	{
 		this.listeners = [];
 		this.sandboxes = {};
-		return this.utils.loadURIInTestFrame('about:blank', aOptions);
+		return this._suite.loadURIInTestFrame('about:blank', aOptions);
 	},
 
 	open : function(aURI, aOptions)
 	{
-		aURI = this.utils.fixupIncompleteURI(aURI)
+		aURI = this._suite.fixupIncompleteURI(aURI)
 		this.listeners = [];
 		this.sandboxes = {};
 		var loadedFlag = { value : false, window : null, tab : null };
 
 		var self = this;
 		var postProcess = function() {
-			self.utils.wait(tempFlag);
+			self._suite.wait(tempFlag);
 
-			self.testWindow = self.utils.getTestWindow(aOptions);
+			self.testWindow = self._suite.getTestWindow(aOptions);
 			loadedFlag.window = self.testWindow;
 
 			var b = loadedFlag.window.gBrowser;
 			if (b) {
-				loadedFlag.tab = self.utils.addTab(aURI).tab;
+				loadedFlag.tab = self._suite.addTab(aURI).tab;
 				self.frame = loadedFlag.tab.linkedBrowser;
 				b.removeAllTabsBut(loadedFlag.tab);
 				loadedFlag.value = true;
@@ -79,9 +79,9 @@ GreasemonkeyUtils.prototype = {
 			}
 		};
 
-		var tempFlag = this.utils.setUpTestWindow(null, aOptions);
+		var tempFlag = this._suite.setUpTestWindow(null, aOptions);
 		if (!aOptions || !aOptions.async) {
-			this.utils.wait(tempFlag);
+			this._suite.wait(tempFlag);
 			postProcess();
 		}
 		else {
@@ -104,7 +104,7 @@ GreasemonkeyUtils.prototype = {
 
 	getSandboxFor : function(aURI)
 	{
-		aURI = this.utils.fixupIncompleteURI(aURI);
+		aURI = this._suite.fixupIncompleteURI(aURI);
 		if (aURI in this.sandboxes) return this.sandboxes[aURI];
 
 		var env = this;
@@ -175,7 +175,7 @@ GreasemonkeyUtils.prototype = {
 		var sandbox = this.getSandboxFor(aURI);
 		var script;
 		try {
-			script = this.utils.include(aURI, sandbox, aEncoding);
+			script = this._suite.include(aURI, sandbox, aEncoding);
 		}
 		catch(e) {
 			throw new Error('Error: GMUtils::loadScript() failed to read specified script.\n'+e);
@@ -466,11 +466,11 @@ GreasemonkeyUtils.prototype = {
 				var mimeService = Cc['@mozilla.org/mime;1']
 						.getService(Ci.nsIMIMEService);
 				if (uri.substring(0, 5) == 'file:') {
-					mimeType = mimeService.getTypeFromFile(utils.getFileFromURLSpec(uri));
+					mimeType = mimeService.getTypeFromFile(this._suite.getFileFromURLSpec(uri));
 				}
 				else {
 					try {
-						mimeType = mimeService.getTypeFromURI(utils.makeURIFromSpec(uri));
+						mimeType = mimeService.getTypeFromURI(this._suite.makeURIFromSpec(uri));
 					}
 					catch(e) {
 					}
@@ -478,7 +478,7 @@ GreasemonkeyUtils.prototype = {
 			}
 			var channel = Cc['@mozilla.org/network/io-service;1']
 						.getService(Ci.nsIIOService)
-						.newChannelFromURI(utils.makeURIFromSpec(uri));
+						.newChannelFromURI(this._suite.makeURIFromSpec(uri));
 			var stream = channel.open();
 			var binaryStream = Cc['@mozilla.org/binaryinputstream;1']
 						.createInstance(Ci.nsIBinaryInputStream);

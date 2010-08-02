@@ -1,7 +1,7 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*- 
 
 if (typeof window == 'undefined')
-	this.EXPORTED_SYMBOLS = ['TestEnvironment'];
+	this.EXPORTED_SYMBOLS = ['TestSuite'];
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -23,7 +23,7 @@ var WindowWatcher = Cc['@mozilla.org/embedcomp/window-watcher;1'].getService(Ci.
 var key = 'uxu-test-window-id'; 
 var defaultURI, defaultType, defaultFeatures, defaultName; 
 	
-function TestEnvironment(aEnvironment, aURI, aBrowser) 
+function TestSuite(aEnvironment, aURI, aBrowser) 
 {
 	if (!aEnvironment) {
 		let global = aBrowser.ownerDocument.defaultView;
@@ -79,7 +79,7 @@ function TestEnvironment(aEnvironment, aURI, aBrowser)
 	this.initVariables();
 }
 
-TestEnvironment.prototype = {
+TestSuite.prototype = {
 	__proto__ : ns.EventTarget.prototype,
 	
 destroy : function() 
@@ -560,53 +560,53 @@ getTabs : function(aOptions)
   
 // override some functions of utils 
 	
-include : function(aSource, aEncoding, aScope) 
+include : function(aSource, aEncoding, aNamespace) 
 {
 	var allowOverrideConstants = false;
 
 	if (aSource &&
 		aEncoding === void(0) &&
-		aScope === void(0) &&
+		aNamespace === void(0) &&
 		typeof aSource == 'object') { // hash style options
 		let options = aSource;
 		aSource = options.source || options.uri || options.url ;
 		aEncoding = options.encoding || options.charset;
-		aScope = options.scope || options.namespace || options.ns;
+		aNamespace = options.scope || options.namespace || options.nameSpace || options.ns;
 		allowOverrideConstants = options.allowOverrideConstants;
 	}
 	else if (typeof aEncoding == 'object') { // for backward compatibility
 		let scope = aEncoding;
-		aEncoding = aScope;
-		aScope = scope;
+		aEncoding = aNamespace;
+		aNamespace = scope;
 	}
 
 	return this._utils.include({
 			uri : aSource,
 			encoding : aEncoding,
-			namespace : (aScope || this.environment),
+			namespace : (aNamespace || this.environment),
 			allowOverrideConstants : allowOverrideConstants
 		});
 },
  
-import : function(aSource, aScope) 
+import : function(aSource, aNamespace) 
 {
-	return this._utils.import.call(this, aSource, aScope);
+	return this._utils.import.call(this, aSource, aNamespace);
 },
  
-createDatabaseFromSQLFile : function(aFile, aEncoding, aScope) 
+createDatabaseFromSQLFile : function(aFile, aEncoding, aNamespace) 
 {
 	if (aEncoding === void(0)) aEncoding = this._utils.getPref('extensions.uxu.defaultEncoding');
 	return this._utils.createDatabaseFromSQLFile.call(this, aFile, aEncoding);
 },
  
-processTemplate : function(aCode, aScope) 
+processTemplate : function(aCode, aNamespace) 
 {
 	var env = {};
-	if (aScope) {
-		for (var i in aScope)
+	if (aNamespace) {
+		for (var i in aNamespace)
 		{
-			if (aScope.hasOwnProperty(i))
-				env[i] = aScope[i];
+			if (aNamespace.hasOwnProperty(i))
+				env[i] = aNamespace[i];
 		}
 	}
 	env.__proto__ = this.environment;
@@ -647,13 +647,13 @@ log : function()
   
 }; 
   
-function WindowWatcherListener(aListener, aTargets, aEnvironment) 
+function WindowWatcherListener(aListener, aTargets, aSuite) 
 {
 	this.listener = aListener;
 	this.targets = aTargets || this.defaultTargets;
 	if (typeof this.targets == 'string')
 		this.targets = [this.targets];
-	this.environment = aEnvironment;
+	this.suite = aSuite;
 }
 
 WindowWatcherListener.prototype = {
@@ -691,7 +691,7 @@ WindowWatcherListener.prototype = {
 
 		try {
 			if (typeof this.listener == 'function')
-				this.listener.call(this.environment, aWindow, aTopic);
+				this.listener.call(this.suite, aWindow, aTopic);
 			else if ('observe' in this.listener)
 				this.listener.observe(aWindow, aTopic, aData);
 			else if ('handleEvent' in this.listener)
@@ -706,7 +706,7 @@ WindowWatcherListener.prototype = {
 				this.listener['on'+aTopic](aWindow);
 		}
 		catch(e) {
-			this.environment.log(e);
+			this.suite.log(e);
 		}
 	},
 	defaultTargets : ['load', 'domwindowclosed']

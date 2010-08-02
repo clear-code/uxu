@@ -13,11 +13,11 @@ var utils = ns.utils;
 
 const ADDRESS_TYPE_FRAGMENT = '//*[@id="addressingWidget"]/descendant::*[local-name()="menulist" and starts-with(@value, "addr_")]';
 	
-function Compose(aMailUtils, aEnvironment) 
+function Compose(aMailUtils, aSuite) 
 {
 	this._utils = aMailUtils;
-	this._environment = aEnvironment;
-	this.action = new ns.Action(aEnvironment);
+	this._suite = aSuite;
+	this.action = new ns.Action(aSuite);
 }
 Compose.prototype = {
 	ERROR_NO_COMPOSE_WINDOW : 'no compose window',
@@ -59,7 +59,7 @@ Compose.prototype = {
 	destroy : function() 
 	{
 		delete this._utils;
-		delete this._environment;
+		delete this._suite;
 	},
  
 // compose window 
@@ -67,7 +67,7 @@ Compose.prototype = {
 	_getWindows : function() 
 	{
 		var composeWindows = [];
-		this._environment.getChromeWindows({ type : 'msgcompose' })
+		this._suite.getChromeWindows({ type : 'msgcompose' })
 			.forEach(function(aWindow) {
 				if (this._isWindowReady(aWindow)) {
 					composeWindows.push(aWindow);
@@ -114,9 +114,9 @@ Compose.prototype = {
 	setUp : function() 
 	{
 		return utils.doIteration((function(aSelf) {
-			yield aSelf._environment.setUpTestWindow();
+			yield aSelf._suite.setUpTestWindow();
 
-			var mainWindow = aSelf._environment.getTestWindow();
+			var mainWindow = aSelf._suite.getTestWindow();
 			yield (function() {
 					return 'MsgNewMessage' in mainWindow;
 				});
@@ -136,7 +136,7 @@ Compose.prototype = {
 	tearDown : function() 
 	{
 		if (this._close()) {
-			this._environment.tearDownTestWindow();
+			this._suite.tearDownTestWindow();
 		}
 	},
 	
@@ -154,7 +154,7 @@ Compose.prototype = {
 	tearDownAll : function() 
 	{
 		if (this._closeAll()) {
-			this._environment.tearDownTestWindow();
+			this._suite.tearDownTestWindow();
 		}
 	},
 	
@@ -279,7 +279,7 @@ Compose.prototype = {
 	attachFile : function(aFile, aComposeWindow) 
 	{
 		if (!aFile) return;
-		aFile = this._environment.normalizeToFile(aFile);
+		aFile = this._suite.normalizeToFile(aFile);
 		if (!aFile || !aFile.exists()) return;
 		aComposeWindow = this._ensureWindowReady(aComposeWindow);
 		if ('AddFileAttachment' in aComposeWindow) { // Thunderbird 3 or later
@@ -489,7 +489,7 @@ Compose.prototype = {
 		{
 			let attachment = bucket.getItemAtIndex(i).attachment;
 			if (attachment) {
-				attachment = this._environment.normalizeToFile(attachment.url);
+				attachment = this._suite.normalizeToFile(attachment.url);
 				if (attachment) {
 					files.push(attachment);
 				}
