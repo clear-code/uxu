@@ -108,41 +108,20 @@ var testRunnerlistener = {
 		return node;
 	},
 
-	onTestCaseStart: function(aEvent) {
-		this.count = {
-			success  : 0,
-			failure  : 0,
-			error    : 0,
-			skip : 0
-		};
-		gLog.scrollBoxObject.ensureElementIsVisible(this.getReport(aEvent.data.testCase));
-		document.documentElement.setAttribute('running', true);
-	},
+	buildResultLine: function(aIndex, aTitle, aResult, aTestCase) {
+		var id = 'testcase-report-line-'+
+					encodeURIComponent(aTestCase.title)+'-'+
+					encodeURIComponent(aTestCase.source)+'-'+
+					aIndex+'-'+encodeURIComponent(aTitle);
+		var node = document.getElementById(id);
+		if (node)
+			return;
 
-	onTestCaseFinish: function(aEvent) {
-		var parent = this.getReport(aEvent.data.testCase);
-		var node = document.createElement('hbox');
-		node.setAttribute('class', 'testcase-finish');
-		node.appendChild(document.createElement('label'));
-		node.lastChild.setAttribute('value', bundle.getFormattedString(
-			'all_result_statistical',
-			[
-				this.count.success+this.count.failure+this.count.error+this.count.skip,
-				this.count.success,
-				this.count.failure,
-				this.count.error,
-				this.count.skip
-			]
-		));
-		parent.appendChild(node);
-		gLog.scrollBoxObject.ensureElementIsVisible(node);
-		document.documentElement.removeAttribute('running');
-	},
+		this.count[aResult]++;
+		this.count.total++;
 
-	onTestCaseTestFinish: function(aEvent) {
-		var report = aEvent.data.data;
 		var color;
-		switch (report.result)
+		switch (aResult)
 		{
 			case ns.TestCase.prototype.RESULT_SUCCESS:
 				color = 'background: green; color: white; ';
@@ -157,15 +136,64 @@ var testRunnerlistener = {
 				color = 'background: gray; color: white;';
 				break;
 		}
-		this.count[report.result]++;
-		var parent = this.getReport(aEvent.data.testCase);
-		var node = document.createElement('hbox');
+
+		var parent = this.getReport(aTestCase);
+		node = document.createElement('hbox');
+		node.setAttribute('id', id);
 		node.setAttribute('class', 'test-finish');
 		node.appendChild(document.createElement('label'));
 		node.lastChild.setAttribute('style', color);
-		node.lastChild.setAttribute('value', report.description);
+		node.lastChild.setAttribute('value', aTitle);
 		parent.appendChild(node);
 		gLog.scrollBoxObject.ensureElementIsVisible(node);
+	},
+
+	onTestCaseStart: function(aEvent) {
+		this.count = {
+			success  : 0,
+			failure  : 0,
+			error    : 0,
+			skip     : 0,
+			total    : 0
+		};
+		gLog.scrollBoxObject.ensureElementIsVisible(this.getReport(aEvent.data.testCase));
+		document.documentElement.setAttribute('running', true);
+	},
+
+	onTestCaseFinish: function(aEvent) {
+		var parent = this.getReport(aEvent.data.testCase);
+		var node = document.createElement('hbox');
+		node.setAttribute('class', 'testcase-finish');
+		node.appendChild(document.createElement('label'));
+		node.lastChild.setAttribute('value', bundle.getFormattedString(
+			'all_result_statistical',
+			[
+				this.count.total,
+				this.count.success,
+				this.count.failure,
+				this.count.error,
+				this.count.skip
+			]
+		));
+		parent.appendChild(node);
+		gLog.scrollBoxObject.ensureElementIsVisible(node);
+		document.documentElement.removeAttribute('running');
+	},
+
+	onTestCaseTestFinish: function(aEvent) {
+		var report = aEvent.data.data;
+		this.buildResultLine(report.index, report.description, report.result, aEvent.data.testCase);
+	},
+
+	onTestCaseRemoteTestFinish : function(aEvent)
+	{
+		aEvent.data.data.forEach(function(aResult) {
+			aResult.results
+				.slice(this.count.total)
+				.forEach(function(aResult) {
+					this.buildResultLine(aResult.index, aResult.title, aResult.type, aEvent.data.testCase);
+				}, this);
+		}, this);
 	},
 
 	_clearLog: function() {

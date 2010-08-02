@@ -54,8 +54,16 @@ Reporter.prototype = {
 					this.onStart(aEvent);
 					break;
 
+				case 'TestCaseStart':
+					this.doneReports = { count : 0 };
+					break;
+
 				case 'TestCaseTestFinish':
 					this.onTestFinish(aEvent);
+					break;
+
+				case 'TestCaseRemoteTestFinish':
+					this.onRemoteTestFinish(aEvent);
 					break;
 
 				case 'Finish':
@@ -91,10 +99,16 @@ Reporter.prototype = {
 		this.finished = true;
 	},
 
-	onTestFinish : function(aEvent)
+	handleReport : function(aReport, aTestCase)
 	{
-		var report = aEvent.data.data;
-		switch (report.result)
+		var id = 'testcase-report-line-'+
+					encodeURIComponent(aTestCase.title)+'-'+
+					encodeURIComponent(aTestCase.source)+'-'+
+					aReport.index+'-'+encodeURIComponent(aReport.description);
+		if (id in this.doneReports)
+			return;
+
+		switch (aReport.result)
 		{
 		    case ns.TestCase.prototype.RESULT_SKIPPED:
 				return;
@@ -106,18 +120,54 @@ Reporter.prototype = {
 				this.nFailures++;
 				break;
 			case ns.TestCase.prototype.RESULT_ERROR:
-				this._handleError(report, false);
+				this._handleError(aReport, false);
 				break;
 			default:
 				this.result += '?';
 				break;
 		}
-		if (this._isMoreImportantStatus(report.result))
-			this.resultStatus = report.result;
+		if (this._isMoreImportantStatus(aReport.result))
+			this.resultStatus = aReport.result;
 
 		this.nTests++;
-		if (report.exception)
-			this.badResults.push(report);
+
+		if (aReport.exception)
+			this.badResults.push(aReport);
+
+		this.doneReports[id] = true;
+		this.doneReports.count++;
+	},
+
+	onTestFinish : function(aEvent)
+	{
+		this.handleReport(aEvent.data.data, aEvent.data.testCase);
+	},
+
+	onRemoteTestFinish : function(aEvent)
+	{
+		aEvent.data.data.forEach(function(aResult) {
+			aResult.results
+				.slice(this.doneReportCount)
+				.forEach(function(aResult) {
+					var exception = null;
+					if (aResult.type == ns.TestCase.prototype.RESULT_FAILURE ||
+						aResult.type == ns.TestCase.prototype.RESULT_ERROR) {
+						exception = {
+							actual     : aResult.actual,
+							expected   : aResult.expected,
+							diff       : aResult.diff,
+							foldedDiff : aResult.foldedDiff,
+							message    : aResult.description,
+							stack      : aResult.stackTrace.join('\n')
+						};
+					}
+					this.handleReport({
+						result      : aResult.type,
+						description : aResult.title,
+						exception   : exception
+					}, aEvent.data.testCase);
+				}, this);
+		}, this);
 	},
 
 	onError : function(aEvent)
