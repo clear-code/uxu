@@ -23,8 +23,6 @@ var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 const IOService = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
 
-const XULAppInfo = Cc['@mozilla.org/xre/app-info;1'].getService(Ci.nsIXULAppInfo).QueryInterface(Ci.nsIXULRuntime);
-
 var Application = '@mozilla.org/fuel/application;1' in Cc ?
 			Cc['@mozilla.org/fuel/application;1'].getService(Ci.fuelIApplication) :
 		'@mozilla.org/steel/application;1' in Cc ?
@@ -2126,11 +2124,17 @@ get internalLoader()
   
 // アプリケーション 
 	
+get XULAppInfo() {
+	if (!this._XULAppInfo)
+		this._XULAppInfo = Cc['@mozilla.org/xre/app-info;1'].getService(Ci.nsIXULAppInfo).QueryInterface(Ci.nsIXULRuntime);
+	return this._XULAppInfo;
+},
+ 
 get product() { 
 	if (this._product)
 		return this._product;
 
-	switch (XULAppInfo.ID)
+	switch (this.XULAppInfo.ID)
 	{
 		case '{ec8030f7-c20a-464f-9b0e-13a3a9e97384}':
 			this._product = 'Firefox';
@@ -2167,14 +2171,14 @@ _productExecutable : null,
  
 get productVersion() { 
 	if (!this._productVersion)
-		this._productVersion = XULAppInfo.version;
+		this._productVersion = this.XULAppInfo.version;
 	return this._productVersion;
 },
 _productVersion : null,
  
 get platformVersion() { 
 	if (!this._platformVersion)
-		this._platformVersion = XULAppInfo.platformVersion;
+		this._platformVersion = this.XULAppInfo.platformVersion;
 	return this._platformVersion;
 },
 _platformVersion : null,
@@ -2234,7 +2238,7 @@ get installedUXU() {
  
 getInstalledLocationOfProduct : function(aProduct) 
 {
-	if (!aProduct || XULAppInfo.OS.toLowerCase().indexOf('win') < 0)
+	if (!aProduct || this.XULAppInfo.OS.toLowerCase().indexOf('win') < 0)
 		return null;
 
 	aProduct = String(aProduct).toLowerCase();
@@ -2260,7 +2264,7 @@ getInstalledLocationOfProduct : function(aProduct)
 	
 _getInstalledLocationOfMozillaProduct : function(aProduct) 
 {
-	if (!aProduct || XULAppInfo.OS.toLowerCase().indexOf('win') < 0)
+	if (!aProduct || this.XULAppInfo.OS.toLowerCase().indexOf('win') < 0)
 		return null;
 
 	var key;
@@ -2373,7 +2377,7 @@ compareVersions : function()
  
 checkProductVersion : function(aVersion) 
 {
-	return this.compareVersions(XULAppInfo.version, aVersion);
+	return this.compareVersions(this.XULAppInfo.version, aVersion);
 },
 checkAppVersion : function(aVersion) // obsolete, for backward compatibility
 {
@@ -2386,7 +2390,7 @@ checkApplicationVersion : function(aVersion) // obsolete, for backward compatibi
  
 checkPlatformVersion : function(aVersion) 
 {
-	return this.compareVersions(XULAppInfo.platformVersion, aVersion);
+	return this.compareVersions(this.XULAppInfo.platformVersion, aVersion);
 },
   
 // デバッグ 

@@ -8,6 +8,7 @@ const Ci = Components.interfaces;
 
 var ns = {};
 Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
+Components.utils.import('resource://uxu-modules/utils.js', ns);
 
 function GreasemonkeyUtils(aEnvironment)
 {
@@ -285,7 +286,7 @@ GreasemonkeyUtils.prototype = {
 			var modifiers = '';
 			if (aAccelModifiers) {
 				modifiers = [];
-				var isMac = navigator.platform.toLowerCase().indexOf('mac') > -1;
+				var isMac = ns.utils.XULAppInfo.OS.toLowerCase().indexOf('darwin') > -1;
 				if (!isMac && /ctrl|control|accel/i.test(aAccelModifiers))
 					modifiers.push('Ctrl');
 				if (isMac && /ctrl|control/i.test(aAccelModifiers))
