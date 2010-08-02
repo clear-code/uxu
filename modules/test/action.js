@@ -2,6 +2,10 @@
 
 if (typeof window == 'undefined')
 	this.EXPORTED_SYMBOLS = ['Action'];
+
+var ns = {};
+Components.utils.import('resource://uxu-modules/utils.js', ns);
+Components.utils.import('resource://uxu-modules/lib/action.jsm', ns);
  
 function Action(aSuite) 
 {
@@ -298,9 +302,7 @@ export : function(aNamespace, aForce)
 				});
 			}
 			else {
-				aNamespace[alias] = function() {
-					return prototype[aMethod].apply(self, arguments);
-				};
+				aNamespace[alias] = ns.utils.bind(prototype[aMethod], self);
 			}
 		})(aMethod, 'action');
 	}
@@ -308,7 +310,5 @@ export : function(aNamespace, aForce)
  
 }; 
 
-var ns = {};
-Components.utils.import('resource://uxu-modules/lib/action.jsm', ns);
 ns.action.export(Action.prototype);
   

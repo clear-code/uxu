@@ -1008,9 +1008,7 @@ Assertions.prototype = {
 						});
 				}
 				else {
-					assertIsTrue[aMethod] = function() {
-						return prototype[aMethod].apply(self, arguments);
-					};
+					assertIsTrue[aMethod] = utils.bind(prototype[aMethod], self);
 					if (aForce || !(aNamespace.__lookupGetter__(alias) || alias in aNamespace))
 						aNamespace[alias] = assertIsTrue[aMethod];
 				}

@@ -122,37 +122,17 @@ GreasemonkeyUtils.prototype = {
 				return env.frame.contentDocument;
 			},
 			XPathResult : Ci.nsIDOMXPathResult,
-			GM_log : function() {
-				return env.GM_log.apply(env, arguments);
-			},
-			GM_getValue : function() {
-				return env.GM_getValue.apply(env, arguments);
-			},
-			GM_setValue : function() {
-				return env.GM_setValue.apply(env, arguments);
-			},
-			GM_registerMenuCommand : function() {
-				return env.GM_registerMenuCommand.apply(env, arguments);
-			},
-			GM_xmlhttpRequest : function(aDetails) {
-				return env.GM_xmlhttpRequest.apply(env, arguments);
-			},
-			GM_addStyle : function() {
-				return env.GM_addStyle.apply(env, arguments);
-			},
-			GM_getResourceURL : function(aKey) {
-				return env.GM_getResourceURL.call(env, aKey, headers);
-			},
-			GM_getResourceText : function(aKey) {
-				return env.GM_getResourceText.call(env, aKey, headers);
-			},
-			GM_openInTab : function() {
-				return env.GM_openInTab.apply(env, arguments);
-			},
+			GM_log                 : ns.utils.bind(this.GM_log, env),
+			GM_getValue            : ns.utils.bind(this.GM_getValue, env),
+			GM_setValue            : ns.utils.bind(this.GM_setValue, env),
+			GM_registerMenuCommand : ns.utils.bind(this.GM_registerMenuCommand, env),
+			GM_xmlhttpRequest      : ns.utils.bind(this.GM_xmlhttpRequest, env),
+			GM_addStyle            : ns.utils.bind(this.GM_addStyle, env),
+			GM_getResourceURL      : ns.utils.bind(this.GM_getResourceURL, env),
+			GM_getResourceText     : ns.utils.bind(this.GM_getResourceText, env),
+			GM_openInTab           : ns.utils.bind(this.GM_openInTab, env),
 			console : {
-				log : function() {
-					return env.GM_log.apply(env, arguments);
-				}
+				log : ns.utils.bind(this.GM_log, env)
 			},
 			get GM_headers() {
 				return headers;
@@ -534,9 +514,7 @@ GreasemonkeyUtils.prototype = {
 						});
 				}
 				else {
-					aNamespace[alias] = function() {
-						return prototype[aMethod].apply(self, arguments);
-					};
+					aNamespace[alias] = ns.utils.bind(prototype[aMethod], self);
 				}
 			})(aMethod, 'greasemonkey');
 		}

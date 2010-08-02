@@ -2421,6 +2421,7 @@ export : function(aNamespace, aForce, aSelf, aSource)
 
 	aSelf = aSelf || this;
 	aSource = aSource || this.__proto__;
+	var self = this;
 	for (var i in aSource)
 	{
 		if (
@@ -2435,19 +2436,24 @@ export : function(aNamespace, aForce, aSelf, aSource)
 				aNamespace.__defineGetter__(aProperty, function() {
 					return aSelf[aProperty];
 				});
-				// aNamespace.__defineSetter__(aProperty, function(aValue) {
-				// 	return aSelf[aProperty] = aValue;
-				// });
+				aNamespace.__defineSetter__(aProperty, function(aValue) {
+					// return aSelf[aProperty] = aValue;
+					// just ignore operation
+					return aValue;
+				});
 			})(i);
 		}
 		else {
 			(function(aMethod) {
-				aNamespace[aMethod] = function() {
-					return aSource[aMethod].apply(aSelf, arguments);
-				};
+				aNamespace[aMethod] = self.bind(aSource[aMethod], aSelf);
 			})(i);
 		}
 	}
+},
+ 
+bind : function(aFunction, aThis)
+{
+	return function() { return aFunction.apply(aThis, arguments); };
 }
  
 }; 

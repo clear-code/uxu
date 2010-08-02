@@ -184,22 +184,14 @@ attachServerUtils : function()
 		return aValue;
 	});
 
-	this.sendMessage = function() {
-		return serverUtils.sendMessage.apply(serverUtils, arguments);
-	};
-	this.startListen = function() {
-		return serverUtils.startListen.apply(serverUtils, arguments);
-	};
+	this.sendMessage = ns.utils.bind(serverUtils.sendMessage, serverUtils);
+	this.startListen = ns.utils.bind(serverUtils.startListen, serverUtils);
 
 	this.setUpHttpServer = function(aPort, aBasePath) {
 		return serverUtils.setUpHttpServer(aPort, this.normalizeToFile(aBasePath));
 	};
-	this.tearDownHttpServer = function(aPort) {
-		return serverUtils.tearDownHttpServer(aPort);
-	};
-	this.tearDownAllHttpServers = function(aPort) {
-		return serverUtils.tearDownAllHttpServers();
-	};
+	this.tearDownHttpServer = ns.utils.bind(serverUtils.tearDownHttpServer, serverUtils);
+	this.tearDownAllHttpServers = ns.utils.bind(serverUtils.tearDownAllHttpServers, serverUtils);
 },
  
 // window management 
