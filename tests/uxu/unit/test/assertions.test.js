@@ -585,7 +585,47 @@ function testType()
 	assertFailure(assertionsModule.isNotFunction, [(function() {}), message]);
 	assertFailure(assertionsModule.isNotFunction, [(new Function('foo', 'return foo')), message]);
 
-	assert.equal(13, assertionsModule.successCount);
+	assertSuccess(assertionsModule.isObject, [{}]);
+	assertSuccess(assertionsModule.isObject, [new Object()]);
+	assertSuccess(assertionsModule.isObject, [[]]);
+	assertSuccess(assertionsModule.isObject, [new Array()]);
+	assertFailure(assertionsModule.isObject, [true, message]);
+	assertFailure(assertionsModule.isObject, [false, message]);
+	assertFailure(assertionsModule.isObject, [0, message]);
+	assertFailure(assertionsModule.isObject, ['func', message]);
+	assertSuccess(assertionsModule.isObject, [null]);
+
+	assertSuccess(assertionsModule.isNotObject, [true]);
+	assertSuccess(assertionsModule.isNotObject, [false]);
+	assertSuccess(assertionsModule.isNotObject, [0]);
+	assertSuccess(assertionsModule.isNotObject, ['func']);
+	assertFailure(assertionsModule.isNotObject, [null, message]);
+	assertFailure(assertionsModule.isNotObject, [{}, message]);
+	assertFailure(assertionsModule.isNotObject, [new Object(), message]);
+	assertFailure(assertionsModule.isNotObject, [[], message]);
+	assertFailure(assertionsModule.isNotObject, [new Array(), message]);
+
+	assertFailure(assertionsModule.isArray, [{}, message]);
+	assertFailure(assertionsModule.isArray, [new Object(), message]);
+	assertSuccess(assertionsModule.isArray, [[]]);
+	assertSuccess(assertionsModule.isArray, [new Array()]);
+	assertFailure(assertionsModule.isArray, [true, message]);
+	assertFailure(assertionsModule.isArray, [false, message]);
+	assertFailure(assertionsModule.isArray, [0, message]);
+	assertFailure(assertionsModule.isArray, ['func', message]);
+	assertFailure(assertionsModule.isArray, [null, message]);
+
+	assertSuccess(assertionsModule.isNotArray, [true]);
+	assertSuccess(assertionsModule.isNotArray, [false]);
+	assertSuccess(assertionsModule.isNotArray, [0]);
+	assertSuccess(assertionsModule.isNotArray, ['func']);
+	assertSuccess(assertionsModule.isNotArray, [null]);
+	assertSuccess(assertionsModule.isNotArray, [{}, message]);
+	assertSuccess(assertionsModule.isNotArray, [new Object(), message]);
+	assertFailure(assertionsModule.isNotArray, [[], message]);
+	assertFailure(assertionsModule.isNotArray, [new Array(), message]);
+
+	assert.equal(31, assertionsModule.successCount);
 }
 
 function testNullAndUndefined()
@@ -694,18 +734,31 @@ function testImplementsInstance()
 {
 	var message = Math.random() * 65000;
 
-	assertSuccess(assertionsModule.implementsInterface,
-		[Ci.nsIDOMWindow, window]
-	);
-	assertSuccess(assertionsModule.implementsInterface,
-		['nsIDOMWindow', window]
-	);
-	assertFailure(assertionsModule.implementsInterface,
-		[Ci.nsIDOMRange, window, message]
-	);
-	assertFailure(assertionsModule.implementsInterface,
-		['nsIDOMRange', window, message]
-	);
+	assertSuccess(assertionsModule.implementsInterface, [Ci.nsIDOMWindow, window]);
+	assertSuccess(assertionsModule.implementsInterface, ['nsIDOMWindow', window]);
+	assertFailure(assertionsModule.implementsInterface, [Ci.nsIDOMRange, window, message]);
+	assertFailure(assertionsModule.implementsInterface, ['nsIDOMRange', window, message]);
+}
+
+function testIsInstanceOf()
+{
+	var message = Math.random() * 65000;
+
+	assertSuccess(assertionsModule.isInstanceOf, [Ci.nsIDOMWindow, window]);
+	assertSuccess(assertionsModule.isInstanceOf, ['nsIDOMWindow', window]);
+	assertFailure(assertionsModule.isInstanceOf, [Ci.nsIDOMRange, window, message]);
+	assertFailure(assertionsModule.isInstanceOf, ['nsIDOMRange', window, message]);
+
+	assertSuccess(assertionsModule.isInstanceOf, [Array, []]);
+	assertSuccess(assertionsModule.isInstanceOf, [Object, [], message]);
+	assertSuccess(assertionsModule.isInstanceOf, [Object, {}]);
+	assertFailure(assertionsModule.isInstanceOf, [Array, {}, message]);
+	assertSuccess(assertionsModule.isInstanceOf, [Date, new Date()]);
+	assertFailure(assertionsModule.isInstanceOf, [Date, {}, message]);
+
+	function MyClass() {}
+	MyClass.prototype = { prop : true };
+	assertSuccess(assertionsModule.isInstanceOf, [MyClass, new MyClass()]);
 }
 
 function testRaises()

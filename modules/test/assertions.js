@@ -241,6 +241,54 @@ Assertions.prototype = {
 	},
 	notFunction : function() { return this.isNotFunction.apply(this, arguments); },
 
+	isObject : function(aActual, aMessage)
+	{
+		if (typeof aActual != 'object')
+			this.fail({
+			     	actualRaw   : this.appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_object_actual', [this.appendTypeString(aActual)])
+			     },
+			     bundle.getString('assert_is_object'), aMessage);
+		this._onSuccess();
+	},
+	'object' : function() { return this.isObject.apply(this, arguments); },
+
+	isNotObject : function(aActual, aMessage)
+	{
+		if (typeof aActual == 'object')
+			this.fail({
+			     	actualRaw   : this.appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_not_object_actual', [this.appendTypeString(aActual)])
+			     },
+			     bundle.getString('assert_is_not_object'), aMessage);
+		this._onSuccess();
+	},
+	notObject : function() { return this.isNotObject.apply(this, arguments); },
+
+	isArray : function(aActual, aMessage)
+	{
+		if (!utils.isArray(aActual))
+			this.fail({
+			     	actualRaw   : this.appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_array_actual', [this.appendTypeString(aActual)])
+			     },
+			     bundle.getString('assert_is_array'), aMessage);
+		this._onSuccess();
+	},
+	'array' : function() { return this.isArray.apply(this, arguments); },
+
+	isNotArray : function(aActual, aMessage)
+	{
+		if (utils.isArray(aActual))
+			this.fail({
+			     	actualRaw   : this.appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_not_array_actual', [this.appendTypeString(aActual)])
+			     },
+			     bundle.getString('assert_is_not_array'), aMessage);
+		this._onSuccess();
+	},
+	notArray : function() { return this.isNotArray.apply(this, arguments); },
+
 	isDefined : function(aActual, aMessage)
 	{
 		if (aActual === undefined)
@@ -291,16 +339,17 @@ Assertions.prototype = {
 
 	implementsInterface : function(aExpectedInterface, aActualInstance, aMessage)
 	{
-		if (typeof aExpectedInterface == 'string')
-			aExpectedInterface = Ci[aExpectedInterface];
+		var expected = aExpectedInterface;
+		if (expected in Ci)
+			expected = Ci[expected];
 
-		if (Ci[String(aExpectedInterface)] != String(aExpectedInterface))
-			throw new Error(bundle.getFormattedString('assert_implement_interface_not_interface', [this.appendTypeString(aExpectedInterface)]));
+		if (Ci[String(expected)] != String(expected))
+			throw new Error(bundle.getFormattedString('assert_implement_interface_not_interface', [this.appendTypeString(expected)]));
 
 		if (!(aActualInstance instanceof Ci.nsISupports))
 			throw new Error(bundle.getFormattedString('assert_implement_interface_not_instance', [this.appendTypeString(aActualInstance)]));
 
-		if (!(aActualInstance instanceof aExpectedInterface)) {
+		if (!(aActualInstance instanceof expected)) {
 			var actualInterfaces = [];
 			for (var i in Ci)
 			{
@@ -308,7 +357,7 @@ Assertions.prototype = {
 			}
 			actualInterfaces = actualInterfaces.sort().join('\n');
 			this.fail({
-			     	expected    : bundle.getFormattedString('assert_implement_interface_expected', [aExpectedInterface]),
+			     	expected    : bundle.getFormattedString('assert_implement_interface_expected', [expected]),
 			     	actual      : bundle.getFormattedString('assert_implement_interface_actual', [actualInterfaces])
 			     },
 			     bundle.getString('assert_implement_interface'), aMessage);
@@ -316,6 +365,34 @@ Assertions.prototype = {
 		this._onSuccess();
 	},
 	implementInterface : function() { return this.implementsInterface.apply(this, arguments); },
+
+	isInstanceOf : function(aExpectedClass, aActualInstance, aMessage)
+	{
+		var expected = aExpectedClass;
+
+		if (expected in Ci)
+			return this.implementsInterface(aExpectedClass, aActualInstance, aMessage);
+
+		if (typeof expected != 'function')
+			throw new Error(bundle.getFormattedString('assert_instance_not_constructor', [this.appendTypeString(expected)]));
+
+		if (!aActualInstance.constructor)
+			throw new Error(bundle.getFormattedString('assert_instance_not_instance', [this.appendTypeString(aActualInstance)]));
+
+		if (aActualInstance.constructor != expected && !(aActualInstance instanceof expected)) {
+			var actualConstructor = aActualInstance.constructor.toString().match(/function ([^\(\s]*)\(/)[1];
+			this.fail({
+			     	expected    : bundle.getFormattedString('assert_instance_expected', [expected]),
+			     	actual      : bundle.getFormattedString('assert_instance_actual', [actualConstructor])
+			     },
+			     bundle.getString('assert_instance'), aMessage);
+		}
+		this._onSuccess();
+	},
+	'instanceOf' : function() { return this.isInstanceOf.apply(this, arguments); },
+	'instanceof' : function() { return this.isInstanceOf.apply(this, arguments); },
+	'isInstance' : function() { return this.isInstanceOf.apply(this, arguments); },
+	'instance' : function() { return this.isInstanceOf.apply(this, arguments); },
 
 	raises : function(aExpectedException, aTask, aContext, aMessage)
 	{
