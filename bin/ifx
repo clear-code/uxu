@@ -5,6 +5,8 @@ require 'socket'
 
 port = ARGV.shift || 4444
 
+QUIT_MESSAGE = [0x1A].pack("U") + "__QUIT__"
+
 history_file = nil
 begin
   history_file = File.expand_path("~/.ifx.history")
@@ -43,10 +45,15 @@ begin
         break if socket.eof?
         buffer << socket.readpartial(4096)
       end
-      puts buffer unless buffer.empty?
+      unless buffer.empty?
+        raise Exception.new if buffer[0, 5] == QUIT_MESSAGE
+        puts buffer
+      end
     end
   end
 rescue SystemCallError
   puts "Is UxU server running? (localhost:#{port})"
+  exit(1)
+rescue Exception
   exit(1)
 end

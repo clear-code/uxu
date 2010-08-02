@@ -38,6 +38,7 @@ Context.prototype = {
 	__proto__ : ns.EventTarget.prototype,
 
 	RETURNABLE_SYNTAX_ERROR : 'returnable syntax error',
+	QUIT_MESSAGE : '\u001A__QUIT__',
 
 	addRunnerListener : function(aListener)
 	{
@@ -58,6 +59,7 @@ Context.prototype = {
 
 	quit : function()
 	{
+		this.puts(this.QUIT_MESSAGE);
 		this.fireEvent('QuitRequest');
 	},
 
