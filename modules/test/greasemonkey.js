@@ -6,11 +6,13 @@ if (typeof window == 'undefined')
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
+var ns = {};
+Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
 
 function GreasemonkeyUtils(aEnvironment)
 {
 	this.utils = aEnvironment;
-	this.frame = this.utils._testFrame;
+	this.frame = this.frameInTestRunner;
 	this.testWindow = null;
 	this.commands = [];
 	this.logs = [];
@@ -23,7 +25,7 @@ function GreasemonkeyUtils(aEnvironment)
 GreasemonkeyUtils.prototype = {
 
 	get frameInTestRunner() {
-		return this.utils._testFrame;
+		return this.utils.testFrame;
 	},
 
 	destroy : function()
@@ -55,32 +57,36 @@ GreasemonkeyUtils.prototype = {
 		aURI = this.utils.fixupIncompleteURI(aURI)
 		this.listeners = [];
 		this.sandboxes = {};
-		var loadedFlag = { value : false, window : null };
-		var _this = this;
-		this.utils.openTestWindow(
-			aOptions,
-			function(win) {
-				_this.testWindow = win;
-				loadedFlag.window = win;
-				win.setTimeout(function() {
-					var b = win.gBrowser;
-					if (!b) {
-						loadedFlag.value = true;
-						return;
-					}
-					var tab = b.addTab('about:blank');
-					b.removeAllTabsBut(tab);
-					b.stop();
-					win.setTimeout(function() {
-						_this.utils._waitBrowserLoad(tab, b, loadedFlag, function() {
-							_this.frame = b;
-						});
-						b.loadURI(aURI);
-					}, 0);
-				}, 0);
+		var loadedFlag = { value : false, window : null, tab : null };
+
+		var self = this;
+		var postProcess = function() {
+			self.utils.wait(tempFlag);
+
+			self.testWindow = self.utils.getTestWindow(aOptions);
+			loadedFlag.window = self.testWindow;
+
+			var b = loadedFlag.window.gBrowser;
+			if (b) {
+				loadedFlag.tab = self.utils.addTab(aURI).tab;
+				self.frame = loadedFlag.tab.linkedBrowser;
+				b.removeAllTabsBut(loadedFlag.tab);
+				loadedFlag.value = true;
 			}
-		);
-		if (!aOptions || !aOptions.async) this.utils.wait(loadedFlag);
+			else {
+				loadedFlag.value = true;
+			}
+		};
+
+		var tempFlag = this.utils.setUpTestWindow(null, aOptions);
+		if (!aOptions || !aOptions.async) {
+			this.utils.wait(tempFlag);
+			postProcess();
+		}
+		else {
+			ns.setTimeout(postProcess, 0);
+		}
+
 		return loadedFlag;
 	},
 
@@ -101,8 +107,10 @@ GreasemonkeyUtils.prototype = {
 		if (aURI in this.sandboxes) return this.sandboxes[aURI];
 
 		var env = this;
+		var win = (this.frame || this.frameInTestRunner).contentWindow;
 		var headers = [];
 		var sandbox = {
+			__proto__ : win,
 			get window() {
 				return env.frame.contentWindow;
 			},
@@ -270,7 +278,7 @@ GreasemonkeyUtils.prototype = {
 			accelModifiers : aAccelModifiers,
 			accessKey : aAccessKey
 		});
-		var command = document.createElement('menuitem');
+		var command = this.frameInTestRunner.ownerDocument.createElement('menuitem');
 		command.setAttribute('label', aName);
 		command.oncommand = aFunction;
 		if (aAccelKey) {
@@ -486,5 +494,50 @@ GreasemonkeyUtils.prototype = {
 		if (this.testWindow &&
 			this.testWindow.gBrowser)
 			this.testWindow.gBrowser.addTab(aURI);
+	},
+
+
+	export : function(aNamespace, aForce)
+	{
+		var self = this;
+		var prototype = GreasemonkeyUtils.prototype;
+
+		if (aForce || !(aNamespace.__lookupGetter__('greasemonkey') || 'greasemonkey' in aNamespace)) {
+			aNamespace.__defineGetter__('greasemonkey', function(aValue) {
+				return self;
+			});
+			aNamespace.__defineSetter__('greasemonkey', function(aValue) {
+				return aValue;
+			});
+		}
+
+		for (var aMethod in prototype)
+		{
+			if (
+				!prototype.hasOwnProperty(aMethod) ||
+				aMethod.charAt(0) == '_' ||
+				/^(export)$/.test(aMethod)
+				)
+				continue;
+
+			(function(aMethod, aPrefix) {
+				var alias = aMethod.indexOf('GM_') == 0 ?
+						aMethod :
+						aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1) ;
+				if (!aForce && (aNamespace.__lookupGetter__(alias) || alias in aNamespace))
+					return;
+
+				if (prototype.__lookupGetter__(aMethod) || (typeof prototype[aMethod] != 'function')){
+						aNamespace.__defineGetter__(alias, function() {
+							return self[aMethod];
+						});
+				}
+				else {
+					aNamespace[alias] = function() {
+						return prototype[aMethod].apply(self, arguments);
+					};
+				}
+			})(aMethod, 'greasemonkey');
+		}
 	}
 };

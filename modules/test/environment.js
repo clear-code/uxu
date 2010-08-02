@@ -45,7 +45,7 @@ function TestEnvironment(aEnvironment, aURI, aBrowser)
 	this.windowWatcherListeners = [];
 
     this.uniqueID = parseInt(Math.random() * 10000000000);
-    this._testFrame = aBrowser;
+    this.testFrame = aBrowser;
 
 	switch (this._utils.product)
 	{
@@ -159,27 +159,7 @@ attachActions : function()
 attachGMUtils : function() 
 {
 	var greasemonkey = new ns.GreasemonkeyUtils(this);
-	this.__defineGetter__('greasemonkey', function() {
-		return greasemonkey;
-	});
-	this.__defineSetter__('greasemonkey', function(aValue) {
-		return aValue;
-	});
-	for (var aMethod in greasemonkey)
-	{
-		if (typeof greasemonkey[aMethod] != 'function')
-			continue;
-		(function(aMethod, aSelf, aObj, aPrefix) {
-			var func = function() {
-					return aObj[aMethod].apply(aObj, arguments);
-				};
-			aSelf[
-				aMethod.indexOf('GM_') == 0 ?
-					aMethod :
-					aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)
-			] = func;
-		})(aMethod, this, greasemonkey, 'greasemonkey');
-	}
+	greasemonkey.export(this);
 },
  
 attachMailUtils : function() 
@@ -498,7 +478,7 @@ loadURIInternal : function(aURI, aOptions)
 {
 	var loadedFlag = { value : false };
 
-	var b = this._testFrame;
+	var b = this.testFrame;
 	if (!aOptions.inFrame) {
 		var win = this.getTestWindow(aOptions);
 		if (win) b = win.gBrowser;
@@ -566,7 +546,7 @@ getBrowser : function(aOptions)
 getTestFrameOwner : function(aOptions) 
 {
 	var win = this.getTestWindow(aOptions);
-	if (!win || !win.gBrowser) return this._testFrame;
+	if (!win || !win.gBrowser) return this.testFrame;
 	return win.gBrowser;
 },
  
