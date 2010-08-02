@@ -2439,7 +2439,7 @@ export : function(aNamespace, aForce, aSelf, aSource)
 		else {
 			(function(aMethod) {
 				aNamespace[aMethod] = function() {
-					return aSelf[aMethod].apply(aSelf, arguments);
+					return aSource[aMethod].apply(aSelf, arguments);
 				};
 			})(i);
 		}

@@ -279,6 +279,7 @@ export : function(aNamespace, aForce)
 	for (var aMethod in prototype)
 	{
 		if (
+			!prototype.hasOwnProperty(aMethod) ||
 			typeof prototype[aMethod] != 'function' ||
 			aMethod.charAt(0) == '_' ||
 			aMethod == 'export' ||
@@ -286,11 +287,22 @@ export : function(aNamespace, aForce)
 			)
 			continue;
 
-		(function(aMethod, aSelf, aPrototype, aPrefix) {
-			aSelf[aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)] = function() {
-				return aPrototype[aMethod].apply(aSelf, arguments);
-			};
-		})(aMethod, self, prototype, 'action');
+		(function(aMethod, aPrefix) {
+			var alias = aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1);
+			if (!aForce && (aNamespace.__lookupGetter__(alias) || alias in aNamespace))
+				return;
+
+			if (prototype.__lookupGetter__(aMethod) || (typeof prototype[aMethod] != 'function')){
+				aNamespace.__defineGetter__(alias, function() {
+					return self[aMethod];
+				});
+			}
+			else {
+				aNamespace[alias] = function() {
+					return prototype[aMethod].apply(self, arguments);
+				};
+			}
+		})(aMethod, 'action');
 	}
 }
  

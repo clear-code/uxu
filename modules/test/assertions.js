@@ -972,37 +972,49 @@ Assertions.prototype = {
 		var prototype = Assertions.prototype;
 
 		var assertIsTrue = function() {
-				return self.isTrue.call(this, arguments);
+				return self.isTrue.call(self, arguments);
 			};
 		assertIsTrue.__defineGetter__('_source', function(aValue) {
 			return self;
 		});
-		aNamespace.__defineGetter__('assert', function(aValue) {
-			return assertIsTrue;
-		});
-		aNamespace.__defineSetter__('assert', function(aValue) {
-			return aValue;
-		});
+
+		if (aForce || !(aNamespace.__lookupGetter__('assert') || 'assert' in aNamespace)) {
+			aNamespace.__defineGetter__('assert', function(aValue) {
+				return assertIsTrue;
+			});
+			aNamespace.__defineSetter__('assert', function(aValue) {
+				return aValue;
+			});
+		}
 
 		for (var aMethod in prototype)
 		{
 			if (
+				!prototype.hasOwnProperty(aMethod) ||
 				aMethod.charAt(0) == '_' ||
-				/^(export|resetSuccessCount)$/.test(aMethod) ||
-				(!aForce && (aNamespace.__lookupGetter__(aMethod) || aMethod in aNamespace))
+				/^(export|resetSuccessCount)$/.test(aMethod)
 				)
 				continue;
 
-			(function(aMethod, aSelf, aPrototype, aPrefix) {
-				if (prototype.__lookupGetter__(aMethod) || typeof prototype[aMethod] != 'function'){
+			(function(aMethod, aPrefix) {
+				var alias = aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1);
+				if (prototype.__lookupGetter__(aMethod) || (typeof prototype[aMethod] != 'function')){
+					assertIsTrue.__defineGetter__(aMethod, function() {
+						return self[aMethod];
+					});
+					if (aForce || !(aNamespace.__lookupGetter__(alias) || alias in aNamespace))
+						aNamespace.__defineGetter__(alias, function() {
+							return self[aMethod];
+						});
 				}
 				else {
 					assertIsTrue[aMethod] = function() {
-						return aPrototype[aMethod].apply(aSelf, arguments);
+						return prototype[aMethod].apply(self, arguments);
 					};
-					aNamespace[aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)] = assertIsTrue[aMethod];
+					if (aForce || !(aNamespace.__lookupGetter__(alias) || alias in aNamespace))
+						aNamespace[alias] = assertIsTrue[aMethod];
 				}
-			})(aMethod, self, prototype, 'assert');
+			})(aMethod, 'assert');
 		}
 	}
 };
