@@ -36,13 +36,13 @@ function tearDown()
 function test_createTestSuite()
 {
 	var suite = runner._createTestSuite(declarationStyleTest);
-	assert.isFunction(suite.TestCase.prototype.run);
-	assert.isFunction(suite.TestCase.prototype.registerTest);
-	assert.isFunction(suite.TestCase.prototype.verify);
-	assert.isFunction(suite.Specification.prototype.run);
-	assert.isFunction(suite.Specification.prototype.registerTest);
-	assert.isFunction(suite.Specification.prototype.verify);
-	assert.equals(suite.TestCase, suite.Specification);
+	assert.isFunction(suite.environment.TestCase.prototype.run);
+	assert.isFunction(suite.environment.TestCase.prototype.registerTest);
+	assert.isFunction(suite.environment.TestCase.prototype.verify);
+	assert.isFunction(suite.environment.Specification.prototype.run);
+	assert.isFunction(suite.environment.Specification.prototype.registerTest);
+	assert.isFunction(suite.environment.Specification.prototype.verify);
+	assert.equals(suite.environment.TestCase, suite.environment.Specification);
 
 	assert.equals('このテストの説明', suite.environment.description);
 	assert.isFunction(suite.environment.testSomething1);
