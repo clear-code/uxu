@@ -132,50 +132,14 @@ get contentDocument() { return this.getTestFrameOwner().contentDocument; },
 attachAssertions : function() 
 {
 	var assert = new ns.Assertions();
-	this.__defineGetter__('assert', function() {
-		return assert;
-	});
-	this.__defineSetter__('assert', function(aValue) {
-		return aValue;
-	});
+	assert.export(this);
 	assert.addListener(this);
-	for (var aMethod in assert)
-	{
-		if (typeof assert[aMethod] != 'function') continue;
-		(function(aMethod, aSelf, aObj, aPrefix) {
-			var func = function() {
-					return aObj[aMethod].apply(aObj, arguments);
-				};
-			aSelf[aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)] = func;
-			if (aMethod.indexOf('is') == 0 &&
-				aMethod.substring(2) &&
-				!(aMethod.substring(2) in aSelf))
-				aSelf[aPrefix+aMethod.substring(2)] = func;
-		})(aMethod, this, assert, 'assert');
-	}
-	this.ok = function() { assert.ok.apply(this, arguments); };
-	this.is = function() { assert.is.apply(this, arguments); };
 },
  
 attachActions : function() 
 {
-	var actionInstance = new ns.Action(this);
-	this.__defineGetter__('action', function() {
-		return actionInstance;
-	});
-	this.__defineSetter__('action', function(aValue) {
-		return aValue;
-	});
-	for (var aMethod in actionInstance)
-	{
-		if (typeof actionInstance[aMethod] != 'function') continue;
-		(function(aMethod, aSelf, aObj, aPrefix) {
-			var func = function() {
-					return aObj[aMethod].apply(aObj, arguments);
-				};
-			aSelf[aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)] = func;
-		})(aMethod, this, actionInstance, 'action');
-	}
+	var action = new ns.Action(this);
+	action.export(this);
 },
  
 attachGMUtils : function() 

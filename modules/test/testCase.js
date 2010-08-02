@@ -941,7 +941,7 @@ TestCase.prototype = {
 			},
 			doTest : function(aContinuation)
 			{
-				ns.Assertions.prototype.resetSuccessCount.call(_this.environment.assert);
+				ns.Assertions.prototype.resetSuccessCount.call(_this.environment.assert.source);
 				testReport.report.onDetailedStart();
 				var newReport = _this._exec(current, context, aContinuation, testReport);
 				if (newReport.result) {
@@ -961,7 +961,7 @@ TestCase.prototype = {
 				try {
 					if (testReport.report.result == _this.RESULT_SUCCESS) {
 						ns.Assertions.prototype.validSuccessCount.call(
-							_this.environment.assert,
+							_this.environment.assert.source,
 							current.assertions,
 							current.minAssertions,
 							current.maxAssertions

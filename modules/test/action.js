@@ -264,8 +264,36 @@ cancelReadiedAction : function(aListener)
 	var index = this.readiedActionListeners.indexOf(aListener);
 	if (index > -1)
 		this.readiedActionListeners.splice(index, 1);
-}
+},
    
+export : function(aNamespace, aForce) 
+{
+	var self = this;
+	var prototype = Action.prototype;
+	aNamespace.__defineGetter__('action', function() {
+		return self;
+	});
+	aNamespace.__defineSetter__('action', function(aValue) {
+		return aValue;
+	});
+	for (var aMethod in prototype)
+	{
+		if (
+			typeof prototype[aMethod] != 'function' ||
+			aMethod.charAt(0) == '_' ||
+			aMethod == 'export' ||
+			(!aForce && (aNamespace.__lookupGetter__(aMethod) || aMethod in aNamespace))
+			)
+			continue;
+
+		(function(aMethod, aSelf, aPrototype, aPrefix) {
+			aSelf[aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)] = function() {
+				return aPrototype[aMethod].apply(aSelf, arguments);
+			};
+		})(aMethod, self, prototype, 'action');
+	}
+}
+ 
 }; 
 
 var ns = {};

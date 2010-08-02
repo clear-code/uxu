@@ -1006,7 +1006,7 @@ function test_fail()
 {
 	var exception = null;
 	try {
-		assertionsModule.fail(
+		assertionsModule._fail(
 			null,
 			0,
 			1,
@@ -1029,7 +1029,7 @@ function test_fail()
 
 	exception = null;
 	try {
-		assertionsModule.fail(
+		assertionsModule._fail(
 			{
 				actualRaw   : 0,
 				actual      : 1
@@ -1055,7 +1055,7 @@ function test_fail()
 
 	exception = null;
 	try {
-		assertionsModule.fail(
+		assertionsModule._fail(
 			{
 				expectedRaw   : 0,
 				expected      : 1
@@ -1081,7 +1081,7 @@ function test_fail()
 
 	exception = null;
 	try {
-		assertionsModule.fail(
+		assertionsModule._fail(
 			{
 				expectedRaw : '0aaaaaaaaaa',
 				actualRaw   : '1aaaaaaaaaa',
@@ -1109,15 +1109,15 @@ function test_fail()
 
 function test_appendTypeString()
 {
-	assert.equals('true (boolean)', assertionsModule.appendTypeString(true));
-	assert.equals('0 (number)',     assertionsModule.appendTypeString(0));
-	assert.equals('"a" (string)',   assertionsModule.appendTypeString('a'));
-	assert.equals('"a" (String)',   assertionsModule.appendTypeString(new String('a')));
-	assert.equals('{} (Object)',    assertionsModule.appendTypeString({}));
-	assert.equals('[] (Array)',     assertionsModule.appendTypeString([]));
-	assert.equals('null',           assertionsModule.appendTypeString(null));
-	assert.equals('undefined',      assertionsModule.appendTypeString(void(0)));
-	assert.equals('function () {\n} (function)', assertionsModule.appendTypeString(function() {}));
+	assert.equals('true (boolean)', assertionsModule._appendTypeString(true));
+	assert.equals('0 (number)',     assertionsModule._appendTypeString(0));
+	assert.equals('"a" (string)',   assertionsModule._appendTypeString('a'));
+	assert.equals('"a" (String)',   assertionsModule._appendTypeString(new String('a')));
+	assert.equals('{} (Object)',    assertionsModule._appendTypeString({}));
+	assert.equals('[] (Array)',     assertionsModule._appendTypeString([]));
+	assert.equals('null',           assertionsModule._appendTypeString(null));
+	assert.equals('undefined',      assertionsModule._appendTypeString(void(0)));
+	assert.equals('function () {\n} (function)', assertionsModule._appendTypeString(function() {}));
 }
 
 function testSuccessCount()
@@ -1174,4 +1174,184 @@ function testAssertValidSuccessCount()
 	assertAssertValidSuccessCountFailed(-1, -1, 1);
 	assertAssertValidSuccessCountSucceeded(-1, -1, 2);
 	assertAssertValidSuccessCountSucceeded(-1, -1, 3);
+}
+
+
+testExport.priority = 'must';
+function testExport()
+{
+	var namespace = {};
+	assertionsModule.export(namespace);
+
+	assert.isFunction(namespace.assert);
+
+	assert.isFunction(namespace.assert.equals);
+	assert.isFunction(namespace.assert.equal);
+	assert.isFunction(namespace.assert.arrayEquals);
+	assert.isFunction(namespace.assert.arrayEqual);
+	assert.isFunction(namespace.assert.notEquals);
+	assert.isFunction(namespace.assert.notEqual);
+	assert.isFunction(namespace.assert.strictlyEquals);
+	assert.isFunction(namespace.assert.strictlyEqual);
+	assert.isFunction(namespace.assert.notStrictlyEquals);
+	assert.isFunction(namespace.assert.notStrictlyEqual);
+	assert.isFunction(namespace.assert.isTrue);
+	assert.isFunction(namespace.assert.true);
+	assert.isFunction(namespace.assert.isFalse);
+	assert.isFunction(namespace.assert.false);
+	assert.isFunction(namespace.assert.isBoolean);
+	assert.isFunction(namespace.assert.isBool);
+	assert.isFunction(namespace.assert.boolean);
+	assert.isFunction(namespace.assert.bool);
+	assert.isFunction(namespace.assert.isNotBoolean);
+	assert.isFunction(namespace.assert.isNotBool);
+	assert.isFunction(namespace.assert.notBoolean);
+	assert.isFunction(namespace.assert.notBool);
+	assert.isFunction(namespace.assert.isString);
+	assert.isFunction(namespace.assert.string);
+	assert.isFunction(namespace.assert.isNotString);
+	assert.isFunction(namespace.assert.notString);
+	assert.isFunction(namespace.assert.isNumber);
+	assert.isFunction(namespace.assert.number);
+	assert.isFunction(namespace.assert.isNotNumber);
+	assert.isFunction(namespace.assert.notNumber);
+	assert.isFunction(namespace.assert.isFunction);
+	assert.isFunction(namespace.assert.function);
+	assert.isFunction(namespace.assert.isNotFunction);
+	assert.isFunction(namespace.assert.notFunction);
+	assert.isFunction(namespace.assert.isObject);
+	assert.isFunction(namespace.assert.object);
+	assert.isFunction(namespace.assert.isNotObject);
+	assert.isFunction(namespace.assert.notObject);
+	assert.isFunction(namespace.assert.isArray);
+	assert.isFunction(namespace.assert.array);
+	assert.isFunction(namespace.assert.isNotArray);
+	assert.isFunction(namespace.assert.notArray);
+	assert.isFunction(namespace.assert.isDefined);
+	assert.isFunction(namespace.assert.defined);
+	assert.isFunction(namespace.assert.isUndefined);
+	assert.isFunction(namespace.assert.undefined);
+	assert.isFunction(namespace.assert.isNull);
+	assert.isFunction(namespace.assert.null);
+	assert.isFunction(namespace.assert.isNotNull);
+	assert.isFunction(namespace.assert.notNull);
+	assert.isFunction(namespace.assert.implementsInterface);
+	assert.isFunction(namespace.assert.implementInterface);
+	assert.isFunction(namespace.assert.isInstanceOf);
+	assert.isFunction(namespace.assert.instanceOf);
+	assert.isFunction(namespace.assert.instanceof);
+	assert.isFunction(namespace.assert.isInstance);
+	assert.isFunction(namespace.assert.instance);
+	assert.isFunction(namespace.assert.raises);
+	assert.isFunction(namespace.assert.raise);
+	assert.isFunction(namespace.assert.notRaises);
+	assert.isFunction(namespace.assert.notRaise);
+	assert.isFunction(namespace.assert.matches);
+	assert.isFunction(namespace.assert.match);
+	assert.isFunction(namespace.assert.notMatches);
+	assert.isFunction(namespace.assert.notMatch);
+	assert.isFunction(namespace.assert.pattern);
+	assert.isFunction(namespace.assert.notPattern);
+	assert.isFunction(namespace.assert.inDelta);
+	assert.isFunction(namespace.assert.compare);
+	assert.isFunction(namespace.assert.contains);
+	assert.isFunction(namespace.assert.contain);
+	assert.isFunction(namespace.assert.notContains);
+	assert.isFunction(namespace.assert.notContain);
+	assert.isFunction(namespace.assert.contained);
+	assert.isFunction(namespace.assert.notContained);
+	assert.isFunction(namespace.assert.finishesWithin);
+	assert.isFunction(namespace.assert.finishWithin);
+	assert.isFunction(namespace.assert.ok);
+	assert.isFunction(namespace.assert.is);
+	assert.isFunction(namespace.assert.assertionsCountEquals);
+	assert.isFunction(namespace.assert.assertionsCountEqual);
+	assert.isFunction(namespace.assert.assertionsMinCount);
+	assert.isFunction(namespace.assert.assertionsMaxCount);
+	assert.isFunction(namespace.assert.validSuccessCount);
+
+	assert.isFunction(namespace.assertEquals);
+	assert.isFunction(namespace.assertEqual);
+	assert.isFunction(namespace.assertArrayEquals);
+	assert.isFunction(namespace.assertArrayEqual);
+	assert.isFunction(namespace.assertNotEquals);
+	assert.isFunction(namespace.assertNotEqual);
+	assert.isFunction(namespace.assertStrictlyEquals);
+	assert.isFunction(namespace.assertStrictlyEqual);
+	assert.isFunction(namespace.assertNotStrictlyEquals);
+	assert.isFunction(namespace.assertNotStrictlyEqual);
+	assert.isFunction(namespace.assertIsTrue);
+	assert.isFunction(namespace.assertTrue);
+	assert.isFunction(namespace.assertIsFalse);
+	assert.isFunction(namespace.assertFalse);
+	assert.isFunction(namespace.assertIsBoolean);
+	assert.isFunction(namespace.assertIsBool);
+	assert.isFunction(namespace.assertBoolean);
+	assert.isFunction(namespace.assertBool);
+	assert.isFunction(namespace.assertIsNotBoolean);
+	assert.isFunction(namespace.assertIsNotBool);
+	assert.isFunction(namespace.assertNotBoolean);
+	assert.isFunction(namespace.assertNotBool);
+	assert.isFunction(namespace.assertIsString);
+	assert.isFunction(namespace.assertString);
+	assert.isFunction(namespace.assertIsNotString);
+	assert.isFunction(namespace.assertNotString);
+	assert.isFunction(namespace.assertIsNumber);
+	assert.isFunction(namespace.assertNumber);
+	assert.isFunction(namespace.assertIsNotNumber);
+	assert.isFunction(namespace.assertNotNumber);
+	assert.isFunction(namespace.assertIsFunction);
+	assert.isFunction(namespace.assertFunction);
+	assert.isFunction(namespace.assertIsNotFunction);
+	assert.isFunction(namespace.assertNotFunction);
+	assert.isFunction(namespace.assertIsObject);
+	assert.isFunction(namespace.assertObject);
+	assert.isFunction(namespace.assertIsNotObject);
+	assert.isFunction(namespace.assertNotObject);
+	assert.isFunction(namespace.assertIsArray);
+	assert.isFunction(namespace.assertArray);
+	assert.isFunction(namespace.assertIsNotArray);
+	assert.isFunction(namespace.assertNotArray);
+	assert.isFunction(namespace.assertIsDefined);
+	assert.isFunction(namespace.assertDefined);
+	assert.isFunction(namespace.assertIsUndefined);
+	assert.isFunction(namespace.assertUndefined);
+	assert.isFunction(namespace.assertIsNull);
+	assert.isFunction(namespace.assertNull);
+	assert.isFunction(namespace.assertIsNotNull);
+	assert.isFunction(namespace.assertNotNull);
+	assert.isFunction(namespace.assertImplementsInterface);
+	assert.isFunction(namespace.assertImplementInterface);
+	assert.isFunction(namespace.assertIsInstanceOf);
+	assert.isFunction(namespace.assertInstanceOf);
+	assert.isFunction(namespace.assertInstanceof);
+	assert.isFunction(namespace.assertIsInstance);
+	assert.isFunction(namespace.assertInstance);
+	assert.isFunction(namespace.assertRaises);
+	assert.isFunction(namespace.assertRaise);
+	assert.isFunction(namespace.assertNotRaises);
+	assert.isFunction(namespace.assertNotRaise);
+	assert.isFunction(namespace.assertMatches);
+	assert.isFunction(namespace.assertMatch);
+	assert.isFunction(namespace.assertNotMatches);
+	assert.isFunction(namespace.assertNotMatch);
+	assert.isFunction(namespace.assertPattern);
+	assert.isFunction(namespace.assertNotPattern);
+	assert.isFunction(namespace.assertInDelta);
+	assert.isFunction(namespace.assertCompare);
+	assert.isFunction(namespace.assertContains);
+	assert.isFunction(namespace.assertContain);
+	assert.isFunction(namespace.assertNotContains);
+	assert.isFunction(namespace.assertNotContain);
+	assert.isFunction(namespace.assertContained);
+	assert.isFunction(namespace.assertNotContained);
+	assert.isFunction(namespace.assertFinishesWithin);
+	assert.isFunction(namespace.assertFinishWithin);
+	assert.isFunction(namespace.assertOk);
+	assert.isFunction(namespace.assertIs);
+	assert.isFunction(namespace.assertAssertionsCountEquals);
+	assert.isFunction(namespace.assertAssertionsCountEqual);
+	assert.isFunction(namespace.assertAssertionsMinCount);
+	assert.isFunction(namespace.assertAssertionsMaxCount);
+	assert.isFunction(namespace.assertValidSuccessCount);
 }

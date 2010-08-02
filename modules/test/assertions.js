@@ -58,11 +58,11 @@ Assertions.prototype = {
 	equals : function(aExpected, aActual, aMessage)
 	{
 		if (!utils.equals(aExpected, aActual))
-			this.fail({
-			     	expectedRaw : this.appendTypeString(aExpected),
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	expected    : bundle.getFormattedString('assert_equals_expected', [this.appendTypeString(aExpected)]),
-			     	actual      : bundle.getFormattedString('assert_equals_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	expectedRaw : this._appendTypeString(aExpected),
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	expected    : bundle.getFormattedString('assert_equals_expected', [this._appendTypeString(aExpected)]),
+			     	actual      : bundle.getFormattedString('assert_equals_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_equals'),
 			     aMessage);
@@ -75,11 +75,11 @@ Assertions.prototype = {
 	notEquals : function(aExpected, aActual, aMessage)
 	{
 		if (utils.equals(aExpected, aActual))
-			this.fail({
-			     	expectedRaw : this.appendTypeString(aExpected),
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	expected    : bundle.getFormattedString('assert_not_equals_expected', [this.appendTypeString(aExpected)]),
-			     	actual      : bundle.getFormattedString('assert_not_equals_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	expectedRaw : this._appendTypeString(aExpected),
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	expected    : bundle.getFormattedString('assert_not_equals_expected', [this._appendTypeString(aExpected)]),
+			     	actual      : bundle.getFormattedString('assert_not_equals_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_not_equals'),
 			     aMessage);
@@ -90,11 +90,11 @@ Assertions.prototype = {
 	strictlyEquals : function(aExpected, aActual, aMessage)
 	{
 		if (!utils.strictlyEquals(aExpected, aActual))
-			this.fail({
-			     	expectedRaw : this.appendTypeString(aExpected),
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	expected    : bundle.getFormattedString('assert_strictly_equals_expected', [this.appendTypeString(aExpected)]),
-			     	actual      : bundle.getFormattedString('assert_strictly_equals_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	expectedRaw : this._appendTypeString(aExpected),
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	expected    : bundle.getFormattedString('assert_strictly_equals_expected', [this._appendTypeString(aExpected)]),
+			     	actual      : bundle.getFormattedString('assert_strictly_equals_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_strictly_equals'),
 			     aMessage);
@@ -105,11 +105,11 @@ Assertions.prototype = {
 	notStrictlyEquals : function(aExpected, aActual, aMessage)
 	{
 		if (utils.strictlyEquals(aExpected, aActual))
-			this.fail({
-			     	expectedRaw : this.appendTypeString(aExpected),
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	expected    : bundle.getFormattedString('assert_not_strictly_equals_expected', [this.appendTypeString(aExpected)]),
-			     	actual      : bundle.getFormattedString('assert_not_strictly_equals_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	expectedRaw : this._appendTypeString(aExpected),
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	expected    : bundle.getFormattedString('assert_not_strictly_equals_expected', [this._appendTypeString(aExpected)]),
+			     	actual      : bundle.getFormattedString('assert_not_strictly_equals_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_not_strictly_equals'),
 			     aMessage);
@@ -120,9 +120,9 @@ Assertions.prototype = {
 	isTrue : function(aActual, aMessage)
 	{
 		if (!aActual)
-			this.fail({
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	actual      : bundle.getFormattedString('assert_is_true_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_true_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_is_true'), aMessage);
 		this._onSuccess();
@@ -132,9 +132,9 @@ Assertions.prototype = {
 	isFalse : function(aActual, aMessage)
 	{
 		if (aActual)
-			this.fail({
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	actual      : bundle.getFormattedString('assert_is_false_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_false_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_is_false'), aMessage);
 		this._onSuccess();
@@ -144,9 +144,9 @@ Assertions.prototype = {
 	isBoolean : function(aActual, aMessage)
 	{
 		if (typeof aActual != 'boolean')
-			this.fail({
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	actual      : bundle.getFormattedString('assert_is_boolean_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_boolean_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_is_boolean'), aMessage);
 		this._onSuccess();
@@ -158,9 +158,9 @@ Assertions.prototype = {
 	isNotBoolean : function(aActual, aMessage)
 	{
 		if (typeof aActual == 'boolean')
-			this.fail({
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	actual      : bundle.getFormattedString('assert_is_not_boolean_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_not_boolean_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_is_not_boolean'), aMessage);
 		this._onSuccess();
@@ -172,9 +172,9 @@ Assertions.prototype = {
 	isString : function(aActual, aMessage)
 	{
 		if (typeof aActual != 'string')
-			this.fail({
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	actual      : bundle.getFormattedString('assert_is_string_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_string_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_is_string'), aMessage);
 		this._onSuccess();
@@ -184,9 +184,9 @@ Assertions.prototype = {
 	isNotString : function(aActual, aMessage)
 	{
 		if (typeof aActual == 'string')
-			this.fail({
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	actual      : bundle.getFormattedString('assert_is_not_string_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_not_string_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_is_not_string'), aMessage);
 		this._onSuccess();
@@ -196,9 +196,9 @@ Assertions.prototype = {
 	isNumber : function(aActual, aMessage)
 	{
 		if (typeof aActual != 'number')
-			this.fail({
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	actual      : bundle.getFormattedString('assert_is_number_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_number_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_is_number'), aMessage);
 		this._onSuccess();
@@ -208,9 +208,9 @@ Assertions.prototype = {
 	isNotNumber : function(aActual, aMessage)
 	{
 		if (typeof aActual == 'number')
-			this.fail({
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	actual      : bundle.getFormattedString('assert_is_not_number_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_not_number_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_is_not_number'), aMessage);
 		this._onSuccess();
@@ -220,9 +220,9 @@ Assertions.prototype = {
 	isFunction : function(aActual, aMessage)
 	{
 		if (typeof aActual != 'function')
-			this.fail({
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	actual      : bundle.getFormattedString('assert_is_function_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_function_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_is_function'), aMessage);
 		this._onSuccess();
@@ -232,9 +232,9 @@ Assertions.prototype = {
 	isNotFunction : function(aActual, aMessage)
 	{
 		if (typeof aActual == 'function')
-			this.fail({
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	actual      : bundle.getFormattedString('assert_is_not_function_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_not_function_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_is_not_function'), aMessage);
 		this._onSuccess();
@@ -244,9 +244,9 @@ Assertions.prototype = {
 	isObject : function(aActual, aMessage)
 	{
 		if (typeof aActual != 'object')
-			this.fail({
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	actual      : bundle.getFormattedString('assert_is_object_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_object_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_is_object'), aMessage);
 		this._onSuccess();
@@ -256,9 +256,9 @@ Assertions.prototype = {
 	isNotObject : function(aActual, aMessage)
 	{
 		if (typeof aActual == 'object')
-			this.fail({
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	actual      : bundle.getFormattedString('assert_is_not_object_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_not_object_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_is_not_object'), aMessage);
 		this._onSuccess();
@@ -268,9 +268,9 @@ Assertions.prototype = {
 	isArray : function(aActual, aMessage)
 	{
 		if (!utils.isArray(aActual))
-			this.fail({
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	actual      : bundle.getFormattedString('assert_is_array_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_array_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_is_array'), aMessage);
 		this._onSuccess();
@@ -280,9 +280,9 @@ Assertions.prototype = {
 	isNotArray : function(aActual, aMessage)
 	{
 		if (utils.isArray(aActual))
-			this.fail({
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	actual      : bundle.getFormattedString('assert_is_not_array_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_not_array_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_is_not_array'), aMessage);
 		this._onSuccess();
@@ -292,9 +292,9 @@ Assertions.prototype = {
 	isDefined : function(aActual, aMessage)
 	{
 		if (aActual === undefined)
-			this.fail({
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	actual      : bundle.getFormattedString('assert_is_defined_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_defined_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_is_defined'), aMessage);
 		this._onSuccess();
@@ -304,9 +304,9 @@ Assertions.prototype = {
 	isUndefined : function(aActual, aMessage)
 	{
 		if (aActual !== undefined)
-			this.fail({
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	actual      : bundle.getFormattedString('assert_is_undefined_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_undefined_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_is_undefined'), aMessage);
 		this._onSuccess();
@@ -316,9 +316,9 @@ Assertions.prototype = {
 	isNull : function(aActual, aMessage)
 	{
 		if (aActual !== null)
-			this.fail({
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	actual      : bundle.getFormattedString('assert_is_null_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_null_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_is_null'), aMessage);
 		this._onSuccess();
@@ -328,9 +328,9 @@ Assertions.prototype = {
 	isNotNull : function(aActual, aMessage)
 	{
 		if (aActual === null)
-			this.fail({
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	actual      : bundle.getFormattedString('assert_is_not_null_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	actual      : bundle.getFormattedString('assert_is_not_null_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_is_not_null'), aMessage);
 		this._onSuccess();
@@ -344,10 +344,10 @@ Assertions.prototype = {
 			expected = Ci[expected];
 
 		if (Ci[String(expected)] != String(expected))
-			throw new Error(bundle.getFormattedString('assert_implement_interface_not_interface', [this.appendTypeString(expected)]));
+			throw new Error(bundle.getFormattedString('assert_implement_interface_not_interface', [this._appendTypeString(expected)]));
 
 		if (!(aActualInstance instanceof Ci.nsISupports))
-			throw new Error(bundle.getFormattedString('assert_implement_interface_not_instance', [this.appendTypeString(aActualInstance)]));
+			throw new Error(bundle.getFormattedString('assert_implement_interface_not_instance', [this._appendTypeString(aActualInstance)]));
 
 		if (!(aActualInstance instanceof expected)) {
 			var actualInterfaces = [];
@@ -356,7 +356,7 @@ Assertions.prototype = {
 				if (aActualInstance instanceof Ci[i]) actualInterfaces.push(i);
 			}
 			actualInterfaces = actualInterfaces.sort().join('\n');
-			this.fail({
+			this._fail({
 			     	expected    : bundle.getFormattedString('assert_implement_interface_expected', [expected]),
 			     	actual      : bundle.getFormattedString('assert_implement_interface_actual', [actualInterfaces])
 			     },
@@ -374,14 +374,14 @@ Assertions.prototype = {
 			return this.implementsInterface(aExpectedClass, aActualInstance, aMessage);
 
 		if (typeof expected != 'function')
-			throw new Error(bundle.getFormattedString('assert_instance_not_constructor', [this.appendTypeString(expected)]));
+			throw new Error(bundle.getFormattedString('assert_instance_not_constructor', [this._appendTypeString(expected)]));
 
 		if (!aActualInstance.constructor)
-			throw new Error(bundle.getFormattedString('assert_instance_not_instance', [this.appendTypeString(aActualInstance)]));
+			throw new Error(bundle.getFormattedString('assert_instance_not_instance', [this._appendTypeString(aActualInstance)]));
 
 		if (aActualInstance.constructor != expected && !(aActualInstance instanceof expected)) {
 			var actualConstructor = aActualInstance.constructor.toString().match(/function ([^\(\s]*)\(/)[1];
-			this.fail({
+			this._fail({
 			     	expected    : bundle.getFormattedString('assert_instance_expected', [expected]),
 			     	actual      : bundle.getFormattedString('assert_instance_actual', [actualConstructor])
 			     },
@@ -440,7 +440,7 @@ Assertions.prototype = {
 	_onRaisesFinish : function(aExpectedException, aActualException, aMessage)
 	{
 		if (aActualException) {
-			this.fail({
+			this._fail({
 			     	expectedRaw : aExpectedException,
 			     	actualRaw   : aActualException,
 			     	expected    : bundle.getFormattedString('assert_raises_expected', [aExpectedException]),
@@ -449,7 +449,7 @@ Assertions.prototype = {
 			     bundle.getString('assert_raises'), aMessage);
 		}
 		else {
-			this.fail({
+			this._fail({
 			     	expectedRaw : aExpectedException,
 			     	expected    : bundle.getFormattedString('assert_raises_expected', [aExpectedException])
 			     },
@@ -501,7 +501,7 @@ Assertions.prototype = {
 	notRaise : function() { return this.notRaises.apply(this, arguments); },
 	_onNotRaisesFinish : function(aUnexpectedException, aActualException, aMessage)
 	{
-		this.fail({
+		this._fail({
 		     	expectedRaw : aUnexpectedException,
 		     	actualRaw   : aActualException,
 		     	expected    : bundle.getFormattedString('assert_not_raises_expected', [aUnexpectedException]),
@@ -513,7 +513,7 @@ Assertions.prototype = {
 	matches : function(aExpectedPattern, aActualString, aMessage)
 	{
 		if (!aActualString.match(aExpectedPattern))
-			this.fail({
+			this._fail({
 			     	expectedRaw : aExpectedPattern,
 			     	actualRaw   : aActualString,
 			     	expected    : bundle.getFormattedString('assert_matches_expected', [aExpectedPattern]),
@@ -527,7 +527,7 @@ Assertions.prototype = {
 	notMatches : function(aUnexpectedPattern, aActualString, aMessage)
 	{
 		if (aActualString.match(aUnexpectedPattern))
-			this.fail({
+			this._fail({
 			     	expectedRaw : aUnexpectedPattern,
 			     	actualRaw   : aActualString,
 			     	expected    : bundle.getFormattedString('assert_not_matches_expected', [aUnexpectedPattern]),
@@ -541,7 +541,7 @@ Assertions.prototype = {
 	pattern : function(aExpectedString, aActualPattern, aMessage)
 	{
 		if (!aExpectedString.match(aActualPattern))
-			this.fail({
+			this._fail({
 			     	expectedRaw : aExpectedString,
 			     	actualRaw   : aActualPattern,
 			     	expected    : bundle.getFormattedString('assert_pattern_expected', [aExpectedString]),
@@ -554,7 +554,7 @@ Assertions.prototype = {
 	notPattern : function(aUnexpectedString, aActualPattern, aMessage)
 	{
 		if (aUnexpectedString.match(aActualPattern))
-			this.fail({
+			this._fail({
 			     	expectedRaw : aUnexpectedString,
 			     	actualRaw   : aActualPattern,
 			     	expected    : bundle.getFormattedString('assert_not_pattern_expected', [aUnexpectedString]),
@@ -574,7 +574,7 @@ Assertions.prototype = {
 			);
 
 		if (aExpected - aDelta > aActual || aActual > aExpected + aDelta)
-			this.fail({
+			this._fail({
 			     	expectedRaw : (aExpected - aDelta)+' - '+(aExpected + aDelta),
 			     	actualRaw   : aActual,
 			     	expected    : bundle.getFormattedString('assert_in_delta_expected',
@@ -584,7 +584,7 @@ Assertions.prototype = {
 			     								aExpected,
 			     								aDelta]),
 			     	actual      : bundle.getFormattedString('assert_in_delta_actual',
-			     							   [this.appendTypeString(aActual)])
+			     							   [this._appendTypeString(aActual)])
 			     },
 				 bundle.getString('assert_in_delta'),
 				 aMessage);
@@ -594,13 +594,13 @@ Assertions.prototype = {
 	_greaterThan : function(aExpected, aActual, aMessage)
 	{
 		if (aExpected >= aActual)
-			this.fail({
+			this._fail({
 			     	expectedRaw : aExpected,
 			     	actualRaw   : aActual,
 			     	expected    : bundle.getFormattedString('assert_greater_than_expected',
-			     							   [this.appendTypeString(aExpected)]),
+			     							   [this._appendTypeString(aExpected)]),
 			     	actual      : bundle.getFormattedString('assert_greater_than_actual',
-			     							   [this.appendTypeString(aActual)])
+			     							   [this._appendTypeString(aActual)])
 			     },
 				 bundle.getString('assert_greater_than'),
 				 aMessage);
@@ -611,13 +611,13 @@ Assertions.prototype = {
 	_greaterOrEqual : function(aExpected, aActual, aMessage)
 	{
 		if (aExpected > aActual)
-			this.fail({
+			this._fail({
 			     	expectedRaw : aExpected,
 			     	actualRaw   : aActual,
 			     	expected    : bundle.getFormattedString('assert_greater_or_equal_expected',
-			     							   [this.appendTypeString(aExpected)]),
+			     							   [this._appendTypeString(aExpected)]),
 			     	actual      : bundle.getFormattedString('assert_greater_or_equal_actual',
-			     							   [this.appendTypeString(aActual)])
+			     							   [this._appendTypeString(aActual)])
 			     },
 				 bundle.getString('assert_greater_or_equal'),
 				 aMessage);
@@ -627,13 +627,13 @@ Assertions.prototype = {
 	_lessThan : function(aExpected, aActual, aMessage)
 	{
 		if (aExpected <= aActual)
-			this.fail({
+			this._fail({
 			     	expectedRaw : aExpected,
 			     	actualRaw   : aActual,
 			     	expected    : bundle.getFormattedString('assert_less_than_expected',
-			     							   [this.appendTypeString(aExpected)]),
+			     							   [this._appendTypeString(aExpected)]),
 			     	actual      : bundle.getFormattedString('assert_less_than_actual',
-			     							   [this.appendTypeString(aActual)])
+			     							   [this._appendTypeString(aActual)])
 			     },
 				 bundle.getString('assert_less_than'),
 				 aMessage);
@@ -644,13 +644,13 @@ Assertions.prototype = {
 	_lessOrEqual : function(aExpected, aActual, aMessage)
 	{
 		if (aExpected < aActual)
-			this.fail({
+			this._fail({
 			     	expectedRaw : aExpected,
 			     	actualRaw   : aActual,
 			     	expected    : bundle.getFormattedString('assert_less_or_equal_expected',
-			     							   [this.appendTypeString(aExpected)]),
+			     							   [this._appendTypeString(aExpected)]),
 			     	actual      : bundle.getFormattedString('assert_less_or_equal_actual',
-			     							   [this.appendTypeString(aActual)])
+			     							   [this._appendTypeString(aActual)])
 			     },
 				 bundle.getString('assert_less_or_equal'),
 				 aMessage);
@@ -696,11 +696,11 @@ Assertions.prototype = {
 				!utils.isTargetInSubTree(aExpected, aActual) :
 				(utils.isArray(aActual) ? aActual : String(aActual) ).indexOf(aExpected) < 0
 			)
-			this.fail({
-			     	expectedRaw : this.appendTypeString(aExpected),
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	expected    : bundle.getFormattedString('assert_contains_expected', [this.appendTypeString(aExpected)]),
-			     	actual      : bundle.getFormattedString('assert_contains_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	expectedRaw : this._appendTypeString(aExpected),
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	expected    : bundle.getFormattedString('assert_contains_expected', [this._appendTypeString(aExpected)]),
+			     	actual      : bundle.getFormattedString('assert_contains_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_contains'),
 			     aMessage);
@@ -719,11 +719,11 @@ Assertions.prototype = {
 				utils.isTargetInSubTree(aExpected, aActual) :
 				(utils.isArray(aActual) ? aActual : String(aActual) ).indexOf(aExpected) > -1
 			)
-			this.fail({
-			     	expectedRaw : this.appendTypeString(aExpected),
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	expected    : bundle.getFormattedString('assert_not_contains_expected', [this.appendTypeString(aExpected)]),
-			     	actual      : bundle.getFormattedString('assert_not_contains_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	expectedRaw : this._appendTypeString(aExpected),
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	expected    : bundle.getFormattedString('assert_not_contains_expected', [this._appendTypeString(aExpected)]),
+			     	actual      : bundle.getFormattedString('assert_not_contains_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_not_contains'),
 			     aMessage);
@@ -742,11 +742,11 @@ Assertions.prototype = {
 				!utils.isTargetInSubTree(aActual, aExpected) :
 				(utils.isArray(aExpected) ? aExpected : String(aExpected) ).indexOf(aActual) < 0
 			)
-			this.fail({
-			     	expectedRaw : this.appendTypeString(aExpected),
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	expected    : bundle.getFormattedString('assert_contained_expected', [this.appendTypeString(aExpected)]),
-			     	actual      : bundle.getFormattedString('assert_contained_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	expectedRaw : this._appendTypeString(aExpected),
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	expected    : bundle.getFormattedString('assert_contained_expected', [this._appendTypeString(aExpected)]),
+			     	actual      : bundle.getFormattedString('assert_contained_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_contained'),
 			     aMessage);
@@ -764,11 +764,11 @@ Assertions.prototype = {
 				utils.isTargetInSubTree(aActual, aExpected) :
 				(utils.isArray(aExpected) ? aExpected : String(aExpected) ).indexOf(aActual) > -1
 			)
-			this.fail({
-			     	expectedRaw : this.appendTypeString(aExpected),
-			     	actualRaw   : this.appendTypeString(aActual),
-			     	expected    : bundle.getFormattedString('assert_not_contained_expected', [this.appendTypeString(aExpected)]),
-			     	actual      : bundle.getFormattedString('assert_not_contained_actual', [this.appendTypeString(aActual)])
+			this._fail({
+			     	expectedRaw : this._appendTypeString(aExpected),
+			     	actualRaw   : this._appendTypeString(aActual),
+			     	expected    : bundle.getFormattedString('assert_not_contained_expected', [this._appendTypeString(aExpected)]),
+			     	actual      : bundle.getFormattedString('assert_not_contained_actual', [this._appendTypeString(aActual)])
 			     },
 			     bundle.getString('assert_not_contained'),
 			     aMessage);
@@ -807,7 +807,7 @@ Assertions.prototype = {
 			var longActualTime = actualTime < 1000 ?
 					'' :
 					bundle.getFormattedString('assert_finishes_within_actual_long', [Math.round(actualTime / 1000)]) ;
-			this.fail({
+			this._fail({
 			     	expected : bundle.getFormattedString('assert_finishes_within_expected', [aExpectedTime, longExpectedTime]),
 			     	actual   : bundle.getFormattedString('assert_finishes_within_actual', [actualTime, longActualTime])
 			     },
@@ -866,7 +866,7 @@ Assertions.prototype = {
 		{
 			case '<=':
 				if (aExpected > aActual)
-					this.fail({
+					this._fail({
 							expected    : bundle.getFormattedString('assert_min_success_count_expected', [aExpected]),
 							actual      : bundle.getFormattedString('assert_min_success_count_actual', [aActual])
 						},
@@ -876,7 +876,7 @@ Assertions.prototype = {
 				return;
 			case '>=':
 				if (aExpected < aActual)
-					this.fail({
+					this._fail({
 							expected    : bundle.getFormattedString('assert_max_success_count_expected', [aExpected]),
 							actual      : bundle.getFormattedString('assert_max_success_count_actual', [aActual])
 						},
@@ -886,7 +886,7 @@ Assertions.prototype = {
 				return;
 			case '==':
 				if (!utils.equals(aExpected, aActual))
-					this.fail({
+					this._fail({
 							expected    : bundle.getFormattedString('assert_success_count_expected', [aExpected]),
 							actual      : bundle.getFormattedString('assert_success_count_actual', [aActual])
 						},
@@ -927,7 +927,7 @@ Assertions.prototype = {
 	},
 
 
-	fail : function()
+	_fail : function()
 	{
 		var args = Array.slice(arguments);
 		var error = new Error();
@@ -956,7 +956,7 @@ Assertions.prototype = {
 		throw error;
 	},
 
-	appendTypeString : function(aValue)
+	_appendTypeString : function(aValue)
 	{
 		if (aValue === null) return 'null';
 		if (aValue === void(0)) return 'undefined';
@@ -964,5 +964,46 @@ Assertions.prototype = {
 				[utils.inspectDOMNode(aValue), utils.inspect(aValue)] :
 				[utils.inspect(aValue), utils.inspectType(aValue)]
 		return bundle.getFormattedString('typed_value', args);
+	},
+
+	export : function(aNamespace, aForce)
+	{
+		var self = this;
+		var prototype = Assertions.prototype;
+
+		var assertIsTrue = function() {
+				return self.isTrue.call(this, arguments);
+			};
+		assertIsTrue.__defineGetter__('source', function(aValue) {
+			return self;
+		});
+		aNamespace.__defineGetter__('assert', function(aValue) {
+			return assertIsTrue;
+		});
+		aNamespace.__defineSetter__('assert', function(aValue) {
+			return aValue;
+		});
+
+		for (var aMethod in prototype)
+		{
+			if (
+				aMethod.charAt(0) == '_' ||
+				aMethod == 'export' ||
+				aMethod == 'resetSuccessCount' ||
+				(!aForce && (aNamespace.__lookupGetter__(aMethod) || aMethod in aNamespace))
+				)
+				continue;
+
+			(function(aMethod, aSelf, aPrototype, aPrefix) {
+				if (prototype.__lookupGetter__(aMethod) || typeof prototype[aMethod] != 'function'){
+				}
+				else {
+					assertIsTrue[aMethod] = function() {
+						return aPrototype[aMethod].apply(aSelf, arguments);
+					};
+					aNamespace[aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1)] = assertIsTrue[aMethod];
+				}
+			})(aMethod, self, prototype, 'assert');
+		}
 	}
 };
