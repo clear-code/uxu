@@ -974,7 +974,7 @@ Assertions.prototype = {
 		var assertIsTrue = function() {
 				return self.isTrue.call(this, arguments);
 			};
-		assertIsTrue.__defineGetter__('source', function(aValue) {
+		assertIsTrue.__defineGetter__('_source', function(aValue) {
 			return self;
 		});
 		aNamespace.__defineGetter__('assert', function(aValue) {
@@ -988,8 +988,7 @@ Assertions.prototype = {
 		{
 			if (
 				aMethod.charAt(0) == '_' ||
-				aMethod == 'export' ||
-				aMethod == 'resetSuccessCount' ||
+				/^(export|resetSuccessCount)$/.test(aMethod) ||
 				(!aForce && (aNamespace.__lookupGetter__(aMethod) || aMethod in aNamespace))
 				)
 				continue;
