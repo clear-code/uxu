@@ -637,6 +637,11 @@ include : function(aSource, aEncoding, aScope)
 		});
 },
  
+import : function(aSource, aScope) 
+{
+	return this._utils.import.call(this, aSource, aScope);
+},
+ 
 createDatabaseFromSQLFile : function(aFile, aEncoding, aScope) 
 {
 	if (aEncoding === void(0)) aEncoding = this._utils.getPref('extensions.uxu.defaultEncoding');

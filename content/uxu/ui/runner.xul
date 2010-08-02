@@ -407,5 +407,10 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 	</vbox>
 </hbox>
 
+<browser id="internal-loader"
+	type="content"
+	src="about:blank"
+	collapsed="true"/>
+
 </window>
 

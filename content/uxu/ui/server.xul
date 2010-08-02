@@ -36,5 +36,10 @@
 			<resizer dir="bottomright"/>
 		</hbox>
 	</hbox>
+
+	<browser id="internal-loader"
+		type="content"
+		src="about:blank"
+		collapsed="true"/>
 </window>
 

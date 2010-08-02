@@ -646,7 +646,7 @@ include : function(aSource, aEncoding, aScope)
 	}
 
 	aSource = this.fixupIncompleteURI(aSource);
-	var encoding = aEncoding || this.getPref('extensions.uxu.defaultEncoding');
+	var encoding = aEncoding || this.getDocumentEncoding(aSource) || this.getPref('extensions.uxu.defaultEncoding');
 	var script;
 	try {
 		script = this.readFrom(aSource, encoding) || '';
@@ -667,6 +667,20 @@ include : function(aSource, aEncoding, aScope)
 			aScope
 		);
 	return script;
+},
+ 
+// for JavaScript code modules
+import : function(aSource, aScope) 
+{
+	var global = {};
+	this.include(aSource, global);
+	if (aScope && 'EXPORTED_SYMBOLS' in global) {
+		for (var i in global.EXPORTED_SYMBOLS)
+		{
+			aScope[i] = global[i];
+		}
+	}
+	return global;
 },
  
 // テンポラリファイル 
@@ -2065,6 +2079,49 @@ _convertParameterType : function(aInput, aType)
 			break;
 	}
 	return data;
+},
+ 
+getDocumentEncoding : function(aSource) 
+{
+	return null;
+
+	if (
+		!this.internalLoader ||
+		!aSource ||
+		!/^(jar:)?(file|chrome|resource):/.test(aSource) // only for local resources
+		)
+		return null;
+
+	var loader = this.internalLoader;
+
+	var completed = { value : null };
+	var listener = function() {
+			loader.removeEventListener('load', listener, true);
+			loader.removeEventListener('error', listener, true);
+			loader.stop();
+
+			completed.value = loader.contentDocument.characterSet;
+		};
+	loader.addEventListener('load', listener, true);
+	loader.addEventListener('error', listener, true);
+
+	try {
+		// add "view-source:" to ignore loading of external resources
+		loader.loadURI('view-source:'+aSource);
+		this.wait(completed);
+	}
+	catch(e) {
+		loader.removeEventListener('load', listener, true);
+		loader.removeEventListener('error', listener, true);
+		return null;
+	}
+
+	return completed.value;
+},
+ 
+get internalLoader()
+{
+	return Utils.internalLoader;
 },
   
 // アプリケーション 

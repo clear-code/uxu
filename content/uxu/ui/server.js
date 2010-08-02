@@ -37,6 +37,8 @@ var restartObserver = {
 };
 
 function Startup() {
+	ns.Utils.internalLoader = $('internal-loader');
+
 	if ('arguments' in window &&
 		window.arguments &&
 		window.arguments.length) {
@@ -76,6 +78,9 @@ function Startup() {
 function Shutdown() {
 	gServer.stop();
 	ObserverService.removeObserver(restartObserver, 'quit-application-requested');
+
+	if (ns.Utils.internalLoader == $('internal-loader'))
+		ns.Utils.internalLoader = null;
 }
 
 var testRunnerlistener = {

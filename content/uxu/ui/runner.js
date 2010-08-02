@@ -225,6 +225,8 @@ const fileDNDObserver =
 	 
 function startup() 
 {
+	ns.Utils.internalLoader = $('internal-loader');
+
 	gLog = new ns.TestLog();
 
 	if (!isLinux()) {
@@ -365,6 +367,9 @@ function shutdown()
 	ObserverService.removeObserver(restartObserver, 'quit-application-requested');
 	_('content').removeEventListener('load', onContentLoad, true);
 	hideSource();
+
+	if (ns.Utils.internalLoader == $('internal-loader'))
+		ns.Utils.internalLoader = null;
 }
   
 /* test cases */ 
