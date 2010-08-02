@@ -97,7 +97,7 @@ TestRunner.prototype = {
 			obj = env[i];
 			if (!env.hasOwnProperty(i) || !obj) continue;
 			if (obj.__proto__ == ns.TestCase.prototype) {
-				obj.environment = env;
+				obj.suite = aSuite;
 				tests.push(obj);
 				continue;
 			}
