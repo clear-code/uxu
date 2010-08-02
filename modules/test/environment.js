@@ -124,7 +124,8 @@ initVariables : function()
 	this.environment.Ci = Ci;
 },
  
-get gBrowser() { return this.getTestFrameOwner(); }, 
+get utils() { return this; }, 
+get gBrowser() { return this.getTestFrameOwner(); },
 get contentWindow() { return this.getTestFrameOwner().contentWindow; },
 get content() { return this.getTestFrameOwner().contentWindow; },
 get contentDocument() { return this.getTestFrameOwner().contentDocument; },
