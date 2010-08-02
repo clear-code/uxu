@@ -403,20 +403,7 @@ TestRunner.prototype = {
 	_createTestSuite : function(aURL) 
 	{
 		var suite = new ns.TestEnvironment(null, aURL, this._browser);
-
-		/* backward compatibility for MozLab/MozUnit testcases */
-		suite.TestCase      = ns.TestCase;
-		suite.Specification = ns.TestCase;
-		suite.mozlab = {
-			mozunit : {
-				TestCase      : ns.TestCase,
-				Specification : ns.TestCase,
-				assertions    : suite.assert
-			}
-		};
-
 		suite.include(suite.fileURL, suite.environment);
-
 		return suite;
 	}
    

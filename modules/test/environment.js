@@ -13,6 +13,7 @@ Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/test/assertions.js', ns);
 Components.utils.import('resource://uxu-modules/test/action.js', ns);
 Components.utils.import('resource://uxu-modules/test/greasemonkey.js', ns);
+Components.utils.import('resource://uxu-modules/test/testCase.js', ns);
 Components.utils.import('resource://uxu-modules/server/utils.js', ns);
 Components.utils.import('resource://uxu-modules/mail/utils.js', ns);
 
@@ -68,13 +69,14 @@ function TestEnvironment(aEnvironment, aURI, aBrowser)
 			break;
 	}
 
-	this.initVariables();
 	this.attachAssertions();
 	this.attachActions();
 	this.attachServerUtils();
 
 	this._utils.export(this.environment.utils, false, this, this.__proto__);
 	this._utils.export(this.environment.utils, false, this, this);
+
+	this.initVariables();
 }
 
 TestEnvironment.prototype = {
@@ -122,6 +124,17 @@ initVariables : function()
 
 	this.environment.Cc = Cc;
 	this.environment.Ci = Ci;
+
+	/* backward compatibility for MozLab/MozUnit testcases */
+	this.environment.TestCase      = ns.TestCase;
+	this.environment.Specification = ns.TestCase;
+	this.environment.mozlab = {
+		mozunit : {
+			TestCase      : ns.TestCase,
+			Specification : ns.TestCase,
+			assertions    : this.environment.assert
+		}
+	};
 },
  
 get utils() { return this; }, 
