@@ -21,7 +21,7 @@ function test_readyToOK()
 	actionModule.readyToOK();
 	var before = Date.now();
 	alert('click OK');
-	assert.compare(500, '>', Date.now() - before);
+	assert.compare(1000, '>', Date.now() - before);
 }
 
 function test_readyToConfirm()
@@ -30,13 +30,13 @@ function test_readyToConfirm()
 	actionModule.readyToConfirm(true);
 	var result = confirm('click OK');
 	assert.isTrue(result);
-	assert.compare(500, '>', Date.now() - before);
+	assert.compare(1000, '>', Date.now() - before);
 
 	before = Date.now();
 	actionModule.readyToConfirm(false);
 	result = confirm('click Cancel');
 	assert.isFalse(result);
-	assert.compare(500, '>', Date.now() - before);
+	assert.compare(1000, '>', Date.now() - before);
 }
 
 function test_readyToPrompt()
@@ -45,5 +45,5 @@ function test_readyToPrompt()
 	actionModule.readyToPrompt('input');
 	var result = prompt('test');
 	assert.equals('input', result);
-	assert.compare(500, '>', Date.now() - before);
+	assert.compare(1000, '>', Date.now() - before);
 }

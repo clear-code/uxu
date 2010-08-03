@@ -31,22 +31,32 @@ readyToOK : function(aOptions)
 
 	var self = this;
 	var listener = function(aWindow) {
-			if (aWindow.location.href != self.COMMON_DIALOG_URL ||
-				!aWindow.gCommonDialogParam ||
-				self.readiedActionListeners.indexOf(listener) < 0)
-				return;
-			var params = aWindow.gCommonDialogParam;
-
-			var buttonsCount = params.GetInt(2);
-			if (buttonsCount != 1)
+			if (
+				aWindow.location.href != self.COMMON_DIALOG_URL ||
+				(!aWindow.gCommonDialogParam && !aWindow.gArgs) ||
+				self.readiedActionListeners.indexOf(listener) < 0
+				)
 				return;
 
-			var title = params.GetString(12);
-			if ('title' in aOptions && aOptions.title != title)
-				return;
+			var buttonsCount, title, message;
+			if (aWindow.gCommonDialogParam) { // -Firefox 3.6
+				let params = aWindow.gCommonDialogParam;
+				buttonsCount = params.GetInt(2);
+				title = params.GetString(12);
+				message = params.GetString(0);
+			}
+			else { // Firefox 4.0-
+				let params = aWindow.gArgs;
+				buttonsCount = aWindow.numButtons;
+				title = params.getProperty('title');
+				message = params.getProperty('text');
+			}
 
-			var message = params.GetString(0);
-			if ('message' in aOptions && aOptions.message != message)
+			if (
+				(buttonsCount != 1) ||
+				('title' in aOptions && aOptions.title != title) ||
+				('message' in aOptions && aOptions.message != message)
+				)
 				return;
 
 			self.cancelReadiedAction(listener);
@@ -57,7 +67,7 @@ readyToOK : function(aOptions)
 				var checkbox = doc.getElementById('checkbox');
 				if (checkbox.boxObject.width && 'checked' in aOptions) {
 					checkbox.checked = aOptions.checked;
-					aWindow.onCheckboxClick();
+					aWindow.onCheckboxClick(checkbox);
 				}
 
 				doc.documentElement.getButton('accept').doCommand();
@@ -74,21 +84,32 @@ readyToConfirm : function(aYes, aOptions)
 
 	var self = this;
 	var listener = function(aWindow) {
-			if (aWindow.location.href != self.COMMON_DIALOG_URL ||
-				!aWindow.gCommonDialogParam)
-				return;
-			var params = aWindow.gCommonDialogParam;
-
-			var buttonsCount = params.GetInt(2);
-			if (buttonsCount != 2 && buttonsCount != 3)
+			if (
+				aWindow.location.href != self.COMMON_DIALOG_URL ||
+				(!aWindow.gCommonDialogParam && !aWindow.gArgs) ||
+				self.readiedActionListeners.indexOf(listener) < 0
+				)
 				return;
 
-			var title = params.GetString(12);
-			if ('title' in aOptions && aOptions.title != title)
-				return;
+			var buttonsCount, title, message;
+			if (aWindow.gCommonDialogParam) { // -Firefox 3.6
+				let params = aWindow.gCommonDialogParam;
+				buttonsCount = params.GetInt(2);
+				title = params.GetString(12);
+				message = params.GetString(0);
+			}
+			else { // Firefox 4.0-
+				let params = aWindow.gArgs;
+				buttonsCount = aWindow.numButtons;
+				title = params.getProperty('title');
+				message = params.getProperty('text');
+			}
 
-			var message = params.GetString(0);
-			if ('message' in aOptions && aOptions.message != message)
+			if (
+				(buttonsCount != 2 && buttonsCount != 3) ||
+				('title' in aOptions && aOptions.title != title) ||
+				('message' in aOptions && aOptions.message != message)
+				)
 				return;
 
 			self.cancelReadiedAction(listener);
@@ -99,7 +120,7 @@ readyToConfirm : function(aYes, aOptions)
 				var checkbox = doc.getElementById('checkbox');
 				if (checkbox.boxObject.width && 'checked' in aOptions) {
 					checkbox.checked = aOptions.checked;
-					aWindow.onCheckboxClick();
+					aWindow.onCheckboxClick(checkbox);
 				}
 
 				var button = (typeof aYes == 'number') ?
@@ -128,27 +149,43 @@ readyToPrompt : function(aInput, aOptions)
 
 	var self = this;
 	var listener = function(aWindow) {
-			if (aWindow.location.href != self.COMMON_DIALOG_URL ||
-				!aWindow.gCommonDialogParam)
+			if (
+				aWindow.location.href != self.COMMON_DIALOG_URL ||
+				(!aWindow.gCommonDialogParam && !aWindow.gArgs) ||
+				self.readiedActionListeners.indexOf(listener) < 0
+				)
 				return;
-			var params = aWindow.gCommonDialogParam;
 
-			var inputFieldsCount = params.GetInt(3);
-			if (aOptions.inputFieldsType == 'both' ?
+			var inputFieldsCount, passwordType, title, message;
+			if (aWindow.gCommonDialogParam) { // -Firefox 3.6
+				let params = aWindow.gCommonDialogParam;
+				inputFieldsCount = params.GetInt(3);
+				passwordType = params.GetInt(4) == 1;
+				title = params.GetString(12);
+				message = params.GetString(0);
+			}
+			else { // Firefox 4.0-
+				let params = aWindow.gArgs;
+				inputFieldsCount = 0;
+				let loginShown = !aWindow.document.getElementById('loginContainer').hidden;
+				let passwordShown = !aWindow.document.getElementById('password1Container').hidden;
+				if (loginShown)
+					inputFieldsCount++;
+				if (passwordShown)
+					inputFieldsCount++;
+				passwordType = !loginShown && passwordShown;
+				title = params.getProperty('title');
+				message = params.getProperty('text');
+			}
+
+			if (
+				(aOptions.inputFieldsType == 'both' ?
 					(inputFieldsCount != 2) :
-					(inputFieldsCount != 1))
-				return;
-
-			var passwordType = params.GetInt(4) == 1;
-			if (passwordType != (aOptions.inputFieldsType == 'password'))
-				return;
-
-			var title = params.GetString(12);
-			if ('title' in aOptions && aOptions.title != title)
-				return;
-
-			var message = params.GetString(0);
-			if ('message' in aOptions && aOptions.message != message)
+					(inputFieldsCount != 1)) ||
+				(passwordType != (aOptions.inputFieldsType == 'password')) ||
+				('title' in aOptions && aOptions.title != title) ||
+				('message' in aOptions && aOptions.message != message)
+				)
 				return;
 
 			self.cancelReadiedAction(listener);
@@ -159,12 +196,11 @@ readyToPrompt : function(aInput, aOptions)
 				var checkbox = doc.getElementById('checkbox');
 				if (checkbox.boxObject.width && 'checked' in aOptions) {
 					checkbox.checked = aOptions.checked;
-					aWindow.onCheckboxClick();
+					aWindow.onCheckboxClick(checkbox);
 				}
 
 				var usernameField = doc.getElementById('loginTextbox');
 				var password1Field = doc.getElementById('password1Textbox');
-				var password2Field = doc.getElementById('password2Textbox');
 
 				switch (aOptions.inputFieldsType)
 				{
@@ -222,17 +258,29 @@ readyToSelect : function(aSelectedIndexes, aOptions)
 
 	var self = this;
 	var listener = function(aWindow) {
-			if (aWindow.location.href != self.SELECT_DIALOG_URL ||
-				!aWindow.gCommonDialogParam)
-				return;
-			var params = aWindow.gCommonDialogParam;
-
-			var title = params.GetString(0);
-			if ('title' in aOptions && aOptions.title != title)
+			if (
+				aWindow.location.href != self.SELECT_DIALOG_URL ||
+				(!aWindow.gCommonDialogParam && !aWindow.gArgs) ||
+				self.readiedActionListeners.indexOf(listener) < 0
+				)
 				return;
 
-			var message = params.GetString(1);
-			if ('message' in aOptions && aOptions.message != message)
+			var title, message;
+			if (aWindow.gCommonDialogParam) { // -Firefox 3.6
+				let params = aWindow.gCommonDialogParam;
+				title = params.GetString(0);
+				message = params.GetString(1);
+			}
+			else { // Firefox 4.0-
+				let params = aWindow.gArgs;
+				title = params.getProperty('title');
+				message = params.getProperty('text');
+			}
+
+			if (
+				('title' in aOptions && aOptions.title != title) ||
+				('message' in aOptions && aOptions.message != message)
+				)
 				return;
 
 			self.cancelReadiedAction(listener);
