@@ -2,7 +2,6 @@ var shouldSkip = utils.checkPlatformVersion('1.9') < 0;
 
 function setUp()
 {
-	utils.clearPref('general.useragent.security');
 	utils.setUpHttpServer(4445, baseURL+'../../fixtures/');
 	utils.wait(300);
 }
@@ -10,11 +9,14 @@ function setUp()
 function tearDown()
 {
 	utils.tearDownAllHttpServers();
-	utils.clearPref('general.useragent.security');
+	utils.clearPref('general.useragent.vendor');
 }
 
 function assertMapped(aURI, aMapToFile)
 {
+	utils.setPref('general.useragent.vendor', '');
+	utils.wait(300);
+
 	var referrer = aURI.indexOf('about:') > -1 ?
 				null :
 				utils.makeURIFromSpec('http://www.example.com/referer?'+Date.now());
@@ -37,16 +39,14 @@ function assertMapped(aURI, aMapToFile)
 	var match = $('script').textContent.match(regexp);
 	assert.equals('5.0', match[1]);
 	assert.match(/^[0-9]+\.[0-9]+([ab]([0-9]+)?(pre)?)?/, match[6]);
-	if (match[3]) {
-		assert.equals(utils.getPref('general.useragent.security'), match[3]);
-		utils.setPref('general.useragent.security', 'foobar');
-		utils.wait(300);
-		// force reload
-		utils.loadURI('about:blank');
-		utils.loadURI(aURI);
-		match = $('script').textContent.match(regexp);
-		assert.equals('foobar', match[3]);
-	}
+
+	assert.notContains('foobar', $('script').textContent);
+	utils.setPref('general.useragent.vendor', 'foobar');
+	utils.wait(300);
+	// force reload
+	utils.loadURI('about:blank');
+	utils.loadURI(aURI);
+	assert.contains('foobar', $('script').textContent);
 }
 
 function assertNotMapped(aURI)
