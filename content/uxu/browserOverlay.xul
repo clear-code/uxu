@@ -26,6 +26,24 @@
 	</menu>
 </menupopup>
 
+<menupopup id="appmenu_developer_popup">
+	<menu id="appmenu-uxu-menu"
+		label="&uxu.tools.menu.label;">
+		<menupopup>
+			<menuitem id="appmenu-uxu-menuitem-runner"
+				label="&uxu.tools.runner.label;"
+				oncommand="openUxURunner()"/>
+			<menuitem id="appmenu-uxu-menuitem"
+				label="&uxu.tools.start.label;"
+				oncommand="startUxU()"/>
+			<menuseparator/>
+			<menuitem id="appmenu-uxu-menuitem-config"
+				label="&uxu.tools.config.label;"
+				oncommand="openUXUConfig()"/>
+		</menupopup>
+	</menu>
+</menupopup>
+
 
 </overlay>
 

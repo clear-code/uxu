@@ -13,6 +13,7 @@ Components.utils.import('resource://uxu-modules/lib/encoding.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/ejs.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/hash.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/registry.jsm', ns);
+Components.utils.import('resource://uxu-modules/lib/extensions.js', ns);
 Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
 
 var prefread = {};
@@ -2239,10 +2240,7 @@ _quitApplication : function(aForce, aOption)
  
 get installedUXU() { 
 	if (!this._installedUXU)
-		this._installedUXU = Cc['@mozilla.org/extensions/manager;1']
-								.getService(Ci.nsIExtensionManager)
-								.getInstallLocation('uxu@clear-code.com')
-								.getItemLocation('uxu@clear-code.com');
+		this._installedUXU = ns.extensions.getInstalledLocation('uxu@clear-code.com');
 	return this._installedUXU;
 },
  
@@ -2469,6 +2467,10 @@ bind : function(aFunction, aThis)
 }; 
 ns.encoding.export(Utils.prototype);
 ns.hash.export(Utils.prototype);
+
+ns.extensions.getInstalledLocation('uxu@clear-code.com', function(aLocation) {
+	Utils.prototype._installedUXU = aLocation;
+});
 
 var utils = new Utils();
    
