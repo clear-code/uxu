@@ -225,7 +225,7 @@ readyToPrompt : function(aInput, aOptions)
 	this.readiedActionListeners.push(listener);
 },
  
-readyToPromptPassword : function(aInput, aOptions) 
+readyToPromptPassword : function(aPassword, aOptions) 
 {
 	this.readyToPrompt(
 		null,
@@ -252,6 +252,14 @@ readyToPromptUsernameAndPassword : function(aUsername, aPassword, aOptions)
  
 readyToSelect : function(aSelectedIndexes, aOptions) 
 {
+const Cc = Components.classes; 
+const Ci = Components.interfaces;
+var Application = '@mozilla.org/fuel/application;1' in Cc ?
+			Cc['@mozilla.org/fuel/application;1'].getService(Ci.fuelIApplication) :
+		'@mozilla.org/steel/application;1' in Cc ?
+			Cc['@mozilla.org/steel/application;1'].getService(Ci.steelIApplication) :
+			null ;
+
 	aOptions = aOptions || {};
 	if (typeof aSelectedIndexes == 'number')
 		aSelectedIndexes = [aSelectedIndexes];
@@ -290,11 +298,15 @@ readyToSelect : function(aSelectedIndexes, aOptions)
 
 				var list = doc.getElementById('list');
 				aSelectedIndexes.forEach(function(aIndex) {
-					var item = this.getItemAtIndex(aIndex);
-					if (item)
-						list.addItemToSelection(item);
-				});
+					var item = list.getItemAtIndex(aIndex);
+					if (!item)
+						return;
 
+					if (list.selType == 'multiple')
+						list.addItemToSelection(item);
+					else
+						list.selectedIndex = aIndex;
+				});
 				doc.documentElement.getButton('accept').doCommand();
 			}, 0);
 		};
