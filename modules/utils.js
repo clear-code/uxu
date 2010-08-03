@@ -1413,17 +1413,6 @@ inspect : function(aObject, aIndent)
 		if (!aTarget.__proto__)
 			return aTarget.toString();
 
-		var toStringMethod;
-		if (aTarget instanceof Ci.nsIDOMWindow) {
-			toStringMethod = aTarget.Object.prototype.toString;
-		}
-		else if (aTarget instanceof Ci.nsISupports) {
-			toStringMethod = Object.prototype.toString;
-		}
-		else {
-			toStringMethod = eval('Object.prototype.toString', aTarget);
-		}
-
 		if (self.isArray(aTarget)) {
 			index = inspectedObjects.length;
 			inspectedObjects.push(aTarget);
@@ -1449,7 +1438,9 @@ inspect : function(aObject, aIndent)
 		else if (self.isString(aTarget)) {
 			return '"' + aTarget.replace(/\"/g, '\\"') + '"';
 		}
-		else if (aTarget.__proto__.toString == toStringMethod) {
+		else if (aTarget.toString == (function(aTarget) {
+						return aTarget.__proto__ ? arguments.callee(aTarget.__proto__) : aTarget ;
+					})(aTarget).toString) {
 			index = inspectedObjects.length;
 			inspectedObjects.push(aTarget);
 			inspectedResults[index] = aTarget.toString();
