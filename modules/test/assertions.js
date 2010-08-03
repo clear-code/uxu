@@ -591,6 +591,101 @@ Assertions.prototype = {
 		this._onSuccess();
 	},
 
+	difference : function()
+	{
+		var aGetter, aExpectedDelta, aTask, aContext, aMessage;
+		var startValue, endValue;
+		var args = Array.slice(arguments);
+		try {
+			if (typeof args[0] == 'function') {
+				aGetter = function() { return args[0].call(aContext); };
+				[aExpectedDelta, aTask, aContext, aMessage] = args.slice(1);
+			}
+			else if (
+				args[0] &&
+				typeof args[1] == 'string' &&
+				args[1] in args[0]
+				) {
+				aGetter = function() {
+					var prop = args[0][args[1]];
+					return (typeof prop == 'function') ? prop.call(args[0]) : prop ;
+				};
+				[aExpectedDelta, aTask, aContext, aMessage] = args.slice(2);
+			}
+		}
+		catch(e) {
+		}
+
+		if (!aGetter)
+			throw new Error(bundle.getFormattedString('assert_difference_invalid_arguments', [this._appendTypeString(args)]));
+
+		if (typeof aExpectedDelta != 'number')
+			throw new Error(bundle.getFormattedString('assert_difference_delta_not_number', [this._appendTypeString(aExpectedDelta)]));
+
+		startValue = aGetter();
+		if (typeof startValue != 'number')
+			throw new Error(bundle.getFormattedString('assert_difference_value_not_number', [this._appendTypeString(startValue)]));
+
+		if (typeof aTask == 'function') aTask = aTask.call(aContext);
+		if (aTask && utils.isGeneratedIterator(aTask)) {
+			var _this = this;
+			return utils.doIteration(aTask, {
+				onEnd : function(e)
+				{
+					_this._onDifferenceFinish(startValue, aGetter(), aExpectedDelta, aMessage);
+				},
+				onError : function(e)
+				{
+					throw e;
+				}
+			});
+		}
+		else {
+			this._onDifferenceFinish(startValue, aGetter(), aExpectedDelta, aMessage);
+		}
+	},
+	_onDifferenceFinish : function(aStartValue, aEndValue, aExpectedDelta, aMessage)
+	{
+		if (typeof aEndValue != 'number')
+			throw new Error(bundle.getFormattedString('assert_difference_not_number', [this._appendTypeString(aEndValue)]));
+
+		var actualDelta = aEndValue - aStartValue;
+		if (actualDelta != aExpectedDelta) {
+			this._fail({
+			     	expected : aStartValue + aExpectedDelta,
+			     	actual   : aEndValue
+			     },
+			     bundle.getString('assert_difference'),
+			     aMessage);
+		}
+		this._onSuccess();
+	},
+	noDifference : function()
+	{
+		var aGetter, aTask, aContext, aMessage;
+		var args = Array.slice(arguments);
+		try {
+			if (typeof args[0] == 'function') {
+				aGetter = function() { return args[0].call(aContext); };
+				[aTask, aContext, aMessage] = args.slice(1);
+			}
+			else if (
+				args[0] &&
+				typeof args[1] == 'string' &&
+				args[1] in args[0]
+				) {
+				aGetter = function() {
+					var prop = args[0][args[1]];
+					return (typeof prop == 'function') ? prop.call(args[0]) : prop ;
+				};
+				[aTask, aContext, aMessage] = args.slice(2);
+			}
+		}
+		catch(e) {
+		}
+		this.difference(aGetter, 0, aTask, aContext, aMessage);
+	},
+
 	_greaterThan : function(aExpected, aActual, aMessage)
 	{
 		if (aExpected >= aActual)

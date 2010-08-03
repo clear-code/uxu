@@ -5,6 +5,9 @@ var topDir = baseURL+'../../../../';
 var Assertions = utils.import(topDir+'modules/test/assertions.js', {}).Assertions;
 var Diff = utils.import(topDir+'modules/diff.js', {}).Diff;
 
+var bundle = utils.import(topDir+'modules/lib/stringBundle.js', {})
+				.stringBundle.get('chrome://uxu/locale/uxu.properties');
+
 var assertionsModule;
 
 function setUp()
@@ -34,23 +37,38 @@ function assertSuccess(aAssertion, aArgs, aAssertionsCount)
 
 function assertFailure(aAssertion, aArgs, aAssertionsCount)
 {
+	var beforeCount = assertionsModule.successCount;
+	var exception;
 	assert.raises(
 		'AssertionFailed',
+		function() {
+			try {
+				aAssertion.apply(assertionsModule, aArgs);
+			}
+			catch(e) {
+				exception = e;
+				throw e;
+			}
+		},
+		null
+	);
+	assert.notEquals(-1, exception.message.indexOf(aArgs[aArgs.length-1]));
+	assert.equals(
+		beforeCount+(aAssertionsCount === void(0) ? 0 : aAssertionsCount ),
+		assertionsModule.successCount
+	);
+}
+
+function assertError(aAssertion, aArgs, aError, aAssertionsCount)
+{
+	var beforeCount = assertionsModule.successCount;
+	assert.raises(
+		aError,
 		function() {
 			aAssertion.apply(assertionsModule, aArgs);
 		},
 		null
 	);
-
-	var beforeCount = assertionsModule.successCount;
-	var exception;
-	try {
-		aAssertion.apply(assertionsModule, aArgs);
-	}
-	catch(e) {
-		exception = e;
-	}
-	assert.notEquals(-1, exception.message.indexOf(aArgs[aArgs.length-1]));
 	assert.equals(
 		beforeCount+(aAssertionsCount === void(0) ? 0 : aAssertionsCount ),
 		assertionsModule.successCount
@@ -832,6 +850,168 @@ function testInDelta()
 	assert.equal(4, assertionsModule.successCount);
 }
 
+function testDifference()
+{
+	var message = Math.random() * 65000;
+
+	var count = { value : 0 };
+
+	count.value = 0;
+	assertSuccess(assertionsModule.difference, [
+		(function() count.value ),
+		1,
+		(function () {
+			count.value++;
+		}),
+		{}
+	]);
+
+	count.value = 0;
+	assertSuccess(assertionsModule.difference, [
+		count,
+		'value',
+		1,
+		(function () {
+			count.value++;
+		}),
+		{}
+	]);
+
+
+	count.value = 0;
+	assertFailure(assertionsModule.difference, [
+		(function() count.value ),
+		-1,
+		(function () {
+			count.value++;
+		}),
+		{},
+		message
+	]);
+
+
+	count.value = 0;
+	var args = [
+			'not function',
+			'string',
+			(function () {
+				count.value++;
+			}),
+			{}
+		];
+	assertError(
+		assertionsModule.difference,
+		args,
+		bundle.getFormattedString(
+			'assert_difference_invalid_arguments',
+			[assertionsModule._appendTypeString(args)]
+		)
+	);
+	assert.equals(0, count.value);
+	assertError(
+		assertionsModule.difference,
+		[
+			(function() count.value ),
+			'string',
+			(function () {
+				count.value++;
+			}),
+			{}
+		],
+		bundle.getFormattedString(
+			'assert_difference_delta_not_number',
+			[assertionsModule._appendTypeString('string')]
+		)
+	);
+	assert.equals(0, count.value);
+	assertError(
+		assertionsModule.difference,
+		[
+			(function() 'string' ),
+			1,
+			(function () {
+				count.value++;
+			}),
+			{}
+		],
+		bundle.getFormattedString(
+			'assert_difference_value_not_number',
+			[assertionsModule._appendTypeString('string')]
+		)
+	);
+	assert.equals(0, count.value);
+
+
+	assert.equal(2, assertionsModule.successCount);
+}
+
+function testNoDifference()
+{
+	var message = Math.random() * 65000;
+
+	var count = { value : 0 };
+
+	count.value = 0;
+	assertSuccess(assertionsModule.noDifference, [
+		(function() count.value ),
+		(function () {}),
+		{}
+	]);
+
+	count.value = 0;
+	assertSuccess(assertionsModule.noDifference, [
+		count,
+		'value',
+		1,
+		(function () {}),
+		{}
+	]);
+
+
+	count.value = 0;
+	assertFailure(assertionsModule.noDifference, [
+		(function() count.value ),
+		(function () {
+			count.value++;
+		}),
+		{},
+		message
+	]);
+
+
+	count.value = 0;
+	var args = [
+			'not function',
+			(function () {}),
+			{}
+		];
+	assertError(
+		assertionsModule.noDifference,
+		args,
+		bundle.getFormattedString(
+			'assert_difference_invalid_arguments',
+			[assertionsModule._appendTypeString(args)]
+		)
+	);
+	assert.equals(0, count.value);
+	assertError(
+		assertionsModule.noDifference,
+		[
+			(function() 'string' ),
+			(function () {}),
+			{}
+		],
+		bundle.getFormattedString(
+			'assert_difference_value_not_number',
+			[assertionsModule._appendTypeString('string')]
+		)
+	);
+	assert.equals(0, count.value);
+
+
+	assert.equal(2, assertionsModule.successCount);
+}
+
 function testCompare()
 {
 	var message = Math.random() * 65000;
@@ -1249,6 +1429,8 @@ function testExport()
 	assert.isFunction(namespace.assert.pattern);
 	assert.isFunction(namespace.assert.notPattern);
 	assert.isFunction(namespace.assert.inDelta);
+	assert.isFunction(namespace.assert.difference);
+	assert.isFunction(namespace.assert.noDifference);
 	assert.isFunction(namespace.assert.compare);
 	assert.isFunction(namespace.assert.contains);
 	assert.isFunction(namespace.assert.contain);
@@ -1334,6 +1516,8 @@ function testExport()
 	assert.isFunction(namespace.assertPattern);
 	assert.isFunction(namespace.assertNotPattern);
 	assert.isFunction(namespace.assertInDelta);
+	assert.isFunction(namespace.assertDifference);
+	assert.isFunction(namespace.assertNoDifference);
 	assert.isFunction(namespace.assertCompare);
 	assert.isFunction(namespace.assertContains);
 	assert.isFunction(namespace.assertContain);
