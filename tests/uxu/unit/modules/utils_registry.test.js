@@ -6,7 +6,7 @@ var topDir = baseURL+'../../../../';
 var utilsModule;
 
 var bundle = utils.import(topDir+'modules/lib/stringBundle.js', {})
-				.stringBundle.get(topDir+'locale/ja/uxu/uxu.properties');
+				.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 function clearWindowsRegistryKey(aRoot, aPath)
 {
