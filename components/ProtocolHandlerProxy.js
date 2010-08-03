@@ -161,6 +161,18 @@ ProtocolHandlerProxy.prototype = {
  
 	mapURI : function(aURI) 
 	{
+		var uri = aURI;
+		var finalURI;
+		do {
+			finalURI = uri;
+			uri = this.mapURIInternal(uri);
+		}
+		while (uri);
+		return finalURI == aURI ? null : finalURI ;
+	},
+ 
+	mapURIInternal : function(aURI) 
+	{
 		if (Pref.getBoolPref(kUXU_TEST_RUNNING)) {
 			var uri = Cc['@mozilla.org/supports-string;1']
 						.createInstance(Ci.nsISupportsString);
