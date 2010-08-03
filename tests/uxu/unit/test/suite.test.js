@@ -46,7 +46,7 @@ function test_contentFrames()
 test$.setUp = function()
 {
 	utils.tearDownTestWindow();
-	yield Do(utils.loadURI('../../fixtures/html.html'));
+	utils.loadURI('../../fixtures/html.html');
 }
 test$.tearDown = function()
 {
@@ -67,30 +67,26 @@ function test$()
 	assert.equals(expected, $(node));
 	assert.equals(expected, $(node, document));
 
-	yield Do(utils.setUpTestWindow());
+	utils.setUpTestWindow();
 	expected = utils.getTestWindow().document.getElementById('content');
 	assert.equals(expected, $('content'));
 }
 
 if (utils.product != 'Firefox') test_addTab.priority = 'never';
-test_addTab.setUp = function() {
-	yield utils.setUpTestWindow();
-}
-test_addTab.tearDown = function() {
-	yield utils.tearDownTestWindow();
-}
+test_addTab.setUp = utils.setUpTestWindow;
+test_addTab.tearDown = utils.tearDownTestWindow;
 function test_addTab()
 {
-	var tabs = gBrowser.mTabs;
+	var tabs = Array.slice(gBrowser.mTabContainer.childNodes);
 	assert.equals(1, tabs.length);
 
-	yield Do(utils.addTab('about:'));
+	utils.addTab('about:');
 	assert.equals(2, tabs.length);
 	assert.notEquals(tabs[1], gBrowser.selectedTab);
 	assert.equals('about:', tabs[1].linkedBrowser.currentURI.spec);
 	gBrowser.removeTab(tabs[1]);
 
-	yield Do(utils.addTab('../../fixtures/frameTest.html?'+Date.now(), { selected : true }));
+	utils.addTab('../../fixtures/frameTest.html?'+Date.now(), { selected : true });
 	assert.equals(2, tabs.length);
 	assert.equals(tabs[1], gBrowser.selectedTab);
 	assert.contains('/fixtures/frameTest.html', tabs[1].linkedBrowser.currentURI.spec);
@@ -101,7 +97,7 @@ function test_addTab()
 	assert.notEquals(0, content.frames[2].document.links.length);
 	gBrowser.removeTab(tabs[1]);
 
-	yield Do(utils.addTab('../../fixtures/frameTestInline.html?'+Date.now(), { selected : true }));
+	utils.addTab('../../fixtures/frameTestInline.html?'+Date.now(), { selected : true });
 	assert.equals(2, tabs.length);
 	assert.contains('/fixtures/frameTestInline.html', tabs[1].linkedBrowser.currentURI.spec);
 	assert.equals(2, content.frames.length);
@@ -128,10 +124,10 @@ test_loadURI.tearDown = function()
 }
 function test_loadURI()
 {
-	yield Do(utils.loadURI('about:'));
+	utils.loadURI('about:');
 	assert.equals('about:', content.location.href);
 
-	yield Do(utils.loadURI('../../fixtures/frameTest.html?'+Date.now()));
+	utils.loadURI('../../fixtures/frameTest.html?'+Date.now());
 	assert.contains('/fixtures/frameTest.html', content.location.href);
 	assert.equals(3, content.frames.length);
 	assert.contains('/html.html', content.frames[0].location.href);
@@ -139,7 +135,7 @@ function test_loadURI()
 	assert.contains('/links.html', content.frames[2].location.href);
 	assert.notEquals(0, content.frames[2].document.links.length);
 
-	yield Do(utils.loadURI('../../fixtures/frameTestInline.html?'+Date.now()));
+	utils.loadURI('../../fixtures/frameTestInline.html?'+Date.now());
 	assert.contains('/fixtures/frameTestInline.html', content.location.href);
 	assert.equals(2, content.frames.length);
 	assert.contains('/html.html', content.frames[0].location.href);
@@ -171,7 +167,7 @@ test_setUpTearDownTestWindow.setUp = function() {
 };
 function test_setUpTearDownTestWindow()
 {
-	yield Do(utils.setUpTestWindow({ width : 290, height : 292, x : 29, y : 92 }));
+	utils.setUpTestWindow({ width : 290, height : 292, x : 29, y : 92 });
 	yield 300;
 	var win = utils.getTestWindow();
 	assert.isNotNull(win);

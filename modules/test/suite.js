@@ -21,7 +21,7 @@ var WindowManager = Cc['@mozilla.org/appshell/window-mediator;1'].getService(Ci.
 var WindowWatcher = Cc['@mozilla.org/embedcomp/window-watcher;1'].getService(Ci.nsIWindowWatcher);
 
 var key = 'uxu-test-window-id'; 
-var defaultURI, defaultType, defaultFeatures, defaultName; 
+var defaultURI, defaultType, defaultFeatures, defaultName, defaultArguments; 
 	
 function TestSuite(aEnvironment, aURI, aBrowser) 
 {
@@ -50,18 +50,20 @@ function TestSuite(aEnvironment, aURI, aBrowser)
 	switch (this._utils.product)
 	{
 		case 'Firefox':
-			defaultURI      = 'chrome://browser/content/browser.xul';
-			defaultType     = 'navigator:browser';
-			defaultFeatures = 'chrome,all,dialog=no';
-			defaultName     = '_blank';
+			defaultURI       = 'chrome://browser/content/browser.xul';
+			defaultType      = 'navigator:browser';
+			defaultFeatures  = 'chrome,all,dialog=no';
+			defaultName      = '_blank';
+			defaultArguments = ['about:blank'];
 			this.attachGMUtils();
 			break;
 
 		case 'Thunderbird':
-			defaultURI      = 'chrome://messenger/content/messenger.xul';
-			defaultType     = null;
-			defaultFeatures = 'chrome,all,dialog=no';
-			defaultName     = '_blank';
+			defaultURI       = 'chrome://messenger/content/messenger.xul';
+			defaultType      = null;
+			defaultFeatures  = 'chrome,all,dialog=no';
+			defaultName      = '_blank';
+			defaultArguments = [];
 			this.attachMailUtils();
 			break;
 
@@ -200,11 +202,13 @@ normalizeTestWindowOption : function(aOptions)
 {
 	if (!aOptions) aOptions = {};
 	if (!aOptions.uri && !aOptions.type) {
-		aOptions.uri       = defaultURI;
-		aOptions.type      = defaultType;
-		aOptions.features  = defaultFeatures;
-		aOptions.name      = defaultName;
-		aOptions.arguments = [];
+		aOptions.uri       = defaultURI || null;
+		aOptions.type      = defaultType || null;
+		aOptions.features  = defaultFeatures || 'chrome,all';
+		aOptions.name      = defaultName || '_blank';
+		aOptions.arguments = defaultArguments || [];
+		if (!aOptions.uri)
+			throw new Error('you must specify URI of the new chrome window!');
 	}
 	else {
 		aOptions.type      = aOptions.type || null;
@@ -264,19 +268,22 @@ openTestWindow : function(aOptions, aCallback)
 	}
 	else {
 		var info = this.normalizeTestWindowOption(aOptions);
-		var args = Cc['@mozilla.org/supports-array;1'].createInstance(Ci.nsISupportsArray);
-		info.arguments.forEach(function(aArg) {
-			var variant = Cc['@mozilla.org/variant;1']
-							.createInstance(Ci.nsIVariant)
-							.QueryInterface(Ci.nsIWritableVariant);
-			variant.setFromVariant(aArg);
-			args.AppendElement(variant);
-		});
+		var args = null;
+		if (info.arguments.length) {
+			args = Cc['@mozilla.org/supports-array;1'].createInstance(Ci.nsISupportsArray);
+			info.arguments.forEach(function(aArg) {
+				var variant = Cc['@mozilla.org/variant;1']
+								.createInstance(Ci.nsIVariant)
+								.QueryInterface(Ci.nsIWritableVariant);
+				variant.setFromVariant(aArg);
+				args.AppendElement(variant);
+			});
+		}
 		win = WindowWatcher.openWindow(null, info.uri, info.name, info.features, args);
-		win[key] = this.uniqueID;
 		var id = info.uri+'?'+this.uniqueID;
 		win.addEventListener('load', function() {
 			win.removeEventListener('load', arguments.callee, false);
+			win[key] = this.uniqueID;
 			win.document.documentElement.setAttribute(key, id);
 			win.setTimeout(function() {
 				if (aOptions) {
