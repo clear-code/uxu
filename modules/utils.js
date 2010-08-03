@@ -928,7 +928,8 @@ formatStackTrace : function(aException, aOptions)
 _comesFromFramework : function(aLine) 
 {
 	return (/@chrome:\/\/uxu\/content\//.test(aLine) ||
-			/file:.+\/uxu@clear-code\.com\/modules\//.test(aLine) ||
+			/file:.+\/uxu@clear-code\.com\/modules\//.test(aLine) || // -Firefox 3.6
+			/resource:\/\/uxu-modules\//.test(aLine) || // Firefox 4.0-
 			// Following is VERY kludgy
 			/\(function \(aExitResult\) \{if \(aEventHandlers/.test(aLine))
 },
