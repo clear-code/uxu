@@ -111,7 +111,6 @@ GreasemonkeyUtils.prototype = {
 		var win = (this.frame || this.frameInTestRunner).contentWindow;
 		var headers = [];
 		var sandbox = {
-			__proto__ : win,
 			get window() {
 				return self.frame.contentWindow;
 			},
@@ -138,6 +137,7 @@ GreasemonkeyUtils.prototype = {
 				return headers;
 			}
 		};
+		sandbox.__proto__ = win; // set this later to avoid "redeclaration of const document" error
 		this.sandboxes[aURI] = sandbox;
 		return sandbox;
 	},
