@@ -81,12 +81,14 @@ function test_addTab()
 	assert.equals(1, tabs.length);
 
 	utils.addTab('about:');
+	tabs = Array.slice(gBrowser.mTabContainer.childNodes);
 	assert.equals(2, tabs.length);
 	assert.notEquals(tabs[1], gBrowser.selectedTab);
 	assert.equals('about:', tabs[1].linkedBrowser.currentURI.spec);
 	gBrowser.removeTab(tabs[1]);
 
 	utils.addTab('../../fixtures/frameTest.html?'+Date.now(), { selected : true });
+	tabs = Array.slice(gBrowser.mTabContainer.childNodes);
 	assert.equals(2, tabs.length);
 	assert.equals(tabs[1], gBrowser.selectedTab);
 	assert.contains('/fixtures/frameTest.html', tabs[1].linkedBrowser.currentURI.spec);
@@ -98,6 +100,7 @@ function test_addTab()
 	gBrowser.removeTab(tabs[1]);
 
 	utils.addTab('../../fixtures/frameTestInline.html?'+Date.now(), { selected : true });
+	tabs = Array.slice(gBrowser.mTabContainer.childNodes);
 	assert.equals(2, tabs.length);
 	assert.contains('/fixtures/frameTestInline.html', tabs[1].linkedBrowser.currentURI.spec);
 	assert.equals(2, content.frames.length);

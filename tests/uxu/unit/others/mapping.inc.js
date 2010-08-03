@@ -31,20 +31,22 @@ function assertMapped(aURI, aMapToFile)
 
 	// for example:
 	// Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.9.0.10) Gecko/2009042316 Firefox/3.0.10 (.NET CLR 3.5.30729)
-	var regexp = /Mozilla\/([\.0-9]+) \(([^;]*); ([^;]*); ([^;]*); ([^;]*); rv:([^\)]+)\) Gecko\/([\.0-9]+)\s+(.+)/;
+	var regexp = /Mozilla\/([\.0-9]+) \(([^;]*); ([^;]*); (?:([^;]*); ([^;]*); )?rv:([^\)]+)\) Gecko\/([\.0-9]+)\s+(.+)/;
 	assert.match(regexp, $('script').textContent);
 
 	var match = $('script').textContent.match(regexp);
 	assert.equals('5.0', match[1]);
-	assert.match(/^1\.[89]\.[0-9]/, match[6]);
-	assert.equals(utils.getPref('general.useragent.security'), match[3]);
-	utils.setPref('general.useragent.security', 'foobar');
-	utils.wait(300);
-	// force reload
-	utils.loadURI('about:blank');
-	utils.loadURI(aURI);
-	match = $('script').textContent.match(regexp);
-	assert.equals('foobar', match[3]);
+	assert.match(/^[0-9]+\.[0-9]+([ab]([0-9]+)?(pre)?)?/, match[6]);
+	if (match[3]) {
+		assert.equals(utils.getPref('general.useragent.security'), match[3]);
+		utils.setPref('general.useragent.security', 'foobar');
+		utils.wait(300);
+		// force reload
+		utils.loadURI('about:blank');
+		utils.loadURI(aURI);
+		match = $('script').textContent.match(regexp);
+		assert.equals('foobar', match[3]);
+	}
 }
 
 function assertNotMapped(aURI)
