@@ -1,7 +1,7 @@
 var topDir = baseURL+'../../../../';
 
 var Report = utils.import(topDir+'modules/test/report.js', {}).Report;
-var TestLog = utils.import(topDir+'modules/test/testCase.js', {}).TestLog;
+var TestLog = utils.import(topDir+'modules/test/log.js', {}).TestLog;
 var TestCase = utils.import(topDir+'modules/test/testCase.js', {}).TestCase;
 
 var bundle = utils.import(topDir+'modules/lib/stringBundle.js', {})
