@@ -3,7 +3,7 @@
 utils.include('utils_common.inc.js');
 
 var bundle = utils.import(topDir+'modules/lib/stringBundle.js', {})
-				.stringBundle.get(topDir+'locale/ja/uxu/uxu.properties');
+				.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 var testDir;
 function tearDown()
