@@ -396,6 +396,10 @@ Assertions.prototype = {
 
 	raises : function(aExpectedException, aTask, aContext, aMessage)
 	{
+		if (typeof aExpectedException == 'string' &&
+			aExpectedException in Components.results)
+			aExpectedException = Components.results[aExpectedException];
+
 		var raised = false;
 		var exception;
 		if (typeof aTask == 'function') {
@@ -404,7 +408,8 @@ Assertions.prototype = {
 			}
 			catch(e if e == aExpectedException ||
 			           e.name == aExpectedException ||
-			           e.message == aExpectedException) {
+			           e.message == aExpectedException ||
+			           e.result == aExpectedException) {
 				raised = true;
 				exception = e;
 			}
@@ -422,7 +427,8 @@ Assertions.prototype = {
 						(
 							e != aExpectedException &&
 							e.name != aExpectedException &&
-							e.message != aExpectedException
+							e.message != aExpectedException &&
+							e.result != aExpectedException
 						)
 						) {
 						_this._onRaisesFinish(aExpectedException, e, aMessage);
@@ -439,6 +445,15 @@ Assertions.prototype = {
 	raise : function() { return this.raises.apply(this, arguments); },
 	_onRaisesFinish : function(aExpectedException, aActualException, aMessage)
 	{
+		if (typeof aExpectedException == 'number') {
+			for (let i in Components.results)
+			{
+				if (Components.results[i] == aExpectedException) {
+					aExpectedException = aExpectedException+' ('+i+')';
+					break;
+				}
+			}
+		}
 		if (aActualException) {
 			this._fail({
 			     	expectedRaw : aExpectedException,
@@ -459,6 +474,10 @@ Assertions.prototype = {
 
 	notRaises : function(aUnexpectedException, aTask, aContext, aMessage)
 	{
+		if (typeof aExpectedException == 'string' &&
+			aExpectedException in Components.results)
+			aExpectedException = Components.results[aExpectedException];
+
 		var raised = false;
 		var exception;
 		if (typeof aTask == 'function') {
@@ -467,7 +486,8 @@ Assertions.prototype = {
 			}
 			catch(e if e == aUnexpectedException ||
 			           e.name == aUnexpectedException ||
-			           e.message == aUnexpectedException) {
+			           e.message == aUnexpectedException ||
+			           e.result == aUnexpectedException) {
 				exception = e;
 				raised = true;
 			}
@@ -486,7 +506,9 @@ Assertions.prototype = {
 						!e ||
 						(
 							e != aUnexpectedException &&
-							e.name != aUnexpectedException
+							e.name != aUnexpectedException &&
+							e.message != aUnexpectedException &&
+							e.result != aUnexpectedException
 						)
 						) {
 						_this._onSuccess();
@@ -501,6 +523,15 @@ Assertions.prototype = {
 	notRaise : function() { return this.notRaises.apply(this, arguments); },
 	_onNotRaisesFinish : function(aUnexpectedException, aActualException, aMessage)
 	{
+		if (typeof aUnexpectedException == 'number') {
+			for (let i in Components.results)
+			{
+				if (Components.results[i] == aUnexpectedException) {
+					aUnexpectedException = aUnexpectedException+' ('+i+')';
+					break;
+				}
+			}
+		}
 		this._fail({
 		     	expectedRaw : aUnexpectedException,
 		     	actualRaw   : aActualException,
