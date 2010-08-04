@@ -49,6 +49,15 @@ function assertMapped(aURI, aMapToFile)
 	assert.contains('foobar', $('script').textContent);
 }
 
+function assertRedirected(aURI)
+{
+	utils.loadURI(aURI);
+	var redirected = utils.mapURI(aURI, mapping).replace(/^<redirect>/i, '');
+	utils.wait(300);
+	assert.equals(redirected, content.location.href);
+	assert.equals('test', content.document.title);
+}
+
 function assertNotMapped(aURI)
 {
 	var referrer = aURI.indexOf('about:') > -1 ?

@@ -16,7 +16,7 @@ const Pref = Cc['@mozilla.org/preferences;1']
 			.getService(Ci.nsIPrefBranch)
 			.QueryInterface(Ci.nsIPrefBranch2);
 const IOService = Cc['@mozilla.org/network/io-service;1']
-			.getService(Components.interfaces.nsIIOService);
+			.getService(Ci.nsIIOService);
  
 var PrefObserver = { 
 	
@@ -178,8 +178,11 @@ ProtocolHandlerProxy.prototype = {
 						.createInstance(Ci.nsIPropertyBag)
 						.QueryInterface(Ci.nsIWritablePropertyBag);
 			bag.setProperty('uri', aURI.spec);
+
 			ObserverService.notifyObservers(bag, 'uxu-mapping-check', null);
-			var uri = bag.getProperty('uri');
+
+			var uri = String(bag.getProperty('uri'))
+						.replace(/^<redirect>/i, UxURedirectProtocol.scheme+':');
 			if (uri != aURI.spec) {
 				var schemer = uri.split(':')[0];
 				var handler = this.getNativeProtocolHandler(schemer);
@@ -247,7 +250,7 @@ HttpProtocolHandlerProxy.prototype = {
 		{
 			return (new HttpProtocolHandlerProxy()).QueryInterface(aIID);
 		},
-		QueryInterface: XPCOMUtils.generateQI([Components.interfaces.nsIFactory])
+		QueryInterface: XPCOMUtils.generateQI([Ci.nsIFactory])
 	}
  
 }; 
@@ -267,14 +270,110 @@ HttpsProtocolHandlerProxy.prototype = {
 		{
 			return (new HttpsProtocolHandlerProxy()).QueryInterface(aIID);
 		},
-		QueryInterface: XPCOMUtils.generateQI([Components.interfaces.nsIFactory])
+		QueryInterface: XPCOMUtils.generateQI([Ci.nsIFactory])
 	}
  
 }; 
 HttpsProtocolHandlerProxy.prototype.__proto__ = ProtocolHandlerProxy.prototype;
-  
+
+
+function UxURedirectProtocol() {
+}
+UxURedirectProtocol.scheme = 'uxu-redirect';
+UxURedirectProtocol.prototype = {
+	contractID : '@mozilla.org/network/protocol;1?name='+UxURedirectProtocol.scheme,
+	classDescription : 'UxURedirectProtocol',
+	classID : Components.ID('{335d9d60-9fbe-11df-981c-0800200c9a66}'),
+
+	_xpcom_factory : { 
+		createInstance: function(aOuter, aIID)
+		{
+			return (new UxURedirectProtocol()).QueryInterface(aIID);
+
+		},
+		QueryInterface: XPCOMUtils.generateQI([Ci.nsIFactory])
+	},
+
+	QueryInterface: XPCOMUtils.generateQI([Ci.nsIProtocolHandler]),
+
+	scheme        : UxURedirectProtocol.scheme,
+	defaultPort   : -1,
+	protocolFlags : Ci.nsIProtocolHandler.URI_NORELATIVE | Ci.nsIProtocolHandler.URI_NOAUTH,
+
+	allowPort: function(aPort, aScheme)
+	{
+		return false;
+	},
+	newURI: function(aSpec, aCharset, aBaseURI)
+	{
+		var uri = Components.classes['@mozilla.org/network/simple-uri;1']
+					.createInstance(Ci.nsIURI);
+		try {
+			uri.spec = aSpec;
+		}
+		catch(e) {
+			dump(e+'\n');
+		}
+		return uri;
+	},
+	newChannel: function(aURI)
+	{
+		var channel = IOService.newChannel('about:blank?'+aURI.spec, null, null);
+		return channel;
+	}
+
+};
+
+function UxURedirector() {
+}
+UxURedirector.prototype = {
+	contractID : '@clear-code.com/uxu/redirector;1',
+	classDescription : 'UxURedirector',
+	classID : Components.ID('{a29a5470-9fbe-11df-981c-0800200c9a66}'),
+
+	_xpcom_categories: [{ category : 'content-policy' }],
+
+	QueryInterface: XPCOMUtils.generateQI([Ci.nsIContentPolicy]),
+
+	TYPE_OTHER			: Ci.nsIContentPolicy.TYPE_OTHER,
+	TYPE_SCRIPT			: Ci.nsIContentPolicy.TYPE_SCRIPT,
+	TYPE_IMAGE			: Ci.nsIContentPolicy.TYPE_IMAGE,
+	TYPE_STYLESHEET		: Ci.nsIContentPolicy.TYPE_STYLESHEET,
+	TYPE_OBJECT			: Ci.nsIContentPolicy.TYPE_OBJECT,
+	TYPE_DOCUMENT		: Ci.nsIContentPolicy.TYPE_DOCUMENT,
+	TYPE_SUBDOCUMENT	: Ci.nsIContentPolicy.TYPE_SUBDOCUMENT,
+	TYPE_REFRESH		: Ci.nsIContentPolicy.TYPE_REFRESH,
+	ACCEPT				: Ci.nsIContentPolicy.ACCEPT,
+	REJECT_REQUEST		: Ci.nsIContentPolicy.REJECT_REQUEST,
+	REJECT_TYPE			: Ci.nsIContentPolicy.REJECT_TYPE,
+	REJECT_SERVER		: Ci.nsIContentPolicy.REJECT_SERVER,
+	REJECT_OTHER		: Ci.nsIContentPolicy.REJECT_OTHER,
+
+	shouldLoad : function(aContentType, aContentLocation, aRequestOrigin, aContext, aMimeTypeGuess, aExtra)
+	{
+		if (aContentLocation.scheme != UxURedirectProtocol.scheme) return this.ACCEPT;
+		if (Pref.getBoolPref(kUXU_TEST_RUNNING)) {
+			var uri = aContentLocation.spec.replace(UxURedirectProtocol.scheme+':', '');
+			aContext.loadURIWithFlags(
+				uri,
+				Ci.nsIWebNavigation.LOAD_FLAGS_REPLACE_HISTORY,
+				null,
+				null,
+				null
+			);
+		}
+		return this.REJECT_REQUEST;
+	},
+
+	shouldProcess : function(aContentType, aContentLocation, aRequestOrigin, aContext, aMimeTypeGuess, aExtra)
+	{
+		return this.ACCEPT;
+	}
+};
+
+
 if (XPCOMUtils.generateNSGetFactory) 
-	var NSGetFactory = XPCOMUtils.generateNSGetFactory([HttpProtocolHandlerProxy, HttpsProtocolHandlerProxy]);
+	var NSGetFactory = XPCOMUtils.generateNSGetFactory([HttpProtocolHandlerProxy, HttpsProtocolHandlerProxy, UxURedirectProtocol, UxURedirector]);
 else
-	var NSGetModule = XPCOMUtils.generateNSGetModule([HttpProtocolHandlerProxy, HttpsProtocolHandlerProxy]);
+	var NSGetModule = XPCOMUtils.generateNSGetModule([HttpProtocolHandlerProxy, HttpsProtocolHandlerProxy, UxURedirectProtocol, UxURedirector]);
  

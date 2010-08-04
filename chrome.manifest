@@ -25,3 +25,11 @@ contract	@mozilla.org/network/protocol;1?name=http	{3d04c1d0-4e6c-11de-8a39-0800
 
 component	{b81efa50-4e7d-11de-8a39-0800200c9a66}	components/ProtocolHandlerProxy.js
 contract	@mozilla.org/network/protocol;1?name=https	{b81efa50-4e7d-11de-8a39-0800200c9a66}
+
+component	{335d9d60-9fbe-11df-981c-0800200c9a66}	components/ProtocolHandlerProxy.js
+contract	@mozilla.org/network/protocol;1?name=uxu-redirect	{335d9d60-9fbe-11df-981c-0800200c9a66}
+
+component	{a29a5470-9fbe-11df-981c-0800200c9a66}	components/ProtocolHandlerProxy.js
+contract	@clear-code.com/uxu/redirector;1	{a29a5470-9fbe-11df-981c-0800200c9a66}
+category	content-policy	UxURedirector	@clear-code.com/uxu/redirector;1
+
