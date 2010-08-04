@@ -51,6 +51,7 @@ function assertMapped(aURI, aMapToFile)
 
 function assertRedirected(aURI)
 {
+	utils.loadURI('about:blank');
 	utils.loadURI(aURI);
 	var redirected = utils.mapURI(aURI, mapping).replace(/^<redirect>/i, '');
 	utils.wait(300);

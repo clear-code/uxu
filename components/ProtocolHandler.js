@@ -278,7 +278,8 @@ UxURedirectProtocol.prototype = {
 	scheme        : URIMappingResolver.REDIRECTION_PROTOCOL, 
 	defaultPort   : -1,
 	protocolFlags : Ci.nsIProtocolHandler.URI_LOADABLE_BY_ANYONE |
-	                Ci.nsIProtocolHandler.URI_INHERITS_SECURITY_CONTEXT,
+	                Ci.nsIProtocolHandler.URI_NORELATIVE |
+	                Ci.nsIProtocolHandler.URI_NOAUTH,
  
 	allowPort: function(aPort, aScheme) 
 	{
@@ -341,8 +342,9 @@ UxURedirector.prototype = {
 		if (!uri || uri.scheme != URIMappingResolver.REDIRECTION_PROTOCOL)
 			return this.ACCEPT;
 
+		var uri = uri.spec.replace(URIMappingResolver.REDIRECTION_PROTOCOL+':', '');
 		aContext.loadURIWithFlags(
-			uri.spec.replace(URIMappingResolver.REDIRECTION_PROTOCOL+':', ''),
+			uri,
 			Ci.nsIWebNavigation.LOAD_FLAGS_REPLACE_HISTORY,
 			null,
 			null,
