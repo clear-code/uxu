@@ -349,14 +349,12 @@ TestCase.prototype = {
 			)
 			return;
 
-		aSubject = aSubject
-					.QueryInterface(Ci.nsIPropertyBag)
-					.QueryInterface(Ci.nsIWritablePropertyBag);
+		aSubject = aSubject.QueryInterface(Ci.nsISupportsString);
 
-		var currentURI = aSubject.getProperty('uri');
+		var currentURI = aSubject.data;
 		var newURI = this._utils.mapURI(currentURI, this._mapping);
 		if (newURI && newURI != currentURI)
-			aSubject.setProperty('uri', newURI);
+			aSubject.data = newURI;
 	},
  
 /**

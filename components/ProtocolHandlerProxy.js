@@ -175,15 +175,11 @@ ProtocolHandlerProxy.prototype = {
 	mapURIInternal : function(aURI) 
 	{
 		if (Pref.getBoolPref(kUXU_TEST_RUNNING)) {
-			var bag = Cc['@mozilla.org/hash-property-bag;1']
-						.createInstance(Ci.nsIPropertyBag)
-						.QueryInterface(Ci.nsIWritablePropertyBag);
-			bag.setProperty('uri', aURI.spec);
-
-			ObserverService.notifyObservers(bag, 'uxu-mapping-check', null);
-
-			var uri = String(bag.getProperty('uri'))
-						.replace(/^<redirect>/i, UxURedirectProtocol.scheme+':');
+			var uri = Cc['@mozilla.org/supports-string;1']
+						.createInstance(Ci.nsISupportsString);
+			uri.data = aURI.spec;
+			ObserverService.notifyObservers(uri, 'uxu-mapping-check', null);
+			uri = uri.data.replace(/^<redirect>/i, UxURedirectProtocol.scheme+':');
 			if (uri != aURI.spec) {
 				var schemer = uri.split(':')[0];
 				var handler = this.getNativeProtocolHandler(schemer);
