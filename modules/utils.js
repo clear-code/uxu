@@ -1106,8 +1106,11 @@ setClipBoard : function(aString)
   
 fixupIncompleteURI : function(aURIOrPart) 
 {
-	if (!this.baseURL ||
-		/^(about|data|javascript|view-source|jar):/.test(aURIOrPart))
+	if (!this.baseURL)
+		return aURIOrPart;
+
+	var match = aURIOrPart.match(/^([^:]+):/);
+	if (match && match[1] != 'file')
 		return aURIOrPart;
 
 	var uri = aURIOrPart;
