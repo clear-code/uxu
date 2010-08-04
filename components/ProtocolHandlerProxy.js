@@ -174,12 +174,14 @@ ProtocolHandlerProxy.prototype = {
 	mapURIInternal : function(aURI) 
 	{
 		if (Pref.getBoolPref(kUXU_TEST_RUNNING)) {
-			var uri = Cc['@mozilla.org/supports-string;1']
-						.createInstance(Ci.nsISupportsString);
-			uri.data = aURI.spec;
-			ObserverService.notifyObservers(uri, 'uxu-mapping-check', null);
-			if (uri.data && uri.data != aURI.spec) {
-				var schemer = uri.data.split(':')[0];
+			var bag = Cc['@mozilla.org/hash-property-bag;1']
+						.createInstance(Ci.nsIPropertyBag)
+						.QueryInterface(Ci.nsIWritablePropertyBag);
+			bag.setProperty('uri', aURI.spec);
+			ObserverService.notifyObservers(bag, 'uxu-mapping-check', null);
+			var uri = bag.getProperty('uri');
+			if (uri != aURI.spec) {
+				var schemer = uri.split(':')[0];
 				var handler = this.getNativeProtocolHandler(schemer);
 				switch (schemer)
 				{
@@ -190,7 +192,7 @@ ProtocolHandlerProxy.prototype = {
 						return IOService.newFileURI(tempLocalFile);
 
 					default:
-						return IOService.newURI(uri.data, null, null);
+						return IOService.newURI(uri, null, null);
 				}
 			}
 		}

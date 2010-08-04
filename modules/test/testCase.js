@@ -349,12 +349,14 @@ TestCase.prototype = {
 			)
 			return;
 
-		aSubject = aSubject.QueryInterface(Ci.nsISupportsString);
+		aSubject = aSubject
+					.QueryInterface(Ci.nsIPropertyBag)
+					.QueryInterface(Ci.nsIWritablePropertyBag);
 
-		var currentURI = aSubject.data;
+		var currentURI = aSubject.getProperty('uri');
 		var newURI = this._utils.mapURI(currentURI, this._mapping);
 		if (newURI && newURI != currentURI)
-			aSubject.data = newURI;
+			aSubject.setProperty('uri', newURI);
 	},
  
 /**
@@ -936,6 +938,7 @@ TestCase.prototype = {
 						useContinuation : true
 					}
 				);
+
 			},
 			doPrivSetUp : function(aContinuation)
 			{
