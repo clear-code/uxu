@@ -8,7 +8,7 @@ var mapping = [
 		'https://addons.mozilla.org/*', baseURL+'../../fixtures/html.html',
 		/.*google.*/,                   baseURL+'../../fixtures/html.html',
 		'about:config',                 baseURL+'../../fixtures/html.html',
-		'http://www.example.org/*',     '<redirect>'+baseURL+'../../fixtures/html.html'
+		'http://www.example.org/*',     '<redirect>http://localhost:4445/html.html'
 	];
 
 function testMapping()

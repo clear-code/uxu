@@ -122,8 +122,9 @@ ProtocolHandlerProxy.prototype = {
 	{
 		if (Pref.getBoolPref(kUXU_TEST_RUNNING)) {
 			var uri = this.mapURI(aURI);
-			if (uri)
+			if (uri) {
 				return this.getNativeProtocolHandler(uri.scheme).newChannel(uri);
+			}
 		}
 		return this.mProtocolHandler.newChannel(aURI);
 	},
@@ -298,7 +299,8 @@ UxURedirectProtocol.prototype = {
 
 	scheme        : UxURedirectProtocol.scheme,
 	defaultPort   : -1,
-	protocolFlags : Ci.nsIProtocolHandler.URI_NORELATIVE | Ci.nsIProtocolHandler.URI_NOAUTH,
+	protocolFlags : Ci.nsIProtocolHandler.URI_LOADABLE_BY_ANYONE |
+	                Ci.nsIProtocolHandler.URI_INHERITS_SECURITY_CONTEXT,
 
 	allowPort: function(aPort, aScheme)
 	{
