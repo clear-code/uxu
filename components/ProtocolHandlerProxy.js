@@ -49,6 +49,87 @@ var PrefObserver = {
 }; 
  
 Pref.addObserver('general.useragent', PrefObserver, false); 
+
+var URIMappingResolver = {
+	init : function()
+	{
+		this.mDefaultHttpProtocolHandler = DEFAULT_HTTP_PROTOCOL_HANDLER
+				.getService(Ci.nsIHttpProtocolHandler)
+				.QueryInterface(Ci.nsIProtocolHandler)
+				.QueryInterface(Ci.nsIProxiedProtocolHandler)
+				.QueryInterface(Ci.nsIObserver)
+				.QueryInterface(Ci.nsISupportsWeakReference);
+//		this.mDefaultHttpsProtocolHandler = DEFAULT_HTTPS_PROTOCOL_HANDLER
+//				.getService(Ci.nsIHttpProtocolHandler)
+//				.QueryInterface(Ci.nsIProtocolHandler)
+//				.QueryInterface(Ci.nsIProxiedProtocolHandler)
+//				.QueryInterface(Ci.nsISupportsWeakReference);
+	},
+
+	resolve : function(aURI) 
+	{
+		var uri = aURI;
+		var finalURI;
+		do {
+			finalURI = uri;
+			uri = this.resolveInternal(uri);
+		}
+		while (uri);
+		return finalURI == aURI ? null : finalURI ;
+	},
+ 
+	resolveInternal : function(aURI) 
+	{
+		if (Pref.getBoolPref(kUXU_TEST_RUNNING)) {
+			var uri = Cc['@mozilla.org/supports-string;1']
+						.createInstance(Ci.nsISupportsString);
+			uri.data = aURI.spec;
+			ObserverService.notifyObservers(uri, 'uxu-mapping-check', null);
+			uri = uri.data.replace(/^<redirect>/i, UxURedirectProtocol.scheme+':');
+			if (uri != aURI.spec) {
+				var schemer = uri.split(':')[0];
+				var handler = this.getNativeProtocolHandler(schemer);
+				switch (schemer)
+				{
+					case 'file':
+						var tempLocalFile = handler
+								.QueryInterface(Ci.nsIFileProtocolHandler)
+								.getFileFromURLSpec(uri);
+						return IOService.newFileURI(tempLocalFile);
+
+					default:
+						return IOService.newURI(uri, null, null);
+				}
+			}
+		}
+		return null;
+	},
+ 
+	getNativeProtocolHandler : function(aSchemer) 
+	{
+		switch (aSchemer)
+		{
+			case 'http':
+				return this.mDefaultHttpProtocolHandler
+						.QueryInterface(Ci.nsIHttpProtocolHandler);
+
+			case 'https':
+//				return this.mDefaultHttpsProtocolHandler
+				return this.mDefaultHttpProtocolHandler
+						.QueryInterface(Ci.nsIHttpProtocolHandler);
+
+			case 'file':
+				return IOService.getProtocolHandler('file')
+						.QueryInterface(Ci.nsIFileProtocolHandler);
+
+			default:
+				return IOService.getProtocolHandler(aSchemer)
+						.QueryInterface(Ci.nsIProtocolHandler);
+		}
+	}
+};
+URIMappingResolver.init();
+
   
 function ProtocolHandlerProxy() { 
 	this.initNonSecure();
@@ -71,7 +152,6 @@ ProtocolHandlerProxy.prototype = {
 //				.getService(Ci.nsIHttpProtocolHandler)
 //				.QueryInterface(Ci.nsIProtocolHandler)
 //				.QueryInterface(Ci.nsIProxiedProtocolHandler)
-//				.QueryInterface(Ci.nsIObserver)
 //				.QueryInterface(Ci.nsISupportsWeakReference);
 		this.mProtocolHandler = this.mDefaultHttpProtocolHandler;
 	},
@@ -121,10 +201,9 @@ ProtocolHandlerProxy.prototype = {
 	newChannel: function(aURI)
 	{
 		if (Pref.getBoolPref(kUXU_TEST_RUNNING)) {
-			var uri = this.mapURI(aURI);
-			if (uri) {
-				return this.getNativeProtocolHandler(uri.scheme).newChannel(uri);
-			}
+			var uri = URIMappingResolver.resolve(aURI);
+			if (uri)
+				return URIMappingResolver.getNativeProtocolHandler(uri.scheme).newChannel(uri);
 		}
 		return this.mProtocolHandler.newChannel(aURI);
 	},
@@ -133,9 +212,9 @@ ProtocolHandlerProxy.prototype = {
 	newProxiedChannel : function(aURI, aProxyInfo)
 	{
 		if (Pref.getBoolPref(kUXU_TEST_RUNNING)) {
-			var uri = this.mapURI(aURI);
+			var uri = URIMappingResolver.resolve(aURI);
 			if (uri) {
-				var handler = this.getNativeProtocolHandler(uri.scheme);
+				var handler = URIMappingResolver.getNativeProtocolHandler(uri.scheme);
 				try {
 					return handler.QueryInterface(Ci.nsIProxiedProtocolHandler)
 									.newProxiedChannel(uri, aProxyInfo);
@@ -158,68 +237,6 @@ ProtocolHandlerProxy.prototype = {
 	GetWeakReference : function()
 	{
 		return this.mProtocolHandler.GetWeakReference();
-	},
- 
-	mapURI : function(aURI) 
-	{
-		var uri = aURI;
-		var finalURI;
-		do {
-			finalURI = uri;
-			uri = this.mapURIInternal(uri);
-		}
-		while (uri);
-		return finalURI == aURI ? null : finalURI ;
-	},
- 
-	mapURIInternal : function(aURI) 
-	{
-		if (Pref.getBoolPref(kUXU_TEST_RUNNING)) {
-			var uri = Cc['@mozilla.org/supports-string;1']
-						.createInstance(Ci.nsISupportsString);
-			uri.data = aURI.spec;
-			ObserverService.notifyObservers(uri, 'uxu-mapping-check', null);
-			uri = uri.data.replace(/^<redirect>/i, UxURedirectProtocol.scheme+':');
-			if (uri != aURI.spec) {
-				var schemer = uri.split(':')[0];
-				var handler = this.getNativeProtocolHandler(schemer);
-				switch (schemer)
-				{
-					case 'file':
-						var tempLocalFile = handler
-								.QueryInterface(Ci.nsIFileProtocolHandler)
-								.getFileFromURLSpec(uri);
-						return IOService.newFileURI(tempLocalFile);
-
-					default:
-						return IOService.newURI(uri, null, null);
-				}
-			}
-		}
-		return null;
-	},
- 
-	getNativeProtocolHandler : function(aSchemer) 
-	{
-		switch (aSchemer)
-		{
-			case 'http':
-				return this.mDefaultHttpProtocolHandler
-						.QueryInterface(Ci.nsIHttpProtocolHandler);
-
-			case 'https':
-//				return this.mDefaultHttpsProtocolHandler
-				return this.mDefaultHttpProtocolHandler
-						.QueryInterface(Ci.nsIHttpProtocolHandler);
-
-			case 'file':
-				return IOService.getProtocolHandler('file')
-						.QueryInterface(Ci.nsIFileProtocolHandler);
-
-			default:
-				return IOService.getProtocolHandler(aSchemer)
-						.QueryInterface(Ci.nsIProtocolHandler);
-		}
 	},
  
 	QueryInterface : XPCOMUtils.generateQI([ 
@@ -354,17 +371,22 @@ UxURedirector.prototype = {
 
 	shouldLoad : function(aContentType, aContentLocation, aRequestOrigin, aContext, aMimeTypeGuess, aExtra)
 	{
-		if (aContentLocation.scheme != UxURedirectProtocol.scheme) return this.ACCEPT;
-		if (Pref.getBoolPref(kUXU_TEST_RUNNING)) {
-			var uri = aContentLocation.spec.replace(UxURedirectProtocol.scheme+':', '');
-			aContext.loadURIWithFlags(
-				uri,
-				Ci.nsIWebNavigation.LOAD_FLAGS_REPLACE_HISTORY,
-				null,
-				null,
-				null
-			);
-		}
+		if (!Pref.getBoolPref(kUXU_TEST_RUNNING))
+			return this.ACCEPT;
+
+		var uri = URIMappingResolver.resolve(aContentLocation);
+		if (!uri || uri.scheme != UxURedirectProtocol.scheme)
+			return this.ACCEPT;
+
+		var uri = uri.spec.replace(UxURedirectProtocol.scheme+':', '');
+		aContext.loadURIWithFlags(
+			uri,
+			Ci.nsIWebNavigation.LOAD_FLAGS_REPLACE_HISTORY,
+			null,
+			null,
+			null
+		);
+
 		return this.REJECT_REQUEST;
 	},
 
