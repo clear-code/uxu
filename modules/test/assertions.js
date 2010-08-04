@@ -718,9 +718,6 @@ Assertions.prototype = {
 		if (!aGetter)
 			throw new Error(bundle.getFormattedString('assert_no_difference_invalid_arguments', [this._appendTypeString(args)]));
 
-		if (typeof aExpectedDelta != 'number')
-			throw new Error(bundle.getFormattedString('assert_difference_delta_not_number', [this._appendTypeString(aExpectedDelta)]));
-
 		startValue = aGetter();
 		if (typeof startValue != 'number')
 			throw new Error(bundle.getFormattedString('assert_difference_value_not_number', [this._appendTypeString(startValue)]));
@@ -748,7 +745,6 @@ Assertions.prototype = {
 		if (typeof aEndValue != 'number')
 			throw new Error(bundle.getFormattedString('assert_difference_not_number', [this._appendTypeString(aEndValue)]));
 
-		var actualDelta = aEndValue - aStartValue;
 		if (aStartValue != aEndValue) {
 			this._fail({
 			     	actual   : bundle.getFormattedString('assert_no_difference_actual', [aEndValue - aStartValue])
