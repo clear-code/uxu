@@ -656,16 +656,15 @@ TestCase.prototype = {
 		this._tests.push(test);
 	},
  
-	_shuffle : function(aArray)
+	_shuffleTests : function()
 	{
-		var source = aArray.slice(0);
-		var result = [];
-		while (source.length)
+		var tests = [];
+		while (this._tests.length)
 		{
-			let index = Math.floor(Math.random() * source.length);
-			result.push(source.splice(index, 1));
+			let index = Math.floor(Math.random() * this._tests.length);
+			tests.push(this._tests.splice(index, 1)[0]);
 		}
-		return result;
+		this._tests = tests;
 	},
    
 /**
@@ -782,8 +781,9 @@ TestCase.prototype = {
 			this._masterPriority = 'never';
 		}
 
+		this._shuffleTests();
+
 		var testIndex = 0;
-		var tests = this._shuffle(this._tests);
 		var current;
 		var testReport = { report : null };
 		var testCaseReport = { report : null };
@@ -880,7 +880,7 @@ TestCase.prototype = {
 			prepareTest : function(aContinuation)
 			{
 				testReport.report = new ns.Report();
-				current = tests[testIndex];
+				current = self._tests[testIndex];
 				self.fireEvent('TestStart', current);
 				aContinuation('ok');
 			},
@@ -1050,7 +1050,7 @@ TestCase.prototype = {
 					return;
 				}
 				testIndex += 1;
-				tests[testIndex] ? aContinuation('ok') : aContinuation('ko');
+				self._tests[testIndex] ? aContinuation('ok') : aContinuation('ko');
 			},
 			doShutDown : function(aContinuation)
 			{
