@@ -188,7 +188,7 @@ ProtocolHandlerProxy.prototype = {
 					case 'file':
 						var tempLocalFile = handler
 								.QueryInterface(Ci.nsIFileProtocolHandler)
-								.getFileFromURLSpec(uri.data);
+								.getFileFromURLSpec(uri);
 						return IOService.newFileURI(tempLocalFile);
 
 					default:
