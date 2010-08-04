@@ -55,7 +55,7 @@ ProtocolHandlerProxy.prototype = {
 		Ci.nsIProxiedProtocolHandler,
 		Ci.nsIObserver,
 		Ci.nsISupportsWeakReference
-	])
+	]),
  
 	init : function() 
 	{
@@ -144,7 +144,7 @@ ProtocolHandlerProxy.prototype = {
 	GetWeakReference : function()
 	{
 		return this.mProtocolHandler.GetWeakReference();
-	},
+	}
  
 }; 
 ProtocolHandlerProxy.prototype.initProperties();
