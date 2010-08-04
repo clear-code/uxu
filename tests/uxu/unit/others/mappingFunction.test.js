@@ -5,7 +5,7 @@ var mapping = function(aURI) {
 				.replace(/^.*localhost.*$/, 'http://localhost:4445/html.html')
 				.replace(/^.*google.*$/, baseURL+'../../fixtures/html.html')
 				.replace(/^.*www.example.jp.*\.jpg$/, baseURL+'../../../../skin/classic/uxu/bomb.png')
-				.replace(/^.*www.example.org.*\.jpg$/, '<redirect>'+baseURL+'../../../../skin/classic/uxu/bomb.png');
+				.replace(/^.*www.example.org.*\.jpg$/, '<redirect>http://localhost:4445/html.html');
 	};
 
 function testMapping()

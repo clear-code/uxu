@@ -294,7 +294,7 @@ UxURedirectProtocol.prototype = {
 		QueryInterface: XPCOMUtils.generateQI([Ci.nsIFactory])
 	},
 
-	QueryInterface: XPCOMUtils.generateQI([Ci.nsIProtocolHandler]),
+	QueryInterface: XPCOMUtils.generateQI([Ci.nsIProtocolHandler, Ci.nsIProxiedProtocolHandler]),
 
 	scheme        : UxURedirectProtocol.scheme,
 	defaultPort   : -1,
@@ -320,8 +320,13 @@ UxURedirectProtocol.prototype = {
 	{
 		var channel = IOService.newChannel('about:blank?'+aURI.spec, null, null);
 		return channel;
+	},
+	// nsIProxiedProtocolHandler
+	newProxiedChannel : function(aURI, aProxyInfo)
+	{
+		var channel = IOService.newChannel('about:blank?'+aURI.spec, null, null);
+		return channel;
 	}
-
 };
 
 function UxURedirector() {
