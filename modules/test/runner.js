@@ -106,14 +106,14 @@ TestRunner.prototype = {
 				continue;
 
 			// declaration style
-			if (/^(start|warm)[uU]p/.test(i) || obj.isStartUp || obj.isWarmUp)
+			if (/^(start|warm)[uU]p$/.test(i) || obj.isStartUp || obj.isWarmUp)
 				testObjects.startUp = obj;
-			else if (/^(shut|warm|cool)[dD]own/.test(i) ||
+			else if (/^(shut|warm|cool)[dD]own$/.test(i) ||
 				obj.isShutDown || obj.isCoolDown || obj.isWarmDown)
 				testObjects.shutDown = obj;
-			else if (/^set[uU]p/.test(i) || obj.isSetUp)
+			else if (/^set[uU]p$/.test(i) || obj.isSetUp)
 				testObjects.setUp = obj;
-			else if (/^tear[dD]own/.test(i) || obj.isTearDown)
+			else if (/^tear[dD]own$/.test(i) || obj.isTearDown)
 				testObjects.tearDown = obj;
 			else if (/^test/.test(i) ||
 				obj.isTest || obj.description)
