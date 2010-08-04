@@ -15,15 +15,6 @@ UxURedirectProtocol.prototype = {
 	contractID : '@mozilla.org/network/protocol;1?name='+URIMappingResolver.REDIRECTION_PROTOCOL, 
 	classDescription : 'UxURedirectProtocol',
 	classID : Components.ID('{335d9d60-9fbe-11df-981c-0800200c9a66}'),
-
-	_xpcom_factory : {
-		createInstance: function(aOuter, aIID)
-		{
-			return (new UxURedirectProtocol()).QueryInterface(aIID);
-
-		},
-		QueryInterface: XPCOMUtils.generateQI([Ci.nsIFactory])
-	},
  
 	QueryInterface: XPCOMUtils.generateQI([Ci.nsIProtocolHandler]), 
  

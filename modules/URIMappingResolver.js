@@ -97,5 +97,4 @@ var URIMappingResolver = {
 	}
  
 }; 
-URIMappingResolver.init();
   
