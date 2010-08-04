@@ -711,6 +711,9 @@ Assertions.prototype = {
 				};
 				[aTask, aContext, aMessage] = args.slice(2);
 			}
+			else {
+				[aGetter, aTask, aContext, aMessage] = args;
+			}
 		}
 		catch(e) {
 		}

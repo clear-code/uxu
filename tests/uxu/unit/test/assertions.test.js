@@ -1018,7 +1018,7 @@ function testNoDifference()
 		args,
 		bundle.getFormattedString(
 			'assert_difference_invalid_arguments',
-			[assertionsModule._appendTypeString(args)]
+			[assertionsModule._appendTypeString([args[0], 0, args[1], args[2], args[3]])]
 		)
 	);
 	assert.equals(0, count.value);
