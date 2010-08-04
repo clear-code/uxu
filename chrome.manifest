@@ -20,16 +20,16 @@ contract	@clear-code.com/uxu/startup;1	{dd385d40-9e6f-11dd-ad8b-0800200c9a66}
 category	profile-after-change	UxUGlobalService	@clear-code.com/uxu/startup;1
 category	command-line-handler	m-uxu	@clear-code.com/uxu/startup;1
 
-component	{3d04c1d0-4e6c-11de-8a39-0800200c9a66}	components/ProtocolHandlerProxy.js
+component	{3d04c1d0-4e6c-11de-8a39-0800200c9a66}	components/ProtocolHandler.js
 contract	@mozilla.org/network/protocol;1?name=http	{3d04c1d0-4e6c-11de-8a39-0800200c9a66}
 
-component	{b81efa50-4e7d-11de-8a39-0800200c9a66}	components/ProtocolHandlerProxy.js
+component	{b81efa50-4e7d-11de-8a39-0800200c9a66}	components/ProtocolHandler.js
 contract	@mozilla.org/network/protocol;1?name=https	{b81efa50-4e7d-11de-8a39-0800200c9a66}
 
-component	{335d9d60-9fbe-11df-981c-0800200c9a66}	components/UxURedirectProtocolHandler.js
+component	{335d9d60-9fbe-11df-981c-0800200c9a66}	components/ProtocolHandler.js
 contract	@mozilla.org/network/protocol;1?name=uxu-redirect	{335d9d60-9fbe-11df-981c-0800200c9a66}
 
-component	{a29a5470-9fbe-11df-981c-0800200c9a66}	components/UxURedirectProtocolHandler.js
+component	{a29a5470-9fbe-11df-981c-0800200c9a66}	components/ProtocolHandler.js
 contract	@clear-code.com/uxu/redirector;1	{a29a5470-9fbe-11df-981c-0800200c9a66}
 category	content-policy	UxURedirector	@clear-code.com/uxu/redirector;1
 
