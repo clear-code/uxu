@@ -711,13 +711,52 @@ Assertions.prototype = {
 				};
 				[aTask, aContext, aMessage] = args.slice(2);
 			}
-			else {
-				[aGetter, aTask, aContext, aMessage] = args;
-			}
 		}
 		catch(e) {
 		}
-		this.difference(aGetter, 0, aTask, aContext, aMessage);
+
+		if (!aGetter)
+			throw new Error(bundle.getFormattedString('assert_no_difference_invalid_arguments', [this._appendTypeString(args)]));
+
+		if (typeof aExpectedDelta != 'number')
+			throw new Error(bundle.getFormattedString('assert_difference_delta_not_number', [this._appendTypeString(aExpectedDelta)]));
+
+		startValue = aGetter();
+		if (typeof startValue != 'number')
+			throw new Error(bundle.getFormattedString('assert_difference_value_not_number', [this._appendTypeString(startValue)]));
+
+		if (typeof aTask == 'function') aTask = aTask.call(aContext);
+		if (aTask && utils.isGeneratedIterator(aTask)) {
+			var _this = this;
+			return utils.doIteration(aTask, {
+				onEnd : function(e)
+				{
+					_this._onNoDifferenceFinish(startValue, aGetter(), aMessage);
+				},
+				onError : function(e)
+				{
+					throw e;
+				}
+			});
+		}
+		else {
+			this._onNoDifferenceFinish(startValue, aGetter(), aMessage);
+		}
+	},
+	_onNoDifferenceFinish : function(aStartValue, aEndValue, aMessage)
+	{
+		if (typeof aEndValue != 'number')
+			throw new Error(bundle.getFormattedString('assert_difference_not_number', [this._appendTypeString(aEndValue)]));
+
+		var actualDelta = aEndValue - aStartValue;
+		if (aStartValue != aEndValue) {
+			this._fail({
+			     	actual   : bundle.getFormattedString('assert_no_difference_actual', [aEndValue - aStartValue])
+			     },
+			     bundle.getString('assert_no_difference'),
+			     aMessage);
+		}
+		this._onSuccess();
 	},
 
 	_greaterThan : function(aExpected, aActual, aMessage)
