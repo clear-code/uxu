@@ -655,6 +655,18 @@ TestCase.prototype = {
 
 		this._tests.push(test);
 	},
+ 
+	_shuffle : function(aArray)
+	{
+		var source = aArray.slice(0);
+		var result = [];
+		while (source.length)
+		{
+			let index = Math.floor(Math.random() * source.length);
+			result.push(source.splice(index, 1));
+		}
+		return result;
+	},
    
 /**
  * Alternative style for defining setup. 
@@ -771,6 +783,7 @@ TestCase.prototype = {
 		}
 
 		var testIndex = 0;
+		var tests = this._shuffle(this._tests);
 		var current;
 		var testReport = { report : null };
 		var testCaseReport = { report : null };
@@ -867,7 +880,7 @@ TestCase.prototype = {
 			prepareTest : function(aContinuation)
 			{
 				testReport.report = new ns.Report();
-				current = self._tests[testIndex];
+				current = tests[testIndex];
 				self.fireEvent('TestStart', current);
 				aContinuation('ok');
 			},
@@ -1037,7 +1050,7 @@ TestCase.prototype = {
 					return;
 				}
 				testIndex += 1;
-				self._tests[testIndex] ? aContinuation('ok') : aContinuation('ko');
+				tests[testIndex] ? aContinuation('ok') : aContinuation('ko');
 			},
 			doShutDown : function(aContinuation)
 			{
