@@ -187,3 +187,15 @@ function test_compareVersions(aParameter)
 		                      utilsModule.compareVersions.apply(utilsModule, aParameter.args));
 	}
 }
+
+function test_getErrorNameFromNSExceptionCode()
+{
+	function assertResult(aName)
+	{
+		assert.equals(aName, utilsModule.getErrorNameFromNSExceptionCode(Components.results[aName]));
+	}
+	assertResult('NS_OK');
+	assertResult('NS_NOINTERFACE');
+	assert.isNull(utilsModule.getErrorNameFromNSExceptionCode('string'));
+}
+
