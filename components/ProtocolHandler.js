@@ -275,6 +275,10 @@ UxURedirectProtocol.prototype = {
  
 	QueryInterface: XPCOMUtils.generateQI([Ci.nsIProtocolHandler]), 
  
+	get wrappedJSObject() { 
+		return this;
+	},
+ 
 	scheme        : URIMappingResolver.REDIRECTION_PROTOCOL, 
 	defaultPort   : -1,
 	protocolFlags : Ci.nsIProtocolHandler.URI_LOADABLE_BY_ANYONE |
@@ -294,7 +298,7 @@ UxURedirectProtocol.prototype = {
 			uri.spec = aSpec;
 		}
 		catch(e) {
-			dump(e+'\n');
+			dump('UxURedirectProtocol.newURI()\n'+e+'\n');
 		}
 		return uri;
 	},
@@ -319,6 +323,10 @@ UxURedirector.prototype = {
  
 	QueryInterface: XPCOMUtils.generateQI([Ci.nsIContentPolicy]), 
  
+	get wrappedJSObject() { 
+		return this;
+	},
+ 
 	TYPE_OTHER			: Ci.nsIContentPolicy.TYPE_OTHER, 
 	TYPE_SCRIPT			: Ci.nsIContentPolicy.TYPE_SCRIPT,
 	TYPE_IMAGE			: Ci.nsIContentPolicy.TYPE_IMAGE,
@@ -338,13 +346,15 @@ UxURedirector.prototype = {
 		if (!URIMappingResolver.available)
 			return this.ACCEPT;
 
-		var uri = URIMappingResolver.resolve(aContentLocation.spec);
-		if (!uri || uri.scheme != URIMappingResolver.REDIRECTION_PROTOCOL)
-			return this.ACCEPT;
+		var uri = aContentLocation;
+		if (uri.scheme != URIMappingResolver.REDIRECTION_PROTOCOL) {
+			uri = URIMappingResolver.resolve(aContentLocation.spec);
+			if (!uri || uri.scheme != URIMappingResolver.REDIRECTION_PROTOCOL)
+				return this.ACCEPT;
+		}
 
-		var uri = uri.spec.replace(URIMappingResolver.REDIRECTION_PROTOCOL+':', '');
 		aContext.loadURIWithFlags(
-			uri,
+			uri.spec.replace(URIMappingResolver.REDIRECTION_PROTOCOL+':', ''),
 			Ci.nsIWebNavigation.LOAD_FLAGS_REPLACE_HISTORY,
 			null,
 			null,
