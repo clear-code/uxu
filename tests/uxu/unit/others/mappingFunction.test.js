@@ -5,7 +5,8 @@ var mapping = function(aURI) {
 				.replace(/^.*localhost.*$/, 'http://localhost:4445/html.html')
 				.replace(/^.*google.*$/, baseURL+'../../fixtures/html.html')
 				.replace(/^.*www.example.jp.*\.jpg$/, baseURL+'../../../../skin/classic/uxu/bomb.png')
-				.replace(/^.*www.example.org.*\.jpg$/, '<redirect>http://localhost:4445/html.html');
+				.replace(/^.*www.example.org.*/, '<redirect>http://localhost:4445/html.html')
+				.replace(/^.*\/submission\/.*/, '<redirect>'+baseURL+'../../fixtures/hash.txt');
 	};
 
 function testMapping()
@@ -19,5 +20,7 @@ function testMapping()
 
 	assertMappedXMLHttpRequest('http://www.google.com/');
 	assertMappedImageRequest('http://www.example.jp/test.jpg');
+
+	assertRedirectedSubmission();
 }
 

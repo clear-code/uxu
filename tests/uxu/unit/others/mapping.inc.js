@@ -59,6 +59,14 @@ function assertRedirected(aURI)
 	assert.equals('test', content.document.title);
 }
 
+function assertRedirectedSubmission()
+{
+	utils.loadURI('http://localhost:4445/html.html');
+	$('form').submit();
+	utils.wait(300);
+	assert.equals('hash\n', content.document.documentElement.textContent);
+}
+
 function assertNotMapped(aURI)
 {
 	var referrer = aURI.indexOf('about:') > -1 ?
