@@ -826,7 +826,15 @@ formatError : function(e)
 	var lines = this.formatStackTrace(e, { onlyFile : true, onlyExternal : true, onlyTraceLine : true });
 	if (!lines || this.getPref('extensions.uxu.showInternalStacks'))
 		lines = this.formatStackTrace(e, { onlyFile : true, onlyTraceLine : true });
-	return e.toString() + '\n' + lines;
+	var formatted = e.toString();
+	if ('result' in e) {
+		let name = this.getErrorNameFromNSExceptionCode(e.result);
+		if (name)
+			formatted += '\n'+e.result+' ('+name+')';
+	}
+	formatted += '\n'+this.inspect(e);
+	formatted += '\n' + lines;
+	return formatted;
 },
  
 hasStackTrace : function(aException) 

@@ -353,6 +353,7 @@ UxURedirector.prototype = {
 				return this.ACCEPT;
 		}
 
+		aContext.stop();
 		aContext.loadURIWithFlags(
 			uri.spec.replace(URIMappingResolver.REDIRECTION_PROTOCOL+':', ''),
 			Ci.nsIWebNavigation.LOAD_FLAGS_REPLACE_HISTORY,
@@ -361,7 +362,7 @@ UxURedirector.prototype = {
 			null
 		);
 
-		return this.REJECT_REQUEST;
+		return this.REJECT_SERVER;
 	},
  
 	shouldProcess : function(aContentType, aContentLocation, aRequestOrigin, aContext, aMimeTypeGuess, aExtra) 
