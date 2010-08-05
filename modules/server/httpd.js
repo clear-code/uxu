@@ -2384,10 +2384,9 @@ ServerHandler.prototype =
     // path-to-directory mapping in the requested URL
     var file = this._getFileForPath(path);
 
-    // ***************************************************************************
+    // *************************************************************************
     // APPENDED BY UXU
-    // ***************************************************************************
-                  dump('REQUEST '+path+'\n');
+    // *************************************************************************
     let (dir = file.clone()) {
       while (dir)
       {
@@ -2425,6 +2424,11 @@ ServerHandler.prototype =
           return;
         }
       }
+    }
+    if (utils.getPref('extensions.uxu.httpd.noCache')) {
+      response.setHeader('Pragma', 'no-cache');
+      response.setHeader('Cache-Control', 'no-cache, must-revalidate');
+      response.setHeader('Expires', 'Mon, 26 Jul 1997 05:00:00 GMT');
     }
     // ***************************************************************************
 
