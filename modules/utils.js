@@ -2116,13 +2116,15 @@ REWRITE_RULES_PATTERN : /^\s*RewriteRule\s+.+$/gm,
 REWRITE_RULE_PATTERN : /RewriteRule\s+([^\s]+)\s+([^\s]+)(?:\s+\[([LR,\s]+)\])?/,
 _processRewriteRule : function(aPath, aHtaccess)
 {
+	var rules = aHtaccess.match(this.REWRITE_RULES_PATTERN);
+	if (!rules) return null;
+
 	var result = {
 			status     : 200,
 			statusText : 'OK',
 			uri        : null
 		};
 
-	var rules = aHtaccess.match(this.REWRITE_RULES_PATTERN);
 	rules.some(function(aLine) {
 	try {
 		let match = aLine.match(this.REWRITE_RULE_PATTERN);
@@ -2155,13 +2157,15 @@ REDIRECTIONS_PATTERN : /^\s*Redirect(Match|Permanent|Temp)?\s+.+$/gim,
 REDIRECTION_PATTERN : /Redirect(Match|Permanent|Temp)?\s+(?:([^\s]+)\s+)?([^\s]+)\s+([^\s]+)/,
 _processRedirect : function(aPath, aHtaccess)
 {
+	var redirections = aHtaccess.match(this.REDIRECTIONS_PATTERN);
+	if (!redirections) return null;
+
 	var result = {
 			status     : 0,
 			statusText : '',
 			uri        : null
 		};
 
-	var redirections = aHtaccess.match(this.REDIRECTIONS_PATTERN);
 	redirections.some(function(aLine) {
 	try {
 		let match = aLine.match(this.REDIRECTION_PATTERN);

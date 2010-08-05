@@ -5,7 +5,7 @@ utils.include('utils_common.inc.js');
 var bundle = utils.import(topDir+'modules/lib/stringBundle.js', {})
 				.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
-var htaccess = utils.readFrom(baseURL+'../../fixtures/redirect/.htaccess');
+var htaccess;
 
 function assertRedirect(aStatus, aStatusText, aURI, aPath)
 {
@@ -36,6 +36,9 @@ function assertNotModified(aPath)
 	assert.isNull(utilsModule.processRequestByHtaccess(aPath, htaccess));
 }
 
+test_processRequestByHtaccess.setUp = function() {
+	htaccess = utils.readFrom(baseURL+'../../fixtures/redirect/.htaccess');
+};
 function test_processRequestByHtaccess()
 {
 	assertRedirect(301, 'Moved Permanently', 'http://localhost:4445/file',
@@ -60,4 +63,15 @@ function test_processRequestByHtaccess()
 	               '/redirect/rewrite_redirect/file');
 	assertNotModified('/redirect/not_rewrite/match/file');
 	assertNotModified('/redirect/rewrite_invalid/match/file');
+
+	htaccess = '';
+	assertNotModified('/redirect/sub/permanent/file');
+	assertNotModified('/redirect/sub/temp/file');
+	assertNotModified('/redirect/sub/seeother/file');
+	assertNotModified('/redirect/sub/permanent2/file');
+	assertNotModified('/redirect/sub/temp2/file');
+	assertNotModified('/redirect/match/file');
+	assertNotModified('/redirect/rewrite/file');
+	assertNotModified('/redirect/rewrite_absolute/file');
+	assertNotModified('/redirect/rewrite_redirect/file');
 }
