@@ -63,7 +63,7 @@ function assertRedirectedSubmission()
 {
 	utils.loadURI('http://localhost:4445/html.html');
 	$('form').submit();
-	utils.wait(300);
+	utils.wait(3000);
 	assert.equals('hash\n', content.document.documentElement.textContent);
 }
 

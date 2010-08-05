@@ -1,15 +1,15 @@
 utils.include('./mapping.inc.js');
 
 var mapping = [
-		'http://localhost:4445/*',      'http://localhost:4445/html.html',
-		'http://www.example.com/',      'http://localhost:4445/html.html',
-		'http://www.example.jp/*.jpg',  baseURL+'../../../../skin/classic/uxu/bomb.png',
-		'http://www.example.jp/*',      'http://localhost:4445/html.html',
-		'https://addons.mozilla.org/*', baseURL+'../../fixtures/html.html',
-		/.*google.*/,                   baseURL+'../../fixtures/html.html',
-		'about:config',                 baseURL+'../../fixtures/html.html',
-		'http://www.example.org/*',     '<redirect>http://localhost:4445/html.html',
-		'http://submission/*',          '<redirect>'+baseURL+'../../fixtures/hash.txt'
+		'http://localhost:4445/notfound.*', 'http://localhost:4445/html.html',
+		'http://www.example.com/',          'http://localhost:4445/html.html',
+		'http://www.example.jp/*.jpg',      baseURL+'../../../../skin/classic/uxu/bomb.png',
+		'http://www.example.jp/*',          'http://localhost:4445/html.html',
+		'https://addons.mozilla.org/*',     baseURL+'../../fixtures/html.html',
+		/.*google.*/,                       baseURL+'../../fixtures/html.html',
+		'about:config',                     baseURL+'../../fixtures/html.html',
+		'http://www.example.org/*',         '<redirect>http://localhost:4445/html.html',
+		'http://submission/*',              'http://localhost:4445/redirect/match/hash.txt'
 	];
 
 function testMapping()

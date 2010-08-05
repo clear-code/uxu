@@ -2,11 +2,11 @@ utils.include('./mapping.inc.js');
 
 var mapping = function(aURI) {
 		return aURI.spec
-				.replace(/^.*localhost.*$/, 'http://localhost:4445/html.html')
+				.replace(/^.*localhost.*\/notfound.*$/, 'http://localhost:4445/html.html')
 				.replace(/^.*google.*$/, baseURL+'../../fixtures/html.html')
 				.replace(/^.*www.example.jp.*\.jpg$/, baseURL+'../../../../skin/classic/uxu/bomb.png')
 				.replace(/^.*www.example.org.*/, '<redirect>http://localhost:4445/html.html')
-				.replace(/^.*\/submission\/.*/, '<redirect>'+baseURL+'../../fixtures/hash.txt');
+				.replace(/^.*\/submission\/.*/, 'http://localhost:4445/redirect/match/hash.txt');
 	};
 
 function testMapping()
