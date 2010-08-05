@@ -2085,6 +2085,20 @@ _convertParameterType : function(aInput, aType)
 	return data;
 },
  
+getErrorNameFromNSExceptionCode : function(aCode)
+{
+	if (typeof aCode != 'number')
+		return null;
+
+	for (let i in Components.results)
+	{
+		if (Components.results[i] == aCode) {
+			return i;
+		}
+	}
+	return null;
+},
+ 
 getDocumentEncoding : function(aSource) 
 {
 	return null;

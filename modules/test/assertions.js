@@ -445,15 +445,9 @@ Assertions.prototype = {
 	raise : function() { return this.raises.apply(this, arguments); },
 	_onRaisesFinish : function(aExpectedException, aActualException, aMessage)
 	{
-		if (typeof aExpectedException == 'number') {
-			for (let i in Components.results)
-			{
-				if (Components.results[i] == aExpectedException) {
-					aExpectedException = aExpectedException+' ('+i+')';
-					break;
-				}
-			}
-		}
+		var name = utils.getErrorNameFromNSExceptionCode(aExpectedException);
+		if (name)
+			aExpectedException = aExpectedException+' ('+name+')';
 		if (aActualException) {
 			this._fail({
 			     	expectedRaw : aExpectedException,
@@ -523,15 +517,9 @@ Assertions.prototype = {
 	notRaise : function() { return this.notRaises.apply(this, arguments); },
 	_onNotRaisesFinish : function(aUnexpectedException, aActualException, aMessage)
 	{
-		if (typeof aUnexpectedException == 'number') {
-			for (let i in Components.results)
-			{
-				if (Components.results[i] == aUnexpectedException) {
-					aUnexpectedException = aUnexpectedException+' ('+i+')';
-					break;
-				}
-			}
-		}
+		var name = utils.getErrorNameFromNSExceptionCode(aUnexpectedException);
+		if (name)
+			aUnexpectedException = aUnexpectedException+' ('+name+')';
 		this._fail({
 		     	expectedRaw : aUnexpectedException,
 		     	actualRaw   : aActualException,
