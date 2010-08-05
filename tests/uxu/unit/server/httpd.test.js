@@ -25,6 +25,18 @@ function testRedirect(aURI)
 {
 	utils.loadURI(aURI);
 	assert.equals('http://localhost:4445/hash.txt', content.location.href);
+	assert.equals('hash\n', content.document.body.textContent);
+}
+
+testRewrite.parameters = [
+	'http://localhost:4445/redirect/rewrite/hash.txt',
+	'http://localhost:4445/redirect/rewrite_absolute/hash.txt'
+];
+function testRewrite(aURI)
+{
+	utils.loadURI(aURI);
+	assert.equals(aURI, content.location.href);
+	assert.equals('hash\n', content.document.body.textContent);
 }
 
 

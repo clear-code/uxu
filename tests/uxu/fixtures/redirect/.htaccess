@@ -6,3 +6,9 @@ RedirectTemp /redirect/sub/temp2/ http://localhost:4445/
 RedirectMatch seeother /redirect/match/(.+)$ http://localhost:4445/$1
 
 Redirect 500 /invalid http://localhost:4445/
+
+RewriteRule /redirect/rewrite/(.*)$ /$1
+RewriteRule /redirect/rewrite_absolute/(.*)$ http://localhost:4445/$1
+RewriteRule /redirect/rewrite_redirect/(.*)$ http://localhost:4445/$1 [R]
+RewriteRule /redirect/rewrite_last/(.*)$ /$1 [L]
+RewriteRule /redirect/rewrite_invalid/(.*)$ http://localhost:4445/$1

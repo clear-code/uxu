@@ -2387,6 +2387,7 @@ ServerHandler.prototype =
     // ***************************************************************************
     // APPENDED BY UXU
     // ***************************************************************************
+                  dump('REQUEST '+path+'\n');
     let (dir = file.clone()) {
       while (dir)
       {
@@ -2398,11 +2399,29 @@ ServerHandler.prototype =
       }
       if (htaccess.exists()) {
         let contents = utils.readFrom(htaccess);
-        let result = utils.processApacheStyleRedirect(path, contents);
-        if (result) {
-          response.setStatusLine('1.1', result.status, result.statusText || '');
-          response.setHeader('Location', result.uri);
-          response.bodyOutputStream.write(' ', 1);
+        let count = 0;
+        if ((function() {
+            if (count++ > 30) // too many recursion
+              throw HTTP_500;
+
+            let result = utils.processRequestByHtaccess(path, contents);
+            if (result) {
+              switch (result.status)
+              {
+                case 200: // RewriteRule
+                  path = result.uri.replace(/^\w+:\/\/[^\/]+/, '');
+                  file = this._getFileForPath(path);
+                  return arguments.callee.call(this);
+
+                default: // Redirect
+                  response.setStatusLine('1.1', result.status, result.statusText || '');
+                  response.setHeader('Location', result.uri);
+                  response.bodyOutputStream.write(' ', 1);
+                  return true;
+              }
+            }
+            return false;
+          }).call(this)) {
           return;
         }
       }

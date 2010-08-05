@@ -2107,16 +2107,61 @@ getErrorNameFromNSExceptionCode : function(aCode)
 	return null;
 },
  
+processRequestByHtaccess : function(aPath, aHtaccess)
+{
+	return this._processRewriteRule(aPath, aHtaccess) ||
+	       this._processRedirect(aPath, aHtaccess);
+},
+REWRITE_RULES_PATTERN : /^\s*RewriteRule\s+.+$/gm,
+REWRITE_RULE_PATTERN : /RewriteRule\s+([^\s]+)\s+([^\s]+)(?:\s+\[([LR,\s]+)\])?/,
+_processRewriteRule : function(aPath, aHtaccess)
+{
+	var result = {
+			status     : 200,
+			statusText : 'OK',
+			uri        : null
+		};
+
+	var rules = aHtaccess.match(this.REWRITE_RULES_PATTERN);
+	rules.some(function(aLine) {
+	try {
+		let match = aLine.match(this.REWRITE_RULE_PATTERN);
+		if (!match)
+			return false;
+
+		var [redirect, from, to, flags] = match;
+
+		from = new RegExp(from);
+		if (!from.test(aPath))
+			return (flags && flags.indexOf('L') > -1);
+
+		result.uri = aPath.replace(from, to);
+
+		if (flags && flags.indexOf('R') > -1) {
+			result.status     = 303;
+			result.statusText = 'See Other';
+		}
+		return true;
+	}
+	catch(e) {
+		return false;
+	}
+	}, this);
+	if (result.uri) return result;
+
+	return null;
+},
 REDIRECTIONS_PATTERN : /^\s*Redirect(Match|Permanent|Temp)?\s+.+$/gim,
 REDIRECTION_PATTERN : /Redirect(Match|Permanent|Temp)?\s+(?:([^\s]+)\s+)?([^\s]+)\s+([^\s]+)/,
-processApacheStyleRedirect : function(aPath, aDefinitions)
+_processRedirect : function(aPath, aHtaccess)
 {
-	var redirections = aDefinitions.match(this.REDIRECTIONS_PATTERN);
 	var result = {
-			status : 0,
+			status     : 0,
 			statusText : '',
-			uri : null
+			uri        : null
 		};
+
+	var redirections = aHtaccess.match(this.REDIRECTIONS_PATTERN);
 	redirections.some(function(aLine) {
 	try {
 		let match = aLine.match(this.REDIRECTION_PATTERN);
@@ -2186,18 +2231,18 @@ processApacheStyleRedirect : function(aPath, aDefinitions)
 
 		var uri = aPath.replace(from, to);
 
-		result.status = status;
+		result.status     = status;
 		result.statusText = statusText;
-		result.uri = uri;
+		result.uri        = uri;
 		return true;
 	}
 	catch(e) {
-		throw e;
 		return false;
 	}
 	}, this);
+	if (result.uri) return result;
 
-	return result.uri ? result : null ;
+	return null;
 },
  
 getDocumentEncoding : function(aSource) 
