@@ -1,0 +1,8 @@
+Redirect permanent /redirect/sub/permanent/ http://localhost:4445/
+Redirect temp /redirect/sub/temp/ http://localhost:4445/
+Redirect seeother /redirect/sub/seeother/ http://localhost:4445/
+RedirectPermanent /redirect/sub/permanent2/ http://localhost:4445/
+RedirectTemp /redirect/sub/temp2/ http://localhost:4445/
+RedirectMatch seeother /redirect/match/(.+)$ http://localhost:4445/$1
+
+Redirect 500 /invalid http://localhost:4445/

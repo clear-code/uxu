@@ -2107,6 +2107,99 @@ getErrorNameFromNSExceptionCode : function(aCode)
 	return null;
 },
  
+REDIRECTIONS_PATTERN : /^\s*Redirect(Match|Permanent|Temp)?\s+.+$/gim,
+REDIRECTION_PATTERN : /Redirect(Match|Permanent|Temp)?\s+(?:([^\s]+)\s+)?([^\s]+)\s+([^\s]+)/,
+processApacheStyleRedirect : function(aPath, aDefinitions)
+{
+	var redirections = aDefinitions.match(this.REDIRECTIONS_PATTERN);
+	var result = {
+			status : 0,
+			statusText : '',
+			uri : null
+		};
+	redirections.some(function(aLine) {
+	try {
+		let match = aLine.match(this.REDIRECTION_PATTERN);
+		if (!match)
+			return false;
+
+		var [redirect, type, status, from, to] = match;
+
+		if (status && /^[0-9]+$/.test()) {
+			status = parseInt(status);
+			if (status < 300 || status > 399)
+				return false;
+		}
+
+		switch (type)
+		{
+			case 'Match':
+				from = new RegExp(from);
+				break;
+
+			case 'Permanent':
+				if (status) return false;
+				status = 301;
+				break;
+
+			case 'Temp':
+				if (status) return false;
+				status = 302;
+				break;
+		}
+
+		if (typeof from == 'string' ?
+				aPath.indexOf(from) != 0 :
+				!from.test(aPath))
+			return false;
+
+		if (typeof status == 'string') {
+			switch (status.toLowerCase())
+			{
+				case 'permanent':
+					status = 301;
+					break;
+				case 'temp':
+					status = 302;
+					break;
+				case 'seeother':
+					status = 303;
+					break;
+				default:
+					return false;
+			}
+		}
+
+		var statusText = '';
+		switch (status)
+		{
+			case 301:
+				statusText = 'Moved Permanently';
+				break;
+			case 302:
+				statusText = 'Found';
+				break;
+			case 303:
+				statusText = 'See Other';
+				break;
+		}
+
+		var uri = aPath.replace(from, to);
+
+		result.status = status;
+		result.statusText = statusText;
+		result.uri = uri;
+		return true;
+	}
+	catch(e) {
+		throw e;
+		return false;
+	}
+	}, this);
+
+	return result.uri ? result : null ;
+},
+ 
 getDocumentEncoding : function(aSource) 
 {
 	return null;

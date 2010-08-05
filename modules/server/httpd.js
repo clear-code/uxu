@@ -2384,6 +2384,31 @@ ServerHandler.prototype =
     // path-to-directory mapping in the requested URL
     var file = this._getFileForPath(path);
 
+    // ***************************************************************************
+    // APPENDED BY UXU
+    // ***************************************************************************
+    let (dir = file.clone()) {
+      while (dir)
+      {
+        htaccess = dir.clone();
+        htaccess.append('.htaccess');
+        if (htaccess.exists())
+          break;
+        dir = dir.parent;
+      }
+      if (htaccess.exists()) {
+        let contents = utils.readFrom(htaccess);
+        let result = utils.processApacheStyleRedirect(path, contents);
+        if (result) {
+          response.setStatusLine('1.1', result.status, result.statusText || '');
+          response.setHeader('Location', result.uri);
+          response.bodyOutputStream.write(' ', 1);
+          return;
+        }
+      }
+    }
+    // ***************************************************************************
+
     // the "file" might be a directory, in which case we either serve the
     // contained index.html or make the index handler write the response
     if (file.exists() && file.isDirectory())

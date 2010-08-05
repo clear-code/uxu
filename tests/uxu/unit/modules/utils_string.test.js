@@ -199,3 +199,37 @@ function test_getErrorNameFromNSExceptionCode()
 	assert.isNull(utilsModule.getErrorNameFromNSExceptionCode('string'));
 }
 
+function test_processApacheStyleRedirect()
+{
+	var redirections = utils.readFrom(baseURL+'../../fixtures/redirect/.htaccess');
+
+	function assertRedirect(aStatus, aStatusText, aURI, aPath)
+	{
+		var result = utilsModule.processApacheStyleRedirect(aPath, redirections);
+		assert.notNull(result);
+		assert.equals(
+			{ status : aStatus,
+			  statusText : aStatusText, 
+			  uri : aURI },
+			result
+		);
+	}
+
+	function assertNotRedirect(aPath)
+	{
+		assert.isNull(utilsModule.processApacheStyleRedirect(aPath, redirections));
+	}
+
+	assertRedirect(301, 'Moved Permanently', 'http://localhost:4445/file',
+	               '/redirect/sub/permanent/file');
+	assertRedirect(302, 'Found', 'http://localhost:4445/file',
+	               '/redirect/sub/temp/file');
+	assertRedirect(303, 'See Other', 'http://localhost:4445/file',
+	               '/redirect/sub/seeother/file');
+	assertRedirect(301, 'Moved Permanently', 'http://localhost:4445/file',
+	               '/redirect/sub/permanent2/file');
+	assertRedirect(302, 'Found', 'http://localhost:4445/file',
+	               '/redirect/sub/temp2/file');
+	assertRedirect(303, 'See Other', 'http://localhost:4445/file',
+	               '/redirect/match/file');
+}
