@@ -5,6 +5,7 @@ if (typeof window == 'undefined')
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
+const Cr = Components.results;
 
 var ns = {};
 Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
@@ -126,6 +127,7 @@ initVariables : function()
 
 	this.environment.Cc = Cc;
 	this.environment.Ci = Ci;
+	this.environment.Cr = Cr;
 
 	/* backward compatibility for MozLab/MozUnit testcases */
 	this.environment.TestCase      = ns.TestCase;
