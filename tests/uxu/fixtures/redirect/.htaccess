@@ -13,5 +13,6 @@ RewriteRule /redirect/rewrite_redirect/(.*)$ http://localhost:4445/$1 [R]
 RewriteRule /redirect/rewrite_redirect301/(.*)$ http://localhost:4445/$1 [R=301]
 RewriteRule /redirect/rewrite_redirect302/(.*)$ http://localhost:4445/$1 [R=302]
 RewriteRule /redirect/rewrite_redirect303/(.*)$ http://localhost:4445/$1 [R=303]
+RewriteRule /redirect/rewrite_NoCase/(.*)$ http://localhost:4445/$1 [NC]
 RewriteRule /redirect/rewrite_last/(.*)$ /$1 [L]
 RewriteRule /redirect/rewrite_invalid/(.*)$ http://localhost:4445/$1

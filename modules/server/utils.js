@@ -155,7 +155,7 @@ ServerUtils.prototype = {
 		       this._processRedirect(aPath, aHtaccess);
 	},
 	REWRITE_RULES_PATTERN : /^\s*RewriteRule\s+.+$/gm,
-	REWRITE_RULE_PATTERN : /RewriteRule\s+([^\s]+)\s+([^\s]+)(?:\s+\[((?:L,?)|(?:R(?:=[0-9]+)?,?))+\])?/,
+	REWRITE_RULE_PATTERN : /RewriteRule\s+([^\s]+)\s+([^\s]+)(?:\s+\[((?:L,?)|(?:R(?:=[0-9]+)?,?)|(?:NC))+\])?/,
 	_processRewriteRule : function(aPath, aHtaccess)
 	{
 		var rules = aHtaccess.match(this.REWRITE_RULES_PATTERN);
@@ -174,14 +174,15 @@ ServerUtils.prototype = {
 				return false;
 
 			var [redirect, from, to, flags] = match;
+			flags = flags || '';
 
-			from = new RegExp(from);
+			from = new RegExp(from, flags.indexOf('NC') > -1 ? 'i' : '');
 			if (!from.test(aPath))
 				return (flags && flags.indexOf('L') > -1);
 
 			result.uri = aPath.replace(from, to);
 
-			if (flags && flags.indexOf('R') > -1) {
+			if (flags.indexOf('R') > -1) {
 				let match = flags.match(/R=([0-9]+)/);
 				let status = 302;
 				if (match) {

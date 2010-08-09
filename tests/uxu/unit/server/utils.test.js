@@ -117,6 +117,10 @@ function test_processRequestByHtaccess()
 	               '/redirect/rewrite/file');
 	assertRewrited('http://localhost:4445/file',
 	               '/redirect/rewrite_absolute/file');
+	assertRewrited('http://localhost:4445/file',
+	               '/redirect/rewrite_NoCase/file');
+	assertRewrited('http://localhost:4445/file',
+	               '/redirect/rewrite_nocase/file');
 	assertRedirect(302, 'Found', 'http://localhost:4445/file',
 	               '/redirect/rewrite_redirect/file');
 	assertRedirect(301, 'Moved Permanently', 'http://localhost:4445/file',
