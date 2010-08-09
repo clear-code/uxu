@@ -120,46 +120,86 @@ function test_sleep()
 if (utils.checkPlatformVersion('1.9') < 0) test_wait.priority = 'never';
 function test_wait()
 {
-	function assertWaitSuccess(aCondition, aTimeout)
+	function assertWaitSuccess(aConditions, aTimeout)
 	{
 		var before = Date.now();
-		utilsModule.wait(aCondition);
+		utilsModule.wait.apply(utilsModule, aConditions);
 		assert.inDelta(aTimeout, Date.now() - before, 200);
 	}
 
-	function assertWaitFail(aCondition, aTimeout)
+	function assertWaitFail(aConditions, aTimeout)
 	{
 		assert.raises(
-			bundle.getFormattedString('error_utils_wait_unknown_condition', [String(aCondition)]),
+			bundle.getFormattedString('error_utils_wait_unknown_condition', [String(aConditions[0])]),
 			function() {
-				utilsModule.wait(aCondition);
+				utilsModule.wait.apply(utilsModule, aConditions);
 			}
 		);
 	}
 
-	assertWaitSuccess(500, 500);
+	assertWaitSuccess([500], 500);
 
 	var object = { value : false };
 	window.setTimeout(function() {
 		object.value = true;
 	}, 500);
-	assertWaitSuccess(object, 500);
+	assertWaitSuccess([object], 500);
 
 	var finished = false;
 	var func = function() { return finished; };
 	window.setTimeout(function() {
 		finished = true;
 	}, 500);
-	assertWaitSuccess(func, 500);
+	assertWaitSuccess([func], 500);
 
-	assertWaitSuccess(true, 100);
-	assertWaitSuccess(false, 100);
-	assertWaitSuccess('string', 100);
-	assertWaitSuccess(null, 100);
-	assertWaitSuccess(undefined, 100);
+	assertWaitSuccess([true], 100);
+	assertWaitSuccess([false], 100);
+	assertWaitSuccess(['string'], 100);
+	assertWaitSuccess([null], 100);
+	assertWaitSuccess([undefined], 100);
 
-	assertWaitFail({});
-	assertWaitFail(-100);
+	assertWaitFail([{}]);
+	assertWaitFail([-100]);
+}
+
+if (utils.checkPlatformVersion('1.9') < 0) test_waitDOMEvent.priority = 'never';
+function test_waitDOMEvent()
+{
+	function assertWaitSuccess(aConditions, aTimeout)
+	{
+		var before = Date.now();
+		utilsModule.wait.apply(utilsModule, aConditions);
+		assert.inDelta(aTimeout, Date.now() - before, 200);
+	}
+
+	utils.loadURI('about:');
+
+	window.setTimeout(function() {
+		action.clickOn(content.document.documentElement);
+	}, 10);
+	assertWaitSuccess([content.document, 'click'], 200);
+
+	window.setTimeout(function() {
+		action.clickOn(content.document.documentElement);
+	}, 10);
+	assertWaitSuccess(['click', content.document], 200);
+
+	window.setTimeout(function() {
+		action.clickOn(content.document.documentElement);
+	}, 10);
+	assertWaitSuccess([content.document, 'click',
+	                   content.document, 'keypress'], 200);
+
+	window.setTimeout(function() {
+		action.clickOn(content.document.documentElement);
+	}, 10);
+	window.setTimeout(function() {
+		action.rightClickOn(content.document.documentElement, { ctrlKey : true });
+	}, 20);
+	assertWaitSuccess([{ type    : 'click',
+	                     button  : 2,
+	                     ctrlKey : true
+	                   }, content.document], 200);
 }
 
 

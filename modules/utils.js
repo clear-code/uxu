@@ -185,6 +185,16 @@ wait : function(aWaitCondition)
 	if (!isThreadManagerAvailable)
 		throw new Error(bundle.getString('error_utils_wait_is_not_available'));
 
+	if (
+		arguments.length > 1 &&
+		arguments[0] && arguments[1] &&
+		(
+			arguments[0] instanceof Ci.nsIDOMEventTarget ||
+			arguments[1] instanceof Ci.nsIDOMEventTarget
+		)
+		)
+		return this.waitDOMEvent.apply(this, arguments);
+
 	if (!aWaitCondition) aWaitCondition = 0;
 
 	var finished = { value : false };
@@ -243,6 +253,89 @@ wait : function(aWaitCondition)
 		if (Date.now() - lastRun >= timeout)
 			throw new Error(bundle.getFormattedString('error_utils_wait_timeout', [parseInt(timeout / 1000)]));
 	}
+},
+ 
+waitDOMEvent : function()
+{
+	var timeout = 10 * 1000;
+	var count = arguments.length;
+	if (count % 2 == 1) {
+		timeout = arguments[count-1];
+		count--;
+	}
+
+	var definitions = [];
+	for (let i = 0; i < count; i += 2)
+	{
+		let [target, conditions] = [arguments[i], arguments[i+1]];
+		if (conditions instanceof Ci.nsIDOMEventTarget)
+			[target, conditions] = [conditions, target];
+		let definition = { target : target };
+
+		if (typeof conditions == 'object' &&
+			'type' in conditions &&
+			typeof conditions.type == 'string') {
+			definition.type = conditions.type;
+			definition.conditions = conditions;
+		}
+		else if (typeof conditions == 'string') {
+			definition.type = conditions;
+		}
+
+		if (!definition.type)
+			continue;
+
+		definitions.push(definition);
+	}
+
+	var TIMEOUT = 'UxUWaitDOMEventTimeout';
+
+	var fired = { value : false };
+	var listener = function(aEvent) {
+			if (
+				aEvent.type != TIMEOUT &&
+				!definitions.some(function(aDefinition) {
+					if (aDefinition.conditions) {
+						for (let i in aDefinition.conditions)
+						{
+							if (i != 'capture' &&
+								aEvent[i] != aDefinition.conditions[i])
+								return false;
+						}
+						return true;
+					}
+					else {
+						return aDefinition.type == aEvent.type;
+					}
+				})
+				)
+				return;
+
+			if (timer) ns.clearTimeout(timer);
+
+			definitions.forEach(function(aDefinition) {
+				aDefinition.target.removeEventListener(aDefinition.type, listener, aDefinition.capture || false);
+			});
+			fired.event = aEvent;
+			fired.value = true;
+		};
+
+	definitions.forEach(function(aDefinition) {
+		aDefinition.target.addEventListener(aDefinition.type, listener, aDefinition.capture || false);
+	});
+
+	var timer = ns.setTimeout(function() {
+			timer = null;
+			listener({
+				type           : TIMEOUT,
+				timeout        : timeout,
+				target         : null,
+				originalTarget : null
+			});
+		}, timeout);
+
+	this.wait(fired);
+	return fired;
 },
   
 // ƒtƒ@ƒCƒ‹‘€ì 
