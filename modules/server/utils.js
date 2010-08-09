@@ -147,5 +147,146 @@ ServerUtils.prototype = {
 	isHttpServerRunning : function()
 	{
 		return this._HTTPServerInstances.length > 0;
+	},
+
+	processRequestByHtaccess : function(aPath, aHtaccess) 
+	{
+		return this._processRewriteRule(aPath, aHtaccess) ||
+		       this._processRedirect(aPath, aHtaccess);
+	},
+	REWRITE_RULES_PATTERN : /^\s*RewriteRule\s+.+$/gm,
+	REWRITE_RULE_PATTERN : /RewriteRule\s+([^\s]+)\s+([^\s]+)(?:\s+\[((?:L,?)|(?:R(?:=[0-9]+)?,?))+\])?/,
+	_processRewriteRule : function(aPath, aHtaccess)
+	{
+		var rules = aHtaccess.match(this.REWRITE_RULES_PATTERN);
+		if (!rules) return null;
+
+		var result = {
+				status     : 200,
+				statusText : 'OK',
+				uri        : null
+			};
+
+		rules.some(function(aLine) {
+		try {
+			let match = aLine.match(this.REWRITE_RULE_PATTERN);
+			if (!match)
+				return false;
+
+			var [redirect, from, to, flags] = match;
+
+			from = new RegExp(from);
+			if (!from.test(aPath))
+				return (flags && flags.indexOf('L') > -1);
+
+			result.uri = aPath.replace(from, to);
+
+			if (flags && flags.indexOf('R') > -1) {
+				let match = flags.match(/R=([0-9]+)/);
+				let status = 302;
+				if (match) {
+					let statusFromFlags = parseInt(match[1]);
+					if (statusFromFlags >= 300 && status <= 399)
+						status = statusFromFlags;
+				}
+				result.status     = status;
+				result.statusText = this._statusTextFromCode[status] || '';
+			}
+			return true;
+		}
+		catch(e) {
+			return false;
+		}
+		}, this);
+		if (result.uri) return result;
+
+		return null;
+	},
+	REDIRECTIONS_PATTERN : /^\s*Redirect(Match|Permanent|Temp)?\s+.+$/gim,
+	REDIRECTION_PATTERN : /Redirect(Match|Permanent|Temp)?\s+(?:([^\s]+)\s+)?([^\s]+)\s+([^\s]+)/,
+	_processRedirect : function(aPath, aHtaccess)
+	{
+		var redirections = aHtaccess.match(this.REDIRECTIONS_PATTERN);
+		if (!redirections) return null;
+
+		var result = {
+				status     : 0,
+				statusText : '',
+				uri        : null
+			};
+
+		redirections.some(function(aLine) {
+		try {
+			let match = aLine.match(this.REDIRECTION_PATTERN);
+			if (!match)
+				return false;
+
+			var [redirect, type, status, from, to] = match;
+
+			if (status && /^[0-9]+$/.test()) {
+				status = parseInt(status);
+				if (status < 300 || status > 399)
+					return false;
+			}
+
+			switch (type)
+			{
+				case 'Match':
+					from = new RegExp(from);
+					break;
+
+				case 'Permanent':
+					if (status) return false;
+					status = 301;
+					break;
+
+				case 'Temp':
+					if (status) return false;
+					status = 302;
+					break;
+			}
+
+			if (typeof from == 'string' ?
+					aPath.indexOf(from) != 0 :
+					!from.test(aPath))
+				return false;
+
+			if (typeof status == 'string') {
+				switch (status.toLowerCase())
+				{
+					case 'permanent':
+						status = 301;
+						break;
+					case 'temp':
+						status = 302;
+						break;
+					case 'seeother':
+						status = 303;
+						break;
+					default:
+						return false;
+				}
+			}
+
+			var uri = aPath.replace(from, to);
+
+			result.status     = status;
+			result.statusText = this._statusTextFromCode[status] || '';
+			result.uri        = uri;
+			return true;
+		}
+		catch(e) {
+			return false;
+		}
+		}, this);
+		if (result.uri) return result;
+
+		return null;
+	},
+	_statusTextFromCode : {
+		'200' : 'OK',
+		'301' : 'Moved Permanently',
+		'302' : 'Found',
+		'303' : 'See Other'
 	}
 };

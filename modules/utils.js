@@ -2093,7 +2093,7 @@ _convertParameterType : function(aInput, aType)
 	return data;
 },
  
-getErrorNameFromNSExceptionCode : function(aCode)
+getErrorNameFromNSExceptionCode : function(aCode) 
 {
 	if (typeof aCode != 'number')
 		return null;
@@ -2104,148 +2104,6 @@ getErrorNameFromNSExceptionCode : function(aCode)
 			return i;
 		}
 	}
-	return null;
-},
- 
-processRequestByHtaccess : function(aPath, aHtaccess)
-{
-	return this._processRewriteRule(aPath, aHtaccess) ||
-	       this._processRedirect(aPath, aHtaccess);
-},
-REWRITE_RULES_PATTERN : /^\s*RewriteRule\s+.+$/gm,
-REWRITE_RULE_PATTERN : /RewriteRule\s+([^\s]+)\s+([^\s]+)(?:\s+\[([LR,\s]+)\])?/,
-_processRewriteRule : function(aPath, aHtaccess)
-{
-	var rules = aHtaccess.match(this.REWRITE_RULES_PATTERN);
-	if (!rules) return null;
-
-	var result = {
-			status     : 200,
-			statusText : 'OK',
-			uri        : null
-		};
-
-	rules.some(function(aLine) {
-	try {
-		let match = aLine.match(this.REWRITE_RULE_PATTERN);
-		if (!match)
-			return false;
-
-		var [redirect, from, to, flags] = match;
-
-		from = new RegExp(from);
-		if (!from.test(aPath))
-			return (flags && flags.indexOf('L') > -1);
-
-		result.uri = aPath.replace(from, to);
-
-		if (flags && flags.indexOf('R') > -1) {
-			result.status     = 303;
-			result.statusText = 'See Other';
-		}
-		return true;
-	}
-	catch(e) {
-		return false;
-	}
-	}, this);
-	if (result.uri) return result;
-
-	return null;
-},
-REDIRECTIONS_PATTERN : /^\s*Redirect(Match|Permanent|Temp)?\s+.+$/gim,
-REDIRECTION_PATTERN : /Redirect(Match|Permanent|Temp)?\s+(?:([^\s]+)\s+)?([^\s]+)\s+([^\s]+)/,
-_processRedirect : function(aPath, aHtaccess)
-{
-	var redirections = aHtaccess.match(this.REDIRECTIONS_PATTERN);
-	if (!redirections) return null;
-
-	var result = {
-			status     : 0,
-			statusText : '',
-			uri        : null
-		};
-
-	redirections.some(function(aLine) {
-	try {
-		let match = aLine.match(this.REDIRECTION_PATTERN);
-		if (!match)
-			return false;
-
-		var [redirect, type, status, from, to] = match;
-
-		if (status && /^[0-9]+$/.test()) {
-			status = parseInt(status);
-			if (status < 300 || status > 399)
-				return false;
-		}
-
-		switch (type)
-		{
-			case 'Match':
-				from = new RegExp(from);
-				break;
-
-			case 'Permanent':
-				if (status) return false;
-				status = 301;
-				break;
-
-			case 'Temp':
-				if (status) return false;
-				status = 302;
-				break;
-		}
-
-		if (typeof from == 'string' ?
-				aPath.indexOf(from) != 0 :
-				!from.test(aPath))
-			return false;
-
-		if (typeof status == 'string') {
-			switch (status.toLowerCase())
-			{
-				case 'permanent':
-					status = 301;
-					break;
-				case 'temp':
-					status = 302;
-					break;
-				case 'seeother':
-					status = 303;
-					break;
-				default:
-					return false;
-			}
-		}
-
-		var statusText = '';
-		switch (status)
-		{
-			case 301:
-				statusText = 'Moved Permanently';
-				break;
-			case 302:
-				statusText = 'Found';
-				break;
-			case 303:
-				statusText = 'See Other';
-				break;
-		}
-
-		var uri = aPath.replace(from, to);
-
-		result.status     = status;
-		result.statusText = statusText;
-		result.uri        = uri;
-		return true;
-	}
-	catch(e) {
-		return false;
-	}
-	}, this);
-	if (result.uri) return result;
-
 	return null;
 },
  
@@ -2287,14 +2145,14 @@ getDocumentEncoding : function(aSource)
 	return completed.value;
 },
  
-get internalLoader()
+get internalLoader() 
 {
 	return Utils.internalLoader;
 },
   
 // アプリケーション 
 	
-get XULAppInfo() {
+get XULAppInfo() { 
 	if (!this._XULAppInfo)
 		this._XULAppInfo = Cc['@mozilla.org/xre/app-info;1'].getService(Ci.nsIXULAppInfo).QueryInterface(Ci.nsIXULRuntime);
 	return this._XULAppInfo;
@@ -2618,7 +2476,7 @@ export : function(aNamespace, aForce, aSelf, aSource)
 	}
 },
  
-bind : function(aFunction, aThis)
+bind : function(aFunction, aThis) 
 {
 	return function() { return aFunction.apply(aThis, arguments); };
 }

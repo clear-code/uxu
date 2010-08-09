@@ -2403,7 +2403,7 @@ ServerHandler.prototype =
             if (count++ > 30) // too many recursion
               throw HTTP_500;
 
-            let result = utils.processRequestByHtaccess(path, contents);
+            let result = serverUtils.processRequestByHtaccess(path, contents);
             if (result) {
               switch (result.status)
               {
@@ -4674,9 +4674,11 @@ function server(port, basePath)
 if (typeof window == 'undefined')
 	this.EXPORTED_SYMBOLS = ['HTTPServer'];
 
-var utils = {};
-Components.utils.import('resource://uxu-modules/utils.js', utils);
-utils = utils.utils;
+var ns = {};
+Components.utils.import('resource://uxu-modules/utils.js', ns);
+Components.utils.import('resource://uxu-modules/server/utils.js', ns);
+var utils = ns.utils;
+var serverUtils = new ns.ServerUtils();
 
 var ThreadManager = 'nsIThreadManager' in Ci ?
 		Cc['@mozilla.org/thread-manager;1'].getService(Ci.nsIThreadManager) :
