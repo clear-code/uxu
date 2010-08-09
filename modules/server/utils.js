@@ -158,6 +158,13 @@ ServerUtils.prototype = {
 	REWRITE_RULE_PATTERN : /RewriteRule\s+([^\s]+)(?:\s+([^\s]+))?(?:\s+(\[[^\]]+\]))?/,
 	_processRewriteRule : function(aPath, aHtaccess)
 	{
+		/* This supports following flags:
+			* F(forbidden)
+			* G(gone)
+			* L(last)
+			* NC(nocase)
+			* R(redirect)
+		*/
 		var rules = aHtaccess.match(this.REWRITE_RULES_PATTERN);
 		if (!rules) return null;
 
@@ -176,31 +183,25 @@ ServerUtils.prototype = {
 			var [redirect, from, to, flags] = match;
 			flags = flags || '';
 
-			if (to.charAt(0) == '[')
-				[flags, to] = [to, null];
-
-			from = new RegExp(from, flags.indexOf('NC') > -1 ? 'i' : '');
+			from = new RegExp(from, /\b(NC|nocase)\b/.test(flags) ? 'i' : '');
 			if (!from.test(aPath))
 				return false;
 
-			if (flags.indexOf('F') > -1) {
+			if (/\b(F|forbidden)\b/.test(flags)) {
 				result.status = 403;
 				result.statusText = this._statusTextFromCode[result.status] || '';
 				rewrited = true;
 			}
-			else if (flags.indexOf('G') > -1) {
+			else if (/\b(G|gone)\b/.test(flags)) {
 				result.status = 401;
 				result.statusText = this._statusTextFromCode[result.status] || '';
 				rewrited = true;
 			}
-			else {
-				if (!to)
-					throw 'invalid rule';
-
+			else if (to != '-') {
 				result.uri = aPath.replace(from, to);
 				rewrited = true;
 
-				if (flags.indexOf('R') > -1) {
+				if (/\b(R|redirect)\b/.test(flags)) {
 					let match = flags.match(/R=([0-9]+)/);
 					let status = 302;
 					if (match) {
@@ -213,7 +214,7 @@ ServerUtils.prototype = {
 				}
 				aPath = result.uri;
 			}
-			return flags.indexOf('L') > -1;
+			return /\b(L|last)\b/.test(flags);
 		}, this);
 
 		if (rewrited)
