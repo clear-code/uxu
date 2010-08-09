@@ -65,25 +65,13 @@ function testHttpServer()
 
 var htaccess;
 
-function assertRedirect(aStatus, aStatusText, aURI, aPath)
+function assertModified(aStatus, aStatusText, aURI, aPath)
 {
 	var result = utilsModule.processRequestByHtaccess(aPath, htaccess);
 	assert.notNull(result);
 	assert.equals(
 		{ status     : aStatus,
 		  statusText : aStatusText, 
-		  uri        : aURI },
-		result
-	);
-}
-
-function assertRewrited(aURI, aPath)
-{
-	var result = utilsModule.processRequestByHtaccess(aPath, htaccess);
-	assert.notNull(result);
-	assert.equals(
-		{ status     : 200,
-		  statusText : 'OK', 
 		  uri        : aURI },
 		result
 	);
@@ -99,38 +87,45 @@ test_processRequestByHtaccess.setUp = function() {
 };
 function test_processRequestByHtaccess()
 {
-	assertRedirect(301, 'Moved Permanently', 'http://localhost:4445/file',
+	assertModified(301, 'Moved Permanently', 'http://localhost:4445/file',
 	               '/redirect/sub/permanent/file');
-	assertRedirect(302, 'Found', 'http://localhost:4445/file',
+	assertModified(302, 'Found', 'http://localhost:4445/file',
 	               '/redirect/sub/temp/file');
-	assertRedirect(303, 'See Other', 'http://localhost:4445/file',
+	assertModified(303, 'See Other', 'http://localhost:4445/file',
 	               '/redirect/sub/seeother/file');
-	assertRedirect(301, 'Moved Permanently', 'http://localhost:4445/file',
+	assertModified(301, 'Moved Permanently', 'http://localhost:4445/file',
 	               '/redirect/sub/permanent2/file');
-	assertRedirect(302, 'Found', 'http://localhost:4445/file',
+	assertModified(302, 'Found', 'http://localhost:4445/file',
 	               '/redirect/sub/temp2/file');
-	assertRedirect(303, 'See Other', 'http://localhost:4445/file',
+	assertModified(303, 'See Other', 'http://localhost:4445/file',
 	               '/redirect/match/file');
 	assertNotModified('/not_redirect/match/file');
 
-	assertRewrited('/file',
+	assertModified(200, 'OK', '/file',
 	               '/redirect/rewrite/file');
-	assertRewrited('http://localhost:4445/file',
+	assertModified(200, 'OK', 'http://localhost:4445/file',
 	               '/redirect/rewrite_absolute/file');
-	assertRewrited('http://localhost:4445/file',
+	assertModified(200, 'OK', 'http://localhost:4445/file',
 	               '/redirect/rewrite_NoCase/file');
-	assertRewrited('http://localhost:4445/file',
+	assertModified(200, 'OK', 'http://localhost:4445/file',
 	               '/redirect/rewrite_nocase/file');
-	assertRedirect(302, 'Found', 'http://localhost:4445/file',
+	assertModified(401, 'Gone', null,
+	               '/redirect/rewrite_401/file');
+	assertModified(403, 'Forbidden', null,
+	               '/redirect/rewrite_403/file');
+	assertModified(302, 'Found', 'http://localhost:4445/file',
 	               '/redirect/rewrite_redirect/file');
-	assertRedirect(301, 'Moved Permanently', 'http://localhost:4445/file',
+	assertModified(301, 'Moved Permanently', 'http://localhost:4445/file',
 	               '/redirect/rewrite_redirect301/file');
-	assertRedirect(302, 'Found', 'http://localhost:4445/file',
+	assertModified(302, 'Found', 'http://localhost:4445/file',
 	               '/redirect/rewrite_redirect302/file');
-	assertRedirect(303, 'See Other', 'http://localhost:4445/file',
+	assertModified(303, 'See Other', 'http://localhost:4445/file',
 	               '/redirect/rewrite_redirect303/file');
+	assertModified(200, 'OK', '/redirect/rewrite_next/file',
+	               '/redirect/rewrite_last/file');
+	assertModified(200, 'OK', '/redirect/rewrite_final/file',
+	               '/redirect/rewrite_next/file');
 	assertNotModified('/redirect/not_rewrite/match/file');
-	assertNotModified('/redirect/rewrite_invalid/match/file');
 
 	htaccess = '';
 	assertNotModified('/redirect/sub/permanent/file');

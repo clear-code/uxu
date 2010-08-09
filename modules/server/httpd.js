@@ -2407,12 +2407,20 @@ ServerHandler.prototype =
             if (result) {
               switch (result.status)
               {
-                case 200: // RewriteRule
+                // RewriteRule
+                case 200:
                   path = result.uri.replace(/^\w+:\/\/[^\/]+/, '');
                   file = this._getFileForPath(path);
                   return arguments.callee.call(this);
 
-                default: // Redirect
+                // RewriteRule
+                case 401:
+                  throw HTTP_401;
+                case 403:
+                  throw HTTP_403;
+
+                // Redirect
+                default:
                   response.setStatusLine('1.1', result.status, result.statusText || '');
                   response.setHeader('Location', result.uri);
                   response.bodyOutputStream.write(' ', 1);
