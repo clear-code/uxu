@@ -257,23 +257,23 @@ waitDOMEvent : function()
 {
 	var args = Array.slice(arguments);
 	var callbacks = [];
+	var timeout = 10 * 1000;
 	args = args.filter(function(aArg) {
-			if (typeof aArg == 'function') {
-				callbacks.push(aArg);
-				return false;
+			switch (typeof aArg)
+			{
+				case 'function':
+					callbacks.push(aArg);
+					return false;
+				case 'number':
+					timeout = aArg;
+					return false;
+				default:
+					return true;
 			}
-			return true;
 		});
 
-	var timeout = 10 * 1000;
-	var count = args.length;
-	if (count % 2 == 1) {
-		timeout = args[count-1];
-		count--;
-	}
-
 	var definitions = [];
-	for (let i = 0; i < count; i += 2)
+	for (let i = 0, count = args.length; i < count; i += 2)
 	{
 		let [target, conditions] = [args[i], args[i+1]];
 		if (conditions instanceof Ci.nsIDOMEventTarget)
