@@ -174,22 +174,30 @@ function test_waitDOMEvent()
 
 	utils.loadURI('about:');
 
+	// standard
 	window.setTimeout(function() {
 		action.clickOn(content.document.documentElement);
 	}, 10);
-	assertWaitSuccess([content.document, 'click'], 200);
+	assertWaitSuccess([content.document, 'click', 500], 200);
 
+	// timeout
+	assertWaitSuccess([content.document, 'click', 500], 500);
+
+	// mixed order
 	window.setTimeout(function() {
 		action.clickOn(content.document.documentElement);
 	}, 10);
-	assertWaitSuccess(['click', content.document], 200);
+	assertWaitSuccess(['click', 500, content.document], 200);
 
+	// multiple events
 	window.setTimeout(function() {
 		action.clickOn(content.document.documentElement);
 	}, 10);
 	assertWaitSuccess([content.document, 'click',
-	                   content.document, 'keypress'], 200);
+	                   content.document, 'keypress',
+	                   500], 200);
 
+	// detailed conditions
 	window.setTimeout(function() {
 		action.clickOn(content.document.documentElement);
 	}, 10);
@@ -199,7 +207,31 @@ function test_waitDOMEvent()
 	assertWaitSuccess([{ type    : 'click',
 	                     button  : 2,
 	                     ctrlKey : true
-	                   }, content.document], 200);
+	                   },
+	                   content.document,
+	                   500], 200);
+
+	// callback style
+	var events = [];
+	var result = utilsModule.waitDOMEvent(
+			'click', content.document,
+			500,
+			function(aEvent) {
+				events.push(aEvent);
+			},
+			function(aEvent) {
+				events.push(aEvent);
+			}
+		);
+	assert.isFalse(result.value);
+	assert.equals([], events);
+	window.setTimeout(function() {
+		action.clickOn(content.document.documentElement);
+	}, 10);
+	utils.wait(100);
+	assert.isTrue(result.value);
+	assert.equals(['click', 'click'],
+	              events.map(function(aEvent) aEvent.type));
 }
 
 
