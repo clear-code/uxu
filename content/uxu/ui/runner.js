@@ -19,6 +19,7 @@ const ObserverService = Cc['@mozilla.org/observer-service;1']
 
 var gOptions;
 var gLog;
+var gBrowser;
  
 /* UTILITIES */ 
 	 
@@ -241,7 +242,8 @@ function startup()
 	setTestFile(defaultTestPath);
 	updateTestCommands();
 
-	_('content').addEventListener('load', onContentLoad, true);
+	gBrowser = _('content');
+	gBrowser.addEventListener('load', onContentLoad, true);
 
 	var running = false;
 	if ('arguments' in window &&

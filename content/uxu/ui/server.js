@@ -21,6 +21,8 @@ var gAutoStart;
 
 var gOptions = {};
 
+var gBrowser;
+
 const ObserverService = Cc['@mozilla.org/observer-service;1']
 	.getService(Ci.nsIObserverService);
 
@@ -54,7 +56,9 @@ function Startup() {
 		}
 	}
 
-	var context = new ns.Context(document.getElementById("content"));
+	gBrowser = document.getElementById("content");
+
+	var context = new ns.Context(gBrowser);
 	context.addRunnerListener(testRunnerlistener);
 
 	gServer = new ns.Server(gOptions.serverPort || utils.getPref('extensions.uxu.port'));
