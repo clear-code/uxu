@@ -337,6 +337,7 @@ waitDOMEvent : function()
 	this.wait(fired);
 	return fired;
 },
+waitDOMEvents : function() { return this.waitDOMEvent.apply(this, arguments); },
   
 // ÉtÉ@ÉCÉãëÄçÏ 
 	
@@ -2187,6 +2188,7 @@ _convertParameterType : function(aInput, aType)
 },
  
 getErrorNameFromNSExceptionCode : function(aCode) 
+
 {
 	if (typeof aCode != 'number')
 		return null;
