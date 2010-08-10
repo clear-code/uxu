@@ -464,9 +464,11 @@ _waitBrowserLoad : function(aTab, aBrowser, aLoadedFlag, aOnComplete)
 		}
 		else if (aBrowser.docShell.busyFlags == Ci.nsIDocShell.BUSY_FLAGS_NONE) {
 			listener.stopTimer();
-			utils.waitDOMEvent(aBrowser.contentDocument, 'load', 100, function() {
-				listener.onFinish();
-			});
+			utils.waitDOMEvent(
+				aBrowser.contentWindow, 'load',
+				100,
+				function() { listener.onFinish(); }
+			);
 		}
 	}, 100, this);
 },
