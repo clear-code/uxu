@@ -187,11 +187,9 @@ wait : function(aWaitCondition)
 
 	if (
 		arguments.length > 1 &&
-		arguments[0] && arguments[1] &&
-		(
-			arguments[0] instanceof Ci.nsIDOMEventTarget ||
-			arguments[1] instanceof Ci.nsIDOMEventTarget
-		)
+		Array.slice(arguments).some(function(aArg) {
+			return aArg instanceof Ci.nsIDOMEventTarget;
+		})
 		)
 		return this.waitDOMEvent.apply(this, arguments);
 
@@ -257,17 +255,19 @@ wait : function(aWaitCondition)
  
 waitDOMEvent : function()
 {
+	var args = Array.slice(arguments);
+
 	var timeout = 10 * 1000;
-	var count = arguments.length;
+	var count = args.length;
 	if (count % 2 == 1) {
-		timeout = arguments[count-1];
+		timeout = args[count-1];
 		count--;
 	}
 
 	var definitions = [];
 	for (let i = 0; i < count; i += 2)
 	{
-		let [target, conditions] = [arguments[i], arguments[i+1]];
+		let [target, conditions] = [args[i], args[i+1]];
 		if (conditions instanceof Ci.nsIDOMEventTarget)
 			[target, conditions] = [conditions, target];
 		let definition = { target : target };
