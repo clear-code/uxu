@@ -411,8 +411,8 @@ _waitBrowserLoad : function(aTab, aBrowser, aLoadedFlag, aOnComplete)
 	var listener = {
 		started : false,
 		finished : false,
-		isTabComplete : function() {
-			return this.started && aTab && aTab.getAttribute('busy') != 'true';
+		isComplete : function() {
+			return !this.started || aBrowser.docShell.busyFlags & Ci.nsIDocShell.BUSY_FLAGS_BEFORE_PAGE_LOAD;
 		},
 		onProgressChange : function() {},
 		onStateChange : function(aWebProgress, aRequest, aStateFlags, aStatus)
@@ -428,7 +428,7 @@ _waitBrowserLoad : function(aTab, aBrowser, aLoadedFlag, aOnComplete)
 			}
 			else {
 				ns.setTimeout(function(aSelf) {
-					if (aSelf.isTabComplete())
+					if (aSelf.isComplete())
 						aSelf.onFinish();
 				}, 100, this);
 			}
@@ -459,7 +459,7 @@ _waitBrowserLoad : function(aTab, aBrowser, aLoadedFlag, aOnComplete)
 	ns.setTimeout(function() {
 		if (!listener.started)
 			listener.onFinish();
-	}, 0);
+	}, 100);
 },
  
 // テスト用のFirefoxウィンドウの現在のタブにURIを読み込む 
