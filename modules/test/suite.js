@@ -411,8 +411,13 @@ _waitBrowserLoad : function(aTab, aBrowser, aLoadedFlag, aOnComplete)
 	var listener = {
 		started : false,
 		finished : false,
-		isComplete : function() {
-			return !this.started || aBrowser.docShell.busyFlags & Ci.nsIDocShell.BUSY_FLAGS_BEFORE_PAGE_LOAD;
+		timeoutTimer : null,
+		stopTimer : function()
+		{
+			if (this.timeoutTimer) {
+				ns.clearInterval(this.timeoutTimer);
+				this.timeoutTimer = null;
+			}
 		},
 		onProgressChange : function() {},
 		onStateChange : function(aWebProgress, aRequest, aStateFlags, aStatus)
@@ -425,12 +430,6 @@ _waitBrowserLoad : function(aTab, aBrowser, aLoadedFlag, aOnComplete)
 				aStateFlags & Ci.nsIWebProgressListener.STATE_STOP &&
 				aStateFlags & Ci.nsIWebProgressListener.STATE_IS_NETWORK) {
 				this.onFinish();
-			}
-			else {
-				ns.setTimeout(function(aSelf) {
-					if (aSelf.isComplete())
-						aSelf.onFinish();
-				}, 100, this);
 			}
 		},
 		onLocationChange : function() {},
@@ -449,6 +448,9 @@ _waitBrowserLoad : function(aTab, aBrowser, aLoadedFlag, aOnComplete)
 		{
 			if (this.finished) return;
 			this.finished = true;
+
+			this.stopTimer();
+
 			aBrowser.removeProgressListener(listener);
 			aLoadedFlag.value = true;
 			if (aOnComplete && typeof aOnComplete == 'function')
@@ -456,10 +458,17 @@ _waitBrowserLoad : function(aTab, aBrowser, aLoadedFlag, aOnComplete)
 		}
 	};
 	aBrowser.addProgressListener(listener);
-	ns.setTimeout(function() {
-		if (!listener.started)
+	listener.timeoutTimer = ns.setInterval(function(aSelf) {
+		if (!listener.started) {
 			listener.onFinish();
-	}, 100);
+		}
+		else if (aBrowser.docShell.busyFlags == Ci.nsIDocShell.BUSY_FLAGS_NONE) {
+			listener.stopTimer();
+			utils.waitDOMEvent(aBrowser.contentDocument, 'load', 100, function() {
+				listener.onFinish();
+			});
+		}
+	}, 100, this);
 },
  
 // テスト用のFirefoxウィンドウの現在のタブにURIを読み込む 

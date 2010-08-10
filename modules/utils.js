@@ -256,6 +256,14 @@ wait : function(aWaitCondition)
 waitDOMEvent : function()
 {
 	var args = Array.slice(arguments);
+	var callbacks = [];
+	args = args.filter(function(aArg) {
+			if (typeof aArg == 'function') {
+				callbacks.push(aArg);
+				return false;
+			}
+			return true;
+		});
 
 	var timeout = 10 * 1000;
 	var count = args.length;
@@ -318,6 +326,11 @@ waitDOMEvent : function()
 			});
 			fired.event = aEvent;
 			fired.value = true;
+
+			if (callbacks.length)
+				callbacks.forEach(function(aCallback) {
+					aCallback(aEvent);
+				});
 		};
 
 	definitions.forEach(function(aDefinition) {
@@ -334,7 +347,9 @@ waitDOMEvent : function()
 			});
 		}, timeout);
 
-	this.wait(fired);
+	if (!callbacks.length)
+		this.wait(fired);
+
 	return fired;
 },
 waitDOMEvents : function() { return this.waitDOMEvent.apply(this, arguments); },
