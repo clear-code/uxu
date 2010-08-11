@@ -485,3 +485,32 @@ function test_mockAccessOrder()
 		function() { mock.first(); }
 	);
 }
+
+
+function test_JSMockStyle()
+{
+	var mock = new Mock();
+	mock.expects().calledWithoutArg();
+	mock.expects().calledWithArg(29).andReturn(290);
+	mock.expects().calledWithArg(290).andThrow('my error');
+	var count = 0;
+	mock.expects().calledWithArg(2900).andStub(function() {
+		count += 1;
+	});
+	mock.expects().calledWithArg(29000).andReturn(2.9).andStub(function() {
+		count += 10;
+	});
+
+	assert.isUndefined(mock.calledWithoutArg());
+	assert.equals(290, mock.calledWithArg(29));
+	assert.raises(
+		'my error',
+		function() {
+			mock.calledWithArg(290);
+		}
+	);
+	mock.calledWithArg(2900);
+	assert.equals(1, count);
+	assert.equals(2.9, mock.calledWithArg(29000));
+	assert.equals(11, count);
+}

@@ -65,6 +65,8 @@ MockManager.prototype = {
 
 		// compatibility for http://micampe.it/projects/jsmock
 		aTarget.MockObject = aTarget.MockCreate = aTarget.Mock;
+		// compatibility for JSMock
+		aTarget.TypeOf = TypeOf;
 	}
 };
 
@@ -162,7 +164,7 @@ Mock.prototype = {
 
 	expect : function(aName)
 	{
-		if (arguments.legth == 0)
+		if (!arguments.length)
 			return this._JSMockExpects();
 
 		var call = this._addMethod(aName).expect.apply(null, Array.slice(arguments, 1));
@@ -173,9 +175,9 @@ Mock.prototype = {
 		}
 		return call;
 	},
-	_expect : function() { this.expect.apply(this, arguments) },
-	expects : function() { this.expect.apply(this, arguments) },
-	_expects : function() { this.expect.apply(this, arguments) },
+	_expect : function() { return this.expect.apply(this, arguments); },
+	expects : function() { return this.expect.apply(this, arguments); },
+	_expects : function() { return this.expect.apply(this, arguments); },
 	expectThrows : function(aName)
 	{
 		var call = this._addMethod(aName).expectThrows.apply(null, Array.slice(arguments, 1));
@@ -186,13 +188,13 @@ Mock.prototype = {
 		}
 		return call;
 	},
-	_expectThrows : function() { this.expectThrows.apply(this, arguments) },
-	expectThrow : function() { this.expectThrows.apply(this, arguments) },
-	_expectThrow : function() { this.expectThrows.apply(this, arguments) },
-	expectRaises : function() { this.expectThrows.apply(this, arguments) },
-	_expectRaises : function() { this.expectThrows.apply(this, arguments) },
-	expectRaise : function() { this.expectThrows.apply(this, arguments) },
-	_expectRaise : function() { this.expectThrows.apply(this, arguments) },
+	_expectThrows : function() {return  this.expectThrows.apply(this, arguments); },
+	expectThrow : function() { return this.expectThrows.apply(this, arguments); },
+	_expectThrow : function() { return this.expectThrows.apply(this, arguments); },
+	expectRaises : function() { return this.expectThrows.apply(this, arguments); },
+	_expectRaises : function() { return this.expectThrows.apply(this, arguments); },
+	expectRaise : function() { return this.expectThrows.apply(this, arguments); },
+	_expectRaise : function() { return this.expectThrows.apply(this, arguments); },
 
 	expectGet : function(aName)
 	{
@@ -204,7 +206,7 @@ Mock.prototype = {
 		}
 		return call;
 	},
-	_expectGet : function() { this.expectGet.apply(this, arguments) },
+	_expectGet : function() { return this.expectGet.apply(this, arguments); },
 	expectGetThrows : function(aName)
 	{
 		var call = this._addGetter(aName).expectThrows.apply(null, Array.slice(arguments, 1));
@@ -215,13 +217,13 @@ Mock.prototype = {
 		}
 		return call;
 	},
-	_expectGetThrows : function() { this.expectGetThrows.apply(this, arguments) },
-	expectGetThrow : function() { this.expectGetThrows.apply(this, arguments) },
-	_expectGetThrow : function() { this.expectGetThrows.apply(this, arguments) },
-	expectGetRaises : function() { this.expectGetThrows.apply(this, arguments) },
-	_expectGetRaises : function() { this.expectGetThrows.apply(this, arguments) },
-	expectGetRaise : function() { this.expectGetThrows.apply(this, arguments) },
-	_expectGetRaise : function() { this.expectGetThrows.apply(this, arguments) },
+	_expectGetThrows : function() { return this.expectGetThrows.apply(this, arguments); },
+	expectGetThrow : function() { return this.expectGetThrows.apply(this, arguments); },
+	_expectGetThrow : function() { return this.expectGetThrows.apply(this, arguments); },
+	expectGetRaises : function() { return this.expectGetThrows.apply(this, arguments); },
+	_expectGetRaises : function() { return this.expectGetThrows.apply(this, arguments); },
+	expectGetRaise : function() { return this.expectGetThrows.apply(this, arguments); },
+	_expectGetRaise : function() { return this.expectGetThrows.apply(this, arguments); },
 
 	expectSet : function(aName)
 	{
@@ -233,7 +235,7 @@ Mock.prototype = {
 		}
 		return call;
 	},
-	_expectSet : function() { this.expectSet.apply(this, arguments) },
+	_expectSet : function() { return this.expectSet.apply(this, arguments); },
 	expectSetThrows : function(aName)
 	{
 		var call = this._addSetter(aName).expectThrows.apply(null, Array.slice(arguments, 1));
@@ -244,13 +246,13 @@ Mock.prototype = {
 		}
 		return call;
 	},
-	_expectSetThrows : function() { this.expectSetThrows.apply(this, arguments) },
-	expectSetThrow : function() { this.expectSetThrows.apply(this, arguments) },
-	_expectSetThrow : function() { this.expectSetThrows.apply(this, arguments) },
-	expectSetRaises : function() { this.expectSetThrows.apply(this, arguments) },
-	_expectSetRaises : function() { this.expectSetThrows.apply(this, arguments) },
-	expectSetRaise : function() { this.expectSetThrows.apply(this, arguments) },
-	_expectSetRaise : function() { this.expectSetThrows.apply(this, arguments) },
+	_expectSetThrows : function() { return this.expectSetThrows.apply(this, arguments); },
+	expectSetThrow : function() { return this.expectSetThrows.apply(this, arguments); },
+	_expectSetThrow : function() { return this.expectSetThrows.apply(this, arguments); },
+	expectSetRaises : function() { return this.expectSetThrows.apply(this, arguments); },
+	_expectSetRaises : function() { return this.expectSetThrows.apply(this, arguments); },
+	expectSetRaise : function() { return this.expectSetThrows.apply(this, arguments); },
+	_expectSetRaise : function() { return this.expectSetThrows.apply(this, arguments); },
 
 	// JSMock API
 	// http://jsmock.sourceforge.net/
@@ -263,7 +265,7 @@ Mock.prototype = {
 		return {
 			_mock : this,
 			__noSuchMethod__ : function(aName, aArguments) {
-				var method = this.mock._addMethod(aName)
+				var method = this._mock._addMethod(aName);
 				method.expects(aArguments);
 				return method;
 			}
@@ -479,6 +481,7 @@ FunctionMock.prototype = {
 		call.returnValue = aValue;
 		return this;
 	},
+	andReturns : function() { return this.andReturn.apply(this, arguments); },
 	andThrow : function(aExceptionClass, aExceptionMessage)
 	{
 		var call = this.lastExpectedCall;
@@ -486,6 +489,7 @@ FunctionMock.prototype = {
 		call.exceptionMessage = aExceptionMessage;
 		return this;
 	},
+	andThrows : function() { return this.andReturn.apply(this, arguments); },
 	andStub : function(aHandler)
 	{
 		var call = this.lastExpectedCall;
@@ -559,7 +563,9 @@ FunctionMock.prototype = {
 		['assert', 'asserts', 'verify',
 		 'expect', 'expects',
 		 'expectThrows', 'expectThrow',
-		 'expectRaises', 'expectRaise'].forEach(function(aMethod) {
+		 'andReturn', 'andReturns',
+		 'andThrow', 'andThrows',
+		 'andStub'].forEach(function(aMethod) {
 			aTarget[aMethod] = function() { return self[aMethod].apply(self, arguments); }
 			aTarget['_'+aMethod] = function() { return self[aMethod].apply(self, arguments); }
 		}, this);
