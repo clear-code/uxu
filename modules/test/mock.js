@@ -782,8 +782,6 @@ SetterMock.prototype = {
 function TypeOf(aConstructor) {
 	this.expectedConstructor = aConstructor;
 }
-TypeOf.prototype = {
-	isA : function(aConstructor) {
-		return new TypeOf(aConstructor);
-	}
+TypeOf.isA = function(aConstructor) {
+	return new TypeOf(aConstructor);
 };

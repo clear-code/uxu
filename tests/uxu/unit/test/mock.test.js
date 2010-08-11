@@ -5,6 +5,7 @@ var Mock = ns.Mock;
 var FunctionMock = ns.FunctionMock;
 var GetterMock = ns.GetterMock;
 var SetterMock = ns.SetterMock;
+var TypeOf = ns.TypeOf;
 
 var bundle = utils.import(topDir+'modules/lib/stringBundle.js', {})
 				.stringBundle.get('chrome://uxu/locale/uxu.properties');
@@ -500,6 +501,7 @@ function test_JSMockStyle()
 	mock.expects().calledWithArg(29000).andReturn(2.9).andStub(function() {
 		count += 10;
 	});
+	mock.expects().calledWithArg(TypeOf.isA(String));
 
 	assert.isUndefined(mock.calledWithoutArg());
 	assert.equals(290, mock.calledWithArg(29));
@@ -513,4 +515,7 @@ function test_JSMockStyle()
 	assert.equals(1, count);
 	assert.equals(2.9, mock.calledWithArg(29000));
 	assert.equals(11, count);
+	mock.calledWithArg(new String('string'));
+
+	mock.assert();
 }
