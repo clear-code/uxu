@@ -54,6 +54,15 @@ MockManager.prototype = {
 		this._mocks.push(mock);
 		return mock;
 	},
+	// JSMock API
+	verify : function()
+	{
+		this.assertAll();
+	},
+	createMock : function(aSource)
+	{
+		return this.Mock(aSource);
+	},
 	export : function(aTarget)
 	{
 		var self = this;
@@ -67,6 +76,7 @@ MockManager.prototype = {
 		aTarget.MockObject = aTarget.MockCreate = aTarget.Mock;
 		// compatibility for JSMock
 		aTarget.TypeOf = TypeOf;
+		aTarget.MockControl = function() { return self; };
 	}
 };
 
