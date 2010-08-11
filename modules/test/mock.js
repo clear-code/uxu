@@ -169,7 +169,7 @@ Mock.prototype = {
 	__handleCall : function(aCall)
 	{
 		this.__assert.equals(this.__expectedCalls[0], aCall);
-		this.__expectedCalls.splice(0, 1);
+		this.__expectedCalls.shift();
 	},
 
 	expect : function(aName)
@@ -181,7 +181,7 @@ Mock.prototype = {
 		if (call) {
 			this.__expectedCalls.push(call);
 			let self = this;
-			call.handlers.push(function() { self.__handleCall.call(self, this.firstExpectedCall); });
+			call.addHandler(function() { self.__handleCall.call(self, this.firstExpectedCall); });
 		}
 		return call;
 	},
@@ -194,7 +194,7 @@ Mock.prototype = {
 		if (call) {
 			this.__expectedCalls.push(call);
 			let self = this;
-			call.handlers.push(function() { self.__handleCall.call(self, this.firstExpectedCall); });
+			call.addHandler(function() { self.__handleCall.call(self, this.firstExpectedCall); });
 		}
 		return call;
 	},
@@ -212,7 +212,7 @@ Mock.prototype = {
 		if (call) {
 			this.__expectedCalls.push(call);
 			let self = this;
-			call.handlers.push(function() { self.__handleCall.call(self, this.firstExpectedCall); });
+			call.addHandler(function() { self.__handleCall.call(self, this.firstExpectedCall); });
 		}
 		return call;
 	},
@@ -223,7 +223,7 @@ Mock.prototype = {
 		if (call) {
 			this.__expectedCalls.push(call);
 			let self = this;
-			call.handlers.push(function() { self.__handleCall.call(self, this.firstExpectedCall); });
+			call.addHandler(function() { self.__handleCall.call(self, this.firstExpectedCall); });
 		}
 		return call;
 	},
@@ -241,7 +241,7 @@ Mock.prototype = {
 		if (call) {
 			this.__expectedCalls.push(call);
 			let self = this;
-			call.handlers.push(function() { self.__handleCall.call(self, this.firstExpectedCall); });
+			call.addHandler(function() { self.__handleCall.call(self, this.firstExpectedCall); });
 		}
 		return call;
 	},
@@ -252,7 +252,7 @@ Mock.prototype = {
 		if (call) {
 			this.__expectedCalls.push(call);
 			let self = this;
-			call.handlers.push(function() { self.__handleCall.call(self, this.firstExpectedCall); });
+			call.addHandler(function() { self.__handleCall.call(self, this.firstExpectedCall); });
 		}
 		return call;
 	},
@@ -300,8 +300,6 @@ Mock.prototype = {
 	_assert  : function() { this.assert(); },
 	verify : function() { this.assert(); },
 	_verify : function() { this.assert(); },
-	asserts : function() { this.assert(); },
-	_asserts : function() { this.assert(); },
 
 	_export : function(aTarget, aAssertions)
 	{
@@ -380,6 +378,24 @@ ExpectedCall.prototype = {
 	{
 		this.handlers.push(aHandler);
 	},
+	onCall : function(aMock, aArguments)
+	{
+		this.handlers.forEach(function(aHandler) {
+			aHandler.apply(aMock, aArguments);
+		}, aMock);
+	},
+	finish : function(aArguments)
+	{
+		var exception = this.exceptionClass;
+		if (exception) {
+			if (typeof exception == 'function')
+				exception = new this.exceptionClass(this.exceptionMessage);
+			throw exception;
+		}
+		return typeof this.returnValue == 'function' ?
+				this.returnValue.apply(null, aArguments) :
+				this.returnValue ;
+	},
 	get arguments()
 	{
 		return this._arguments;
@@ -429,7 +445,7 @@ FunctionMock.prototype = {
 	},
 	get calledCount()
 	{
-		return this.totalCount - this.expectedCalls.length + this.errorsCount;
+		return this.totalCount - this.expectedCalls.length;
 	},
 	get firstExpectedCall()
 	{
@@ -441,43 +457,45 @@ FunctionMock.prototype = {
 		var calls = this.expectedCalls;
 		return calls.length ? calls[calls.length-1] : null ;
 	},
-	expect : function(aArguments, aReturnValue)
+	getCurrentCall : function(aMessage)
 	{
-		var call = new ExpectedCall({
-				arguments   : aArguments || [],
-				returnValue : aReturnValue
-			});
+		if (!this.anyCall && !this.expectedCalls.length) {
+			this.errorsCount++;
+			throw new Error(aMessage);
+		}
+		return this.anyCall || this.firstExpectedCall;
+	},
+	addExpectedCall : function(aOptions)
+	{
+		var call = new ExpectedCall(aOptions);
 		if (call.isAnyCall()) {
 			this.anyCall = call;
-			call = null;
+			return null;
 		}
 		else {
 			this.anyCall = null;
 			this.expectedCalls.push(call);
 			this.totalCount++;
+			return call;
 		}
-		return call;
+	},
+	expect : function(aArguments, aReturnValue)
+	{
+		return this.addExpectedCall({
+				arguments   : aArguments || [],
+				returnValue : aReturnValue
+			});
 	},
 	expects : function() { return this.expect.apply(this, arguments); },
 	expectThrows : function(aArguments, aExceptionClass, aExceptionMessage)
 	{
 		if (!aExceptionClass)
 			throw new Error(bundle.getString('mock_error_no_exception'));
-		var call = new ExpectedCall({
+		return this.addExpectedCall({
 				arguments        : aArguments || [],
 				exceptionClass   : aExceptionClass,
 				exceptionMessage : aExceptionMessage
 			});
-		if (call.isAnyCall()) {
-			this.anyCall = call;
-			call = null;
-		}
-		else {
-			this.anyCall = null;
-			this.expectedCalls.push(call);
-			this.totalCount++;
-		}
-		return call;
 	},
 	expectThrow : function() { return this.expectThrows.apply(this, arguments); },
 	expectRaises : function() { return this.expectThrows.apply(this, arguments); },
@@ -503,47 +521,33 @@ FunctionMock.prototype = {
 	andStub : function(aHandler)
 	{
 		var call = this.lastExpectedCall;
-		call.handlers.push(aHandler);
+		call.addHandler(aHandler);
 		return this;
 	},
 
 	onCall : function(aArguments)
 	{
-		if (!this.anyCall && !this.expectedCalls.length) {
-			this.errorsCount++;
-			throw new Error(bundle.getFormattedString(
+		var call = this.getCurrentCall(bundle.getFormattedString(
 						'function_mock_unexpected_call',
 						[ns.utils.inspect(aArguments)]
 					));
-		}
 
 		var call = this.anyCall || this.firstExpectedCall;
 		if (!call.isAnyCall() && !call.isOneTimeAnyCall())
 			this._assert.equals(
-				this.formatExpectedArgumentsArray(call.arguments, aArguments),
+				this.formatArgumentsArray(call.arguments, aArguments),
 				aArguments,
 				bundle.getString('function_mock_wrong_arguments')
 			);
 
-		call.handlers.forEach(function(aHandler) {
-			aHandler.apply(this, aArguments);
-		}, this);
+		call.onCall(this, aArguments);
 
 		if (!this.anyCall)
-			this.expectedCalls.splice(0, 1);
+			this.expectedCalls.shift();
 
-		var exception = call.exceptionClass;
-		if (exception) {
-			if (typeof exception == 'function')
-				exception = new call.exceptionClass(call.exceptionMessage);
-			throw exception;
-		}
-
-		return typeof call.returnValue == 'function' ?
-				call.returnValue.apply(null, aArguments) :
-				call.returnValue ;
+		return call.finish(aArguments);
 	},
-	formatExpectedArgumentsArray : function(aExpectedArray, aActualArray)
+	formatArgumentsArray : function(aExpectedArray, aActualArray)
 	{
 		return aExpectedArray.map(function(aExpected, aIndex) {
 			if (aExpected instanceof TypeOf) {
@@ -559,18 +563,15 @@ FunctionMock.prototype = {
 	},
 	assert : function()
 	{
-		this._assert.equals(
-			this.totalCount,
-			this.calledCount,
-			bundle.getString('function_mock_assert_fail')
-		);
+		if (this.errorsCount)
+			throw new Error(bundle.getFormattedString('function_mock_assert_error', [this.errorsCount]));
+		this._assert.equals(this.totalCount, this.calledCount, bundle.getString('function_mock_assert_fail'));
 	},
 	verify : function() { this.assert(); },
-	asserts : function() { this.assert(); },
 	export : function(aTarget)
 	{
 		var self = this;
-		['assert', 'asserts', 'verify',
+		['assert', 'verify',
 		 'expect', 'expects',
 		 'expectThrows', 'expectThrow',
 		 'andReturn', 'andReturns',
@@ -602,20 +603,10 @@ GetterMock.prototype = {
 			) {
 			[args, aReturnValue] = Array.slice(arguments);
 		}
-		var call = new ExpectedCall({
+		return this.addExpectedCall({
 				arguments   : args,
 				returnValue : aReturnValue
 			});
-		if (call.isAnyCall()) {
-			this.alwaysCall = call;
-			call = null;
-		}
-		else {
-			this.alwaysCall = null;
-			this.expectedCalls.push(call);
-			this.totalCount++;
-		}
-		return call;
 	},
 	expectThrows : function(aExceptionClass, aExceptionMessage)
 	{
@@ -631,56 +622,28 @@ GetterMock.prototype = {
 		}
 		if (!aExceptionClass)
 			throw new Error(bundle.getString('mock_error_no_exception'));
-		var call = new ExpectedCall({
+		return this.addExpectedCall({
 				arguments        : args,
 				exceptionClass   : aExceptionClass,
 				exceptionMessage : aExceptionMessage
 			});
-		if (call.isAnyCall()) {
-			this.alwaysCall = call;
-			call = null;
-		}
-		else {
-			this.alwaysCall = null;
-			this.expectedCalls.push(call);
-			this.totalCount++;
-		}
-		return call;
 	},
 	onCall : function()
 	{
-		if (!this.alwaysCall && !this.expectedCalls.length) {
-			this.errorsCount++;
-			throw new Error(bundle.getString('getter_mock_unexpected_call'));
-		}
+		var call = this.getCurrentCall(bundle.getString('getter_mock_unexpected_call'));
 
-		var call = this.alwaysCall || this.firstExpectedCall;
+		call.onCall(this, []);
 
-		call.handlers.forEach(function(aHandler) {
-			aHandler.apply(this, []);
-		}, this);
+		if (!this.anyCall)
+			this.expectedCalls.shift();
 
-		if (!this.alwaysCall)
-			this.expectedCalls.splice(0, 1);
-
-		var exception = call.exceptionClass;
-		if (exception) {
-			if (typeof exception == 'function')
-				exception = new call.exceptionClass(call.exceptionMessage);
-			throw exception;
-		}
-
-		return typeof call.returnValue == 'function' ?
-				call.returnValue.call(null) :
-				call.returnValue ;
+		return call.finish([]);
 	},
 	assert : function()
 	{
-		this._assert.equals(
-			this.totalCount,
-			this.calledCount,
-			bundle.getString('getter_mock_assert_fail')
-		);
+		if (this.errorsCount)
+			throw new Error(bundle.getFormattedString('getter_mock_assert_error', [this.errorsCount]));
+		this._assert.equals(this.totalCount, this.calledCount, bundle.getString('getter_mock_assert_fail'));
 	}
 };
 
@@ -693,88 +656,52 @@ SetterMock.prototype = {
 	__proto__ : FunctionMock.prototype,
 	expect : function(aArgument, aReturnValue)
 	{
-		var call = new ExpectedCall({
+		var call = this.addExpectedCall({
 				arguments   : [aArgument],
 				returnValue : aReturnValue
 			});
-		if (call.isAnyCall()) {
-			this.anyCall = call;
-			call = null;
-		}
-		else {
-			this.anyCall = null;
-			this.expectedCalls.push(call);
-			this.totalCount++;
-			if (arguments.length < 2)
-				call.returnValue = aArgument;
-		}
+		if (call && arguments.length < 2)
+			call.returnValue = aArgument;
 		return call;
 	},
 	expectThrows : function(aArgument, aExceptionClass, aExceptionMessage)
 	{
 		if (!aExceptionClass)
 			throw new Error(bundle.getString('mock_error_no_exception'));
-		var call = new ExpectedCall({
+		var call = this.addExpectedCall({
 				arguments        : [aArgument],
 				exceptionClass   : aExceptionClass,
 				exceptionMessage : aExceptionMessage
 			});
-		if (call.isAnyCall()) {
-			this.anyCall = call;
-			call = null;
-		}
-		else {
-			this.anyCall = null;
-			this.expectedCalls.push(call);
-			this.totalCount++;
-		}
-		return call;
 	},
 	onCall : function(aArguments)
 	{
 		if (!aArguments.length) aArguments = [void(0)];
 
-		if (!this.anyCall && !this.expectedCalls.length) {
-			this.errorsCount++;
-			throw new Error(bundle.getFormattedString(
-						'setter_mock_unexpected_call',
-						[ns.utils.inspect(aArguments[0])]
-					));
-		}
+		var call = this.getCurrentCall(bundle.getFormattedString(
+				'setter_mock_unexpected_call',
+				[ns.utils.inspect(aArguments[0])]
+			));
 
-		var call = this.anyCall || this.firstExpectedCall;
 		if (!call.isAnyCall() && !call.isOneTimeAnyCall())
 			this._assert.equals(
-				this.formatExpectedArgumentsArray(call.arguments, aArguments),
+				this.formatArgumentsArray(call.arguments, aArguments),
 				aArguments,
 				bundle.getString('setter_mock_wrong_value')
 			);
 
-		call.handlers.forEach(function(aHandler) {
-			aHandler.apply(this, aArguments);
-		}, this);
+		call.onCall(this, aArguments);
 
 		if (!this.anyCall)
-			this.expectedCalls.splice(0, 1);
+			this.expectedCalls.shift();
 
-		var exception = call.exceptionClass;
-		if (exception) {
-			if (typeof exception == 'function')
-				exception = new call.exceptionClass(call.exceptionMessage);
-			throw exception;
-		}
-
-		return typeof call.returnValue == 'function' ?
-				call.returnValue.call(null, aArguments[0]) :
-				call.returnValue ;
+		return call.finish([]);
 	},
 	assert : function()
 	{
-		this._assert.equals(
-			this.totalCount,
-			this.calledCount,
-			bundle.getString('setter_mock_assert_fail')
-		);
+		if (this.errorsCount)
+			throw new Error(bundle.getFormattedString('setter_mock_assert_error', [this.errorsCount]));
+		this._assert.equals(this.totalCount, this.calledCount, bundle.getString('setter_mock_assert_fail'));
 	}
 };
 
