@@ -2588,6 +2588,8 @@ export : function(aNamespace, aForce, aSelf, aSource)
  
 bind : function(aFunction, aThis) 
 {
+	if (typeof aFunction != 'function' && typeof aThis == 'function')
+		[aThis, aFunction] = [aFunction, aThis];
 	return function() { return aFunction.apply(aThis, arguments); };
 }
  

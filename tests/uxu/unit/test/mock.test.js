@@ -371,7 +371,7 @@ function test_createMock()
 	assert.raises(
 		bundle.getFormattedString(
 			'mock_unexpected_call',
-			['slice', [0]]
+			['slice', utils.inspect([0])]
 		),
 		function() {
 			mock.slice(0);
