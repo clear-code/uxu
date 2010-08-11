@@ -1,4 +1,6 @@
-// API compatible to http://micampe.it/projects/jsmock
+// API compatible to:
+//  * MockObject.js http://micampe.it/projects/jsmock
+//  * JSMock http://jsmock.sourceforge.net/
 
 const EXPORTED_SYMBOLS = [
 		'MockManager', 'Mock', 'FunctionMock', 'MockFunction', 'GetterMock', 'SetterMock',
@@ -72,9 +74,10 @@ MockManager.prototype = {
 		aTarget.GetterMock = function() { return self.GetterMock.apply(self, arguments); };
 		aTarget.SetterMock = function() { return self.SetterMock.apply(self, arguments); };
 
-		// compatibility for http://micampe.it/projects/jsmock
+		// MockObject,js
 		aTarget.MockObject = aTarget.MockCreate = aTarget.Mock;
-		// compatibility for JSMock
+
+		// JSMock
 		aTarget.TypeOf = TypeOf;
 		aTarget.MockControl = function() { return self; };
 	}
@@ -265,7 +268,6 @@ Mock.prototype = {
 	_expectSetRaise : function() { return this.expectSetThrows.apply(this, arguments); },
 
 	// JSMock API
-	// http://jsmock.sourceforge.net/
 	addMockMethod : function(aName)
 	{
 		this._addMethod(aName);
@@ -502,7 +504,6 @@ FunctionMock.prototype = {
 	expectRaise : function() { return this.expectThrows.apply(this, arguments); },
 
 	// JSMock API
-	// http://jsmock.sourceforge.net/
 	andReturn : function(aValue)
 	{
 		var call = this.lastExpectedCall;
