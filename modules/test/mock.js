@@ -1,7 +1,6 @@
 // API compatible to http://micampe.it/projects/jsmock
 
-if (typeof window == 'undefined')
-	this.EXPORTED_SYMBOLS = ['MockManager', 'Mock', 'FunctionMock', 'GetterMock', 'SetterMock'];
+const EXPORTED_SYMBOLS = ['MockManager', 'Mock', 'FunctionMock', 'MockFunction', 'GetterMock', 'SetterMock'];
 
 var ns = {};
 Components.utils.import('resource://uxu-modules/utils.js', ns);
@@ -29,26 +28,27 @@ MockManager.prototype = {
 	},
 	Mock : function(aSource)
 	{
-		var mock = Mock(aSource, this._assert);
+		var mock = new Mock(aSource, this._assert);
 		this._mocks.push(mock);
 		return mock;
 	},
 	FunctionMock : function()
 	{
-		var mock = FunctionMock(this._assert);
-		this._mocks.mocks.push(mock);
+		var mock = new FunctionMock(this._assert);
+		this._mocks.push(mock);
 		return mock;
 	},
+	MockFunction : function() { return this.FunctionMock.apply(this, arguments); },
 	GetterMock : function()
 	{
-		var mock = GetterMock(this._assert);
-		this._mocks.mocks.push(mock);
+		var mock = new GetterMock(this._assert);
+		this._mocks.push(mock);
 		return mock;
 	},
 	SetterMock : function()
 	{
-		var mock = SetterMock(this._assert);
-		this._mocks.mocks.push(mock);
+		var mock = new SetterMock(this._assert);
+		this._mocks.push(mock);
 		return mock;
 	},
 	export : function(aTarget)
@@ -56,6 +56,7 @@ MockManager.prototype = {
 		var self = this;
 		aTarget.Mock = function() { return self.Mock.apply(self, arguments); };
 		aTarget.FunctionMock = function() { return self.FunctionMock.apply(self, arguments); };
+		aTarget.MockFunction = aTarget.FunctionMock;
 		aTarget.GetterMock = function() { return self.GetterMock.apply(self, arguments); };
 		aTarget.SetterMock = function() { return self.SetterMock.apply(self, arguments); };
 
@@ -369,6 +370,7 @@ FunctionMock.prototype = {
 		this.anyCall = null;
 		this._assert = aAssertions || new ns.Assertions();
 		this.errorsCount = 0;
+		this.totalCount = 0;
 	},
 	createFunction : function()
 	{
@@ -379,9 +381,9 @@ FunctionMock.prototype = {
 
 		return func;
 	},
-	get count()
+	get calledCount()
 	{
-		return this.expectedCalls.length - this.errorsCount;
+		return this.totalCount - this.expectedCalls.length + this.errorsCount;
 	},
 	expect : function(aArguments, aReturnValue, aHandler)
 	{
@@ -397,6 +399,7 @@ FunctionMock.prototype = {
 		else {
 			this.anyCall = null;
 			this.expectedCalls.push(call);
+			this.totalCount++;
 		}
 		return call;
 	},
@@ -418,6 +421,7 @@ FunctionMock.prototype = {
 		else {
 			this.anyCall = null;
 			this.expectedCalls.push(call);
+			this.totalCount++;
 		}
 		return call;
 	},
@@ -464,8 +468,8 @@ FunctionMock.prototype = {
 	assert : function()
 	{
 		this._assert.equals(
-			0,
-			this.count,
+			this.totalCount,
+			this.calledCount,
 			bundle.getString('function_mock_assert_fail')
 		);
 	},
@@ -484,6 +488,8 @@ FunctionMock.prototype = {
 	}
 };
 
+var MockFunction = FunctionMock;
+
 function GetterMock(aAssertions)
 {
 	this.init(aAssertions);
@@ -499,6 +505,7 @@ GetterMock.prototype = {
 			};
 		this.alwaysCall = null;
 		this.expectedCalls.push(call);
+		this.totalCount++;
 		return call;
 	},
 	expectThrows : function(aExceptionClass, aExceptionMessage, aHandler)
@@ -527,6 +534,7 @@ GetterMock.prototype = {
 		else {
 			this.alwaysCall = null;
 			this.expectedCalls.push(call);
+			this.totalCount++;
 		}
 		return call;
 	},
@@ -559,8 +567,8 @@ GetterMock.prototype = {
 	assert : function()
 	{
 		this._assert.equals(
-			0,
-			this.count,
+			this.totalCount,
+			this.calledCount,
 			bundle.getString('getter_mock_assert_fail')
 		);
 	}
@@ -587,6 +595,7 @@ SetterMock.prototype = {
 		else {
 			this.anyCall = null;
 			this.expectedCalls.push(call);
+			this.totalCount++;
 			if (arguments.length < 2)
 				call.returnValue = aSetValue;
 		}
@@ -609,6 +618,7 @@ SetterMock.prototype = {
 		else {
 			this.anyCall = null;
 			this.expectedCalls.push(call);
+			this.totalCount++;
 		}
 		return call;
 	},
@@ -652,8 +662,8 @@ SetterMock.prototype = {
 	assert : function()
 	{
 		this._assert.equals(
-			0,
-			this.count,
+			this.totalCount,
+			this.calledCount,
 			bundle.getString('setter_mock_assert_fail')
 		);
 	}
