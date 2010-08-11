@@ -793,12 +793,13 @@ TestCase.prototype = {
 			setUpDaemons      : { ok : 'doStartUp' },
 			doStartUp         : { ok : 'prepareTest', ko: 'doShutDown' },
 			prepareTest       : { ok : 'checkDoOrSkip' },
-			checkDoOrSkip     : { ok : 'doSetUp', ko: 'skip' },
+			checkDoOrSkip     : { ok : 'cleanUpBeforeTest', ko: 'skip' },
 			skip              : { ok : 'doReport' },
+			cleanUpBeforeTest : { ok : 'doSetUp' },
 			doSetUp           : { ok : 'doPrivSetUp', ko: 'doPrivTearDown' },
 			doPrivSetUp       : { ok : 'doTest', ko: 'doPrivTearDown' },
-			doTest            : { ok : 'checkSuccessCount' },
-			checkSuccessCount : { ok : 'doPrivTearDown', ko: 'doPrivTearDown' },
+			doTest            : { ok : 'doTestAssertions' },
+			doTestAssertions  : { ok : 'doPrivTearDown', ko: 'doPrivTearDown' },
 			doPrivTearDown    : { ok : 'doTearDown', ko: 'doTearDown' },
 			doTearDown        : { ok : 'doReport', ko: 'doReport' },
 			doReport          : { ok : 'nextTest' },
@@ -923,6 +924,11 @@ TestCase.prototype = {
 				}
 				aContinuation('ok');
 			},
+			cleanUpBeforeTest : function(aContinuation)
+			{
+				self._suite.mockManager.clear();
+				aContinuation('ok');
+			},
 			doSetUp : function(aContinuation)
 			{
 				self.notifications = [];
@@ -972,7 +978,7 @@ TestCase.prototype = {
 					testReport.report.description = current.description;
 				}
 			},
-			checkSuccessCount : function(aContinuation)
+			doTestAssertions : function(aContinuation)
 			{
 				try {
 					if (testReport.report.result == self.RESULT_SUCCESS) {
@@ -982,6 +988,7 @@ TestCase.prototype = {
 							current.minAssertions,
 							current.maxAssertions
 						);
+						self._suite.mockManager.assertAll();
 					}
 					aContinuation('ok');
 				}

@@ -12,6 +12,7 @@ Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
 Components.utils.import('resource://uxu-modules/eventTarget.js', ns);
 Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/test/assertions.js', ns);
+Components.utils.import('resource://uxu-modules/test/mock.js', ns);
 Components.utils.import('resource://uxu-modules/test/action.js', ns);
 Components.utils.import('resource://uxu-modules/test/greasemonkey.js', ns);
 Components.utils.import('resource://uxu-modules/test/testCase.js', ns);
@@ -75,6 +76,7 @@ function TestSuite(aEnvironment, aURI, aBrowser)
 	this.attachAssertions();
 	this.attachActions();
 	this.attachServerUtils();
+	this.attachMock();
 
 	this._utils.export(this.environment.utils, false, this, this.__proto__);
 	this._utils.export(this.environment.utils, false, this, this);
@@ -196,6 +198,12 @@ attachServerUtils : function()
 	};
 	this.tearDownHttpServer = ns.utils.bind(serverUtils.tearDownHttpServer, serverUtils);
 	this.tearDownAllHttpServers = ns.utils.bind(serverUtils.tearDownAllHttpServers, serverUtils);
+},
+ 
+attachMock : function() 
+{
+	this.mockManager = new ns.MockManager(this.assert);
+	this.mockManager.export(this);
 },
  
 // window management 
