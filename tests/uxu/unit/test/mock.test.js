@@ -175,7 +175,7 @@ function test_functionMock_expect()
 	});
 }
 
-function test_functionMock_expectAny()
+function test_functionMock_specialSpec()
 {
 	var mock = createFunctionMock();
 
@@ -209,6 +209,11 @@ function test_functionMock_expectAny()
 		mock.expect(29, 'foobar');
 	});
 	assertCallSuccess(mock, [29], 'foobar');
+
+	assertCallNotModified(mock, function() {
+		mock.expect(Mock.NEVER);
+	});
+	assertCallError(mock, [0]);
 }
 
 function test_functionMock_expectThrows()
@@ -308,21 +313,59 @@ function test_getterMock_expect()
 {
 	var mock = createGetterMock();
 	assertCallError(mock);
-	mock.expect(0);
-	assertCallSuccess(mock, [0]);
+	assertCallAdded(mock, function() {
+		mock.expect(0);
+	});
+	assertCallSuccess(mock, [], 0);
 	assertCallError(mock);
 
-	mock.expect(29);
+	assertCallAdded(mock, function() {
+		mock.expect(29);
+	});
 	assertCallSuccess(mock, [], 29);
 
-	mock.expect([29]);
+	assertCallAdded(mock, function() {
+		mock.expect([29]);
+	});
 	assertCallSuccess(mock, [], [29]);
 
-	mock.expect(function() { return 'returned' });
+	assertCallAdded(mock, function() {
+		mock.expect(function() { return 'returned' });
+	});
 	assertCallSuccess(mock, [], 'returned');
 
-	mock.expect(29, true);
+	assertCallAdded(mock, function() {
+		mock.expect(29, true);
+	});
 	assertCallSuccess(mock, [], [29]);
+}
+
+function test_getterMock_specialSpec()
+{
+	var mock = createGetterMock();
+
+	assertAnyCallAdded(mock, function() {
+		mock.expect(Mock.ANY, true);
+	});
+	assertAnyCallSuccess(mock, [], true);
+	assertAnyCallSuccess(mock, [], true);
+
+	assertAnyCallAdded(mock, function() {
+		mock.expect(Mock.ANY, false);
+	});
+	assertAnyCallSuccess(mock, [], false);
+	assertAnyCallSuccess(mock, [], false);
+
+	assertCallAdded(mock, function() {
+		mock.expect(Mock.ANY_ONETIME, 29);
+	});
+	assertCallSuccess(mock, [], 29);
+	assertCallError(mock, []);
+
+	assertCallNotModified(mock, function() {
+		mock.expect(Mock.NEVER);
+	});
+	assertCallError(mock, []);
 }
 
 function test_getterMock_expectThrows()
@@ -373,50 +416,77 @@ function test_setterMock_expect()
 {
 	var mock = createSetterMock();
 	assertCallError(mock);
-	mock.expect(0);
+	assertCallAdded(mock, function() {
+		mock.expect(0);
+	});
 	assertCallSuccess(mock, [0], 0);
 	assertCallError(mock);
 
-	mock.expect(29);
+	assertCallAdded(mock, function() {
+		mock.expect(29);
+	});
 	assertCallSuccess(mock, [29], 29);
 
-	mock.expect([29]);
+	assertCallAdded(mock, function() {
+		mock.expect([29]);
+	});
 	assertCallSuccess(mock, [[29]], [29]);
 
-	mock.expect(29, true);
+	assertCallAdded(mock, function() {
+		mock.expect(29, true);
+	});
 	assertCallSuccess(mock, [29], true);
 
-	mock.expect('string', function() { return 'returned' });
+	assertCallAdded(mock, function() {
+		mock.expect('string', function() { return 'returned' });
+	});
 	assertCallSuccess(mock, ['string'], 'returned');
 
-	mock.expect(29);
+	assertCallAdded(mock, function() {
+		mock.expect(29);
+	});
 	assertCallRaise(mock, [290], 'AssertionFailed');
 }
 
-function test_setterMock_expectAny()
+function test_setterMock_specialSpec()
 {
 	var mock = createSetterMock();
 
-	mock.expect(Mock.ANY);
+	assertAnyCallAdded(mock, function() {
+		mock.expect(Mock.ANY);
+	});
 	assertAnyCallSuccess(mock, [0]);
 	assertAnyCallSuccess(mock, [29]);
 	assertAnyCallSuccess(mock, ['string']);
 
-	mock.expect(Mock.ANY, 29);
+	assertAnyCallAdded(mock, function() {
+		mock.expect(Mock.ANY, 29);
+	});
 	assertAnyCallSuccess(mock, [0], 29);
 	assertAnyCallSuccess(mock, [29], 29);
 	assertAnyCallSuccess(mock, ['string'], 29);
 
-	mock.expect(Mock.ANY_ONETIME, 29);
+	assertCallAdded(mock, function() {
+		mock.expect(Mock.ANY_ONETIME, 29);
+	});
 	assertCallSuccess(mock, [0], 29);
 	assertCallError(mock, [0]);
 
-	mock.expect(Mock.ANY_ONETIME, 'foobar');
+	assertCallAdded(mock, function() {
+		mock.expect(Mock.ANY_ONETIME, 'foobar');
+	});
 	assertCallSuccess(mock, [29], 'foobar');
 	assertCallError(mock, [0]);
 
-	mock.expect(29, 'foobar');
+	assertCallAdded(mock, function() {
+		mock.expect(29, 'foobar');
+	});
 	assertCallSuccess(mock, [29], 'foobar');
+
+	assertCallNotModified(mock, function() {
+		mock.expect(Mock.NEVER);
+	});
+	assertCallError(mock, [0]);
 }
 
 function test_setterMock_expectThrows()
@@ -444,16 +514,24 @@ function test_setterMock_expectThrows()
 	);
 	assertCallRaise(mock, [], message);
 
-	mock.expectThrows(29, message);
+	assertCallAdded(mock, function() {
+		mock.expectThrows(29, message);
+	});
 	assertCallRaise(mock, [29], message);
 
-	mock.expectThrows([29], message);
+	assertCallAdded(mock, function() {
+		mock.expectThrows([29], message);
+	});
 	assertCallRaise(mock, [29], message);
 
-	mock.expectThrows(29, Error, 'user defined error');
+	assertCallAdded(mock, function() {
+		mock.expectThrows(29, Error, 'user defined error');
+	});
 	assertCallRaise(mock, [29], 'user defined error');
 
-	mock.expectThrows(29, message);
+	assertCallAdded(mock, function() {
+		mock.expectThrows(29, message);
+	});
 	assertCallRaise(mock, [290], 'AssertionFailed');
 }
 
@@ -494,9 +572,15 @@ function test_createMock()
 function test_mockMethod()
 {
 	var mock = new Mock();
-	mock.expect('method');
-	mock.expect('args', [0, 1, 2], true);
-	mock.expectThrows('error', [], 'error message');
+	assertCallAdded(mock, function() {
+		mock.expect('method');
+	});
+	assertCallAdded(mock, function() {
+		mock.expect('args', [0, 1, 2], true);
+	});
+	assertCallAdded(mock, function() {
+		mock.expectThrows('error', [], 'error message');
+	});
 	assertFail(mock);
 	assert.notRaises(
 		'Error',
@@ -513,9 +597,15 @@ function test_mockMethod()
 function test_mockGetter()
 {
 	var mock = new Mock();
-	mock.expectGet('getterUndefined');
-	mock.expectGet('getterArray', [0, 1, 2]);
-	mock.expectGetThrows('getterError', Error, 'error message');
+	assertCallAdded(mock, function() {
+		mock.expectGet('getterUndefined');
+	});
+	assertCallAdded(mock, function() {
+		mock.expectGet('getterArray', [0, 1, 2]);
+	});
+	assertCallAdded(mock, function() {
+		mock.expectGetThrows('getterError', Error, 'error message');
+	});
 	assertFail(mock);
 	assert.notRaises(
 		'Error',
@@ -534,10 +624,16 @@ function test_mockGetter()
 function test_mockSetter()
 {
 	var mock = new Mock();
-	mock.expectSet('setterUndefined');
-	mock.expectSet('setterArray', [0, 1, 2]);
+	assertCallAdded(mock, function() {
+		mock.expectSet('setterUndefined');
+	});
+	assertCallAdded(mock, function() {
+		mock.expectSet('setterArray', [0, 1, 2]);
+	});
 //	mock.expectSet('setterString', 'string', 'returned');
-	mock.expectSetThrows('setterError', 'error', Error, 'error message');
+	assertCallAdded(mock, function() {
+		mock.expectSetThrows('setterError', 'error', Error, 'error message');
+	});
 	assertFail(mock);
 	assert.notRaises(
 		'Error',

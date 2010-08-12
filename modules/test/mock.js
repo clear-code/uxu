@@ -127,6 +127,7 @@ Mock.prototype = {
 	ANY_ONETIME : '1843351e-0446-40ce-9bbd-cfd01d3c87a4',
 	ALWAYS      : '11941072-0dc4-406b-a392-f57d36bb0b27',
 	ONETIME     : '079e5fb7-0b5e-4139-b365-48455901f17b',
+	NEVER       : '5b9a1df9-2c17-4fb4-9b3d-cdb860bf39a6',
 	__inherit : function(aSource)
 	{
 		for (let i in aSource)
@@ -344,6 +345,7 @@ Mock.prototype = {
 		aTarget.ANY_ONETIME = Mock.prototype.ANY_ONETIME;
 		aTarget.ALWAYS      = Mock.prototype.ALWAYS;
 		aTarget.ONETIME     = Mock.prototype.ONETIME;
+		aTarget.NEVER       = Mock.prototype.NEVER;
 
 		aTarget._addMethod = function(aObject, aName) {
 			return Mock.prototype._addMethod.call(aObject, aName, assertions);
@@ -404,7 +406,7 @@ function ExpectedCall(aOptions)
 	this._arguments       = [];
 	this.handlers         = [];
 	this.arguments        = aOptions.arguments;
-	this.returnValue      = aOptions.returnValue || void(0);
+	if ('returnValue' in aOptions) this.returnValue = aOptions.returnValue;
 	if ('exceptionClass' in aOptions) this.exceptionClass = aOptions.exceptionClass;
 	if ('exceptionMessage' in aOptions) this.exceptionMessage = aOptions.exceptionMessage;
 }
@@ -516,6 +518,16 @@ FunctionMock.prototype = {
 			return call;
 		}
 	},
+	isSpecialSpec : function(aArgument)
+	{
+		return (
+			aArgument == Mock.prototype.ALWAYS ||
+			aArgument == Mock.prototype.ONETIME ||
+			aArgument == Mock.prototype.ANY ||
+			aArgument == Mock.prototype.ANY_ONETIME ||
+			aArgument == Mock.prototype.NEVER
+		);
+	},
 	// JSMock, JsMockito
 	createExpectationChain : function()
 	{
@@ -534,7 +546,9 @@ FunctionMock.prototype = {
 		if (!arguments.length && !this.inExpectationChain)
 			return this.createExpectationChain();
 
-		return this.addExpectedCall({
+		return aArguments == Mock.prototype.NEVER ?
+			null :
+			this.addExpectedCall({
 				arguments   : aArguments,
 				returnValue : aReturnValue
 			});
@@ -674,15 +688,12 @@ GetterMock.prototype = {
 	expect : function(aReturnValue)
 	{
 		var args = [];
-		if (
-			(aReturnValue == Mock.prototype.ALWAYS ||
-			 aReturnValue == Mock.prototype.ONETIME ||
-			 aReturnValue == Mock.prototype.ANY ||
-			 aReturnValue == Mock.prototype.ANY_ONETIME)
-			) {
+		if (this.isSpecialSpec(aReturnValue))
 			[args, aReturnValue] = Array.slice(arguments);
-		}
-		return this.addExpectedCall({
+
+		return args == Mock.prototype.NEVER ?
+			null :
+			this.addExpectedCall({
 				arguments   : args,
 				returnValue : aReturnValue
 			});
@@ -692,10 +703,7 @@ GetterMock.prototype = {
 		var args = [];
 		if (
 			aExceptionMessage &&
-			(aExceptionClass == Mock.prototype.ALWAYS ||
-			 aExceptionClass == Mock.prototype.ONETIME ||
-			 aExceptionClass == Mock.prototype.ANY ||
-			 aExceptionClass == Mock.prototype.ANY_ONETIME)
+			this.isSpecialSpec(aExceptionClass)
 			) {
 			[args, aExceptionClass, aExceptionMessage] = Array.slice(arguments);
 		}
@@ -742,6 +750,9 @@ SetterMock.prototype = {
 	__proto__ : FunctionMock.prototype,
 	expect : function(aArgument, aReturnValue)
 	{
+		if (aArgument == Mock.prototype.NEVER)
+			return;
+
 		var call = this.addExpectedCall({
 				arguments   : [aArgument],
 				returnValue : aReturnValue
@@ -754,7 +765,7 @@ SetterMock.prototype = {
 	{
 		if (!aExceptionClass)
 			throw new Error(bundle.getString('mock_error_no_exception'));
-		var call = this.addExpectedCall({
+		return this.addExpectedCall({
 				arguments        : [aArgument],
 				exceptionClass   : aExceptionClass,
 				exceptionMessage : aExceptionMessage
