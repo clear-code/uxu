@@ -12,6 +12,7 @@ var bundle = utils.import(topDir+'modules/lib/stringBundle.js', {})
 				.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 var mock;
+var manager;
 
 function setUp()
 {
@@ -509,6 +510,39 @@ function test_JSMockStyle()
 		count += 10;
 	});
 	mock.expects().calledWithArg(TypeOf.isA(String));
+
+	assert.isUndefined(mock.calledWithoutArg());
+	assert.equals(290, mock.calledWithArg(29));
+	assert.raises(
+		'my error',
+		function() {
+			mock.calledWithArg(290);
+		}
+	);
+	mock.calledWithArg(2900);
+	assert.equals(1, count);
+	assert.equals(2.9, mock.calledWithArg(29000));
+	assert.equals(11, count);
+	mock.calledWithArg(new String('string'));
+
+	mock.assert();
+}
+
+function test_JsMockitoStyle()
+{
+	var manager = new MockManager();
+	var mock = new Mock();
+	manager.when(mock).calledWithoutArg();
+	manager.when(mock).calledWithArg(29).thenReturn(290);
+	manager.when(mock).calledWithArg(290).thenThrow('my error');
+	var count = 0;
+	manager.when(mock).calledWithArg(2900).then(function() {
+		count += 1;
+	});
+	manager.when(mock).calledWithArg(29000).thenReturn(2.9).then(function() {
+		count += 10;
+	});
+	manager.when(mock).calledWithArg(TypeOf.isA(String));
 
 	assert.isUndefined(mock.calledWithoutArg());
 	assert.equals(290, mock.calledWithArg(29));

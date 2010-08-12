@@ -561,8 +561,8 @@ FunctionMock.prototype = {
 	// JsMockito API
 	thenReturn : function() { return this.andReturn.apply(this, arguments); },
 	thenReturns : function() { return this.andReturn.apply(this, arguments); }, // extended from JsMockito
-	thenThrow : function() { return this.andReturn.apply(this, arguments); },
-	thenThrows : function() { return this.andReturn.apply(this, arguments); }, // extended from JsMockito
+	thenThrow : function() { return this.andThrow.apply(this, arguments); },
+	thenThrows : function() { return this.andThrow.apply(this, arguments); }, // extended from JsMockito
 	then : function() { return this.andStub.apply(this, arguments); },
 
 	onCall : function(aArguments)
