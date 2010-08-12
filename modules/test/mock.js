@@ -78,7 +78,10 @@ MockManager.prototype = {
 	export : function(aTarget)
 	{
 		var self = this;
+
 		aTarget.Mock = function() { return self.Mock.apply(self, arguments); };
+		Mock.export(aTarget.Mock);
+
 		aTarget.FunctionMock = function() { return self.FunctionMock.apply(self, arguments); };
 		aTarget.MockFunction = aTarget.FunctionMock;
 		aTarget.GetterMock = function() { return self.GetterMock.apply(self, arguments); };
@@ -154,7 +157,7 @@ Mock.prototype = {
 	{
 		var method = this[aName];
 		if (!method || !('expect' in method)) {
-			method = new FunctionMock(aAssertions || this.__assert);
+			method = new FunctionMock(aName, aAssertions || this.__assert);
 			this.__methods[aName] = method;
 			this[aName] = method;
 		}
@@ -164,7 +167,7 @@ Mock.prototype = {
 	{
 		var getter = this.__getters[aName];
 		if (!getter || !('expect' in getter)) {
-			getter = new GetterMock(aAssertions || this.__assert);
+			getter = new GetterMock(aName, aAssertions || this.__assert);
 			this.__getters[aName] = getter;
 			this.__defineGetter__(aName, getter);
 		}
@@ -174,7 +177,7 @@ Mock.prototype = {
 	{
 		var setter = this.__setters[aName];
 		if (!setter || !('expect' in setter)) {
-			setter = new SetterMock(aAssertions || this.__assert);
+			setter = new SetterMock(aName, aAssertions || this.__assert);
 			this.__setters[aName] = setter;
 			this.__defineSetter__(aName, setter);
 		}
@@ -458,14 +461,18 @@ ExpectedCall.prototype = {
 	}
 };
 
-function FunctionMock(aAssertions)
+function FunctionMock(aName, aAssertions)
 {
-	this.init(aAssertions);
+	if (aName && typeof aName != 'string')
+		[aAssertions, aName] = [aAssertions, null];
+	this.init(aName, aAssertions);
 	return this.createFunction();
 }
 FunctionMock.prototype = {
-	init : function(aAssertions)
+	defaultName : bundle.getString('function_mock_default_name'),
+	init : function(aName, aAssertions)
 	{
+		this.name = aName || this.defaultName || '';
 		this.inExpectationChain = false;
 		this.expectedCalls = [];
 		this.anyCall = null;
@@ -557,7 +564,7 @@ FunctionMock.prototype = {
 	expectThrows : function(aArguments, aExceptionClass, aExceptionMessage)
 	{
 		if (!aExceptionClass)
-			throw new Error(bundle.getString('mock_error_no_exception'));
+			throw new Error(bundle.getFormattedString('mock_error_no_exception', [this.name]));
 		return this.addExpectedCall({
 				arguments        : aArguments,
 				exceptionClass   : aExceptionClass,
@@ -587,9 +594,9 @@ FunctionMock.prototype = {
 	andStub : function(aHandler)
 	{
 		if (!aHandler)
-			throw new Error(bundle.getFormattedString('function_mock_no_stub', ['andStub']));
+			throw new Error(bundle.getFormattedString('function_mock_no_stub', [this.name, 'andStub']));
 		if (typeof aHandler != 'function')
-			throw new Error(bundle.getFormattedString('function_mock_not_stub', ['andStub', utils.inspect(aHandler)]));
+			throw new Error(bundle.getFormattedString('function_mock_not_stub', [this.name, 'andStub', utils.inspect(aHandler)]));
 		var call = this.lastExpectedCall;
 		call.addHandler(aHandler);
 		return this;
@@ -603,9 +610,9 @@ FunctionMock.prototype = {
 	then : function(aHandler)
 	{
 		if (!aHandler)
-			throw new Error(bundle.getFormattedString('function_mock_no_stub', ['then']));
+			throw new Error(bundle.getFormattedString('function_mock_no_stub', [this.name, 'then']));
 		if (typeof aHandler != 'function')
-			throw new Error(bundle.getFormattedString('function_mock_not_stub', ['then', utils.inspect(aHandler)]));
+			throw new Error(bundle.getFormattedString('function_mock_not_stub', [this.name, 'then', utils.inspect(aHandler)]));
 		return this.andStub.apply(this, arguments);
 	},
 
@@ -613,21 +620,21 @@ FunctionMock.prototype = {
 	{
 		var call = this.getCurrentCall(bundle.getFormattedString(
 						'function_mock_unexpected_call',
-						[utils.inspect(aArguments)]
+						[this.name, utils.inspect(aArguments)]
 					));
 
 		if (!call.isAnyCall() && !call.isOneTimeAnyCall())
 			this._assert.equals(
 				this.formatArgumentsArray(call.arguments, aArguments),
 				aArguments,
-				bundle.getString('function_mock_wrong_arguments')
+				bundle.getFormattedString('function_mock_wrong_arguments', [this.name])
 			);
 
 		if ('context' in call)
 			this._assert.equals(
 				call.context,
 				aContext,
-				bundle.getFormattedString('function_mock_wrong_context', [utils.inspect(aArguments)])
+				bundle.getFormattedString('function_mock_wrong_context', [this.name, utils.inspect(aArguments)])
 			);
 
 		call.onCall(this, aArguments);
@@ -654,8 +661,15 @@ FunctionMock.prototype = {
 	assert : function()
 	{
 		if (this.errorsCount)
-			throw new Error(bundle.getFormattedString('function_mock_assert_error', [this.errorsCount]));
-		this._assert.equals(this.totalCount, this.calledCount, bundle.getString('function_mock_assert_fail'));
+			throw new Error(bundle.getFormattedString(
+						'function_mock_assert_error',
+						[this.name, this.errorsCount]
+					));
+		this._assert.equals(
+			this.totalCount,
+			this.calledCount,
+			bundle.getFormattedString('function_mock_assert_fail', [this.name])
+		);
 	},
 	verify : function() { this.assert(); },
 	export : function(aTarget)
@@ -678,13 +692,16 @@ FunctionMock.prototype = {
 
 var MockFunction = FunctionMock;
 
-function GetterMock(aAssertions)
+function GetterMock(aName, aAssertions)
 {
-	this.init(aAssertions);
+	if (aName && typeof aName != 'string')
+		[aAssertions, aName] = [aAssertions, null];
+	this.init(aName, aAssertions);
 	return this.createFunction();
 }
 GetterMock.prototype = {
 	__proto__ : FunctionMock.prototype,
+	defaultName : bundle.getString('getter_mock_default_name'),
 	expect : function(aReturnValue)
 	{
 		var args = [];
@@ -708,7 +725,7 @@ GetterMock.prototype = {
 			[args, aExceptionClass, aExceptionMessage] = Array.slice(arguments);
 		}
 		if (!aExceptionClass)
-			throw new Error(bundle.getString('mock_error_no_exception'));
+			throw new Error(bundle.getFormattedString('mock_error_no_exception', [this.name]));
 		return this.addExpectedCall({
 				arguments        : args,
 				exceptionClass   : aExceptionClass,
@@ -717,13 +734,13 @@ GetterMock.prototype = {
 	},
 	onCall : function(aContext)
 	{
-		var call = this.getCurrentCall(bundle.getString('getter_mock_unexpected_call'));
+		var call = this.getCurrentCall(bundle.getFormattedString('getter_mock_unexpected_call', [this.name]));
 
 		if ('context' in call)
 			this._assert.equals(
 				call.context,
 				aContext,
-				bundle.getString('getter_mock_wrong_context')
+				bundle.getFormattedString('getter_mock_wrong_context', [this.name])
 			);
 
 		call.onCall(this, []);
@@ -736,18 +753,28 @@ GetterMock.prototype = {
 	assert : function()
 	{
 		if (this.errorsCount)
-			throw new Error(bundle.getFormattedString('getter_mock_assert_error', [this.errorsCount]));
-		this._assert.equals(this.totalCount, this.calledCount, bundle.getString('getter_mock_assert_fail'));
+			throw new Error(bundle.getFormattedString(
+						'getter_mock_assert_error',
+						[this.name, this.errorsCount]
+					));
+		this._assert.equals(
+			this.totalCount,
+			this.calledCount,
+			bundle.getFormattedString('getter_mock_assert_fail', [this.name])
+		);
 	}
 };
 
-function SetterMock(aAssertions)
+function SetterMock(aName, aAssertions)
 {
-	this.init(aAssertions);
+	if (aName && typeof aName != 'string')
+		[aAssertions, aName] = [aAssertions, null];
+	this.init(aName, aAssertions);
 	return this.createFunction();
 }
 SetterMock.prototype = {
 	__proto__ : FunctionMock.prototype,
+	defaultName : bundle.getString('setter_mock_default_name'),
 	expect : function(aArgument, aReturnValue)
 	{
 		if (aArgument == Mock.prototype.NEVER)
@@ -764,7 +791,7 @@ SetterMock.prototype = {
 	expectThrows : function(aArgument, aExceptionClass, aExceptionMessage)
 	{
 		if (!aExceptionClass)
-			throw new Error(bundle.getString('mock_error_no_exception'));
+			throw new Error(bundle.getFormattedString('mock_error_no_exception', [this.name]));
 		return this.addExpectedCall({
 				arguments        : [aArgument],
 				exceptionClass   : aExceptionClass,
@@ -777,21 +804,21 @@ SetterMock.prototype = {
 
 		var call = this.getCurrentCall(bundle.getFormattedString(
 				'setter_mock_unexpected_call',
-				[utils.inspect(aArguments[0])]
+				[this.name, utils.inspect(aArguments[0])]
 			));
 
 		if (!call.isAnyCall() && !call.isOneTimeAnyCall())
 			this._assert.equals(
 				this.formatArgumentsArray(call.arguments, aArguments),
 				aArguments,
-				bundle.getString('setter_mock_wrong_value')
+				bundle.getFormattedString('setter_mock_wrong_value', [this.name])
 			);
 
 		if ('context' in call)
 			this._assert.equals(
 				call.context,
 				aContext,
-				bundle.getFormattedString('setter_mock_wrong_context', [utils.inspect(aArguments[0])])
+				bundle.getFormattedString('setter_mock_wrong_context', [this.name, utils.inspect(aArguments[0])])
 			);
 
 		call.onCall(this, aArguments);
@@ -804,8 +831,15 @@ SetterMock.prototype = {
 	assert : function()
 	{
 		if (this.errorsCount)
-			throw new Error(bundle.getFormattedString('setter_mock_assert_error', [this.errorsCount]));
-		this._assert.equals(this.totalCount, this.calledCount, bundle.getString('setter_mock_assert_fail'));
+			throw new Error(bundle.getFormattedString(
+						'setter_mock_assert_error',
+						[this.name, this.errorsCount]
+					));
+		this._assert.equals(
+			this.totalCount,
+			this.calledCount,
+			bundle.getFormattedString('setter_mock_assert_fail', [this.name])
+		);
 	}
 };
 
