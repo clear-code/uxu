@@ -487,6 +487,12 @@ function test_mockAccessOrder()
 	);
 }
 
+function test_TypeOf()
+{
+	assert.isInstanceOf(TypeOf, TypeOf.isA(Array));
+	assert.isInstanceOf(TypeOf, new TypeOf(Array));
+	assert.isInstanceOf(TypeOf, TypeOf(Array));
+}
 
 function test_JSMockStyle()
 {

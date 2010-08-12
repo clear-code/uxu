@@ -708,8 +708,13 @@ SetterMock.prototype = {
 
 // JSMock API
 function TypeOf(aConstructor) {
-	this.expectedConstructor = aConstructor;
+	if (this instanceof TypeOf) {
+		this.expectedConstructor = aConstructor;
+	}
+	else {
+		return new TypeOf(aConstructor);
+	}
 }
 TypeOf.isA = function(aConstructor) {
-	return new TypeOf(aConstructor);
+	return TypeOf(aConstructor);
 };
