@@ -35,7 +35,7 @@ MockManager.prototype = {
 	Mock : function(aName, aSource)
 	{
 		var mock = new Mock(aName, aSource);
-		mock._mock.__assert = this._assert;
+		mock.__assert = this._assert;
 		this._mocks.push(mock);
 		return mock;
 	},
