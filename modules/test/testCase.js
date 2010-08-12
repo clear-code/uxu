@@ -783,6 +783,25 @@ TestCase.prototype = {
 
 		this._shuffleTests();
 
+		var testsToBeSkipped = this._tests.filter(function(aTest) {
+				if (aTest.targetProduct &&
+					String(aTest.targetProduct).toLowerCase() != this._utils.product.toLowerCase())
+					return true;
+
+				if (!this._checkPriorityToExec(aTest))
+					return true;
+
+				var shouldSkip = aTest.shouldSkip;
+				return (shouldSkip !== void(0) &&
+						typeof shouldSkip != 'function' &&
+						!shouldSkip);
+			}, this)
+			.map(function(aTest) {
+				aTest.shouldSkip = true;
+				return aTest;
+			}, this);
+		var allTestsToBeSkipped = testsToBeSkipped.length == this._tests.length;
+
 		var testIndex = 0;
 		var current;
 		var testReport = { report : null };
@@ -869,6 +888,10 @@ TestCase.prototype = {
 			doStartUp : function(aContinuation)
 			{
 	 			testCaseReport.report = new ns.Report();
+				if (allTestsToBeSkipped) {
+					aContinuation('ko');
+					return;
+				}
 				doPreOrPostProcess(
 					aContinuation,
 					self._startUp,
@@ -887,15 +910,6 @@ TestCase.prototype = {
 			},
 			checkDoOrSkip : function(aContinuation)
 			{
-				if (current.targetProduct &&
-					String(current.targetProduct).toLowerCase() != self._utils.product.toLowerCase()) {
-					aContinuation('ko');
-					return;
-				}
-				if (!self._checkPriorityToExec(current)) {
-					aContinuation('ko');
-					return;
-				}
 				var shouldSkip = current.shouldSkip;
 				if (shouldSkip !== void(0)) {
 					if (typeof shouldSkip == 'function') {
@@ -1062,6 +1076,10 @@ TestCase.prototype = {
 			},
 			doShutDown : function(aContinuation)
 			{
+				if (allTestsToBeSkipped) {
+					aContinuation('ok');
+					return;
+				}
 				doPreOrPostProcess(
 					aContinuation,
 					self._shutDown,
@@ -1073,7 +1091,8 @@ TestCase.prototype = {
 			},
 			tearDownDaemons : function(aContinuation)
 			{
-				if (!ns.ServerUtils.prototype.isHttpServerRunning.call(self.suite.serverUtils)) {
+				if (allTestsToBeSkipped ||
+					!ns.ServerUtils.prototype.isHttpServerRunning.call(self.suite.serverUtils)) {
 					aContinuation('ok');
 					return;
 				}
