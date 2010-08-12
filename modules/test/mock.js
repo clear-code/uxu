@@ -32,28 +32,32 @@ MockManager.prototype = {
 				aMock.assert();
 		}, this);
 	},
-	Mock : function(aSource)
+	Mock : function(aName, aSource)
 	{
-		var mock = new Mock(aSource, this._assert);
+		var mock = new Mock(aName, aSource);
+		mock._mock.__assert = this._assert;
 		this._mocks.push(mock);
 		return mock;
 	},
-	FunctionMock : function()
+	FunctionMock : function(aName, aSource)
 	{
-		var mock = new FunctionMock(this._assert);
+		var mock = new FunctionMock(aName, aSource);
+		mock._mock._assert = this._assert;
 		this._mocks.push(mock);
 		return mock;
 	},
 	MockFunction : function() { return this.FunctionMock.apply(this, arguments); },
-	GetterMock : function()
+	GetterMock : function(aName, aSource)
 	{
-		var mock = new GetterMock(this._assert);
+		var mock = new GetterMock(aName, aSource);
+		mock._mock._assert = this._assert;
 		this._mocks.push(mock);
 		return mock;
 	},
-	SetterMock : function()
+	SetterMock : function(aName, aSource)
 	{
-		var mock = new SetterMock(this._assert);
+		var mock = new SetterMock(aName, aSource);
+		mock._mock._assert = this._assert;
 		this._mocks.push(mock);
 		return mock;
 	},
