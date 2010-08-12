@@ -132,6 +132,13 @@ function createFunctionMock()
 	return mock;
 }
 
+function test_functionMock_name()
+{
+	assert.equals('custom name', (new FunctionMock('custom name'))._mock.name);
+	var f = function NamedFunction() {};
+	assert.equals('NamedFunction', (new FunctionMock(f))._mock.name);
+}
+
 function test_functionMock_expect()
 {
 	var mock = createFunctionMock();
@@ -309,6 +316,13 @@ function createGetterMock()
 	return mock;
 }
 
+function test_getterMock_name()
+{
+	assert.equals('custom name', (new GetterMock('custom name'))._mock.name);
+	var f = function NamedGetter() {};
+	assert.equals('NamedGetter', (new GetterMock(f))._mock.name);
+}
+
 function test_getterMock_expect()
 {
 	var mock = createGetterMock();
@@ -410,6 +424,13 @@ function createSetterMock()
 	var mock = new SetterMock();
 	assert.isFunction(mock);
 	return mock;
+}
+
+function test_setterMock_name()
+{
+	assert.equals('custom name', (new SetterMock('custom name'))._mock.name);
+	var f = function NamedSetter() {};
+	assert.equals('NamedSetter', (new SetterMock(f))._mock.name);
 }
 
 function test_setterMock_expect()
@@ -567,6 +588,20 @@ function test_createMock()
 			mock.slice(0);
 		}
 	);
+}
+
+function test_mockName()
+{
+	assert.equals('custom name', (new Mock('custom name')).__name);
+	assert.equals('Array', (new Mock(Array)).__name);
+
+	var mock = new Mock();
+	mock.expect('method', true, true);
+	assert.equals('method', mock.method._mock.name);
+	mock.expectGet('getter', true);
+	assert.equals('getter', mock.__lookupGetter__('getter')._mock.name);
+	mock.expectSet('setter', true, false);
+	assert.equals('setter', mock.__lookupSetter__('setter')._mock.name);
 }
 
 function test_mockMethod()
