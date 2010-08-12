@@ -221,26 +221,28 @@ Mock.prototype = {
 
 		var expectArgs = Array.slice(arguments, 1);
 		if (!expectArgs.length) expectArgs.push([]);
-		var call = this._addMethod(aName).expect.apply(null, expectArgs);
+		var method = this._addMethod(aName);
+		var call = method.expect.apply(null, expectArgs);
 		if (call) {
 			this.__expectedCalls.push(call);
 			let self = this;
 			call.addHandler(function() { self.__handleCall.call(self, this.firstExpectedCall); });
 		}
-		return call;
+		return method;
 	},
 	_expect : function() { return this.expect.apply(this, arguments); },
 	expects : function() { return this.expect.apply(this, arguments); },
 	_expects : function() { return this.expect.apply(this, arguments); },
 	expectThrows : function(aName)
 	{
-		var call = this._addMethod(aName).expectThrows.apply(null, Array.slice(arguments, 1));
+		var method = this._addMethod(aName);
+		var call = method.expectThrows.apply(null, Array.slice(arguments, 1));
 		if (call) {
 			this.__expectedCalls.push(call);
 			let self = this;
 			call.addHandler(function() { self.__handleCall.call(self, this.firstExpectedCall); });
 		}
-		return call;
+		return method;
 	},
 	_expectThrows : function() {return  this.expectThrows.apply(this, arguments); },
 	expectThrow : function() { return this.expectThrows.apply(this, arguments); },
@@ -254,24 +256,26 @@ Mock.prototype = {
 	{
 		var expectArgs = Array.slice(arguments, 1);
 		if (!expectArgs.length) expectArgs.push(void(0));
-		var call = this._addGetter(aName).expect.apply(null, expectArgs);
+		var getter = this._addGetter(aName);
+		var call = getter.expect.apply(null, expectArgs);
 		if (call) {
 			this.__expectedCalls.push(call);
 			let self = this;
 			call.addHandler(function() { self.__handleCall.call(self, this.firstExpectedCall); });
 		}
-		return call;
+		return getter;
 	},
 	_expectGet : function() { return this.expectGet.apply(this, arguments); },
 	expectGetThrows : function(aName)
 	{
-		var call = this._addGetter(aName).expectThrows.apply(null, Array.slice(arguments, 1));
+		var getter = this._addGetter(aName);
+		var call = getter.expectThrows.apply(null, Array.slice(arguments, 1));
 		if (call) {
 			this.__expectedCalls.push(call);
 			let self = this;
 			call.addHandler(function() { self.__handleCall.call(self, this.firstExpectedCall); });
 		}
-		return call;
+		return getter;
 	},
 	_expectGetThrows : function() { return this.expectGetThrows.apply(this, arguments); },
 	expectGetThrow : function() { return this.expectGetThrows.apply(this, arguments); },
@@ -285,24 +289,26 @@ Mock.prototype = {
 	{
 		var expectArgs = Array.slice(arguments, 1);
 		if (!expectArgs.length) expectArgs.push(void(0));
-		var call = this._addSetter(aName).expect.apply(null, expectArgs);
+		var setter = this._addSetter(aName);
+		var call = setter.expect.apply(null, expectArgs);
 		if (call) {
 			this.__expectedCalls.push(call);
 			let self = this;
 			call.addHandler(function() { self.__handleCall.call(self, this.firstExpectedCall); });
 		}
-		return call;
+		return setter;
 	},
 	_expectSet : function() { return this.expectSet.apply(this, arguments); },
 	expectSetThrows : function(aName)
 	{
-		var call = this._addSetter(aName).expectThrows.apply(null, Array.slice(arguments, 1));
+		var setter = this._addSetter(aName);
+		var call = setter.expectThrows.apply(null, Array.slice(arguments, 1));
 		if (call) {
 			this.__expectedCalls.push(call);
 			let self = this;
 			call.addHandler(function() { self.__handleCall.call(self, this.firstExpectedCall); });
 		}
-		return call;
+		return setter;
 	},
 	_expectSetThrows : function() { return this.expectSetThrows.apply(this, arguments); },
 	expectSetThrow : function() { return this.expectSetThrows.apply(this, arguments); },
