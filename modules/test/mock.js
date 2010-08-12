@@ -167,7 +167,7 @@ Mock.prototype = {
 	{
 		var method = this[aName];
 		if (!method || !('expect' in method)) {
-			method = new FunctionMock(aName, aAssertions || this.__assert);
+			method = new FunctionMock(aName, null, aAssertions || this.__assert);
 			this.__methods[aName] = method;
 			this[aName] = method;
 		}
@@ -177,7 +177,7 @@ Mock.prototype = {
 	{
 		var getter = this.__getters[aName];
 		if (!getter || !('expect' in getter)) {
-			getter = new GetterMock(aName, aAssertions || this.__assert);
+			getter = new GetterMock(aName, null, aAssertions || this.__assert);
 			this.__getters[aName] = getter;
 			this.__defineGetter__(aName, getter);
 		}
@@ -187,7 +187,7 @@ Mock.prototype = {
 	{
 		var setter = this.__setters[aName];
 		if (!setter || !('expect' in setter)) {
-			setter = new SetterMock(aName, aAssertions || this.__assert);
+			setter = new SetterMock(aName, null, aAssertions || this.__assert);
 			this.__setters[aName] = setter;
 			this.__defineSetter__(aName, setter);
 		}
@@ -471,18 +471,20 @@ ExpectedCall.prototype = {
 	}
 };
 
-function FunctionMock(aName, aAssertions)
+function FunctionMock(aName, aSource, aAssertions)
 {
 	if (aName && typeof aName != 'string')
-		[aAssertions, aName] = [aAssertions, null];
+		[aSource, aAssertions, aName] = [aName, aSource, null];
 	this.init(aName, aAssertions);
 	return this.createFunction();
 }
 FunctionMock.prototype = {
 	defaultName : bundle.getString('function_mock_default_name'),
-	init : function(aName, aAssertions)
+	init : function(aName, aSource, aAssertions)
 	{
+		aName = aName || (String(aSource).match(/function\s*([^\(]*)\s*\(/) && RegExp.$1);
 		this.name = aName || this.defaultName || '';
+
 		this.inExpectationChain = false;
 		this.expectedCalls = [];
 		this.anyCall = null;
@@ -702,10 +704,10 @@ FunctionMock.prototype = {
 
 var MockFunction = FunctionMock;
 
-function GetterMock(aName, aAssertions)
+function GetterMock(aName, aSource, aAssertions)
 {
 	if (aName && typeof aName != 'string')
-		[aAssertions, aName] = [aAssertions, null];
+		[aSource, aAssertions, aName] = [aName, aSource, null];
 	this.init(aName, aAssertions);
 	return this.createFunction();
 }
@@ -775,10 +777,10 @@ GetterMock.prototype = {
 	}
 };
 
-function SetterMock(aName, aAssertions)
+function SetterMock(aName, aSource, aAssertions)
 {
 	if (aName && typeof aName != 'string')
-		[aAssertions, aName] = [aAssertions, null];
+		[aSource, aAssertions, aName] = [aName, aSource, null];
 	this.init(aName, aAssertions);
 	return this.createFunction();
 }

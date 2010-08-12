@@ -557,11 +557,11 @@ function test_createMock()
 	var mock = new Mock(window);
 	assert.isFunction(mock.alert);
 
-	mock = new Mock([]);
+	mock = new Mock('mock array', []);
 	assert.raises(
 		bundle.getFormattedString(
 			'mock_unexpected_call',
-			['slice', utils.inspect([0])]
+			['mock array', 'slice', utils.inspect([0])]
 		),
 		function() {
 			mock.slice(0);
