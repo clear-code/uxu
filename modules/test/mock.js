@@ -104,8 +104,11 @@ MockManager.prototype = {
 	}
 };
 
-function Mock(aSource, aAssertions)
+function Mock(aName, aSource, aAssertions)
 {
+	if (aName && typeof aName != 'string')
+		[aSource, aAssertions, aName] = [aName, aSource, null];
+	this.__name = aName || this.__defaultName;
 	this.__methods = {};
 	this.__getters = {};
 	this.__setters = {};
@@ -117,9 +120,15 @@ function Mock(aSource, aAssertions)
 		switch (typeof aSource)
 		{
 			case 'function':
+				this.__name = this.__name ||
+				              (String(aSource).match(/function\s*([^\(]*)\s*\(/) && RegExp.$1) ||
+				              this.__defaultName;
 				this.__inherit(aSource.prototype);
 				break;
 			case 'object':
+				this.__name = this.__name ||
+				              (String(aSource.constructor).match(/function\s*([^\(]*)\s*\(/) && RegExp.$1) ||
+				              this.__defaultName;
 				this.__inherit(aSource);
 				break;
 		}
@@ -131,6 +140,7 @@ Mock.prototype = {
 	ALWAYS      : '11941072-0dc4-406b-a392-f57d36bb0b27',
 	ONETIME     : '079e5fb7-0b5e-4139-b365-48455901f17b',
 	NEVER       : '5b9a1df9-2c17-4fb4-9b3d-cdb860bf39a6',
+	__defaultName : bundle.getString('mock_default_name'),
 	__inherit : function(aSource)
 	{
 		for (let i in aSource)
@@ -188,7 +198,7 @@ Mock.prototype = {
 	{
 		throw new Error(bundle.getFormattedString(
 					'mock_unexpected_call',
-					[aName, utils.inspect(aArguments)]
+					[this.__name, aName, utils.inspect(aArguments)]
 				));
 	},
 
