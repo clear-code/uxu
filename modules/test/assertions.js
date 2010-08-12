@@ -671,8 +671,10 @@ Assertions.prototype = {
 		var actualDelta = aEndValue - aStartValue;
 		if (actualDelta != aExpectedDelta) {
 			this._fail({
-			     	expected : aStartValue + aExpectedDelta,
-			     	actual   : aEndValue
+			     	expectedRaw : aExpectedDelta,
+			     	expected    : aExpectedDelta,
+			     	actualRaw   : actualDelta,
+			     	actual      : actualDelta
 			     },
 			     bundle.getString('assert_difference'),
 			     aMessage);
@@ -735,7 +737,8 @@ Assertions.prototype = {
 
 		if (aStartValue != aEndValue) {
 			this._fail({
-			     	actual   : bundle.getFormattedString('assert_no_difference_actual', [aEndValue - aStartValue])
+			     	actualRaw : aEndValue - aStartValue,
+			     	actual    : bundle.getFormattedString('assert_no_difference_actual', [aEndValue - aStartValue])
 			     },
 			     bundle.getString('assert_no_difference'),
 			     aMessage);
