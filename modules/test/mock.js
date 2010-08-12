@@ -65,6 +65,11 @@ MockManager.prototype = {
 	{
 		return this.Mock(aSource);
 	},
+	// JsMockito API
+	when : function(aMock)
+	{
+		return aMock.expects();
+	},
 	export : function(aTarget)
 	{
 		var self = this;
@@ -80,6 +85,12 @@ MockManager.prototype = {
 		// JSMock
 		aTarget.TypeOf = TypeOf;
 		aTarget.MockControl = function() { return self; };
+
+		// JsMockito
+		aTarget.mock = aTarget.Mock;
+		aTarget.mockFunction = aTarget.FunctionMock;
+		aTarget.when = function() { return self.when.apply(self, arguments); };
+		aTarget.anything = function() { return Mock.prototype.ANY; };
 	}
 };
 
@@ -178,9 +189,11 @@ Mock.prototype = {
 	expect : function(aName)
 	{
 		if (!arguments.length)
-			return this._JSMockExpects();
+			return this._createExpectingChain();
 
-		var call = this._addMethod(aName).expect.apply(null, Array.slice(arguments, 1));
+		var expectArgs = Array.slice(arguments, 1);
+		if (!expectArgs.length) expectArgs.push([]);
+		var call = this._addMethod(aName).expect.apply(null, expectArgs);
 		if (call) {
 			this.__expectedCalls.push(call);
 			let self = this;
@@ -211,7 +224,9 @@ Mock.prototype = {
 
 	expectGet : function(aName)
 	{
-		var call = this._addGetter(aName).expect.apply(null, Array.slice(arguments, 1));
+		var expectArgs = Array.slice(arguments, 1);
+		if (!expectArgs.length) expectArgs.push(void(0));
+		var call = this._addGetter(aName).expect.apply(null, expectArgs);
 		if (call) {
 			this.__expectedCalls.push(call);
 			let self = this;
@@ -240,7 +255,9 @@ Mock.prototype = {
 
 	expectSet : function(aName)
 	{
-		var call = this._addSetter(aName).expect.apply(null, Array.slice(arguments, 1));
+		var expectArgs = Array.slice(arguments, 1);
+		if (!expectArgs.length) expectArgs.push(void(0));
+		var call = this._addSetter(aName).expect.apply(null, expectArgs);
 		if (call) {
 			this.__expectedCalls.push(call);
 			let self = this;
@@ -272,13 +289,15 @@ Mock.prototype = {
 	{
 		this._addMethod(aName);
 	},
-	_JSMockExpects : function()
+
+	// JSMock, JsMockito
+	_createExpectingChain : function()
 	{
 		return {
 			_mock : this,
 			__noSuchMethod__ : function(aName, aArguments) {
 				var method = this._mock._addMethod(aName);
-				method.expects(aArguments);
+				method.expect(aArguments);
 				return method;
 			}
 		};
@@ -383,7 +402,8 @@ ExpectedCall.prototype = {
 	onCall : function(aMock, aArguments)
 	{
 		this.handlers.forEach(function(aHandler) {
-			aHandler.apply(aMock, aArguments);
+			if (aHandler && typeof aHandler == 'function')
+				aHandler.apply(aMock, aArguments);
 		}, aMock);
 	},
 	finish : function(aArguments)
@@ -481,10 +501,22 @@ FunctionMock.prototype = {
 			return call;
 		}
 	},
+	// JSMock, JsMockito
+	_createExpectingChain : function()
+	{
+		var self = this;
+		return function() {
+			self.expect(Array.slice(arguments));
+			return self;
+		};
+	},
 	expect : function(aArguments, aReturnValue)
 	{
+		if (!arguments.length)
+			return this._createExpectingChain();
+
 		return this.addExpectedCall({
-				arguments   : aArguments || [],
+				arguments   : aArguments,
 				returnValue : aReturnValue
 			});
 	},
@@ -494,7 +526,7 @@ FunctionMock.prototype = {
 		if (!aExceptionClass)
 			throw new Error(bundle.getString('mock_error_no_exception'));
 		return this.addExpectedCall({
-				arguments        : aArguments || [],
+				arguments        : aArguments,
 				exceptionClass   : aExceptionClass,
 				exceptionMessage : aExceptionMessage
 			});
@@ -510,7 +542,7 @@ FunctionMock.prototype = {
 		call.returnValue = aValue;
 		return this;
 	},
-	andReturns : function() { return this.andReturn.apply(this, arguments); },
+	andReturns : function() { return this.andReturn.apply(this, arguments); }, // extended from JSMock
 	andThrow : function(aExceptionClass, aExceptionMessage)
 	{
 		var call = this.lastExpectedCall;
@@ -518,13 +550,20 @@ FunctionMock.prototype = {
 		call.exceptionMessage = aExceptionMessage;
 		return this;
 	},
-	andThrows : function() { return this.andReturn.apply(this, arguments); },
+	andThrows : function() { return this.andReturn.apply(this, arguments); }, // extended from JSMock
 	andStub : function(aHandler)
 	{
 		var call = this.lastExpectedCall;
 		call.addHandler(aHandler);
 		return this;
 	},
+
+	// JsMockito API
+	thenReturn : function() { return this.andReturn.apply(this, arguments); },
+	thenReturns : function() { return this.andReturn.apply(this, arguments); }, // extended from JsMockito
+	thenThrow : function() { return this.andReturn.apply(this, arguments); },
+	thenThrows : function() { return this.andReturn.apply(this, arguments); }, // extended from JsMockito
+	then : function() { return this.andStub.apply(this, arguments); },
 
 	onCall : function(aArguments)
 	{
@@ -533,7 +572,6 @@ FunctionMock.prototype = {
 						[ns.utils.inspect(aArguments)]
 					));
 
-		var call = this.anyCall || this.firstExpectedCall;
 		if (!call.isAnyCall() && !call.isOneTimeAnyCall())
 			this._assert.equals(
 				this.formatArgumentsArray(call.arguments, aArguments),
@@ -577,7 +615,10 @@ FunctionMock.prototype = {
 		 'expectThrows', 'expectThrow',
 		 'andReturn', 'andReturns',
 		 'andThrow', 'andThrows',
-		 'andStub'].forEach(function(aMethod) {
+		 'andStub',
+		 'thenReturn', 'thenReturns',
+		 'thenThrow', 'thenThrows',
+		 'then'].forEach(function(aMethod) {
 			aTarget[aMethod] = function() { return self[aMethod].apply(self, arguments); }
 			aTarget['_'+aMethod] = function() { return self[aMethod].apply(self, arguments); }
 		}, this);
@@ -595,6 +636,9 @@ GetterMock.prototype = {
 	__proto__ : FunctionMock.prototype,
 	expect : function(aReturnValue)
 	{
+		if (!arguments.length)
+			return this._createExpectingChain();
+
 		var args = [];
 		if (
 			(aReturnValue == Mock.prototype.ALWAYS ||
@@ -657,6 +701,9 @@ SetterMock.prototype = {
 	__proto__ : FunctionMock.prototype,
 	expect : function(aArgument, aReturnValue)
 	{
+		if (!arguments.length)
+			return this._createExpectingChain();
+
 		var call = this.addExpectedCall({
 				arguments   : [aArgument],
 				returnValue : aReturnValue

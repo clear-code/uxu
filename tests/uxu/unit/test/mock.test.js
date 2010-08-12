@@ -1,6 +1,7 @@
 var topDir = baseURL+'../../../../';
 
 var ns = utils.import(topDir+'modules/test/mock.js', {});
+var MockManager = ns.MockManager;
 var Mock = ns.Mock;
 var FunctionMock = ns.FunctionMock;
 var GetterMock = ns.GetterMock;
@@ -79,8 +80,8 @@ function test_functionMock_expect()
 {
 	var mock = createFunctionMock();
 	assertCallError(mock);
-	mock.expect();
-	assertCallSuccess(mock);
+	mock.expect(0);
+	assertCallSuccess(mock, [0]);
 	assertCallError(mock);
 
 	mock.expect(29);
@@ -197,8 +198,8 @@ function test_getterMock_expect()
 {
 	var mock = createGetterMock();
 	assertCallError(mock);
-	mock.expect();
-	assertCallSuccess(mock);
+	mock.expect(0);
+	assertCallSuccess(mock, [0]);
 	assertCallError(mock);
 
 	mock.expect(29);
@@ -237,15 +238,15 @@ function test_getterMock_expectThrows()
 function test_getterMock_assert()
 {
 	var mock = createGetterMock();
-	mock.expect();
-	mock.expect();
+	mock.expect(0);
+	mock.expect(0);
 	mock();
 	mock();
 	assertSuccess(mock);
 
 	mock = createGetterMock();
-	mock.expect();
-	mock.expect();
+	mock.expect(0);
+	mock.expect(0);
 	mock();
 	assertFail(mock);
 }
@@ -262,8 +263,8 @@ function test_setterMock_expect()
 {
 	var mock = createSetterMock();
 	assertCallError(mock);
-	mock.expect();
-	assertCallSuccess(mock);
+	mock.expect(0);
+	assertCallSuccess(mock, [0], 0);
 	assertCallError(mock);
 
 	mock.expect(29);
@@ -349,16 +350,16 @@ function test_setterMock_expectThrows()
 function test_setterMock_assert()
 {
 	var mock = createSetterMock();
-	mock.expect();
-	mock.expect();
-	mock();
-	mock();
+	mock.expect(0);
+	mock.expect(0);
+	mock(0);
+	mock(0);
 	assertSuccess(mock);
 
 	mock = createSetterMock();
-	mock.expect();
-	mock.expect();
-	mock();
+	mock.expect(0);
+	mock.expect(0);
+	mock(0);
 	assertFail(mock);
 }
 
