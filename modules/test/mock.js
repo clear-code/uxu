@@ -23,43 +23,42 @@ function MockManager(aAssertions)
 MockManager.prototype = {
 	clear : function()
 	{
-		this._mocks = [];
+		this.mocks = [];
 	},
 	assertAll : function()
 	{
-		this._mocks.forEach(function(aMock) {
+		this.mocks.forEach(function(aMock) {
 			if ('assert' in aMock && typeof aMock.assert == 'function')
 				aMock.assert();
 		}, this);
 	},
 	addMock : function(aMock)
 	{
-		if (this._mocks.indexOf(aMock) < 0)
-			this._mocks.push(aMock);
+		if (this.mocks.indexOf(aMock) < 0)
+			this.mocks.push(aMock);
 	},
-	Mock : function(aName, aSource)
+	createMock : function(aName, aSource)
 	{
 		var mock = new Mock(aName, aSource);
 		mock._assert = this._assert;
 		this.addMock(mock);
 		return mock;
 	},
-	FunctionMock : function(aName, aSource)
+	createFunctionMock : function(aName, aSource)
 	{
 		var mock = new FunctionMock(aName, aSource);
 		mock._mock._assert = this._assert;
 		this.addMock(mock);
 		return mock;
 	},
-	MockFunction : function() { return this.FunctionMock.apply(this, arguments); },
-	GetterMock : function(aName, aSource)
+	createGetterMock : function(aName, aSource)
 	{
 		var mock = new GetterMock(aName, aSource);
 		mock._mock._assert = this._assert;
 		this.addMock(mock);
 		return mock;
 	},
-	SetterMock : function(aName, aSource)
+	createSetterMock : function(aName, aSource)
 	{
 		var mock = new SetterMock(aName, aSource);
 		mock._mock._assert = this._assert;
@@ -70,10 +69,6 @@ MockManager.prototype = {
 	verify : function()
 	{
 		this.assertAll();
-	},
-	createMock : function(aSource)
-	{
-		return this.Mock(aSource);
 	},
 	// JsMockito API
 	when : function(aMock)
@@ -88,7 +83,7 @@ MockManager.prototype = {
 	{
 		var self = this;
 
-		aTarget.Mock = function() { return self.Mock.apply(self, arguments); };
+		aTarget.Mock = function() { return self.createMock.apply(self, arguments); };
 		aTarget.Mock.prototype = Mock.prototype;
 		Mock.export(aTarget.Mock, this._assert);
 		aTarget.Mock.getMockFor = function(aObject, aName) {
@@ -97,12 +92,12 @@ MockManager.prototype = {
 			return mock;
 		};
 
-		aTarget.FunctionMock = function() { return self.FunctionMock.apply(self, arguments); };
+		aTarget.FunctionMock = function() { return self.createFunctionMock.apply(self, arguments); };
 		aTarget.FunctionMock.prototype = FunctionMock.prototype;
 		aTarget.MockFunction = aTarget.FunctionMock;
-		aTarget.GetterMock = function() { return self.GetterMock.apply(self, arguments); };
+		aTarget.GetterMock = function() { return self.createGetterMock.apply(self, arguments); };
 		aTarget.GetterMock.prototype = GetterMock.prototype;
-		aTarget.SetterMock = function() { return self.SetterMock.apply(self, arguments); };
+		aTarget.SetterMock = function() { return self.createSetterMock.apply(self, arguments); };
 		aTarget.SetterMock.prototype = SetterMock.prototype;
 
 		// MockObject,js
