@@ -89,7 +89,7 @@ function assertCallAdded(aMock, aTask)
 {
 	aMock = aMock._mock || aMock;
 	assert.difference(
-		function() (aMock.expectedCalls || aMock.__expectedCalls).length,
+		function() (aMock.expectedCalls || aMock._expectedCalls).length,
 		1,
 		aTask
 	);
@@ -99,7 +99,7 @@ function assertAnyCallAdded(aMock, aTask)
 {
 	aMock = aMock._mock || aMock;
 	assert.noDifference(
-		function() (aMock.expectedCalls || aMock.__expectedCalls).length,
+		function() (aMock.expectedCalls || aMock._expectedCalls).length,
 		aTask
 	);
 	assert.isNotNull(aMock.anyCall);
@@ -109,7 +109,7 @@ function assertCallRemoved(aMock, aTask)
 {
 	aMock = aMock._mock || aMock;
 	assert.difference(
-		function() (aMock.expectedCalls || aMock.__expectedCalls).length,
+		function() (aMock.expectedCalls || aMock._expectedCalls).length,
 		-1,
 		aTask
 	);
@@ -119,7 +119,7 @@ function assertCallNotModified(aMock, aTask)
 {
 	aMock = aMock._mock || aMock;
 	assert.noDifference(
-		function() (aMock.expectedCalls || aMock.__expectedCalls).length,
+		function() (aMock.expectedCalls || aMock._expectedCalls).length,
 		aTask
 	);
 }
@@ -592,8 +592,8 @@ function test_createMock()
 
 function test_mockName()
 {
-	assert.equals('custom name', (new Mock('custom name')).__name);
-	assert.equals('Array', (new Mock(Array)).__name);
+	assert.equals('custom name', (new Mock('custom name'))._name);
+	assert.equals('Array', (new Mock(Array))._name);
 
 	var mock = new Mock();
 	mock.expect('method', true, true);
@@ -881,6 +881,10 @@ function test_JsMockitoStyle_functionMock()
 			count += 10;
 		});
 	});
+	var context = {};
+	assertCallAdded(mock, function() {
+		manager.when(mock).call(context, 10).thenReturn('OK');
+	});
 	assertCallAdded(mock, function() {
 		manager.when(mock)(Mock.prototype.ANY_ONETIME).thenReturn('ANY');
 	});
@@ -906,6 +910,11 @@ function test_JsMockitoStyle_functionMock()
 	assertCallRemoved(mock, function() {
 		assert.equals(2.9, mock(29000));
 		assert.equals(11, count);
+	});
+	assertCallRaise(mock, [10], 'AssertionFailed');
+	assertCallRemoved(mock, function() {
+		context.method = mock;
+		context.method(10);
 	});
 	assertCallRemoved(mock, function() {
 		mock('anything');

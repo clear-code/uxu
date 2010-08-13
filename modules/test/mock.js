@@ -35,7 +35,7 @@ MockManager.prototype = {
 	Mock : function(aName, aSource)
 	{
 		var mock = new Mock(aName, aSource);
-		mock.__assert = this._assert;
+		mock._assert = this._assert;
 		this._mocks.push(mock);
 		return mock;
 	},
@@ -84,12 +84,16 @@ MockManager.prototype = {
 		var self = this;
 
 		aTarget.Mock = function() { return self.Mock.apply(self, arguments); };
-		Mock.export(aTarget.Mock);
+		aTarget.Mock.prototype = Mock.prototype;
+		Mock.export(aTarget.Mock, this._assert);
 
 		aTarget.FunctionMock = function() { return self.FunctionMock.apply(self, arguments); };
+		aTarget.FunctionMock.prototype = FunctionMock.prototype;
 		aTarget.MockFunction = aTarget.FunctionMock;
 		aTarget.GetterMock = function() { return self.GetterMock.apply(self, arguments); };
+		aTarget.GetterMock.prototype = GetterMock.prototype;
 		aTarget.SetterMock = function() { return self.SetterMock.apply(self, arguments); };
+		aTarget.SetterMock.prototype = SetterMock.prototype;
 
 		// MockObject,js
 		aTarget.MockObject = aTarget.MockCreate = aTarget.Mock;
@@ -112,36 +116,36 @@ function Mock(aName, aSource, aAssertions)
 {
 	if (aName && typeof aName != 'string')
 		[aSource, aAssertions, aName] = [aName, aSource, null];
-	this.__name = aName;
-	this.__methods = {};
-	this.__getters = {};
-	this.__setters = {};
-	this.__inExpectationChain = false;
-	this.__expectedCalls = [];
-	this.__assert = aAssertions || new ns.Assertions();
+	this._name = aName;
+	this._methods = {};
+	this._getters = {};
+	this._setters = {};
+	this._inExpectationChain = false;
+	this._expectedCalls = [];
+	this._assert = aAssertions || new ns.Assertions();
 	if (aSource) {
 		aSource = aSource.wrappedJSObject || aSource;
 		switch (typeof aSource)
 		{
 			case 'function':
-				this.__name = this.__name ||
+				this._name = this._name ||
 				              (String(aSource).match(/function\s*([^\(]*)\s*\(/) && RegExp.$1) ||
-				              this.__defaultName;
-				this.__inherit(aSource.prototype);
+				              this._defaultName;
+				this._inherit(aSource.prototype);
 				break;
 			case 'object':
-				this.__name = this.__name ||
+				this._name = this._name ||
 				              (String(aSource.constructor).match(/function\s*([^\(]*)\s*\(/) && RegExp.$1) ||
-				              this.__defaultName;
-				this.__inherit(aSource);
+				              this._defaultName;
+				this._inherit(aSource);
 				break;
 			default:
-				this.__name = this.__name || this.__defaultName;
+				this._name = this._name || this._defaultName;
 				break;
 		}
 	}
 	else {
-		this.__name = this.__name || this.__defaultName;
+		this._name = this._name || this._defaultName;
 	}
 }
 Mock.prototype = {
@@ -150,8 +154,8 @@ Mock.prototype = {
 	ALWAYS      : '11941072-0dc4-406b-a392-f57d36bb0b27',
 	ONETIME     : '079e5fb7-0b5e-4139-b365-48455901f17b',
 	NEVER       : '5b9a1df9-2c17-4fb4-9b3d-cdb860bf39a6',
-	__defaultName : bundle.getString('mock_default_name'),
-	__inherit : function(aSource)
+	_defaultName : bundle.getString('mock_default_name'),
+	_inherit : function(aSource)
 	{
 		for (let i in aSource)
 		{
@@ -159,78 +163,81 @@ Mock.prototype = {
 				continue;
 
 			let getter = aSource.__lookupGetter__(i);
-			if (getter) this._addGetter(i);
+			if (getter) this.addGetter(i);
 			let setter = aSource.__lookupSetter__(i);
-			if (setter) this._addSetter(i);
+			if (setter) this.addSetter(i);
 			if (!getter && !setter) {
 				if (typeof aSource[i] == 'function') {
-					this._addMethod(i);
+					this.addMethod(i);
 				}
 				else {
-					this._addGetter(i);
-					this._addSetter(i);
+					this.addGetter(i);
+					this.addSetter(i);
 				}
 			}
 		}
 	},
-	_addMethod : function(aName, aAssertions)
+	addMethod : function(aName, aAssertions)
 	{
 		var method = this[aName];
 		if (!method || !('expect' in method)) {
-			method = new FunctionMock(aName, null, aAssertions || this.__assert);
-			this.__methods[aName] = method;
+			method = new FunctionMock(aName, null, aAssertions || this._assert);
+			this._methods[aName] = method;
 			this[aName] = method;
 		}
 		return method;
 	},
-	_addGetter : function(aName, aAssertions)
+	_addMethod : function() { return this.addMethod.apply(this, arguments); },
+	addGetter : function(aName, aAssertions)
 	{
-		var getter = this.__getters[aName];
+		var getter = this._getters[aName];
 		if (!getter || !('expect' in getter)) {
-			getter = new GetterMock(aName, null, aAssertions || this.__assert);
-			this.__getters[aName] = getter;
+			getter = new GetterMock(aName, null, aAssertions || this._assert);
+			this._getters[aName] = getter;
 			this.__defineGetter__(aName, getter);
 		}
 		return getter;
 	},
-	_addSetter : function(aName, aAssertions)
+	_addGetter : function() { return this.addGetter.apply(this, arguments); },
+	addSetter : function(aName, aAssertions)
 	{
-		var setter = this.__setters[aName];
+		var setter = this._setters[aName];
 		if (!setter || !('expect' in setter)) {
-			setter = new SetterMock(aName, null, aAssertions || this.__assert);
-			this.__setters[aName] = setter;
+			setter = new SetterMock(aName, null, aAssertions || this._assert);
+			this._setters[aName] = setter;
 			this.__defineSetter__(aName, setter);
 		}
 		return setter;
 	},
+	_addSetter : function() { return this.addSetter.apply(this, arguments); },
 
 	__noSuchMethod__ : function(aName, aArguments)
 	{
 		throw new Error(bundle.getFormattedString(
 					'mock_unexpected_call',
-					[this.__name, aName, utils.inspect(aArguments)]
+					[this._name, aName, utils.inspect(aArguments)]
 				));
 	},
 
-	__handleCall : function(aCall)
+	_handleCall : function(aCall)
 	{
-		this.__assert.equals(this.__expectedCalls[0], aCall);
-		this.__expectedCalls.shift();
+		this._assert.equals(this._expectedCalls[0], aCall);
+		this._expectedCalls.shift();
 	},
 
 	expect : function(aName)
 	{
-		if (!arguments.length && !this.__inExpectationChain)
+		if (!arguments.length && !this._inExpectationChain)
 			return this._createExpectationChain();
 
 		var expectArgs = Array.slice(arguments, 1);
 		if (!expectArgs.length) expectArgs.push([]);
-		var method = this._addMethod(aName);
+		var method = this.addMethod(aName);
 		var call = method.expect.apply(null, expectArgs);
 		if (call) {
-			this.__expectedCalls.push(call);
+			this._expectedCalls.push(call);
 			let self = this;
-			call.addHandler(function() { self.__handleCall.call(self, this.firstExpectedCall); });
+			call.addHandler(function() { self._handleCall.call(self, this.firstExpectedCall); });
 		}
 		return method;
 	},
@@ -239,12 +246,12 @@ Mock.prototype = {
 	_expects : function() { return this.expect.apply(this, arguments); },
 	expectThrows : function(aName)
 	{
-		var method = this._addMethod(aName);
+		var method = this.addMethod(aName);
 		var call = method.expectThrows.apply(null, Array.slice(arguments, 1));
 		if (call) {
-			this.__expectedCalls.push(call);
+			this._expectedCalls.push(call);
 			let self = this;
-			call.addHandler(function() { self.__handleCall.call(self, this.firstExpectedCall); });
+			call.addHandler(function() { self._handleCall.call(self, this.firstExpectedCall); });
 		}
 		return method;
 	},
@@ -260,24 +267,24 @@ Mock.prototype = {
 	{
 		var expectArgs = Array.slice(arguments, 1);
 		if (!expectArgs.length) expectArgs.push(void(0));
-		var getter = this._addGetter(aName);
+		var getter = this.addGetter(aName);
 		var call = getter.expect.apply(null, expectArgs);
 		if (call) {
-			this.__expectedCalls.push(call);
+			this._expectedCalls.push(call);
 			let self = this;
-			call.addHandler(function() { self.__handleCall.call(self, this.firstExpectedCall); });
+			call.addHandler(function() { self._handleCall.call(self, this.firstExpectedCall); });
 		}
 		return getter;
 	},
 	_expectGet : function() { return this.expectGet.apply(this, arguments); },
 	expectGetThrows : function(aName)
 	{
-		var getter = this._addGetter(aName);
+		var getter = this.addGetter(aName);
 		var call = getter.expectThrows.apply(null, Array.slice(arguments, 1));
 		if (call) {
-			this.__expectedCalls.push(call);
+			this._expectedCalls.push(call);
 			let self = this;
-			call.addHandler(function() { self.__handleCall.call(self, this.firstExpectedCall); });
+			call.addHandler(function() { self._handleCall.call(self, this.firstExpectedCall); });
 		}
 		return getter;
 	},
@@ -293,24 +300,24 @@ Mock.prototype = {
 	{
 		var expectArgs = Array.slice(arguments, 1);
 		if (!expectArgs.length) expectArgs.push(void(0));
-		var setter = this._addSetter(aName);
+		var setter = this.addSetter(aName);
 		var call = setter.expect.apply(null, expectArgs);
 		if (call) {
-			this.__expectedCalls.push(call);
+			this._expectedCalls.push(call);
 			let self = this;
-			call.addHandler(function() { self.__handleCall.call(self, this.firstExpectedCall); });
+			call.addHandler(function() { self._handleCall.call(self, this.firstExpectedCall); });
 		}
 		return setter;
 	},
 	_expectSet : function() { return this.expectSet.apply(this, arguments); },
 	expectSetThrows : function(aName)
 	{
-		var setter = this._addSetter(aName);
+		var setter = this.addSetter(aName);
 		var call = setter.expectThrows.apply(null, Array.slice(arguments, 1));
 		if (call) {
-			this.__expectedCalls.push(call);
+			this._expectedCalls.push(call);
 			let self = this;
-			call.addHandler(function() { self.__handleCall.call(self, this.firstExpectedCall); });
+			call.addHandler(function() { self._handleCall.call(self, this.firstExpectedCall); });
 		}
 		return setter;
 	},
@@ -325,23 +332,23 @@ Mock.prototype = {
 	// JSMock API
 	addMockMethod : function(aName)
 	{
-		this._addMethod(aName);
+		this.addMethod(aName);
 	},
 
 	// JSMock, JsMockito
 	_createExpectationChain : function()
 	{
 		var self = this;
-		this.__inExpectationChain = true;
+		this._inExpectationChain = true;
 		return {
 			__noSuchMethod__ : function(aName, aArguments) {
-				var method = self._addMethod(aName);
+				var method = self.addMethod(aName);
 				var call = method.expect(aArguments);
 				if (call) {
-					self.__expectedCalls.push(call);
-					call.addHandler(function() { self.__handleCall.call(self, this.firstExpectedCall); });
+					self._expectedCalls.push(call);
+					call.addHandler(function() { self._handleCall.call(self, this.firstExpectedCall); });
 				}
-				self.__inExpectationChain = false;
+				self._inExpectationChain = false;
 				return method;
 			}
 		};
@@ -349,95 +356,147 @@ Mock.prototype = {
 
 	assert : function()
 	{
-		for (let i in this.__getters)
+		for (let i in this._getters)
 		{
-			this.__getters[i].assert();
+			this._getters[i].assert();
 		}
-		for (let i in this.__setters)
+		for (let i in this._setters)
 		{
-			this.__setters[i].assert();
+			this._setters[i].assert();
 		}
-		for (let i in this.__methods)
+		for (let i in this._methods)
 		{
-			this.__methods[i].assert();
+			this._methods[i].assert();
 		}
 	},
 	_assert  : function() { this.assert(); },
 	verify : function() { this.assert(); },
-	_verify : function() { this.assert(); },
-
-	_export : function(aTarget, aAssertions)
-	{
-		var assertions = aAssertions || new ns.Assertions();
-
-		aTarget.ANY         = Mock.prototype.ANY;
-		aTarget.ANY_ONETIME = Mock.prototype.ANY_ONETIME;
-		aTarget.ALWAYS      = Mock.prototype.ALWAYS;
-		aTarget.ONETIME     = Mock.prototype.ONETIME;
-		aTarget.NEVER       = Mock.prototype.NEVER;
-
-		aTarget._addMethod = function(aObject, aName) {
-			return Mock.prototype._addMethod.call(aObject, aName, assertions);
-		};
-		aTarget._addSetter = function(aObject, aName) {
-			return Mock.prototype._addSetter.call(aObject, aName, assertions);
-		};
-		aTarget._addGetter = function(aObject, aName) {
-			return Mock.prototype._addGetter.call(aObject, aName, assertions);
-		};
-
-		aTarget.expect = function() {
-			var args = Array.slice(arguments);
-			return Mock.prototype.expect.apply(args[0], args.slice(1));
-		};
-		aTarget._expects = aTarget.expects = aTarget._expect = aTarget.expect;
-		aTarget.expectThrows = function() {
-			var args = Array.slice(arguments);
-			return Mock.prototype.expectThrows.apply(args[0], args.slice(1));
-		};
-		aTarget._expectThrow = aTarget.expectThrow = aTarget._expectThrows = aTarget.expectThrows;
-		aTarget._expectRaise = aTarget.expectRaise = aTarget._expectRaises = aTarget.expectRaises = aTarget.expectThrows;
-
-		aTarget.expectGet = function() {
-			var args = Array.slice(arguments);
-			return Mock.prototype.expectGet.apply(args[0], args.slice(1));
-		};
-		aTarget._expectGet = Mock.expectGet;
-		aTarget.expectGetThrows = function() {
-			var args = Array.slice(arguments);
-			return Mock.prototype.expectGetThrows.apply(args[0], args.slice(1));
-		};
-		aTarget._expectGetThrow = aTarget.expectGetThrow = aTarget._expectGetThrows = aTarget.expectGetThrows;
-		aTarget._expectGetRaise = aTarget.expectGetRaise = aTarget._expectGetRaises = aTarget.expectGetRaises = aTarget.expectGetThrows;
-
-		aTarget.expectSet = function() {
-			var args = Array.slice(arguments);
-			return Mock.prototype.expectSet.apply(args[0], args.slice(1));
-		};
-		aTarget._expectSet = aTarget.expectSet;
-		aTarget.expectSetThrows = function() {
-			var args = Array.slice(arguments);
-			return Mock.prototype.expectSetThrows.apply(args[0], args.slice(1));
-		};
-		aTarget._expectSetThrow = aTarget.expectSetThrow = aTarget._expectSetThrows = aTarget.expectSetThrows;
-		aTarget._expectSetRaise = aTarget.expectSetRaise = aTarget._expectSetRaises = aTarget.expectSetRaises = aTarget.expectSetThrows;
-
-		aTarget.export = function(aObject) {
-			Mock.prototype._export(aObject);
-		};
-	}
+	_verify : function() { this.assert(); }
 };
-Mock.prototype._export(Mock);
+
+Mock.getMockFor = function(aObject, aName, aAssertions) {
+	if (!aObject)
+		throw new Error(bundle.getString('mock_error_creation_no_target'));
+	if (typeof aObject != 'object')
+		throw new Error(bundle.getFormattedString('mock_error_creation_invalid_target', [utils.inspect(aObject)]));
+	return (aObject.__uxu__mock = aObject.__uxu__mock || new Mock(aName, aObject, aAssertions));
+};
+Mock.addMethod = function(aObject, aName, aAssertions) {
+	return this.getMockFor(aObject).addMethod(aName, aAssertions);
+};
+Mock.addGetter = function(aObject, aName, aAssertions) {
+	return this.getMockFor(aObject).addGetter(aName, aAssertions);
+};
+Mock.addSetter = function(aObject, aName, aAssertions) {
+	return this.getMockFor(aObject).addSetter(aName, aAssertions);
+};
+
+Mock.expect = function() {
+	var args = Array.slice(arguments);
+	var mock = this.getMockFor(args[0]);
+	return mock.expect.apply(mock, args.slice(1));
+};
+Mock.expects = Mock.expect;
+Mock.expectThrows = function() {
+	var args = Array.slice(arguments);
+	var mock = this.getMockFor(args[0]);
+	return mock.expectThrows.apply(mock, args.slice(1));
+};
+Mock.expectRaise = Mock.expectRaises = Mock.expectThrow = Mock.expectThrows;
+
+Mock.expectGet = function() {
+	var args = Array.slice(arguments);
+	var mock = this.getMockFor(args[0]);
+	return mock.expectGet.apply(mock, args.slice(1));
+};
+Mock.expectGetThrows = function() {
+	var args = Array.slice(arguments);
+	var mock = this.getMockFor(args[0]);
+	return mock.expectGetThrows.apply(mock, args.slice(1));
+};
+Mock.expectGetRaise = Mock.expectGetRaises = Mock.expectGetThrow = Mock.expectGetThrows;
+
+Mock.expectSet = function() {
+	var args = Array.slice(arguments);
+	var mock = this.getMockFor(args[0]);
+	return mock.expectSet.apply(mock, args.slice(1));
+};
+Mock.expectSetThrows = function() {
+	var args = Array.slice(arguments);
+	var mock = this.getMockFor(args[0]);
+	return mock.expectSetThrows.apply(mock, args.slice(1));
+};
+Mock.expectSetRaise = Mock.expectSetRaises = Mock.expectSetThrow = Mock.expectSetThrows;
+
+Mock.ANY         = Mock.prototype.ANY;
+Mock.ANY_ONETIME = Mock.prototype.ANY_ONETIME;
+Mock.ALWAYS      = Mock.prototype.ALWAYS;
+Mock.ONETIME     = Mock.prototype.ONETIME;
+Mock.NEVER       = Mock.prototype.NEVER;
+Mock.export = function(aTarget, aAssertions) {
+	aAssertions = aAssertions || new ns.Assertions();
+	var self = this;
+
+	aTarget.ANY         = this.prototype.ANY;
+	aTarget.ANY_ONETIME = this.prototype.ANY_ONETIME;
+	aTarget.ALWAYS      = this.prototype.ALWAYS;
+	aTarget.ONETIME     = this.prototype.ONETIME;
+	aTarget.NEVER       = this.prototype.NEVER;
+
+	aTarget.addMethod = function(aObject, aName) {
+		return self.addMethod(aObject, aName, aAssertions);
+	};
+	aTarget.addSetter = function(aObject, aName) {
+		return self.addSetter(aObject, aName, aAssertions);
+	};
+	aTarget.addGetter = function(aObject, aName) {
+		return self.addGetter(aObject, aName, aAssertions);
+	};
+
+	aTarget.expect = function(aObject) {
+		return self.expect.apply(self, [aObject, aAssertions].concat(Array.slice(arguments, 1)));
+	};
+	aTarget.expecs = aTarget.expect;
+	aTarget.expectThrows = function(aObject) {
+		return self.expectThrows.apply(self, [aObject, aAssertions].concat(Array.slice(arguments, 1)));
+	};
+	aTarget.expectRaise = aTarget.expectRaises = aTarget.expectThrow = aTarget.expectThrows;
+
+	aTarget.expectGet = function(aObject) {
+		return self.expectGet.apply(self, [aObject, aAssertions].concat(Array.slice(arguments, 1)));
+	};
+	aTarget.expectGetThrows = function(aObject) {
+		return self.expectGetThrows.apply(self, [aObject, aAssertions].concat(Array.slice(arguments, 1)));
+	};
+	aTarget.expectGetRaise = aTarget.expectGetRaises = aTarget.expectGetThrow = aTarget.expectGetThrows;
+
+	aTarget.expectSet = function(aObject) {
+		return self.expectSet.apply(self, [aObject, aAssertions].concat(Array.slice(arguments, 1)));
+	};
+	aTarget.expectSetThrows = function(aObject) {
+		return self.expectSetThrows.apply(self, [aObject, aAssertions].concat(Array.slice(arguments, 1)));
+	};
+	aTarget.expectSetRaise = aTarget.expectSetRaises = aTarget.expectSetThrow = aTarget.expectSetThrows;
+
+	aTarget.export = function(aObject) {
+		self.export(aObject, aAssertions);
+	};
+};
 
 
 function ExpectedCall(aOptions)
 {
-	this._arguments       = [];
-	this.handlers         = [];
-	this.arguments        = aOptions.arguments;
-	if ('returnValue' in aOptions) this.returnValue = aOptions.returnValue;
-	if ('exceptionClass' in aOptions) this.exceptionClass = aOptions.exceptionClass;
-	if ('exceptionMessage' in aOptions) this.exceptionMessage = aOptions.exceptionMessage;
+	this._arguments = [];
+	this.handlers   = [];
+
+	if ('arguments' in aOptions)
+		this.arguments = aOptions.arguments;
+	if ('returnValue' in aOptions)
+		this.returnValue = aOptions.returnValue;
+	if ('exceptionClass' in aOptions)
+		this.exceptionClass = aOptions.exceptionClass;
+	if ('exceptionMessage' in aOptions)
+		this.exceptionMessage = aOptions.exceptionMessage;
 }
 ExpectedCall.prototype = {
 	addHandler : function(aHandler)
