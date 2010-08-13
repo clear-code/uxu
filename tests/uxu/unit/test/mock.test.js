@@ -292,6 +292,18 @@ function test_functionMock_expectThrows()
 	});
 }
 
+function test_functionMock_bindTo()
+{
+	var mock = createFunctionMock();
+	var object = {};
+	mock.expect([0]).boundTo(object);
+	assertCallRaise(mock, [0], 'AssertionFailed');
+	object.method = mock;
+	assertCallRemoved(mock, function() {
+		object.method(0);
+	});
+}
+
 function test_functionMock_assert()
 {
 	var mock = createFunctionMock();
@@ -400,6 +412,18 @@ function test_getterMock_expectThrows()
 		}
 	);
 	assertCallRaise(mock, [], message);
+}
+
+function test_getterMock_bindTo()
+{
+	var mock = createGetterMock();
+	var object = {};
+	mock.expect(29).boundTo(object);
+	assertCallRaise(mock, [], 'AssertionFailed');
+	object.__defineGetter__('property', mock);
+	assertCallRemoved(mock, function() {
+		assert.equals(29, object.property);
+	});
 }
 
 function test_getterMock_assert()
@@ -554,6 +578,18 @@ function test_setterMock_expectThrows()
 		mock.expectThrows(29, message);
 	});
 	assertCallRaise(mock, [290], 'AssertionFailed');
+}
+
+function test_setterMock_bindTo()
+{
+	var mock = createSetterMock();
+	var object = {};
+	mock.expect(29).boundTo(object);
+	assertCallRaise(mock, [], 'AssertionFailed');
+	object.__defineSetter__('property', mock);
+	assertCallRemoved(mock, function() {
+		object.property = 29;
+	});
 }
 
 function test_setterMock_assert()

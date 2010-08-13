@@ -219,6 +219,14 @@ Mock.prototype = {
 				));
 	},
 
+	_addExpectedCall : function(aCall)
+	{
+		var self = this;
+		this._expectedCalls.push(aCall);
+		aCall.addHandler(function() {
+			self._handleCall.call(self, this.firstExpectedCall);
+		});
+	},
 	_handleCall : function(aCall)
 	{
 		this._assert.equals(this._expectedCalls[0], aCall);
@@ -233,12 +241,10 @@ Mock.prototype = {
 		var expectArgs = Array.slice(arguments, 1);
 		if (!expectArgs.length) expectArgs.push([]);
 		var method = this.addMethod(aName);
-		var call = method.expect.apply(null, expectArgs);
-		if (call) {
-			this._expectedCalls.push(call);
-			let self = this;
-			call.addHandler(function() { self._handleCall.call(self, this.firstExpectedCall); });
-		}
+		var last = method.lastExpectedCall;
+		method.expect.apply(method, expectArgs);
+		if (method.lastExpectedCall != last)
+			this._addExpectedCall(method.lastExpectedCall);
 		return method;
 	},
 	_expect : function() { return this.expect.apply(this, arguments); },
@@ -247,12 +253,10 @@ Mock.prototype = {
 	expectThrows : function(aName)
 	{
 		var method = this.addMethod(aName);
-		var call = method.expectThrows.apply(null, Array.slice(arguments, 1));
-		if (call) {
-			this._expectedCalls.push(call);
-			let self = this;
-			call.addHandler(function() { self._handleCall.call(self, this.firstExpectedCall); });
-		}
+		var last = method.lastExpectedCall;
+		method.expectThrows.apply(method, Array.slice(arguments, 1));
+		if (method.lastExpectedCall != last)
+			this._addExpectedCall(method.lastExpectedCall);
 		return method;
 	},
 	_expectThrows : function() {return  this.expectThrows.apply(this, arguments); },
@@ -268,24 +272,20 @@ Mock.prototype = {
 		var expectArgs = Array.slice(arguments, 1);
 		if (!expectArgs.length) expectArgs.push(void(0));
 		var getter = this.addGetter(aName);
-		var call = getter.expect.apply(null, expectArgs);
-		if (call) {
-			this._expectedCalls.push(call);
-			let self = this;
-			call.addHandler(function() { self._handleCall.call(self, this.firstExpectedCall); });
-		}
+		var last = getter.lastExpectedCall;
+		getter.expect.apply(getter, expectArgs);
+		if (getter.lastExpectedCall != last)
+			this._addExpectedCall(getter.lastExpectedCall);
 		return getter;
 	},
 	_expectGet : function() { return this.expectGet.apply(this, arguments); },
 	expectGetThrows : function(aName)
 	{
 		var getter = this.addGetter(aName);
-		var call = getter.expectThrows.apply(null, Array.slice(arguments, 1));
-		if (call) {
-			this._expectedCalls.push(call);
-			let self = this;
-			call.addHandler(function() { self._handleCall.call(self, this.firstExpectedCall); });
-		}
+		var last = getter.lastExpectedCall;
+		getter.expectThrows.apply(getter, Array.slice(arguments, 1));
+		if (getter.lastExpectedCall != last)
+			this._addExpectedCall(getter.lastExpectedCall);
 		return getter;
 	},
 	_expectGetThrows : function() { return this.expectGetThrows.apply(this, arguments); },
@@ -301,24 +301,20 @@ Mock.prototype = {
 		var expectArgs = Array.slice(arguments, 1);
 		if (!expectArgs.length) expectArgs.push(void(0));
 		var setter = this.addSetter(aName);
-		var call = setter.expect.apply(null, expectArgs);
-		if (call) {
-			this._expectedCalls.push(call);
-			let self = this;
-			call.addHandler(function() { self._handleCall.call(self, this.firstExpectedCall); });
-		}
+		var last = setter.lastExpectedCall;
+		setter.expect.apply(setter, expectArgs);
+		if (setter.lastExpectedCall != last)
+			this._addExpectedCall(setter.lastExpectedCall);
 		return setter;
 	},
 	_expectSet : function() { return this.expectSet.apply(this, arguments); },
 	expectSetThrows : function(aName)
 	{
 		var setter = this.addSetter(aName);
-		var call = setter.expectThrows.apply(null, Array.slice(arguments, 1));
-		if (call) {
-			this._expectedCalls.push(call);
-			let self = this;
-			call.addHandler(function() { self._handleCall.call(self, this.firstExpectedCall); });
-		}
+		var last = setter.lastExpectedCall;
+		setter.expectThrows.apply(setter, Array.slice(arguments, 1));
+		if (setter.lastExpectedCall != last)
+			this._addExpectedCall(setter.lastExpectedCall);
 		return setter;
 	},
 	_expectSetThrows : function() { return this.expectSetThrows.apply(this, arguments); },
@@ -343,11 +339,10 @@ Mock.prototype = {
 		return {
 			__noSuchMethod__ : function(aName, aArguments) {
 				var method = self.addMethod(aName);
-				var call = method.expect(aArguments);
-				if (call) {
-					self._expectedCalls.push(call);
-					call.addHandler(function() { self._handleCall.call(self, this.firstExpectedCall); });
-				}
+				var last = method.lastExpectedCall;
+				method.expect(aArguments);
+				if (method.lastExpectedCall != last)
+					self._addExpectedCall(method.lastExpectedCall);
 				self._inExpectationChain = false;
 				return method;
 			}
@@ -639,28 +634,36 @@ FunctionMock.prototype = {
 	{
 		if (!arguments.length && !this.inExpectationChain)
 			return this.createExpectationChain();
-
-		return aArguments == Mock.prototype.NEVER ?
-			null :
+		if (aArguments != Mock.prototype.NEVER)
 			this.addExpectedCall({
 				arguments   : aArguments,
 				returnValue : aReturnValue
 			});
+		return this;
 	},
 	expects : function() { return this.expect.apply(this, arguments); },
 	expectThrows : function(aArguments, aExceptionClass, aExceptionMessage)
 	{
 		if (!aExceptionClass)
 			throw new Error(bundle.getFormattedString('mock_error_no_exception', [this.name]));
-		return this.addExpectedCall({
-				arguments        : aArguments,
-				exceptionClass   : aExceptionClass,
-				exceptionMessage : aExceptionMessage
-			});
+		this.addExpectedCall({
+			arguments        : aArguments,
+			exceptionClass   : aExceptionClass,
+			exceptionMessage : aExceptionMessage
+		});
+		return this;
 	},
 	expectThrow : function() { return this.expectThrows.apply(this, arguments); },
 	expectRaises : function() { return this.expectThrows.apply(this, arguments); },
 	expectRaise : function() { return this.expectThrows.apply(this, arguments); },
+
+	bindTo : function(aTarget)
+	{
+		this.lastExpectedCall.context = aTarget;
+	},
+	boundTo : function(aTarget) { return this.bindTo.apply(this, arguments); },
+	andBindTo : function(aTarget) { return this.bindTo.apply(this, arguments); },
+	andBoundTo : function(aTarget) { return this.bindTo.apply(this, arguments); },
 
 	// JSMock API
 	andReturn : function(aValue)
@@ -765,6 +768,8 @@ FunctionMock.prototype = {
 		['assert', 'verify',
 		 'expect', 'expects',
 		 'expectThrows', 'expectThrow',
+		 'bindTo', 'boundTo',
+		 'andBindTo', 'andBoundTo',
 		 'andReturn', 'andReturns',
 		 'andThrow', 'andThrows',
 		 'andStub',
@@ -773,6 +778,9 @@ FunctionMock.prototype = {
 		 'then'].forEach(function(aMethod) {
 			aTarget[aMethod] = function() { return self[aMethod].apply(self, arguments); }
 			aTarget['_'+aMethod] = function() { return self[aMethod].apply(self, arguments); }
+		}, this);
+		['firstExpectedCall', 'lastExpectedCall'].forEach(function(aName) {
+			aTarget.__defineGetter__(aName, function() { return self[aName]; });
 		}, this);
 	}
 };
@@ -794,13 +802,12 @@ GetterMock.prototype = {
 		var args = [];
 		if (this.isSpecialSpec(aReturnValue))
 			[args, aReturnValue] = Array.slice(arguments);
-
-		return args == Mock.prototype.NEVER ?
-			null :
+		if (args != Mock.prototype.NEVER)
 			this.addExpectedCall({
 				arguments   : args,
 				returnValue : aReturnValue
 			});
+		return this;
 	},
 	expectThrows : function(aExceptionClass, aExceptionMessage)
 	{
@@ -813,11 +820,12 @@ GetterMock.prototype = {
 		}
 		if (!aExceptionClass)
 			throw new Error(bundle.getFormattedString('mock_error_no_exception', [this.name]));
-		return this.addExpectedCall({
-				arguments        : args,
-				exceptionClass   : aExceptionClass,
-				exceptionMessage : aExceptionMessage
-			});
+		this.addExpectedCall({
+			arguments        : args,
+			exceptionClass   : aExceptionClass,
+			exceptionMessage : aExceptionMessage
+		});
+		return this;
 	},
 	onCall : function(aContext)
 	{
@@ -866,24 +874,24 @@ SetterMock.prototype = {
 	{
 		if (aArgument == Mock.prototype.NEVER)
 			return;
-
 		var call = this.addExpectedCall({
 				arguments   : [aArgument],
 				returnValue : aReturnValue
 			});
 		if (call && arguments.length < 2)
 			call.returnValue = aArgument;
-		return call;
+		return this;
 	},
 	expectThrows : function(aArgument, aExceptionClass, aExceptionMessage)
 	{
 		if (!aExceptionClass)
 			throw new Error(bundle.getFormattedString('mock_error_no_exception', [this.name]));
-		return this.addExpectedCall({
-				arguments        : [aArgument],
-				exceptionClass   : aExceptionClass,
-				exceptionMessage : aExceptionMessage
-			});
+		this.addExpectedCall({
+			arguments        : [aArgument],
+			exceptionClass   : aExceptionClass,
+			exceptionMessage : aExceptionMessage
+		});
+		return this;
 	},
 	onCall : function(aContext, aArguments)
 	{
