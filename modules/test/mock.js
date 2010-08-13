@@ -803,19 +803,28 @@ FunctionMock.prototype = {
 	export : function(aTarget)
 	{
 		var self = this;
-		['assert', 'verify',
-		 'expect', 'expects',
+		['assert', 'verify'].forEach(function(aMethod) {
+			aTarget['_'+aMethod] =
+				aTarget[aMethod] =
+					function() { return self[aMethod].apply(self, arguments); };
+		}, this);
+		['expect', 'expects',
 		 'expectThrows', 'expectThrow',
 		 'bindTo', 'boundTo',
 		 'andBindTo', 'andBoundTo',
+		 'times', 'time',
 		 'andReturn', 'andReturns',
 		 'andThrow', 'andThrows',
 		 'andStub',
 		 'thenReturn', 'thenReturns',
 		 'thenThrow', 'thenThrows',
 		 'then'].forEach(function(aMethod) {
-			aTarget[aMethod] = function() { return self[aMethod].apply(self, arguments); }
-			aTarget['_'+aMethod] = function() { return self[aMethod].apply(self, arguments); }
+			aTarget['_'+aMethod] =
+				aTarget[aMethod] =
+					function() {
+						var value = self[aMethod].apply(self, arguments);
+						return value == self ? this : value ;
+					};
 		}, this);
 		['firstExpectedCall', 'lastExpectedCall'].forEach(function(aName) {
 			aTarget.__defineGetter__(aName, function() { return self[aName]; });
