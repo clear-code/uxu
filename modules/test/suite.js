@@ -9,6 +9,7 @@ const Cr = Components.results;
 
 var ns = {};
 Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
+Components.utils.import('resource://uxu-modules/lib/jsdeferred.js', ns);
 Components.utils.import('resource://uxu-modules/eventTarget.js', ns);
 Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/test/assertions.js', ns);
@@ -77,6 +78,7 @@ function TestSuite(aEnvironment, aURI, aBrowser)
 	this.attachActions();
 	this.attachServerUtils();
 	this.attachMock();
+	this.attachDeferred();
 
 	this._utils.export(this.environment.utils, false, this, this.__proto__);
 	this._utils.export(this.environment.utils, false, this, this);
@@ -204,6 +206,11 @@ attachMock : function()
 {
 	this.mockManager = new ns.MockManager(this.assert);
 	this.mockManager.export(this);
+},
+ 
+attachDeferred : function() 
+{
+	this.Deferred = ns.Deferred;
 },
  
 // window management 
