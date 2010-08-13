@@ -293,7 +293,6 @@ GreasemonkeyUtils.prototype = {
 
 	GM_xmlhttpRequest : function(aDetails)
 	{
-Application.console.log(utils.inspect(aDetails))
 		this.fireEvent({ type : 'GM_xmlhttpRequestCall', detail : aDetails });
 
 		if (!this.emulateXMLHTTPRequest)
@@ -349,17 +348,10 @@ Application.console.log(utils.inspect(aDetails))
 
 					event.type = 'GM_xmlhttpRequest'+eventType;
 					if ('on'+aEvent.type in this) {
-Application.console.log('HANDLE '+aEvent.type)
 						state.handled = event.handled = true;
 						var func = this['on'+aEvent.type];
-Application.console.log(' HANDLER => '+func)
 						this.frame.contentWindow.setTimeout(function(aState) {
-Application.console.log('CALLBACK')
-try{
-							func(request);
-Application.console.log('DONE '+request.responseText)
-}
-catch(e){Application.console.log(e);}
+							func(aState);
 							_this.fireEvent(event);
 						}, 0, state);
 						return;
