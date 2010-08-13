@@ -27,7 +27,7 @@ TestLog.prototype = {
 	IGNORE_SKIPPED : (1 << 10),
 	IGNORE_SUCCESS : (1 << 11),
 
-	FORMAT_DEFUALT : (1 << 0) | (1 << 10),// | (1 << 11),
+	FORMAT_DEFAULT : (1 << 1) | (1 << 10),// | (1 << 11),
 
 	MAX_PARAMETER_LENGTH_TEXT : 80,
 
@@ -44,7 +44,7 @@ TestLog.prototype = {
 
 	toString : function(aFormat)
 	{
-		if (!aFormat) aFormat = this.FORMAT_DEFUALT;
+		if (!aFormat) aFormat = this.FORMAT_DEFAULT;
 
 		if (aFormat & this.FORMAT_RAW) {
 			return this._items.toSource();
@@ -271,3 +271,12 @@ TestLog.prototype = {
 	}
 
 };
+
+TestLog.FORMAT_RAW     = TestLog.prototype.FORMAT_RAW 
+TestLog.FORMAT_TEXT    = TestLog.prototype.FORMAT_TEXT
+//TestLog.FORMAT_HTML  = TestLog.prototype.FORMAT_HTML
+//TestLog.FORMAT_CSV   = TestLog.prototype.FORMAT_CSV 
+//TestLog.FORMAT_TSV   = TestLog.prototype.FORMAT_TSV 
+TestLog.IGNORE_SKIPPED = TestLog.prototype.IGNORE_SKIPPED
+TestLog.IGNORE_SUCCESS = TestLog.prototype.IGNORE_SUCCESS
+TestLog.FORMAT_DEFAULT = TestLog.prototype.FORMAT_DEFAULT

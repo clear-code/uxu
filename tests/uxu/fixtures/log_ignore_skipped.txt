@@ -2,7 +2,7 @@
 所要時間：0 ミリ秒
 
 ======================================================================
-<%= baseURL %>../../../../content/uxu/lib/module_manager.js
+<%= baseURL %>../../../../modules/test/testCase.js
 テストケース「test1」実行開始（<%= start %>）
 ======================================================================
 テスト名：Success
@@ -28,7 +28,7 @@ info
 所要時間：0 ミリ秒
 Failure
 
-()@<%= baseURL %>test_log.test.js:49,createReports([object Object])@<%= baseURL %>test_log.test.js:45,setUp()@<%= baseURL %>test_log.test.js:144
+()@<%= baseURL %>log.test.js:45,createReports([object Object])@<%= baseURL %>log.test.js:41,setUp()@<%= baseURL %>log.test.js:140
 ----------------------------------------------------------------------
 テスト名：Failure with notifications
 進度：4/0
@@ -37,7 +37,7 @@ Failure
 所要時間：0 ミリ秒
 Failure
 
-()@<%= baseURL %>test_log.test.js:59,createReports([object Object])@<%= baseURL %>test_log.test.js:55,setUp()@<%= baseURL %>test_log.test.js:144
+()@<%= baseURL %>log.test.js:55,createReports([object Object])@<%= baseURL %>log.test.js:51,setUp()@<%= baseURL %>log.test.js:140
 
 info
 
@@ -50,7 +50,7 @@ info
 所要時間：0 ミリ秒
 Error
 
-()@<%= baseURL %>test_log.test.js:79,createReports([object Object])@<%= baseURL %>test_log.test.js:75,setUp()@<%= baseURL %>test_log.test.js:144
+()@<%= baseURL %>log.test.js:75,createReports([object Object])@<%= baseURL %>log.test.js:71,setUp()@<%= baseURL %>log.test.js:140
 ----------------------------------------------------------------------
 テスト名：Error with notifications
 進度：0/0
@@ -59,7 +59,7 @@ Error
 所要時間：0 ミリ秒
 Error
 
-()@<%= baseURL %>test_log.test.js:89,createReports([object Object])@<%= baseURL %>test_log.test.js:85,setUp()@<%= baseURL %>test_log.test.js:144
+()@<%= baseURL %>log.test.js:85,createReports([object Object])@<%= baseURL %>log.test.js:81,setUp()@<%= baseURL %>log.test.js:140
 
 info
 
