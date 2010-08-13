@@ -22,7 +22,7 @@ function assertModified(aStatus, aStatusText, aURI, aPath)
 
 function assertNotModified(aPath)
 {
-	assert.isNull(utilsModule.processRequestByHtaccess(aPath, htaccess));
+	assert.isNull(HTTPServer.prototype.processRequestByHtaccess(aPath, htaccess));
 }
 
 test_processRequestByHtaccess.setUp = function() {
