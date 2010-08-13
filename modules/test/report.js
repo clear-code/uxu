@@ -4,9 +4,6 @@ if (typeof window == 'undefined')
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-var ns = {};
-Components.utils.import('resource://uxu-modules/multiplexError.js', ns);
-
 function Report()
 {
 	this.result = null;
@@ -32,12 +29,8 @@ Report.prototype = {
 		return e.length == 0 ? void(0) : e[e.length-1];
 	},
 	set exception(aException) {
-		if (aException) {
-			if (aException instanceof ns.MultiplexError)
-				this._exceptions.concat(aException.errors);
-			else
-				this._exceptions.push(aException);
-		}
+		if (aException)
+			this._exceptions.push(aException);
 		return aException;
 	},
 	get exceptions() {

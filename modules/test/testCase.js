@@ -33,6 +33,7 @@ Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
 Components.utils.import('resource://uxu-modules/fsm.js', ns);
 Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/eventTarget.js', ns);
+Components.utils.import('resource://uxu-modules/multiplexError.js', ns);
 Components.utils.import('resource://uxu-modules/test/assertions.js', ns);
 Components.utils.import('resource://uxu-modules/test/report.js', ns);
 Components.utils.import('resource://uxu-modules/server/server.js', ns);
@@ -864,9 +865,11 @@ TestCase.prototype = {
 					}
 				}
 				catch(e) {
-					aOptions.report.report.result = self.RESULT_ERROR;
-					aOptions.report.report.exception = self._utils.normalizeError(e);
-					aOptions.report.report.description = aOptions.errorDescription;
+					(e.name == 'MultiplexError' ? e.errors : [e] ).forEach(function(e) {
+						aOptions.report.report.result = (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR;
+						aOptions.report.report.exception = self._utils.normalizeError(e);
+						aOptions.report.report.description = aOptions.errorDescription;
+					}, this);
 					aOptions.report.report.parameter = aOptions.parameter;
 					aOptions.report.report.formattedParameter = aOptions.formattedParameter;
 					aOptions.report.report.onFinish();
@@ -983,8 +986,6 @@ TestCase.prototype = {
 				if (newReport.result) {
 					testReport.report = newReport;
 					testReport.report.description = current.description;
-					testReport.report.parameter = current.parameter;
-					testReport.report.formattedParameter = current.formattedParameter;
 					testReport.report.onDetailedFinish();
 					aContinuation('ok');
 				}
@@ -1002,9 +1003,11 @@ TestCase.prototype = {
 				}
 				catch(e) {
 					testReport.report = new ns.Report();
-					testReport.report.result = self.RESULT_FAILURE;
-					testReport.report.exception = self._utils.normalizeError(e);
-					testReport.report.description = bundle.getFormattedString('report_description_mock', [current.description]);
+					(e.name == 'MultiplexError' ? e.errors : [e] ).forEach(function(e) {
+						testReport.report.result = (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR;
+						testReport.report.exception = self._utils.normalizeError(e);
+						testReport.report.description = bundle.getFormattedString('report_description_mock', [current.description]);
+					});
 					aContinuation('ko');
 					return;
 				}
@@ -1019,7 +1022,7 @@ TestCase.prototype = {
 				}
 				catch(e) {
 					testReport.report = new ns.Report();
-					testReport.report.result = self.RESULT_FAILURE;
+					testReport.report.result = (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR;
 					testReport.report.exception = self._utils.normalizeError(e);
 					testReport.report.description = bundle.getFormattedString('report_description_check_success_count', [current.description]);
 					aContinuation('ko');
@@ -1349,8 +1352,10 @@ TestCase.prototype = {
 						},
 						onError : function(e) {
 							aReport.report.onDetailedFinish();
-							aReport.report.result = self.RESULT_ERROR;
-							aReport.report.exception = e;
+							(e.name == 'MultiplexError' ? e.errors : [e] ).forEach(function(e) {
+								aReport.report.result = (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR;
+								aReport.report.exception = self._utils.normalizeError(e);
+							});
 							self._onFinish(aTest, aReport.report.result);
 							aContinuation('ok');
 						}
@@ -1362,14 +1367,16 @@ TestCase.prototype = {
 			report.result = this.RESULT_SUCCESS;
 			this._onFinish(aTest, report.result);
 		}
-		catch(exception if exception.name == 'AssertionFailed') {
+		catch(e if e.name == 'AssertionFailed') {
 			report.result = this.RESULT_FAILURE;
-			report.exception = exception;
+			report.exception = e;
 			this._onFinish(aTest, report.result);
 		}
-		catch(exception) {
-			report.result = this.RESULT_ERROR;
-			report.exception = this._utils.normalizeError(exception);;
+		catch(e) {
+			(e.name == 'MultiplexError' ? e.errors : [e] ).forEach(function(e) {
+				report.result = (e.name == 'AssertionFailed') ? this.RESULT_FAILURE : this.RESULT_ERROR;
+				report.exception = this._utils.normalizeError(e);
+			}, this);
 			this._onFinish(aTest, report.result);
 		}
 
