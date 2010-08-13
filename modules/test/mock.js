@@ -544,7 +544,7 @@ ExpectedCall.prototype = {
 	set arguments(aValue)
 	{
 		if (utils.isArray(aValue)) {
-			this._arguments = aValue;
+			this._arguments = aValue.slice(0);
 		}
 		else {
 			this._arguments = [aValue];
@@ -680,10 +680,25 @@ FunctionMock.prototype = {
 	bindTo : function(aTarget)
 	{
 		this.lastExpectedCall.context = aTarget;
+		return this;
 	},
 	boundTo : function(aTarget) { return this.bindTo.apply(this, arguments); },
 	andBindTo : function(aTarget) { return this.bindTo.apply(this, arguments); },
 	andBoundTo : function(aTarget) { return this.bindTo.apply(this, arguments); },
+
+	times : function(aTimes)
+	{
+		if (!aTimes)
+			throw new Error(bundle.getFormattedString('mock_error_times_zero', [this.name]));
+		if (typeof aTimes != 'string' || aTimes < 1)
+			throw new Error(bundle.getFormattedString('mock_error_times_invalid', [this.name, aTimes]));
+		for (var i = 0, maxi = aTimes-1; i++)
+		{
+			this.addExpectedCall(this.lastExpectedCall);
+		}
+		return this;
+	},
+	time : function() { return this.times.apply(this, arguments); },
 
 	// JSMock API
 	andReturn : function(aValue)
