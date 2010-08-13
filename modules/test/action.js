@@ -252,13 +252,6 @@ readyToPromptUsernameAndPassword : function(aUsername, aPassword, aOptions)
  
 readyToSelect : function(aSelectedIndexes, aOptions) 
 {
-const Cc = Components.classes; 
-const Ci = Components.interfaces;
-var Application = '@mozilla.org/fuel/application;1' in Cc ?
-			Cc['@mozilla.org/fuel/application;1'].getService(Ci.fuelIApplication) :
-		'@mozilla.org/steel/application;1' in Cc ?
-			Cc['@mozilla.org/steel/application;1'].getService(Ci.steelIApplication) :
-			null ;
 
 	aOptions = aOptions || {};
 	if (typeof aSelectedIndexes == 'number')
@@ -268,21 +261,28 @@ var Application = '@mozilla.org/fuel/application;1' in Cc ?
 	var listener = function(aWindow) {
 			if (
 				aWindow.location.href != self.SELECT_DIALOG_URL ||
-				(!aWindow.gCommonDialogParam && !aWindow.gArgs) ||
 				self.readiedActionListeners.indexOf(listener) < 0
 				)
 				return;
 
-			var title, message;
-			if (aWindow.gCommonDialogParam) { // -Firefox 3.6
-				let params = aWindow.gCommonDialogParam;
-				title = params.GetString(0);
-				message = params.GetString(1);
+			var params = aWindow.gArgs || aWindow.gCommonDialogParam;
+			if (!params) {
+				try {
+					params = aWindow.arguments[0].QueryInterface(Ci.nsIDialogParamBlock);
+				}
+				catch(e) {
+				}
+				if (!params) return;
 			}
-			else { // Firefox 4.0-
-				let params = aWindow.gArgs;
+
+			var title, message;
+			if (aWindow.gArgs) { // Firefox 4.0-
 				title = params.getProperty('title');
 				message = params.getProperty('text');
+			}
+			else { // -Firefox 3.6
+				title = params.GetString(0);
+				message = params.GetString(1);
 			}
 
 			if (
