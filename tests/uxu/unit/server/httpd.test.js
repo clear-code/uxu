@@ -1,5 +1,7 @@
 var shouldSkip = utils.checkPlatformVersion('1.9') < 0;
 
+var topDir = baseURL+'../../../../';
+
 var HTTPServer = utils.import(topDir+'modules/server/httpd.js', {}).HTTPServer;
 var bundle = utils.import(topDir+'modules/lib/stringBundle.js', {})
 				.stringBundle.get('chrome://uxu/locale/uxu.properties');
@@ -89,8 +91,8 @@ testRedirect.parameters = [
 	'http://localhost:4445/redirect/sub/temp2/hash.txt',
 	'http://localhost:4445/redirect/match/hash.txt'
 ];
-testRedirect.setUp = setUpServer;
-testRedirect.tearDown = tearDownServer;
+testRedirect.setUp = setUpHttpServer;
+testRedirect.tearDown = tearDownHttpServer;
 function testRedirect(aURI)
 {
 	utils.loadURI(aURI);
@@ -102,8 +104,8 @@ testRewrite.parameters = [
 	'http://localhost:4445/redirect/rewrite/hash.txt',
 	'http://localhost:4445/redirect/rewrite_absolute/hash.txt'
 ];
-testRewrite.setUp = setUpServer;
-testRewrite.tearDown = tearDownServer;
+testRewrite.setUp = setUpHttpServer;
+testRewrite.tearDown = tearDownHttpServer;
 function testRewrite(aURI)
 {
 	utils.loadURI(aURI);
