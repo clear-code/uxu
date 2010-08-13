@@ -294,12 +294,7 @@ function testContainsAndContainedRange()
 {
 	var message = Math.random() * 65000;
 
-	yield Do(utils.loadURI('../../fixtures/links.html'));
-
-	function $(aId)
-	{
-		return content.document.getElementById(aId);
-	}
+	utils.loadURI('../../fixtures/links.html');
 
 	var range = content.document.createRange();
 	range.setStartBefore($('item4'));
@@ -370,6 +365,8 @@ function testContainsAndContainedRange()
 function testContainsSelection()
 {
 	var message = Math.random() * 65000;
+
+	utils.loadURI('../../fixtures/links.html');
 
 	var selection = content.getSelection();
 	selection.removeAllRanges();
@@ -475,6 +472,8 @@ function testContainsSelection()
 function testContainsDOMNodeTree()
 {
 	var message = Math.random() * 65000;
+
+	utils.loadURI('../../fixtures/links.html');
 
 	var root = $('item5');
 
