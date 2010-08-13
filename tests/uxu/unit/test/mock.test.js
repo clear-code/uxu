@@ -765,6 +765,140 @@ function test_mockAccessOrder()
 	);
 }
 
+
+function test_Mock_getMockFor()
+{
+	var object = {};
+	var mock = Mock.getMockFor(object);
+	assert.isInstanceOf(Mock, mock);
+}
+
+function test_Mock_addX()
+{
+	var object = {};
+	Mock.addMethod(object, 'method');
+	assert.isFunction(object.method);
+	Mock.addGetter(object, 'getter');
+	assert.isFunction(object.__lookupGetter__('getter'));
+	Mock.addSetter(object, 'setter');
+	assert.isFunction(object.__lookupSetter__('setter'));
+}
+
+function test_Mock_method()
+{
+	var object = {};
+
+	Mock.expect(object, 'method', [0, 1], 'OK');
+	assert.isFunction(object.method);
+	assert.raises(
+		'AssertionFailed',
+		function() {
+			object.method();
+		}
+	);
+	assert.equals('OK', object.method(0, 1));
+	assert.raises(
+		'Error',
+		function() {
+			object.method();
+		}
+	);
+
+	Mock.expectThrows(object, 'methodError', [0, 1], 'custom error');
+	assert.isFunction(object.methodError);
+	assert.raises(
+		'AssertionFailed',
+		function() {
+			object.methodError();
+		}
+	);
+	assert.raises(
+		'custom error',
+		function() {
+			object.methodError(0, 1);
+		}
+	);
+	assert.notRaises(
+		'custom error',
+		function() {
+			object.methodError();
+		}
+	);
+}
+
+function test_Mock_getter()
+{
+	var object = {};
+
+	Mock.expectGet(object, 'getter', 'OK');
+	assert.isFunction(object.__lookupGetter__('getter'));
+	assert.equals('OK', object.getter);
+	assert.raises(
+		'Error',
+		function() {
+			object.getter;
+		}
+	);
+
+	Mock.expectGetThrows(object, 'getterError', 'custom error');
+	assert.isFunction(object.__lookupGetter__('getterError'));
+	assert.raises(
+		'custom error',
+		function() {
+			object.getterError;
+		}
+	);
+	assert.notRaises(
+		'custom error',
+		function() {
+			object.getterError;
+		}
+	);
+}
+
+function test_Mock_setter()
+{
+	var object = {};
+
+	Mock.expectSet(object, 'setter', 29, 'OK');
+	assert.isFunction(object.__lookupSetter__('setter'));
+	assert.raises(
+		'AssertionFailed',
+		function() {
+			object.setter = 290;
+		}
+	);
+	object.setter = 29;
+	assert.raises(
+		'Error',
+		function() {
+			object.setter = 29;
+		}
+	);
+
+	Mock.expectSetThrows(object, 'setterError', 29, 'custom error');
+	assert.isFunction(object.__lookupSetter__('setterError'));
+	assert.raises(
+		'AssertionFailed',
+		function() {
+			object.setterError = 290;
+		}
+	);
+	assert.raises(
+		'custom error',
+		function() {
+			object.setterError = 29;
+		}
+	);
+	assert.notRaises(
+		'custom error',
+		function() {
+			object.setterError = 29;
+		}
+	);
+}
+
+
 function test_TypeOf()
 {
 	assert.isInstanceOf(TypeOf, TypeOf.isA(Array));

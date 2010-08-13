@@ -377,49 +377,55 @@ Mock.getMockFor = function(aObject, aName, aAssertions) {
 	return (aObject.__uxu__mock = aObject.__uxu__mock || new Mock(aName, aObject, aAssertions));
 };
 Mock.addMethod = function(aObject, aName, aAssertions) {
-	return this.getMockFor(aObject).addMethod(aName, aAssertions);
+	var method = this.getMockFor(aObject).addMethod(aName, aAssertions);
+	if (aObject[aName] != method) aObject[aName] = method;
+	return method;
 };
 Mock.addGetter = function(aObject, aName, aAssertions) {
-	return this.getMockFor(aObject).addGetter(aName, aAssertions);
+	var getter = this.getMockFor(aObject).addGetter(aName, aAssertions);
+	if (aObject.__lookupGetter__(aName) != getter) aObject.__defineGetter__(aName, getter);
+	return getter;
 };
 Mock.addSetter = function(aObject, aName, aAssertions) {
-	return this.getMockFor(aObject).addSetter(aName, aAssertions);
+	var setter = this.getMockFor(aObject).addSetter(aName, aAssertions);
+	if (aObject.__lookupSetter__(aName) != setter) aObject.__defineSetter__(aName, setter);
+	return setter;
 };
 
-Mock.expect = function() {
-	var args = Array.slice(arguments);
-	var mock = this.getMockFor(args[0]);
-	return mock.expect.apply(mock, args.slice(1));
+Mock.expect = function(aObject, aName) {
+	var mock = this.getMockFor(aObject);
+	this.addMethod(aObject, aName);
+	return mock.expect.apply(mock, Array.slice(arguments, 1));
 };
 Mock.expects = Mock.expect;
-Mock.expectThrows = function() {
-	var args = Array.slice(arguments);
-	var mock = this.getMockFor(args[0]);
-	return mock.expectThrows.apply(mock, args.slice(1));
+Mock.expectThrows = function(aObject, aName) {
+	var mock = this.getMockFor(aObject);
+	this.addMethod(aObject, aName);
+	return mock.expectThrows.apply(mock, Array.slice(arguments, 1));
 };
 Mock.expectRaise = Mock.expectRaises = Mock.expectThrow = Mock.expectThrows;
 
-Mock.expectGet = function() {
-	var args = Array.slice(arguments);
-	var mock = this.getMockFor(args[0]);
-	return mock.expectGet.apply(mock, args.slice(1));
+Mock.expectGet = function(aObject, aName) {
+	var mock = this.getMockFor(aObject);
+	this.addGetter(aObject, aName);
+	return mock.expectGet.apply(mock, Array.slice(arguments, 1));
 };
-Mock.expectGetThrows = function() {
-	var args = Array.slice(arguments);
-	var mock = this.getMockFor(args[0]);
-	return mock.expectGetThrows.apply(mock, args.slice(1));
+Mock.expectGetThrows = function(aObject, aName) {
+	var mock = this.getMockFor(aObject);
+	this.addGetter(aObject, aName);
+	return mock.expectGetThrows.apply(mock, Array.slice(arguments, 1));
 };
 Mock.expectGetRaise = Mock.expectGetRaises = Mock.expectGetThrow = Mock.expectGetThrows;
 
-Mock.expectSet = function() {
-	var args = Array.slice(arguments);
-	var mock = this.getMockFor(args[0]);
-	return mock.expectSet.apply(mock, args.slice(1));
+Mock.expectSet = function(aObject, aName) {
+	var mock = this.getMockFor(aObject);
+	this.addSetter(aObject, aName);
+	return mock.expectSet.apply(mock, Array.slice(arguments, 1));
 };
-Mock.expectSetThrows = function() {
-	var args = Array.slice(arguments);
-	var mock = this.getMockFor(args[0]);
-	return mock.expectSetThrows.apply(mock, args.slice(1));
+Mock.expectSetThrows = function(aObject, aName) {
+	var mock = this.getMockFor(aObject);
+	this.addSetter(aObject, aName);
+	return mock.expectSetThrows.apply(mock, Array.slice(arguments, 1));
 };
 Mock.expectSetRaise = Mock.expectSetRaises = Mock.expectSetThrow = Mock.expectSetThrows;
 
