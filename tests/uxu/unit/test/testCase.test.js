@@ -9,55 +9,18 @@ function setUp()
 {
 	testcase = new TestCase('description');
 	testcase.suite = new TestSuite(null, baseURL, gBrowser);
-	yield 0; // to run tests progressively
+	utils.wait(1); // to run tests progressively
 }
 
 function tearDown()
 {
 }
 
-function testProperties()
-{
-	assert.equals('description', testcase.title);
-	assert.isNull(testcase.masterPriority);
-}
 
-var setUpCount = 0;
-var tearDownCount = 0;
-var testCount = 0;
-
-function clearCount()
-{
-	setUpCount    = 0;
-	tearDownCount = 0;
-	testCount     = 0;
-}
-
-function assertDoneProcessCount(aSetUp, aTearDown, aTestCount, aParameters)
-{
-	if (!aParameters) aParameters = {};
-	if ('priority' in aParameters) {
-		testcase.masterPriority = aParameters.priority;
-	}
-	if (!aParameters.doNotRun) {
-		assert.isFalse(testcase.done);
-		testcase[aParameters.method || 'run']();
-		utils.wait(function() { return testcase.done; });
-	}
-	assert.equals({ setUpCount    : aSetUp,
-	                tearDownCount : aTearDown,
-	                testCount     : aTestCount,
-	                done          : ('done' in aParameters ? aParameters.done : true ) },
-	              { setUpCount    : setUpCount,
-	                tearDownCount : tearDownCount,
-	                testCount     : testCount,
-	                done          : testcase.done });
-}
-
-function assertTestResult()
+function assertResults()
 {
 	testcase.run();
-	yield (function() { return testcase.done; });
+	utils.wait(function() { return testcase.done; });
 	assert.equals(
 		Array.slice(arguments),
 		testcase.tests.map(function(aTest) {
@@ -73,6 +36,13 @@ function assertInitialized(aTest, aDescription)
 	              { description : aTest.description,
 	                priority    : aTest.priority });
 	assert.matches(/^test-\d+-\d+$/, aTest.id);
+}
+
+
+function testProperties()
+{
+	assert.equals('description', testcase.title);
+	assert.isNull(testcase.masterPriority);
 }
 
 function testFunctionsWithProperties()
@@ -132,168 +102,281 @@ function testFunctionsWithProperties()
 	assert.isNotNull(testcase.tests[7].tearDown);
 }
 
+function createXUnitMocks(aTestCount, aArguments)
+{
+	var setUp = new FunctionMock('setUp');
+	setUp.expect(aArguments || []).times(aTestCount);
+
+	var tearDown = new FunctionMock('tearDown');
+	tearDown.expect(aArguments || []).times(aTestCount);
+
+	return {
+		setUp    : setUp,
+		tearDown : tearDown,
+		tests    : createTestMocks(aTestCount, aArguments)
+	};
+}
+
+function createBDDMocks(aTestCount, aArguments)
+{
+	var given = new FunctionMock('given');
+	given.expect(aArguments || []).times(aTestCount);
+
+	return {
+		given : given,
+		tests : createTestMocks(aTestCount, aArguments)
+	};
+}
+
+function createTestMocks(aTestCount, aArguments)
+{
+	var tests = [];
+	for (let i = 0; i < aTestCount; i++)
+	{
+		let test = new FunctionMock('test'+i);
+		test.expect(aArguments || []);
+		tests.push(test);
+	}
+	return tests;
+}
+
 function testRegisterFunctionCallStyle()
 {
-	clearCount();
-	testcase.setUp(function() { setUpCount++; });
-	testcase.tearDown(function() { tearDownCount++; });
-	testcase.test(1, function() { testCount++; });
-	testcase.test(2, function() { testCount++; });
-	testcase.test(3, function() { testCount++; });
+	var mocks = createXUnitMocks(3);
+	testcase.setUp(mocks.setUp);
+	testcase.tearDown(mocks.tearDown);
+	testcase.test(1, mocks.tests[0]);
+	testcase.test(2, mocks.tests[1]);
+	testcase.test(3, mocks.tests[2]);
 	assert.equals(3, testcase.tests.length);
 	assertInitialized(testcase.tests[0], '1');
-	assertDoneProcessCount(3, 3, 3, { priority : 'must' });
+	testcase.masterPriority = 'must';
+	testcase.run();
+	assert.isTrue(testcase.done);
 }
 
 function testRegisterOperationStyle()
 {
-	clearCount();
-	testcase.registerSetUp(function() { setUpCount++; });
-	testcase.registerTearDown(function() { tearDownCount++; });
-	testcase.registerTest(function test1() { testCount++; });
-	testcase.registerTest(function test2() { testCount++; });
-	testcase.registerTest(function test3() { testCount++; });
+	var mocks = createXUnitMocks(3);
+	mocks.tests[0].description = 'test0';
+	testcase.registerSetUp(mocks.setUp);
+	testcase.registerTearDown(mocks.tearDown);
+	testcase.registerTest(mocks.tests[0]);
+	testcase.registerTest(mocks.tests[1]);
+	testcase.registerTest(mocks.tests[2]);
 	assert.equals(3, testcase.tests.length);
-	assertInitialized(testcase.tests[0], 'test1');
-	assertDoneProcessCount(3, 3, 3, { priority : 'must' });
+	assertInitialized(testcase.tests[0], 'test0');
+	testcase.masterPriority = 'must';
+	testcase.run();
+	assert.isTrue(testcase.done);
 }
 
 function testRegisterHashStyle()
 {
-	clearCount();
+	var mocks = createXUnitMocks(3);
 	testcase.tests = {
-		setUp : function() { setUpCount++; },
-		tearDown : function() { tearDownCount++; },
-		'1' : function() { testCount++; },
-		'2' : function() { testCount++; },
-		'3' : function() { testCount++; }
+		setUp    : mocks.setUp,
+		tearDown : mocks.tearDown,
+		'1'      : mocks.tests[0],
+		'2'      : mocks.tests[1],
+		'3'      : mocks.tests[2]
 	};
 	assert.equals(3, testcase.tests.length);
 	assertInitialized(testcase.tests[0], '1');
-	assertDoneProcessCount(3, 3, 3, { priority : 'must' });
+	testcase.masterPriority = 'must';
+	testcase.run();
+	assert.isTrue(testcase.done);
 }
 
 function testBDDFunctionCallStyle()
 {
-	clearCount();
-	testcase.given(function() { setUpCount++; });
-	testcase.states(1, function() { testCount++; });
-	testcase.states(2, function() { testCount++; });
-	testcase.states(3, function() { testCount++; });
+	var mocks = createBDDMocks(3);
+	testcase.given(mocks.given);
+	testcase.states(1, mocks.tests[0]);
+	testcase.states(2, mocks.tests[1]);
+	testcase.states(3, mocks.tests[2]);
 	assert.equals(3, testcase.tests.length);
 	assertInitialized(testcase.tests[0], '1');
-	assertDoneProcessCount(3, 0, 3, { priority : 'must', method : 'verify' });
+	testcase.masterPriority = 'must';
+	testcase.verify();
+	assert.isTrue(testcase.done);
 }
 
 function testBDDHashStyle()
 {
-	clearCount();
+	var mocks = createBDDMocks(3);
 	testcase.stateThat = {
-		given : function() { setUpCount++; },
-		'1' : function() { testCount++; },
-		'2' : function() { testCount++; },
-		'3' : function() { testCount++; }
+		given : mocks.given,
+		'1'   : mocks.tests[0],
+		'2'   : mocks.tests[1],
+		'3'   : mocks.tests[2]
 	};
 	assert.equals(3, testcase.tests.length);
 	assertInitialized(testcase.tests[0], '1');
-	assertDoneProcessCount(3, 0, 3, { priority : 'must', method : 'verify' });
+	testcase.masterPriority = 'must';
+	testcase.verify();
+	assert.isTrue(testcase.done);
 }
 
-function testAsync()
+function testAsync_yield()
 {
-	clearCount();
+	var mocks = createXUnitMocks(3);
 	testcase.tests = {
 		setUp : function()
 		{
-			setUpCount++;
+			mocks.setUp();
 			yield 100;
 		},
 		tearDown : function()
 		{
-			tearDownCount++;
+			mocks.tearDown();
 			yield 100;
 		},
 		'1' : function()
 		{
-			testCount++;
+			mocks.tests[0]();
 			yield 100;
 		},
 		'2' : function()
 		{
-			testCount++;
+			mocks.tests[1]();
 			yield 100;
 		},
 		'3' : function()
 		{
-			testCount++;
+			mocks.tests[2]();
 			yield 100;
 		}
 	};
 	assert.equals(3, testcase.tests.length);
+	testcase.masterPriority = 'must';
 	var start = Date.now();
-	assertDoneProcessCount(3, 3, 3, { priority : 'must' });
+	testcase.run();
+	utils.wait(function() { return testcase.done; });
+	assert.compare(Date.now() - start, '>=', (100 * 3) * 3);
+}
+
+function testAsync_wait()
+{
+	var mocks = createXUnitMocks(3);
+	testcase.tests = {
+		setUp : function()
+		{
+			mocks.setUp();
+			utils.wait(100);
+		},
+		tearDown : function()
+		{
+			mocks.tearDown();
+			utils.wait(100);
+		},
+		'1' : function()
+		{
+			mocks.tests[0]();
+			utils.wait(100);
+		},
+		'2' : function()
+		{
+			mocks.tests[1]();
+			utils.wait(100);
+		},
+		'3' : function()
+		{
+			mocks.tests[2]();
+			utils.wait(100);
+		}
+	};
+	assert.equals(3, testcase.tests.length);
+	testcase.masterPriority = 'must';
+	var start = Date.now();
+	testcase.run();
+	assert.isTrue(testcase.done);
 	assert.compare(Date.now() - start, '>=', (100 * 3) * 3);
 }
 
 function testReuseFunctions()
 {
-	clearCount();
+	var mocks = createXUnitMocks(3);
 
 	var tests = {
-		setUp : function() { setUpCount++; },
-		tearDown : function() { tearDownCount++; },
-		'1' : function() { testCount++; },
-		'2' : function() { testCount++; },
-		'3' : function() { testCount++; }
+		setUp    : mocks.setUp,
+		tearDown : mocks.tearDown,
+		'1'      : mocks.tests[0],
+		'2'      : mocks.tests[1],
+		'3'      : mocks.tests[2]
 	};
 
 	testcase = new TestCase('description1');
 	testcase.suite = new TestSuite({}, baseURL, gBrowser);
 	testcase.tests = tests;
-	assertDoneProcessCount(3, 3, 3, { priority : 'must' });
+	testcase.masterPriority = 'must';
+	testcase.run();
+	assert.isTrue(testcase.done);
+
+	mocks.setUp.assert();
+	mocks.tearDown.assert();
+	mocks.tests[0].assert();
+	mocks.tests[1].assert();
+	mocks.tests[2].assert();
+
+	mocks.setUp.expect([]).times(3);
+	mocks.tearDown.expect([]).times(3);
+	mocks.tests[0].expect([]);
+	mocks.tests[1].expect([]);
+	mocks.tests[2].expect([]);
 
 	testcase = new TestCase('description2');
 	testcase.suite = new TestSuite({}, baseURL, gBrowser);
 	testcase.tests = tests;
-	assertDoneProcessCount(6, 6, 6, { priority : 'must' });
+	testcase.masterPriority = 'must';
+	testcase.run();
+	assert.isTrue(testcase.done);
 }
 
 function testNoFunction()
 {
-	clearCount();
-
+	var setUp = new FunctionMock('setUp');
+	var tearDown = new FunctionMock('setUp');
 	testcase.tests = {
-		setUp : function() { setUpCount++; },
-		tearDown : function() { tearDownCount++; }
+		setUp    : setUp,
+		tearDown : tearDown
 	};
 	assert.equals(0, testcase.tests.length);
-	assertDoneProcessCount(0, 0, 0, { priority : 'must' });
+	testcase.masterPriority = 'must';
+	testcase.run();
+	assert.isTrue(testcase.done);
 }
 
 function testPriority()
 {
-	clearCount();
+	var setUpCount    = 0;
+	var tearDownCount = 0;
+	var testCount     = 0;
 	testcase.tests = {
-		setUp : function() { setUpCount++; },
+		setUp    : function() { setUpCount++; },
 		tearDown : function() { tearDownCount++; },
-		'1' : function() { testCount++; },
-		'2' : function() { testCount++; },
-		'3' : function() { testCount++; },
-		'4' : function() { testCount++; },
-		'5' : function() { testCount++; },
-		'6' : function() { testCount++; },
-		'7' : function() { testCount++; },
-		'8' : function() { testCount++; },
-		'9' : function() { testCount++; },
-		'10' : function() { testCount++; }
+		'1'      : function() { testCount++; },
+		'2'      : function() { testCount++; },
+		'3'      : function() { testCount++; },
+		'4'      : function() { testCount++; },
+		'5'      : function() { testCount++; },
+		'6'      : function() { testCount++; },
+		'7'      : function() { testCount++; },
+		'8'      : function() { testCount++; },
+		'9'      : function() { testCount++; },
+		'10'     : function() { testCount++; }
 	};
 	assert.equals(10, testcase.tests.length);
 
 	testcase.masterPriority = 0.5;
 	for (var i = 0, maxi = 10; i < maxi; i++)
 	{
+		testcase.tests.forEach(function(aTest) {
+			delete aTest.shouldSkip;
+		});
 		testcase.run();
-		yield (function() { return testcase.done; });
+		utils.wait(function() { return testcase.done; });
+		utils.wait(1);
 	}
 	assert.equals(testCount, setUpCount);
 	assert.equals(testCount, tearDownCount);
@@ -303,87 +386,148 @@ function testPriority()
 
 function testMasterPriority()
 {
-	var syncTests = {
-		setUp : function() { setUpCount++; },
-		tearDown : function() { tearDownCount++; },
-		'1' : function() { testCount++; },
-		'2' : function() { testCount++; }
+	var mocks = createXUnitMocks(2);
+	testcase = new TestCase('description1');
+	testcase.suite = new TestSuite({}, baseURL, gBrowser);
+	testcase.tests = {
+		setUp    : mocks.setUp,
+		tearDown : mocks.tearDown,
+		'1'      : mocks.tests[0],
+		'2'      : mocks.tests[1]
 	};
-	eval('testcase.tests = '+syncTests.toSource());
 	assert.equals(2, testcase.tests.length);
+	testcase.masterPriority = 'must';
+	testcase.run();
+	assert.isTrue(testcase.done);
 
-	clearCount();
-	assertDoneProcessCount(2, 2, 2, { priority : 'must' });
+	testcase = new TestCase('description2');
+	testcase.suite = new TestSuite({}, baseURL, gBrowser);
+	testcase.tests = {
+		setUp    : new MockFunction('neverRunSetUp'),
+		tearDown : new MockFunction('neverRunTearDown'),
+		'1'      : new MockFunction('neverRunTest0'),
+		'2'      : new MockFunction('neverRunTest1')
+	};
+	testcase.masterPriority = 'never';
+	testcase.run();
+	assert.isTrue(testcase.done);
+}
 
-	clearCount();
-	testcase.done = false;
-	assertDoneProcessCount(0, 0, 0, { priority : 'never' });
-
-	clearCount();
-	testcase.done = false;
-	var tests;
-	eval('tests = '+syncTests.toSource());
-	tests[1].priority = 'never';
-	testcase.tests = tests;
-	assert.equals(4, testcase.tests.length);
-	assertDoneProcessCount(3, 3, 3, { priority : 'must' });
+function testMasterPriority_overriddenByEachPriority()
+{
+	var mocks = createXUnitMocks(1);
+	var neverRunTest = new MockFunction('neverRunTest');
+	neverRunTest.priority = 'never';
+	testcase.tests = {
+		setUp    : mocks.setUp,
+		tearDown : mocks.tearDown,
+		'1'      : mocks.tests[0],
+		'2'      : neverRunTest
+	};
+	testcase.masterPriority = 'must';
+	testcase.run();
+	assert.isTrue(testcase.done);
 }
 
 function testForceRetry()
 {
+	var neverRunTest = new MockFunction('neverRunTest');
+	var tests = {
+		setUp    : new FunctionMock('setUp').expect([]),
+		tearDown : new FunctionMock('tearDown').expect([]),
+		test    : function() { assert.isTrue(false); neverRunTest(); }
+	};
+	testcase.tests = tests;
+	assert.equals(1, testcase.tests.length);
+	testcase.masterPriority = 'must';
+	testcase.run();
+	assert.isTrue(testcase.done);
+
+	tests.setUp.assert();
+	tests.tearDown.assert();
+	neverRunTest.assert();
+
+	tests.setUp.expect([]).times(10);
+	tests.tearDown.expect([]).times(10);
+
+	utils.wait(
+		Deferred.repeat(10, function() {
+			testcase.done = false;
+			testcase.masterPriority = 'normal';
+			testcase.run();
+			assert.isTrue(testcase.done);
+		})
+	);
+}
+
+function testPreventForceRetryByMasterPriorityNever()
+{
+	var mocks = createXUnitMocks(1);
+	var neverRunTest = new MockFunction('neverRunTest');
 	testcase.tests = {
-		setUp : function() { setUpCount++; },
-		tearDown : function() { tearDownCount++; },
-		'1' : function() { assert.isTrue(false); testCount++; },
-		'2' : function() { testCount++; }
+		setUp    : mocks.setUp.expect([]),
+		tearDown : mocks.tearDown.expect([]),
+		'1'      : function() { assert.isTrue(false); neverRunTest(); },
+		'2'      : mocks.tests[0]
 	};
 	assert.equals(2, testcase.tests.length);
 
-	clearCount();
-	assertDoneProcessCount(2, 2, 1, { priority : 'must' });
+	testcase.masterPriority = 'must';
+	testcase.run();
+	assert.isTrue(testcase.done);
 
-	clearCount();
-	testcase.done = false;
-	assertDoneProcessCount(0, 0, 0, { priority : 'never' });
+	mocks.setUp.assert();
+	mocks.tearDown.assert();
+	mocks.tests[0].assert();
+	neverRunTest.assert();
+
+	testcase.masterPriority = 'never';
+	testcase.run();
+	assert.isTrue(testcase.done);
 }
 
 function testContext()
 {
 	var tests = {
-		setUp : function() { setUpCount++; },
-		tearDown : function() { tearDownCount++; },
-		'1' : function() { this.count++; },
-		'2' : function() { this.count++; },
-		count : 0
+		setUp    : new MockFunction('setUp'),
+		tearDown : new MockFunction('tearDown'),
+		'test'   : new MockFunction('test')
 	};
 	testcase.tests = tests;
-	assert.equals(2, testcase.tests.length);
+	assert.equals(1, testcase.tests.length);
 
-	clearCount();
-	assert.equals(0, tests.count);
-	assertDoneProcessCount(2, 2, 0, { priority : 'must' });
-	assert.equals(2, tests.count);
+	tests.setUp.expect([]).bindTo(tests);
+	tests.tearDown.expect([]).bindTo(tests);
+	tests.test.expect([]).bindTo(tests);
 
-	clearCount();
+	testcase.masterPriority = 'must';
+	testcase.run();
+	assert.isTrue(testcase.done);
+
 	testcase.done = false;
-	var context = { count : 0 };
+	var context = {};
 	testcase.context = context;
-	assert.equals(0, context.count);
-	assertDoneProcessCount(2, 2, 0);
-	assert.equals(2, context.count);
+
+	tests.setUp.expect([]).bindTo(context);
+	tests.tearDown.expect([]).bindTo(context);
+	tests.test.expect([]).bindTo(context);
+
+	testcase.masterPriority = 'must';
+	testcase.run();
+	assert.isTrue(testcase.done);
 }
 
 function testListener()
 {
-	testcase.tests = {
-		setUp : function() { setUpCount++; },
-		tearDown : function() { tearDownCount++; },
-		'1' : function() { assert.isTrue(false); testCount++; },
-		'2' : function() { throw 'test'; testCount++; },
-		'3' : function() { testCount++; }
+	var mocks = createXUnitMocks(3);
+	var tests = {
+		setUp    : mocks.setUp,
+		tearDown : mocks.tearDown,
+		'1'      : function() { assert.isTrue(false); },
+		'2'      : function() { throw 'test'; },
+		'3'      : mocks.tests[0]
 	};
-	var errorCount = 0;
-	var failCount  = 0;
+	testcase.tests = tests;
 	var listener = function(aEvent) {
 		switch (aEvent.type)
 		{
@@ -391,10 +535,10 @@ function testListener()
 				switch (aEvent.data.result)
 				{
 					case 'failure':
-						failCount++;
+						mocks.tests[1]();
 						break;
 					case 'error':
-						errorCount++;
+						mocks.tests[2]();
 						break;
 				}
 				break;
@@ -402,127 +546,128 @@ function testListener()
 	};
 	testcase.addListener(listener);
 	assert.equals(3, testcase.tests.length);
+	testcase.masterPriority = 'must';
+	testcase.run();
+	assert.isTrue(testcase.done);
 
-	clearCount();
-	assertDoneProcessCount(3, 3, 1, { priority : 'must' });
-	assert.equals(1, failCount);
-	assert.equals(1, errorCount);
+	mocks.setUp.assert();
+	mocks.tearDown.assert();
+	mocks.tests[0].assert();
+	mocks.tests[1].assert();
+	mocks.tests[2].assert();
+
+	mocks.setUp.expect([]).times(3);
+	mocks.tearDown.expect([]).times(3);
+	mocks.tests[0].expect([]);
+	mocks.tests[1].expect([]);
+	mocks.tests[2].expect([]);
 
 	testcase.removeListener(listener);
 	testcase.addListener({handleEvent : listener});
-	clearCount();
 	testcase.done = false;
-	errorCount = 0;
-	failCount  = 0;
-	assertDoneProcessCount(3, 3, 1, { priority : 'must' });
-	assert.equals(1, failCount);
-	assert.equals(1, errorCount);
+	testcase.masterPriority = 'must';
+	testcase.run();
+	assert.isTrue(testcase.done);
 }
 
 function testStopper()
 {
-	testcase.tests = {
-		setUp : function() { setUpCount++; },
-		tearDown : function() { tearDownCount++; },
-		'1' : function() { testCount++; yield 1000; },
-		'2' : function() { testCount++; yield 1000; },
-		'3' : function() { testCount++; yield 1000; }
-	};
-	assert.equals(3, testcase.tests.length);
-
 	var shouldStop = false;
 	var stopper = function() {
 			return shouldStop;
 		};
 
-	clearCount();
-	testcase.masterPriority = 'must';
-	testcase.run(stopper);
-	yield 5000;
-	assertDoneProcessCount(3, 3, 3, { doNotRun : true });
+	var mocks = createXUnitMocks(3);
+	testcase.tests = {
+		setUp    : mocks.setUp,
+		tearDown : mocks.tearDown,
+		'1'      : function() { mocks.tests[0](); stopper(); yield 500; },
+		'2'      : function() { mocks.tests[1](); },
+		'3'      : function() { mocks.tests[2](); }
+	};
+	assert.equals(3, testcase.tests.length);
 
-	clearCount();
+	testcase.masterPriority = 'must';
+	testcase.randomOrder = false;
+	testcase.run(stopper);
+	utils.wait(function() { return testcase.done; });
+	assert.isFalse(testcase.aborted);
+
+	mocks.setUp.assert();
+	mocks.tearDown.assert();
+	mocks.tests[0].assert();
+	mocks.tests[1].assert();
+	mocks.tests[2].assert();
+
+	mocks.setUp.expect([]);
+	mocks.tearDown.expect([]);
+	mocks.tests[0].expect([]);
+
 	testcase.done = false;
 	testcase.masterPriority = 'must';
+	testcase.randomOrder = false;
 	testcase.run(stopper);
-	yield 500;
+	yield 100;
 	shouldStop = true;
-	yield 5000;
-	assertDoneProcessCount(1, 1, 1, { doNotRun : true, done : false });
+	utils.wait(function() { return testcase.done || testcase.aborted; });
+	assert.isFalse(testcase.done);
+	assert.isTrue(testcase.aborted);
 }
 function testPrivSetUpTearDown()
 {
-	var steps = [];
-	testcase.registerStartUp(function() {
-		steps.push('SU');
-	});
-	testcase.registerShutDown(function() {
-		steps.push('SD');
-	});
-	testcase.registerSetUp(function() {
-		steps.push('s0');
-	});
-	testcase.registerTearDown(function() {
-		steps.push('d0');
-	});
+	var pass = new FunctionMock('pass');
+	pass.expect('startUp')
+			.expect('setUp')
+				.expect('setUp1')
+					.expect('test1')
+				.expect('tearDown1')
+			.expect('tearDown')
+			.expect('setUp')
+				.expect('setUp2')
+				.expect('tearDown2')
+			.expect('tearDown')
+			.expect('setUp')
+				.expect('tearDown3')
+			.expect('tearDown')
+			.expect('setUp')
+				.expect('setUp4')
+					.expect('test4')
+			.expect('tearDown')
+		.expect('shutDown');
+
+	testcase.registerStartUp(function() { pass('startUp'); });
+	testcase.registerShutDown(function() { pass('shutDown'); });
+	testcase.registerSetUp(function() { pass('setUp'); });
+	testcase.registerTearDown(function() { pass('tearDown'); });
 	testcase.registerTest((function() {
-		var f = function() {
-			steps.push('t1');
-		};
-		f.setUp = function() {
-			steps.push('s1');
-		};
-		f.tearDown = function() {
-			steps.push('d1');
-		};
+		var f = function() { pass('test1'); };
+		f.setUp = function() { pass('setUp1'); };
+		f.tearDown = function() { pass('tearDown1'); };
 		return f;
 	})());
 	testcase.registerTest((function() {
-		var f = function() {
-			steps.push('t2');
-		};
-		f.setUp = function() {
-			throw 'error';
-			steps.push('s2');
-		};
-		f.tearDown = function() {
-			steps.push('d2');
-		};
+		var f = function() { throw 'error'; pass('test2'); };
+		f.setUp = function() { pass('setUp2'); };
+		f.tearDown = function() { pass('tearDown2'); };
 		return f;
 	})());
 	testcase.registerTest((function() {
-		var f = function() {
-			throw 'error';
-			steps.push('t3');
-		};
-		f.setUp = function() {
-			steps.push('s3');
-		};
-		f.tearDown = function() {
-			steps.push('d3');
-		};
+		var f = function() { pass('test3'); };
+		f.setUp = function() { throw 'error'; pass('setUp3'); };
+		f.tearDown = function() { pass('tearDown3'); };
 		return f;
 	})());
 	testcase.registerTest((function() {
-		var f = function() {
-			steps.push('t4');
-		};
-		f.setUp = function() {
-			steps.push('s4');
-		};
-		f.tearDown = function() {
-			throw 'error';
-			steps.push('d4');
-		};
+		var f = function() { pass('test4'); };
+		f.setUp = function() { pass('setUp4'); };
+		f.tearDown = function() { throw 'error'; pass('tearDown4'); };
 		return f;
 	})());
 	assert.equals(4, testcase.tests.length);
-	assert.isFalse(testcase.done);
-	var start = Date.now();
 	testcase.masterPriority = 'must';
+	testcase.randomOrder = false;
 	testcase.run();
-	yield (function() { return testcase.done; });
-	assert.equals('SU,s0,s1,t1,d1,d0,s0,d2,d0,s0,s3,d3,d0,s0,s4,t4,d0,SD', steps.join(','));
+	utils.wait(function() { return testcase.done; });
 }
 
 function testAssertionsCount()
@@ -552,7 +697,8 @@ function testAssertionsCount()
 		return f;
 	})());
 	testcase.masterPriority = 'must';
-	yield Do(assertTestResult('success', 'failure', 'failure'));
+	testcase.randomOrder = false;
+	assertResults('success', 'failure', 'failure');
 }
 
 function testMinAssertionsCount()
@@ -579,7 +725,8 @@ function testMinAssertionsCount()
 		return f;
 	})());
 	testcase.masterPriority = 'must';
-	yield Do(assertTestResult('failure', 'success', 'success'));
+	testcase.randomOrder = false;
+	assertResults('failure', 'success', 'success');
 }
 
 function testMaxAssertionsCount()
@@ -607,7 +754,8 @@ function testMaxAssertionsCount()
 	})());
 
 	testcase.masterPriority = 'must';
-	yield Do(assertTestResult('success', 'success', 'failure'));
+	testcase.randomOrder = false;
+	assertResults('success', 'success', 'failure');
 }
 
 function testShouldSkip()
@@ -624,21 +772,18 @@ function testShouldSkip()
 	})());
 	testcase.registerTest((function() {
 		var f = function() {};
-		f.shouldSkip = function() {
-			return true;
-		};
+		f.shouldSkip = (new MockFunction('shouldSkip-true')).expect([], true);
 		return f;
 	})());
 	testcase.registerTest((function() {
 		var f = function() {};
-		f.shouldSkip = function() {
-			return false;
-		};
+		f.shouldSkip = (new MockFunction('shouldSkip-false')).expect([], false);
 		return f;
 	})());
 
 	testcase.masterPriority = 'must';
-	yield Do(assertTestResult('skip', 'success', 'skip', 'success'));
+	testcase.randomOrder = false;
+	assertResults('skip', 'success', 'skip', 'success');
 }
 
 function testShouldSkipForAll_boolean_skip()
@@ -648,7 +793,7 @@ function testShouldSkipForAll_boolean_skip()
 	testcase.registerTest(function() {});
 	testcase.masterPriority = 'must';
 	testcase.shouldSkip = true;
-	yield Do(assertTestResult('skip', 'skip', 'skip'));
+	assertResults('skip', 'skip', 'skip');
 }
 
 function testShouldSkipForAll_boolean_success()
@@ -658,7 +803,7 @@ function testShouldSkipForAll_boolean_success()
 	testcase.registerTest(function() {});
 	testcase.masterPriority = 'must';
 	testcase.shouldSkip = false;
-	yield Do(assertTestResult('success', 'success', 'success'));
+	assertResults('success', 'success', 'success');
 }
 
 function testShouldSkipForAll_function_skip()
@@ -667,8 +812,9 @@ function testShouldSkipForAll_function_skip()
 	testcase.registerTest(function() {});
 	testcase.registerTest(function() {});
 	testcase.masterPriority = 'must';
-	testcase.shouldSkip = function() { return true; };
-	yield Do(assertTestResult('skip', 'skip', 'skip'));
+	testcase.shouldSkip = (new MockFunction('shouldSkip'))
+							.expect([], true);
+	assertResults('skip', 'skip', 'skip');
 }
 
 function testShouldSkipForAll_function_success()
@@ -677,8 +823,9 @@ function testShouldSkipForAll_function_success()
 	testcase.registerTest(function() {});
 	testcase.registerTest(function() {});
 	testcase.masterPriority = 'must';
-	testcase.shouldSkip = function() { return false; };
-	yield Do(assertTestResult('success', 'success', 'success'));
+	testcase.shouldSkip = (new MockFunction('shouldSkip'))
+							.expect([], false);
+	assertResults('success', 'success', 'success');
 }
 
 
@@ -694,84 +841,103 @@ function assertRegisterTestWithParameters(aTest, aDescriptions)
 	}
 }
 
-var privateSetUpWithParametersResults;
-var privateTearDownWithParametersResults;
-
-function createNewTestForParameters(aDescription)
-{
-	var test = function(aParameter) {
-			testcase.suite.assert.isTrue(aParameter);
-		};
-	test.description = aDescription;
-	test.setUp = function(aParameter) {
-			privateSetUpWithParametersResults.push(aParameter);
-		};
-	test.tearDown = function(aParameter) {
-			privateTearDownWithParametersResults.push(aParameter);
-		};
-	return test;
-}
-
 function testWithArrayParameters()
 {
 	var test;
-	privateSetUpWithParametersResults = [];
-	privateTearDownWithParametersResults = [];
 
-	test = createNewTestForParameters('desc1');
+	test = (new MockFunction('test1'))
+			.expect(true).expect(false);
+	test.setUp = (new MockFunction('setUp1'))
+			.expect(true).expect(false);
+	test.tearDown = (new MockFunction('tearDown1'))
+			.expect(true).expect(false);
+	test.description = 'desc1';
 	test.parameters = [true, false];
 	assertRegisterTestWithParameters(test,
 	                                 ['desc1 (1)',
 	                                  'desc1 (2)']);
 
-	test = createNewTestForParameters('desc2');
-	test.params = [true, false];
+	test = (new MockFunction('test2'))
+			.expect(0).expect(1).expect(2);
+	test.setUp = (new MockFunction('setUp2'))
+			.expect(0).expect(1).expect(2);
+	test.tearDown = (new MockFunction('tearDown2'))
+			.expect(0).expect(1).expect(2);
+	test.description = 'desc2';
+	test.parameters = [0, 1, 2];
 	assertRegisterTestWithParameters(test,
 	                                 ['desc2 (1)',
-	                                  'desc2 (2)']);
+	                                  'desc2 (2)',
+	                                  'desc2 (3)']);
 
-	test = createNewTestForParameters('desc3');
-	test.parameters = [true, false];
+	var obj = {};
+	test = (new MockFunction('test3'))
+			.expect(obj);
+	test.setUp = (new MockFunction('setUp3'))
+			.expect(obj);
+	test.tearDown = (new MockFunction('tearDown3'))
+			.expect(obj);
+	test.description = 'desc3';
+	test.parameters = [obj];
 	assertRegisterTestWithParameters(test,
-	                                 ['desc3 (1)',
-	                                  'desc3 (2)']);
+	                                 ['desc3 (1)']);
 
 	testcase.masterPriority = 'must';
-	yield Do(assertTestResult('success', 'failure',
-	                          'success', 'failure',
-	                          'success', 'failure'));
-	assert.equals([true, false, true, false, true, false],
-	              privateSetUpWithParametersResults);
-	assert.equals([true, false, true, false, true, false],
-	              privateTearDownWithParametersResults);
+	testcase.randomOrder = false;
+	assertResults('success', 'success',
+	              'success', 'success', 'success',
+	              'success');
 }
 
 function testWithHashParameters()
 {
 	var test;
-	privateSetUpWithParametersResults = [];
-	privateTearDownWithParametersResults = [];
 
-	test = createNewTestForParameters('desc1');
-	test.parameters = { foo : true,
-	                    bar : false };
+	var params1 = { foo : true,
+	                bar : false }
+	test = (new MockFunction('test1'))
+			.expect(params1.foo).expect(params1.bar);
+	test.setUp = (new MockFunction('setUp1'))
+			.expect(params1.foo).expect(params1.bar);
+	test.tearDown = (new MockFunction('tearDown1'))
+			.expect(params1.foo).expect(params1.bar);
+	test.description = 'desc1';
+	test.parameters = params1;
 	assertRegisterTestWithParameters(test,
 	                                 ['desc1 (foo)',
 	                                  'desc1 (bar)']);
 
-	test = createNewTestForParameters('desc2');
-	test.params = { foo : true,
-	                bar : false };
+	var params2 = { hoge : 0,
+	                fuga : 1 }
+	test = (new MockFunction('test2'))
+			.expect(params2.hoge).expect(params2.fuga);
+	test.setUp = (new MockFunction('setUp2'))
+			.expect(params2.hoge).expect(params2.fuga);
+	test.tearDown = (new MockFunction('tearDown2'))
+			.expect(params2.hoge).expect(params2.fuga);
+	test.description = 'desc2';
+	test.parameters = params2;
 	assertRegisterTestWithParameters(test,
-	                                 ['desc2 (foo)',
-	                                  'desc2 (bar)']);
+	                                 ['desc2 (hoge)',
+	                                  'desc2 (fuga)']);
+
+	var params3 = { aaa : {},
+	                bbb : {} }
+	test = (new MockFunction('test3'))
+			.expect(params3.aaa).expect(params3.bbb);
+	test.setUp = (new MockFunction('setUp3'))
+			.expect(params3.aaa).expect(params3.bbb);
+	test.tearDown = (new MockFunction('tearDown3'))
+			.expect(params3.aaa).expect(params3.bbb);
+	test.description = 'desc3';
+	test.parameters = params3;
+	assertRegisterTestWithParameters(test,
+	                                 ['desc3 (aaa)',
+	                                  'desc3 (bbb)']);
 
 	testcase.masterPriority = 'must';
-	yield Do(assertTestResult('success', 'failure',
-	                          'success', 'failure'));
-	assert.equals([true, false, true, false],
-	              privateSetUpWithParametersResults);
-	assert.equals([true, false, true, false],
-	              privateTearDownWithParametersResults);
+	testcase.randomOrder = false;
+	assertResults('success', 'success',
+	              'success', 'success',
+	              'success', 'success');
 }
-

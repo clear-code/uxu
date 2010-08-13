@@ -94,19 +94,19 @@ function TestCase(aTitle, aOptions)
 	this._initSource(aOptions);
 	this._initRemote(aOptions);
 
-	this._title = aTitle;
 	this._tests = [];
 	this._registeredTests = [];
-	this._masterPriority = aOptions.priority || null;
-	this._shouldSkip = aOptions.shouldSkip || false;
-	this._context = aOptions.context || {};
-	this._targetProduct = aOptions.targetProduct || null;
-	this._suite = null;
+	this._suite           = null;
+
+	this.title          = aTitle;
+	this.masterPriority = aOptions.priority || null;
+	this.shouldSkip     = aOptions.shouldSkip || false;
+	this.context        = aOptions.context || {};
+	this.targetProduct  = aOptions.targetProduct || null;
+	this.mapping        = aOptions.mapping || aOptions.redirect || null;
 
 	this.done = false;
-
-	this._mapping = aOptions.mapping || aOptions.redirect || null;
-
+	this.aborted = false;
 	this.notifications = [];
 	this.addListener(this);
 }
@@ -130,10 +130,8 @@ TestCase.prototype = {
 	ERROR_INVALID_SUITE   : 'test suite must be a TestSuite.',
 	ERROR_NO_TEST         : 'there is no test.',
  
-	get title() {
-		return this._title;
-	},
-
+	randomOrder : true,
+ 
 	set tests(aHash) {
 		this.setTests(aHash);
 		return aHash;
@@ -146,40 +144,8 @@ TestCase.prototype = {
 		return aHash;
 	},
 
-	set masterPriority(aPriority) {
-		this._masterPriority = aPriority;
-		return aPriority;
-	},
-	get masterPriority() {
-		return this._masterPriority;
-	},
-
-	set shouldSkip(aSkip) {
-		this._shouldSkip = aSkip;
-		return aSkip;
-	},
-	get shouldSkip() {
-		return this._shouldSkip;
-	},
-
 	get neverRun() {
-		return this._equalsToNever(this._masterPriority);
-	},
-
-	set context(aContext) {
-		this._context = aContext;
-		return aContext;
-	},
-	get context() {
-		return this._context;
-	},
-
-	set targetProduct(aProduct) {
-		this._targetProduct = aProduct;
-		return aProduct;
-	},
-	get targetProduct() {
-		return this._targetProduct;
+		return this._equalsToNever(this.masterPriority);
 	},
 
 	set suite(aSuite) {
@@ -189,14 +155,6 @@ TestCase.prototype = {
 	},
 	get suite() {
 		return this._suite;
-	},
-
-	set mapping(aMapping) {
-		this._mapping = aMapping;
-		return aMapping;
-	},
-	get mapping() {
-		return this._mapping;
 	},
  
 	_initSource : function(aOptions) 
@@ -286,11 +244,26 @@ TestCase.prototype = {
 		return this._options;
 	},
  
+	get done() {
+		return this._done;
+	},
+	set done(aValue) {
+		if (!aValue) {
+			this._tests.forEach(function(aTest) {
+				delete aTest._computedSkip;
+			});
+			this.aborted = false;
+		}
+		this._done = aValue;
+		return aValue;
+	},
+	_done : false,
+ 
 	onStart : function() 
 	{
 		this.addListener(this._suite);
 		this._suite.addListener(this);
-		if (this._mapping) {
+		if (this.mapping) {
 			if (
 				!('{3d04c1d0-4e6c-11de-8a39-0800200c9a66}' in Components.classesByID) ||
 				(Cc['@mozilla.org/network/protocol;1?name=http'].getService() !=
@@ -345,14 +318,14 @@ TestCase.prototype = {
 	{
 		if (
 			aTopic != 'uxu-mapping-check' ||
-			!this._mapping
+			!this.mapping
 			)
 			return;
 
 		aSubject = aSubject.QueryInterface(Ci.nsISupportsString);
 
 		var currentURI = aSubject.data;
-		var newURI = this._utils.mapURI(currentURI, this._mapping);
+		var newURI = this._utils.mapURI(currentURI, this.mapping);
 		if (newURI && newURI != currentURI)
 			aSubject.data = newURI;
 	},
@@ -512,7 +485,7 @@ TestCase.prototype = {
 		var desc = aFunction.description;
 		if (!desc) {
 			var source = aFunction.toSource();
-			if (source.match(/\(?function ([^\(]+)\s*\(/))
+			if (source.match(/\(?function\s*([^\(]+)\s*\(/))
 				desc = RegExp.$1;
 			else
 				desc = source.substring(0, 30);
@@ -746,7 +719,7 @@ TestCase.prototype = {
 			this._stopper = aStopper;
 
 			this.done = false;
-			this._aborted = false;
+			this.aborted = false;
 
 			if (this.shouldRunInRemote)
 				this._runByRemote();
@@ -767,40 +740,37 @@ TestCase.prototype = {
 		var context = this.context || {};
 		if (
 			(
-				this._targetProduct &&
-				String(this._targetProduct).toLowerCase() != this._utils.product.toLowerCase()
+				this.targetProduct &&
+				String(this.targetProduct).toLowerCase() != this._utils.product.toLowerCase()
 			) ||
 			(
-				this._shouldSkip &&
+				this.shouldSkip &&
 				(
-					(typeof this._shouldSkip != 'function') ||
-					this._shouldSkip.call(context)
+					typeof this.shouldSkip != 'function' ||
+					this.shouldSkip.call(context)
 				)
 			)
 			) {
-			this._masterPriority = 'never';
+			this.masterPriority = 'never';
 		}
-
-		this._shuffleTests();
 
 		var testsToBeSkipped = this._tests.filter(function(aTest) {
 				if (aTest.targetProduct &&
 					String(aTest.targetProduct).toLowerCase() != this._utils.product.toLowerCase())
-					return true;
+					return aTest._computedSkip = true;
 
-				if (!this._checkPriorityToExec(aTest))
-					return true;
+				if (typeof aTest.shouldSkip == 'function')
+					return false;
 
-				var shouldSkip = aTest.shouldSkip;
-				return (shouldSkip !== void(0) &&
-						typeof shouldSkip != 'function' &&
-						!shouldSkip);
-			}, this)
-			.map(function(aTest) {
-				aTest.shouldSkip = true;
-				return aTest;
+				if (aTest.shouldSkip)
+					return aTest._computedSkip = true;
+
+				return aTest._computedSkip = !this._computeDoOrSkip(aTest);
 			}, this);
 		var allTestsToBeSkipped = testsToBeSkipped.length == this._tests.length;
+
+		if (this.randomOrder && !allTestsToBeSkipped)
+			this._shuffleTests();
 
 		var testIndex = 0;
 		var current;
@@ -808,24 +778,19 @@ TestCase.prototype = {
 		var testCaseReport = { report : null };
 
 		var stateTransitions = {
-			start             : { ok : 'setUpDaemons' },
-			setUpDaemons      : { ok : 'doStartUp' },
-			doStartUp         : { ok : 'prepareTest' },
-			prepareTest       : { ok : 'checkDoOrSkip' },
-			checkDoOrSkip     : { ok : 'cleanUpBeforeTest', ko: 'skip' },
-			skip              : { ok : 'doReport' },
-			cleanUpBeforeTest : { ok : 'doSetUp' },
-			doSetUp           : { ok : 'doPrivSetUp', ko: 'doPrivTearDown' },
-			doPrivSetUp       : { ok : 'doTest', ko: 'doPrivTearDown' },
-			doTest            : { ok : 'doTestAssertions' },
-			doTestAssertions  : { ok : 'doPrivTearDown', ko: 'doPrivTearDown' },
-			doPrivTearDown    : { ok : 'doTearDown', ko: 'doTearDown' },
-			doTearDown        : { ok : 'doReport', ko: 'doReport' },
-			doReport          : { ok : 'nextTest' },
-			nextTest          : { ok : 'prepareTest', ko: 'doShutDown' },
-			doShutDown        : { ok : 'tearDownDaemons', ko: 'tearDownDaemons' },
-			tearDownDaemons   : { ok : 'finished' },
-			finished          : { }
+			start               : { ok : 'doStartUp' },
+			doStartUp           : { ok : 'prepareTest' },
+			prepareTest         : { ok : 'doSetUp', ko: 'doReport' },
+			doSetUp             : { ok : 'doPrivSetUp', ko: 'doPrivTearDown' },
+			doPrivSetUp         : { ok : 'doTest', ko: 'doPrivTearDown' },
+			doTest              : { ok : 'assertSurelySuccess' },
+			assertSurelySuccess : { ok : 'doPrivTearDown', ko: 'doPrivTearDown' },
+			doPrivTearDown      : { ok : 'doTearDown', ko: 'doTearDown' },
+			doTearDown          : { ok : 'doReport', ko: 'doReport' },
+			doReport            : { ok : 'nextTest' },
+			nextTest            : { ok : 'prepareTest', ko: 'doShutDown' },
+			doShutDown          : { ok : 'finished', ko: 'finished' },
+			finished            : { }
 		};
 
 		var doPreOrPostProcess = function(aContinuation, aFunction, aOptions)
@@ -887,10 +852,6 @@ TestCase.prototype = {
 				self.fireEvent('Start');
 				aContinuation('ok')
 			},
-			setUpDaemons : function(aContinuation)
-			{
-				aContinuation('ok');
-			},
 			doStartUp : function(aContinuation)
 			{
 	 			testCaseReport.report = new ns.Report();
@@ -912,42 +873,35 @@ TestCase.prototype = {
 				testReport.report = new ns.Report();
 				current = self._tests[testIndex];
 				self.fireEvent('TestStart', current);
-				aContinuation('ok');
-			},
-			checkDoOrSkip : function(aContinuation)
-			{
-				var shouldSkip = current.shouldSkip;
-				if (shouldSkip !== void(0)) {
-					if (typeof shouldSkip == 'function') {
-						try {
-							shouldSkip = shouldSkip.call(context);
-						}
-						catch(e) {
-							testReport.report.result = self.RESULT_ERROR;
-							testReport.report.exception = self._utils.normalizeError(e);
-							testReport.report.description =  bundle.getFormattedString('report_description_check_to_skip', [current.description]);
-							shouldSkip = true;
-						}
-					}
-					if (shouldSkip) {
-						aContinuation('ko');
-						return;
-					}
-				}
-				aContinuation('ok');
-			},
-			skip : function(aContinuation)
-			{
-				if (!testReport.report.result) {
-					testReport.report.result = self.RESULT_SKIPPED;
-					testReport.report.description = current.description;
-				}
-				aContinuation('ok');
-			},
-			cleanUpBeforeTest : function(aContinuation)
-			{
+
 				self._suite.mockManager.clear();
-				aContinuation('ok');
+
+				var shouldSkip = current.shouldSkip;
+				if (typeof shouldSkip == 'function') {
+					try {
+						shouldSkip = shouldSkip.call(context) ||
+						             !self._computeDoOrSkip(current);
+					}
+					catch(e) {
+						testReport.report.result = self.RESULT_ERROR;
+						testReport.report.exception = self._utils.normalizeError(e);
+						testReport.report.description =  bundle.getFormattedString('report_description_check_to_skip', [current.description]);
+						shouldSkip = true;
+					}
+				}
+				else {
+					shouldSkip = false;
+				}
+				if (shouldSkip || current._computedSkip) {
+					if (!testReport.report.result) {
+						testReport.report.result = self.RESULT_SKIPPED;
+						testReport.report.description = current.description;
+					}
+					aContinuation('ko');
+				}
+				else {
+					aContinuation('ok');
+				}
 			},
 			doSetUp : function(aContinuation)
 			{
@@ -995,10 +949,12 @@ TestCase.prototype = {
 					testReport.report.description = current.description;
 				}
 			},
-			doTestAssertions : function(aContinuation)
+			assertSurelySuccess : function(aContinuation)
 			{
-				if (testReport.report.result != self.RESULT_SUCCESS)
+				if (testReport.report.result != self.RESULT_SUCCESS) {
 					aContinuation('ok');
+					return;
+				}
 
 				try {
 					self._suite.mockManager.assertAll();
@@ -1089,7 +1045,7 @@ TestCase.prototype = {
 			nextTest : function(aContinuation)
 			{
 				if (self._stopper && self._stopper()) {
-					self._aborted = true;
+					self.aborted = true;
 					self.fireEvent('Abort');
 					aContinuation('ko');
 					return;
@@ -1112,27 +1068,13 @@ TestCase.prototype = {
 					}
 				);
 			},
-			tearDownDaemons : function(aContinuation)
-			{
-				if (allTestsToBeSkipped ||
-					!ns.ServerUtils.prototype.isHttpServerRunning.call(self.suite.serverUtils)) {
-					aContinuation('ok');
-					return;
-				}
-				self._utils.doIteration(
-					function() {
-						yield ns.ServerUtils.prototype.tearDownAllHttpServers.call(self.suite.serverUtils);
-					},
-					{
-						onEnd : function(e) {
-							aContinuation('ok');
-						}
-					}
-				);
-			},
 			finished : function(aContinuation)
 			{
-				if (!self._aborted) {
+				if (!allTestsToBeSkipped &&
+					ns.ServerUtils.prototype.isHttpServerRunning.call(self.suite.serverUtils))
+					utils.wait(ns.ServerUtils.prototype.tearDownAllHttpServers.call(self.suite.serverUtils));
+
+				if (!self.aborted) {
 					self.done = true;
 					self.fireEvent('Finish', testCaseReport.report);
 				}
@@ -1152,10 +1094,10 @@ TestCase.prototype = {
 			)
 			return false;
 
-		if (this._targetProduct &&
-			String(this._targetProduct).toLowerCase() != this._utils.product.toLowerCase() &&
+		if (this.targetProduct &&
+			String(this.targetProduct).toLowerCase() != this._utils.product.toLowerCase() &&
 			!this._application) {
-			var application = this._utils.getInstalledLocationOfProduct(this._targetProduct);
+			var application = this._utils.getInstalledLocationOfProduct(this.targetProduct);
 			if (application) {
 				this._application = application;
 			}
@@ -1206,8 +1148,8 @@ TestCase.prototype = {
 				server.port,
 				'-uxu-hidden'
 			];
-		if (this._masterPriority) {
-			args = args.concat(['-uxu-priority', this._masterPriority]);
+		if (this.masterPriority) {
+			args = args.concat(['-uxu-priority', this.masterPriority]);
 		}
 		args = args.concat(this.options);
 
@@ -1232,8 +1174,8 @@ TestCase.prototype = {
 				{
 					timeout = self._remoteReady ? afterReadyTimeout : beforeReadyTimeout ;
 					interval = self._remoteReady ? afterReadyInterval : beforeReadyInterval ;
-					if (!self._aborted && self._stopper && self._stopper()) {
-						self._aborted = true;
+					if (!self.aborted && self._stopper && self._stopper()) {
+						self.aborted = true;
 					}
 					if (Date.now() - self._lastRemoteResponse > timeout) {
 						throw new Error(bundle.getFormattedString('error_remote_timeout', [parseInt(timeout / 1000)]));
@@ -1284,7 +1226,7 @@ TestCase.prototype = {
 			this._remoteResultBuffer += input;
 			return;
 		}
-		if (this._aborted) {
+		if (this.aborted) {
 			this.fireEvent('ResponseRequest', this.TESTCASE_ABORTED+responseId+'\n');
 			this.fireEvent('Abort');
 			return;
@@ -1321,7 +1263,7 @@ TestCase.prototype = {
 	_onFinishRemoteResult : function(aReport) 
 	{
 		this.done = true;
-		if (!this._aborted) {
+		if (!this.aborted) {
 			this.fireEvent('Finish', aReport);
 		}
 	},
@@ -1382,16 +1324,16 @@ TestCase.prototype = {
 		return aReport.report;
 	},
  
-	_checkPriorityToExec : function(aTest) 
+	_computeDoOrSkip : function(aTest) 
 	{
 		var priority = 0.5;
-		var forceNever = this._equalsToNever(aTest.priority) || this._equalsToNever(this._masterPriority);
+		var forceNever = this._equalsToNever(aTest.priority) || this._equalsToNever(this.masterPriority);
 		if (forceNever) {
 			priority = 'never';
 		}
 		else {
-			if (this._masterPriority !== null && this._masterPriority !== void(0))
-				priority = this._masterPriority;
+			if (this.masterPriority !== null && this.masterPriority !== void(0))
+				priority = this.masterPriority;
 			if (aTest.priority !== null && aTest.priority !== void(0))
 				priority = aTest.priority;
 		}
