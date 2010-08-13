@@ -231,16 +231,16 @@ function test_GM_registerMenuCommand()
 }
 
 test_GM_xmlhttpRequest.setUp = function() {
-	yield Do(utils.setUpHttpServer(4445, topDir+'tests/uxu/fixtures/'));
+	utils.setUpHttpServer(4445, topDir+'tests/uxu/fixtures/');
 };
 test_GM_xmlhttpRequest.tearDown = function() {
-	yield Do(utils.tearDownAllHttpServers());
+	utils.tearDownAllHttpServers();
 };
 function test_GM_xmlhttpRequest()
 {
 	var sandbox = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_xmlHttpRequest.user.js');
 	sandbox.loadAsciiFile();
-	yield 1000;
+	yield function() { return sandbox.data; };
 	assert.equals('ASCII', sandbox.data);
 }
 
@@ -436,10 +436,10 @@ GM_xmlhttpRequestReadystatechange
 
 
 test_doAndWaitLoad.setUp = function() {
-	yield Do(utils.setUpHttpServer(4445, topDir+'tests/uxu/fixtures/'));
+	utils.setUpHttpServer(4445, topDir+'tests/uxu/fixtures/');
 };
 test_doAndWaitLoad.tearDown = function() {
-	yield Do(utils.tearDownAllHttpServers());
+	utils.tearDownAllHttpServers();
 };
 function test_doAndWaitLoad()
 {
