@@ -1337,7 +1337,7 @@ TestCase.prototype = {
 				aReport.report.description = aTest.description;
 				self._onFinish(aTest, aReport.report.result);
 			};
-		var onError = function(aError) {
+		var onError = function(e) {
 				var multiplex = e.name == 'MultiplexError';
 				(multiplex ? e.errors : [e] ).forEach(function(e, aIndex) {
 					var suffix = multiplex ? ' ('+(aIndex+1)+')' : '' ;
@@ -1350,7 +1350,6 @@ TestCase.prototype = {
 
 		try {
 			var result = aTest.code.call(aContext);
-
 			if (this._utils.isGeneratedIterator(result)) {
 				ns.setTimeout(function() {
 					self._utils.doIteration(result, {
@@ -1368,7 +1367,6 @@ TestCase.prototype = {
 				}, 0);
 				return aReport.report;
 			}
-
 			onSuccess();
 		}
 		catch(e) {
