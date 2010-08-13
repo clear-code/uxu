@@ -32,18 +32,23 @@ MockManager.prototype = {
 				aMock.assert();
 		}, this);
 	},
+	addMock : function(aMock)
+	{
+		if (this._mocks.indexOf(aMock) < 0)
+			this._mocks.push(aMock);
+	},
 	Mock : function(aName, aSource)
 	{
 		var mock = new Mock(aName, aSource);
 		mock._assert = this._assert;
-		this._mocks.push(mock);
+		this.addMock(mock);
 		return mock;
 	},
 	FunctionMock : function(aName, aSource)
 	{
 		var mock = new FunctionMock(aName, aSource);
 		mock._mock._assert = this._assert;
-		this._mocks.push(mock);
+		this.addMock(mock);
 		return mock;
 	},
 	MockFunction : function() { return this.FunctionMock.apply(this, arguments); },
@@ -51,14 +56,14 @@ MockManager.prototype = {
 	{
 		var mock = new GetterMock(aName, aSource);
 		mock._mock._assert = this._assert;
-		this._mocks.push(mock);
+		this.addMock(mock);
 		return mock;
 	},
 	SetterMock : function(aName, aSource)
 	{
 		var mock = new SetterMock(aName, aSource);
 		mock._mock._assert = this._assert;
-		this._mocks.push(mock);
+		this.addMock(mock);
 		return mock;
 	},
 	// JSMock API
@@ -86,6 +91,11 @@ MockManager.prototype = {
 		aTarget.Mock = function() { return self.Mock.apply(self, arguments); };
 		aTarget.Mock.prototype = Mock.prototype;
 		Mock.export(aTarget.Mock, this._assert);
+		aTarget.Mock.getMockFor = function(aObject, aName) {
+			var mock = this.getMockFor(aObject, aName, self._assert);
+			self.addMock(mock);
+			return mock;
+		};
 
 		aTarget.FunctionMock = function() { return self.FunctionMock.apply(self, arguments); };
 		aTarget.FunctionMock.prototype = FunctionMock.prototype;
@@ -436,7 +446,14 @@ Mock.ONETIME     = Mock.prototype.ONETIME;
 Mock.NEVER       = Mock.prototype.NEVER;
 Mock.export = function(aTarget, aAssertions) {
 	aAssertions = aAssertions || new ns.Assertions();
+
 	var self = this;
+	aTarget.getMockFor = function(aObject, aName) {
+		return self.getMockFor(aObject, aName, aAssertions);
+	};
+	aTarget.export = function(aObject) {
+		self.export(aObject, aAssertions);
+	};
 
 	aTarget.ANY         = this.prototype.ANY;
 	aTarget.ANY_ONETIME = this.prototype.ANY_ONETIME;
@@ -444,44 +461,18 @@ Mock.export = function(aTarget, aAssertions) {
 	aTarget.ONETIME     = this.prototype.ONETIME;
 	aTarget.NEVER       = this.prototype.NEVER;
 
-	aTarget.addMethod = function(aObject, aName) {
-		return self.addMethod(aObject, aName, aAssertions);
-	};
-	aTarget.addSetter = function(aObject, aName) {
-		return self.addSetter(aObject, aName, aAssertions);
-	};
-	aTarget.addGetter = function(aObject, aName) {
-		return self.addGetter(aObject, aName, aAssertions);
-	};
+	aTarget.addMethod = this.addMethod;
+	aTarget.addSetter = this.addSetter;
+	aTarget.addGetter = this.addGetter;
 
-	aTarget.expect = function(aObject) {
-		return self.expect.apply(self, [aObject, aAssertions].concat(Array.slice(arguments, 1)));
-	};
-	aTarget.expecs = aTarget.expect;
-	aTarget.expectThrows = function(aObject) {
-		return self.expectThrows.apply(self, [aObject, aAssertions].concat(Array.slice(arguments, 1)));
-	};
-	aTarget.expectRaise = aTarget.expectRaises = aTarget.expectThrow = aTarget.expectThrows;
+	aTarget.expecs = aTarget.expect = this.expect;
+	aTarget.expectRaise = aTarget.expectRaises = aTarget.expectThrow = aTarget.expectThrows = this.expectThrows;
 
-	aTarget.expectGet = function(aObject) {
-		return self.expectGet.apply(self, [aObject, aAssertions].concat(Array.slice(arguments, 1)));
-	};
-	aTarget.expectGetThrows = function(aObject) {
-		return self.expectGetThrows.apply(self, [aObject, aAssertions].concat(Array.slice(arguments, 1)));
-	};
-	aTarget.expectGetRaise = aTarget.expectGetRaises = aTarget.expectGetThrow = aTarget.expectGetThrows;
+	aTarget.expectGet = this.expectGet;
+	aTarget.expectGetRaise = aTarget.expectGetRaises = aTarget.expectGetThrow = aTarget.expectGetThrows = this.expectGetThrows;
 
-	aTarget.expectSet = function(aObject) {
-		return self.expectSet.apply(self, [aObject, aAssertions].concat(Array.slice(arguments, 1)));
-	};
-	aTarget.expectSetThrows = function(aObject) {
-		return self.expectSetThrows.apply(self, [aObject, aAssertions].concat(Array.slice(arguments, 1)));
-	};
-	aTarget.expectSetRaise = aTarget.expectSetRaises = aTarget.expectSetThrow = aTarget.expectSetThrows;
-
-	aTarget.export = function(aObject) {
-		self.export(aObject, aAssertions);
-	};
+	aTarget.expectSet = this.expectSet;
+	aTarget.expectSetRaise = aTarget.expectSetRaises = aTarget.expectSetThrow = aTarget.expectSetThrows = this.expectSetThrows;
 };
 
 
