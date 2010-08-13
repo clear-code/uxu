@@ -690,7 +690,7 @@ FunctionMock.prototype = {
 	{
 		if (!aTimes)
 			throw new Error(bundle.getFormattedString('mock_error_times_zero', [this.name]));
-		if (typeof aTimes != 'string' || aTimes < 1)
+		if (typeof aTimes != 'number' || aTimes < 1)
 			throw new Error(bundle.getFormattedString('mock_error_times_invalid', [this.name, aTimes]));
 		for (var i = 0, maxi = aTimes-1; i < maxi; i++)
 		{
