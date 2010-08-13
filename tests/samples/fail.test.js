@@ -358,3 +358,12 @@ function testNotification()
 	utils.log('message');
 }
 
+
+
+function testMock()
+{
+	var mock = new Mock();
+	mock.expect('method', [0, 1], 'OK');
+	mock.expectGet('getter', 'OK');
+	mock.expectSet('setter', 'OK', 'OK');
+}

@@ -994,17 +994,28 @@ TestCase.prototype = {
 			},
 			doTestAssertions : function(aContinuation)
 			{
-				try {
-					if (testReport.report.result == self.RESULT_SUCCESS) {
-						ns.Assertions.prototype.validSuccessCount.call(
-							self.suite.assert._source,
-							current.assertions,
-							current.minAssertions,
-							current.maxAssertions
-						);
-						self._suite.mockManager.assertAll();
-					}
+				if (testReport.report.result != self.RESULT_SUCCESS)
 					aContinuation('ok');
+
+				try {
+					self._suite.mockManager.assertAll();
+				}
+				catch(e) {
+					testReport.report = new ns.Report();
+					testReport.report.result = self.RESULT_FAILURE;
+					testReport.report.exception = self._utils.normalizeError(e);
+					testReport.report.description = bundle.getFormattedString('report_description_mock', [current.description]);
+					aContinuation('ko');
+					return;
+				}
+
+				try {
+					ns.Assertions.prototype.validSuccessCount.call(
+						self.suite.assert._source,
+						current.assertions,
+						current.minAssertions,
+						current.maxAssertions
+					);
 				}
 				catch(e) {
 					testReport.report = new ns.Report();
@@ -1012,7 +1023,10 @@ TestCase.prototype = {
 					testReport.report.exception = self._utils.normalizeError(e);
 					testReport.report.description = bundle.getFormattedString('report_description_check_success_count', [current.description]);
 					aContinuation('ko');
+					return;
 				}
+
+				aContinuation('ok');
 			},
 			doPrivTearDown : function(aContinuation)
 			{

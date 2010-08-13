@@ -9,6 +9,7 @@ const EXPORTED_SYMBOLS = [
 
 var ns = {};
 Components.utils.import('resource://uxu-modules/utils.js', ns);
+Components.utils.import('resource://uxu-modules/multiplexError.js', ns);
 Components.utils.import('resource://uxu-modules/test/assertions.js', ns);
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 
@@ -27,10 +28,19 @@ MockManager.prototype = {
 	},
 	assertAll : function()
 	{
+		var errors = [];
 		this.mocks.forEach(function(aMock) {
-			if ('assert' in aMock && typeof aMock.assert == 'function')
-				aMock.assert();
+			if ('assert' in aMock && typeof aMock.assert == 'function') {
+				try {
+					aMock.assert();
+				}
+				catch(e) {
+					errors.push(e);
+				}
+			}
 		}, this);
+		if (errors.length)
+			throw new ns.MultiplexError(errors);
 	},
 	addMock : function(aMock)
 	{
@@ -356,18 +366,36 @@ Mock.prototype = {
 
 	assert : function()
 	{
+		var errors = [];
 		for (let i in this._getters)
 		{
-			this._getters[i].assert();
+			try {
+				this._getters[i].assert();
+			}
+			catch(e) {
+				errors.push(e);
+			}
 		}
 		for (let i in this._setters)
 		{
-			this._setters[i].assert();
+			try {
+				this._setters[i].assert();
+			}
+			catch(e) {
+				errors.push(e);
+			}
 		}
 		for (let i in this._methods)
 		{
-			this._methods[i].assert();
+			try {
+				this._methods[i].assert();
+			}
+			catch(e) {
+				errors.push(e);
+			}
 		}
+		if (errors.length)
+			throw new ns.MultiplexError(errors);
 	},
 	_assert  : function() { this.assert(); },
 	verify : function() { this.assert(); },
@@ -557,7 +585,7 @@ FunctionMock.prototype = {
 		this.anyCall = null;
 		this.successCount = 0;
 		this.errorCount = 0;
-		this.totalCount = 0;
+		this.expectedCount = 0;
 	},
 	createFunction : function()
 	{
@@ -591,14 +619,13 @@ FunctionMock.prototype = {
 		var call = new ExpectedCall(aOptions);
 		if (call.isAnyCall()) {
 			this.anyCall = call;
-			return null;
 		}
 		else {
 			this.anyCall = null;
 			this.expectedCalls.push(call);
-			this.totalCount++;
-			return call;
+			this.expectedCount++;
 		}
+		return call;
 	},
 	isSpecialSpec : function(aArgument)
 	{
@@ -745,13 +772,13 @@ FunctionMock.prototype = {
 	},
 	assertInternal : function(aErrorMessageKey, aFailMessageKey)
 	{
-		var total = this.totalCount;
+		var expected = this.expectedCount;
 		var success = this.successCount;
 		var errors = this.errorCount;
 		this.reset();
 		if (errors)
-			throw new Error(bundle.getFormattedString(aErrorMessageKey, [this.name, this.errorCount]));
-		this._assert.equals(total, success, bundle.getFormattedString(aFailMessageKey, [this.name]));
+			throw new Error(bundle.getFormattedString(aErrorMessageKey, [this.name, errors]));
+		this._assert.equals(expected, success, bundle.getFormattedString(aFailMessageKey, [this.name]));
 	},
 	assert : function()
 	{
@@ -861,14 +888,11 @@ SetterMock.prototype = {
 	defaultName : bundle.getString('setter_mock_default_name'),
 	expect : function(aArgument, aReturnValue)
 	{
-		if (aArgument == Mock.prototype.NEVER)
-			return;
-		var call = this.addExpectedCall({
+		if (aArgument != Mock.prototype.NEVER)
+			this.addExpectedCall({
 				arguments   : [aArgument],
-				returnValue : aReturnValue
+				returnValue : arguments.length < 2 ? aArgument : aReturnValue
 			});
-		if (call && arguments.length < 2)
-			call.returnValue = aArgument;
 		return this;
 	},
 	expectThrows : function(aArgument, aExceptionClass, aExceptionMessage)

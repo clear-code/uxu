@@ -7,6 +7,7 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 var ns = {};
+Components.utils.import('resource://uxu-modules/multiplexError.js', ns);
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/lib/prefs.js', ns);
 Components.utils.import('resource://uxu-modules/lib/encoding.jsm', ns);
@@ -925,6 +926,13 @@ normalizeError : function(e)
 			var msg = bundle.getFormattedString('unknown_exception', [e]);
 			e = new Error(msg);
 			e.stack = this.getStackTrace();
+			break;
+
+		case 'object':
+			if (e instanceof ns.MultiplexError)
+				e.errors.forEach(function(aError) {
+					this.normalizeError(aError);
+				}, this);
 			break;
 	}
 	return e;

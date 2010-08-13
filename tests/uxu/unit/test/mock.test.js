@@ -529,17 +529,26 @@ function test_mockName()
 
 function test_mockMethod()
 {
-	var mock = new Mock();
-	assertCallAdded(mock, function() {
-		mock.expect('method');
-	});
-	assertCallAdded(mock, function() {
-		mock.expect('args', [0, 1, 2], true);
-	});
-	assertCallAdded(mock, function() {
-		mock.expectThrows('error', [], 'error message');
-	});
-	assertFail(mock);
+	function setUpMock()
+	{
+		var mock = new Mock();
+		assertCallAdded(mock, function() {
+			mock.expect('method');
+		});
+		assertCallAdded(mock, function() {
+			mock.expect('args', [0, 1, 2], true);
+		});
+		assertCallAdded(mock, function() {
+			mock.expectThrows('error', [], 'error message');
+		});
+		return mock;
+	}
+
+	var mock = setUpMock();
+	assert.raises('MultiplexError', function() { mock.assert(); });
+	assert.notRaises('MultiplexError', function() { mock.assert(); });
+
+	mock = setUpMock();
 	assert.notRaises(
 		'Error',
 		function() { mock.method(); }
@@ -549,22 +558,31 @@ function test_mockMethod()
 		'error message',
 		function() { mock.error(); }
 	);
-	assertSuccess(mock);
+	assert.notRaises('MultiplexError', function() { mock.assert(); });
 }
 
 function test_mockGetter()
 {
-	var mock = new Mock();
-	assertCallAdded(mock, function() {
-		mock.expectGet('getterUndefined');
-	});
-	assertCallAdded(mock, function() {
-		mock.expectGet('getterArray', [0, 1, 2]);
-	});
-	assertCallAdded(mock, function() {
-		mock.expectGetThrows('getterError', Error, 'error message');
-	});
-	assertFail(mock);
+	function setUpMock()
+	{
+		var mock = new Mock();
+		assertCallAdded(mock, function() {
+			mock.expectGet('getterUndefined');
+		});
+		assertCallAdded(mock, function() {
+			mock.expectGet('getterArray', [0, 1, 2]);
+		});
+		assertCallAdded(mock, function() {
+			mock.expectGetThrows('getterError', Error, 'error message');
+		});
+		return mock;
+	}
+
+	var mock = setUpMock();
+	assert.raises('MultiplexError', function() { mock.assert(); });
+	assert.notRaises('MultiplexError', function() { mock.assert(); });
+
+	mock = setUpMock();
 	assert.notRaises(
 		'Error',
 		function() {
@@ -576,36 +594,40 @@ function test_mockGetter()
 		'error message',
 		function() { var value = mock.getterError; }
 	);
-	assertSuccess(mock);
+	assert.notRaises('MultiplexError', function() { mock.assert(); });
 }
 
 function test_mockSetter()
 {
-	var mock = new Mock();
-	assertCallAdded(mock, function() {
-		mock.expectSet('setterUndefined');
-	});
-	assertCallAdded(mock, function() {
-		mock.expectSet('setterArray', [0, 1, 2]);
-	});
-//	mock.expectSet('setterString', 'string', 'returned');
-	assertCallAdded(mock, function() {
-		mock.expectSetThrows('setterError', 'error', Error, 'error message');
-	});
-	assertFail(mock);
-	assert.notRaises(
-		'Error',
-		function() {
-			mock.setterUndefined = void(0);
-		}
-	);
+	function setUpMock()
+	{
+		var mock = new Mock();
+		assertCallAdded(mock, function() {
+			mock.expectSet('setterUndefined');
+		});
+		assertCallAdded(mock, function() {
+			mock.expectSet('setterArray', [0, 1, 2]);
+		});
+	//	mock.expectSet('setterString', 'string', 'returned');
+		assertCallAdded(mock, function() {
+			mock.expectSetThrows('setterError', 'error', Error, 'error message');
+		});
+		return mock;
+	}
+
+	var mock = setUpMock();
+	assert.raises('MultiplexError', function() { mock.assert(); });
+	assert.notRaises('MultiplexError', function() { mock.assert(); });
+
+	mock = setUpMock();
+	mock.setterUndefined = void(0);
 	assert.equals([0, 1, 2], mock.setterArray = [0, 1, 2]);
 //	assert.equals('returned', mock.setterString = 'string');
 	assert.raises(
 		'error message',
 		function() { mock.setterError = 'error'; }
 	);
-	assertSuccess(mock);
+	assert.notRaises('MultiplexError', function() { mock.assert(); });
 }
 
 function test_mockAccessOrder()
