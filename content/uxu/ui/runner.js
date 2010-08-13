@@ -681,7 +681,7 @@ function updateUIForAllTestsFinish()
 		_('testResultStatus').setAttribute('label', bundle.getString('all_abort'));
 		return;
 	}
-	else if (gFailureCount || gErrorCount) {
+	else if (gFailed.length || gError.length) {
 		_('runFailed').removeAttribute('disabled');
 		var failures = getFailureReports();
 		var errors = getErrorReports();
@@ -691,14 +691,14 @@ function updateUIForAllTestsFinish()
 	else {
 		scrollReportsTo(_('testcase-reports').firstChild);
 		_('testResultStatus').setAttribute('label',
-			bundle.getString(gSkipCount ? 'all_result_done' : 'all_result_success' )
+			bundle.getString(gSkipped.length ? 'all_result_done' : 'all_result_success' )
 		);
 	}
 	_('testResultStatistical').hidden = false;
 	_('testResultStatistical').setAttribute('label',
 		bundle.getFormattedString(
 			'all_result_statistical',
-			[gTotalCount, gSuccessCount, gFailureCount, gErrorCount, gSkipCount]
+			[gAll.length, gSuccess.length, gFailed.length, gError.length, gSkipped.length]
 		)
 	);
 };
@@ -724,11 +724,11 @@ function displayStackTraceLines(aLines, aListbox)
 function reset() 
 {
 	gAborted = false;
-	gTotalCount    = 0;
-	gSuccessCount  = 0;
-	gSkipCount = 0;
-	gErrorCount    = 0;
-	gFailureCount  = 0;
+	gAll     = [];
+	gSuccess = [];
+	gSkipped = [];
+	gFailed  = [];
+	gError   = [];
 	_('runFailed').setAttribute('disabled', true);
 	_('testResultStatus').setAttribute('label', '');
 	_('testResultStatistical').setAttribute('label', '');
@@ -739,11 +739,11 @@ function reset()
 	gLog.clear();
 }
 var gAborted = false;
-var gTotalCount    = 0;
-var gSuccessCount  = 0;
-var gSkipCount = 0;
-var gErrorCount    = 0;
-var gFailureCount  = 0;
+var gAll     = [];
+var gSuccess = [];
+var gSkipped = [];
+var gFailed  = [];
+var gError   = [];
  
 function setRunningState(aRunning) 
 {
@@ -857,7 +857,9 @@ function getReport(aTestCase)
  
 function fillReportFromResult(aTestCase, aResult) 
 {
-	var id = 'test-report-'+encodeURIComponent(aTestCase.title)+'-'+encodeURIComponent(aTestCase.source)+'-'+aResult.index+'-'+encodeURIComponent(aResult.title);
+	var testId = 'test-report-'+encodeURIComponent(aTestCase.title)+'-'+encodeURIComponent(aTestCase.source)+'-'+aResult.index;
+	Application.console.log(testId);
+	var id = testId+'-'+encodeURIComponent(aResult.title);
 	if (_(id)) return;
 
 	var reportNode = getReport(aTestCase);
@@ -875,32 +877,34 @@ function fillReportFromResult(aTestCase, aResult)
 	var dummyTestReport = document.createElement('data');
 	dummyTestReport.setAttribute('id', id);
 
-	gTotalCount++;
 	switch (aResult.type)
 	{
 		case ns.TestCase.prototype.RESULT_SUCCESS:
-			gSuccessCount++;
+			if (gSuccess.indexOf(testId) < 0) gSuccess.push(testId);
 			var successes = parseInt(_(reportNode, 'success-counter').value);
 			_(reportNode, 'success-counter').value = successes + 1;
 			_(reportNode).appendChild(dummyTestReport);
-			if (!aResult.notifications || !aResult.notifications.length)
-				return;
 			break;
 		case ns.TestCase.prototype.RESULT_SKIPPED:
-			gSkipCount++;
+			if (gSkipped.indexOf(testId) < 0) gSkipped.push(testId);
 			var skip = parseInt(_(reportNode, 'skip-counter').value);
 			_(reportNode, 'skip-counter').value = skip + 1;
 			_(reportNode).appendChild(dummyTestReport);
 			return;
 		case ns.TestCase.prototype.RESULT_FAILURE:
-			gFailureCount++;
+			if (gFailed.indexOf(testId) < 0) gFailed.push(testId);
 			break;
 		case ns.TestCase.prototype.RESULT_ERROR:
-			gErrorCount++;
+			if (gError.indexOf(testId) < 0) gError.push(testId);
 			break;
 		default:
 			break;
 	}
+	if (gAll.indexOf(testId) < 0) gAll.push(testId);
+
+	if (aResult.type == ns.TestCase.prototype.RESULT_SUCCESS &&
+		(!aResult.notifications || !aResult.notifications.length))
+		return;
 
 	var wTestReport = clone('test-report');
 	wTestReport.setAttribute('id', id);
