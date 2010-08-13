@@ -210,7 +210,9 @@ attachMock : function()
  
 attachDeferred : function() 
 {
-	this.Deferred = ns.Deferred;
+	this.__defineGetter__('Deferred', function() {
+		return ns.Deferred;
+	});
 },
  
 // window management 

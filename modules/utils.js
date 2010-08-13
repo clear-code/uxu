@@ -15,6 +15,7 @@ Components.utils.import('resource://uxu-modules/lib/hash.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/registry.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/extensions.js', ns);
 Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
+Components.utils.import('resource://uxu-modules/lib/jsdeferred.js', ns);
 
 var prefread = {};
 Components.utils.import('resource://uxu-modules/prefread.js', prefread);
@@ -233,6 +234,15 @@ wait : function(aWaitCondition)
 		case 'object':
 			if (this.isGeneratedIterator(aWaitCondition)) {
 				finished = this.doIteration(aWaitCondition);
+			}
+			else if (this.isDeferred(aWaitCondition)) {
+				aWaitCondition
+					.next(function() {
+						finished.value = true;
+					})
+					.error(function() {
+						finished.value = true;
+					});
 			}
 			else {
 				if (!aWaitCondition || !('value' in aWaitCondition))
@@ -1294,7 +1304,8 @@ doIteration : function(aGenerator, aCallbacks)
 	var retVal = { value : false };
 	var lastRun = Date.now();
 	var timeout = Math.max(0, this.getPref('extensions.uxu.run.timeout'));
-	(function(aObject, aSelf) {
+	var self = this;
+	(function(aObject) {
 		try {
 			if (Date.now() - lastRun >= timeout)
 				throw new Error(bundle.getFormattedString('error_generator_timeout', [parseInt(timeout / 1000)]));
@@ -1302,19 +1313,33 @@ doIteration : function(aGenerator, aCallbacks)
 			if (aObject !== void(0)) {
 				var continueAfterDelay = false;
 				if (aObject instanceof Error) {
-					throw returnedValue;
+					throw aObject;
 				}
 				else if (typeof aObject == 'number') {
 					// TraceMonkeyのバグなのかなんなのか、指定時間経つ前にタイマーが発動することがあるようだ……
 					continueAfterDelay = (Date.now() - lastRun < aObject);
 				}
 				else if (aObject && typeof aObject == 'object') {
-					if (aSelf.isGeneratedIterator(aObject))
-						return ns.setTimeout(arguments.callee, 0, aSelf.doIteration(aObject), aSelf);
-					else if ('error' in aObject && aObject.error instanceof Error)
+					if (self.isGeneratedIterator(aObject)) {
+						return ns.setTimeout(arguments.callee, 0, self.doIteration(aObject));
+					}
+					else if (self.isDeferred(aObject)) {
+						let finished = { value : false };
+						aObject
+							.next(function() {
+								finished.value = true;
+							})
+							.error(function() {
+								finished.value = true;
+							});
+						return ns.setTimeout(arguments.callee, 0, finished);
+					}
+					else if ('error' in aObject && aObject.error instanceof Error) {
 						throw aObject.error;
-					else if (!aObject.value)
+					}
+					else if (!aObject.value) {
 						continueAfterDelay = true;
+					}
 				}
 				else if (typeof aObject == 'function') {
 					var val;
@@ -1329,11 +1354,11 @@ doIteration : function(aGenerator, aCallbacks)
 						continueAfterDelay = true;
 					else if (val instanceof Error)
 						throw val;
-					else if (aSelf.isGeneratedIterator(val))
-						return ns.setTimeout(arguments.callee, 0, aSelf.doIteration(val), aSelf);
+					else if (self.isGeneratedIterator(val))
+						return ns.setTimeout(arguments.callee, 0, self.doIteration(val));
 				}
 				if (continueAfterDelay)
-					return ns.setTimeout(arguments.callee, 10, aObject, aSelf);
+					return ns.setTimeout(arguments.callee, 10, aObject);
 			}
 
 			var returnedValue = iterator.next();
@@ -1349,23 +1374,33 @@ doIteration : function(aGenerator, aCallbacks)
 
 				case 'number':
 					if (returnedValue >= 0) {
-						ns.setTimeout(arguments.callee, returnedValue, returnedValue, aSelf);
+						ns.setTimeout(arguments.callee, returnedValue, returnedValue);
 						return;
 					}
 					throw new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(returnedValue)]));
 
 				case 'object':
-					if (
-						returnedValue &&
-						('value' in returnedValue || aSelf.isGeneratedIterator(returnedValue))
-						) {
-						ns.setTimeout(arguments.callee, 10, returnedValue, aSelf);
-						return;
+					if (returnedValue) {
+						if ('value' in returnedValue || self.isGeneratedIterator(returnedValue)) {
+							ns.setTimeout(arguments.callee, 10, returnedValue);
+							return;
+						}
+						else if (self.isDeferred(returnedValue)) {
+							let loop = arguments.callee;
+							returnedValue
+								.next(function(aReturnedValue) {
+									loop();
+								})
+								.error(function(aException) {
+									loop();
+								});
+							return;
+						}
 					}
 					throw new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(returnedValue)]));
 
 				case 'function':
-					ns.setTimeout(arguments.callee, 10, returnedValue, aSelf);
+					ns.setTimeout(arguments.callee, 10, returnedValue);
 					return;
 			}
 		}
@@ -1410,7 +1445,7 @@ doIteration : function(aGenerator, aCallbacks)
 			}
 		}
 		catch(e) {
-			e = aSelf.normalizeError(e);
+			e = self.normalizeError(e);
 			try {
 				e.stack += callerStack;
 			}
@@ -1430,7 +1465,7 @@ doIteration : function(aGenerator, aCallbacks)
 				retVal.error = e;
 			}
 		}
-	})(null, this);
+	})(null);
 
 	return retVal;
 },
@@ -1764,6 +1799,11 @@ isRegExp : function(aObject)
 isObject : function(aObject) 
 {
 	return typeof aObject == 'object';
+},
+ 
+isDeferred : function(aObject)
+{
+	return aObject && aObject.__proto__ == ns.Deferred.prototype;
 },
   
 // 比較 
