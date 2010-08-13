@@ -888,11 +888,16 @@ SetterMock.prototype = {
 	defaultName : bundle.getString('setter_mock_default_name'),
 	expect : function(aArgument, aReturnValue)
 	{
-		if (aArgument != Mock.prototype.NEVER)
-			this.addExpectedCall({
-				arguments   : [aArgument],
-				returnValue : arguments.length < 2 ? aArgument : aReturnValue
-			});
+		
+		if (aArgument != Mock.prototype.NEVER) {
+			var call = this.addExpectedCall({
+					arguments   : [aArgument]
+				});
+			if (arguments.length > 1)
+				call.returnValue = aReturnValue;
+			else if (!this.isSpecialSpec(aArgument))
+				call.returnValue = aArgument;
+		}
 		return this;
 	},
 	expectThrows : function(aArgument, aExceptionClass, aExceptionMessage)
@@ -936,7 +941,10 @@ SetterMock.prototype = {
 
 		this.successCount++;
 
-		return call.finish([]);
+		var returnValue = call.finish([]);
+		return !('returnValue' in call) && !this.isSpecialSpec(call.arguments[0]) ?
+				aArguments[0] :
+				returnValue ;
 	},
 	assert : function()
 	{
