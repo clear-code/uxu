@@ -91,8 +91,12 @@ testRedirect.parameters = [
 	'http://localhost:4445/redirect/sub/temp2/hash.txt',
 	'http://localhost:4445/redirect/match/hash.txt'
 ];
-testRedirect.setUp = setUpHttpServer;
-testRedirect.tearDown = tearDownHttpServer;
+testRedirect.setUp = function() {
+	setUpHttpServer(4445, baseURL+'../../fixtures/');
+};
+testRedirect.tearDown = function() {
+	tearDownAllHttpServers();
+};
 function testRedirect(aURI)
 {
 	utils.loadURI(aURI);
@@ -104,8 +108,12 @@ testRewrite.parameters = [
 	'http://localhost:4445/redirect/rewrite/hash.txt',
 	'http://localhost:4445/redirect/rewrite_absolute/hash.txt'
 ];
-testRewrite.setUp = setUpHttpServer;
-testRewrite.tearDown = tearDownHttpServer;
+testRewrite.setUp = function() {
+	setUpHttpServer(4445, baseURL+'../../fixtures/');
+};
+testRewrite.tearDown = function() {
+	tearDownAllHttpServers();
+};
 function testRewrite(aURI)
 {
 	utils.loadURI(aURI);
