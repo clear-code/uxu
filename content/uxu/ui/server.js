@@ -122,10 +122,9 @@ var testRunnerlistener = {
 		if (node)
 			return;
 
-		if (this.count[aResult].indexOf(testId) < 0)
-			this.count[aResult].push(testId);
-		if (this.count.total.indexOf(testId) < 0)
-			this.count.total.push(testId);
+		this.count[aResult]++;
+		if (this.count.allTests.indexOf(testId) < 0)
+			this.count.allTests.push(testId);
 
 		var color;
 		switch (aResult)
@@ -157,11 +156,11 @@ var testRunnerlistener = {
 
 	onTestCaseStart: function(aEvent) {
 		this.count = {
-			success  : [],
-			failure  : [],
-			error    : [],
-			skip     : [],
-			total    : []
+			success  : 0,
+			failure  : 0,
+			error    : 0,
+			skip     : 0,
+			allTests : []
 		};
 		gLog.scrollBoxObject.ensureElementIsVisible(this.getReport(aEvent.data.testCase));
 		document.documentElement.setAttribute('running', true);
@@ -175,11 +174,11 @@ var testRunnerlistener = {
 		node.lastChild.setAttribute('value', bundle.getFormattedString(
 			'all_result_statistical',
 			[
-				this.count.total.length,
-				this.count.success.length,
-				this.count.failure.length,
-				this.count.error.length,
-				this.count.skip.length
+				this.count.allTests.length,
+				this.count.success,
+				this.count.failure,
+				this.count.error,
+				this.count.skip
 			]
 		));
 		parent.appendChild(node);
@@ -196,7 +195,7 @@ var testRunnerlistener = {
 	{
 		aEvent.data.data.forEach(function(aResult) {
 			aResult.results
-				.slice(this.count.total.length)
+				.slice(this.count.allTests.length)
 				.forEach(function(aResult) {
 					this.buildResultLine(aResult.index, aResult.title, aResult.type, aEvent.data.testCase);
 				}, this);

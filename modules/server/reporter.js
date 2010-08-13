@@ -22,14 +22,14 @@ var statusOrder = [
 
 function Reporter(aOptions)
 {
-	this.nTests = 0;
-	this.nAssertions = 0;
-	this.nFailures = 0;
-	this.nErrors = 0;
-	this.finished   = false;
-	this.result     = '';
+	this.allTests     = [];
+	this.nAssertions  = 0;
+	this.nFailures    = 0;
+	this.nErrors      = 0;
+	this.finished     = false;
+	this.result       = '';
 	this.resultStatus = ns.TestCase.prototype.RESULT_SUCCESS;
-	this.badResults = [];
+	this.badResults   = [];
 
 	if (!aOptions)
 		aOptions = {};
@@ -101,10 +101,11 @@ Reporter.prototype = {
 
 	handleReport : function(aReport, aTestCase)
 	{
-		var id = 'testcase-report-line-'+
+		var testId = 'testcase-report-line-'+
 					encodeURIComponent(aTestCase.title)+'-'+
 					encodeURIComponent(aTestCase.source)+'-'+
-					aReport.index+'-'+encodeURIComponent(aReport.description);
+					aReport.index;
+		var id = testId + '-'+encodeURIComponent(aReport.description);
 		if (id in this.doneReports)
 			return;
 
@@ -129,7 +130,8 @@ Reporter.prototype = {
 		if (this._isMoreImportantStatus(aReport.result))
 			this.resultStatus = aReport.result;
 
-		this.nTests++;
+		if (this.allTests.indexOf(testId) < 0)
+			this.allTests.push(testId);
 
 		if (aReport.exception)
 			this.badResults.push(aReport);
@@ -231,15 +233,15 @@ Reporter.prototype = {
 
 		resultColor = this._statusColor(this.resultStatus);
 
-		summary = [this.nTests + " test(s)",
+		summary = [this.allTests + " test(s)",
 				   // this.nAssertions + " assertion(s)",
 				   this.nFailures + " failure(s)",
 				   this.nErrors + " error(s)"].join(', ');
 		this.result += this._colorize(summary, resultColor);
 		this.result += "\n";
 
-		if (this.nTests > 0)
-			successRate = (this.nTests - this.badResults.length) / this.nTests * 100;
+		if (this.allTests > 0)
+			successRate = (this.allTests - this.badResults.length) / this.allTests * 100;
 		else
 			successRate = 0;
 		this.result += this._colorize(successRate + '% passed.', resultColor);
