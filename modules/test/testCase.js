@@ -866,10 +866,12 @@ TestCase.prototype = {
 				catch(e) {
 					let multiplex = e.name == 'MultiplexError';
 					(multiplex ? e.errors : [e] ).forEach(function(e, aIndex) {
-						var suffix = multiplex ? ' ('+(aIndex+1)+')' : '' ;
+						var description = aOptions.errorDescription;
+						if (multiplex)
+							description = bundle.getFormattedString('report_description_multiplex', [description, aIndex+1]);
 						aOptions.report.report.result = (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR;
 						aOptions.report.report.exception = self._utils.normalizeError(e);
-						aOptions.report.report.description = aOptions.errorDescription + suffix;
+						aOptions.report.report.description = description;
 					}, this);
 					aOptions.report.report.parameter = aOptions.parameter;
 					aOptions.report.report.formattedParameter = aOptions.formattedParameter;
@@ -1005,10 +1007,12 @@ TestCase.prototype = {
 					testReport.report = new ns.Report();
 					let multiplex = e.name == 'MultiplexError';
 					(multiplex ? e.errors : [e] ).forEach(function(e, aIndex) {
-						var suffix = multiplex ? ' ('+(aIndex+1)+')' : '' ;
+						var description = bundle.getFormattedString('report_description_mock', [current.description]);
+						if (multiplex)
+							description = bundle.getFormattedString('report_description_multiplex', [description, aIndex+1]);
 						testReport.report.result = (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR;
 						testReport.report.exception = self._utils.normalizeError(e);
-						testReport.report.description = bundle.getFormattedString('report_description_mock', [current.description]) + suffix;
+						testReport.report.description = description;
 					});
 					aContinuation('ko');
 					return;
@@ -1340,10 +1344,12 @@ TestCase.prototype = {
 		var onError = function(e) {
 				var multiplex = e.name == 'MultiplexError';
 				(multiplex ? e.errors : [e] ).forEach(function(e, aIndex) {
-					var suffix = multiplex ? ' ('+(aIndex+1)+')' : '' ;
+					var description = aTest.description;
+					if (multiplex)
+						description = bundle.getFormattedString('report_description_multiplex', [description, aIndex+1]);
 					aReport.report.result = (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR;
 					aReport.report.exception = self._utils.normalizeError(e);
-					aReport.report.description = aTest.description + suffix;
+					aReport.report.description = description;
 				});
 				self._onFinish(aTest, aReport.report.result);
 			};
