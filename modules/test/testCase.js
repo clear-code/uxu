@@ -33,7 +33,6 @@ Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
 Components.utils.import('resource://uxu-modules/fsm.js', ns);
 Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/eventTarget.js', ns);
-Components.utils.import('resource://uxu-modules/multiplexError.js', ns);
 Components.utils.import('resource://uxu-modules/test/assertions.js', ns);
 Components.utils.import('resource://uxu-modules/test/report.js', ns);
 Components.utils.import('resource://uxu-modules/server/server.js', ns);
@@ -865,10 +864,12 @@ TestCase.prototype = {
 					}
 				}
 				catch(e) {
-					(e.name == 'MultiplexError' ? e.errors : [e] ).forEach(function(e) {
+					let multiplex = e.name == 'MultiplexError';
+					(multiplex ? e.errors : [e] ).forEach(function(e, aIndex) {
+						var suffix = multiplex ? ' ('+(aIndex+1)+')' : '' ;
 						aOptions.report.report.result = (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR;
 						aOptions.report.report.exception = self._utils.normalizeError(e);
-						aOptions.report.report.description = aOptions.errorDescription;
+						aOptions.report.report.description = aOptions.errorDescription + suffix;
 					}, this);
 					aOptions.report.report.parameter = aOptions.parameter;
 					aOptions.report.report.formattedParameter = aOptions.formattedParameter;
@@ -985,7 +986,6 @@ TestCase.prototype = {
 				var newReport = self._exec(current, context, aContinuation, testReport);
 				if (newReport.result) {
 					testReport.report = newReport;
-					testReport.report.description = current.description;
 					testReport.report.onDetailedFinish();
 					aContinuation('ok');
 				}
@@ -1003,10 +1003,12 @@ TestCase.prototype = {
 				}
 				catch(e) {
 					testReport.report = new ns.Report();
-					(e.name == 'MultiplexError' ? e.errors : [e] ).forEach(function(e) {
+					let multiplex = e.name == 'MultiplexError';
+					(multiplex ? e.errors : [e] ).forEach(function(e, aIndex) {
+						var suffix = multiplex ? ' ('+(aIndex+1)+')' : '' ;
 						testReport.report.result = (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR;
 						testReport.report.exception = self._utils.normalizeError(e);
-						testReport.report.description = bundle.getFormattedString('report_description_mock', [current.description]);
+						testReport.report.description = bundle.getFormattedString('report_description_mock', [current.description]) + suffix;
 					});
 					aContinuation('ko');
 					return;
@@ -1322,65 +1324,58 @@ TestCase.prototype = {
   
 	_exec : function(aTest, aContext, aContinuation, aReport) 
 	{
-		var report = new ns.Report();
+		aReport.report = new ns.Report();
 
 		if (this._stopper && this._stopper()) {
-			report.result = this.RESULT_SKIPPED;
-			return report;
+			aReport.report.result = this.RESULT_SKIPPED;
+			return aReport.report;
 		}
+
+		var self = this;
+		var onSuccess = function() {
+				aReport.report.result = self.RESULT_SUCCESS;
+				aReport.report.description = aTest.description;
+				self._onFinish(aTest, aReport.report.result);
+			};
+		var onError = function(aError) {
+				var multiplex = e.name == 'MultiplexError';
+				(multiplex ? e.errors : [e] ).forEach(function(e, aIndex) {
+					var suffix = multiplex ? ' ('+(aIndex+1)+')' : '' ;
+					aReport.report.result = (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR;
+					aReport.report.exception = self._utils.normalizeError(e);
+					aReport.report.description = aTest.description + suffix;
+				});
+				self._onFinish(aTest, aReport.report.result);
+			};
 
 		try {
 			var result = aTest.code.call(aContext);
 
 			if (this._utils.isGeneratedIterator(result)) {
-				aReport.report = report;
-				var self = this;
 				ns.setTimeout(function() {
 					self._utils.doIteration(result, {
 						onEnd : function(e) {
 							aReport.report.onDetailedFinish();
-							aReport.report.result = self.RESULT_SUCCESS;
-							self._onFinish(aTest, aReport.report.result);
-							aContinuation('ok');
-						},
-						onFail : function(e) {
-							aReport.report.onDetailedFinish();
-							aReport.report.result = self.RESULT_FAILURE;
-							aReport.report.exception = e;
-							self._onFinish(aTest, aReport.report.result);
+							onSuccess();
 							aContinuation('ok');
 						},
 						onError : function(e) {
 							aReport.report.onDetailedFinish();
-							(e.name == 'MultiplexError' ? e.errors : [e] ).forEach(function(e) {
-								aReport.report.result = (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR;
-								aReport.report.exception = self._utils.normalizeError(e);
-							});
-							self._onFinish(aTest, aReport.report.result);
+							onError(e);
 							aContinuation('ok');
 						}
 					});
 				}, 0);
-				return report;
+				return aReport.report;
 			}
 
-			report.result = this.RESULT_SUCCESS;
-			this._onFinish(aTest, report.result);
-		}
-		catch(e if e.name == 'AssertionFailed') {
-			report.result = this.RESULT_FAILURE;
-			report.exception = e;
-			this._onFinish(aTest, report.result);
+			onSuccess();
 		}
 		catch(e) {
-			(e.name == 'MultiplexError' ? e.errors : [e] ).forEach(function(e) {
-				report.result = (e.name == 'AssertionFailed') ? this.RESULT_FAILURE : this.RESULT_ERROR;
-				report.exception = this._utils.normalizeError(e);
-			}, this);
-			this._onFinish(aTest, report.result);
+			onError(e);
 		}
 
-		return report;
+		return aReport.report;
 	},
  
 	_checkPriorityToExec : function(aTest) 

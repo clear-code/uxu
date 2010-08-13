@@ -360,7 +360,13 @@ function testNotification()
 
 
 
-function testMock()
+function testMock_single()
+{
+	var mock = new Mock();
+	mock.expect('method', [0, 1], 'OK');
+}
+
+function testMock_multiple()
 {
 	var mock = new Mock();
 	mock.expect('method', [0, 1], 'OK');

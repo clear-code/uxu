@@ -12,6 +12,10 @@ function MultiplexError(aErrorsArray)
 		else
 			errors.push(aError);
 	});
+
+	if (errors.length == 1)
+		return errors[0];
+
 	error.errors = errors;
 	return error;
 }
