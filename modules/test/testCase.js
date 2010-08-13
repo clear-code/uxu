@@ -810,7 +810,7 @@ TestCase.prototype = {
 		var stateTransitions = {
 			start             : { ok : 'setUpDaemons' },
 			setUpDaemons      : { ok : 'doStartUp' },
-			doStartUp         : { ok : 'prepareTest', ko: 'doShutDown' },
+			doStartUp         : { ok : 'prepareTest' },
 			prepareTest       : { ok : 'checkDoOrSkip' },
 			checkDoOrSkip     : { ok : 'cleanUpBeforeTest', ko: 'skip' },
 			skip              : { ok : 'doReport' },
@@ -895,7 +895,7 @@ TestCase.prototype = {
 			{
 	 			testCaseReport.report = new ns.Report();
 				if (allTestsToBeSkipped) {
-					aContinuation('ko');
+					aContinuation('ok');
 					return;
 				}
 				doPreOrPostProcess(
