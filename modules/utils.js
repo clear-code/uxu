@@ -10,6 +10,7 @@ var ns = {};
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/lib/prefs.js', ns);
 Components.utils.import('resource://uxu-modules/lib/encoding.jsm', ns);
+Components.utils.import('resource://uxu-modules/lib/textIO.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/ejs.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/hash.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/registry.jsm', ns);
@@ -505,50 +506,7 @@ readFrom : function(aTarget, aEncoding)
 	if (!target)
 		throw new Error(bundle.getFormattedString('error_utils_read_from', [aTarget]));
 
-	var stream;
-	try {
-		target = target.QueryInterface(Ci.nsIURI);
-		var channel = IOService.newChannelFromURI(target);
-		stream = channel.open();
-	}
-	catch(e) {
-		target = target.QueryInterface(Ci.nsILocalFile)
-		stream = Cc['@mozilla.org/network/file-input-stream;1']
-					.createInstance(Ci.nsIFileInputStream);
-		try {
-			stream.init(target, 1, 0, false); // open as "read only"
-		}
-		catch(ex) {
-			return null;
-		}
-	}
-
-	var fileContents = null;
-	try {
-		if (aEncoding) {
-			var converterStream = Cc['@mozilla.org/intl/converter-input-stream;1']
-					.createInstance(Ci.nsIConverterInputStream);
-			var buffer = stream.available();
-			converterStream.init(stream, aEncoding, buffer,
-				converterStream.DEFAULT_REPLACEMENT_CHARACTER);
-			var out = { value : null };
-			converterStream.readString(stream.available(), out);
-			converterStream.close();
-			fileContents = out.value;
-		}
-		else {
-			var scriptableStream = Cc['@mozilla.org/scriptableinputstream;1']
-					.createInstance(Ci.nsIScriptableInputStream);
-			scriptableStream.init(stream);
-			fileContents = scriptableStream.read(scriptableStream.available());
-			scriptableStream.close();
-		}
-	}
-	finally {
-		stream.close();
-	}
-
-	return fileContents;
+	return ns.textIO.readFrom(target, aEncoding);
 },
  
 // ファイルパスまたはURLで示された先のテキストファイルに文字列を書き出す 
@@ -573,23 +531,7 @@ writeTo : function(aContent, aTarget, aEncoding)
 	tempFile.append(target.localName+'.writing');
 	tempFile.createUnique(tempFile.NORMAL_FILE_TYPE, 0666);
 
-	var stream = Cc['@mozilla.org/network/file-output-stream;1']
-			.createInstance(Ci.nsIFileOutputStream);
-	stream.init(tempFile, 2, 0x200, false); // open as "write only"
-
-	if (aEncoding) {
-		var converterStream = Cc['@mozilla.org/intl/converter-output-stream;1']
-				.createInstance(Ci.nsIConverterOutputStream);
-		var buffer = aContent.length;
-		converterStream.init(stream, aEncoding, buffer, Ci.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER);
-		converterStream.writeString(aContent);
-		converterStream.close();
-	}
-	else {
-		stream.write(aContent, aContent.length);
-	}
-
-	stream.close();
+	ns.textIO.writeTo(aContent, tempFile, aEncoding);
 
 	if (target.exists()) target.remove(true);
 	tempFile.moveTo(target.parent, target.leafName);
