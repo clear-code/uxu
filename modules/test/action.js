@@ -314,7 +314,7 @@ readyToSelect : function(aSelectedIndexes, aOptions)
 	this.readiedActionListeners.push(listener);
 },
  
-cancelReadiedActions : function(aInput) 
+cancelReadiedActions : function() 
 {
 	this.readiedActionListeners.forEach(function(aListener) {
 		this._suite.removeWindowWatcher(aListener);
