@@ -34,7 +34,8 @@ readyToOK : function(aOptions)
 			if (
 				aWindow.location.href != self.COMMON_DIALOG_URL ||
 				(!aWindow.gCommonDialogParam && !aWindow.gArgs) ||
-				self.readiedActionListeners.indexOf(listener) < 0
+				self.readiedActionListeners.indexOf(listener) < 0 ||
+				aWindow.__uxu__willBeClosed
 				)
 				return;
 
@@ -60,6 +61,8 @@ readyToOK : function(aOptions)
 				return;
 
 			self.cancelReadiedAction(listener);
+
+			aWindow.__uxu__willBeClosed = true;
 
 			aWindow.setTimeout(function() {
 				var doc = aWindow.document;
@@ -87,7 +90,8 @@ readyToConfirm : function(aYes, aOptions)
 			if (
 				aWindow.location.href != self.COMMON_DIALOG_URL ||
 				(!aWindow.gCommonDialogParam && !aWindow.gArgs) ||
-				self.readiedActionListeners.indexOf(listener) < 0
+				self.readiedActionListeners.indexOf(listener) < 0 ||
+				aWindow.__uxu__willBeClosed
 				)
 				return;
 
@@ -113,6 +117,8 @@ readyToConfirm : function(aYes, aOptions)
 				return;
 
 			self.cancelReadiedAction(listener);
+
+			aWindow.__uxu__willBeClosed = true;
 
 			aWindow.setTimeout(function() {
 				var doc = aWindow.document;
@@ -152,7 +158,8 @@ readyToPrompt : function(aInput, aOptions)
 			if (
 				aWindow.location.href != self.COMMON_DIALOG_URL ||
 				(!aWindow.gCommonDialogParam && !aWindow.gArgs) ||
-				self.readiedActionListeners.indexOf(listener) < 0
+				self.readiedActionListeners.indexOf(listener) < 0 ||
+				aWindow.__uxu__willBeClosed
 				)
 				return;
 
@@ -189,6 +196,8 @@ readyToPrompt : function(aInput, aOptions)
 				return;
 
 			self.cancelReadiedAction(listener);
+
+			aWindow.__uxu__willBeClosed = true;
 
 			aWindow.setTimeout(function() {
 				var doc = aWindow.document;
@@ -261,7 +270,8 @@ readyToSelect : function(aSelectedIndexes, aOptions)
 	var listener = function(aWindow) {
 			if (
 				aWindow.location.href != self.SELECT_DIALOG_URL ||
-				self.readiedActionListeners.indexOf(listener) < 0
+				self.readiedActionListeners.indexOf(listener) < 0 ||
+				aWindow.__uxu__willBeClosed
 				)
 				return;
 
@@ -292,6 +302,8 @@ readyToSelect : function(aSelectedIndexes, aOptions)
 				return;
 
 			self.cancelReadiedAction(listener);
+
+			aWindow.__uxu__willBeClosed = true;
 
 			aWindow.setTimeout(function() {
 				var doc = aWindow.document;
