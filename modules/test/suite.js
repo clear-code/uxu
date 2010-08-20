@@ -195,6 +195,9 @@ attachServerUtils : function()
 	this.sendMessage = ns.utils.bind(serverUtils.sendMessage, serverUtils);
 	this.startListen = ns.utils.bind(serverUtils.startListen, serverUtils);
 
+	this.getHttpServer =
+		this.getHTTPServer =
+			ns.utils.bind(serverUtils.getHttpServer, serverUtils);
 	this.setUpHttpServer =
 		this.setUpHTTPServer =
 			function(aPort, aBasePath) {
