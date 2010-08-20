@@ -1,12 +1,14 @@
 var shouldSkip = utils.checkPlatformVersion('1.9') < 0;
 
 var topDir = baseURL+'../../../../';
+var fixtures = baseURL+'../../fixtures/';
 
 var HTTPServer = utils.import(topDir+'modules/server/httpd.js', {}).HTTPServer;
 var bundle = utils.import(topDir+'modules/lib/stringBundle.js', {})
 				.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 var htaccess;
+var server;
 
 function assertModified(aStatus, aStatusText, aURI, aPath)
 {
@@ -26,7 +28,7 @@ function assertNotModified(aPath)
 }
 
 test_processRequestByHtaccess.setUp = function() {
-	htaccess = utils.readFrom(baseURL+'../../fixtures/redirect/.htaccess');
+	htaccess = utils.readFrom(fixtures+'redirect/.htaccess');
 };
 function test_processRequestByHtaccess()
 {
@@ -83,6 +85,93 @@ function test_processRequestByHtaccess()
 }
 
 
+
+test_handleRequest_htaccess.setUp = function() {
+	server = new HTTPServer(4445, fixtures, utils.mockManager);
+	utils.wait(function() {
+		return !server.isStopped();
+	});
+};
+test_handleRequest_htaccess.tearDown = function() {
+	utils.wait(server.stop());
+	server = null;
+};
+function test_handleRequest_htaccess()
+{
+	var hashTxt = utils.getFileFromURLSpec(fixtures+'hash.txt');
+	hashTxt.normalize();
+
+	var result = server.handleRequest('/hash.txt', server.mServer._handler);
+	assert.equals(4, result.length);
+	assert.isInstanceOf(Ci.nsIFile, result[2]);
+	result[2] = result[2].path;
+	assert.equals([true, '/hash.txt', hashTxt.path, 0], result);
+
+
+	result = server.handleRequest('/notexist', server.mServer._handler);
+	assert.equals(4, result.length);
+	assert.isInstanceOf(Ci.nsIFile, result[2]);
+	result[2] = result[2].path;
+	file = utils.getFileFromURLSpec(fixtures+'notexist');
+	file.normalize();
+	assert.equals([true, '/notexist', file.path, 0], result);
+
+
+	result = server.handleRequest('/redirect/match/hash.txt', server.mServer._handler);
+	assert.equals(4, result.length);
+	assert.isNull(result[2]);
+	assert.equals([false, '/hash.txt', null, 0], result);
+
+
+	result = server.handleRequest('/redirect/rewrite/hash.txt', server.mServer._handler);
+	assert.equals(4, result.length);
+	assert.isInstanceOf(Ci.nsIFile, result[2]);
+	result[2] = result[2].path;
+	assert.equals([true, '/hash.txt', hashTxt.path, 0], result);
+}
+
+
+test_handleRequest_mock.setUp = function() {
+	server = new HTTPServer(4445, fixtures, utils.mockManager);
+	utils.wait(function() {
+		return !server.isStopped();
+	});
+};
+test_handleRequest_mock.tearDown = function() {
+	utils.wait(server.stop());
+	server = null;
+};
+function test_handleRequest_mock()
+{
+	var hashTxt = utils.getFileFromURLSpec(fixtures+'hash.txt');
+	hashTxt.normalize();
+
+	server.expect('/expected-path', '/hash.txt');
+	server.expect('/expected-file', hashTxt);
+	server.expectThrows('/unknown-file', 404);
+	server.expectThrows('/error', 500);
+
+	var result = server.handleRequest('/expected-path', server.mServer._handler);
+	assert.equals(4, result.length);
+	assert.isInstanceOf(Ci.nsIFile, result[2]);
+	result[2] = result[2].path;
+	assert.equals([true, '/hash.txt', hashTxt.path, 0], result);
+
+	var result = server.handleRequest('/expected-file', server.mServer._handler);
+	assert.equals(4, result.length);
+	assert.isInstanceOf(Ci.nsIFile, result[2]);
+	result[2] = result[2].path;
+	assert.equals([true, '/expected-file', hashTxt.path, 0], result);
+
+	assert.raises(404, function() {
+		server.handleRequest('/unknown-file', server.mServer._handler);
+	});
+	assert.raises(500, function() {
+		server.handleRequest('/error', server.mServer._handler);
+	});
+}
+
+
 testRedirect.parameters = [
 	'http://localhost:4445/redirect/sub/permanent/hash.txt',
 	'http://localhost:4445/redirect/sub/temp/hash.txt',
@@ -92,10 +181,14 @@ testRedirect.parameters = [
 	'http://localhost:4445/redirect/match/hash.txt'
 ];
 testRedirect.setUp = function() {
-	setUpHttpServer(4445, baseURL+'../../fixtures/');
+	server = new HTTPServer(4445, fixtures);
+	utils.wait(function() {
+		return !server.isStopped();
+	});
 };
 testRedirect.tearDown = function() {
-	tearDownAllHttpServers();
+	utils.wait(server.stop());
+	server = null;
 };
 function testRedirect(aURI)
 {
@@ -109,10 +202,14 @@ testRewrite.parameters = [
 	'http://localhost:4445/redirect/rewrite_absolute/hash.txt'
 ];
 testRewrite.setUp = function() {
-	setUpHttpServer(4445, baseURL+'../../fixtures/');
+	server = new HTTPServer(4445, fixtures);
+	utils.wait(function() {
+		return !server.isStopped();
+	});
 };
 testRewrite.tearDown = function() {
-	tearDownAllHttpServers();
+	utils.wait(server.stop());
+	server = null;
 };
 function testRewrite(aURI)
 {
