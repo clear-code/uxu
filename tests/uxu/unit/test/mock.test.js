@@ -807,3 +807,180 @@ function test_Mock_setter()
 	);
 }
 
+
+
+
+function createHTTPServerMock()
+{
+	var mock = new HTTPServerMock();
+	assert.isFunction(mock);
+	return mock;
+}
+
+function test_HTTPServerMock_name()
+{
+	assert.equals('custom name', (new HTTPServerMock('custom name'))._mock.name);
+	assert.equals(bundle.getString('server_mock_default_name'), (new HTTPServerMock())._mock.name);
+}
+
+function test_HTTPServerMock_formatReturnValue()
+{
+	var mock = createHTTPServerMock()._mock;
+	assert.equals(
+		{ uri : '', file : null, status : 0, statusText : '' },
+		mock.formatReturnValue()
+	);
+
+	assert.equals(
+		{ uri : '/actual', file : null, status : 200, statusText : '' },
+		mock.formatReturnValue('/actual')
+	);
+	assert.equals(
+		{ uri : '/actual', file : null, status : 200, statusText : '' },
+		mock.formatReturnValue(200, '/actual')
+	);
+	assert.equals(
+		{ uri : '/actual', file : null, status : 301, statusText : '' },
+		mock.formatReturnValue('/actual', 301)
+	);
+
+	var file = utils.getFileFromURLSpec(baseURL);
+	assert.equals(
+		{ uri : '', file : file, status : 200, statusText : '' },
+		mock.formatReturnValue(file)
+	);
+	assert.equals(
+		{ uri : '/actual', file : file, status : 200, statusText : '' },
+		mock.formatReturnValue(200, '/actual', file)
+	);
+
+	assert.equals(
+		{ status : 404, file : file, path : '/actual', uri : '/actual', statusText : 'not found' },
+		mock.formatReturnValue({ status : 404, file : file, path : '/actual', statusText : 'not found' })
+	);
+}
+
+function test_HTTPServerMock_expect()
+{
+	var mock = createHTTPServerMock();
+	assertCallError(mock);
+	assertCallAdded(mock, function() {
+		mock.expect('/');
+	});
+	assertCallSuccess(mock, ['/'],
+		{ uri : '', file : null, status : 0, statusText : '' });
+	assertCallError(mock);
+
+	assertCallAdded(mock, function() {
+		mock.expect('/expected');
+	});
+	assertCallNotModified(mock, function() {
+		assertCallRaise(mock, ['/unexpected'], 'AssertionFailed');
+	});
+
+	mock = createHTTPServerMock();
+	assertCallAdded(mock, function() {
+		mock.expect(/FooBar/i, '/expected');
+	});
+	assertCallNotModified(mock, function() {
+		assertCallRaise(mock, ['/foo'], 'AssertionFailed');
+	});
+	assertCallSuccess(mock, ['/foobar'],
+		{ uri : '/expected', file : null, status : 200, statusText : '' });
+}
+
+function test_HTTPServerMock_specialSpec()
+{
+	var mock = createHTTPServerMock();
+
+	assertAnyCallAdded(mock, function() {
+		mock.expect(Mock.ANY);
+	});
+	assertAnyCallSuccess(mock, ['/path1'], { uri : '/path1', file : null, status : 200, statusText : '' });
+	assertAnyCallSuccess(mock, ['/path2'], { uri : '/path2', file : null, status : 200, statusText : '' });
+	assertAnyCallSuccess(mock, ['/path3'], { uri : '/path3', file : null, status : 200, statusText : '' });
+
+	assertAnyCallAdded(mock, function() {
+		mock.expect(Mock.ANY, '/expected', 301);
+	});
+	assertAnyCallSuccess(mock, ['/path1'], { uri : '/expected', file : null, status : 301, statusText : '' });
+	assertAnyCallSuccess(mock, ['/path2'], { uri : '/expected', file : null, status : 301, statusText : '' });
+	assertAnyCallSuccess(mock, ['/path3'], { uri : '/expected', file : null, status : 301, statusText : '' });
+
+	assertCallAdded(mock, function() {
+		mock.expect(Mock.ANY_ONETIME, '/expected', 401);
+	});
+	assertCallSuccess(mock, ['/any'], { uri : '/expected', file : null, status : 401, statusText : '' });
+	assertCallError(mock, ['/any']);
+
+	assertCallNotModified(mock, function() {
+		mock.expect(Mock.NEVER);
+	});
+	assertCallError(mock, ['/never']);
+}
+
+function test_HTTPServerMock_expectThrows()
+{
+	var mock = createHTTPServerMock();
+
+	assertCallNotModified(mock, function() {
+		assert.raises(
+			bundle.getString('mock_error_no_exception'),
+			function() {
+				mock.expectThrows()
+			}
+		);
+	});
+	assertCallNotModified(mock, function() {
+		assert.raises(
+			bundle.getString('mock_error_no_exception'),
+			function() {
+				mock.expectThrows('/error')
+			}
+		);
+	});
+	assertCallAdded(mock, function() {
+		assert.notRaises(
+			bundle.getString('mock_error_no_exception'),
+			function() {
+				mock.expectThrows('/error', 502)
+			}
+		);
+	});
+	assertCallRemoved(mock, function() {
+		assertCallSuccess(mock, ['/error'],
+			{ uri : '', file : null, status : 502, statusText : '' });
+	});
+
+	assertCallAdded(mock, function() {
+		mock.expectThrows(/errorpage/i, 503, 'some error');
+	});
+	assertCallRemoved(mock, function() {
+		assertCallSuccess(mock, ['/ErrorPage'],
+			{ uri : '', file : null, status : 503, statusText : 'some error' });
+	});
+
+	assertCallAdded(mock, function() {
+		mock.expectThrows('/expected', 400);
+	});
+	assertCallNotModified(mock, function() {
+		assertCallRaise(mock, ['/unexpected'], 'AssertionFailed');
+	});
+}
+
+function test_HTTPServerMock_assert()
+{
+	var mock = createHTTPServerMock();
+	mock.expect('/expect0');
+	mock.expect('/expect1');
+	mock('/expect0');
+	mock('/expect1');
+	assertSuccess(mock);
+
+	mock = createHTTPServerMock();
+	mock.expect('/expect0');
+	mock.expect('/expect1');
+	mock('/expect0');
+	assertFail(mock);
+}
+

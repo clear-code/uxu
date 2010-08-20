@@ -1012,13 +1012,15 @@ HTTPServerMock.prototype = {
 	},
 	expectThrows : function(aArgument, aStatusCode, aStatusText)
 	{
-		if (!aErrorStatus)
+		if (!aStatusCode)
 			throw new Error(bundle.getFormattedString('mock_error_no_exception', [this.name]));
 		this.addExpectedCall({
 			arguments   : [aArgument],
 			returnValue : {
+				uri        : '',
+				file       : null,
 				status     : aStatusCode,
-				statusText : aStatusText
+				statusText : aStatusText || ''
 			}
 		});
 		return this;
@@ -1041,8 +1043,10 @@ HTTPServerMock.prototype = {
 	andThrow : function(aStatusCode, aStatusText)
 	{
 		var call = this.lastExpectedCall;
+		if (!call.returnValue)
+			call.returnValue = { uri : '', file : null };
 		call.returnValue.status = aStatusCode;
-		call.returnValue.statusText = aStatusText;
+		call.returnValue.statusText = aStatusText || call.returnValue.statusText || '';
 		return this;
 	},
 	onCall : function(aContext, aArguments)
@@ -1063,8 +1067,8 @@ HTTPServerMock.prototype = {
 				);
 			else
 				this._assert.matches(
-					this.formatArgumentsArray(call.arguments, aArguments)[0],
-					aArguments[0],
+					call.arguments[0],
+					String(aArguments[0]),
 					bundle.getFormattedString('server_mock_wrong_value', [this.name])
 				);
 		}
@@ -1077,8 +1081,8 @@ HTTPServerMock.prototype = {
 		this.successCount++;
 
 		var returnValue = call.finish([]);
-		return !('returnValue' in call) && !this.isSpecialSpec(call.arguments[0]) ?
-				aArguments[0] :
+		return !returnValue.uri && !returnValue.file && this.isSpecialSpec(call.arguments[0]) ?
+				this.formatReturnValue(aArguments[0]) :
 				returnValue ;
 	},
 	assert : function()

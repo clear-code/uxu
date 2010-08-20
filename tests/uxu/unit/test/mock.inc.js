@@ -6,6 +6,7 @@ var Mock = ns.Mock;
 var FunctionMock = ns.FunctionMock;
 var GetterMock = ns.GetterMock;
 var SetterMock = ns.SetterMock;
+var HTTPServerMock = ns.HTTPServerMock;
 var TypeOf = ns.TypeOf;
 
 var Assertions = utils.import(topDir+'modules/test/assertions.js', {}).Assertions;
@@ -37,12 +38,15 @@ function assertCallSuccess(aMock, aArguments, aReturnValue)
 {
 	assertCallRemoved(aMock, function() {
 		var returnValue;
+		var done;
 		assert.notRaises(
 			'Error',
 			function() {
 				returnValue = aMock.apply(null, aArguments || []);
+				done = true;
 			}
 		);
+		assert.isTrue(done);
 		assert.equals(aReturnValue, returnValue);
 	});
 }
@@ -51,12 +55,15 @@ function assertAnyCallSuccess(aMock, aArguments, aReturnValue)
 {
 	assertCallNotModified(aMock, function() {
 		var returnValue;
+		var done;
 		assert.notRaises(
 			'Error',
 			function() {
 				returnValue = aMock.apply(null, aArguments || []);
+				done = true;
 			}
 		);
+		assert.isTrue(done);
 		assert.equals(aReturnValue, returnValue);
 	});
 }
