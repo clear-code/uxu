@@ -2509,6 +2509,7 @@ var action;
   
 		/**
 		  * Exports features of this class to the specified namespace.
+		  * The "export" method itself won't be exported.
 		  *
 		  * @param {Object} aNamespace
 		  *   The object which methods are exported to.
@@ -2522,7 +2523,8 @@ var action;
 
 			for (var i in this)
 			{
-				if (i.charAt(0) == '_' ||
+				if (i == 'export' ||
+					i.charAt(0) == '_' ||
 					!this.hasOwnProperty(i) ||
 					typeof this[i] != 'function')
 					continue;
