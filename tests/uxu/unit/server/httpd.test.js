@@ -219,3 +219,35 @@ function testRewrite(aURI)
 }
 
 
+testResponseWithDelay.setUp = function() {
+	server = new HTTPServer(4445, fixtures, utils.mockManager);
+	utils.wait(function() {
+		return !server.isStopped();
+	});
+};
+testResponseWithDelay.tearDown = function() {
+	utils.wait(server.stop());
+	server = null;
+};
+function testResponseWithDelay()
+{
+	utils.loadURI('about:blank');
+
+	server.expect('/delayed', { uri : '/hash.txt', delay : 3000 });
+	var start = Date.now();
+	utils.loadURI('http://localhost:4445/delayed');
+	assert.compare(3000, '<=', Date.now() - start);
+	assert.equals('/delayed', content.location.href);
+	assert.equals('hash\n', content.document.body.textContent);
+
+	utils.loadURI('about:blank');
+
+	server.expect('/delayed', { uri : '/hash.txt', status : 301, delay : 3000 });
+	var start = Date.now();
+	utils.loadURI('http://localhost:4445/delayed');
+	assert.compare(3000, '<=', Date.now() - start);
+	assert.equals('/hash.txt', content.location.href);
+	assert.equals('hash\n', content.document.body.textContent);
+}
+
+

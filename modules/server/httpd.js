@@ -4780,7 +4780,14 @@ HTTPServer.prototype = {
 				if (aResponse) {
 					aResponse.setStatusLine('1.1', result.status, result.statusText || '');
 					aResponse.setHeader('Location', result.uri);
-					aResponse.bodyOutputStream.write(' ', 1);
+					if (result.delay > 0) {
+						ns.setTimeout(function() {
+							aResponse.bodyOutputStream.write(' ', 1);
+						}, result.delay);
+					}
+					else {
+						aResponse.bodyOutputStream.write(' ', 1);
+					}
 				}
 				shouldContinueToProcess = false;
 			}
