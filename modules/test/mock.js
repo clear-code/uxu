@@ -912,7 +912,6 @@ SetterMock.prototype = {
 	defaultName : bundle.getString('setter_mock_default_name'),
 	expect : function(aArgument, aReturnValue)
 	{
-		
 		if (aArgument != Mock.prototype.NEVER) {
 			var call = this.addExpectedCall({
 					arguments   : [aArgument]
@@ -973,6 +972,144 @@ SetterMock.prototype = {
 	assert : function()
 	{
 		this.assertInternal('setter_mock_assert_error', 'setter_mock_assert_fail');
+	}
+};
+
+function HTTPServerMock(aName, aSource, aAssertions)
+{
+	if (aName && typeof aName != 'string')
+		[aSource, aAssertions, aName] = [aName, aSource, null];
+	this.init(aName, aSource, aAssertions);
+	return this.createFunction();
+}
+HTTPServerMock.prototype = {
+	__proto__ : FunctionMock.prototype,
+	defaultName : bundle.getString('server_mock_default_name'),
+	expect : function(aArgument, aReturnValue)
+	{
+		if (!arguments.length && !this.inExpectationChain)
+			return this.createExpectationChain();
+		if (aArguments != Mock.prototype.NEVER) {
+			aReturnValue = this.formatReturnValue.apply(this, Array.slice(arguments, 1));
+			this.addExpectedCall({
+				arguments   : aArguments,
+				returnValue : aReturnValue
+			});
+		}
+		return this;
+	},
+	expectThrows : function(aArgument, aStatusCode, aStatusText)
+	{
+		if (!aErrorStatus)
+			throw new Error(bundle.getFormattedString('mock_error_no_exception', [this.name]));
+		this.addExpectedCall({
+			arguments   : aArguments,
+			returnValue : {
+				status     : aStatusCode,
+				statusText : aStatusText
+			}
+		});
+		return this;
+	},
+	andReturn : function(aValue)
+	{
+		aValue = this.formatReturnValue.apply(this, Array.slice(arguments, 1));
+		var call = this.lastExpectedCall;
+		if (!call.returnValue) {
+			for (let i in aValue)
+			{
+				call.returnValue[i] = aValue[i];
+			}
+		}
+		else {
+			call.returnValue = aValue;
+		}
+		return this;
+	},
+	andThrow : function(aStatusCode, aStatusText)
+	{
+		var call = this.lastExpectedCall;
+		call.returnValue.status = aStatusCode;
+		call.returnValue.statusText = aStatusText;
+		return this;
+	},
+	onCall : function(aContext, aArguments)
+	{
+		if (!aArguments.length) aArguments = [void(0)];
+
+		var call = this.getCurrentCall(bundle.getFormattedString(
+				'server_mock_unexpected_call',
+				[this.name, utils.inspect(aArguments[0])]
+			));
+
+		if (!call.isAnyCall() && !call.isOneTimeAnyCall())
+			this._assert.equals(
+				this.formatArgumentsArray(call.arguments, aArguments),
+				aArguments,
+				bundle.getFormattedString('server_mock_wrong_value', [this.name])
+			);
+
+		call.onCall(this, aArguments);
+
+		if (!this.anyCall)
+			this.expectedCalls.shift();
+
+		this.successCount++;
+
+		var returnValue = call.finish([]);
+		return !('returnValue' in call) && !this.isSpecialSpec(call.arguments[0]) ?
+				aArguments[0] :
+				returnValue ;
+	},
+	assert : function()
+	{
+		this.assertInternal('server_mock_assert_error', 'server_mock_assert_fail');
+	},
+	formatReturnValue : function(aValue)
+	{
+		var uri, file, status, hash;
+		Array.slice(arguments).forEach(function(aArg) {
+			switch (typeof aArg)
+			{
+				case 'number':
+					if (!status) status = aArg;
+					break;
+
+				case 'string':
+					if (!uri) uri = aArg;
+					break;
+
+				case 'object':
+					if (aArg instanceof Ci.nsIFile) {
+						if (!file) file = aArg;
+					}
+					else if (aArg instanceof Ci.nsIURI) {
+						if (!uri) uri = aArg;
+					}
+					else if (
+							aArg &&
+							(
+								'uri' in aArg ||
+								'url' in aArg ||
+								'path' in aArg ||
+								'file' in aArg
+							)
+							) {
+						if (!hash) hash = aArg;
+					}
+					break;
+			}
+		});
+
+		var result = hash || {};
+		result.uri        = result.uri || result.url || result.path || uri;
+		result.file       = result.file || file;
+		result.status     = result.status || status;
+		result.statusText = result.statusText || '';
+		if (!result.status && (result.uri || result.file))
+			result.status = 200;
+
+		return result;
 	}
 };
 

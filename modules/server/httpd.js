@@ -85,7 +85,6 @@ function HttpError(code, description)
 {
   this.code = code;
   this.description = description;
-  HttpError.errors[code] = this;
 }
 HttpError.prototype =
 {
@@ -94,7 +93,6 @@ HttpError.prototype =
     return this.code + " " + this.description;
   }
 };
-HttpError.errors = {};
 
 /**
  * Errors thrown to trigger specific HTTP server responses.
@@ -4744,7 +4742,7 @@ HTTPServer.prototype = {
 	{
 		if (!this.mock)
 			this.mock = new this.mMockManager.HTTPServerMock(this.port);
-		return this.mock;
+		return this.mock.expect.apply(this.mock, arguments);
 	},
 	expects : function() { return this.expect.apply(this, arguments); },
 
@@ -4760,19 +4758,21 @@ HTTPServer.prototype = {
 			if (result.status == 200) {
 				aPath = result.uri.replace(/^\w+:\/\/[^\/]+/, '');
 				file = result.file || this.mServer_getFileForPath(aPath);
-				delay = result.delay;
+				delay = result.delay || 0;
 			}
-			else if (result.status < 300 && result.status > 399) {
-				throw HttpError.errors[result.status] ||
-						new HttpError(result.status, result.statusText);
-			}
-			else {
+			else if (result.status >= 300 && result.status <= 399) {
 				if (aResponse) {
 					aResponse.setStatusLine('1.1', result.status, result.statusText || '');
 					aResponse.setHeader('Location', result.uri);
 					aResponse.bodyOutputStream.write(' ', 1);
 				}
 				shouldContinueToProcess = false;
+			}
+			else {
+				throw new HttpError(
+						result.status,
+						result.statusText || this._statusTextFromCode[result.status] || ''
+					);
 			}
 		}
 		else {
