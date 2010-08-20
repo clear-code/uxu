@@ -104,7 +104,7 @@ ServerUtils.prototype = {
 			return completedCheck;
 
 		ns.utils.wait(completedCheck);
-		return { value : true };
+		return { value : true, server : server };
 	},
 
 	tearDownHttpServer : function(aPort)

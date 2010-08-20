@@ -85,6 +85,7 @@ function HttpError(code, description)
 {
   this.code = code;
   this.description = description;
+  HttpError.errors[code] = this;
 }
 HttpError.prototype =
 {
@@ -93,6 +94,7 @@ HttpError.prototype =
     return this.code + " " + this.description;
   }
 };
+HttpError.errors = {};
 
 /**
  * Errors thrown to trigger specific HTTP server responses.
@@ -2382,61 +2384,20 @@ ServerHandler.prototype =
 
     // determine the actual on-disk file; this requires finding the deepest
     // path-to-directory mapping in the requested URL
-    var file = this._getFileForPath(path);
+    // var file = this._getFileForPath(path);
 
     // *************************************************************************
     // APPENDED BY UXU
     // *************************************************************************
-    let (dir = file.clone()) {
-      while (dir)
-      {
-        htaccess = dir.clone();
-        htaccess.append('.htaccess');
-        if (htaccess.exists())
-          break;
-        dir = dir.parent;
-      }
-      if (htaccess.exists()) {
-        let contents = utils.readFrom(htaccess);
-        let count = 0;
-        if ((function() {
-            if (count++ > 30) // too many recursion
-              throw HTTP_500;
-
-            let result = HTTPServer.prototype.processRequestByHtaccess(path, contents);
-            if (result) {
-              switch (result.status)
-              {
-                // RewriteRule
-                case 200:
-                  path = result.uri.replace(/^\w+:\/\/[^\/]+/, '');
-                  file = this._getFileForPath(path);
-                  return arguments.callee.call(this);
-
-                // RewriteRule
-                case 401:
-                  throw HTTP_401;
-                case 403:
-                  throw HTTP_403;
-
-                // Redirect
-                default:
-                  response.setStatusLine('1.1', result.status, result.statusText || '');
-                  response.setHeader('Location', result.uri);
-                  response.bodyOutputStream.write(' ', 1);
-                  return true;
-              }
-            }
-            return false;
-          }).call(this)) {
-          return;
-        }
-      }
+    var file, delay = 0;
+    if (this.owner) {
+      let shouldContinue;
+      [shouldContinue, path, file, delay] = this.owner.handleRequest(path, response);
+      if (!shouldContinue)
+        return;
     }
-    if (utils.getPref('extensions.uxu.httpd.noCache')) {
-      response.setHeader('Pragma', 'no-cache');
-      response.setHeader('Cache-Control', 'no-cache, must-revalidate');
-      response.setHeader('Expires', 'Mon, 26 Jul 1997 05:00:00 GMT');
+    else {
+      file = this._getFileForPath(path);
     }
     // ***************************************************************************
 
@@ -2513,7 +2474,7 @@ ServerHandler.prototype =
     // finally...
     dumpn("*** handling '" + path + "' as mapping to " + file.path + " from " +
           start + " to " + end + " inclusive");
-    this._writeFileResponse(metadata, file, response, start, end - start + 1);
+    this._writeFileResponse(metadata, file, response, start, end - start + 1, delay);
   },
 
   /**
@@ -2531,7 +2492,7 @@ ServerHandler.prototype =
    * @param count: uint
    *   the number of bytes to write
    */
-  _writeFileResponse: function(metadata, file, response, offset, count)
+  _writeFileResponse: function(metadata, file, response, offset, count, delay)
   {
     const PR_RDONLY = 0x01;
 
@@ -2678,7 +2639,7 @@ ServerHandler.prototype =
               if (count === 0)
               {
                 fis.close();
-                response.finish();
+                response.finish(delay);
               }
               else
               {
@@ -2693,7 +2654,7 @@ ServerHandler.prototype =
               }
               finally
               {
-                response.finish();
+                response.finish(delay);
               }
               throw e;
             }
@@ -3521,7 +3482,7 @@ Response.prototype =
   //
   // see nsIHttpResponse.finish
   //
-  finish: function()
+  finish: function(aDelay)
   {
     if (!this._processAsync)
       throw Cr.NS_ERROR_UNEXPECTED;
@@ -3529,9 +3490,18 @@ Response.prototype =
       return;
 
     dumpn("*** finishing async connection " + this._connection.number);
-    this._startAsyncProcessor(); // in case bodyOutputStream was never accessed
-    if (this._bodyOutputStream)
-      this._bodyOutputStream.close();
+    if (aDelay && aDelay > 0) {
+      ns.setTimeout(function(aSelf) {
+        aSelf._startAsyncProcessor(); // in case bodyOutputStream was never accessed
+        if (aSelf._bodyOutputStream)
+          aSelf._bodyOutputStream.close();
+      }, aDelay, this);
+    }
+    else {
+      this._startAsyncProcessor(); // in case bodyOutputStream was never accessed
+      if (this._bodyOutputStream)
+        this._bodyOutputStream.close();
+    }
     this._finished = true;
   },
 
@@ -4684,16 +4654,20 @@ if (typeof window == 'undefined')
 
 var ns = {};
 Components.utils.import('resource://uxu-modules/utils.js', ns);
+Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
 var utils = ns.utils;
 
 var ThreadManager = 'nsIThreadManager' in Ci ?
 		Cc['@mozilla.org/thread-manager;1'].getService(Ci.nsIThreadManager) :
 		null ;
 
-function HTTPServer(aPort, aBasePath)
+function HTTPServer(aPort, aBasePath, aMockManager)
 {
 	this.port = aPort;
+	this.mMockManager = aMockManager;
 	this.mServer = new nsHttpServer();
+	this.mServer.owner = this;
+	this.mock = null;
 
 	if (aBasePath && (aBasePath = utils.normalizeToFile(aBasePath)))
 		this.mServer.registerDirectory('/', aBasePath);
@@ -4715,7 +4689,10 @@ HTTPServer.prototype = {
 		this.mServer.stop(function() {
 			stopped.value = true;
 		});
+		delete this.mServer.owner;
 		delete this.mServer;
+		delete this.mMockManager;
+		delete this.mock;
 		return stopped;
 	},
 
@@ -4759,6 +4736,122 @@ HTTPServer.prototype = {
 			aIID.equals(Components.interfaces.nsISupports))
 			return this;
 		throw Components.results.NS_ERROR_NO_INTERFACE;
+	},
+
+
+	// mock interfaces
+	expect : function()
+	{
+		if (!this.mock)
+			this.mock = new this.mMockManager.HTTPServerMock(this.port);
+		return this.mock;
+	},
+	expects : function() { return this.expect.apply(this, arguments); },
+
+
+	handleRequest : function(aPath, aResponse)
+	{
+		var shouldContinueToProcess = true;
+		var file;
+		var delay = 0;
+
+		if (this.mock) {
+			let result = this.processRequestAsMock(aPath);
+			if (result.status == 200) {
+				aPath = result.uri.replace(/^\w+:\/\/[^\/]+/, '');
+				file = result.file || this.mServer_getFileForPath(aPath);
+				delay = result.delay;
+			}
+			else if (result.status < 300 && result.status > 399) {
+				throw HttpError.errors[result.status] ||
+						new HttpError(result.status, result.statusText);
+			}
+			else {
+				if (aResponse) {
+					aResponse.setStatusLine('1.1', result.status, result.statusText || '');
+					aResponse.setHeader('Location', result.uri);
+					aResponse.bodyOutputStream.write(' ', 1);
+				}
+				shouldContinueToProcess = false;
+			}
+		}
+		else {
+			file = this.mServer_getFileForPath(aPath);
+			let dir = file.clone();
+			let htaccess;
+			while (dir)
+			{
+				htaccess = dir.clone();
+				htaccess.append('.htaccess');
+				if (htaccess.exists())
+					break;
+				dir = dir.parent;
+			}
+			if (htaccess.exists()) {
+				let contents = utils.readFrom(htaccess);
+				let count = 0;
+				if ((function() {
+						if (count++ > 30) // too many recursion
+							throw HTTP_500;
+
+						let result = this.processRequestByHtaccess(aPath, contents);
+						if (result) {
+							switch (result.status)
+							{
+								// RewriteRule
+								case 200:
+									aPath = result.uri.replace(/^\w+:\/\/[^\/]+/, '');
+									file = this.mServer_getFileForPath(aPath);
+									return arguments.callee.call(this);
+
+								// RewriteRule
+								case 401:
+									throw HTTP_401;
+								case 403:
+									throw HTTP_403;
+
+								// Redirect
+								default:
+									if (aResponse) {
+										aResponse.setStatusLine('1.1', result.status, result.statusText || '');
+										aResponse.setHeader('Location', result.uri);
+										aResponse.bodyOutputStream.write(' ', 1);
+									}
+									return true;
+							}
+						}
+						return false;
+					}).call(this)) {
+					// this request is redirected to another request,
+					// so this must be canceled.
+					shouldContinueToProcess = false;
+				}
+			}
+		}
+
+		if (
+			aResponse &&
+			shouldContinueToProcess &&
+			utils.getPref('extensions.uxu.httpd.noCache')
+			) {
+			aResponse.setHeader('Pragma', 'no-cache');
+			aResponse.setHeader('Cache-Control', 'no-cache, must-revalidate');
+			aResponse.setHeader('Expires', 'Mon, 26 Jul 1997 05:00:00 GMT');
+		}
+
+		return [shouldContinueToProcess, aPath, file, delay];
+	},
+
+
+	processRequestAsMock : function(aPath)
+	{
+		var result = {
+				uri        : null,
+				file       : null,
+				status     : 500,
+				statusText : null
+			};
+		return result;
 	},
 
 
