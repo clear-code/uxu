@@ -4682,7 +4682,7 @@ function HTTPServer(aPort, aBasePath, aMockManager)
 
 HTTPServer.prototype = {
 
-	stop : function()
+	stop : function(aAsync)
 	{
 		if (!this.mServer)
 			return { value : true };
@@ -4699,6 +4699,10 @@ HTTPServer.prototype = {
 		delete this.mock;
 		if (errors)
 			throw new ns.MultiplexError(errors);
+
+		if (!aAsync)
+			utils.wait(stopped);
+
 		return stopped;
 	},
 
@@ -4742,6 +4746,13 @@ HTTPServer.prototype = {
 			aIID.equals(Components.interfaces.nsISupports))
 			return this;
 		throw Components.results.NS_ERROR_NO_INTERFACE;
+	},
+
+
+	// for yield and utils.wait()
+	get value()
+	{
+		return !this.isStopped();
 	},
 
 

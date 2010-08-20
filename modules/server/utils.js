@@ -87,6 +87,22 @@ ServerUtils.prototype = {
 		return listener;
 	},
 
+	getHttpServer : function(aPort)
+	{
+		var index = -1;
+		if (this._HTTPServerInstances.some(function(aServer, aIndex) {
+				if (aServer.port == aPort) {
+					index = aIndex;
+					return true;
+				}
+				return false;
+			}))
+			return this._HTTPServerInstances[i];
+
+		return null;
+	},
+	getHTTPServer : function() { return this.getHttpServer.apply(this, arguments); },
+
 	setUpHttpServer : function(aPort, aBasePath, aAsync)
 	{
 		if (!aPort) throw new Error(ERROR_INVALID_PORT);
@@ -102,14 +118,14 @@ ServerUtils.prototype = {
 				return !server.isStopped();
 			};
 
-		if (aAsync)
-			return completedCheck;
+		if (!aAsync)
+			ns.utils.wait(server);
 
-		ns.utils.wait(completedCheck);
-		return { value : true, server : server };
+		return server;
 	},
+	setUpHTTPServer : function() { return this.setUpHttpServer.apply(this, arguments); },
 
-	tearDownHttpServer : function(aPort)
+	tearDownHttpServer : function(aPort, aAsync)
 	{
 		var server;
 		if (aPort) {
@@ -123,8 +139,9 @@ ServerUtils.prototype = {
 		else {
 			server = this._HTTPServerInstances.pop();
 		}
-		return server ? server.stop() : { value : true } ;
+		return server ? server.stop(aAsync) : { value : true } ;
 	},
+	tearDownHTTPServer : function() { return this.tearDownHttpServer.apply(this, arguments); },
 
 	tearDownAllHttpServers : function(aAsync)
 	{
@@ -150,15 +167,18 @@ ServerUtils.prototype = {
 				return false;
 			};
 
-		if (aAsync)
-			return completedCheck;
+		if (!aAsync)
+			ns.utils.wait(completedCheck);
 
-		ns.utils.wait(completedCheck);
-		return { value : true };
+		return completedCheck;
 	},
+	tearDownAllHTTPServers : function() { return this.tearDownAllHttpServers.apply(this, arguments); },
+	tearDownHttpServers : function() { return this.tearDownAllHttpServers.apply(this, arguments); },
+	tearDownHTTPServers : function() { return this.tearDownAllHttpServers.apply(this, arguments); },
 
 	isHttpServerRunning : function()
 	{
 		return this._HTTPServerInstances.length > 0;
-	}
+	},
+	isHTTPServerRunning : function() { return this.isHttpServerRunning.apply(this, arguments); }
 };

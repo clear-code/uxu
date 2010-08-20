@@ -195,11 +195,20 @@ attachServerUtils : function()
 	this.sendMessage = ns.utils.bind(serverUtils.sendMessage, serverUtils);
 	this.startListen = ns.utils.bind(serverUtils.startListen, serverUtils);
 
-	this.setUpHttpServer = function(aPort, aBasePath) {
-		return serverUtils.setUpHttpServer(aPort, this.normalizeToFile(aBasePath));
-	};
-	this.tearDownHttpServer = ns.utils.bind(serverUtils.tearDownHttpServer, serverUtils);
-	this.tearDownAllHttpServers = ns.utils.bind(serverUtils.tearDownAllHttpServers, serverUtils);
+	this.setUpHttpServer =
+		this.setUpHTTPServer =
+			function(aPort, aBasePath) {
+				return serverUtils.setUpHttpServer(aPort, this.normalizeToFile(aBasePath));
+			};
+	this.tearDownHttpServer =
+		this.tearDownHTTPServer =
+			ns.utils.bind(serverUtils.tearDownHttpServer, serverUtils);
+	this.tearDownAllHttpServers = this.tearDownAllHTTPServers =
+		this.tearDownHttpServers = this.tearDownHTTPServers =
+			ns.utils.bind(serverUtils.tearDownAllHttpServers, serverUtils);
+	this.isHttpServerRunning =
+		this.isHTTPServerRunning =
+			ns.utils.bind(serverUtils.isHttpServerRunning, serverUtils);
 },
  
 attachMock : function() 
