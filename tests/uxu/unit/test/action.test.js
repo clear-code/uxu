@@ -219,3 +219,21 @@ function test_readyToSelect()
 		}
 	);
 }
+
+
+function test_multiple()
+{
+	actionModule.readyToOK();
+	actionModule.readyToOK();
+	actionModule.readyToOK({ checked : true });
+	assert.finishWithin(
+		ACCEPT_DELAY * 3,
+		function() {
+			alert('click OK');
+			PromptService.alert(null, 'title', 'click OK');
+			var checked = {};
+			PromptService.alertCheck(null, 'title', 'click OK', 'check', checked);
+			assert.isTrue(checked.value);
+		}
+	);
+}

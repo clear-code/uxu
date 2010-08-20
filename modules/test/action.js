@@ -10,7 +10,7 @@ Components.utils.import('resource://uxu-modules/lib/action.jsm', ns);
 function Action(aSuite) 
 {
 	this._suite = aSuite;
-	this.readiedActionListeners = [];
+	this._readiedActionListener = null;
 }
  
 Action.prototype = { 
@@ -25,6 +25,51 @@ destroy : function()
 COMMON_DIALOG_URL : 'chrome://global/content/commonDialog.xul',
 SELECT_DIALOG_URL : 'chrome://global/content/selectDialog.xul',
 	
+_getWindowWatcherListener : function()
+{
+	if (this._readiedActionListener)
+		return this._readiedActionListener;
+
+	var self = this;
+	var listener = function(aWindow) {
+			var index = -1;
+			listener.listeners.some(function(aListener, aIndex) {
+				if (aListener.call(null, aWindow)) {
+					index = aIndex;
+					return true;
+				}
+				return false;
+			});
+			if (index > -1)
+				self._removeWindowWatcherListener(listener.listeners[index]);
+		};
+	listener.listeners = [];
+	this._suite.addWindowWatcher(listener, 'load');
+	return this._readiedActionListener = listener;
+},
+ 
+_addWindowWatcherListener : function(aListener)
+{
+	this._getWindowWatcherListener().listeners.push(aListener);
+},
+ 
+_removeWindowWatcherListener : function(aListener)
+{
+	if (!this._readiedActionListener)
+		return;
+
+	var listener = this._getWindowWatcherListener();
+	listener.listeners =
+		listener.listeners
+			.filter(function(aRegisteredListener) {
+				return aRegisteredListener != aListener;
+			});
+	if (!listener.listeners.length) {
+		this._suite.removeWindowWatcher(listener);
+		this._readiedActionListener = null;
+	}
+},
+ 
 readyToOK : function(aOptions) 
 {
 	aOptions = aOptions || {};
@@ -34,10 +79,9 @@ readyToOK : function(aOptions)
 			if (
 				aWindow.location.href != self.COMMON_DIALOG_URL ||
 				(!aWindow.gCommonDialogParam && !aWindow.gArgs) ||
-				self.readiedActionListeners.indexOf(listener) < 0 ||
 				aWindow.__uxu__willBeClosed
 				)
-				return;
+				return false;
 
 			var buttonsCount, title, message;
 			if (aWindow.gCommonDialogParam) { // -Firefox 3.6
@@ -58,9 +102,7 @@ readyToOK : function(aOptions)
 				('title' in aOptions && aOptions.title != title) ||
 				('message' in aOptions && aOptions.message != message)
 				)
-				return;
-
-			self.cancelReadiedAction(listener);
+				return false;
 
 			aWindow.__uxu__willBeClosed = true;
 
@@ -75,9 +117,11 @@ readyToOK : function(aOptions)
 
 				doc.documentElement.getButton('accept').doCommand();
 			}, 0);
+
+			return true;
 		};
-	this._suite.addWindowWatcher(listener, 'load');
-	this.readiedActionListeners.push(listener);
+	this._addWindowWatcherListener(listener);
+	return listener;
 },
 readyToOk : function(aOptions) { return this.readyToOK(aOptions); },
  
@@ -90,10 +134,9 @@ readyToConfirm : function(aYes, aOptions)
 			if (
 				aWindow.location.href != self.COMMON_DIALOG_URL ||
 				(!aWindow.gCommonDialogParam && !aWindow.gArgs) ||
-				self.readiedActionListeners.indexOf(listener) < 0 ||
 				aWindow.__uxu__willBeClosed
 				)
-				return;
+				return false;
 
 			var buttonsCount, title, message;
 			if (aWindow.gCommonDialogParam) { // -Firefox 3.6
@@ -114,9 +157,7 @@ readyToConfirm : function(aYes, aOptions)
 				('title' in aOptions && aOptions.title != title) ||
 				('message' in aOptions && aOptions.message != message)
 				)
-				return;
-
-			self.cancelReadiedAction(listener);
+				return false;
 
 			aWindow.__uxu__willBeClosed = true;
 
@@ -144,9 +185,11 @@ readyToConfirm : function(aYes, aOptions)
 
 				doc.documentElement.getButton(buttonType).doCommand();
 			}, 0);
+
+			return true;
 		};
-	this._suite.addWindowWatcher(listener, 'load');
-	this.readiedActionListeners.push(listener);
+	this._addWindowWatcherListener(listener);
+	return listener;
 },
  
 readyToPrompt : function(aInput, aOptions) 
@@ -158,10 +201,9 @@ readyToPrompt : function(aInput, aOptions)
 			if (
 				aWindow.location.href != self.COMMON_DIALOG_URL ||
 				(!aWindow.gCommonDialogParam && !aWindow.gArgs) ||
-				self.readiedActionListeners.indexOf(listener) < 0 ||
 				aWindow.__uxu__willBeClosed
 				)
-				return;
+				return false;
 
 			var inputFieldsCount, passwordType, title, message;
 			if (aWindow.gCommonDialogParam) { // -Firefox 3.6
@@ -193,9 +235,7 @@ readyToPrompt : function(aInput, aOptions)
 				('title' in aOptions && aOptions.title != title) ||
 				('message' in aOptions && aOptions.message != message)
 				)
-				return;
-
-			self.cancelReadiedAction(listener);
+				return false;
 
 			aWindow.__uxu__willBeClosed = true;
 
@@ -229,9 +269,11 @@ readyToPrompt : function(aInput, aOptions)
 
 				doc.documentElement.getButton('accept').doCommand();
 			}, 0);
+
+			return true;
 		};
-	this._suite.addWindowWatcher(listener, 'load');
-	this.readiedActionListeners.push(listener);
+	this._addWindowWatcherListener(listener);
+	return listener;
 },
  
 readyToPromptPassword : function(aPassword, aOptions) 
@@ -270,10 +312,9 @@ readyToSelect : function(aSelectedIndexes, aOptions)
 	var listener = function(aWindow) {
 			if (
 				aWindow.location.href != self.SELECT_DIALOG_URL ||
-				self.readiedActionListeners.indexOf(listener) < 0 ||
 				aWindow.__uxu__willBeClosed
 				)
-				return;
+				return false;
 
 			var params = aWindow.gArgs || aWindow.gCommonDialogParam;
 			if (!params) {
@@ -282,7 +323,7 @@ readyToSelect : function(aSelectedIndexes, aOptions)
 				}
 				catch(e) {
 				}
-				if (!params) return;
+				if (!params) return false;
 			}
 
 			var title, message;
@@ -299,9 +340,7 @@ readyToSelect : function(aSelectedIndexes, aOptions)
 				('title' in aOptions && aOptions.title != title) ||
 				('message' in aOptions && aOptions.message != message)
 				)
-				return;
-
-			self.cancelReadiedAction(listener);
+				return false;
 
 			aWindow.__uxu__willBeClosed = true;
 
@@ -321,25 +360,25 @@ readyToSelect : function(aSelectedIndexes, aOptions)
 				});
 				doc.documentElement.getButton('accept').doCommand();
 			}, 0);
+
+			return true;
 		};
-	this._suite.addWindowWatcher(listener, 'load');
-	this.readiedActionListeners.push(listener);
+	this._addWindowWatcherListener(listener);
+	return listener;
 },
  
 cancelReadiedActions : function() 
 {
-	this.readiedActionListeners.forEach(function(aListener) {
-		this._suite.removeWindowWatcher(aListener);
-	}, this);
-	this.readiedActionListeners = [];
+	if (!this._readiedActionListener)
+		return;
+
+	this._suite.removeWindowWatcher(listener);
+	this._readiedActionListener = null;
 },
 	
 cancelReadiedAction : function(aListener) 
 {
-	this._suite.removeWindowWatcher(aListener);
-	var index = this.readiedActionListeners.indexOf(aListener);
-	if (index > -1)
-		this.readiedActionListeners.splice(index, 1);
+	this._removeWindowWatcherListener(aListener);
 },
    
 export : function(aNamespace, aForce) 
