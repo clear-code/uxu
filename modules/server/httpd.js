@@ -2388,9 +2388,9 @@ ServerHandler.prototype =
     // APPENDED BY UXU
     // *************************************************************************
     var file, delay = 0;
-    if (this.owner) {
+    if (this._server.owner) {
       let shouldContinue;
-      [shouldContinue, path, file, delay] = this.owner.handleRequest(path, response);
+      [shouldContinue, path, file, delay] = this._server.owner.handleRequest(path, this, response);
       if (!shouldContinue)
         return;
     }
@@ -4653,7 +4653,10 @@ if (typeof window == 'undefined')
 var ns = {};
 Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
+Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 var utils = ns.utils;
+
+var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 var ThreadManager = 'nsIThreadManager' in Ci ?
 		Cc['@mozilla.org/thread-manager;1'].getService(Ci.nsIThreadManager) :
@@ -4738,16 +4741,29 @@ HTTPServer.prototype = {
 
 
 	// mock interfaces
-	expect : function()
+	_getMock : function()
 	{
 		if (!this.mock)
-			this.mock = new this.mMockManager.HTTPServerMock(this.port);
-		return this.mock.expect.apply(this.mock, arguments);
+			this.mock = this.mMockManager.createHTTPServerMock(bundle.getFormattedString('server_mock_name', [this.port]));
+		return this.mock;
+	},
+	expect : function()
+	{
+		var mock = this._getMock();
+		return mock.expect.apply(mock, arguments);
 	},
 	expects : function() { return this.expect.apply(this, arguments); },
+	expectThrows : function()
+	{
+		var mock = this._getMock();
+		return mock.expect.apply(mock, arguments);
+	},
+	expectThrow : function() { return this.expectThrows.apply(this, arguments); },
+	expectRaises : function() { return this.expectThrows.apply(this, arguments); },
+	expectRaise : function() { return this.expectThrows.apply(this, arguments); },
 
 
-	handleRequest : function(aPath, aResponse)
+	handleRequest : function(aPath, aServerHandler, aResponse)
 	{
 		var shouldContinueToProcess = true;
 		var file;
@@ -4756,8 +4772,8 @@ HTTPServer.prototype = {
 		if (this.mock) {
 			let result = this.mock(aPath);
 			if (result.status == 200) {
-				aPath = result.uri.replace(/^\w+:\/\/[^\/]+/, '');
-				file = result.file || this.mServer_getFileForPath(aPath);
+				aPath = result.uri.replace(/^\w+:\/\/[^\/]+/, '') || aPath;
+				file = result.file || aServerHandler._getFileForPath(aPath);
 				delay = result.delay || 0;
 			}
 			else if (result.status >= 300 && result.status <= 399) {
@@ -4776,7 +4792,7 @@ HTTPServer.prototype = {
 			}
 		}
 		else {
-			file = this.mServer_getFileForPath(aPath);
+			file = aServerHandler._getFileForPath(aPath);
 			let dir = file.clone();
 			let htaccess;
 			while (dir)
@@ -4801,7 +4817,7 @@ HTTPServer.prototype = {
 								// RewriteRule
 								case 200:
 									aPath = result.uri.replace(/^\w+:\/\/[^\/]+/, '');
-									file = this.mServer_getFileForPath(aPath);
+									file = aServerHandler._getFileForPath(aPath);
 									return arguments.callee.call(this);
 
 								// RewriteRule
@@ -4817,6 +4833,8 @@ HTTPServer.prototype = {
 										aResponse.setHeader('Location', result.uri);
 										aResponse.bodyOutputStream.write(' ', 1);
 									}
+									aPath = result.uri.replace(/^\w+:\/\/[^\/]+/, '');
+									file = null;
 									return true;
 							}
 						}
@@ -4840,18 +4858,6 @@ HTTPServer.prototype = {
 		}
 
 		return [shouldContinueToProcess, aPath, file, delay];
-	},
-
-
-	processRequestAsMock : function(aPath)
-	{
-		var result = {
-				uri        : null,
-				file       : null,
-				status     : 500,
-				statusText : null
-			};
-		return result;
 	},
 
 

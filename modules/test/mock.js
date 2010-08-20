@@ -7,6 +7,9 @@ const EXPORTED_SYMBOLS = [
 		'TypeOf'
 	];
 
+const Cc = Components.classes;
+const Ci = Components.interfaces;
+
 var ns = {};
 Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/multiplexError.js', ns);
@@ -75,6 +78,13 @@ MockManager.prototype = {
 		this.addMock(mock);
 		return mock;
 	},
+	createHTTPServerMock : function(aName, aSource)
+	{
+		var mock = new HTTPServerMock(aName, aSource);
+		mock._mock._assert = this._assert;
+		this.addMock(mock);
+		return mock;
+	},
 	// JSMock API
 	verify : function()
 	{
@@ -109,6 +119,8 @@ MockManager.prototype = {
 		aTarget.GetterMock.prototype = GetterMock.prototype;
 		aTarget.SetterMock = function() { return self.createSetterMock.apply(self, arguments); };
 		aTarget.SetterMock.prototype = SetterMock.prototype;
+		aTarget.HTTPServerMock = function() { return self.createHTTPServerMock.apply(self, arguments); };
+		aTarget.HTTPServerMock.prototype = HTTPServerMock.prototype;
 
 		// MockObject,js
 		aTarget.MockObject = aTarget.MockCreate = aTarget.Mock;
@@ -945,8 +957,8 @@ SetterMock.prototype = {
 
 		if (!call.isAnyCall() && !call.isOneTimeAnyCall())
 			this._assert.equals(
-				this.formatArgumentsArray(call.arguments, aArguments),
-				aArguments,
+				this.formatArgumentsArray(call.arguments, aArguments)[0],
+				aArguments[0],
 				bundle.getFormattedString('setter_mock_wrong_value', [this.name])
 			);
 
@@ -989,10 +1001,10 @@ HTTPServerMock.prototype = {
 	{
 		if (!arguments.length && !this.inExpectationChain)
 			return this.createExpectationChain();
-		if (aArguments != Mock.prototype.NEVER) {
+		if (aArgument != Mock.prototype.NEVER) {
 			aReturnValue = this.formatReturnValue.apply(this, Array.slice(arguments, 1));
 			this.addExpectedCall({
-				arguments   : aArguments,
+				arguments   : [aArgument],
 				returnValue : aReturnValue
 			});
 		}
@@ -1003,7 +1015,7 @@ HTTPServerMock.prototype = {
 		if (!aErrorStatus)
 			throw new Error(bundle.getFormattedString('mock_error_no_exception', [this.name]));
 		this.addExpectedCall({
-			arguments   : aArguments,
+			arguments   : [aArgument],
 			returnValue : {
 				status     : aStatusCode,
 				statusText : aStatusText
@@ -1042,12 +1054,20 @@ HTTPServerMock.prototype = {
 				[this.name, utils.inspect(aArguments[0])]
 			));
 
-		if (!call.isAnyCall() && !call.isOneTimeAnyCall())
-			this._assert.equals(
-				this.formatArgumentsArray(call.arguments, aArguments),
-				aArguments,
-				bundle.getFormattedString('server_mock_wrong_value', [this.name])
-			);
+		if (!call.isAnyCall() && !call.isOneTimeAnyCall()) {
+			if (typeof call.arguments[0] == 'string')
+				this._assert.equals(
+					this.formatArgumentsArray(call.arguments, aArguments)[0],
+					aArguments[0],
+					bundle.getFormattedString('server_mock_wrong_value', [this.name])
+				);
+			else
+				this._assert.matches(
+					this.formatArgumentsArray(call.arguments, aArguments)[0],
+					aArguments[0],
+					bundle.getFormattedString('server_mock_wrong_value', [this.name])
+				);
+		}
 
 		call.onCall(this, aArguments);
 
@@ -1102,9 +1122,9 @@ HTTPServerMock.prototype = {
 		});
 
 		var result = hash || {};
-		result.uri        = result.uri || result.url || result.path || uri;
-		result.file       = result.file || file;
-		result.status     = result.status || status;
+		result.uri        = result.uri || result.url || result.path || uri || '';
+		result.file       = result.file || file || null;
+		result.status     = result.status || status || 0;
 		result.statusText = result.statusText || '';
 		if (!result.status && (result.uri || result.file))
 			result.status = 200;
