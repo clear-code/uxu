@@ -54,10 +54,10 @@ function test_processRequestByHtaccess()
 	               '/redirect/rewrite_NoCase/file');
 	assertModified(200, 'OK', 'http://localhost:4445/file',
 	               '/redirect/rewrite_nocase/file');
-	assertModified(401, 'Gone', null,
-	               '/redirect/rewrite_401/file');
 	assertModified(403, 'Forbidden', null,
 	               '/redirect/rewrite_403/file');
+	assertModified(410, 'Gone', null,
+	               '/redirect/rewrite_401/file');
 	assertModified(302, 'Found', 'http://localhost:4445/file',
 	               '/redirect/rewrite_redirect/file');
 	assertModified(301, 'Moved Permanently', 'http://localhost:4445/file',
@@ -163,10 +163,10 @@ function test_handleResponse_mock()
 	result[2] = result[2].path;
 	assert.equals([true, '/expected-file', hashTxt.path, 0], result);
 
-	assert.raises(404, function() {
+	assert.raises('404 Not Found', function() {
 		server.handleResponse('/unknown-file', server.mServer._handler);
 	});
-	assert.raises(500, function() {
+	assert.raises('500 Internal Server Error', function() {
 		server.handleResponse('/error', server.mServer._handler);
 	});
 }
