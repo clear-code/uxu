@@ -1,17 +1,14 @@
-/*
- Hash Generator Library for Firefox 3.5 or later
-
- Usage:
-   Components.utils.import('resource://my-modules/hash.jsm');
-   hash.export(this);
-
- lisence: The MIT License, Copyright (c) 2010 ClearCode Inc.
-   http://www.clear-code.com/repos/svn/js-codemodules/license.txt
- original:
-   http://www.clear-code.com/repos/svn/js-codemodules/hash.jsm
-   http://www.clear-code.com/repos/svn/js-codemodules/hash.test.js
-*/
-
+/**
+ * @fileOverview Hash Generator Library for Firefox 3.5 or later
+ * @author       ClearCode Inc.
+ * @version      1
+ *
+ * @license
+ *   The MIT License, Copyright (c) 2010 ClearCode Inc.
+ *   http://www.clear-code.com/repos/svn/js-codemodules/license.txt
+ * @url http://www.clear-code.com/repos/svn/js-codemodules/hash.jsm
+ * @url http://www.clear-code.com/repos/svn/js-codemodules/hash.test.js
+ */
 
 if (typeof window == 'undefined')
 	this.EXPORTED_SYMBOLS = ['hash'];
@@ -30,6 +27,7 @@ if (typeof namespace == 'undefined') {
 	}
 }
 
+var hash;
 (function() {
 	const currentRevision = 1;
 
@@ -37,21 +35,49 @@ if (typeof namespace == 'undefined') {
 			namespace.hash.revision :
 			0 ;
 	if (loadedRevision && loadedRevision > currentRevision) {
+		hash = namespace.hash;
 		return;
 	}
 
 	const Cc = Components.classes;
 	const Ci = Components.interfaces;
 
-	namespace.hash = {
+	/**
+	 * @class
+	 *   The hasher service, provides features to calculate hash strings from
+	 *   strings or files.
+	 *
+	 * @example
+	 *   Components.utils.import('resource://my-modules/hash.jsm');
+	 *   hash.export(this);
+	 */
+	hash = {
+		/** @private */
 		revision : currentRevision,
 
+		/** @private */
 		get Hasher()
 		{
 			delete this.Hasher;
 			return this.Hasher = Cc['@mozilla.org/security/hash;1'].createInstance(Ci.nsICryptoHash);
 		},
 
+		/**
+		 * Calculates a hash string from the given data, with the specified
+		 * algorithm.
+		 *
+		 * @param {(nsIFile|string)} aData
+		 *   The source to calculate a hash. If it is a file, the hash of the
+		 *   file contents will be returned. Otherwise the hash string of the
+		 *   given value (converted to a string) will be returned.
+		 * @param {string} aHashAlgorithm
+		 *   The name of the hash algorithm you wish to use. Available
+		 *   algorithms are: MD2, MD5, SHA-1, SHA-256, SHA-384 and SHA-512.
+		 *
+		 * @returns {string} The calculated hash string.
+		 *
+		 * @throws Error If Gecko doesn't support the specified hash algorithm.
+		 */
 		computeHash : function(aData, aHashAlgorithm) 
 		{
 			var algorithm = String(aHashAlgorithm).toUpperCase().replace('-', '');
@@ -70,7 +96,7 @@ if (typeof namespace == 'undefined') {
 				this.Hasher.updateFromStream(stream, PR_UINT32_MAX);
 			}
 			else {
-				var array = aData.split('').map(function(aChar) {
+				var array = String(aData).split('').map(function(aChar) {
 								return aChar.charCodeAt(0);
 							});
 				this.Hasher.update(array, array.length);
@@ -82,13 +108,74 @@ if (typeof namespace == 'undefined') {
 				}).join('').toUpperCase();
 		},
 
-		md2    : function(aData) { return this.computeHash(aData, 'md2'); },
-		md5    : function(aData) { return this.computeHash(aData, 'md5'); },
-		sha1   : function(aData) { return this.computeHash(aData, 'sha1'); },
+		/**
+		 * Calculates MD2 hash from the given data (a file or a string).
+		 * This is just a shorthand for <code>computeHash</code>.
+		 *
+		 * @param {(nsIFile|string)} aData The source to calculate a hash.
+		 * @returns {string} The calculated hash string.
+		 * @see hash.computeHash
+		 */
+		md2 : function(aData) { return this.computeHash(aData, 'md2'); },
+
+		/**
+		 * Calculates MD25 hash from the given data (a file or a string).
+		 * This is just a shorthand for <code>computeHash</code>.
+		 *
+		 * @param {(nsIFile|string)} aData The source to calculate a hash.
+		 * @returns {string} The calculated hash string.
+		 * @see hash.computeHash
+		 */
+		md5 : function(aData) { return this.computeHash(aData, 'md5'); },
+
+		/**
+		 * Calculates SHA-1 hash from the given data (a file or a string).
+		 * This is just a shorthand for <code>computeHash</code>.
+		 *
+		 * @param {(nsIFile|string)} aData The source to calculate a hash.
+		 * @returns {string} The calculated hash string.
+		 * @see hash.computeHash
+		 */
+		sha1 : function(aData) { return this.computeHash(aData, 'sha1'); },
+
+		/**
+		 * Calculates SHA-256 hash from the given data (a file or a string).
+		 * This is just a shorthand for <code>computeHash</code>.
+		 *
+		 * @param {(nsIFile|string)} aData The source to calculate a hash.
+		 * @returns {string} The calculated hash string.
+		 * @see hash.computeHash
+		 */
 		sha256 : function(aData) { return this.computeHash(aData, 'sha256'); },
+
+		/**
+		 * Calculates SHA-384 hash from the given data (a file or a string).
+		 * This is just a shorthand for <code>computeHash</code>.
+		 *
+		 * @param {(nsIFile|string)} aData The source to calculate a hash.
+		 * @returns {string} The calculated hash string.
+		 * @see hash.computeHash
+		 */
 		sha384 : function(aData) { return this.computeHash(aData, 'sha384'); },
+
+		/**
+		 * Calculates SHA-512 hash from the given data (a file or a string).
+		 * This is just a shorthand for <code>computeHash</code>.
+		 *
+		 * @param {(nsIFile|string)} aData The source to calculate a hash.
+		 * @returns {string} The calculated hash string.
+		 * @see hash.computeHash
+		 */
 		sha512 : function(aData) { return this.computeHash(aData, 'sha512'); },
 
+		/**
+		  * Exports features of this class to the specified namespace.
+		  * The "export" method itself and "computeHash" method won't be
+		  * exported.
+		  *
+		  * @param {Object} aNamespace
+		  *   The object which methods are exported to.
+		  */
 		export : function(aNamespace)
 		{
 			if (!aNamespace)
@@ -107,6 +194,5 @@ if (typeof namespace == 'undefined') {
 		}
 	};
 
+	namespace.hash = hash;
 })();
-
-var hash = namespace.hash;

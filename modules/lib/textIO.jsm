@@ -1,18 +1,14 @@
-/*
- Plaintext File I/O Library for Firefox 3.5 or later
-
- Usage:
-   Components.utils.import('resource://my-modules/textIO.jsm');
-   var text = textIO.readFrom(nsIFile, 'UTF-8');
-   textIO.writeTo(text, nsIFile, 'Shift_JIS');
-
- lisence: The MIT License, Copyright (c) 2010 ClearCode Inc.
-   http://www.clear-code.com/repos/svn/js-codemodules/license.txt
- original:
-   http://www.clear-code.com/repos/svn/js-codemodules/textIO.jsm
-   http://www.clear-code.com/repos/svn/js-codemodules/textIO.test.js
-*/
-
+/**
+ * @fileOverview Plaintext File I/O Library for Firefox 3.5 or later
+ * @author       ClearCode Inc.
+ * @version      2
+ *
+ * @license
+ *   The MIT License, Copyright (c) 2010 ClearCode Inc.
+ *   http://www.clear-code.com/repos/svn/js-codemodules/license.txt
+ * @url http://www.clear-code.com/repos/svn/js-codemodules/textIO.jsm
+ * @url http://www.clear-code.com/repos/svn/js-codemodules/textIO.test.js
+ */
 
 if (typeof window == 'undefined')
 	this.EXPORTED_SYMBOLS = ['textIO'];
@@ -31,22 +27,50 @@ if (typeof namespace == 'undefined') {
 	}
 }
 
+var textIO;
 (function() {
-	const currentRevision = 1;
+	const currentRevision = 2;
 
-	var loadedRevision = 'encoding' in namespace ?
+	var loadedRevision = 'textIO' in namespace ?
 			namespace.textIO.revision :
 			0 ;
 	if (loadedRevision && loadedRevision > currentRevision) {
+		textIO = namespace.textIO;
 		return;
 	}
 
 	const Cc = Components.classes;
 	const Ci = Components.interfaces;
 
-	namespace.textIO = {
+	/**
+	 * @class
+	 *   The plaintext I/O service, provides features to read/write
+	 *   plaintext files.
+	 *
+	 * @example
+	 *   Components.utils.import('resource://my-modules/textIO.jsm');
+	 *   var text = textIO.readFrom(nsIFile, 'UTF-8');
+	 *   textIO.writeTo(text, nsIFile, 'Shift_JIS');
+	 */
+	textIO = {
+		/** @private */
 		revision : currentRevision,
 
+		/**
+		 * Reads the contents of the given text file, and returns the contents
+		 * as a string.
+		 *
+		 * @param {(nsIFile|nsIURI)} aFileOrURI
+		 *   The pointer to the plain text file.
+		 * @param {string=} aEncoding (optional)
+		 *   The encoding of the contents of the file. If no encoding is given,
+		 *   this returns the contents of the file as is.
+		 *
+		 * @returns {string}
+		 *   The contents of the given file. If an encoding is given, a decoded
+		 *   string will be returned. Otherwise this returns a raw bytes array
+		 *   as a string.
+		 */
 		readFrom : function(aFileOrURI, aEncoding)
 		{
 			var stream;
@@ -95,6 +119,23 @@ if (typeof namespace == 'undefined') {
 			return fileContents;
 		},
 
+		/**
+		 * Outputs the given string to a file, as a plain text file.
+		 *
+		 * @param {string} aContents
+		 *   The string you want to output. It should be a Unicode string (UCS2).
+		 * @param {nsIFile} aFile
+		 *   The pointer to the plain text file. If the file exists, it will be
+		 *   overwritten. If there are some missing directories, then they are
+		 *   automatically created.
+		 * @param {string=} aEncoding (optional)
+		 *   The encoding of the contents of the file. This encodes the given
+		 *   string by the encoding before output. If no encoding is given,
+		 *   this outputs the given string to the file as is.
+		 *
+		 * @returns {nsIFile}
+		 *   The given file itself.
+		 */
 		writeTo : function(aContent, aFile, aEncoding)
 		{
 			// create directories
@@ -107,6 +148,9 @@ if (typeof namespace == 'undefined') {
 				catch(e) {
 				}
 			})(aFile.parent);
+
+			if (aFile.exists()) aFile.remove(true);
+			aFile.create(aFile.NORMAL_FILE_TYPE, 0666);
 
 			var stream = Cc['@mozilla.org/network/file-output-stream;1']
 					.createInstance(Ci.nsIFileOutputStream);
@@ -130,6 +174,5 @@ if (typeof namespace == 'undefined') {
 		}
 	};
 
+	namespace.textIO = textIO;
 })();
-
-var textIO = namespace.textIO;

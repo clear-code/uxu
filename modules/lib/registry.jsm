@@ -1,20 +1,14 @@
-/*
- Windows Registry I/O Library for Firefox 3.5 or later
-
- Usage:
-   Components.utils.import('resource://my-modules/registry.jsm');
-   // both styles, HKEY_xxxx_xxxx and HKxx are available.
-   var type = registry.getValue('HKEY_CLASSES_ROOT\\.txt\\Content Type');
-   registry.setValue('HKCR\\.foobar\\Content Type', 'application/x-foobar');
-   registry.clear('HKCU\\Software\\ClearCode Inc.\\MyApp');
-
- lisence: The MIT License, Copyright (c) 2010 ClearCode Inc.
-   http://www.clear-code.com/repos/svn/js-codemodules/license.txt
- original:
-   http://www.clear-code.com/repos/svn/js-codemodules/registry.jsm
-   http://www.clear-code.com/repos/svn/js-codemodules/registry.test.js
-*/
-
+/**
+ * @fileOverview Windows Registry I/O Library for Firefox 3.5 or later
+ * @author       ClearCode Inc.
+ * @version      1
+ *
+ * @license
+ *   The MIT License, Copyright (c) 2010 ClearCode Inc.
+ *   http://www.clear-code.com/repos/svn/js-codemodules/license.txt
+ * @url http://www.clear-code.com/repos/svn/js-codemodules/registry.jsm
+ * @url http://www.clear-code.com/repos/svn/js-codemodules/registry.test.js
+ */
 
 if (typeof window == 'undefined')
 	this.EXPORTED_SYMBOLS = ['registry'];
@@ -33,6 +27,7 @@ if (typeof namespace == 'undefined') {
 	}
 }
 
+var registry;
 (function() {
 	const currentRevision = 1;
 
@@ -40,19 +35,51 @@ if (typeof namespace == 'undefined') {
 			namespace.registry.revision :
 			0 ;
 	if (loadedRevision && loadedRevision > currentRevision) {
+		registry = namespace.registry;
 		return;
 	}
 
 	const Cc = Components.classes;
 	const Ci = Components.interfaces;
 
-	namespace.registry = {
+	/**
+	 * @class
+	 *   The registry I/O service, provides features to read/write the registry
+	 *   database of Windows.
+	 *
+	 * @example
+	 *   Components.utils.import('resource://my-modules/registry.jsm');
+	 *   var type = registry.getValue('HKEY_CLASSES_ROOT\\.txt\\Content Type');
+	 *   registry.setValue('HKCR\\.foobar\\Content Type', 'application/x-foobar');
+	 *   registry.clear('HKCU\\Software\\ClearCode Inc.\\MyApp');
+	 */
+	registry = {
+		/** @private */
 		revision : currentRevision,
 
+		/** @const */
 		ERROR_NOT_WINDOWS  : 'The platform is not Windows!',
+		/** @const */
 		ERROR_WRITE_FAILED : 'Failed to write new value!',
+		/** @const */
 		ERROR_CLEAR_FAILED : 'Failed to clear a registry key!',
 
+		/**
+		 * @private
+		 * Parses the given path string of registry key and returns each part:
+		 * the root (constant of Ci.nsIWindowsRegKey), the path, and the name.
+		 * As the root, short-hands ("HKCR", "HKCU" and "HKLM") are available.
+		 * They equal to full-spelled versions, like "HKEY_LOCAL_MACHINE".
+		 *
+		 * @param {string} aKey
+		 *   A path string of a registry key.
+		 *
+		 * @returns {Array}
+		 *   The parsed result. The array has 3 elements: [0] is the root,
+		 *   [1] is the path, and [2] is the name (last part of the path).
+		 *
+		 * @throws ERROR_NOT_WINDOWS If the platform is not Windows.
+		 */
 		_splitKey : function(aKey) 
 		{
 			var root = -1, path = '', name = '';
@@ -89,6 +116,21 @@ if (typeof namespace == 'undefined') {
 			return [root, path, name];
 		},
 		 
+		/**
+		 * Returns the value of the registry key specified by the given path.
+		 *
+		 * @param {string} aKey
+		 *   A path string of a registry key. You can start the path with
+		 *   short-hands ("HKCR", "HKCU" and "HKLM").
+		 *
+		 * @returns {?*}
+		 *   The value of the registry key. The type of the returned value is
+		 *   automatically detected by the type of the registry key. It will be
+		 *   mapped to number, string, boolean, or an array of bytes.
+		 *   <code>null</code> will be returned if there is no existing value.
+		 *
+		 * @throws ERROR_NOT_WINDOWS If the platform is not Windows.
+		 */
 		getValue : function(aKey) 
 		{
 			var value = null;
@@ -136,6 +178,25 @@ if (typeof namespace == 'undefined') {
 			return value;
 		},
 		 
+		/**
+		 * Stores the given value to the specified registry key. If there is
+		 * existing value, the given value will be converted to the type of the
+		 * old value. Otherwise, strings are stored as is, boolean and number
+		 * are stored as an integer, and an array of bytes will be a binary.
+		 *
+		 * @param {string} aKey
+		 *   A path string of a registry key. You can start the path with
+		 *   short-hands ("HKCR", "HKCU" and "HKLM").
+		 * @param {*} aValue
+		 *   A string, a number, a boolean, or an array of bytes.
+		 *
+		 * @returns {*}
+		 *   The given value will be returned as is.
+		 *
+		 * @throws ERROR_NOT_WINDOWS If the platform is not Windows.
+		 * @throws ERROR_WRITE_FAILED If the path is invalid or you don't have
+		 *         permissions to write specified regisry key.
+		 */
 		setValue : function(aKey, aValue) 
 		{
 			var root, path, name;
@@ -294,6 +355,17 @@ if (typeof namespace == 'undefined') {
 			return aValue;
 		},
 		 
+		/**
+		 * Clears the registry key specified by the given path string. If the
+		 * key has child keys, all of children are cleared recursively.
+		 *
+		 * @param {string} aKey
+		 *   A path string of a registry key. You can start the path with
+		 *   short-hands ("HKCR", "HKCU" and "HKLM").
+		 *
+		 * @throws ERROR_NOT_WINDOWS If the platform is not Windows.
+		 * @throws ERROR_CLEAR_FAILED If the path is invalid.
+		 */
 		clear : function(aKey) 
 		{
 			var root, path, name;
@@ -363,6 +435,5 @@ if (typeof namespace == 'undefined') {
 		}
 	};
 
+	namespace.registry = registry;
 })();
-
-var registry = namespace.registry;

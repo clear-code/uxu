@@ -1,19 +1,14 @@
-/*
- Embedded JavaScript Template Library for Firefox 3.5 or later
-
- Usage:
-   Components.utils.import('resource://my-modules/ejs.jsm');
-   var source = 'Happy new year <%= (new Date()).getFullYear() %>!';
-   var result = (new EJS(source)).result();
-   // Just same to EJS.result(source);
-
- lisence: The MIT License, Copyright (c) 2010 ClearCode Inc.
-   http://www.clear-code.com/repos/svn/js-codemodules/license.txt
- original:
-   http://www.clear-code.com/repos/svn/js-codemodules/ejs.jsm
-   http://www.clear-code.com/repos/svn/js-codemodules/ejs.test.js
-*/
-
+/**
+ * @fileOverview Embedded JavaScript Template Library for Firefox 3.5 or later
+ * @author       ClearCode Inc.
+ * @version      2
+ *
+ * @license
+ *   The MIT License, Copyright (c) 2010 ClearCode Inc.
+ *   http://www.clear-code.com/repos/svn/js-codemodules/license.txt
+ * @url http://www.clear-code.com/repos/svn/js-codemodules/ejs.jsm
+ * @url http://www.clear-code.com/repos/svn/js-codemodules/ejs.test.js
+ */
 
 if (typeof window == 'undefined')
 	this.EXPORTED_SYMBOLS = ['EJS'];
@@ -32,22 +27,55 @@ if (typeof namespace == 'undefined') {
 	}
 }
 
+var EJS;
 (function() {
-	const currentRevision = 1;
+	const currentRevision = 2;
 
-	var loadedRevision = 'encoding' in namespace ?
-			namespace.encoding.revision :
+	var loadedRevision = 'EJS' in namespace ?
+			namespace.EJS.revision :
 			0 ;
 	if (loadedRevision && loadedRevision > currentRevision) {
+		EJS = namespace.EJS;
 		return;
 	}
 
-
-	function EJS(aCode)
-	{
+	/**
+	 * @class
+	 *   Embedded JavaScript class implementation.
+	 *
+	 * @example
+	 *   var source = 'Happy new year <%= (new Date()).getFullYear() %>!';
+	 *   var result = (new EJS(source)).result();
+	 *   // Just same to EJS.result(source);
+	 *
+	 * @param {string} aCode
+	 *   A string including script fragments.
+	 */
+	EJS = function EJS(aCode) {
 		this.code = aCode;
-	}
+	};
 	EJS.prototype = {
+		/**
+		 * Evaluates script fragments embedded in the string, in the given
+		 * scope. <% ... %> work as simple operations, and <%= ... %> will be
+		 * replaced with results of embedded expressions.
+		 *
+		 * @example
+		 *   var string = '<% for (var i = 0; i < 3; i++) { %>'+
+		 *                '<li><%= label + i %></li>'+
+		 *                '<% } %>';
+		 *   var ejs = new EJS(string);
+		 *   ejs.result({ label: 'item' });
+		 *   // => '<li>item0</li><li>item1</li><li>item2</li>'
+		 *
+		 * @param {Object=} aScope
+		 *   The namespace to evaluate script fragments in the string.
+		 *   You can access properties of the object from script fragments
+		 *   as simple local variables.
+		 *
+		 * @returns {string}
+		 *   The result.
+		 */
 		result : function(aScope) 
 		{
 			var __processTemplate__codes = [];
@@ -73,19 +101,42 @@ if (typeof namespace == 'undefined') {
 			Components.utils.evalInSandbox(__processTemplate__codes.join('\n'), sandbox);
 			return sandbox.__processTemplate__results.join('');
 		},
+		/**
+		 * @private
+		 * Returns the global object on the context.
+		 */
 		get _global()
 		{
 			return (function() { return this; })();
 		}
 	};
-
+	/**
+	 * A short-hand for evaluation.
+	 *
+	 * @example
+	 *   var string = '<% for (var i = 0; i < 3; i++) { %>'+
+	 *                '<li><%= label + i %></li>'+
+	 *                '<% } %>';
+	 *   EJS.result(string, { label: 'item' });
+	 *   // => '<li>item0</li><li>item1</li><li>item2</li>'
+	 *
+	 * @param {string} aCode
+	 *   A string including script fragments.
+	 * @param {Object=} aScope
+	 *   The namespace to evaluate script fragments in the string.
+	 *   You can access properties of the object from script fragments
+	 *   as simple local variables.
+	 *
+	 * @returns {string}
+	 *   The result.
+	 *
+	 * @see result
+	 */
 	EJS.result = function(aCode, aScope) {
 		return (new EJS(aCode)).result(aScope);
 	};
-
-	EJS.currentRevision = currentRevision;
+	/** @private */
+	EJS.revision = currentRevision;
 
 	namespace.EJS = EJS;
 })();
-
-var EJS = namespace.EJS;

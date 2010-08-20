@@ -1,27 +1,14 @@
-/*
- Command Line Handlers helper library for Firefox 3.5 or later
-
- Usage:
-   Components.utils.import('resource://my-modules/CLHHelper.jsm');
-   CommandLineHandler.prototype.handle = function(aCommandLine) {
-     var args = {
-          server     : CLHHelper.getBooleanValue('boolean-option', aCommandLine),
-          serverPort : CLHHelper.getNumericValue('numeric-option', aCommandLine, 0),
-          outputHost : CLHHelper.getStringValue('string-option', aCommandLine, ''),
-          testcase   : CLHHelper.getFullPath('path-option', aCommandLine, '')
-       };
-   };
-   CommandLineHandler.prototype.helpInfo = CLHHelper.formatHelpInfo({
-     '-boolean-option' : 'It is a boolean option.',
-     '-path-option <path>' : 'It is a path option.'
-   });
-
- lisence: The MIT License, Copyright (c) 2010 ClearCode Inc.
-   http://www.clear-code.com/repos/svn/js-codemodules/license.txt
- original:
-   http://www.clear-code.com/repos/svn/js-codemodules/CLHHelper.jsm
-   http://www.clear-code.com/repos/svn/js-codemodules/CLHHelper.test.js
-*/
+/**
+ * @fileOverview Command Line Handlers Helper for Firefox 3.5 or later
+ * @author       ClearCode Inc.
+ * @version      2
+ *
+ * @license
+ *   The MIT License, Copyright (c) 2010 ClearCode Inc.
+ *   http://www.clear-code.com/repos/svn/js-codemodules/license.txt
+ * @url http://www.clear-code.com/repos/svn/js-codemodules/CLHHelper.jsm
+ * @url http://www.clear-code.com/repos/svn/js-codemodules/CLHHelper.test.js
+ */
 
 if (typeof window == 'undefined')
 	this.EXPORTED_SYMBOLS = ['CLHHelper'];
@@ -40,6 +27,7 @@ if (typeof namespace == 'undefined') {
 	}
 }
 
+var CLHHelper;
 (function() {
 	const currentRevision = 2;
 
@@ -47,15 +35,21 @@ if (typeof namespace == 'undefined') {
 			namespace.CLHHelper.revision :
 			0 ;
 	if (loadedRevision && loadedRevision > currentRevision) {
+		CLHHelper = namespace.CLHHelper;
 		return;
 	}
 
 	const Cc = Components.classes;
 	const Ci = Components.interfaces;
 
-	namespace.CLHHelper = {
+	/**
+	 * @class The helper service, provides features to implement nsICommandHandler components.
+	 */
+	CLHHelper = {
+		/** @private */
 		revision : currentRevision,
 
+		/** @private */
 		_getValue : function(aOption, aCommandLine, aDefaultValue) 
 		{
 			if (aDefaultValue === void(0)) aDefaultValue = '';
@@ -68,6 +62,23 @@ if (typeof namespace == 'undefined') {
 			return aDefaultValue;
 		},
 	 
+		/**
+		 * Checks whether the command line option is given or not.
+		 *
+		 * @example
+		 *   // > firefox.exe -my-option
+		 *   CLHHelper.getBooleanValue('my-option', aCommandLine);
+		 *   // => true
+		 *
+		 * @param {string} aOption
+		 *   The name of the option.
+		 * @param {nsICommandLine} aCommandLine
+		 *   The command line object given to nsICommandLineHandler::handle.
+		 *
+		 * @returns {boolean}
+		 *   If the option is given, <code>true</code> will be returned.
+		 *   Otherwise <code>false</code>.
+		 */
 		getBooleanValue : function(aOption, aCommandLine) 
 		{
 			try {
@@ -79,6 +90,27 @@ if (typeof namespace == 'undefined') {
 			return false;
 		},
  
+		/**
+		 * Gets the value of the command line option as a number.
+		 *
+		 * @example
+		 *   // > firefox.exe -my-option "200"
+		 *   CLHHelper.getNumericValue('my-option', aCommandLine);
+		 *   // => 200
+		 *
+		 * @param {string} aOption
+		 *   The name of the option.
+		 * @param {nsICommandLine} aCommandLine
+		 *   The command line object given to nsICommandLineHandler::handle.
+		 * @param {number=} aDefaultValue (optional)
+		 *   The default value which is used when the option is not given.
+		 *   This is <code>0</code> by default.
+		 *
+		 * @returns {number}
+		 *   A numeric value specified by the option. If the option is not
+		 *   given, or it is not a number, then this returns the aDefaultValue
+		 *   as is.
+		 */
 		getNumericValue : function(aOption, aCommandLine, aDefaultValue) 
 		{
 			if (!aDefaultValue) aDefaultValue = 0;
@@ -88,11 +120,52 @@ if (typeof namespace == 'undefined') {
 			return isNaN(value) ? aDefaultValue : value ;
 		},
  
+		/**
+		 * Gets the value of the command line option as a string.
+		 *
+		 * @example
+		 *   // > firefox.exe -my-option "my-value"
+		 *   CLHHelper.getStringValue('my-option', aCommandLine);
+		 *   // => "my-value"
+		 *
+		 * @param {string} aOption
+		 *   The name of the option.
+		 * @param {nsICommandLine} aCommandLine
+		 *   The command line object given to nsICommandLineHandler::handle.
+		 * @param {string=} aDefaultValue (optional)
+		 *   The default value which is used when the option is not given.
+		 *   This is "" (blank string) by default.
+		 *
+		 * @returns {string}
+		 *   A string value specified by the option. If the option is not
+		 *   given, then this returns the aDefaultValue as is.
+		 */
 		getStringValue : function(aOption, aCommandLine, aDefaultValue) 
 		{
 			return this._getValue(aOption, aCommandLine, aDefaultValue);
 		},
 
+		/**
+		 * Gets a full path or an absolute file URL from a related path
+		 * string specified by a command line option.
+		 *
+		 * @example
+		 *   // > firefox.exe -my-option "../../file.txt"
+		 *   CLHHelper.getFullPath('my-option', aCommandLine);
+		 *   // => "file:///C:/.../file.txt"
+		 *
+		 * @param {string} aOption
+		 *   The name of the option.
+		 * @param {nsICommandLine} aCommandLine
+		 *   The command line object given to nsICommandLineHandler::handle.
+		 * @param {string=} aDefaultValue (optional)
+		 *   The default value which is used when the option is not given.
+		 *   This is "" (blank string) by default.
+		 *
+		 * @returns {string}
+		 *   A full path or an absolute file URL. If the option is not
+		 *   given, then this returns the aDefaultValue as is.
+		 */
 		getFullPath : function(aOption, aCommandLine, aDefaultValue) 
 		{
 			if (!aDefaultValue) aDefaultValue = '';
@@ -108,6 +181,29 @@ if (typeof namespace == 'undefined') {
 			}
 		},
 
+		/**
+		 * Creates a formatted text for nsICommandLineHandler::helpInfo, from
+		 * a hash.
+		 *
+		 * @example
+		 *   MyCommandLineHandler.prototype.__defineGetter__(
+		 *     'helpInfo',
+		 *     function() {
+		 *       return CLHHelper.formatHelpInfo({
+		 *         '-boolean-option'     : 'It is a boolean option.',
+		 *         '-path-option <path>' : 'It is a path option.'
+		 *       });
+		 *     }
+		 *  );
+		 *
+		 * @param {Object.<string, string>} aDescriptions
+		 *   A hash which have items for each command line option: the key is
+		 *   the name of the option, and the value is the description.
+		 *
+		 * @returns {string}
+		 *   An UTF-8 string which is formatted by: wrapped at 76 columns, and
+		 *   they have 23 cols for the name, rest for the description.
+		 */
 		formatHelpInfo : function(aDescriptions)
 		{
 			var lines = [];
@@ -141,11 +237,21 @@ if (typeof namespace == 'undefined') {
 			return this._UCS2ToUTF8(lines.join('\n'))+'\n';
 		},
 
+		/**
+		 * @private
+		 * Converts an Unicode string (UCS-2) to an UTF-8 string.
+		 *
+		 * @param {string} aInput
+		 *   The input string.
+		 *
+		 * @returns {string}
+		 *   The UTF-8 converted version of the given string.
+		 */
 		_UCS2ToUTF8 : function(aInput)
 		{
 			return unescape(encodeURIComponent(aInput));
 		}
 	};
-})();
 
-var CLHHelper = namespace.CLHHelper;
+	namespace.CLHHelper = CLHHelper;
+})();
