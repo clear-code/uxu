@@ -237,6 +237,8 @@ wait : function(aWaitCondition)
 				finished = this.doIteration(aWaitCondition);
 			}
 			else if (this.isDeferred(aWaitCondition)) {
+				if (aWaitCondition.fired)
+					return;
 				aWaitCondition
 					.next(function() {
 						finished.value = true;
@@ -1267,13 +1269,18 @@ doIteration : function(aGenerator, aCallbacks)
 					}
 					else if (self.isDeferred(aObject)) {
 						let finished = { value : false };
-						aObject
-							.next(function() {
-								finished.value = true;
-							})
-							.error(function() {
-								finished.value = true;
-							});
+						if (aObject.fired) {
+							finished.value = true;
+						}
+						else {
+							aObject
+								.next(function() {
+									finished.value = true;
+								})
+								.error(function() {
+									finished.value = true;
+								});
+						}
 						return ns.setTimeout(arguments.callee, 0, finished);
 					}
 					else if ('error' in aObject && aObject.error instanceof Error) {
@@ -1328,14 +1335,19 @@ doIteration : function(aGenerator, aCallbacks)
 							return;
 						}
 						else if (self.isDeferred(returnedValue)) {
-							let loop = arguments.callee;
-							returnedValue
-								.next(function(aReturnedValue) {
-									loop();
-								})
-								.error(function(aException) {
-									loop();
-								});
+							if (returnedValue.fired) {
+								ns.setTimeout(arguments.callee, 10, 0);
+							}
+							else {
+								let loop = arguments.callee;
+								returnedValue
+									.next(function(aReturnedValue) {
+										loop();
+									})
+									.error(function(aException) {
+										loop();
+									});
+							}
 							return;
 						}
 					}

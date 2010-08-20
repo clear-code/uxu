@@ -160,6 +160,16 @@ function test_wait()
 
 	assertWaitFail([{}]);
 	assertWaitFail([-100]);
+
+	var deferred = new Deferred();
+	window.setTimeout(function() {
+		deferred.call();
+	}, 500);
+	assertWaitSuccess([deferred], 500);
+
+	deferred = new Deferred();
+	deferred.call();
+	assertWaitSuccess([deferred], 0);
 }
 
 if (utils.checkPlatformVersion('1.9') < 0) test_waitDOMEvent.priority = 'never';
