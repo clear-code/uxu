@@ -86,29 +86,29 @@ function test_processRequestByHtaccess()
 
 
 
-test_handleRequest_htaccess.setUp = function() {
+test_handleResponse_htaccess.setUp = function() {
 	server = new HTTPServer(4445, fixtures, utils.mockManager);
 	utils.wait(function() {
 		return !server.isStopped();
 	});
 };
-test_handleRequest_htaccess.tearDown = function() {
+test_handleResponse_htaccess.tearDown = function() {
 	utils.wait(server.stop());
 	server = null;
 };
-function test_handleRequest_htaccess()
+function test_handleResponse_htaccess()
 {
 	var hashTxt = utils.getFileFromURLSpec(fixtures+'hash.txt');
 	hashTxt.normalize();
 
-	var result = server.handleRequest('/hash.txt', server.mServer._handler);
+	var result = server.handleResponse('/hash.txt', server.mServer._handler);
 	assert.equals(4, result.length);
 	assert.isInstanceOf(Ci.nsIFile, result[2]);
 	result[2] = result[2].path;
 	assert.equals([true, '/hash.txt', hashTxt.path, 0], result);
 
 
-	result = server.handleRequest('/notexist', server.mServer._handler);
+	result = server.handleResponse('/notexist', server.mServer._handler);
 	assert.equals(4, result.length);
 	assert.isInstanceOf(Ci.nsIFile, result[2]);
 	result[2] = result[2].path;
@@ -117,13 +117,13 @@ function test_handleRequest_htaccess()
 	assert.equals([true, '/notexist', file.path, 0], result);
 
 
-	result = server.handleRequest('/redirect/match/hash.txt', server.mServer._handler);
+	result = server.handleResponse('/redirect/match/hash.txt', server.mServer._handler);
 	assert.equals(4, result.length);
 	assert.isNull(result[2]);
 	assert.equals([false, '/hash.txt', null, 0], result);
 
 
-	result = server.handleRequest('/redirect/rewrite/hash.txt', server.mServer._handler);
+	result = server.handleResponse('/redirect/rewrite/hash.txt', server.mServer._handler);
 	assert.equals(4, result.length);
 	assert.isInstanceOf(Ci.nsIFile, result[2]);
 	result[2] = result[2].path;
@@ -131,17 +131,17 @@ function test_handleRequest_htaccess()
 }
 
 
-test_handleRequest_mock.setUp = function() {
+test_handleResponse_mock.setUp = function() {
 	server = new HTTPServer(4445, fixtures, utils.mockManager);
 	utils.wait(function() {
 		return !server.isStopped();
 	});
 };
-test_handleRequest_mock.tearDown = function() {
+test_handleResponse_mock.tearDown = function() {
 	utils.wait(server.stop());
 	server = null;
 };
-function test_handleRequest_mock()
+function test_handleResponse_mock()
 {
 	var hashTxt = utils.getFileFromURLSpec(fixtures+'hash.txt');
 	hashTxt.normalize();
@@ -151,23 +151,23 @@ function test_handleRequest_mock()
 	server.expectThrows('/unknown-file', 404);
 	server.expectThrows('/error', 500);
 
-	var result = server.handleRequest('/expected-path', server.mServer._handler);
+	var result = server.handleResponse('/expected-path', server.mServer._handler);
 	assert.equals(4, result.length);
 	assert.isInstanceOf(Ci.nsIFile, result[2]);
 	result[2] = result[2].path;
 	assert.equals([true, '/hash.txt', hashTxt.path, 0], result);
 
-	var result = server.handleRequest('/expected-file', server.mServer._handler);
+	var result = server.handleResponse('/expected-file', server.mServer._handler);
 	assert.equals(4, result.length);
 	assert.isInstanceOf(Ci.nsIFile, result[2]);
 	result[2] = result[2].path;
 	assert.equals([true, '/expected-file', hashTxt.path, 0], result);
 
 	assert.raises(404, function() {
-		server.handleRequest('/unknown-file', server.mServer._handler);
+		server.handleResponse('/unknown-file', server.mServer._handler);
 	});
 	assert.raises(500, function() {
-		server.handleRequest('/error', server.mServer._handler);
+		server.handleResponse('/error', server.mServer._handler);
 	});
 }
 
@@ -237,16 +237,17 @@ function testResponseWithDelay()
 	var start = Date.now();
 	utils.loadURI('http://localhost:4445/delayed');
 	assert.compare(3000, '<=', Date.now() - start);
-	assert.equals('/delayed', content.location.href);
+	assert.equals('http://localhost:4445/delayed', content.location.href);
 	assert.equals('hash\n', content.document.body.textContent);
 
 	utils.loadURI('about:blank');
 
 	server.expect('/delayed', { uri : '/hash.txt', status : 301, delay : 3000 });
-	var start = Date.now();
+	server.expect('/hash.txt', { uri : '/hash.txt', status : 200 });
+	start = Date.now();
 	utils.loadURI('http://localhost:4445/delayed');
 	assert.compare(3000, '<=', Date.now() - start);
-	assert.equals('/hash.txt', content.location.href);
+	assert.equals('http://localhost:4445/hash.txt', content.location.href);
 	assert.equals('hash\n', content.document.body.textContent);
 }
 

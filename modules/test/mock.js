@@ -588,6 +588,7 @@ FunctionMock.prototype = {
 		this.name = aName || this.defaultName || '';
 
 		this._assert = aAssertions || new ns.Assertions();
+		this.errors = [];
 		this.reset();
 	},
 	reset : function()
@@ -760,19 +761,33 @@ FunctionMock.prototype = {
 						[this.name, utils.inspect(aArguments)]
 					));
 
-		if (!call.isAnyCall() && !call.isOneTimeAnyCall())
-			this._assert.equals(
-				this.formatArgumentsArray(call.arguments, aArguments),
-				aArguments,
-				bundle.getFormattedString('function_mock_wrong_arguments', [this.name])
-			);
+		if (!call.isAnyCall() && !call.isOneTimeAnyCall()) {
+			try {
+				this._assert.equals(
+					this.formatArgumentsArray(call.arguments, aArguments),
+					aArguments,
+					bundle.getFormattedString('function_mock_wrong_arguments', [this.name])
+				);
+			}
+			catch(e) {
+				this.errors.push(e)
+				throw e;
+			}
+		}
 
-		if ('context' in call)
-			this._assert.equals(
-				call.context,
-				aContext,
-				bundle.getFormattedString('function_mock_wrong_context', [this.name, utils.inspect(aArguments)])
-			);
+		if ('context' in call) {
+			try {
+				this._assert.equals(
+					call.context,
+					aContext,
+					bundle.getFormattedString('function_mock_wrong_context', [this.name, utils.inspect(aArguments)])
+				);
+			}
+			catch(e) {
+				this.errors.push(e)
+				throw e;
+			}
+		}
 
 		call.onCall(this, aArguments);
 
@@ -788,8 +803,14 @@ FunctionMock.prototype = {
 		return aExpectedArray.map(function(aExpected, aIndex) {
 			if (aExpected instanceof TypeOf) {
 				let actual = aActualArray[aIndex];
-				this._assert.isDefined(actual);
-				this._assert.isInstanceOf(aExpected.expectedConstructor, actual)
+				try {
+					this._assert.isDefined(actual);
+					this._assert.isInstanceOf(aExpected.expectedConstructor, actual)
+				}
+				catch(e) {
+					this.errors.push(e)
+					throw e;
+				}
 				return actual;
 			}
 			else {
@@ -803,9 +824,15 @@ FunctionMock.prototype = {
 		var success = this.successCount;
 		var errors = this.errorCount;
 		this.reset();
-		if (errors)
-			throw new Error(bundle.getFormattedString(aErrorMessageKey, [this.name, errors]));
-		this._assert.equals(expected, success, bundle.getFormattedString(aFailMessageKey, [this.name]));
+		try {
+			if (errors)
+				throw new Error(bundle.getFormattedString(aErrorMessageKey, [this.name, errors]));
+			this._assert.equals(expected, success, bundle.getFormattedString(aFailMessageKey, [this.name]));
+		}
+		catch(e) {
+			this.errors.push(e)
+			throw e;
+		}
 	},
 	assert : function()
 	{
@@ -838,7 +865,10 @@ FunctionMock.prototype = {
 						return value == self ? this : value ;
 					};
 		}, this);
-		['firstExpectedCall', 'lastExpectedCall'].forEach(function(aName) {
+		['firstExpectedCall',
+		 'lastExpectedCall',
+		 'expectedCalls',
+		 'errors'].forEach(function(aName) {
 			aTarget.__defineGetter__(aName, function() { return self[aName]; });
 		}, this);
 	}
@@ -890,12 +920,19 @@ GetterMock.prototype = {
 	{
 		var call = this.getCurrentCall(bundle.getFormattedString('getter_mock_unexpected_call', [this.name]));
 
-		if ('context' in call)
-			this._assert.equals(
-				call.context,
-				aContext,
-				bundle.getFormattedString('getter_mock_wrong_context', [this.name])
-			);
+		if ('context' in call) {
+			try {
+				this._assert.equals(
+					call.context,
+					aContext,
+					bundle.getFormattedString('getter_mock_wrong_context', [this.name])
+				);
+			}
+			catch(e) {
+				this.errors.push(e)
+				throw e;
+			}
+		}
 
 		call.onCall(this, []);
 
@@ -955,19 +992,33 @@ SetterMock.prototype = {
 				[this.name, utils.inspect(aArguments[0])]
 			));
 
-		if (!call.isAnyCall() && !call.isOneTimeAnyCall())
-			this._assert.equals(
-				this.formatArgumentsArray(call.arguments, aArguments)[0],
-				aArguments[0],
-				bundle.getFormattedString('setter_mock_wrong_value', [this.name])
-			);
+		if (!call.isAnyCall() && !call.isOneTimeAnyCall()) {
+			try {
+				this._assert.equals(
+					this.formatArgumentsArray(call.arguments, aArguments)[0],
+					aArguments[0],
+					bundle.getFormattedString('setter_mock_wrong_value', [this.name])
+				);
+			}
+			catch(e) {
+				this.errors.push(e)
+				throw e;
+			}
+		}
 
-		if ('context' in call)
-			this._assert.equals(
-				call.context,
-				aContext,
-				bundle.getFormattedString('setter_mock_wrong_context', [this.name, utils.inspect(aArguments[0])])
-			);
+		if ('context' in call) {
+			try {
+				this._assert.equals(
+					call.context,
+					aContext,
+					bundle.getFormattedString('setter_mock_wrong_context', [this.name, utils.inspect(aArguments[0])])
+				);
+			}
+			catch(e) {
+				this.errors.push(e)
+				throw e;
+			}
+		}
 
 		call.onCall(this, aArguments);
 
@@ -1059,18 +1110,24 @@ HTTPServerMock.prototype = {
 			));
 
 		if (!call.isAnyCall() && !call.isOneTimeAnyCall()) {
-			if (typeof call.arguments[0] == 'string')
-				this._assert.equals(
-					this.formatArgumentsArray(call.arguments, aArguments)[0],
-					aArguments[0],
-					bundle.getFormattedString('server_mock_wrong_value', [this.name])
-				);
-			else
-				this._assert.matches(
-					call.arguments[0],
-					String(aArguments[0]),
-					bundle.getFormattedString('server_mock_wrong_value', [this.name])
-				);
+			try {
+				if (typeof call.arguments[0] == 'string')
+					this._assert.equals(
+						this.formatArgumentsArray(call.arguments, aArguments)[0],
+						aArguments[0],
+						bundle.getFormattedString('server_mock_wrong_value', [this.name])
+					);
+				else
+					this._assert.matches(
+						call.arguments[0],
+						String(aArguments[0]),
+						bundle.getFormattedString('server_mock_wrong_value', [this.name])
+					);
+			}
+			catch(e) {
+				this.errors.push(e)
+				throw e;
+			}
 		}
 
 		call.onCall(this, aArguments);

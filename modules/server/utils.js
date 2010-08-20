@@ -4,6 +4,7 @@ if (typeof window == 'undefined')
 var ns = {};
 Components.utils.import('resource://uxu-modules/eventTarget.js', ns);
 Components.utils.import('resource://uxu-modules/utils.js', ns);
+Components.utils.import('resource://uxu-modules/multiplexError.js', ns);
 Components.utils.import('resource://uxu-modules/server/httpd.js', ns);
 Components.utils.import('resource://uxu-modules/server/message.js', ns);
 Components.utils.import('resource://uxu-modules/server/server.js', ns);
@@ -128,14 +129,25 @@ ServerUtils.prototype = {
 	tearDownAllHttpServers : function(aAsync)
 	{
 		var stopped = [];
+		var errors = [];
 		while (this._HTTPServerInstances.length)
 		{
-			stopped.push(this.tearDownHttpServer());
+			try {
+				stopped.push(this.tearDownHttpServer());
+			}
+			catch(e) {
+				errors.push(e);
+			}
 		}
 		var completedCheck = function() {
-				return stopped.every(function(aStopped) {
+				if (stopped.every(function(aStopped) {
 						return aStopped.value;
-					});
+					})) {
+					if (errors.length)
+						throw new ns.MultiplexError(errors);
+					return true;
+				}
+				return false;
 			};
 
 		if (aAsync)

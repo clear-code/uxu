@@ -2390,7 +2390,7 @@ ServerHandler.prototype =
     var file, delay = 0;
     if (this._server.owner) {
       let shouldContinue;
-      [shouldContinue, path, file, delay] = this._server.owner.handleRequest(path, this, response);
+      [shouldContinue, path, file, delay] = this._server.owner.handleResponse(path, this, response);
       if (!shouldContinue)
         return;
     }
@@ -2637,7 +2637,7 @@ ServerHandler.prototype =
               if (count === 0)
               {
                 fis.close();
-                response.finish(delay);
+                response.finish();
               }
               else
               {
@@ -2652,14 +2652,21 @@ ServerHandler.prototype =
               }
               finally
               {
-                response.finish(delay);
+                response.finish();
               }
               throw e;
             }
           }
         };
 
-      writeMore();
+      if (delay && delay > 0) {
+        ns.setTimeout(function(aSelf) {
+          writeMore();
+        }, delay, this);
+      }
+      else {
+        writeMore();
+      }
 
       // Now that we know copying will start, flag the response as async.
       response.processAsync();
@@ -3480,7 +3487,7 @@ Response.prototype =
   //
   // see nsIHttpResponse.finish
   //
-  finish: function(aDelay)
+  finish: function()
   {
     if (!this._processAsync)
       throw Cr.NS_ERROR_UNEXPECTED;
@@ -3488,18 +3495,9 @@ Response.prototype =
       return;
 
     dumpn("*** finishing async connection " + this._connection.number);
-    if (aDelay && aDelay > 0) {
-      ns.setTimeout(function(aSelf) {
-        aSelf._startAsyncProcessor(); // in case bodyOutputStream was never accessed
-        if (aSelf._bodyOutputStream)
-          aSelf._bodyOutputStream.close();
-      }, aDelay, this);
-    }
-    else {
-      this._startAsyncProcessor(); // in case bodyOutputStream was never accessed
-      if (this._bodyOutputStream)
-        this._bodyOutputStream.close();
-    }
+    this._startAsyncProcessor(); // in case bodyOutputStream was never accessed
+    if (this._bodyOutputStream)
+      this._bodyOutputStream.close();
     this._finished = true;
   },
 
@@ -4652,6 +4650,7 @@ if (typeof window == 'undefined')
 
 var ns = {};
 Components.utils.import('resource://uxu-modules/utils.js', ns);
+Components.utils.import('resource://uxu-modules/multiplexError.js', ns);
 Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 var utils = ns.utils;
@@ -4685,7 +4684,11 @@ HTTPServer.prototype = {
 
 	stop : function()
 	{
+		if (!this.mServer)
+			return { value : true };
+
 		var stopped = { value : false };
+		var errors = (this.mock && this.mock.errors.length) ? this.mock.errors : null ;
 	//	if (ThreadManager) this.thread.shutdown();
 		this.mServer.stop(function() {
 			stopped.value = true;
@@ -4694,6 +4697,8 @@ HTTPServer.prototype = {
 		delete this.mServer;
 		delete this.mMockManager;
 		delete this.mock;
+		if (errors)
+			throw new ns.MultiplexError(errors);
 		return stopped;
 	},
 
@@ -4763,7 +4768,7 @@ HTTPServer.prototype = {
 	expectRaise : function() { return this.expectThrows.apply(this, arguments); },
 
 
-	handleRequest : function(aPath, aServerHandler, aResponse)
+	handleResponse : function(aPath, aServerHandler, aResponse)
 	{
 		var shouldContinueToProcess = true;
 		var file;
@@ -4777,18 +4782,9 @@ HTTPServer.prototype = {
 				delay = result.delay || 0;
 			}
 			else if (result.status >= 300 && result.status <= 399) {
-				if (aResponse) {
-					aResponse.setStatusLine('1.1', result.status, result.statusText || '');
-					aResponse.setHeader('Location', result.uri);
-					if (result.delay > 0) {
-						ns.setTimeout(function() {
-							aResponse.bodyOutputStream.write(' ', 1);
-						}, result.delay);
-					}
-					else {
-						aResponse.bodyOutputStream.write(' ', 1);
-					}
-				}
+				delay = result.delay || 0;
+				if (aResponse)
+					this.doRedirect(aResponse, result.uri, result.status, result.statusText, delay);
 				shouldContinueToProcess = false;
 			}
 			else {
@@ -4835,11 +4831,8 @@ HTTPServer.prototype = {
 
 								// Redirect
 								default:
-									if (aResponse) {
-										aResponse.setStatusLine('1.1', result.status, result.statusText || '');
-										aResponse.setHeader('Location', result.uri);
-										aResponse.bodyOutputStream.write(' ', 1);
-									}
+									if (aResponse)
+										this.doRedirect(aResponse, result.uri, result.status, result.statusText);
 									aPath = result.uri.replace(/^\w+:\/\/[^\/]+/, '');
 									file = null;
 									return true;
@@ -4854,17 +4847,34 @@ HTTPServer.prototype = {
 			}
 		}
 
-		if (
-			aResponse &&
-			shouldContinueToProcess &&
-			utils.getPref('extensions.uxu.httpd.noCache')
-			) {
+		if (aResponse && utils.getPref('extensions.uxu.httpd.noCache')) {
 			aResponse.setHeader('Pragma', 'no-cache');
 			aResponse.setHeader('Cache-Control', 'no-cache, must-revalidate');
 			aResponse.setHeader('Expires', 'Mon, 26 Jul 1997 05:00:00 GMT');
 		}
 
 		return [shouldContinueToProcess, aPath, file, delay];
+	},
+
+	doRedirect : function(aResponse, aURI, aStatus, aStatusText, aDelay)
+	{
+		aResponse.setStatusLine('1.1', aStatus, aStatusText || '');
+
+		if (!/^[^:]+:/.test(aURI))
+			aURI = 'http://localhost:'+this.port+'/'+aURI.replace(/^\//, '');
+
+		if (aDelay && aDelay > 0) {
+			aResponse.processAsync();
+			ns.setTimeout(function() {
+				aResponse.setHeader('Location', aURI);
+				aResponse.bodyOutputStream.write(' ', 1);
+				aResponse.finish();
+			}, aDelay);
+		}
+		else {
+			aResponse.setHeader('Location', aURI);
+			aResponse.bodyOutputStream.write(' ', 1);
+		}
 	},
 
 
