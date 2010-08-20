@@ -75,9 +75,9 @@ function TestSuite(aEnvironment, aURI, aBrowser)
 	}
 
 	this.attachAssertions();
+	this.attachMock();
 	this.attachActions();
 	this.attachServerUtils();
-	this.attachMock();
 	this.attachDeferred();
 
 	this._utils.export(this.environment.utils, false, this, this.__proto__);
@@ -184,7 +184,7 @@ attachMailUtils : function()
  
 attachServerUtils : function() 
 {
-	var serverUtils = new ns.ServerUtils();
+	var serverUtils = new ns.ServerUtils(this.mockManager);
 	this.__defineGetter__('serverUtils', function() {
 		return serverUtils;
 	});

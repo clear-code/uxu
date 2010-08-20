@@ -4756,7 +4756,7 @@ HTTPServer.prototype = {
 		var delay = 0;
 
 		if (this.mock) {
-			let result = this.processRequestAsMock(aPath);
+			let result = this.mock(aPath);
 			if (result.status == 200) {
 				aPath = result.uri.replace(/^\w+:\/\/[^\/]+/, '');
 				file = result.file || this.mServer_getFileForPath(aPath);

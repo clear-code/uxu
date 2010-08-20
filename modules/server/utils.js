@@ -14,10 +14,11 @@ var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 var ERROR_INVALID_PORT = 'Invalid port is specified for HTTP daemon!';
 var ERROR_USED_PORT    = 'The port is already used by another HTTP daemon!';
 
-function ServerUtils()
+function ServerUtils(aMockManager)
 {
 	this.initListeners();
 
+	this.mMockManager = aMockManager;
 	this._HTTPServerInstances = [];
 }
 
@@ -93,7 +94,7 @@ ServerUtils.prototype = {
 			}))
 			throw new Error(ERROR_USED_PORT);
 
-		var server = new ns.HTTPServer(aPort, aBasePath);
+		var server = new ns.HTTPServer(aPort, aBasePath, this.mMockManager);
 		this._HTTPServerInstances.push(server);
 
 		var completedCheck = function() {
