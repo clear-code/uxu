@@ -204,7 +204,7 @@ attachServerUtils : function()
  
 attachMock : function() 
 {
-	this.mockManager = new ns.MockManager(this.assert);
+	this.mockManager = new ns.MockManager();
 	this.mockManager.export(this);
 },
  
