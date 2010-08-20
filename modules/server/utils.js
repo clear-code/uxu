@@ -97,7 +97,7 @@ ServerUtils.prototype = {
 				}
 				return false;
 			}))
-			return this._HTTPServerInstances[i];
+			return this._HTTPServerInstances[index];
 
 		return null;
 	},
