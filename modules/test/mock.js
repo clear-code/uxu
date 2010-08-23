@@ -375,6 +375,10 @@ Mock.prototype = {
 			}
 		};
 	},
+	get when()
+	{
+		return this._createExpectationChain();
+	},
 
 	assert : function()
 	{
@@ -651,17 +655,22 @@ FunctionMock.prototype = {
 		);
 	},
 	// JSMock, JsMockito
-	createExpectationChain : function()
+	createExpectationChain : function(aSelf)
 	{
 		this.inExpectationChain = true;
-		var self = this;
+		var self = aSelf || this;
 		return function() {
 			self.expect(Array.slice(arguments));
-			if (this != self)
-				self.lastExpectedCall.context = this;
+			var boundContext = this;
+			if (boundContext != self)
+				self.lastExpectedCall.context = boundContext;
 			self.inExpectationChain = false;
 			return self;
 		};
+	},
+	get when()
+	{
+		return this.createExpectationChain();
 	},
 	expect : function(aArguments, aReturnValue)
 	{
@@ -842,11 +851,13 @@ FunctionMock.prototype = {
 	export : function(aTarget)
 	{
 		var self = this;
+
 		['assert', 'verify'].forEach(function(aMethod) {
 			aTarget['_'+aMethod] =
 				aTarget[aMethod] =
 					function() { return self[aMethod].apply(self, arguments); };
 		}, this);
+
 		['expect', 'expects',
 		 'expectThrows', 'expectThrow',
 		 'bindTo', 'boundTo',
@@ -865,12 +876,17 @@ FunctionMock.prototype = {
 						return value == self ? this : value ;
 					};
 		}, this);
+
 		['firstExpectedCall',
 		 'lastExpectedCall',
 		 'expectedCalls',
 		 'errors'].forEach(function(aName) {
 			aTarget.__defineGetter__(aName, function() { return self[aName]; });
 		}, this);
+
+		aTarget.__defineGetter__('when', function() {
+			return self.createExpectationChain(this);
+		});
 	}
 };
 
