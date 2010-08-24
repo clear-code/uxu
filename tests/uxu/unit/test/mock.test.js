@@ -549,6 +549,7 @@ function test_mockName()
 {
 	assert.equals('custom name', (new Mock('custom name'))._name);
 	assert.equals('Array', (new Mock(Array))._name);
+	assert.equals('ChromeWindow', (new Mock(window))._name);
 
 	var mock = new Mock();
 	mock.expect('method', true, true);

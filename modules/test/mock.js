@@ -179,7 +179,7 @@ function Mock(aName, aSource, aAssertions)
 				break;
 			case 'object':
 				this._name = this._name ||
-				              (String(aSource.constructor).match(/function\s*([^\(]*)\s*\(/) && RegExp.$1) ||
+				              (String(aSource.constructor).match(/function\s*([^\(]*)\s*\(|\[object ([^\]]+)\]/) && (RegExp.$1 || RegExp.$2)) ||
 				              this._defaultName;
 				this._inherit(aSource);
 				break;
