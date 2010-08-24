@@ -814,27 +814,29 @@ Assertions.prototype = {
 
 	compare : function(aExpected, aOperator, aActual, aMessage)
 	{
+		var message = bundle.getFormattedString('assert_compare', [aExpected+' '+aOperator+' '+aActual]);
+		if (aMessage) message = aMessage + message;
 		switch (aOperator)
 		{
 			case '<':
-				return this._greaterThan(aExpected, aActual, aMessage);
+				return this._greaterThan(aExpected, aActual, message);
 			case '=<':
 			case '<=':
-				return this._greaterOrEqual(aExpected, aActual, aMessage);
+				return this._greaterOrEqual(aExpected, aActual, message);
 			case '>':
-				return this._lessThan(aExpected, aActual, aMessage);
+				return this._lessThan(aExpected, aActual, message);
 			case '=>':
 			case '>=':
-				return this._lessOrEqual(aExpected, aActual, aMessage);
+				return this._lessOrEqual(aExpected, aActual, message);
 			case '=':
 			case '==':
-				return this.equals(aExpected, aActual, aMessage);
+				return this.equals(aExpected, aActual, message);
 			case '!=':
-				return this.notEquals(aExpected, aActual, aMessage);
+				return this.notEquals(aExpected, aActual, message);
 			case '===':
-				return this.strictlyEquals(aExpected, aActual, aMessage);
+				return this.strictlyEquals(aExpected, aActual, message);
 			case '!==':
-				return this.notStrictlyEquals(aExpected, aActual, aMessage);
+				return this.notStrictlyEquals(aExpected, aActual, message);
 			default:
 				throw new Error(bundle.getFormattedString('assert_compare_invalid_operator', [aOperator]));
 		}

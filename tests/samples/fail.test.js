@@ -382,3 +382,8 @@ function testMock_multiple_auto()
 	mock.expectGet('getter', 'OK');
 	mock.expectSet('setter', 'OK', 'OK');
 }
+
+function test_assertCompare()
+{
+	assert.compare(10, '>', 30);
+}
