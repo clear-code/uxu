@@ -29,6 +29,15 @@ MockManager.prototype = {
 	{
 		this.mocks = [];
 	},
+	resetAll : function()
+	{
+		this.mocks.forEach(function(aMock) {
+			if ('_reset' in aMock)
+				aMock._reset();
+			else if ('reset' in aMock)
+				aMock.reset();
+		}, this);
+	},
 	assertAll : function()
 	{
 		var errors = [];
@@ -86,6 +95,10 @@ MockManager.prototype = {
 		return mock;
 	},
 	// JSMock API
+	reset : function()
+	{
+		this.resetAll();
+	},
 	verify : function()
 	{
 		this.assertAll();
@@ -128,6 +141,14 @@ MockManager.prototype = {
 		// JSMock
 		aTarget.TypeOf = TypeOf;
 		aTarget.MockControl = function() { return self; };
+		aTarget.createMock = aTarget.Mock;
+		aTarget.resetMocks = function() { return self.resetAll(); };
+		aTarget.verifyMocks = function() { return self.assertAll(); };
+		aTarget.JSMock = {
+			extend : function(aTarget) {
+				self.extend(aTarget);
+			}
+		};
 
 		// JsMockito
 		aTarget.mock = aTarget.Mock;
@@ -144,11 +165,7 @@ function Mock(aName, aSource, aAssertions)
 	if (aName && typeof aName != 'string')
 		[aSource, aAssertions, aName] = [aName, aSource, null];
 	this._name = aName;
-	this._methods = {};
-	this._getters = {};
-	this._setters = {};
-	this._inExpectationChain = false;
-	this._expectedCalls = [];
+	this._reset();
 	this._assert = aAssertions || new ns.Assertions();
 	if (aSource) {
 		aSource = aSource.wrappedJSObject || aSource;
@@ -377,6 +394,35 @@ Mock.prototype = {
 		return this._createExpectationChain();
 	},
 
+	reset : function()
+	{
+		if (this._getters) {
+			for (let i in this._getters)
+			{
+				this._getters[i].reset();
+			}
+		}
+		if (this._setters) {
+			for (let i in this._setters)
+			{
+				this._setters[i].reset();
+			}
+		}
+		if (this._methods) {
+			for (let i in this._methods)
+			{
+				this._methods[i].reset();
+			}
+		}
+
+		this._methods = {};
+		this._getters = {};
+		this._setters = {};
+		this._inExpectationChain = false;
+		this._expectedCalls = [];
+	},
+	_reset : function() { this.reset(); },
+
 	assert : function()
 	{
 		var errors = [];
@@ -591,11 +637,13 @@ FunctionMock.prototype = {
 
 		this._assert = aAssertions || new ns.Assertions();
 
-		this.errors = [];
-		this.reset();
+		this.reset(false);
 	},
-	reset : function()
+	reset : function(aKeepErrors)
 	{
+		if (!aKeepErrors) {
+			this.errors = [];
+		}
 		this.inExpectationChain = false;
 		this.expectedCalls = [];
 		this.anyCall = null;
@@ -837,7 +885,7 @@ FunctionMock.prototype = {
 		var expected = this.expectedCount;
 		var success = this.successCount;
 		var errors = this.errorCount;
-		this.reset();
+		this.reset(true);
 		try {
 			if (errors) {
 				let e = new Error(bundle.getFormattedString(aErrorMessageKey, [this.name, errors]));
@@ -860,7 +908,8 @@ FunctionMock.prototype = {
 	{
 		var self = this;
 
-		['assert', 'verify'].forEach(function(aMethod) {
+		['reset',
+		 'assert', 'verify'].forEach(function(aMethod) {
 			aTarget['_'+aMethod] =
 				aTarget[aMethod] =
 					function() { return self[aMethod].apply(self, arguments); };

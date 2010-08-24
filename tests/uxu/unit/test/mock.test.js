@@ -191,6 +191,30 @@ function test_functionMock_bindTo()
 	});
 }
 
+function test_functionMock_reset()
+{
+	var mock = createFunctionMock();
+	mock.expect([1]);
+	mock.expect([1]);
+	assertCallSuccess(mock, [1]);
+	mock.reset();
+	mock.assert();
+	assertCallError(mock, [0]);
+
+	mock = createFunctionMock();
+	mock.expect([1]);
+	assertCallRaise(mock, [0], 'AssertionFailed');
+	mock.reset();
+	mock.assert();
+	assertCallError(mock, [0]);
+
+	mock = createFunctionMock();
+	mock.expect([1]);
+	mock.reset();
+	mock.assert();
+	assertCallError(mock, [0]);
+}
+
 function test_functionMock_assert()
 {
 	var mock = createFunctionMock();
@@ -498,8 +522,16 @@ function test_setterMock_assert()
 
 function test_createMock()
 {
-	var mock = new Mock(window);
-	assert.isFunction(mock.alert);
+	var mock = new Mock('window', window);
+	assert.raises(
+		bundle.getFormattedString(
+			'mock_unexpected_call',
+			['window', 'alert', utils.inspect([0])]
+		),
+		function() {
+			mock.alert(0);
+		}
+	);
 
 	mock = new Mock('mock array', []);
 	assert.raises(
@@ -672,6 +704,24 @@ function test_mockAccessOrder()
 		'AssertionFailed',
 		function() { mock.first(); }
 	);
+}
+
+function test_Mock_reset()
+{
+	var mock = new Mock();
+	mock.expect('method', [0]);
+	mock.expectGet('getter', true);
+	mock.expectSet('setter', true, true);
+	assert.raises(
+		'AssertionFailed',
+		function() { mock.method(); }
+	);
+	assert.raises(
+		'Error',
+		function() { mock.unknown(); }
+	);
+	mock.reset();
+	mock.assert();
 }
 
 

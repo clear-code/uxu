@@ -20,7 +20,9 @@ function test_TypeOf()
 
 function test_JSMockStyle()
 {
-	var mock = new Mock();
+	var manager = new MockManager();
+
+	var mock = manager.createMock();
 	assertCallAdded(mock, function() {
 		mock.expects().methodWithoutArg();
 	});
@@ -77,7 +79,17 @@ function test_JSMockStyle()
 		mock.methodWithArg(new Array(3));
 	});
 
-	mock.assert();
+	mock.verify();
+
+	mock.expects().method();
+	mock.reset();
+	mock.verify();
+
+	assert.raises('Error', function() {
+		mock.unknown();
+	});
+	manager.reset();
+	manager.verify();
 }
 
 function test_JsMockitoStyle()
