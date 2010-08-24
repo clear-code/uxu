@@ -194,10 +194,7 @@ Mock.prototype = {
 			let setter = aSource.__lookupSetter__(i);
 			if (setter) this.addSetter(i);
 			if (!getter && !setter) {
-				if (typeof aSource[i] == 'function') {
-					this.addMethod(i);
-				}
-				else {
+				if (typeof aSource[i] != 'function') {
 					this.addGetter(i);
 					this.addSetter(i);
 				}
@@ -590,8 +587,10 @@ FunctionMock.prototype = {
 	{
 		aName = aName || (String(aSource).match(/function\s*([^\(]*)\s*\(/) && RegExp.$1);
 		this.name = aName || this.defaultName || '';
+		this.stack = utils.getStackTrace();
 
 		this._assert = aAssertions || new ns.Assertions();
+
 		this.errors = [];
 		this.reset();
 	},
@@ -643,6 +642,12 @@ FunctionMock.prototype = {
 			this.expectedCount++;
 		}
 		return call;
+	},
+	addError : function(aError)
+	{
+		if (aError.stack)
+			aError.stack = this.stack + aError.stack;
+		return this.errors.push(aError);
 	},
 	isSpecialSpec : function(aArgument)
 	{
@@ -779,7 +784,7 @@ FunctionMock.prototype = {
 				);
 			}
 			catch(e) {
-				this.errors.push(e)
+				this.addError(e)
 				throw e;
 			}
 		}
@@ -793,7 +798,7 @@ FunctionMock.prototype = {
 				);
 			}
 			catch(e) {
-				this.errors.push(e)
+				this.addError(e)
 				throw e;
 			}
 		}
@@ -817,7 +822,7 @@ FunctionMock.prototype = {
 					this._assert.isInstanceOf(aExpected.expectedConstructor, actual)
 				}
 				catch(e) {
-					this.errors.push(e)
+					this.addError(e)
 					throw e;
 				}
 				return actual;
@@ -834,12 +839,15 @@ FunctionMock.prototype = {
 		var errors = this.errorCount;
 		this.reset();
 		try {
-			if (errors)
-				throw new Error(bundle.getFormattedString(aErrorMessageKey, [this.name, errors]));
+			if (errors) {
+				let e = new Error(bundle.getFormattedString(aErrorMessageKey, [this.name, errors]));
+				e.stack = this.stack + e.stack;
+				throw e;
+			}
 			this._assert.equals(expected, success, bundle.getFormattedString(aFailMessageKey, [this.name]));
 		}
 		catch(e) {
-			this.errors.push(e)
+			this.addError(e)
 			throw e;
 		}
 	},
@@ -945,7 +953,7 @@ GetterMock.prototype = {
 				);
 			}
 			catch(e) {
-				this.errors.push(e)
+				this.addError(e)
 				throw e;
 			}
 		}
@@ -1017,7 +1025,7 @@ SetterMock.prototype = {
 				);
 			}
 			catch(e) {
-				this.errors.push(e)
+				this.addError(e)
 				throw e;
 			}
 		}
@@ -1031,7 +1039,7 @@ SetterMock.prototype = {
 				);
 			}
 			catch(e) {
-				this.errors.push(e)
+				this.addError(e)
 				throw e;
 			}
 		}
@@ -1141,7 +1149,7 @@ HTTPServerMock.prototype = {
 					);
 			}
 			catch(e) {
-				this.errors.push(e)
+				this.addError(e)
 				throw e;
 			}
 		}
