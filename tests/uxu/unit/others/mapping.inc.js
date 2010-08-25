@@ -33,12 +33,13 @@ function assertMapped(aURI, aMapToFile)
 
 	// for example:
 	// Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.9.0.10) Gecko/2009042316 Firefox/3.0.10 (.NET CLR 3.5.30729)
-	var regexp = /Mozilla\/([\.0-9]+) \(([^;]*); ([^;]*); (?:([^;]*); ([^;]*); )?rv:([^\)]+)\) Gecko\/([\.0-9]+)\s+(.+)/;
+	// Mozilla/5.0 (Windows NT 6.1; rv:2.0b5pre) Gecko/20100824 Minefield/4.0b5pre
+	var regexp = /Mozilla\/([\.0-9]+) \((?:(?:[^;]*); (?:[UI]*); )?([^;]*); (?:(?:[^;]*); )?rv:([^\)]+)\) Gecko\/([\.0-9]+)\s+(.+)/;
 	assert.match(regexp, $('script').textContent);
 
 	var match = $('script').textContent.match(regexp);
 	assert.equals('5.0', match[1]);
-	assert.match(/^[0-9]+\.[0-9]+([ab]([0-9]+)?(pre)?)?/, match[6]);
+	assert.match(/^[0-9]+\.[0-9]+([ab]([0-9]+)?(pre)?)?/, match[3]);
 
 	assert.notContains('foobar', $('script').textContent);
 	utils.setPref('general.useragent.vendor', 'foobar');
