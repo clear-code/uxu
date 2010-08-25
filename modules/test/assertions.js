@@ -443,6 +443,8 @@ Assertions.prototype = {
 		this._onSuccess();
 	},
 	raise : function() { return this.raises.apply(this, arguments); },
+	'throw' : function() { return this.raises.apply(this, arguments); },
+	throws : function() { return this.raises.apply(this, arguments); },
 	_onRaisesFinish : function(aExpectedException, aActualException, aMessage)
 	{
 		var name = utils.getErrorNameFromNSExceptionCode(aExpectedException);
@@ -515,6 +517,8 @@ Assertions.prototype = {
 		this._onSuccess();
 	},
 	notRaise : function() { return this.notRaises.apply(this, arguments); },
+	notThrow : function() { return this.notRaises.apply(this, arguments); },
+	notThrows : function() { return this.notRaises.apply(this, arguments); },
 	_onNotRaisesFinish : function(aUnexpectedException, aActualException, aMessage)
 	{
 		var name = utils.getErrorNameFromNSExceptionCode(aUnexpectedException);
@@ -969,6 +973,50 @@ Assertions.prototype = {
 			     	actual   : bundle.getFormattedString('assert_finishes_within_actual', [actualTime, longActualTime])
 			     },
 			     bundle.getString('assert_finishes_within'),
+			     aMessage);
+		}
+		this._onSuccess();
+	},
+
+	notFinishesWithin : function(aExpectedTime, aTask, aContext, aMessage)
+	{
+		var startAt = Date.now();
+		if (typeof aTask == 'function') aTask = aTask.call(aContext);
+		if (aTask && utils.isGeneratedIterator(aTask)) {
+			var _this = this;
+			return utils.doIteration(aTask, {
+				onEnd : function(e)
+				{
+					_this._onNotFinishesWithinFinish(aExpectedTime, startAt, aMessage);
+				},
+				onError : function(e)
+				{
+					throw e;
+				}
+			});
+		}
+		else {
+			this._onNotFinishesWithinFinish(aExpectedTime, startAt, aMessage);
+		}
+	},
+	notFinishWithin : function() { return this.notFinishesWithin.apply(this, arguments); },
+	finishesOver : function() { return this.notFinishesWithin.apply(this, arguments); },
+	finishOver : function() { return this.notFinishesWithin.apply(this, arguments); },
+	_onNotFinishesWithinFinish : function(aExpectedTime, aStartAt, aMessage)
+	{
+		var actualTime = Date.now() - aStartAt;
+		if (actualTime < aExpectedTime) {
+			var longExpectedTime = aExpectedTime < 1000 ?
+					'' :
+					bundle.getFormattedString('assert_not_finishes_within_expected_long', [Math.round(aExpectedTime / 1000)]) ;
+			var longActualTime = actualTime < 1000 ?
+					'' :
+					bundle.getFormattedString('assert_not_finishes_within_actual_long', [Math.round(actualTime / 1000)]) ;
+			this._fail({
+			     	expected : bundle.getFormattedString('assert_not_finishes_within_expected', [aExpectedTime, longExpectedTime]),
+			     	actual   : bundle.getFormattedString('assert_not_finishes_within_actual', [actualTime, longActualTime])
+			     },
+			     bundle.getString('assert_not_finishes_within'),
 			     aMessage);
 		}
 		this._onSuccess();

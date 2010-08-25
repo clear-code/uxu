@@ -1129,6 +1129,68 @@ function testFinishesWithin()
 	assert.equal(2, assertionsModule.successCount);
 }
 
+function testFinishesOver()
+{
+	var message = Math.random() * 65000;
+
+	assertSuccess(
+		assertionsModule.finishesOver,
+		[
+			50,
+			function() {
+				utils.wait(100);
+				assert.isTrue(true);
+			},
+			{}
+		]
+	);
+	assertFailure(
+		assertionsModule.finishesOver,
+		[
+			50,
+			function() {
+				utils.wait(100);
+				assert.isTrue(false, message);
+			},
+			{},
+			message
+		]
+	);
+	assertFailure(
+		assertionsModule.finishesOver,
+		[
+			1000,
+			function() {
+				assert.isTrue(true);
+			},
+			{},
+			message
+		]
+	);
+
+	yield Do(assertionsModule.finishesOver(
+		10,
+		function() {
+			yield 500;
+		},
+		{}
+	));
+
+	var result = Do(assertionsModule.finishesOver(
+		500,
+		function() {
+			yield 10;
+		},
+		{}
+	));
+	yield (function() { return result.value; });
+	assert.isDefined(result.error);
+	assert.isNotNull(result.error);
+	assert.equals('AssertionFailed', result.error.name);
+
+	assert.equal(2, assertionsModule.successCount);
+}
+
 function testAssertionsCount()
 {
 	var message = Math.random() * 65000;
@@ -1467,6 +1529,10 @@ function testExport()
 	assert.isFunction(namespace.assert.notContained);
 	assert.isFunction(namespace.assert.finishesWithin);
 	assert.isFunction(namespace.assert.finishWithin);
+	assert.isFunction(namespace.assert.notFinishesWithin);
+	assert.isFunction(namespace.assert.notFinishWithin);
+	assert.isFunction(namespace.assert.finishesOver);
+	assert.isFunction(namespace.assert.finishOver);
 	assert.isFunction(namespace.assert.ok);
 	assert.isFunction(namespace.assert.is);
 	assert.isFunction(namespace.assert.assertionsCountEquals);
@@ -1554,6 +1620,10 @@ function testExport()
 	assert.isFunction(namespace.assertNotContained);
 	assert.isFunction(namespace.assertFinishesWithin);
 	assert.isFunction(namespace.assertFinishWithin);
+	assert.isFunction(namespace.assertNotFinishesWithin);
+	assert.isFunction(namespace.assertNotFinishWithin);
+	assert.isFunction(namespace.assertFinishesOver);
+	assert.isFunction(namespace.assertFinishOver);
 	assert.isFunction(namespace.assertOk);
 	assert.isFunction(namespace.assertIs);
 	assert.isFunction(namespace.assertAssertionsCountEquals);
