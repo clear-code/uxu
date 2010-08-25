@@ -4777,6 +4777,11 @@ HTTPServer.prototype = {
 	expectThrow : function() { return this.expectThrows.apply(this, arguments); },
 	expectRaises : function() { return this.expectThrows.apply(this, arguments); },
 	expectRaise : function() { return this.expectThrows.apply(this, arguments); },
+	assert : function()
+	{
+		return this._getMock().assert();
+	},
+	verify : function() { return this.assert.apply(this, arguments); },
 
 
 	handleResponse : function(aPath, aServerHandler, aResponse)
