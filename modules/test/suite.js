@@ -36,12 +36,12 @@ TestSuite.prototype = {
 	
 init : function(aEnvironment, aURI, aBrowser) 
 {
+	let global = aBrowser.ownerDocument.defaultView;
 	if (!aEnvironment) {
-		let global = aBrowser.ownerDocument.defaultView;
 		aEnvironment = new global.Object();
 	}
 	this.environment = aEnvironment;
-	this.environment.__proto__ = this.environment.utils = {};
+	this.environment.__proto__ = this.environment.utils = new global.Object();
 
 	var baseURL = aURI.replace(/[^/]*$/, '');
 
