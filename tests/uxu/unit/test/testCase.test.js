@@ -311,7 +311,11 @@ function testReuseFunctions()
 	};
 
 	testcase = new TestCase('description1');
-	testcase.suite = new TestSuite({}, baseURL, gBrowser);
+	testcase.suite = new TestSuite({
+		envCreator : function() { return {}; },
+		uri        : baseURL,
+		browser    : gBrowser
+	});
 	testcase.tests = tests;
 	testcase.masterPriority = 'must';
 	testcase.run();
@@ -330,7 +334,11 @@ function testReuseFunctions()
 	mocks.tests[2].expect([]);
 
 	testcase = new TestCase('description2');
-	testcase.suite = new TestSuite({}, baseURL, gBrowser);
+	testcase.suite = new TestSuite({
+		envCreator : function() { return {}; },
+		uri        : baseURL,
+		browser    : gBrowser
+	});
 	testcase.tests = tests;
 	testcase.masterPriority = 'must';
 	testcase.run();
@@ -392,7 +400,11 @@ function testMasterPriority()
 {
 	var mocks = createXUnitMocks(2);
 	testcase = new TestCase('description1');
-	testcase.suite = new TestSuite({}, baseURL, gBrowser);
+	testcase.suite = new TestSuite({
+		envCreator : function() { return {}; },
+		uri        : baseURL,
+		browser    : gBrowser
+	});
 	testcase.tests = {
 		setUp    : mocks.setUp,
 		tearDown : mocks.tearDown,
@@ -405,7 +417,11 @@ function testMasterPriority()
 	assert.isTrue(testcase.done);
 
 	testcase = new TestCase('description2');
-	testcase.suite = new TestSuite({}, baseURL, gBrowser);
+	testcase.suite = new TestSuite({
+		envCreator : function() { return {}; },
+		uri        : baseURL,
+		browser    : gBrowser
+	});
 	testcase.tests = {
 		setUp    : new MockFunction('neverRunSetUp'),
 		tearDown : new MockFunction('neverRunTearDown'),
