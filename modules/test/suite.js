@@ -28,10 +28,17 @@ var defaultURI, defaultType, defaultFeatures, defaultName, defaultArguments;
 	
 function TestSuite(aEnvironment, aURI, aBrowser) 
 {
+	this.init(aEnvironment, aURI, aBrowser);
+}
+
+TestSuite.prototype = {
+	__proto__ : ns.EventTarget.prototype,
+	
+init : function(aEnvironment, aURI, aBrowser) 
+{
 	if (!aEnvironment) {
 		let global = aBrowser.ownerDocument.defaultView;
 		aEnvironment = new global.Object();
-		aEnvironment.window = global;
 	}
 	this.environment = aEnvironment;
 	this.environment.__proto__ = this.environment.utils = {};
@@ -84,11 +91,8 @@ function TestSuite(aEnvironment, aURI, aBrowser)
 	this._utils.export(this.environment.utils, false, this, this);
 
 	this.initVariables();
-}
-
-TestSuite.prototype = {
-	__proto__ : ns.EventTarget.prototype,
-	
+},
+ 
 destroy : function() 
 {
 	if (this.greasemonkey) this.greasemonkey.destroy();
@@ -132,6 +136,12 @@ initVariables : function()
 	this.environment.Cc = Cc;
 	this.environment.Ci = Ci;
 	this.environment.Cr = Cr;
+
+	this.environment.Application = '@mozilla.org/fuel/application;1' in Cc ?
+									Cc['@mozilla.org/fuel/application;1'].getService(Ci.fuelIApplication) :
+								'@mozilla.org/steel/application;1' in Cc ?
+									Cc['@mozilla.org/steel/application;1'].getService(Ci.steelIApplication) :
+									null ;
 
 	/* backward compatibility for MozLab/MozUnit testcases */
 	this.environment.TestCase      = ns.TestCase;

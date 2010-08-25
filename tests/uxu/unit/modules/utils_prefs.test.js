@@ -14,7 +14,7 @@ function clearPref(aKey)
 		Pref.clearUserPref(aKey);
 	}
 	catch(e) {
-		Application.console.log(aKey+'\n'+e);
+		dump(e+'\n');
 	}
 }
 

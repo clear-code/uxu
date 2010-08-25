@@ -50,7 +50,7 @@ function setUp()
 
 function tearDown()
 {
-	if (tempFile.exists())
+	if (tempFile && tempFile.exists())
 		tempFile.remove(true);
 }
 
