@@ -10,6 +10,11 @@ var bundle = utils.import(topDir+'modules/lib/stringBundle.js', {})
 var htaccess;
 var server;
 
+function setUp()
+{
+	utils.setPref('extensions.uxu.httpd.noCache', true);
+}
+
 function assertModified(aStatus, aStatusText, aURI, aPath)
 {
 	var result = HTTPServer.prototype.processRequestByHtaccess(aPath, htaccess);
@@ -234,9 +239,9 @@ function testResponseWithDelay()
 	utils.loadURI('about:blank');
 
 	server.expect('/delayed', { uri : '/hash.txt', delay : 3000 });
-	var start = Date.now();
-	utils.loadURI('http://localhost:4445/delayed');
-	assert.compare(3000, '<=', Date.now() - start);
+	assert.finishesOver(3000, function() {
+		utils.loadURI('http://localhost:4445/delayed');
+	});
 	assert.equals('http://localhost:4445/delayed', content.location.href);
 	assert.equals('hash\n', content.document.body.textContent);
 
@@ -244,9 +249,9 @@ function testResponseWithDelay()
 
 	server.expect('/delayed', { uri : '/hash.txt', status : 301, delay : 3000 });
 	server.expect('/hash.txt', { uri : '/hash.txt', status : 200 });
-	start = Date.now();
-	utils.loadURI('http://localhost:4445/delayed');
-	assert.compare(3000, '<=', Date.now() - start);
+	assert.finishesOver(3000, function() {
+		utils.loadURI('http://localhost:4445/delayed');
+	});
 	assert.equals('http://localhost:4445/hash.txt', content.location.href);
 	assert.equals('hash\n', content.document.body.textContent);
 }
