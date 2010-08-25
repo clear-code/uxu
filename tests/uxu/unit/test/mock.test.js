@@ -938,6 +938,12 @@ function test_HTTPServerMock_expect()
 	});
 	assertCallSuccess(mock, ['/foobar'],
 		{ uri : '/expected', file : null, status : 200, statusText : '' });
+
+	assertCallAdded(mock, function() {
+		mock.expect(/([^\/]+)\.jpg/, '/images/jpeg/$1.jpg');
+	});
+	assertCallSuccess(mock, ['/files/photo.jpg?q=0123456'],
+		{ uri : '/images/jpeg/photo.jpg', file : null, status : 200, statusText : '' });
 }
 
 function test_HTTPServerMock_specialSpec()

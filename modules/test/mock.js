@@ -1203,6 +1203,12 @@ HTTPServerMock.prototype = {
 			}
 		}
 
+		if (typeof call.arguments[0] != 'string') {
+			let flags = call.arguments[0].ignoreCase ? 'i' : '' ;
+			let regexp = new RegExp('^.*?(?:'+call.arguments[0].source+').*?$', flags);
+			call.returnValue.uri = String(aArguments[0]).replace(regexp, call.returnValue.uri || '');
+		}
+
 		call.onCall(this, aArguments);
 
 		if (!this.anyCall)
