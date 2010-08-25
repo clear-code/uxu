@@ -19,14 +19,17 @@ var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 const RUNNING = 'extensions.uxu.running';
 	
-function TestRunner(aBrowser/*, aFile, ...*/) 
+function TestRunner(aOptions/*, aFile, ...*/) 
 {
+	aOptions = aOptions || {};
+
 	this.initListeners();
 
 	this.runningCount = 0;
 	this.files = Array.slice(arguments, 1);
 	if (utils.isArray(this.files[0])) this.files = this.files[0];
-	this._browser = aBrowser;
+	this._browser    = aOptions.browser;
+	this._envCreator = aOptions.envCreator;
 	this._filters = [];
 	this._log = new ns.TestLog();
 }
@@ -402,7 +405,11 @@ TestRunner.prototype = {
 	
 	_createTestSuite : function(aURL) 
 	{
-		var suite = new ns.TestSuite(null, aURL, this._browser);
+		var suite = new ns.TestSuite({
+				envCreator : this._envCreator,
+				uri        : aURL,
+				browser    : this._browser
+			});
 		suite.include(suite.fileURL, suite.environment);
 		return suite;
 	}

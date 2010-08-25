@@ -26,22 +26,29 @@ var WindowWatcher = Cc['@mozilla.org/embedcomp/window-watcher;1'].getService(Ci.
 var key = 'uxu-test-window-id'; 
 var defaultURI, defaultType, defaultFeatures, defaultName, defaultArguments; 
 	
-function TestSuite(aEnvironment, aURI, aBrowser) 
+function TestSuite(aOptions) 
 {
-	this.init(aEnvironment, aURI, aBrowser);
+	this.init(aOptions);
 }
 
 TestSuite.prototype = {
 	__proto__ : ns.EventTarget.prototype,
 	
-init : function(aEnvironment, aURI, aBrowser) 
+init : function(aOptions) 
 {
-	let global = aBrowser.ownerDocument.defaultView;
-	if (!aEnvironment) {
-		aEnvironment = new global.Object();
-	}
-	this.environment = aEnvironment;
-	this.environment.__proto__ = this.environment.utils = new global.Object();
+	aOptions = aOptions || {};
+	var aURI        = aOptions.uri;
+	var aEnvCreator = aOptions.envCreator;
+	var aBrowser    = aOptions.browser;
+
+	let global = aBrowser ? aBrowser.ownerDocument.defaultView : null ;
+	this.environment = aEnvCreator ? aEnvCreator() :
+						global ? new global.Object() :
+						{};
+	this.environment.__proto__ =
+		this.environment.utils = aEnvCreator ? aEnvCreator() :
+								global ? new global.Object() :
+								{};
 
 	var baseURL = aURI.replace(/[^/]*$/, '');
 

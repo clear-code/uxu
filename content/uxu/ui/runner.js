@@ -776,7 +776,13 @@ function run(aMasterPriority)
 {
 	reset();
 
-	gRunner = new ns.TestRunner(_('content'), _('file').value);
+	gRunner = new ns.TestRunner(
+		{
+			browser    : _('content'),
+			envCreator : function() { return {}; }
+		},
+		_('file').value
+	);
 
 	gRunner.addListener(runnerListener);
 

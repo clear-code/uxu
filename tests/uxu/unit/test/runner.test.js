@@ -14,7 +14,10 @@ var tempPrefs;
 
 function setUp()
 {
-	runner = new TestRunner(gBrowser);
+	runner = new TestRunner({
+		browser    : gBrowser,
+		envCreator : function() { return {}; }
+	});
 	tempFiles = [];
 	tempPrefs = [];
 }

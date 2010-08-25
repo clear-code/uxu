@@ -20,15 +20,18 @@ var action = new ns.Action({ __proto__ : utils, utils : utils });
 var WindowManager = Cc['@mozilla.org/appshell/window-mediator;1']
 		.getService(Ci.nsIWindowMediator);
 
-function Context(aBrowser)
+function Context(aOptions)
 {
+	aOptions = aOptions || {};
+
 	this.initListeners();
 
-	this.environment = new aBrowser.ownerDocument.defaultView.Object();
-	this.environment.__proto__ = this;
-
-	this._browser = aBrowser;
+	this._browser         = aOptions.browser;
+	this._envCreator      = aOptions.envCreator;
 	this._runnerListeners = [];
+
+	this.environment = this._envCreator ? this._envCreator() : new aBrowser.ownerDocument.defaultView.Object() ;
+	this.environment.__proto__ = this;
 
 	this._buffer = '';
 	this._lastEvaluatedScript = '';
@@ -47,7 +50,13 @@ Context.prototype = {
 
 	runTest : function(aOptions/*, aTargets, ...*/)
 	{
-		var runner = new ns.TestRunner(this._browser, Array.slice(arguments, 1));
+		var runner = new ns.TestRunner(
+				{
+					browser : this._browser,
+					envCreator : this._envCreator
+				},
+				Array.slice(arguments, 1)
+			);
 		var reporter = new ns.Reporter(aOptions);
 		this._runnerListeners.forEach(function (aListener) {
 			runner.addListener(aListener);

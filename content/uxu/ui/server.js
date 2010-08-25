@@ -58,7 +58,10 @@ function Startup() {
 
 	gBrowser = document.getElementById("content");
 
-	var context = new ns.Context(gBrowser);
+	var context = new ns.Context({
+			browser    : gBrowser,
+			envCreator : function() { return {}; }
+		});
 	context.addRunnerListener(testRunnerlistener);
 
 	gServer = new ns.Server(gOptions.serverPort || utils.getPref('extensions.uxu.port'));
