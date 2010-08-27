@@ -65,7 +65,7 @@ _removeWindowWatcherListener : function(aListener)
 				return aRegisteredListener != aListener;
 			});
 	if (!listener.listeners.length) {
-		this._suite.removeWindowWatcher(listener);
+		this._suite.removeWindowWatcher(this._readiedActionListener);
 		this._readiedActionListener = null;
 	}
 },
@@ -372,7 +372,7 @@ cancelReadiedActions : function()
 	if (!this._readiedActionListener)
 		return;
 
-	this._suite.removeWindowWatcher(listener);
+	this._suite.removeWindowWatcher(this._readiedActionListener);
 	this._readiedActionListener = null;
 },
 	
