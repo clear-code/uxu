@@ -99,7 +99,7 @@ var testRunnerlistener = {
 		gLog.appendChild(node);
 	},
 
-	getReport: function(aTestCase) {
+	getReportNode: function(aTestCase) {
 		var id = 'testcase-report-'+encodeURIComponent(aTestCase.title)+'-'+encodeURIComponent(aTestCase.source);
 
 		var node = document.getElementById(id);
@@ -146,7 +146,7 @@ var testRunnerlistener = {
 				break;
 		}
 
-		var parent = this.getReport(aTestCase);
+		var parent = this.getReportNode(aTestCase);
 		node = document.createElement('hbox');
 		node.setAttribute('id', id);
 		node.setAttribute('class', 'test-finish');
@@ -165,12 +165,12 @@ var testRunnerlistener = {
 			skip     : 0,
 			allTests : []
 		};
-		gLog.scrollBoxObject.ensureElementIsVisible(this.getReport(aEvent.data.testCase));
+		gLog.scrollBoxObject.ensureElementIsVisible(this.getReportNode(aEvent.data.testCase));
 		document.documentElement.setAttribute('running', true);
 	},
 
 	onTestCaseFinish: function(aEvent) {
-		var parent = this.getReport(aEvent.data.testCase);
+		var parent = this.getReportNode(aEvent.data.testCase);
 		var node = document.createElement('hbox');
 		node.setAttribute('class', 'testcase-finish');
 		node.appendChild(document.createElement('label'));
@@ -190,17 +190,17 @@ var testRunnerlistener = {
 	},
 
 	onTestCaseTestFinish: function(aEvent) {
-		var report = aEvent.data.data;
-		this.buildResultLine(report.index, report.description, report.result, aEvent.data.testCase);
+		var topic = aEvent.data.data;
+		this.buildResultLine(topic.index, topic.description, topic.result, aEvent.data.testCase);
 	},
 
 	onTestCaseRemoteTestFinish : function(aEvent)
 	{
-		aEvent.data.data.forEach(function(aResult) {
-			aResult.results
+		aEvent.data.data.forEach(function(aReport) {
+			aReport.topics
 				.slice(this.count.allTests.length)
-				.forEach(function(aResult) {
-					this.buildResultLine(aResult.index, aResult.title, aResult.type, aEvent.data.testCase);
+				.forEach(function(aTopic) {
+					this.buildResultLine(aTopic.index, aTopic.description, aTopic.result, aEvent.data.testCase);
 				}, this);
 		}, this);
 	},

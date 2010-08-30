@@ -29,7 +29,7 @@ function Reporter(aOptions)
 	this.finished     = false;
 	this.result       = '';
 	this.resultStatus = ns.TestCase.prototype.RESULT_SUCCESS;
-	this.badResults   = [];
+	this.badTopics    = [];
 
 	if (!aOptions)
 		aOptions = {};
@@ -99,17 +99,17 @@ Reporter.prototype = {
 		this.finished = true;
 	},
 
-	handleReport : function(aReport, aTestCase)
+	handleTopic : function(aTopic, aTestCase)
 	{
 		var testId = 'testcase-report-line-'+
 					encodeURIComponent(aTestCase.title)+'-'+
 					encodeURIComponent(aTestCase.source)+'-'+
-					aReport.index;
-		var id = testId + '-'+encodeURIComponent(aReport.description);
+					aTopic.index;
+		var id = testId + '-'+encodeURIComponent(aTopic.description);
 		if (id in this.doneReports)
 			return;
 
-		switch (aReport.result)
+		switch (aTopic.result)
 		{
 		    case ns.TestCase.prototype.RESULT_SKIPPED:
 				return;
@@ -121,20 +121,20 @@ Reporter.prototype = {
 				this.nFailures++;
 				break;
 			case ns.TestCase.prototype.RESULT_ERROR:
-				this._handleError(aReport, false);
+				this._handleError(aTopic, false);
 				break;
 			default:
 				this.result += '?';
 				break;
 		}
-		if (this._isMoreImportantStatus(aReport.result))
-			this.resultStatus = aReport.result;
+		if (this._isMoreImportantStatus(aTopic.result))
+			this.resultStatus = aTopic.result;
 
 		if (this.allTests.indexOf(testId) < 0)
 			this.allTests.push(testId);
 
-		if (aReport.exception)
-			this.badResults.push(aReport);
+		if (aTopic.exception)
+			this.badTopics.push(aTopic);
 
 		this.doneReports[id] = true;
 		this.doneReports.count++;
@@ -142,32 +142,16 @@ Reporter.prototype = {
 
 	onTestFinish : function(aEvent)
 	{
-		this.handleReport(aEvent.data.data, aEvent.data.testCase);
+		this.handleTopic(aEvent.data.data, aEvent.data.testCase);
 	},
 
 	onRemoteTestFinish : function(aEvent)
 	{
-		aEvent.data.data.forEach(function(aResult) {
-			aResult.results
-				.slice(this.doneReportCount)
-				.forEach(function(aResult) {
-					var exception = null;
-					if (aResult.type == ns.TestCase.prototype.RESULT_FAILURE ||
-						aResult.type == ns.TestCase.prototype.RESULT_ERROR) {
-						exception = {
-							actual     : aResult.actual,
-							expected   : aResult.expected,
-							diff       : aResult.diff,
-							foldedDiff : aResult.foldedDiff,
-							message    : aResult.description,
-							stack      : aResult.stackTrace.join('\n')
-						};
-					}
-					this.handleReport({
-						result      : aResult.type,
-						description : aResult.title,
-						exception   : exception
-					}, aEvent.data.testCase);
+		aEvent.data.data.forEach(function(aReport) {
+			aReport.topics
+				.slice(this.doneTopicsCount)
+				.forEach(function(aTopic) {
+					this.handleTopic(aTopic, aEvent.data.testCase);
 				}, this);
 		}, this);
 	},
@@ -175,19 +159,19 @@ Reporter.prototype = {
 	onError : function(aEvent)
 	{
 		var error = aEvent.data;
-		var report = {
+		var topic = {
 			result      : ns.TestCase.prototype.RESULT_ERROR,
 			description : "unknown",
 			exception   : error
 		};
-		this._handleError(report, true);
+		this._handleError(topic, true);
 	},
 
-	_handleError : function(aReport, aRegisterBadResults)
+	_handleError : function(aTopic, aRegisterBadResults)
 	{
 		this.result += this._colorize('E', this.errorColor);
 		if (aRegisterBadResults)
-			this.badResults.push(aReport);
+			this.badTopics.push(aTopic);
 		this.nErrors++;
 	},
 
@@ -195,18 +179,21 @@ Reporter.prototype = {
 	{
 		var _this = this;
 
-		this.badResults.forEach(function(aResult, aIndex) {
+		this.badTopics.forEach(function(aTopic, aIndex) {
+			if (!aTopic.stack && aTopic.stackTrace)
+				aTopic.stack = aTopic.stackTrace.join('\n');
+
 			var formattedIndex, summary, detail, exception;
 
-			formattedIndex = _this._formatIndex(aIndex + 1, _this.badResults.length);
+			formattedIndex = _this._formatIndex(aIndex + 1, _this.badTopics.length);
 			formattedIndex = " " + formattedIndex + ") ";
-			detail = _this._colorize([aResult.result,
-									  aResult.description].join(': '),
-									 _this._statusColor(aResult.result));
+			detail = _this._colorize([aTopic.result,
+									  aTopic.description].join(': '),
+									 _this._statusColor(aTopic.result));
 			detail = formattedIndex + detail + '\n';
 
-			exception = aResult.exception;
-			if (aResult.result == ns.TestCase.prototype.RESULT_FAILURE) {
+			exception = aTopic.exception;
+			if (aTopic.result == ns.TestCase.prototype.RESULT_FAILURE) {
 				if (exception.message) {
 					detail += exception.message.replace(/(^[\s\n]+|[\s\n]+$)/, '');
 					detail += "\n";
@@ -233,15 +220,15 @@ Reporter.prototype = {
 
 		resultColor = this._statusColor(this.resultStatus);
 
-		summary = [this.allTests + " test(s)",
+		summary = [this.allTests.length + " test(s)",
 				   // this.nAssertions + " assertion(s)",
 				   this.nFailures + " failure(s)",
 				   this.nErrors + " error(s)"].join(', ');
 		this.result += this._colorize(summary, resultColor);
 		this.result += "\n";
 
-		if (this.allTests > 0)
-			successRate = (this.allTests - this.badResults.length) / this.allTests * 100;
+		if (this.allTests.length > 0)
+			successRate = (this.allTests.length - this.badTopics.length) / this.allTests.length * 100;
 		else
 			successRate = 0;
 		this.result += this._colorize(successRate + '% passed.', resultColor);
