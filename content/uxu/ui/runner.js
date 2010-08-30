@@ -772,8 +772,17 @@ function setRunningState(aRunning)
 	}
 }
  
-function run(aMasterPriority) 
+function run(aMasterPriority, aOnlyFailed) 
 {
+	var filteredTests = {};
+	if (aOnlyFailed)
+		[].concat(getFailureReports()).concat(getErrorReports())
+			.forEach(function(aTestReport) {
+				var title = aTestReport.parentNode.parentNode.getAttribute('title');
+				if (title in filteredTests) return;
+				filteredTests[title] = true;
+			});
+
 	reset();
 
 	gRunner = new ns.TestRunner(
@@ -786,9 +795,15 @@ function run(aMasterPriority)
 
 	gRunner.addListener(runnerListener);
 
-	gRunner.run(null, aMasterPriority);
+	if (aOnlyFailed)
+		gRunner.addTestFilter(function(aTestCase) {
+			aTestCase.masterPriority = 'must';
+			return aTestCase.title in filteredTests;
+		});
 
 	document.documentElement.setAttribute('running', true);
+
+	gRunner.run(null, aMasterPriority);
 }
 	
 function runByPref() 
@@ -813,32 +828,7 @@ var _delayedRunTimer = null;
   
 function runFailed() 
 {
-	var failedTests = {};
-	[].concat(getFailureReports()).concat(getErrorReports())
-		.forEach(function(aTestReport) {
-			var title = aTestReport.parentNode.parentNode.getAttribute('title');
-			if (title in failedTests) return;
-			failedTests[title] = true;
-		});
-
-	reset();
-
-	gRunner = new ns.TestRunner(
-		{
-			browser    : _('content'),
-			envCreator : function() { return {}; }
-		},
-		_('file').value
-	);
-
-	gRunner.addListener(runnerListener);
-
-	gRunner.addTestFilter(function(aTestCase) {
-		aTestCase.masterPriority = 'must';
-		return aTestCase.title in failedTests;
-	});
-
-	gRunner.run();
+	run(null, true);
 }
  
 function stop() 

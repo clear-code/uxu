@@ -61,6 +61,10 @@ TestRunner.prototype = {
 		this.fireEvent('Start');
 		this._runTests(tests);
 		this._isProcessing = false;
+		if (!tests.length) {
+			utils.setPref(RUNNING, false);
+			this.fireEvent('Finish');
+		}
 	},
 	
 	_collectTestCases : function(aSuites) 
