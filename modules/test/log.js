@@ -21,8 +21,8 @@ TestLog.prototype = {
 	FORMAT_RAW  : (1 << 0),
 	FORMAT_TEXT : (1 << 1),
 	//FORMAT_HTML : (1 << 2),
-	//FORMAT_CSV  : (1 << 3),
-	//FORMAT_TSV  : (1 << 4),
+	FORMAT_CSV  : (1 << 3),
+	FORMAT_TSV  : (1 << 4),
 
 	IGNORE_SKIPPED : (1 << 10),
 	IGNORE_SUCCESS : (1 << 11),
@@ -46,9 +46,14 @@ TestLog.prototype = {
 	{
 		if (!aFormat) aFormat = this.FORMAT_DEFAULT;
 
-		if (aFormat & this.FORMAT_RAW) {
+		if (aFormat & this.FORMAT_RAW)
 			return this._items.toSource();
-		}
+
+		if (aFormat & this.FORMAT_CSV)
+			return this._toCSV(',');
+
+		if (aFormat & this.FORMAT_TSV)
+			return this._toCSV('\t');
 
 		return this._toText(aFormat);
 	},
@@ -153,6 +158,41 @@ TestLog.prototype = {
 		if (aTime >= 1000)
 			timeStr += ' '+bundle.getFormattedString(key+'_long', [Math.round(aTime / 1000)]);
 		return timeStr;
+	},
+
+	_toCSV : function(aDelimiter)
+	{
+		var columns = 'source,title,index,result,parameter,formattedParameter,time,detailedTime,message,expected,actual,diff,stackTrace'.split(',');
+		var rows = [
+				columns.concat(['notifications'])
+			];
+		this._items.forEach(function(aLog) {
+			aLog.topics.forEach(function(aTopic) {
+				let row = [];
+				columns.forEach(function(aColumn) {
+					row.push(aColumn in aLog ? String(aLog[aColumn]) : '' );
+				}, this);
+				var notifications = [];
+				if (aTopic.notifications && aTopic.notifications.length) {
+					aTopic.notifications.forEach(function(aNotification) {
+						if (!aNotification.description &&
+							(!aNotification.stackTrace || !aNotification.stackTrace.length))
+							return;
+						if (aNotification.description)
+							notifications.push(aNotification.description);
+						if (aNotification.stackTrace && aNotification.stackTrace.length)
+							notifications.push(aNotification.stackTrace.join(','));
+					}, this);
+				}
+				row.push(notifications.join('\n'));
+				rows.push(row);
+			}, this);
+		}, this);
+		return rows.map(function(aRow) {
+				return aRow.map(function(aCell) {
+						return '"'+aCell.replace(/"/g, '""')+'"';
+					}).join(aDelimiter);
+			}).join('\n');
 	},
 
 	append : function(aNewItems)
