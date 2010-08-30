@@ -21,72 +21,86 @@ function createReports(aTestCase)
 	return [
 		(function() {
 			var r = new Report();
-			r.result = TestCase.prototype.RESULT_SUCCESS;
-			r.description = 'Success';
-			r.testOwner = aTestCase;
-			r.testID    = 'success';
-			r.testIndex = 0;
+			r.addTopic({
+				result      : TestCase.prototype.RESULT_SUCCESS,
+				description : 'Success'
+			});
+			r.owner = aTestCase;
+			r.id    = 'success';
+			r.index = 0;
 			return r;
 		})(),
 		(function() {
 			var r = new Report();
-			r.result = TestCase.prototype.RESULT_SUCCESS;
-			r.description = 'Success with notifications';
+			r.addTopic({
+				result      : TestCase.prototype.RESULT_SUCCESS,
+				description : 'Success with notifications'
+			});
 			r.notifications = notifications;
-			r.testOwner = aTestCase;
-			r.testID    = 'success';
-			r.testIndex = 1;
+			r.owner = aTestCase;
+			r.id    = 'success';
+			r.index = 1;
 			return r;
 		})(),
 		(function() {
 			var r = new Report();
-			r.result = TestCase.prototype.RESULT_FAILURE;
-			r.description = 'Failure';
-			r.exception = new Error('Failure');
-			r.testOwner = aTestCase;
-			r.testID    = 'success';
-			r.testIndex = 2;
+			r.addTopic({
+				result      : TestCase.prototype.RESULT_FAILURE,
+				description : 'Failure',
+				exception   : new Error('Failure')
+			});
+			r.owner = aTestCase;
+			r.id    = 'success';
+			r.index = 2;
 			return r;
 		})(),
 		(function() {
 			var r = new Report();
-			r.result = TestCase.prototype.RESULT_FAILURE;
-			r.description = 'Failure with notifications';
-			r.exception = new Error('Failure');
+			r.addTopic({
+				result      : TestCase.prototype.RESULT_FAILURE,
+				description : 'Failure with notifications',
+				exception   : new Error('Failure')
+			});
 			r.notifications = notifications;
-			r.testOwner = aTestCase;
-			r.testID    = 'success';
-			r.testIndex = 3;
+			r.owner = aTestCase;
+			r.id    = 'success';
+			r.index = 3;
 			return r;
 		})(),
 		(function() {
 			var r = new Report();
-			r.result = TestCase.prototype.RESULT_SKIPPED;
-			r.description = 'Skipped';
-			r.testOwner = aTestCase;
-			r.testID    = 'success';
-			r.testIndex = 4;
+			r.addTopic({
+				result      : TestCase.prototype.RESULT_SKIPPED,
+				description : 'Skipped'
+			});
+			r.owner = aTestCase;
+			r.id    = 'success';
+			r.index = 4;
 			return r;
 		})(),
 		(function() {
 			var r = new Report();
-			r.result = TestCase.prototype.RESULT_ERROR;
-			r.description = 'Error';
-			r.exception = new Error('Error');
-			r.testOwner = aTestCase;
-			r.testID    = 'success';
-			r.testIndex = 5;
+			r.addTopic({
+				result      : TestCase.prototype.RESULT_ERROR,
+				description : 'Error',
+				exception   : new Error('Error')
+			});
+			r.owner = aTestCase;
+			r.id    = 'success';
+			r.index = 5;
 			return r;
 		})(),
 		(function() {
 			var r = new Report();
-			r.result = TestCase.prototype.RESULT_ERROR;
-			r.description = 'Error with notifications';
-			r.exception = new Error('Error');
+			r.addTopic({
+				result      : TestCase.prototype.RESULT_ERROR,
+				description : 'Error with notifications',
+				exception   : new Error('Error')
+			});
 			r.notifications = notifications;
-			r.testOwner = aTestCase;
-			r.testID    = 'success';
-			r.testIndex = 6;
+			r.owner = aTestCase;
+			r.id    = 'success';
+			r.index = 6;
 			return r;
 		})()
 	];

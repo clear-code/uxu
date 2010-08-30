@@ -313,7 +313,7 @@ function startup()
 					current += step;
 					if (items.length) {
 						progress.setAttribute('value', Math.min(100, parseInt(current / gLog.items.length * 100)));
-						buildReportsFromResults(gLog.items);
+						buildReports(gLog.items);
 					}
 					else {
 						window.clearInterval(lastResultTimer);
@@ -482,19 +482,19 @@ var runnerListener = {
 
 
 	// events from testcases
-	doneReportCount : 0,
+	doneTopicsCount : 0,
 	onTestCaseStart : function(aEvent)
 	{
-		this.doneReportCount = 0;
+		this.doneTopicsCount = 0;
 		gLog.items = aEvent.data.log.items;
 		gRemoteRun.onEvent('progress');
-		var report = getReport(aEvent.data.testCase);
-		report.setAttribute('source', aEvent.data.testCase.source);
+		var node = getReportNode(aEvent.data.testCase);
+		node.setAttribute('source', aEvent.data.testCase.source);
 	},
 	onTestCaseTestStart : function(aEvent)
 	{
-		var report = getReport(aEvent.data.testCase);
-		_(report, 'running-status').setAttribute('value',
+		var node = getReportNode(aEvent.data.testCase);
+		_(node, 'running-status').setAttribute('value',
 			bundle.getFormattedString('status_running', [aEvent.data.data.title])
 		);
 	},
@@ -502,18 +502,18 @@ var runnerListener = {
 	{
 		gLog.items = aEvent.data.log.items;
 		gRemoteRun.onEvent('progress');
-		gLog.lastItem.results
-			.slice(this.doneReportCount)
-			.forEach(function(aOneResult) {
-				fillReportFromResult(aEvent.data.testCase, aOneResult);
+		gLog.lastItem.topics
+			.slice(this.doneTopicsCount)
+			.forEach(function(aOneTopic) {
+				fillReportFromTopic(aOneTopic, aEvent.data.testCase);
 			});
-		this.doneReportCount = gLog.lastItem.results.length;
+		this.doneTopicsCount = gLog.lastItem.topics.length;
 	},
 	onTestCaseRemoteTestFinish : function(aEvent)
 	{
 		gLog.items = aEvent.data.log.items;
 		gRemoteRun.onEvent('progress');
-		buildReportsFromResults(aEvent.data.data);
+		buildReports(aEvent.data.data);
 	},
 	onTestCaseAbort : function(aEvent)
 	{
@@ -850,7 +850,7 @@ function stop()
   
 /* UI */ 
 	 
-function getReport(aTestCase) 
+function getReportNode(aTestCase) 
 {
 	var id = 'testcase-report-'+encodeURIComponent(aTestCase.title)+'-'+encodeURIComponent(aTestCase.source);
 	return _(id) ||
@@ -867,30 +867,30 @@ function getReport(aTestCase)
 		})();
 }
  
-function fillReportFromResult(aTestCase, aResult) 
+function fillReportFromTopic(aTopic, aTestCase) 
 {
 	var testId = 'test-report-'+encodeURIComponent(aTestCase.title)
 					+'-'+encodeURIComponent(aTestCase.source)
-					+'-'+aResult.index;
-	var id = testId+'-'+encodeURIComponent(aResult.title);
+					+'-'+aTopic.index;
+	var id = testId+'-'+encodeURIComponent(aTopic.description);
 	if (_(id)) return;
 
-	var reportNode = getReport(aTestCase);
+	var reportNode = getReportNode(aTestCase);
 
 	_(reportNode, 'bar').setAttribute('mode', 'determined');
-	_(reportNode, 'bar').setAttribute('value', aResult.percentage);
+	_(reportNode, 'bar').setAttribute('value', aTopic.percentage);
 	_(reportNode, 'running-status').removeAttribute('value');
-	_(reportNode, 'total-counter').value = aResult.step.split('/')[1];
+	_(reportNode, 'total-counter').value = aTopic.step.split('/')[1];
 
 	_(reportNode, 'bar').setAttribute('testcase-results',
 		_(reportNode, 'bar').getAttribute('testcase-results')+
-		' '+aResult.type
+		' '+aTopic.result
 	);
 
 	var dummyTestReport = document.createElement('data');
 	dummyTestReport.setAttribute('id', id);
 
-	switch (aResult.type)
+	switch (aTopic.result)
 	{
 		case ns.TestCase.prototype.RESULT_SUCCESS:
 			gSuccess++;
@@ -916,43 +916,43 @@ function fillReportFromResult(aTestCase, aResult)
 	if (gAllTests.indexOf(testId) < 0)
 		gAllTests.push(testId);
 
-	if (aResult.type == ns.TestCase.prototype.RESULT_SUCCESS &&
-		(!aResult.notifications || !aResult.notifications.length))
+	if (aTopic.result == ns.TestCase.prototype.RESULT_SUCCESS &&
+		(!aTopic.notifications || !aTopic.notifications.length))
 		return;
 
 	var wTestReport = clone('test-report');
 	wTestReport.setAttribute('id', id);
-	_(wTestReport, 'result').setAttribute('value', bundle.getString('report_result_'+aResult.type));
-	_(wTestReport, 'icon').setAttribute('class', 'test-' + aResult.type);
-	_(wTestReport).setAttribute('report-type', aResult.type);
-	_(wTestReport, 'description').textContent = aResult.title;
-	_(wTestReport, 'description').setAttribute('tooltiptext', aResult.title);
-	if (aResult.parameter) {
-		_(wTestReport, 'parameter-oneline').setAttribute('value', aResult.parameter);
-		_(wTestReport, 'parameter-multiline').textContent = aResult.formattedParameter;
-		_(wTestReport, 'parameter-multiline').setAttribute('style', 'min-height:'+aResult.formattedParameter.split('\n').length+'em');
+	_(wTestReport, 'result').setAttribute('value', bundle.getString('report_result_'+aTopic.result));
+	_(wTestReport, 'icon').setAttribute('class', 'test-' + aTopic.result);
+	_(wTestReport).setAttribute('report-type', aTopic.result);
+	_(wTestReport, 'description').textContent = aTopic.description;
+	_(wTestReport, 'description').setAttribute('tooltiptext', aTopic.description);
+	if (aTopic.parameter) {
+		_(wTestReport, 'parameter-oneline').setAttribute('value', aTopic.parameter);
+		_(wTestReport, 'parameter-multiline').textContent = aTopic.formattedParameter;
+		_(wTestReport, 'parameter-multiline').setAttribute('style', 'min-height:'+aTopic.formattedParameter.split('\n').length+'em');
 		_(wTestReport, 'parameter-container').removeAttribute('collapsed');
 	}
 
-	if (aResult.type == ns.TestCase.prototype.RESULT_ERROR ||
-		aResult.type == ns.TestCase.prototype.RESULT_FAILURE) {
+	if (aTopic.result == ns.TestCase.prototype.RESULT_ERROR ||
+		aTopic.result == ns.TestCase.prototype.RESULT_FAILURE) {
 		_(reportNode, 'bar').setAttribute('class', 'testcase-problems');
 
 		var wTestReportPart = clone('test-report-part');
-		if (aResult.expected) {
-			_(wTestReportPart, 'expected-value').textContent = aResult.expected;
+		if (aTopic.expected) {
+			_(wTestReportPart, 'expected-value').textContent = aTopic.expected;
 			_(wTestReportPart, 'expected-row').removeAttribute('hidden');
 		}
-		if (aResult.actual) {
-			_(wTestReportPart, 'actual-value').textContent = aResult.actual;
+		if (aTopic.actual) {
+			_(wTestReportPart, 'actual-value').textContent = aTopic.actual;
 			_(wTestReportPart, 'actual-row').removeAttribute('hidden');
 		}
-		if (aResult.expected || aResult.actual) {
+		if (aTopic.expected || aTopic.actual) {
 			_(wTestReportPart, 'vs').removeAttribute('hidden');
 		}
-		if (aResult.encodedDiff && utils.getPref('extensions.uxu.runner.coloredDiff')) {
+		if (aTopic.encodedDiff && utils.getPref('extensions.uxu.runner.coloredDiff')) {
 			var pre = document.createElementNS('http://www.w3.org/1999/xhtml', 'pre');
-			pre.innerHTML = aResult.encodedDiff;
+			pre.innerHTML = aTopic.encodedDiff;
 			_(wTestReportPart, 'diff-value').appendChild(pre);
 			var range = document.createRange();
 			range.selectNodeContents(pre);
@@ -962,22 +962,22 @@ function fillReportFromResult(aTestCase, aResult)
 			range.insertNode(encodedDiff);
 			_(wTestReportPart, 'diff-row').removeAttribute('hidden');
 		}
-		else if (aResult.diff) {
-			_(wTestReportPart, 'diff-value').textContent = aResult.diff;
+		else if (aTopic.diff) {
+			_(wTestReportPart, 'diff-value').textContent = aTopic.diff;
 			_(wTestReportPart, 'diff-row').removeAttribute('hidden');
 		}
-		if (aResult.description) {
-			_(wTestReportPart, 'additionalInfo').textContent = aResult.description;
+		if (aTopic.message) {
+			_(wTestReportPart, 'additionalInfo').textContent = aTopic.message;
 		}
-		if (aResult.stackTrace && aResult.stackTrace.length) {
-			displayStackTraceLines(aResult.stackTrace, _(wTestReportPart, 'stack-trace'));
+		if (aTopic.stackTrace && aTopic.stackTrace.length) {
+			displayStackTraceLines(aTopic.stackTrace, _(wTestReportPart, 'stack-trace'));
 			_(wTestReportPart, 'stack-trace').hidden = false;
 		}
 		_(wTestReport, 'test-report-parts').appendChild(wTestReportPart);
 	}
 
-	if (aResult.notifications && aResult.notifications.length) {
-		aResult.notifications.forEach(function(aNotification) {
+	if (aTopic.notifications && aTopic.notifications.length) {
+		aTopic.notifications.forEach(function(aNotification) {
 			var wTestReportPart = clone('test-report-part');
 			_(wTestReportPart, 'icon').setAttribute('class', 'report-'+aNotification.type);
 			if (aNotification.description) {
@@ -996,13 +996,13 @@ function fillReportFromResult(aTestCase, aResult)
 	scrollReportsTo(wTestReport);
 }
  
-function buildReportsFromResults(aResults) 
+function buildReports(aReports) 
 {
-	aResults.forEach(function(aResult) {
-		var report = getReport(aResult);
-		report.setAttribute('source', aResult.source);
-		aResult.results.forEach(function(aOneResult) {
-			fillReportFromResult(aResult, aOneResult);
+	aReports.forEach(function(aReport) {
+		var node = getReportNode(aReport);
+		node.setAttribute('source', aReport.source);
+		aReport.topics.forEach(function(aTopic) {
+			fillReportFromTopic(aTopic, aReport);
 		});
 	});
 }

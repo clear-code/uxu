@@ -77,45 +77,45 @@ TestLog.prototype = {
 					error    : 0
 				};
 			var outputCount = 0;
-			aLog.results.forEach(function(aResult, aIndex) {
-				count[aResult.type]++;
+			aLog.topics.forEach(function(aTopic, aIndex) {
+				count[aTopic.result]++;
 				count.total++;
 				if (aFormat & this.IGNORE_SKIPPED &&
-					aResult.type == ns.TestCase.prototype.RESULT_SKIPPED)
+					aTopic.result == ns.TestCase.prototype.RESULT_SKIPPED)
 					return;
 				if (aFormat & this.IGNORE_SUCCESS &&
-					aResult.type == ns.TestCase.prototype.RESULT_SUCCESS)
+					aTopic.result == ns.TestCase.prototype.RESULT_SUCCESS)
 					return;
 
 				if (outputCount) result.push(bundle.getString('log_separator_test'));
 				outputCount++;
 
-				result.push(bundle.getFormattedString('log_test_title', [aResult.title]));
-				if (aResult.parameter) {
-					let parameter = aResult.parameter;
+				result.push(bundle.getFormattedString('log_test_title', [aTopic.description]));
+				if (aTopic.parameter) {
+					let parameter = aTopic.parameter;
 					if (parameter.length > this.MAX_PARAMETER_LENGTH_TEXT)
 						parameter = parameter.substr(0, this.MAX_PARAMETER_LENGTH_TEXT)+'...';
 					result.push(bundle.getFormattedString('log_test_parameter', [parameter]));
 				}
-				result.push(bundle.getFormattedString('log_test_step', [aResult.step]));
-				result.push(bundle.getFormattedString('log_test_timestamp', [new Date(aResult.timestamp)]));
-				result.push(bundle.getFormattedString('log_test_result', [bundle.getString('report_result_'+aResult.type)]));
-				result.push(this._getLogTimeStr(aResult.time));
-				if (aResult.detailedTime && aResult.time != aResult.detailedTime)
-					result.push(this._getLogTimeStr(aResult.detailedTime, true));
-				if (aResult.description)
-					result.push(aResult.description);
-				if (aResult.expected)
-					result.push(bundle.getFormattedString('log_test_expected', [aResult.expected]));
-				if (aResult.actual)
-					result.push(bundle.getFormattedString('log_test_actual', [aResult.actual]));
-				if (aResult.diff)
-					result.push(bundle.getFormattedString('log_test_diff', [aResult.diff]));
-				if (aResult.stackTrace && aResult.stackTrace.length) {
+				result.push(bundle.getFormattedString('log_test_step', [aTopic.step]));
+				result.push(bundle.getFormattedString('log_test_timestamp', [new Date(aTopic.timestamp)]));
+				result.push(bundle.getFormattedString('log_test_result', [bundle.getString('report_result_'+aTopic.result)]));
+				result.push(this._getLogTimeStr(aTopic.time));
+				if (aTopic.detailedTime && aTopic.time != aTopic.detailedTime)
+					result.push(this._getLogTimeStr(aTopic.detailedTime, true));
+				if (aTopic.message)
+					result.push(aTopic.message);
+				if (aTopic.expected)
+					result.push(bundle.getFormattedString('log_test_expected', [aTopic.expected]));
+				if (aTopic.actual)
+					result.push(bundle.getFormattedString('log_test_actual', [aTopic.actual]));
+				if (aTopic.diff)
+					result.push(bundle.getFormattedString('log_test_diff', [aTopic.diff]));
+				if (aTopic.stackTrace && aTopic.stackTrace.length) {
 					result.push('');
-					result.push(aResult.stackTrace);
+					result.push(aTopic.stackTrace);
 				}
-				aResult.notifications.forEach(function(aNotification) {
+				aTopic.notifications.forEach(function(aNotification) {
 					if (!aNotification.description &&
 						(!aNotification.stackTrace || !aNotification.stackTrace.length))
 						return;
@@ -183,83 +183,22 @@ TestLog.prototype = {
 	onStart : function(aEvent)
 	{
 		this._items.push({
-			start   : Date.now(),
-			title   : aEvent.target.title,
-			source  : aEvent.target.source,
-			results : []
+			start  : Date.now(),
+			title  : aEvent.target.title,
+			source : aEvent.target.source,
+			topics : []
 		});
 	},
 
 	onTestFinish : function(aEvent)
 	{
-		var report = aEvent.data;
-		var results = this._createResultsFromReport(report);
-
-		var testCase = aEvent.target;
-		results.forEach(function(aResult) {
-			aResult.index = report.testIndex;
-			aResult.step  = (report.testIndex+1)+'/'+testCase.tests.length;
-			aResult.percentage = parseInt((report.testIndex+1) / testCase.tests.length * 100);
-		}, this);
-
-		this.lastItem.results = this.lastItem.results.concat(results);
-	},
-	_createResultsFromReport : function(aReport)
-	{
-		var timestamp = Date.now();
-		var results = aReport.exceptions.map(function(aException, aIndex) {
-				var result = this._createResultFromReport(aReport, timestamp);
-				result.title = aReport.descriptions[aIndex] || result.title;
-				if (aException.expected)
-					result.expected = aException.expected;
-				if (aException.actual)
-					result.actual = aException.actual;
-				if (aException.diff)
-					result.diff = aException.foldedDiff || aException.diff;
-				if (aException.encodedDiff)
-					result.encodedDiff = aException.encodedDiff;
-				result.description = aException.message.replace(/^\s+/, '');
-				if (utils.hasStackTrace(aException))
-					result.stackTrace = utils.formatStackTraceForDisplay(aException);
-				return result;
-			}, this);
-		if (!results.length)
-			results = [this._createResultFromReport(aReport, timestamp)];
-		return results;
-	},
-	_createResultFromReport : function(aReport, aTimestamp)
-	{
-		return {
-			type          : aReport.result,
-			title         : aReport.description,
-			parameter     : aReport.parameter,
-			formattedParameter : aReport.formattedParameter,
-			timestamp     : (aTimestamp || Date.now()),
-			time          : aReport.time,
-			detailedTime  : aReport.detailedTime,
-			notifications : aReport.notifications.map(function(aNotification) {
-				var type = aNotification.type || 'notification';
-				var description = bundle.getFormattedString('notification_message_'+type, [aNotification.message]) ||
-							aNotification.message;
-				return {
-					type        : type,
-					description : description,
-					stackTrace  : utils.formatStackTraceForDisplay(aNotification)
-				};
-			})
-		};
+		this.lastItem.topics = this.lastItem.topics.concat(aEvent.data.topics);
 	},
 
 	onFinish : function(aEvent)
 	{
 		if (aEvent.data.result == ns.TestCase.prototype.RESULT_ERROR) {
-			var results = this._createResultsFromReport(aEvent.data);
-			results.forEach(function(aResult) {
-				aResult.index = -1;
-				aResult.step  = '0/'+aEvent.target.tests.length
-				aResult.percentage = 100;
-			}, this);
-			this.lastItem.results = this.lastItem.results.concat(results);
+			this.lastItem.topics = this.lastItem.topics.concat(aEvent.data.topics);
 		}
 		this.lastItem.finish = Date.now();
 		this.lastItem.time = aEvent.data.time;

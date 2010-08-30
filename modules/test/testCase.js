@@ -728,9 +728,11 @@ TestCase.prototype = {
 		}
 		catch(e) {
 			var report = new ns.Report();
-			report.result = this.RESULT_ERROR;
-			report.exception = this._utils.normalizeError(e);
-			report.description = bundle.getString('report_fatal_error');
+			report.addTopic({
+				result      : this.RESULT_ERROR,
+				description : bundle.getString('report_fatal_error'),
+				exception   : this._utils.normalizeError(e)
+			});
 			report.onFinish();
 			this.fireEvent('Finish', report);
 		}
@@ -774,8 +776,8 @@ TestCase.prototype = {
 
 		var testIndex = 0;
 		var current;
-		var testReport = { report : null };
-		var testCaseReport = { report : null };
+		var testReport;
+		var testCaseReport;
 
 		var stateTransitions = {
 			start               : { ok : 'doStartUp' },
@@ -796,36 +798,35 @@ TestCase.prototype = {
 		var doPreOrPostProcess = function(aContinuation, aFunction, aOptions)
 			{
 				if (!aFunction || self.neverRun) {
-					aOptions.report.report.onFinish();
+					aOptions.report.onFinish();
 					aContinuation('ok');
 					return;
 				}
-				var usesContinuation = aOptions.useContinuation && aFunction.arity > 0;
 				try {
-					var result = usesContinuation ?
+					var result = aOptions.useContinuation ?
 							aFunction.call(context, aContinuation) :
 							aFunction.call(context) ;
 					if (self._utils.isGeneratedIterator(result)) {
 						self._utils.doIteration(result, {
 							onEnd : function(e) {
-								aOptions.report.report.onFinish();
-								if (!usesContinuation) aContinuation('ok');
+								aOptions.report.onFinish();
+								if (!aOptions.useContinuation) aContinuation('ok');
 							},
 							onError : function(e) {
 								if (aOptions.onError) aOptions.onError();
-								aOptions.report.report.result = self.RESULT_ERROR;
-								aOptions.report.report.exception = self._utils.normalizeError(e);
-								aOptions.report.report.description = aOptions.errorDescription;
-								aOptions.report.report.parameter = aOptions.parameter;
-								aOptions.report.report.formattedParameter = aOptions.formattedParameter;
-								aOptions.report.report.onFinish();
+								aOptions.report.addTopic({
+									result      : self.RESULT_ERROR,
+									description : aOptions.errorDescription,
+									exception   : self._utils.normalizeError(e)
+								});
+								aOptions.report.onFinish();
 								aContinuation('ko');
 							}
 						});
 					}
 					else {
-						aOptions.report.report.onFinish();
-						if (!usesContinuation) aContinuation('ok');
+						aOptions.report.onFinish();
+						if (!aOptions.useContinuation) aContinuation('ok');
 					}
 				}
 				catch(e) {
@@ -834,13 +835,13 @@ TestCase.prototype = {
 						var description = aOptions.errorDescription;
 						if (multiplex)
 							description = bundle.getFormattedString('report_description_multiplex', [description, aIndex+1]);
-						aOptions.report.report.result = (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR;
-						aOptions.report.report.exception = self._utils.normalizeError(e);
-						aOptions.report.report.description = description;
+						aOptions.report.addTopic({
+							result      : (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR,
+							description : description,
+							exception   : self._utils.normalizeError(e)
+						});
 					}, this);
-					aOptions.report.report.parameter = aOptions.parameter;
-					aOptions.report.report.formattedParameter = aOptions.formattedParameter;
-					aOptions.report.report.onFinish();
+					aOptions.report.onFinish();
 					aContinuation('ko');
 				}
 			};
@@ -854,7 +855,7 @@ TestCase.prototype = {
 			},
 			doStartUp : function(aContinuation)
 			{
-	 			testCaseReport.report = new ns.Report();
+	 			testCaseReport = new ns.Report();
 				if (allTestsToBeSkipped) {
 					aContinuation('ok');
 					return;
@@ -864,17 +865,21 @@ TestCase.prototype = {
 					self._startUp,
 					{
 						errorDescription : bundle.getFormattedString('report_description_startup', [self.title]),
-						report : testCaseReport
+						report           : testCaseReport
 					}
 				);
 			},
 			prepareTest : function(aContinuation)
 			{
-				testReport.report = new ns.Report();
 				current = self._tests[testIndex];
 				self.fireEvent('TestStart', current);
 
 				self._suite.mockManager.clear();
+
+				testReport = new ns.Report();
+				testReport.description        = current.description;
+				testReport.parameter          = current.parameter;
+				testReport.formattedParameter = current.formattedParameter;
 
 				var shouldSkip = current.shouldSkip;
 				if (typeof shouldSkip == 'function') {
@@ -883,9 +888,11 @@ TestCase.prototype = {
 						             !self._computeDoOrSkip(current);
 					}
 					catch(e) {
-						testReport.report.result = self.RESULT_ERROR;
-						testReport.report.exception = self._utils.normalizeError(e);
-						testReport.report.description =  bundle.getFormattedString('report_description_check_to_skip', [current.description]);
+						testReport.addTopic({
+							result      : self.RESULT_ERROR,
+							description : bundle.getFormattedString('report_description_check_to_skip', [current.description]),
+							exception   : self._utils.normalizeError(e)
+						});
 						shouldSkip = true;
 					}
 				}
@@ -893,9 +900,11 @@ TestCase.prototype = {
 					shouldSkip = false;
 				}
 				if (shouldSkip || current._computedSkip) {
-					if (!testReport.report.result) {
-						testReport.report.result = self.RESULT_SKIPPED;
-						testReport.report.description = current.description;
+					if (!testReport.hasTopic()) {
+						testReport.addTopic({
+							result      : self.RESULT_SKIPPED,
+							description : current.description
+						});
 					}
 					aContinuation('ko');
 				}
@@ -906,14 +915,13 @@ TestCase.prototype = {
 			doSetUp : function(aContinuation)
 			{
 				self.notifications = [];
-				testReport.report = new ns.Report();
 				doPreOrPostProcess(
 					aContinuation,
 					self._setUp,
 					{
 						errorDescription : bundle.getFormattedString('report_description_setup', [current.description]),
-						report : testReport,
-						useContinuation : true
+						report           : testReport,
+						useContinuation  : (self._setUp && self._setUp.arity > 0)
 					}
 				);
 
@@ -929,29 +937,18 @@ TestCase.prototype = {
 					current.setUp,
 					{
 						errorDescription : bundle.getFormattedString('report_description_priv_setup', [current.description]),
-						parameter : current.parameter,
-						formattedParameter : current.formattedParameter,
-						report : testReport
+						report           : testReport
 					}
 				);
 			},
 			doTest : function(aContinuation)
 			{
 				ns.Assertions.prototype.resetSuccessCount.call(self.suite.assert._source);
-				testReport.report.onDetailedStart();
-				var newReport = self._exec(current, context, aContinuation, testReport);
-				if (newReport.result) {
-					testReport.report = newReport;
-					testReport.report.onDetailedFinish();
-					aContinuation('ok');
-				}
-				else {
-					testReport.report.description = current.description;
-				}
+				self._exec(current, context, aContinuation, testReport);
 			},
 			assertSurelySuccess : function(aContinuation)
 			{
-				if (testReport.report.result != self.RESULT_SUCCESS) {
+				if (testReport.lastResult != self.RESULT_SUCCESS) {
 					aContinuation('ok');
 					return;
 				}
@@ -960,15 +957,16 @@ TestCase.prototype = {
 					self._suite.mockManager.assertAll();
 				}
 				catch(e) {
-					testReport.report = new ns.Report();
 					let multiplex = e.name == 'MultiplexError';
 					(multiplex ? e.errors : [e] ).forEach(function(e, aIndex) {
 						var description = bundle.getFormattedString('report_description_mock', [current.description]);
 						if (multiplex)
 							description = bundle.getFormattedString('report_description_multiplex', [description, aIndex+1]);
-						testReport.report.result = (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR;
-						testReport.report.exception = self._utils.normalizeError(e);
-						testReport.report.description = description;
+						testReport.addTopic({
+							result      : (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR,
+							description : description,
+							exception   : self._utils.normalizeError(e)
+						});
 					});
 					aContinuation('ko');
 					return;
@@ -983,10 +981,11 @@ TestCase.prototype = {
 					);
 				}
 				catch(e) {
-					testReport.report = new ns.Report();
-					testReport.report.result = (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR;
-					testReport.report.exception = self._utils.normalizeError(e);
-					testReport.report.description = bundle.getFormattedString('report_description_check_success_count', [current.description]);
+					testReport.addTopic({
+						result      : (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR,
+						description : bundle.getFormattedString('report_description_check_success_count', [current.description]),
+						exception   : self._utils.normalizeError(e)
+					});
 					aContinuation('ko');
 					return;
 				}
@@ -1004,10 +1003,8 @@ TestCase.prototype = {
 					current.tearDown,
 					{
 						errorDescription : bundle.getFormattedString('report_description_priv_teardown', [current.description]),
-						parameter : current.parameter,
-						formattedParameter : current.formattedParameter,
-						report : testReport,
-						onError : function() {
+						report           : testReport,
+						onError          : function() {
 							self._onFinish(current, self.RESULT_ERROR);
 						}
 					}
@@ -1020,26 +1017,26 @@ TestCase.prototype = {
 					self._tearDown,
 					{
 						errorDescription : bundle.getFormattedString('report_description_teardown', [current.description]),
-						report : testReport,
-						onError : function() {
+						report           : testReport,
+						onError          : function() {
 							self._onFinish(current, self.RESULT_ERROR);
 						},
-						useContinuation : true
+						useContinuation : (self._tearDown && self._tearDown.arity > 0)
 					}
 				);
 			},
 			doReport : function(aContinuation)
 			{
-				current.report = testReport.report;
-				self._onFinish(current, testReport.report.result);
-				testReport.report.testOwner = self;
-				testReport.report.testIndex = testIndex;
-				testReport.report.testID    = current.name;
-				testReport.report.parameter = current.parameter;
-				testReport.report.formattedParameter = current.formattedParameter;
-				testReport.report.notifications = self.notifications;
+				current.report = testReport;
+				self._onFinish(current, testReport.lastResult);
+				testReport.owner         = self;
+				testReport.id            = current.name;
+				testReport.index         = testIndex;
+				testReport.step          = testIndex + '/' + self._tests.length;
+				testReport.percentage    = parseInt((testIndex+1) / self._tests.length * 100);
+				testReport.notifications = self.notifications;
 				self.notifications = [];
-				self.fireEvent('TestFinish', testReport.report);
+				self.fireEvent('TestFinish', testReport);
 				aContinuation('ok');
 			},
 			nextTest : function(aContinuation)
@@ -1064,7 +1061,7 @@ TestCase.prototype = {
 					self._shutDown,
 					{
 						errorDescription : bundle.getFormattedString('report_description_shutdown', [self.title]),
-						report : testCaseReport
+						report           : testCaseReport
 					}
 				);
 			},
@@ -1076,7 +1073,7 @@ TestCase.prototype = {
 
 				if (!self.aborted) {
 					self.done = true;
-					self.fireEvent('Finish', testCaseReport.report);
+					self.fireEvent('Finish', testCaseReport);
 				}
 				aContinuation('ok');
 			}
@@ -1185,7 +1182,9 @@ TestCase.prototype = {
 			},
 			{
 				onEnd : function(e) {
-					report.result = self.RESULT_SUCCESS;
+					report.addTopic({
+						result : self.RESULT_SUCCESS
+					});
 					report.onFinish();
 					self._onFinishRemoteResult(report);
 
@@ -1194,9 +1193,11 @@ TestCase.prototype = {
 					self._utils.scheduleToRemove(profile);
 				},
 				onError : function(e) {
-					report.result = self.RESULT_ERROR;
-					report.exception = e;
-					report.description = bundle.getFormattedString('report_description_remote', [self.title]);
+					report.addTopic({
+						result      : self.RESULT_ERROR,
+						description : bundle.getFormattedString('report_description_remote', [self.title]),
+						exception   : e
+					});
 					report.onFinish();
 					self._onFinishRemoteResult(report);
 
@@ -1270,18 +1271,23 @@ TestCase.prototype = {
   
 	_exec : function(aTest, aContext, aContinuation, aReport) 
 	{
-		aReport.report = new ns.Report();
-
+		aReport.onDetailedStart();
 		if (this._stopper && this._stopper()) {
-			aReport.report.result = this.RESULT_SKIPPED;
-			return aReport.report;
+			aReport.addTopic({
+				result : this.RESULT_SKIPPED
+			});
+			aReport.onDetailedFinish();
+			aContinuation('ok');
+			return;
 		}
 
 		var self = this;
 		var onSuccess = function() {
-				aReport.report.result = self.RESULT_SUCCESS;
-				aReport.report.description = aTest.description;
-				self._onFinish(aTest, aReport.report.result);
+				aReport.addTopic({
+					result      : self.RESULT_SUCCESS,
+					description : aTest.description
+				});
+				self._onFinish(aTest, aReport.result);
 			};
 		var onError = function(e) {
 				var multiplex = e.name == 'MultiplexError';
@@ -1289,11 +1295,13 @@ TestCase.prototype = {
 					var description = aTest.description;
 					if (multiplex)
 						description = bundle.getFormattedString('report_description_multiplex', [description, aIndex+1]);
-					aReport.report.result = (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR;
-					aReport.report.exception = self._utils.normalizeError(e);
-					aReport.report.description = description;
+					aReport.addTopic({
+						result      : (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR,
+						description : description,
+						exception   : self._utils.normalizeError(e)
+					});
 				});
-				self._onFinish(aTest, aReport.report.result);
+				self._onFinish(aTest, aReport.result);
 			};
 
 		try {
@@ -1302,18 +1310,18 @@ TestCase.prototype = {
 				ns.setTimeout(function() {
 					self._utils.doIteration(result, {
 						onEnd : function(e) {
-							aReport.report.onDetailedFinish();
+							aReport.onDetailedFinish();
 							onSuccess();
 							aContinuation('ok');
 						},
 						onError : function(e) {
-							aReport.report.onDetailedFinish();
+							aReport.onDetailedFinish();
 							onError(e);
 							aContinuation('ok');
 						}
 					});
 				}, 0);
-				return aReport.report;
+				return;
 			}
 			onSuccess();
 		}
@@ -1321,7 +1329,8 @@ TestCase.prototype = {
 			onError(e);
 		}
 
-		return aReport.report;
+		aReport.onDetailedFinish();
+		aContinuation('ok');
 	},
  
 	_computeDoOrSkip : function(aTest) 
