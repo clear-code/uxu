@@ -22,7 +22,7 @@ function testStep()
 	assert.equals('0/3', report.step);
 
 	report.index = 1;
-	assert.equals('1/3', report.step);
+	assert.equals('2/3', report.step);
 }
 
 function testPercentage()

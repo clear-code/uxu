@@ -165,7 +165,7 @@ function testOnEvents()
 	log.onStart(createStartEvent(testcase1));
 	assert.equals(1, log.items.length);
 	assert.equals('test1', log.items[0].title);
-	assert.equals([], log.items[0].results);
+	assert.equals([], log.items[0].topics);
 	assert.isFalse(log.items[0].aborted);
 
 	var events = createTestFinishEvents(testcase1, reports1);
@@ -174,11 +174,11 @@ function testOnEvents()
 	});
 	assert.equals(1, log.items.length);
 	assert.equals('test1', log.items[0].title);
-	assert.equals(reports1.length-1, log.items[0].results.length);
+	assert.equals(reports1.length-1, log.items[0].topics.length);
 	assert.isFalse(log.items[0].aborted);
 
-	var results = log.items[0].results;
-	results.forEach(function(aResult, aIndex) {
+	var topics = log.items[0].topics;
+	topics.forEach(function(aResult, aIndex) {
 		var report = reports1[aIndex];
 		assert.equals(report.result, aResult.type, aIndex);
 		assert.equals(report.description, aResult.title, aIndex);
@@ -199,12 +199,12 @@ function testOnEvents()
 
 	log.onFinish(createFinishEvent(testcase1, reports1));
 	assert.equals(1, log.items.length);
-	assert.equals(reports1.length, log.items[0].results.length);
+	assert.equals(reports1.length, log.items[0].topics.length);
 	assert.isFalse(log.items[0].aborted);
 
 	log.onAbort({ type : 'Abort' });
 	assert.equals(1, log.items.length);
-	assert.equals(reports1.length, log.items[0].results.length);
+	assert.equals(reports1.length, log.items[0].topics.length);
 	assert.isTrue(log.items[0].aborted);
 }
 
@@ -213,7 +213,7 @@ function test_clear()
 	log.onStart(createStartEvent(testcase1));
 	assert.equals(1, log.items.length);
 	assert.equals('test1', log.items[0].title);
-	assert.equals([], log.items[0].results);
+	assert.equals([], log.items[0].topics);
 	assert.isFalse(log.items[0].aborted);
 
 	log.clear();
@@ -241,7 +241,7 @@ function test_toString()
 
 	log.lastItem.start = start;
 	log.lastItem.finish = finish;
-	log.lastItem.results.forEach(function(aResult, aIndex) {
+	log.lastItem.topics.forEach(function(aResult, aIndex) {
 		aResult.timestamp = now;
 	});
 

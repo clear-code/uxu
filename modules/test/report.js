@@ -66,7 +66,7 @@ Report.prototype = {
 
 	get step()
 	{
-		return Math.max(this.index, 0) +
+		return (this.index+1) +
 				'/' +
 				(this.testCase ? this.testCase.tests.length : 0 );
 	},
