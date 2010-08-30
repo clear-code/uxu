@@ -266,7 +266,7 @@ wait : function(aWaitCondition)
 	}
 },
  
-waitDOMEvent : function()
+waitDOMEvent : function() 
 {
 	var args = Array.slice(arguments);
 	var callbacks = [];
@@ -1038,7 +1038,33 @@ unformatStackLine : function(aLine)
 		line   : (RegExp.$2 || '')
 	};
 },
-   
+  
+toHash : function(aObject, aProperties) 
+{
+	var hash = {};
+	if (!aProperties) {
+		for (let p in aObject)
+		{
+			if (!aObject.hasOwnProperty(p))
+				continue;
+
+			hash[p] = aObject[p];
+			//if (hash[p] && typeof hash[p] == 'object')
+			//	hash[p] = this.toHash(hash[p]);
+		}
+	}
+	else {
+		if (typeof aProperties == 'string')
+			aProperties = aProperties.split(/[,\s]+/);
+		aProperties.forEach(function(p) {
+			hash[p] = aObject[p];
+			//if (hash[p] && typeof hash[p] == 'object')
+			//	hash[p] = this.toHash(hash[p]);
+		});
+	}
+	return hash;
+},
+  
 // ê›íËì«Ç›èëÇ´ 
 	
 getPref : function(aKey) 
@@ -1755,7 +1781,7 @@ isObject : function(aObject)
 	return typeof aObject == 'object';
 },
  
-isDeferred : function(aObject)
+isDeferred : function(aObject) 
 {
 	return aObject && aObject.__proto__ == ns.Deferred.prototype;
 },

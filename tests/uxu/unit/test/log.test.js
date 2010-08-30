@@ -25,7 +25,7 @@ function createReports(aTestCase)
 				result      : TestCase.prototype.RESULT_SUCCESS,
 				description : 'Success'
 			});
-			r.owner = aTestCase;
+			r.testCase = aTestCase;
 			r.id    = 'success';
 			r.index = 0;
 			return r;
@@ -37,7 +37,7 @@ function createReports(aTestCase)
 				description : 'Success with notifications'
 			});
 			r.notifications = notifications;
-			r.owner = aTestCase;
+			r.testCase = aTestCase;
 			r.id    = 'success';
 			r.index = 1;
 			return r;
@@ -49,7 +49,7 @@ function createReports(aTestCase)
 				description : 'Failure',
 				exception   : new Error('Failure')
 			});
-			r.owner = aTestCase;
+			r.testCase = aTestCase;
 			r.id    = 'success';
 			r.index = 2;
 			return r;
@@ -62,7 +62,7 @@ function createReports(aTestCase)
 				exception   : new Error('Failure')
 			});
 			r.notifications = notifications;
-			r.owner = aTestCase;
+			r.testCase = aTestCase;
 			r.id    = 'success';
 			r.index = 3;
 			return r;
@@ -73,7 +73,7 @@ function createReports(aTestCase)
 				result      : TestCase.prototype.RESULT_SKIPPED,
 				description : 'Skipped'
 			});
-			r.owner = aTestCase;
+			r.testCase = aTestCase;
 			r.id    = 'success';
 			r.index = 4;
 			return r;
@@ -85,7 +85,7 @@ function createReports(aTestCase)
 				description : 'Error',
 				exception   : new Error('Error')
 			});
-			r.owner = aTestCase;
+			r.testCase = aTestCase;
 			r.id    = 'success';
 			r.index = 5;
 			return r;
@@ -98,7 +98,7 @@ function createReports(aTestCase)
 				exception   : new Error('Error')
 			});
 			r.notifications = notifications;
-			r.owner = aTestCase;
+			r.testCase = aTestCase;
 			r.id    = 'success';
 			r.index = 6;
 			return r;

@@ -728,6 +728,7 @@ TestCase.prototype = {
 		}
 		catch(e) {
 			var report = new ns.Report();
+			report.testCase = this;
 			report.addTopic({
 				result      : this.RESULT_ERROR,
 				description : bundle.getString('report_fatal_error'),
@@ -877,6 +878,8 @@ TestCase.prototype = {
 				self._suite.mockManager.clear();
 
 				testReport = new ns.Report();
+				testReport.testCase           = self
+				testReport.test               = current;
 				testReport.description        = current.description;
 				testReport.parameter          = current.parameter;
 				testReport.formattedParameter = current.formattedParameter;
@@ -1005,7 +1008,7 @@ TestCase.prototype = {
 						errorDescription : bundle.getFormattedString('report_description_priv_teardown', [current.description]),
 						report           : testReport,
 						onError          : function() {
-							self._onFinish(current, self.RESULT_ERROR);
+							self._saveResult(current, self.RESULT_ERROR);
 						}
 					}
 				);
@@ -1019,7 +1022,7 @@ TestCase.prototype = {
 						errorDescription : bundle.getFormattedString('report_description_teardown', [current.description]),
 						report           : testReport,
 						onError          : function() {
-							self._onFinish(current, self.RESULT_ERROR);
+							self._saveResult(current, self.RESULT_ERROR);
 						},
 						useContinuation : (self._tearDown && self._tearDown.arity > 0)
 					}
@@ -1028,8 +1031,7 @@ TestCase.prototype = {
 			doReport : function(aContinuation)
 			{
 				current.report = testReport;
-				self._onFinish(current, testReport.lastResult);
-				testReport.owner         = self;
+				self._saveResult(current, testReport.lastResult);
 				testReport.id            = current.name;
 				testReport.index         = testIndex;
 				testReport.step          = testIndex + '/' + self._tests.length;
@@ -1252,7 +1254,8 @@ TestCase.prototype = {
 		try {
 			result = this._utils.evalInSandbox(aResult);
 			result[result.length-1].topics.forEach(function(aTopic) {
-				this._onFinish(this._tests[aTopic.index], aTopic.result);
+				if (aTopic.test)
+					this._saveResult(aTopic.test, aTopic.result);
 			}, this);
 		}
 		catch(e) {
@@ -1287,7 +1290,7 @@ TestCase.prototype = {
 					result      : self.RESULT_SUCCESS,
 					description : aTest.description
 				});
-				self._onFinish(aTest, aReport.result);
+				self._saveResult(aTest, aReport.result);
 			};
 		var onError = function(e) {
 				var multiplex = e.name == 'MultiplexError';
@@ -1301,7 +1304,7 @@ TestCase.prototype = {
 						exception   : self._utils.normalizeError(e)
 					});
 				});
-				self._onFinish(aTest, aReport.result);
+				self._saveResult(aTest, aReport.result);
 			};
 
 		try {
@@ -1413,7 +1416,7 @@ TestCase.prototype = {
 		);
 	},
  
-	_onFinish : function(aTest, aResult) 
+	_saveResult : function(aTest, aResult) 
 	{
 		var db, statement;
 		try {

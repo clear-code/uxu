@@ -22,7 +22,8 @@ function Report()
 	this._result        = null;
 	this._topics        = [];
 	this._notifications = [];
-	this.owner          = null;
+	this.testCase       = null;
+	this.test           = null;
 	this.id             = null;
 	this.index          = -1;
 
@@ -105,7 +106,16 @@ Report.prototype = {
 			aTopic.message = e.message.replace(/^\s+/, '');
 			if (utils.hasStackTrace(e))
 				aTopic.stackTrace = utils.formatStackTraceForDisplay(e);
+
+			// replace with simple hash, for logging
+			aTopic.exception = utils.toHash(e, 'name,message,expected,actual,diff,foldedDiff,encodedDiff,stack');
 		}
+
+		// replace with simple hash, for logging
+		if (this.test)
+			aTopic.test = utils.toHash(this.test, 'name,description,hash,id');
+		if (this.testCase)
+			aTopic.testCase = utils.toHash(this.testCase, 'title,source');
 
 		aTopic.index = this.index === void(0) ? -1 : this.index ;
 		aTopic.step = this.step === void(0) ? '0/0' : this.step ;

@@ -121,152 +121,159 @@ function testFormatDiffPointe()
                           "");
 }
 
-function testSameContents()
+testReadableDiff.parameters = {
+	same1 : {
+		expected : "  aaa",
+		encoded  : '<span class="block equal">'+
+		             '<span class="line equal">'+
+		               'aaa'+
+		             '</span>'+
+		           '</span>',
+		from : ["aaa"],
+		to   : ["aaa"]
+	},
+	same2 : {
+		expected : "  aaa\n" +
+		           "  bbb",
+		encoded  : '<span class="block equal">'+
+		             '<span class="line equal">'+
+		               'aaa'+
+		             '</span>'+
+		             '<span class="line equal">'+
+		               'bbb'+
+		             '</span>'+
+		           '</span>',
+		from : ["aaa", "bbb"],
+		to   : ["aaa", "bbb"]
+	},
+	deleted1 : {
+		expected : "  aaa\n" +
+		           "- bbb",
+		encoded  : '<span class="block equal">'+
+		             '<span class="line equal">'+
+		               'aaa'+
+		             '</span>'+
+		           '</span>'+
+		           '<span class="block deleted">'+
+		             '<span class="line deleted">'+
+		               'bbb'+
+		             '</span>'+
+		           '</span>',
+		from : ["aaa", "bbb"],
+		to   : ["aaa"]
+	},
+	deleted2 : {
+		expected : "  aaa\n" +
+		           "- bbb\n" +
+		           "- ccc\n" +
+		           "- ddd",
+		encoded  : '<span class="block equal">'+
+		             '<span class="line equal">'+
+		               'aaa'+
+		             '</span>'+
+		           '</span>'+
+		           '<span class="block deleted">'+
+		             '<span class="line deleted">'+
+		               'bbb'+
+		             '</span>'+
+		             '<span class="line deleted">'+
+		               'ccc'+
+		             '</span>'+
+		             '<span class="line deleted">'+
+		               'ddd'+
+		             '</span>'+
+		           '</span>',
+		from : ["aaa", "bbb", "ccc", "ddd"],
+		to   : ["aaa"]
+	},
+	inserted : {
+		expected : "  aaa\n" +
+		           "+ bbb\n" +
+		           "+ ccc\n" +
+		           "+ ddd",
+		encoded : '<span class="block equal">'+
+		            '<span class="line equal">'+
+		              'aaa'+
+		            '</span>'+
+		          '</span>'+
+		          '<span class="block inserted">'+
+		            '<span class="line inserted">'+
+		              'bbb'+
+		            '</span>'+
+		            '<span class="line inserted">'+
+		              'ccc'+
+		            '</span>'+
+		            '<span class="line inserted">'+
+		              'ddd'+
+		            '</span>'+
+		          '</span>',
+		from : ["aaa"],
+		to   : ["aaa", "bbb", "ccc", "ddd"]
+	},
+	replace1 : {
+		expected : "  aaa\n" +
+		           "- bbb\n" +
+		           "+ BbB\n" +
+		           "  ccc\n" +
+		           "- ddd\n" +
+		           "- efg\n" +
+		           "?  -\n" +
+		           "+ eg",
+		encoded : '<span class="block equal">'+
+		            '<span class="line equal">'+
+		              'aaa'+
+		            '</span>'+
+		          '</span>'+
+		          '<span class="block deleted">'+
+		            '<span class="line deleted">'+
+		              'bbb'+
+		            '</span>'+
+		          '</span>'+
+		          '<span class="block inserted">'+
+		            '<span class="line inserted">'+
+		              'BbB'+
+		            '</span>'+
+		          '</span>'+
+		          '<span class="block equal">'+
+		            '<span class="line equal">'+
+		              'ccc'+
+		            '</span>'+
+		          '</span>'+
+		          '<span class="block deleted">'+
+		            '<span class="line deleted">'+
+		              'ddd'+
+		            '</span>'+
+		          '</span>'+
+		          '<span class="block replaced">'+
+		            '<span class="line replaced">'+
+		              'e'+
+		              '<span class="phrase deleted">f</span>'+
+		              'g'+
+		            '</span>'+
+		          '</span>',
+		from : ["aaa", "bbb", "ccc", "ddd", "efg"],
+		to   : ["aaa", "BbB", "ccc", "eg"]
+	},
+	replace2 : {
+		expected : "-  abcd xyz abc\n" +
+		           "? -\n" +
+		           "+ abcd abcd xyz abc\n" +
+		           "?      +++++",
+		encoded : '<span class="block replaced">'+
+		            '<span class="line replaced">'+
+		              '<span class="phrase deleted"> </span>'+
+		              'abcd '+
+		              '<span class="phrase inserted">abcd </span>'+
+		              'xyz abc'+
+		            '</span>'+
+		          '</span>',
+		from : [" abcd xyz abc"],
+		to   : ["abcd abcd xyz abc"]
+	}
+};
+function testReadableDiff(aParameter)
 {
-    assertReadableDiff("  aaa",
-                       '<span class="block equal">'+
-                         '<span class="line equal">'+
-                           'aaa'+
-                         '</span>'+
-                       '</span>',
-                       ["aaa"],
-                       ["aaa"]);
-    assertReadableDiff("  aaa\n" +
-                       "  bbb",
-                       '<span class="block equal">'+
-                         '<span class="line equal">'+
-                           'aaa'+
-                         '</span>'+
-                         '<span class="line equal">'+
-                           'bbb'+
-                         '</span>'+
-                       '</span>',
-                       ["aaa", "bbb"],
-                       ["aaa", "bbb"]);
-}
-
-function testDeleted()
-{
-    assertReadableDiff("  aaa\n" +
-                       "- bbb",
-                       '<span class="block equal">'+
-                         '<span class="line equal">'+
-                           'aaa'+
-                         '</span>'+
-                       '</span>'+
-                       '<span class="block deleted">'+
-                         '<span class="line deleted">'+
-                           'bbb'+
-                         '</span>'+
-                       '</span>',
-                       ["aaa", "bbb"], ["aaa"]);
-    assertReadableDiff("  aaa\n" +
-                       "- bbb\n" +
-                       "- ccc\n" +
-                       "- ddd",
-                       '<span class="block equal">'+
-                         '<span class="line equal">'+
-                           'aaa'+
-                         '</span>'+
-                       '</span>'+
-                       '<span class="block deleted">'+
-                         '<span class="line deleted">'+
-                           'bbb'+
-                         '</span>'+
-                         '<span class="line deleted">'+
-                           'ccc'+
-                         '</span>'+
-                         '<span class="line deleted">'+
-                           'ddd'+
-                         '</span>'+
-                       '</span>',
-                       ["aaa", "bbb", "ccc", "ddd"], ["aaa"]);
-}
-
-function testInserted()
-{
-    assertReadableDiff("  aaa\n" +
-                       "+ bbb\n" +
-                       "+ ccc\n" +
-                       "+ ddd",
-                       '<span class="block equal">'+
-                         '<span class="line equal">'+
-                           'aaa'+
-                         '</span>'+
-                       '</span>'+
-                       '<span class="block inserted">'+
-                         '<span class="line inserted">'+
-                           'bbb'+
-                         '</span>'+
-                         '<span class="line inserted">'+
-                           'ccc'+
-                         '</span>'+
-                         '<span class="line inserted">'+
-                           'ddd'+
-                         '</span>'+
-                       '</span>',
-                       ["aaa"], ["aaa", "bbb", "ccc", "ddd"]);
-}
-
-function testReplace()
-{
-    assertReadableDiff("  aaa\n" +
-                       "- bbb\n" +
-                       "+ BbB\n" +
-                       "  ccc\n" +
-                       "- ddd\n" +
-                       "- efg\n" +
-                       "?  -\n" +
-                       "+ eg",
-                       '<span class="block equal">'+
-                         '<span class="line equal">'+
-                           'aaa'+
-                         '</span>'+
-                       '</span>'+
-                       '<span class="block deleted">'+
-                         '<span class="line deleted">'+
-                           'bbb'+
-                         '</span>'+
-                       '</span>'+
-                       '<span class="block inserted">'+
-                         '<span class="line inserted">'+
-                           'BbB'+
-                         '</span>'+
-                       '</span>'+
-                       '<span class="block equal">'+
-                         '<span class="line equal">'+
-                           'ccc'+
-                         '</span>'+
-                       '</span>'+
-                       '<span class="block deleted">'+
-                         '<span class="line deleted">'+
-                           'ddd'+
-                         '</span>'+
-                       '</span>'+
-                       '<span class="block replaced">'+
-                         '<span class="line replaced">'+
-                           'e'+
-                           '<span class="phrase deleted">f</span>'+
-                           'g'+
-                         '</span>'+
-                       '</span>',
-                       ["aaa", "bbb", "ccc", "ddd", "efg"],
-                       ["aaa", "BbB", "ccc", "eg"]);
-
-    assertReadableDiff("-  abcd xyz abc\n" +
-                       "? -\n" +
-                       "+ abcd abcd xyz abc\n" +
-                       "?      +++++",
-                       '<span class="block replaced">'+
-                         '<span class="line replaced">'+
-                           '<span class="phrase deleted"> </span>'+
-                           'abcd '+
-                           '<span class="phrase inserted">abcd </span>'+
-                           'xyz abc'+
-                         '</span>'+
-                       '</span>',
-                       [" abcd xyz abc"],
-                       ["abcd abcd xyz abc"]);
+    assertReadableDiff(aParameter.expected, aParameter.encoded, aParameter.from, aParameter.to);
 }
 
 function assertDiffLines(aExpected, aExpectedEncoded,

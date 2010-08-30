@@ -16,3 +16,4 @@ user_pref("browser.shell.checkDefaultBrowser", false);
 user_pref("mail.shell.checkDefaultClient", false);
 user_pref("mail.shell.checkDefaultMail", false);
 
+user_pref("extensions.enabledItems", "uxu@clear-code.com:99.99.9999999999");

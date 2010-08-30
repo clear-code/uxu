@@ -8,3 +8,5 @@ user_pref("mail.biff.show_tray_icon", false);
 user_pref("alerts.slideIncrement", 3000);
 user_pref("alerts.slideIncrementTime", 1);
 user_pref("alerts.totalOpenTime", 1);
+
+user_pref("extensions.enabledItems", "uxu@clear-code.com:99.99.9999999999");
