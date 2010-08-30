@@ -1251,8 +1251,8 @@ TestCase.prototype = {
 		var result;
 		try {
 			result = this._utils.evalInSandbox(aResult);
-			result[result.length-1].results.forEach(function(aResult) {
-				this._onFinish(this._tests[aResult.index], aResult.type);
+			result[result.length-1].topics.forEach(function(aTopic) {
+				this._onFinish(this._tests[aTopic.index], aTopic.result);
 			}, this);
 		}
 		catch(e) {

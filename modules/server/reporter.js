@@ -228,7 +228,7 @@ Reporter.prototype = {
 		this.result += "\n";
 
 		if (this.allTests.length > 0)
-			successRate = (this.allTests.length - this.badTopics.length) / this.allTests.length * 100;
+			successRate = Math.floor((this.allTests.length - this.badTopics.length) / this.allTests.length * 100);
 		else
 			successRate = 0;
 		this.result += this._colorize(successRate + '% passed.', resultColor);
