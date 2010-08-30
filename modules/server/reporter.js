@@ -29,7 +29,7 @@ function Reporter(aOptions)
 	this.finished     = false;
 	this.result       = '';
 	this.resultStatus = ns.TestCase.prototype.RESULT_SUCCESS;
-	this.badTopics    = [];
+	this.badResults   = [];
 
 	if (!aOptions)
 		aOptions = {};
@@ -134,7 +134,7 @@ Reporter.prototype = {
 			this.allTests.push(testId);
 
 		if (aTopic.exception)
-			this.badTopics.push(aTopic);
+			this.badResults.push(aTopic);
 
 		this.doneReports[id] = true;
 		this.doneReports.count++;
@@ -142,7 +142,10 @@ Reporter.prototype = {
 
 	onTestFinish : function(aEvent)
 	{
-		this.handleTopic(aEvent.data.data, aEvent.data.testCase);
+		aEvent.data.data.topics
+				.forEach(function(aTopic) {
+					this.handleTopic(aTopic, aEvent.data.testCase);
+				}, this);
 	},
 
 	onRemoteTestFinish : function(aEvent)
@@ -171,7 +174,7 @@ Reporter.prototype = {
 	{
 		this.result += this._colorize('E', this.errorColor);
 		if (aRegisterBadResults)
-			this.badTopics.push(aTopic);
+			this.badResults.push(aTopic);
 		this.nErrors++;
 	},
 
@@ -179,13 +182,13 @@ Reporter.prototype = {
 	{
 		var _this = this;
 
-		this.badTopics.forEach(function(aTopic, aIndex) {
+		this.badResults.forEach(function(aTopic, aIndex) {
 			if (!aTopic.stack && aTopic.stackTrace)
 				aTopic.stack = aTopic.stackTrace.join('\n');
 
 			var formattedIndex, summary, detail, exception;
 
-			formattedIndex = _this._formatIndex(aIndex + 1, _this.badTopics.length);
+			formattedIndex = _this._formatIndex(aIndex + 1, _this.badResults.length);
 			formattedIndex = " " + formattedIndex + ") ";
 			detail = _this._colorize([aTopic.result,
 									  aTopic.description].join(': '),
@@ -228,7 +231,7 @@ Reporter.prototype = {
 		this.result += "\n";
 
 		if (this.allTests.length > 0)
-			successRate = Math.floor((this.allTests.length - this.badTopics.length) / this.allTests.length * 100);
+			successRate = Math.floor((this.allTests.length - this.badResults.length) * 100 / this.allTests.length);
 		else
 			successRate = 0;
 		this.result += this._colorize(successRate + '% passed.', resultColor);

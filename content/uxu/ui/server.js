@@ -190,8 +190,10 @@ var testRunnerlistener = {
 	},
 
 	onTestCaseTestFinish: function(aEvent) {
-		var topic = aEvent.data.data;
-		this.buildResultLine(topic.index, topic.description, topic.result, aEvent.data.testCase);
+		aEvent.data.data.topics
+				.forEach(function(aTopic) {
+					this.buildResultLine(aTopic.index, aTopic.description, aTopic.result, aEvent.data.testCase);
+				}, this);
 	},
 
 	onTestCaseRemoteTestFinish : function(aEvent)
