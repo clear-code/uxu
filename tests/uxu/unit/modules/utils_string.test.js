@@ -198,3 +198,15 @@ function test_getErrorNameFromNSExceptionCode()
 	assertResult('NS_NOINTERFACE');
 	assert.isNull(utilsModule.getErrorNameFromNSExceptionCode('string'));
 }
+
+function test_toHash()
+{
+	var c = function() {
+		this.bool = true;
+		this.number = 29;
+	};
+	c.prototype = {
+		string : 'string'
+	};
+	assert.equals({bool:true,number:29}, utilsModule.toHash(new c()));
+}
