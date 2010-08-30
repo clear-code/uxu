@@ -53,9 +53,9 @@ Report.prototype = {
 	_description : null,
 
 	/**
-	 * The total result of the context. If there is any error except AssertionFailed,
-	 * this is "error". If there is any AssertionFailed, this is "failure". Otherwise
-	 * this inherits the last result.
+	 * The total result of the context. If there is any error except
+	 * AssertionFailed, this is "error". If there is any AssertionFailed,
+	 * this is "failure". Otherwise this inherits the last result.
 	 */
 	get result()
 	{
@@ -63,6 +63,20 @@ Report.prototype = {
 				(this._result || this.lastResult);
 	},
 	_result : null,
+
+	get step()
+	{
+		return Math.max(this.index, 0) +
+				'/' +
+				(this.testCase ? this.testCase.tests.length : 0 );
+	},
+
+	get percentage()
+	{
+		return this.index > -1 && this.testCase ?
+				Math.floor((this.index+1) * 100 / this.testCase.tests.length) :
+				100 ;
+	},
 
 	/**
 	 * Topics for the context.
@@ -74,24 +88,21 @@ Report.prototype = {
 	 */
 	get topics()
 	{
-		if (!this._timestamp)
-			this._timestamp = Date.now();
-
 		return this._topics.map(this._formatTopic, this);
 	},
-	_timestamp : null,
-
 	_formatTopic : function(aTopic)
 	{
 		if (aTopic._formatted)
 			return aTopic;
 
-		aTopic.parameter          = this.parameter;
-		aTopic.formattedParameter = this.formattedParameter;
-		aTopic.timestamp          = this._timestamp;
-		aTopic.time               = this.time;
-		aTopic.detailedTime       = this.detailedTime;
-		aTopic.notifications      = this.notifications;
+		if (this.parameter)
+			aTopic.parameter = this.parameter;
+		if (this.formattedParameter)
+			aTopic.formattedParameter = this.formattedParameter;
+
+		aTopic.time          = this.time;
+		aTopic.detailedTime  = this.detailedTime;
+		aTopic.notifications = this.notifications;
 
 		if (aTopic.exception) {
 			let e = aTopic.exception;
@@ -118,8 +129,8 @@ Report.prototype = {
 			aTopic.testCase = utils.toHash(this.testCase, 'title,source');
 
 		aTopic.index = this.index === void(0) ? -1 : this.index ;
-		aTopic.step = this.step === void(0) ? '0/0' : this.step ;
-		aTopic.percentage = this.percentage === void(0) ? 100 : this.percentage ;
+		aTopic.step = this.step;
+		aTopic.percentage = this.percentage;
 
 		aTopic._formatted = true;
 		return aTopic;
@@ -140,6 +151,9 @@ Report.prototype = {
 
 		if (!aTopic.exception)
 			aTopic.exception = null;
+
+		if (!aTopic.timestamp)
+			aTopic.timestamp = Date.now();
 
 		if ((!this._result && aTopic.result == ns.TestCase.prototype.RESULT_ERROR) ||
 			aTopic.result == ns.TestCase.prototype.RESULT_FAILURE)

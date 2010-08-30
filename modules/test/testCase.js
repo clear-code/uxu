@@ -878,8 +878,10 @@ TestCase.prototype = {
 				self._suite.mockManager.clear();
 
 				testReport = new ns.Report();
+				testReport.id                 = current.name;
 				testReport.testCase           = self
 				testReport.test               = current;
+				testReport.index              = testIndex;
 				testReport.description        = current.description;
 				testReport.parameter          = current.parameter;
 				testReport.formattedParameter = current.formattedParameter;
@@ -1032,10 +1034,6 @@ TestCase.prototype = {
 			{
 				current.report = testReport;
 				self._saveResult(current, testReport.lastResult);
-				testReport.id            = current.name;
-				testReport.index         = testIndex;
-				testReport.step          = testIndex + '/' + self._tests.length;
-				testReport.percentage    = parseInt((testIndex+1) / self._tests.length * 100);
 				testReport.notifications = self.notifications;
 				self.notifications = [];
 				self.fireEvent('TestFinish', testReport);
