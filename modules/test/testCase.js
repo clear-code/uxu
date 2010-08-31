@@ -713,7 +713,9 @@ TestCase.prototype = {
  */
 	run : function()
 	{
-		var stopper = function() { stopper.called = true; }
+		var stopper = function() {
+				stopper.called = true;
+			};
 		this._stopper = stopper;
 
 		try {

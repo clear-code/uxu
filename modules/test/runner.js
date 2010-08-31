@@ -33,6 +33,7 @@ function TestRunner(aOptions/*, aFile, ...*/)
 	this._browser    = aOptions.browser;
 	this._envCreator = aOptions.envCreator;
 	this._filters = [];
+	this._stoppers = [];
 	this._log = new ns.TestLog();
 }
 TestRunner.prototype = {
@@ -175,46 +176,58 @@ TestRunner.prototype = {
 		this._current     = 0;
 		this._testsCount  = aTests.length;
 
-		var _this = this;
-		var stoppers = [];
+		var self = this;
+		this._stoppers = [];
 		var runTest = function(aTest) {
-				if (_this._shouldAbort) {
-					stoppers.forEach(function(aStopper) {
-						aStopper();
-					});
-					_this.fireEvent('Abort');
-					return;
-				}
-				_this._current++;
-				_this.fireEvent('Progress',
-					parseInt(((_this._current) / (_this._testsCount + 1)) * 100));
+				if (self._shouldAbort)
+					return true;
+
+				self._current++;
+				self.fireEvent('Progress',
+					parseInt(((self._current) / (self._testsCount + 1)) * 100));
 				try {
-					aTest.addListener(_this);
-					stoppers.push(aTest.run());
+					aTest.addListener(self);
+					let stopper = aTest.run();
+					self._stoppers.push(stopper);
 				}
 				catch(e) {
-					_this.fireEvent('Error', utils.normalizeError(e));
+					self.fireEvent('Error', utils.normalizeError(e));
 				}
+				return false;
 			};
 
 		if (utils.getPref('extensions.uxu.runner.runParallel')) {
-			aTests.forEach(runTest);
+			if (aTests.some(runTest)) {
+				this.abort(); // to stop running tests
+				this.fireEvent('Abort');
+			}
 		}
 		else {
 			var test;
 			ns.setTimeout(function() {
-				if ((!test || test.done) && aTests.length) {
+				let aborted = false;
+				if ((!test || test.done || test.aborted) && aTests.length) {
 					test = aTests.shift();
-					runTest(test);
+					if (test)
+						aborted = runTest(test);
 				}
-				if (aTests.length)
+				if (aborted || self._shouldAbort) {
+					self.abort(); // to stop running tests
+					self.fireEvent('Abort');
+				}
+				else if (aTests.length) {
 					ns.setTimeout(arguments.callee, 100);
+				}
 			}, 100);
 		}
 	},
   
 	abort : function() 
 	{
+		this._stoppers.forEach(function(aStopper) {
+			if (aStopper && typeof aStopper == 'function')
+				aStopper();
+		});
 		this._shouldAbort = true;
 	},
 	
@@ -313,10 +326,10 @@ TestRunner.prototype = {
 	
 	loadFolder : function(aFolder) 
 	{
-		var _this = this;
+		var self = this;
 		var filesMayBeTest = this._getTestFiles(aFolder);
 		return filesMayBeTest.map(function(aFile) {
-				return _this.loadFile(aFile);
+				return self.loadFile(aFile);
 			});
 	},
 	
