@@ -2081,6 +2081,15 @@ redirectURI : function(aURI, aMappingDefinition)
 	return this.mapURI.call(this, aURI, aMappingDefinition)
 },
  
+escapeHTML : function(aString)
+{
+	return String(aString)
+			.replace(/"/g, '&quot;')
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&rt;');
+},
+ 
 // http://liosk.blog103.fc2.com/blog-entry-75.html
 // CSV parser based on RFC4180
 parseCSV : function(aInput, aDelimiter) 

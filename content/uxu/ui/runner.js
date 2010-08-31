@@ -1260,14 +1260,15 @@ function saveReport(aPath, aFormat)
 		}
 
 		let filters = {};
+		filters[bundle.getString('filetype_html')] = '*.html';
 		filters[bundle.getString('filetype_txt')] = '*.txt';
 		filters[bundle.getString('filetype_csv')] = '*.csv';
 		filters[bundle.getString('filetype_tsv')] = '*.tsv';
 		filters[bundle.getString('filetype_json')] = '*.json';
 		let picked = pickFile(
 				'save', {
-					defaultFile : last || 'log.txt',
-					defaultExtension : (last ? last.leafName.replace(/^.*\.([^\.]+)$/, '$1') : '') || 'txt',
+					defaultFile : last || 'log.html',
+					defaultExtension : (last ? last.leafName.replace(/^.*\.([^\.]+)$/, '$1') : '') || 'html',
 					filters : filters,
 					title : bundle.getString('log_picker_title')
 				}
@@ -1286,10 +1287,11 @@ function saveReport(aPath, aFormat)
 	if (!file) return;
 
 	aFormat = aFormat ? aFormat :
+		/\.te?xt$/i.test(file.leafName) ? gLog.FORMAT_TEXT :
 		/\.csv$/i.test(file.leafName) ? gLog.FORMAT_CSV :
 		/\.tsv$/i.test(file.leafName) ? gLog.FORMAT_TSV :
 		/\.js(on)?$/i.test(file.leafName) ? gLog.FORMAT_JSON :
-		gLog.FORMAT_TEXT;
+		gLog.FORMAT_HTML;
 
 	utils.setPref('extensions.uxu.runner.lastLog', file.path);
 

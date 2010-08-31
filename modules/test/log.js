@@ -91,6 +91,9 @@ TestLog.prototype = {
 		if (aFormat & this.FORMAT_TSV)
 			return this._toCSV('\t');
 
+		if (aFormat & this.FORMAT_HTML)
+			return this._toHTML();
+
 		if (aFormat & this.FORMAT_JSON)
 			return this._toJSON();
 
@@ -232,6 +235,37 @@ TestLog.prototype = {
 						return '"'+aCell.replace(/"/g, '""')+'"';
 					}).join(aDelimiter);
 			}).join('\n');
+	},
+
+	_toHTML : function()
+	{
+		var columns = 'source,title,index,description,result,parameter,formattedParameter,time,detailedTime,message,expected,actual,diff,stackTrace'.split(',');
+		var rows = [
+				columns.concat(['notifications'])
+			];
+		this._items.forEach(function(aLog) {
+			aLog.topics.forEach(function(aTopic) {
+				let row = [];
+				columns.forEach(function(aColumn) {
+					row.push(aColumn in aTopic ? utils.escapeHTML(aTopic[aColumn]) : '' );
+				}, this);
+				var notifications = [];
+				if (aTopic.notifications && aTopic.notifications.length) {
+					aTopic.notifications.forEach(function(aNotification) {
+						if (!aNotification.description &&
+							(!aNotification.stackTrace || !aNotification.stackTrace.length))
+							return;
+						if (aNotification.description)
+							notifications.push(aNotification.description);
+						if (aNotification.stackTrace && aNotification.stackTrace.length)
+							notifications.push(aNotification.stackTrace.join(','));
+					}, this);
+				}
+				row.push(utils.escapeHTML(notifications.join('\n')));
+				rows.push('<td>'+row.join('</td><td>')+'</td>');
+			}, this);
+		}, this);
+		return '<tr>'+rows.join('</tr><tr>')+'<tr>';
 	},
 
 	_toJSON : function()

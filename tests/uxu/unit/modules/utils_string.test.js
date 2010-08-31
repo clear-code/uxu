@@ -210,3 +210,12 @@ function test_toHash()
 	};
 	assert.equals({bool:true,number:29}, utilsModule.toHash(new c()));
 }
+
+
+function test_escapeHTML()
+{
+	assert.equals(
+		'string&quot;&lt;&amp;&gt;&lt;&amp;&gt;&lt;&amp;&gt;&quot;',
+		utilsModule.escapeHTML('string"<&><&><&>"')
+	);
+}
