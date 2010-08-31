@@ -646,7 +646,7 @@ var gRemoteRun = {
 
 		if (gOptions.log) {
 			utils.writeTo(
-				gLog.toString(),
+				gLog.toString(utils.makeFileWithPath(gOptions.log)),
 				gOptions.log,
 				'UTF-8'
 			);
@@ -1286,18 +1286,11 @@ function saveReport(aPath, aFormat)
 	}
 	if (!file) return;
 
-	aFormat = aFormat ? aFormat :
-		/\.te?xt$/i.test(file.leafName) ? gLog.FORMAT_TEXT :
-		/\.csv$/i.test(file.leafName) ? gLog.FORMAT_CSV :
-		/\.tsv$/i.test(file.leafName) ? gLog.FORMAT_TSV :
-		/\.js(on)?$/i.test(file.leafName) ? gLog.FORMAT_JSON :
-		gLog.FORMAT_HTML;
-
 	utils.setPref('extensions.uxu.runner.lastLog', file.path);
 
 	if (file.exists()) file.remove(true);
 	utils.writeTo(
-		gLog.toString(aFormat),
+		gLog.toString(aFormat || file),
 		file.path,
 		'UTF-8'
 	);

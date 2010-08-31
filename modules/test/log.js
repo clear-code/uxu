@@ -80,7 +80,9 @@ TestLog.prototype = {
 
 	toString : function(aFormat)
 	{
-		if (!aFormat) aFormat = this.FORMAT_DEFAULT;
+		aFormat = aFormat || this.FORMAT_DEFAULT;
+		if (aFormat instanceof Ci.nsIFile)
+			aFormat = this._formatForFile(aFormat);
 
 		if (aFormat & this.FORMAT_RAW)
 			return this._items.toSource();
@@ -98,6 +100,16 @@ TestLog.prototype = {
 			return this._toJSON();
 
 		return this._toText(aFormat);
+	},
+	_formatForFile : function(aFile)
+	{
+		let name = aFile.leafName;
+		return /\.te?xt$/i.test(name) ? this.FORMAT_TEXT :
+			/\.csv$/i.test(name) ? this.FORMAT_CSV :
+			/\.tsv$/i.test(name) ? this.FORMAT_TSV :
+			/\.js(on)?$/i.test(name) ? this.FORMAT_JSON :
+			/\.html?$/i.test(name) ? this.FORMAT_HTML :
+			this.FORMAT_TEXT;
 	},
 
 	_toText : function(aFormat)
