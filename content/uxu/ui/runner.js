@@ -249,6 +249,8 @@ function startup()
 	gBrowser.addEventListener('load', onContentLoad, true);
 
 	var running = false;
+
+	gOptions = {};
 	if ('arguments' in window &&
 		window.arguments &&
 		window.arguments.length) {
@@ -257,7 +259,6 @@ function startup()
 			gOptions = utils.toHash(gOptions);
 		}
 		catch(e) {
-			gOptions = {};
 		}
 
 		if (gOptions.testcase) {
@@ -271,9 +272,6 @@ function startup()
 			gOptions.log = utils.getFilePathFromURLSpec(gOptions.log);
 		if (gOptions.rawLog && gOptions.rawLog.indexOf('file://') > -1)
 			gOptions.rawLog = utils.getFilePathFromURLSpec(gOptions.rawLog);
-		if (gOptions.server || gOptions.serverPort ||
-			utils.getPref('extensions.uxu.runner.autoStart.server'))
-			startServer(gOptions.serverPort || 0);
 		if (gOptions.testcase) {
 			gRemoteRun.onEvent('start');
 			runWithDelay(gOptions.priority);
@@ -286,12 +284,18 @@ function startup()
 				});
 		}
 
-		if (gOptions && (gOptions.outputHost || gOptions.outputPort)) {
+		if (gOptions.outputHost || gOptions.outputPort) {
 			gRemoteRun.startPinging();
+			running = true;
 		}
-
-		running = true;
 	}
+
+	if (
+		gOptions.server ||
+		gOptions.serverPort ||
+		utils.getPref('extensions.uxu.runner.autoStart.server')
+		)
+		startServer(gOptions.serverPort || 0);
 
 	var mainDeck = _('mainDeck');
 	var lastResult = utils.getPref('extensions.uxu.runner.lastResults');
