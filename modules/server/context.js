@@ -20,17 +20,11 @@ var action = new ns.Action({ __proto__ : utils, utils : utils });
 var WindowManager = Cc['@mozilla.org/appshell/window-mediator;1']
 		.getService(Ci.nsIWindowMediator);
 
-function Context(aOptions)
+function Context(aEnvironment)
 {
-	aOptions = aOptions || {};
-
 	this.initListeners();
 
-	this._browser         = aOptions.browser;
-	this._envCreator      = aOptions.envCreator;
-	this._runnerListeners = [];
-
-	this.environment = this._envCreator ? this._envCreator() : new aBrowser.ownerDocument.defaultView.Object() ;
+	this.environment = aEnvironment;
 	this.environment.__proto__ = this;
 
 	this._buffer = '';
@@ -42,29 +36,6 @@ Context.prototype = {
 
 	RETURNABLE_SYNTAX_ERROR : 'returnable syntax error',
 	QUIT_MESSAGE : '\u001A__QUIT__',
-
-	addRunnerListener : function(aListener)
-	{
-		this._runnerListeners.push(aListener);
-	},
-
-	runTest : function(aOptions/*, aTargets, ...*/)
-	{
-		var runner = new ns.TestRunner(
-				{
-					browser : this._browser,
-					envCreator : this._envCreator
-				},
-				Array.slice(arguments, 1)
-			);
-		var reporter = new ns.Reporter(aOptions);
-		this._runnerListeners.forEach(function (aListener) {
-			runner.addListener(aListener);
-		});
-		runner.addListener(reporter);
-		runner.run();
-		return reporter;
-	},
 
 	quit : function()
 	{

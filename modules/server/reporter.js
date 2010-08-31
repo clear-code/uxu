@@ -97,6 +97,8 @@ Reporter.prototype = {
 		this._reportSummary();
 
 		this.finished = true;
+
+		aEvent.target.removeListener(this);
 	},
 
 	handleTopic : function(aTopic, aTestCase)

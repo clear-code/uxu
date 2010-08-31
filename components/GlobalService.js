@@ -75,13 +75,9 @@ GlobalService.prototype = {
 				this.setUpUXUPrefs(aSubject.QueryInterface(Ci.nsILocalFile));
 				return;
 
-
 			case 'uxu-start-runner-request':
-				this.startRunner(aSubject, this.evalInSandbox(aData));
-				return;
-
 			case 'uxu-start-server-request':
-				this.startServer(aSubject, this.evalInSandbox(aData));
+				this.startRunner(aSubject, this.evalInSandbox(aData));
 				return;
 
 			case 'uxu-open-config-request':
@@ -122,26 +118,13 @@ GlobalService.prototype = {
  
 	autoStart : function() 
 	{
-		if (
-			Pref.getBoolPref('extensions.uxu.auto.start') ||
-			(
-				Pref.getBoolPref('extensions.uxu.autoStart.oneTime.enabled') &&
-				Pref.getBoolPref('extensions.uxu.autoStart.oneTime')
-			)
-			) {
-			Pref.setBoolPref('extensions.uxu.autoStart.oneTime', false);
-			this.startServer(null, { serverPort : Pref.getIntPref('extensions.uxu.autoStart.oneTime.port') });
-		}
-
-		if (
-			Pref.getBoolPref('extensions.uxu.runner.autoStart') ||
-			(
-				Pref.getBoolPref('extensions.uxu.runner.autoStart.oneTime.enabled') &&
-				Pref.getBoolPref('extensions.uxu.runner.autoStart.oneTime')
-			)
-			) {
+		var onetime = Pref.getBoolPref('extensions.uxu.runner.autoStart.oneTime.enabled') &&
+						Pref.getBoolPref('extensions.uxu.runner.autoStart.oneTime');
+		if (Pref.getBoolPref('extensions.uxu.runner.autoStart') || onetime) {
+			let port = onetime ? Pref.getIntPref('extensions.uxu.runner.autoStart.oneTime.port') : 0 ;
 			Pref.setBoolPref('extensions.uxu.runner.autoStart.oneTime', false);
-			this.startRunner();
+			Pref.setIntPref('extensions.uxu.runner.autoStart.oneTime.port', 0);
+			this.startRunner(null, { serverPort : port });
 		}
 	},
  
@@ -341,17 +324,6 @@ GlobalService.prototype = {
 		);
 	},
  
-	startServer : function(aOwner, aOptions) 
-	{
-		this.openWindow(
-			aOwner,
-			'uxu:server',
-			'chrome://uxu/content/ui/server.xul',
-			'chrome,all,dialog=no,resizable=yes',
-			aOptions
-		);
-	},
- 
 	openConfig : function(aOwner) 
 	{
 		this.openWindow(
@@ -387,10 +359,7 @@ GlobalService.prototype = {
 
 		if (arg.testcase || arg.server) {
 			aCommandLine.preventDefault = true;
-			if (arg.server)
-				this.startServer(null, arg);
-			else
-				this.startRunner(null, arg);
+			this.startRunner(null, arg);
 		}
 	},
  

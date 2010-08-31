@@ -26,8 +26,10 @@ function TestRunner(aOptions/*, aFile, ...*/)
 	this.initListeners();
 
 	this.runningCount = 0;
+
 	this.files = Array.slice(arguments, 1);
 	if (utils.isArray(this.files[0])) this.files = this.files[0];
+
 	this._browser    = aOptions.browser;
 	this._envCreator = aOptions.envCreator;
 	this._filters = [];
@@ -36,11 +38,9 @@ function TestRunner(aOptions/*, aFile, ...*/)
 TestRunner.prototype = {
 	__proto__ : ns.EventTarget.prototype,
 	
-	run : function(aReporter, aMasterPriority) 
+	run : function(aMasterPriority) 
 	{
 		utils.setPref(RUNNING, true);
-
-		if (aReporter) this.addListener(aReporter);
 
 		this.runningCount = 0;
 
@@ -50,7 +50,7 @@ TestRunner.prototype = {
 		}, this);
 
 		var tests = this._collectTestCases(suites);
-		if (aMasterPriority) {
+		if (aMasterPriority !== void(0)) {
 			tests.forEach(function(aTest) {
 				if (!aTest.neverRun)
 					aTest.masterPriority = aMasterPriority;

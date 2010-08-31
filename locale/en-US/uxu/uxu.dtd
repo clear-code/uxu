@@ -1,12 +1,6 @@
-<!ENTITY uxu.server.title        "UxU - UnitTest.XUL">
-<!ENTITY uxu.server.running      "UxU Server is available.">
-<!ENTITY uxu.server.close.label  "Stop">
-<!ENTITY uxu.server.autostart.label  "Auto Start">
-
 <!ENTITY uxu.tools.menu.label   "UnitTest.XUL">
-<!ENTITY uxu.tools.start.label   "Start UxU Server">
-<!ENTITY uxu.tools.runner.label   "Test Runner">
-<!ENTITY uxu.tools.config.label   "Config...">
+<!ENTITY uxu.tools.runner.label "Test Runner">
+<!ENTITY uxu.tools.config.label "Config...">
 
 
 <!ENTITY runner.title "UxU Test Runner">
@@ -81,6 +75,10 @@
 <!ENTITY runner.diff.label         "Diff">
 <!ENTITY runner.diff.separator     ":">
 
+<!ENTITY runner.toggleServer.label                "Accept connections as a server">
+<!ENTITY runner.toggleServer.checkbox.label       "Server">
+<!ENTITY runner.toggleServer.checkbox.tooltiptext "Accept connections as a server">
+
 
 
 
@@ -122,14 +120,12 @@
 <!ENTITY config.runner.runMode.1 "Run any test always">
 <!ENTITY config.runner.autoShowContent "Show internal frame while testing automatically">
 <!ENTITY config.runner.autoExpandWindow.sourceViewer "Expand window automatically when source viewer is open">
-<!ENTITY config.tabs.server "UxU Server">
+<!ENTITY config.tabs.server "Server">
 <!ENTITY config.runner.autoStart "Start Test Runner automatically on Firefox's startup">
 <!ENTITY config.runner.autoStart.oneTime.enabled "Restore Test Runner automatically after Firefox's restart">
 <!ENTITY config.runner.autoExit  "Stop Test Runner automatically on Firefox's shutdown">
+<!ENTITY config.runner.autoStart.server "Enable server socket automatically">
 
-<!ENTITY config.auto.start "Start server automatically on Firefox's startup">
-<!ENTITY config.auto.exit  "Stop server automatically on Firefox's shutdown">
-<!ENTITY config.autoStart.oneTime.enabled "Restore server automatically after Firefox's restart">
 <!ENTITY config.port  "Default Port:">
 
 <!ENTITY config.allowAccessesFromRemote "Allow to connect from foreign hosts">

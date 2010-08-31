@@ -137,6 +137,9 @@
 		<preference id="extensions.uxu.runner.autoExit"
 			name="extensions.uxu.runner.autoExit"
 			type="bool"/>
+		<preference id="extensions.uxu.runner.autoStart.server"
+			name="extensions.uxu.runner.autoStart.server"
+			type="bool"/>
 		<preference id="extensions.uxu.runner.autoShowContent"
 			name="extensions.uxu.runner.autoShowContent"
 			type="bool"/>
@@ -153,9 +156,14 @@
 		label="&config.runner.autoStart;"/>
 	<hbox>
 		<spacer style="width:1em;"/>
-		<checkbox id="extensions.uxu.runner.autoStart.oneTime.enabled-check"
-			preference="extensions.uxu.runner.autoStart.oneTime.enabled"
-			label="&config.runner.autoStart.oneTime.enabled;"/>
+		<vbox>
+			<checkbox id="extensions.uxu.runner.autoStart.oneTime.enabled-check"
+				preference="extensions.uxu.runner.autoStart.oneTime.enabled"
+				label="&config.runner.autoStart.oneTime.enabled;"/>
+			<checkbox id="extensions.uxu.runner.autoStart.server-check"
+				preference="extensions.uxu.runner.autoStart.server"
+				label="&config.runner.autoStart.server;"/>
+		</vbox>
 	</hbox>
 	<checkbox id="extensions.uxu.runner.autoExit-check"
 		preference="extensions.uxu.runner.autoExit"
@@ -182,15 +190,6 @@
 
 <prefpane id="prefpane-server" label="&config.tabs.server;" flex="1">
 	<preferences>
-		<preference id="extensions.uxu.auto.start"
-			name="extensions.uxu.auto.start"
-			type="bool"/>
-		<preference id="extensions.uxu.auto.exit"
-			name="extensions.uxu.auto.exit"
-			type="bool"/>
-		<preference id="extensions.uxu.autoStart.oneTime.enabled"
-			name="extensions.uxu.autoStart.oneTime.enabled"
-			type="bool"/>
 		<preference id="extensions.uxu.port"
 			name="extensions.uxu.port"
 			type="int"/>
@@ -202,18 +201,6 @@
 			type="string"/>
 	</preferences>
 
-	<checkbox id="extensions.uxu.auto.start-check"
-		preference="extensions.uxu.auto.start"
-		label="&config.auto.start;"/>
-	<hbox>
-		<spacer style="width:1em;"/>
-		<checkbox id="extensions.uxu.autoStart.oneTime.enabled-check"
-			preference="extensions.uxu.autoStart.oneTime.enabled"
-			label="&config.autoStart.oneTime.enabled;"/>
-	</hbox>
-	<checkbox id="extensions.uxu.auto.exit-check"
-		preference="extensions.uxu.auto.exit"
-		label="&config.auto.exit;"/>
 	<hbox align="center">
 		<label value="&config.port;"
 			control="extensions.uxu.port-textbox"/>

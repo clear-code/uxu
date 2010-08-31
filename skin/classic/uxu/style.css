@@ -152,15 +152,6 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 }
 
 
-.server-report {
-	margin-bottom: 1em;
-}
-
-.server-report label {
-	padding: 0.5em;
-	-moz-box-flex: 1;
-}
-
 
 
 .uxu-bottom-toolbox {

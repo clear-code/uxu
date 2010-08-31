@@ -2,6 +2,9 @@ var ns = {};
 Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/server/message.js', ns);
+Components.utils.import('resource://uxu-modules/server/server.js', ns);
+Components.utils.import('resource://uxu-modules/server/context.js', ns);
+Components.utils.import('resource://uxu-modules/server/reporter.js', ns);
 Components.utils.import('resource://uxu-modules/test/runner.js', ns);
 Components.utils.import('resource://uxu-modules/test/log.js', ns);
 Components.utils.import('resource://uxu-modules/test/testCase.js', ns);
@@ -22,7 +25,7 @@ var gLog;
 var gBrowser;
  
 /* UTILITIES */ 
-	 
+	
 function _(idOrElement, subCriteria) 
 {
 	var element = $(idOrElement);
@@ -167,7 +170,7 @@ const fileDNDObserver =
 		return aFile.isDirectory() || /\.js$/.test(aFile.leafName);
 	},
  
-	get browserWindow()
+	get browserWindow() 
 	{
 		return Cc['@mozilla.org/appshell/window-mediator;1']
 				.getService(Ci.nsIWindowMediator)
@@ -223,7 +226,7 @@ const fileDNDObserver =
 }; 
    
 /* DOMAIN */ 
-	 
+	
 function startup() 
 {
 	ns.Utils.internalLoader = $('internal-loader');
@@ -260,6 +263,7 @@ function startup()
 			jsobj.priority   = gOptions.getProperty('priority');
 			jsobj.autoQuit   = gOptions.getProperty('autoQuit');
 			jsobj.doNotQuit  = gOptions.getProperty('doNotQuit');
+			jsobj.serverPort = gOptions.getProperty('serverPort');
 			jsobj.hidden     = gOptions.getProperty('hidden');
 			gOptions = jsobj;
 		}
@@ -278,6 +282,9 @@ function startup()
 			gOptions.log = utils.getFilePathFromURLSpec(gOptions.log);
 		if (gOptions.rawLog && gOptions.rawLog.indexOf('file://') > -1)
 			gOptions.rawLog = utils.getFilePathFromURLSpec(gOptions.rawLog);
+		if (gOptions.serverPort ||
+			utils.getPref('extensions.uxu.runner.autoStart.server'))
+			startServer(gOptions.serverPort || 0);
 		if (gOptions.testcase) {
 			gRemoteRun.onEvent('start');
 			runWithDelay(gOptions.priority);
@@ -334,7 +341,7 @@ function startup()
 	// ãåî≈ÇÃpersistëÆê´Ç…ÇÊÇ¡Çƒï€ë∂Ç≥ÇÍÇƒÇ¢ÇΩílÇ™ïúå≥Ç≥ÇÍÇƒÇµÇ‹Ç¡ÇΩèÍçáÇÃÇΩÇﬂÇ…
 	window.setTimeout(setTestFile, 0, defaultTestPath, false);
 }
-	 
+	
 var alwaysRaisedObserver = { 
 	observe : function(aSubect, aTopic, aData)
 	{
@@ -356,11 +363,15 @@ var restartObserver = {
 
 		if (utils.getPref('extensions.uxu.runner.autoStart.oneTime.enabled'))
 			utils.setPref('extensions.uxu.runner.autoStart.oneTime', true);
+			if (gServer)
+				utils.setPref('extensions.uxu.runner.autoStart.oneTime.port', gServer.port);
 	}
 };
   
 function shutdown() 
 {
+	stopServer();
+
 	gRemoteRun.stopPinging();
 
 	if (!isLinux()) {
@@ -447,7 +458,7 @@ function getFocusedFile()
 }
   
 /* runner */ 
-	 
+	
 var gRunner; 
  
 var runnerListener = { 
@@ -654,7 +665,7 @@ var gRemoteRun = {
 	},
 	_pingTimer : null
 };
- 	
+ 
 function onAllTestsFinish() 
 {
 	utils.setPref(
@@ -674,6 +685,7 @@ function updateUIForAllTestsFinish()
 	}
 
 	_('saveReport').removeAttribute('disabled');
+	_('toggleServer').removeAttribute('disabled');
 
 	stopAllProgressMeters();
 
@@ -755,6 +767,7 @@ function setRunningState(aRunning)
 		_('runFailed').setAttribute('disabled', true);
 		_('stop-box').removeAttribute('hidden');
 		_('stop').removeAttribute('disabled');
+		_('toggleServer').setAttribute('disabled', true);
 		_('testRunningProgressMeter').setAttribute('mode', 'determined');
 		_('testRunningProgressMeterPanel').removeAttribute('collapsed');
 		_('testResultStatus').setAttribute('label', bundle.getString('all_wait'));
@@ -767,15 +780,18 @@ function setRunningState(aRunning)
 		_('runFailed').setAttribute('disabled', true);
 		_('stop-box').setAttribute('hidden', true);
 		_('stop').setAttribute('disabled', true);
+		_('toggleServer').removeAttribute('disabled');
 		_('testRunningProgressMeter').setAttribute('mode', 'undetermined');
 		_('testRunningProgressMeterPanel').setAttribute('collapsed', true);
 	}
 }
  
-function run(aMasterPriority, aOnlyFailed) 
+function run(aOptions) 
 {
+	aOptions = aOptions || {};
+
 	var filteredTests = {};
-	if (aOnlyFailed)
+	if (aOptions.onlyFailed)
 		[].concat(getFailureReports()).concat(getErrorReports())
 			.forEach(function(aTestReport) {
 				var title = aTestReport.parentNode.parentNode.getAttribute('title');
@@ -790,12 +806,16 @@ function run(aMasterPriority, aOnlyFailed)
 			browser    : _('content'),
 			envCreator : function() { return {}; }
 		},
-		_('file').value
+		aOptions.targets || _('file').value
 	);
 
 	gRunner.addListener(runnerListener);
+	if (aOptions.extraListeners)
+		aOptions.extraListeners.forEach(function(aListener) {
+			gRunner.addListener(aListener);
+		});
 
-	if (aOnlyFailed)
+	if (aOptions.onlyFailed)
 		gRunner.addTestFilter(function(aTestCase) {
 			aTestCase.masterPriority = 'must';
 			return aTestCase.title in filteredTests;
@@ -803,19 +823,19 @@ function run(aMasterPriority, aOnlyFailed)
 
 	document.documentElement.setAttribute('running', true);
 
-	gRunner.run(null, aMasterPriority);
+	gRunner.run(aOptions.priority);
 }
 	
 function runByPref() 
 {
-	run(utils.getPref('extensions.uxu.runner.runMode') == 1 ? 'must' : null );
+	run({ priority : utils.getPref('extensions.uxu.runner.runMode') == 1 ? 'must' : null });
 }
  
 function runWithDelay(aMasterPriority) 
 {
 	_delayedRunTimer = window.setTimeout(function() {
 		_delayedRunTimer = null;
-		run(aMasterPriority);
+		run({ priority : aMasterPriority });
 	}, 0);
 }
 function cancelDelayedRun()
@@ -828,7 +848,7 @@ var _delayedRunTimer = null;
   
 function runFailed() 
 {
-	run(null, true);
+	run({ onlyFailed : true });
 }
  
 function stop() 
@@ -839,7 +859,7 @@ function stop()
 }
   
 /* UI */ 
-	 
+	
 function getReportNode(aTestCase) 
 {
 	var id = 'testcase-report-'+encodeURIComponent(aTestCase.title)+'-'+encodeURIComponent(aTestCase.source);
@@ -1143,6 +1163,54 @@ function stopAllProgressMeters()
 	).forEach(function(aNode) {
 		aNode.setAttribute('mode', 'determined');
 	}, this);
+}
+  
+/* server */ 
+	
+var gServer = null; 
+ 
+function toggleServer() 
+{
+	var command = _('toggleServer');
+	if (gServer) {
+		stopServer();
+		command.removeAttribute('checked');
+	}
+	else {
+		startServer();
+		command.setAttribute('checked', true);
+	}
+}
+ 
+function startServer(aPort) 
+{
+	if (gServer)
+		return;
+
+	var context = new ns.Context({});
+	context.runTest = function(aOptions/*, aTargets, ...*/) {
+		var reporter = new ns.Reporter(aOptions);
+		run({
+			targets        : Array.slice(arguments, 1),
+			priority       : aOptions.priority,
+			extraListeners : [reporter]
+		});
+		return reporter;
+	};
+
+	gServer = new ns.Server(aPort || utils.getPref('extensions.uxu.port'));
+	gServer.addListener(context);
+	context.addListener(gServer);
+	gServer.start();
+}
+ 
+function stopServer() 
+{
+	if (!gServer)
+		return;
+
+	gServer.stop();
+	gServer = null;
 }
   
 /* commands */ 

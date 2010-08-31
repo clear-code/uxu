@@ -35,21 +35,18 @@ pref("extensions.uxu.runner.alwaysRaised", false);
 pref("extensions.uxu.runner.autoShowContent", true);
 pref("extensions.uxu.runner.autoExpandWindow.sourceViewer", true);
 pref("extensions.uxu.runner.autoStart", false);
+pref("extensions.uxu.runner.autoStart.server", false);
 pref("extensions.uxu.runner.autoStart.oneTime.enabled", true);
 pref("extensions.uxu.runner.autoStart.oneTime", false);
+pref("extensions.uxu.runner.autoStart.oneTime.port", 0);
 pref("extensions.uxu.runner.autoExit", false);
 pref("extensions.uxu.runner.lastPath", "");
 pref("extensions.uxu.runner.lastResults", "");
 pref("extensions.uxu.runner.coloredDiff", true);
 
-pref("extensions.uxu.auto.start", false);
-pref("extensions.uxu.auto.exit",  true);
 pref("extensions.uxu.port",       4444);
 pref("extensions.uxu.allowAccessesFromRemote", false);
 pref("extensions.uxu.allowAccessesFromRemote.allowedList", "127.0.0.1,localhost,192.168.*.*");
-pref("extensions.uxu.autoStart.oneTime.enabled", true);
-pref("extensions.uxu.autoStart.oneTime", false);
-pref("extensions.uxu.autoStart.oneTime.port", 0);
 
 pref("extensions.uxu@clear-code.com.name", "chrome://uxu/locale/uxu.properties") ;
 pref("extensions.uxu@clear-code.com.description", "chrome://uxu/locale/uxu.properties") ;

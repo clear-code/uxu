@@ -1,12 +1,6 @@
-<!ENTITY uxu.server.title        "UxU - UnitTest.XUL">
-<!ENTITY uxu.server.running      "UxUサーバ動作中">
-<!ENTITY uxu.server.close.label  "停止">
-<!ENTITY uxu.server.autostart.label  "自動起動">
-
 <!ENTITY uxu.tools.menu.label   "UnitTest.XUL">
-<!ENTITY uxu.tools.start.label   "UxUサーバを起動">
-<!ENTITY uxu.tools.runner.label   "テストランナー">
-<!ENTITY uxu.tools.config.label   "設定...">
+<!ENTITY uxu.tools.runner.label "テストランナー">
+<!ENTITY uxu.tools.config.label "設定...">
 
 
 <!ENTITY runner.title "UxUテストランナー">
@@ -81,7 +75,9 @@
 <!ENTITY runner.diff.label         "相違点">
 <!ENTITY runner.diff.separator     ":">
 
-
+<!ENTITY runner.toggleServer.label                "サーバとして接続を受け付ける">
+<!ENTITY runner.toggleServer.checkbox.label       "サーバ">
+<!ENTITY runner.toggleServer.checkbox.tooltiptext "サーバとして接続を受け付ける">
 
 
 
@@ -121,16 +117,15 @@
 <!ENTITY config.runner.runMode.0 "前回失敗したテストや未実行のテストは必ず実行し、それ以外は優先度を落とす（推奨）">
 <!ENTITY config.runner.runMode.1 "すべてのテストを必ず実行する">
 <!ENTITY config.runner.autoShowContent "テストの実行時にテスト用フレームを自動的に表示する">
-<!ENTITY config.runner.autoExpandWindow.sourceViewer "エラー箇所のソースを表示する時にウィンドウを自動的に広げる"><!ENTITY config.runner.autoStart "Firefoxの起動と同時にテストランナーを起動する">
+<!ENTITY config.runner.autoExpandWindow.sourceViewer "エラー箇所のソースを表示する時にウィンドウを自動的に広げる">
+<!ENTITY config.runner.autoStart "Firefoxの起動と同時にテストランナーを起動する">
 <!ENTITY config.runner.autoStart.oneTime.enabled "Firefoxの再起動時にテストランナーを自動的に復帰させる">
 <!ENTITY config.runner.autoExit  "Firefoxの終了と同時にテストランナーを終了する">
+<!ENTITY config.runner.autoStart.server "サーバ機能を自動的に有効にする">
 
 
-<!ENTITY config.tabs.server "UxUサーバ">
+<!ENTITY config.tabs.server "サーバ">
 
-<!ENTITY config.auto.start "Firefoxの起動と同時にサーバとしての動作を開始する">
-<!ENTITY config.auto.exit  "Firefoxの終了と同時にサーバとしての動作を終了する">
-<!ENTITY config.autoStart.oneTime.enabled "Firefoxの再起動時にサーバを自動的に復帰させる">
 <!ENTITY config.port  "リモート接続を受け付ける既定のポート番号：">
 
 <!ENTITY config.allowAccessesFromRemote "ローカル以外からの接続を受け付ける">

@@ -1,9 +1,3 @@
-function startUxU(aOptions) {
-	Components.classes['@mozilla.org/observer-service;1']
-		.getService(Components.interfaces.nsIObserverService)
-		.notifyObservers(window, 'uxu-start-server-request', (aOptions || {}).toSource());
-}
-
 function openUxURunner() {
 	Components.classes['@mozilla.org/observer-service;1']
 		.getService(Components.interfaces.nsIObserverService)
