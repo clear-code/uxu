@@ -158,10 +158,14 @@ Report.prototype = {
 		}
 
 		// replace with simple hash, for logging
-		if (this.test)
+		if (this.test) {
 			aTopic.test = utils.toHash(this.test, 'name,description,hash,id');
-		if (this.testCase)
+		}
+		if (this.testCase) {
 			aTopic.testCase = utils.toHash(this.testCase, 'title,source');
+			aTopic.title = aTopic.testCase.title;
+			aTopic.source = aTopic.testCase.source;
+		}
 
 		aTopic.index = this.index === void(0) ? -1 : this.index ;
 		aTopic.step = this.step;

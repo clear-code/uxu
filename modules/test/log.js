@@ -201,7 +201,7 @@ TestLog.prototype = {
 
 	_toCSV : function(aDelimiter)
 	{
-		var columns = 'source,title,index,result,parameter,formattedParameter,time,detailedTime,message,expected,actual,diff,stackTrace'.split(',');
+		var columns = 'source,title,index,description,result,parameter,formattedParameter,time,detailedTime,message,expected,actual,diff,stackTrace'.split(',');
 		var rows = [
 				columns.concat(['notifications'])
 			];
@@ -209,7 +209,7 @@ TestLog.prototype = {
 			aLog.topics.forEach(function(aTopic) {
 				let row = [];
 				columns.forEach(function(aColumn) {
-					row.push(aColumn in aLog ? String(aLog[aColumn]) : '' );
+					row.push(aColumn in aTopic ? String(aTopic[aColumn]) : '' );
 				}, this);
 				var notifications = [];
 				if (aTopic.notifications && aTopic.notifications.length) {
