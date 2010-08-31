@@ -782,17 +782,26 @@ TestCase.prototype = {
 
 		var stateTransitions = {
 			start               : { ok : 'doStartUp' },
-			doStartUp           : { ok : 'prepareTest' },
-			prepareTest         : { ok : 'doSetUp', ko: 'doReport' },
-			doSetUp             : { ok : 'doPrivSetUp', ko: 'doPrivTearDown' },
-			doPrivSetUp         : { ok : 'doTest', ko: 'doPrivTearDown' },
+			doStartUp           : { ok : 'prepareTest',
+			                        ko : 'prepareTest' },
+			prepareTest         : { ok : 'doSetUp',
+			                        ko : 'doReport' },
+			doSetUp             : { ok : 'doPrivSetUp',
+			                        ko : 'doPrivTearDown' },
+			doPrivSetUp         : { ok : 'doTest',
+			                        ko : 'doPrivTearDown' },
 			doTest              : { ok : 'assertSurelySuccess' },
-			assertSurelySuccess : { ok : 'doPrivTearDown', ko: 'doPrivTearDown' },
-			doPrivTearDown      : { ok : 'doTearDown', ko: 'doTearDown' },
-			doTearDown          : { ok : 'doReport', ko: 'doReport' },
+			assertSurelySuccess : { ok : 'doPrivTearDown',
+			                        ko : 'doPrivTearDown' },
+			doPrivTearDown      : { ok : 'doTearDown',
+			                        ko : 'doTearDown' },
+			doTearDown          : { ok : 'doReport',
+			                        ko : 'doReport' },
 			doReport            : { ok : 'nextTest' },
-			nextTest            : { ok : 'prepareTest', ko: 'doShutDown' },
-			doShutDown          : { ok : 'finished', ko: 'finished' },
+			nextTest            : { ok : 'prepareTest',
+			                        ko : 'doShutDown' },
+			doShutDown          : { ok : 'finished',
+			                        ko : 'finished' },
 			finished            : { }
 		};
 
@@ -1048,7 +1057,7 @@ TestCase.prototype = {
 					return;
 				}
 				testIndex += 1;
-				self._tests[testIndex] ? aContinuation('ok') : aContinuation('ko');
+				aContinuation(self._tests[testIndex] ? 'ok' : 'ko' );
 			},
 			doShutDown : function(aContinuation)
 			{
@@ -1079,7 +1088,7 @@ TestCase.prototype = {
 			}
 		};
 
-		ns.fsm.go('start', {}, stateHandlers, stateTransitions, []);
+		ns.fsm.go('start', stateHandlers, stateTransitions);
 	},
 	
 	_runByRemote : function() 
