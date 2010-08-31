@@ -254,19 +254,7 @@ function startup()
 		window.arguments.length) {
 		try {
 			gOptions = window.arguments[0].QueryInterface(Ci.nsIPropertyBag);
-			var jsobj = {};
-			jsobj.testcase   = gOptions.getProperty('testcase');
-			jsobj.outputHost = gOptions.getProperty('outputHost');
-			jsobj.outputPort = gOptions.getProperty('outputPort');
-			jsobj.log        = gOptions.getProperty('log');
-			jsobj.rawLog     = gOptions.getProperty('rawLog');
-			jsobj.priority   = gOptions.getProperty('priority');
-			jsobj.autoQuit   = gOptions.getProperty('autoQuit');
-			jsobj.doNotQuit  = gOptions.getProperty('doNotQuit');
-			jsobj.server     = gOptions.getProperty('server');
-			jsobj.serverPort = gOptions.getProperty('serverPort');
-			jsobj.hidden     = gOptions.getProperty('hidden');
-			gOptions = jsobj;
+			gOptions = utils.toHash(gOptions);
 		}
 		catch(e) {
 			gOptions = {};
@@ -283,8 +271,7 @@ function startup()
 			gOptions.log = utils.getFilePathFromURLSpec(gOptions.log);
 		if (gOptions.rawLog && gOptions.rawLog.indexOf('file://') > -1)
 			gOptions.rawLog = utils.getFilePathFromURLSpec(gOptions.rawLog);
-		if (gOptions.server ||
-			gOptions.serverPort ||
+		if (gOptions.server || gOptions.serverPort ||
 			utils.getPref('extensions.uxu.runner.autoStart.server'))
 			startServer(gOptions.serverPort || 0);
 		if (gOptions.testcase) {
@@ -1176,15 +1163,10 @@ var gServer = null;
  
 function toggleServer() 
 {
-	var command = _('toggleServer');
-	if (gServer) {
+	if (gServer)
 		stopServer();
-		command.removeAttribute('checked');
-	}
-	else {
+	else
 		startServer();
-		command.setAttribute('checked', true);
-	}
 }
  
 function startServer(aPort) 
@@ -1194,6 +1176,7 @@ function startServer(aPort)
 
 	var context = new ns.Context({});
 	context.runTest = function(aOptions/*, aTargets, ...*/) {
+		setTestFile('', true);
 		var reporter = new ns.Reporter(aOptions);
 		run({
 			targets        : Array.slice(arguments, 1),
@@ -1207,6 +1190,8 @@ function startServer(aPort)
 	gServer.addListener(context);
 	context.addListener(gServer);
 	gServer.start();
+
+	_('toggleServer').setAttribute('checked', true);
 }
  
 function stopServer() 
@@ -1216,6 +1201,8 @@ function stopServer()
 
 	gServer.stop();
 	gServer = null;
+
+	_('toggleServer').removeAttribute('checked');
 }
   
 /* commands */ 

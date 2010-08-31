@@ -298,7 +298,8 @@ GlobalService.prototype = {
 					.createInstance(Ci.nsIWritablePropertyBag);
 			for (var i in aOptions)
 			{
-				bag.setProperty(i, aOptions[i]);
+				if (aOptions.hasOwnProperty(i))
+					bag.setProperty(i, aOptions[i]);
 			}
 		}
 

@@ -1041,14 +1041,26 @@ unformatStackLine : function(aLine)
   
 toHash : function(aObject, aProperties) 
 {
+	var obj = aObject;
+	if (aObject && aObject instanceof Ci.nsIPropertyBag) {
+		obj = {};
+		let enum = aObject.QueryInterface(Ci.nsIPropertyBag).enumerator;
+		while (enum.hasMoreElements())
+		{
+			let item = enum.getNext().QueryInterface(Ci.nsIProperty);
+			obj[item.name] = item.value;
+		}
+		return obj;
+	}
+
 	var hash = {};
 	if (!aProperties) {
-		for (let p in aObject)
+		for (let p in obj)
 		{
-			if (!aObject.hasOwnProperty(p))
+			if (!obj.hasOwnProperty(p))
 				continue;
 
-			hash[p] = aObject[p];
+			hash[p] = obj[p];
 			//if (hash[p] && typeof hash[p] == 'object')
 			//	hash[p] = this.toHash(hash[p]);
 		}
@@ -1057,7 +1069,7 @@ toHash : function(aObject, aProperties)
 		if (typeof aProperties == 'string')
 			aProperties = aProperties.split(/[,\s]+/);
 		aProperties.forEach(function(p) {
-			hash[p] = aObject[p];
+			hash[p] = obj[p];
 			//if (hash[p] && typeof hash[p] == 'object')
 			//	hash[p] = this.toHash(hash[p]);
 		});
