@@ -1,4 +1,21 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
+/**
+ * Mainly translated from difflib.py, the standard diff library of Python.
+ * This code is distributed under the Python Software Foundation License.
+ *
+ * Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+ * Python Software Foundation.
+ * All rights reserved.
+ *
+ * Copyright (c) 2000 BeOpen.com.
+ * All rights reserved.
+ *
+ * Copyright (c) 1995-2001 Corporation for National Research Initiatives.
+ * All rights reserved.
+ *
+ * Copyright (c) 1991-1995 Stichting Mathematisch Centrum.
+ * All rights reserved.
+ */
 
 if (typeof window == 'undefined')
 	this.EXPORTED_SYMBOLS = ['Diff', 'ReadableDiffer', 'SequenceMatcher'];

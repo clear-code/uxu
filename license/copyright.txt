@@ -4,7 +4,9 @@ Contributor(s):
 	SHIMODA Hiroshi (piro@p.club.ne.jp / shimoda@clear-code.com)
 	SUTOU Kouhei (kou at cozmixng.org / kou@clear-code.com)
 
-----
-Original Version: "MozLab"
-Copyright ©2005-2007 by Massimiliano Mirra, released under the GPLv2 license.
-Darcs source repository and snapshot tarball available at http://repo.hyperstruct.net .
+* Original Version: "MozLab"
+  Copyright ©2005-2007 by Massimiliano Mirra, released under the GPLv2 license.
+  Darcs source repository and snapshot tarball available at http://repo.hyperstruct.net .
+
+* Modules for diff is imported from Python. (difflib.py)
+  Those files are distributed under the Python Software Foundation Licese.
