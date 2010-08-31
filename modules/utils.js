@@ -1276,6 +1276,7 @@ doIteration : function(aGenerator, aCallbacks)
 	var timeout = Math.max(0, this.getPref('extensions.uxu.run.timeout'));
 	var self = this;
 	(function(aObject) {
+		var loop = arguments.callee;
 		try {
 			if (Date.now() - lastRun >= timeout)
 				throw new Error(bundle.getFormattedString('error_generator_timeout', [parseInt(timeout / 1000)]));
@@ -1291,7 +1292,7 @@ doIteration : function(aGenerator, aCallbacks)
 				}
 				else if (aObject && typeof aObject == 'object') {
 					if (self.isGeneratedIterator(aObject)) {
-						return ns.setTimeout(arguments.callee, 0, self.doIteration(aObject));
+						return ns.Deferred.next(function() { loop(self.doIteration(aObject)); });
 					}
 					else if (self.isDeferred(aObject)) {
 						let finished = { value : false };
@@ -1307,7 +1308,7 @@ doIteration : function(aGenerator, aCallbacks)
 									finished.value = true;
 								});
 						}
-						return ns.setTimeout(arguments.callee, 0, finished);
+						return ns.Deferred.next(function() { loop(finished); });
 					}
 					else if ('error' in aObject && aObject.error instanceof Error) {
 						throw aObject.error;
@@ -1330,10 +1331,10 @@ doIteration : function(aGenerator, aCallbacks)
 					else if (val instanceof Error)
 						throw val;
 					else if (self.isGeneratedIterator(val))
-						return ns.setTimeout(arguments.callee, 0, self.doIteration(val));
+						return ns.Deferred.next(function() { loop(self.doIteration(val)); });
 				}
 				if (continueAfterDelay)
-					return ns.setTimeout(arguments.callee, 10, aObject);
+					return ns.setTimeout(loop, 10, aObject);
 			}
 
 			var returnedValue = iterator.next();
@@ -1349,7 +1350,7 @@ doIteration : function(aGenerator, aCallbacks)
 
 				case 'number':
 					if (returnedValue >= 0) {
-						ns.setTimeout(arguments.callee, returnedValue, returnedValue);
+						ns.setTimeout(loop, returnedValue, returnedValue);
 						return;
 					}
 					throw new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(returnedValue)]));
@@ -1357,22 +1358,17 @@ doIteration : function(aGenerator, aCallbacks)
 				case 'object':
 					if (returnedValue) {
 						if ('value' in returnedValue || self.isGeneratedIterator(returnedValue)) {
-							ns.setTimeout(arguments.callee, 10, returnedValue);
+							ns.setTimeout(loop, 10, returnedValue);
 							return;
 						}
 						else if (self.isDeferred(returnedValue)) {
 							if (returnedValue.fired) {
-								ns.setTimeout(arguments.callee, 10, 0);
+								ns.Deferred.next(function() { loop(); });
 							}
 							else {
-								let loop = arguments.callee;
 								returnedValue
-									.next(function(aReturnedValue) {
-										loop();
-									})
-									.error(function(aException) {
-										loop();
-									});
+									.next(function(aReturnedValue) { loop(); })
+									.error(function(aException) { loop(); });
 							}
 							return;
 						}
@@ -1380,7 +1376,7 @@ doIteration : function(aGenerator, aCallbacks)
 					throw new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(returnedValue)]));
 
 				case 'function':
-					ns.setTimeout(arguments.callee, 10, returnedValue);
+					ns.setTimeout(loop, 10, returnedValue);
 					return;
 			}
 		}

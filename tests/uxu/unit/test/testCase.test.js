@@ -593,9 +593,7 @@ function testListener()
 function testStopper()
 {
 	var shouldStop = false;
-	var stopper = function() {
-			return shouldStop;
-		};
+	var stopper = function() {};
 
 	var mocks = createXUnitMocks(3);
 	testcase.tests = {
@@ -609,8 +607,9 @@ function testStopper()
 
 	testcase.masterPriority = 'must';
 	testcase.randomOrder = false;
-	testcase.run(stopper);
-	utils.wait(function() { return testcase.done; });
+	testcase.run();
+	utils.wait(function() { return testcase.done || testcase.aborted; });
+	assert.isTrue(testcase.done);
 	assert.isFalse(testcase.aborted);
 
 	mocks.setUp.assert();
@@ -626,7 +625,7 @@ function testStopper()
 	testcase.done = false;
 	testcase.masterPriority = 'must';
 	testcase.randomOrder = false;
-	testcase.run(stopper);
+	stopper = testcase.run();
 	yield 100;
 	shouldStop = true;
 	utils.wait(function() { return testcase.done || testcase.aborted; });

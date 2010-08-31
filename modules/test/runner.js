@@ -176,8 +176,12 @@ TestRunner.prototype = {
 		this._testsCount  = aTests.length;
 
 		var _this = this;
+		var stoppers = [];
 		var runTest = function(aTest) {
 				if (_this._shouldAbort) {
+					stoppers.forEach(function(aStopper) {
+						aStopper();
+					});
 					_this.fireEvent('Abort');
 					return;
 				}
@@ -186,14 +190,11 @@ TestRunner.prototype = {
 					parseInt(((_this._current) / (_this._testsCount + 1)) * 100));
 				try {
 					aTest.addListener(_this);
-					aTest.run(stopper);
+					stoppers.push(aTest.run());
 				}
 				catch(e) {
 					_this.fireEvent('Error', utils.normalizeError(e));
 				}
-			};
-		var stopper = function() {
-				return _this._shouldAbort;
 			};
 
 		if (utils.getPref('extensions.uxu.runner.runParallel')) {
