@@ -1,5 +1,5 @@
-"UxU - UnitText.XUL" is released under the GPLv2 license.
-Copyright ©2010 SHIMODA Hiroshi, SUTOU Kouhei
+"UxU - UnitText.XUL" is released under the GPLv2 license (or any later versions).
+Copyright ©2010 ClearCode Inc., SHIMODA Hiroshi, SUTOU Kouhei
 Contributor(s):
 	SHIMODA Hiroshi (piro@p.club.ne.jp / shimoda@clear-code.com)
 	SUTOU Kouhei (kou at cozmixng.org / kou@clear-code.com)
@@ -7,4 +7,4 @@ Contributor(s):
 ----
 Original Version: "MozLab"
 Copyright ©2005-2007 by Massimiliano Mirra, released under the GPLv2 license.
-Darcs source repository and snapshot tarball available at http://repo.hyperstruct.net.
+Darcs source repository and snapshot tarball available at http://repo.hyperstruct.net .
