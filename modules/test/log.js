@@ -55,9 +55,10 @@ function TestLog()
 TestLog.prototype = {
 	FORMAT_RAW  : (1 << 0),
 	FORMAT_TEXT : (1 << 1),
-	//FORMAT_HTML : (1 << 2),
+	FORMAT_HTML : (1 << 2),
 	FORMAT_CSV  : (1 << 3),
 	FORMAT_TSV  : (1 << 4),
+	FORMAT_JSON : (1 << 5),
 
 	IGNORE_SKIPPED : (1 << 10),
 	IGNORE_SUCCESS : (1 << 11),
@@ -89,6 +90,9 @@ TestLog.prototype = {
 
 		if (aFormat & this.FORMAT_TSV)
 			return this._toCSV('\t');
+
+		if (aFormat & this.FORMAT_JSON)
+			return this._toJSON();
 
 		return this._toText(aFormat);
 	},
@@ -230,6 +234,11 @@ TestLog.prototype = {
 			}).join('\n');
 	},
 
+	_toJSON : function()
+	{
+		return JSON.stringify(this._items);
+	},
+
 	append : function(aNewItems)
 	{
 		aNewItems.forEach(function(aOneNewItem) {
@@ -286,11 +295,12 @@ TestLog.prototype = {
 
 };
 
-TestLog.FORMAT_RAW     = TestLog.prototype.FORMAT_RAW 
-TestLog.FORMAT_TEXT    = TestLog.prototype.FORMAT_TEXT
-//TestLog.FORMAT_HTML  = TestLog.prototype.FORMAT_HTML
-//TestLog.FORMAT_CSV   = TestLog.prototype.FORMAT_CSV 
-//TestLog.FORMAT_TSV   = TestLog.prototype.FORMAT_TSV 
-TestLog.IGNORE_SKIPPED = TestLog.prototype.IGNORE_SKIPPED
-TestLog.IGNORE_SUCCESS = TestLog.prototype.IGNORE_SUCCESS
-TestLog.FORMAT_DEFAULT = TestLog.prototype.FORMAT_DEFAULT
+TestLog.FORMAT_RAW     = TestLog.prototype.FORMAT_RAW;
+TestLog.FORMAT_TEXT    = TestLog.prototype.FORMAT_TEXT;
+TestLog.FORMAT_HTML    = TestLog.prototype.FORMAT_HTML;
+TestLog.FORMAT_CSV     = TestLog.prototype.FORMAT_CSV;
+TestLog.FORMAT_TSV     = TestLog.prototype.FORMAT_TSV;
+TestLog.FORMAT_JSON    = TestLog.prototype.FORMAT_JSON;
+TestLog.IGNORE_SKIPPED = TestLog.prototype.IGNORE_SKIPPED;
+TestLog.IGNORE_SUCCESS = TestLog.prototype.IGNORE_SUCCESS;
+TestLog.FORMAT_DEFAULT = TestLog.prototype.FORMAT_DEFAULT;
