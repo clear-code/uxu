@@ -5,7 +5,6 @@ var mapping = function(aURI) {
 				.replace(/^.*localhost.*\/notfound.*$/, 'http://localhost:4445/html.html')
 				.replace(/^.*google.*$/, baseURL+'../../fixtures/html.html')
 				.replace(/^.*www.example.jp.*\.jpg$/, baseURL+'../../../../skin/classic/uxu/bomb.png')
-				.replace(/^.*www.example.org.*/, '<redirect>http://localhost:4445/html.html')
 				.replace(/^.*\/submission\/.*/, 'http://localhost:4445/redirect/match/hash.txt');
 	};
 
@@ -16,7 +15,6 @@ function testMapping()
 	assertNotMapped('http://www.example.com/');
 	assertNotMapped('about:blank');
 	assertMapped('http://www.google.com/', true);
-	assertRedirected('http://www.example.org/?', true);
 
 	assertMappedXMLHttpRequest('http://www.google.com/');
 	assertMappedImageRequest('http://www.example.jp/test.jpg');

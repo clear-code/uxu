@@ -50,16 +50,6 @@ function assertMapped(aURI, aMapToFile)
 	assert.contains('foobar', $('script').textContent);
 }
 
-function assertRedirected(aURI)
-{
-	utils.loadURI('about:blank');
-	utils.loadURI(aURI);
-	var redirected = utils.mapURI(aURI, mapping).replace(/^<redirect>/i, '');
-	utils.wait(300);
-	assert.equals(redirected, content.location.href);
-	assert.equals('test', content.document.title);
-}
-
 function assertRedirectedSubmission()
 {
 	utils.loadURI('http://localhost:4445/html.html');
