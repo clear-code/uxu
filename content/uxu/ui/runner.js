@@ -125,6 +125,7 @@ function getErrorReports()
 function pickFile(aMode, aOptions) 
 {
 	if (!aOptions) aOptions = {};
+
 	var mode = 'mode' + (aMode ?
 						 aMode[0].toUpperCase() + aMode.substr(1) :
 						 'open');
@@ -139,37 +140,51 @@ function pickFile(aMode, aOptions)
 		var defaultFile = aOptions.defaultFile;
 		try {
 			defaultFile = defaultFile.QueryInterface(Ci.nsILocalFile)
+			picker.defaultString = defaultFile.leafName;
 		}
 		catch(e) {
 			try {
 				defaultFile = utils.makeFileWithPath(defaultFile);
+				picker.defaultString = defaultFile.leafName;
 			}
 			catch(e) {
 				picker.defaultString = defaultFile;
-				defaultFile = null;
 			}
 		}
-		if (defaultFile) {
+		if (defaultFile && typeof defaultFile == 'object') {
 			if (defaultFile.exists() && defaultFile.isDirectory()) {
 				picker.displayDirectory = defaultFile;
 			}
 			else if (!defaultFile.exists() || !defaultFile.isDirectory()) {
 					picker.displayDirectory = defaultFile.parent;
 			}
+			defaultFile = defaultFile.leafName;
 		}
 	}
 
 	picker.init(window, aOptions.title || '', nsIFilePicker[mode]);
 	if (aOptions.filters) {
-		for (var filter in aOptions.filters) {
-			picker.appendFilter(filter, aOptions.filters[filter]);
+		let count = 0;
+		for (let label in aOptions.filters)
+		{
+			let filter = aOptions.filters[label];
+			picker.appendFilter(label+' ('+filter+')', filter);
+			try {
+				if (new RegExp(filter.replace(/\./g, '\\.').replace(/\*/g, '.*'), 'i').test(defaultFile))
+					picker.filterIndex = count
+			}
+			catch(e) {
+			}
+			count++;
 		}
 	}
 	picker.appendFilters((aOptions.filter || 0) | nsIFilePicker.filterAll);
 	var result = picker.show();
 	if (result == nsIFilePicker.returnOK ||
-	   result == nsIFilePicker.returnReplace)
+		result == nsIFilePicker.returnReplace)
 		return picker.file;
+
+	return null;
 }
  
 function pickFileUrl(aMode, aOptions) 
@@ -1201,7 +1216,7 @@ function startServer(aPort)
 	context.runTest = function(aOptions/*, aTargets, ...*/) {
 		setTestFile('', true);
 		var reporter = new ns.Reporter({
-				__ proto__ : aOptions,
+				__proto__ : aOptions,
 				onAbort : function() { stop(); }
 			});
 		run({
@@ -1237,22 +1252,46 @@ function saveReport(aPath, aFormat)
 {
 	var file;
 	if (!aPath) {
-		var picked = pickFile(
+		let last;
+		try {
+			last = utils.makeFileWithPath(utils.getPref('extensions.uxu.runner.lastLog'));
+		}
+		catch(e) {
+		}
+
+		let filters = {};
+		filters[bundle.getString('filetype_txt')] = '*.txt';
+		filters[bundle.getString('filetype_csv')] = '*.csv';
+		filters[bundle.getString('filetype_tsv')] = '*.tsv';
+		filters[bundle.getString('filetype_json')] = '*.json';
+		let picked = pickFile(
 				'save', {
-					defaultFile : 'log.txt',
-					defaultExtension : 'txt',
-					filters : {
-						'Text Files' : '*.txt'
-					},
+					defaultFile : last || 'log.txt',
+					defaultExtension : (last ? last.leafName.replace(/^.*\.([^\.]+)$/, '$1') : '') || 'txt',
+					filters : filters,
 					title : bundle.getString('log_picker_title')
 				}
 			);
+
 		if (!picked) return;
 		file = picked;
 	}
 	else {
-		file = utils.makeFileWithPath(aPath);
+		try {
+			file = utils.makeFileWithPath(aPath);
+		}
+		catch(e) {
+		}
 	}
+	if (!file) return;
+
+	aFormat = aFormat ? aFormat :
+		/\.csv$/i.test(file.leafName) ? gLog.FORMAT_CSV :
+		/\.tsv$/i.test(file.leafName) ? gLog.FORMAT_TSV :
+		/\.js(on)?$/i.test(file.leafName) ? gLog.FORMAT_JSON :
+		gLog.FORMAT_TEXT;
+
+	utils.setPref('extensions.uxu.runner.lastLog', file.path);
 
 	if (file.exists()) file.remove(true);
 	utils.writeTo(

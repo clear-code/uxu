@@ -77,6 +77,7 @@ pref("extensions.uxu.runner.autoStart.oneTime.server", false);
 pref("extensions.uxu.runner.autoStart.oneTime.port", 0);
 pref("extensions.uxu.runner.autoExit", false);
 pref("extensions.uxu.runner.lastPath", "");
+pref("extensions.uxu.runner.lastLog", "");
 pref("extensions.uxu.runner.lastResults", "");
 pref("extensions.uxu.runner.coloredDiff", true);
 
