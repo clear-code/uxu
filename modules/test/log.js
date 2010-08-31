@@ -239,6 +239,10 @@ TestLog.prototype = {
 
 	_toHTML : function()
 	{
+		return this._toHTMLTable();
+	},
+	_toHTMLTable : function()
+	{
 		var columns = 'source,title,index,description,result,parameter,formattedParameter,time,detailedTime,message,expected,actual,diff,stackTrace'.split(',');
 		var rows = [
 				columns.concat(['notifications'])
@@ -262,10 +266,14 @@ TestLog.prototype = {
 					}, this);
 				}
 				row.push(utils.escapeHTML(notifications.join('\n')));
-				rows.push('<td>'+row.join('</td><td>')+'</td>');
+				rows.push(row);
 			}, this);
 		}, this);
-		return '<tr>'+rows.join('</tr><tr>')+'<tr>';
+		return '<table border="1"><tr>'+
+			rows.map(function(aRow) {
+				return '<td>'+aRow.join('</td><td>')+'</td>';
+			}).join('</tr><tr>')+
+			'</tr></table>';
 	},
 
 	_toJSON : function()
