@@ -25,6 +25,7 @@
  *   Christian Biesinger (v2, netwerk/test/unit/head_http_server.js)
  *   Jeff Walden <jwalden+code@mit.edu> (v3, netwerk/test/httpserver/httpd.js)
  *   Robert Sayre <sayrer@gmail.com>
+ *   SHIMODA Hiroshi <shimoda@clear-code.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
