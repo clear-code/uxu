@@ -2084,10 +2084,10 @@ redirectURI : function(aURI, aMappingDefinition)
 escapeHTML : function(aString)
 {
 	return String(aString)
-			.replace(/"/g, '&quot;')
 			.replace(/&/g, '&amp;')
+			.replace(/"/g, '&quot;')
 			.replace(/</g, '&lt;')
-			.replace(/>/g, '&rt;');
+			.replace(/>/g, '&gt;');
 },
  
 // http://liosk.blog103.fc2.com/blog-entry-75.html

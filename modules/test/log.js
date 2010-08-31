@@ -111,11 +111,13 @@ TestLog.prototype = {
 				error    : 0
 			};
 		var totalTime = 0;
+		var testCaseSeparator = bundle.getString('log_separator_testcase');
+		var testSeparator = bundle.getString('log_separator_test');
 		this._items.forEach(function(aLog) {
-			result.push(bundle.getString('log_separator_testcase'));
+			result.push(testCaseSeparator);
 			result.push(aLog.source);
 			result.push(bundle.getFormattedString('log_start', [aLog.title, new Date(aLog.start)]));
-			result.push(bundle.getString('log_separator_testcase'));
+			result.push(testCaseSeparator);
 			var count = {
 					total    : 0,
 					success  : 0,
@@ -134,7 +136,8 @@ TestLog.prototype = {
 					aTopic.result == ns.TestCase.prototype.RESULT_SUCCESS)
 					return;
 
-				if (outputCount) result.push(bundle.getString('log_separator_test'));
+				if (outputCount)
+					result.push(testSeparator);
 				outputCount++;
 
 				result.push(bundle.getFormattedString('log_test_title', [aTopic.description]));
@@ -173,14 +176,14 @@ TestLog.prototype = {
 						result.push(aNotification.stackTrace);
 				}, this);
 			}, this);
-			result.push(bundle.getString('log_separator_testcase'));
+			result.push(testCaseSeparator);
 			if (aLog.aborted)
 				result.push(bundle.getFormattedString('log_abort_user', [new Date(aLog.finish)]));
 			else
 				result.push(bundle.getFormattedString('log_finish', [new Date(aLog.finish)]));
 			result.push(this._getLogTimeStr(aLog.time));
 			result.push(bundle.getFormattedString('log_result', [count.success, count.failure, count.error, count.skip]));
-			result.push(bundle.getString('log_separator_testcase'));
+			result.push(testCaseSeparator);
 			result.push('');
 			for (var i in count) allCount[i] += count[i];
 			totalTime += aLog.time;
@@ -196,15 +199,20 @@ TestLog.prototype = {
 	_getLogTimeStr : function(aTime, aDetailed)
 	{
 		var key = aDetailed ? 'log_test_detailedTime' : 'log_test_time' ;
-		var timeStr = bundle.getFormattedString(key, [aTime]);
+		return bundle.getFormattedString(key, [this._getLogTime(aTime, aDetailed)]);
+	},
+	_getLogTime : function(aTime, aDetailed)
+	{
+		var key = aDetailed ? 'log_test_detailedTime' : 'log_test_time' ;
+		var formatted = aTime;
 		if (aTime >= 1000)
-			timeStr += ' '+bundle.getFormattedString(key+'_long', [Math.round(aTime / 1000)]);
-		return timeStr;
+			formatted += ' '+bundle.getFormattedString(key+'_long', [Math.round(aTime / 1000)]);
+		return formatted;
 	},
 
 	_toCSV : function(aDelimiter)
 	{
-		var columns = 'source,title,index,description,result,parameter,formattedParameter,time,detailedTime,message,expected,actual,diff,stackTrace'.split(',');
+		var columns = 'source,title,index,description,parameter,timestamp,result,time,detailedTime,message,expected,actual,diff,stackTrace'.split(',');
 		var rows = [
 				columns.concat(['notifications'])
 			];
@@ -239,41 +247,95 @@ TestLog.prototype = {
 
 	_toHTML : function()
 	{
-		return this._toHTMLTable();
-	},
-	_toHTMLTable : function()
-	{
-		var columns = 'source,title,index,description,result,parameter,formattedParameter,time,detailedTime,message,expected,actual,diff,stackTrace'.split(',');
-		var rows = [
-				columns.concat(['notifications'])
-			];
+		var allCount = {
+				total    : 0,
+				success  : 0,
+				skip     : 0,
+				failure  : 0,
+				error    : 0
+			};
+		var totalTime = 0;
+
+		var props = 'index,description,parameter,timestamp,result,time,detailedTime,error,message,expected,actual,diff,stackTrace'.split(',');
+		var headerRow = bundle.getString('log_html_header_row');
+		var rows = [];
 		this._items.forEach(function(aLog) {
+			var count = {
+					total    : 0,
+					success  : 0,
+					skip     : 0,
+					failure  : 0,
+					error    : 0
+				};
+
+			var topicRows = [];
 			aLog.topics.forEach(function(aTopic) {
-				let row = [];
-				columns.forEach(function(aColumn) {
-					row.push(aColumn in aTopic ? utils.escapeHTML(aTopic[aColumn]) : '' );
+				count[aTopic.result]++;
+				count.total++;
+
+				var base = bundle.getString(aTopic.exception ? 'log_html_topic_row_error' : 'log_html_topic_row' );
+				props.forEach(function(aProp) {
+					let string = !(aProp in aTopic) ? '' :
+							aProp == 'result' ?
+								bundle.getString('report_result_'+aTopic.result) :
+							aProp == 'timestamp' ?
+								new Date(aTopic.timestamp) :
+							aProp == 'time' ?
+								this._getLogTime(aTopic.time) :
+							aProp == 'detailedTime' ?
+								this._getLogTime(aTopic.detailedTime, true) :
+							aProp == 'stackTrace' ?
+								aTopic[aProp]/*.map(function(aLine) {
+									return aLine.replace(/^.*@/, '')
+								})*/.join('\n') :
+								aTopic[aProp] ;
+					base = base.replace('<<'+aProp+'>>', utils.escapeHTML(string))
+								.replace('<<'+aProp+'-raw>>', aTopic[aProp]);
 				}, this);
+
 				var notifications = [];
 				if (aTopic.notifications && aTopic.notifications.length) {
 					aTopic.notifications.forEach(function(aNotification) {
-						if (!aNotification.description &&
-							(!aNotification.stackTrace || !aNotification.stackTrace.length))
-							return;
 						if (aNotification.description)
 							notifications.push(aNotification.description);
-						if (aNotification.stackTrace && aNotification.stackTrace.length)
-							notifications.push(aNotification.stackTrace.join(','));
 					}, this);
 				}
-				row.push(utils.escapeHTML(notifications.join('\n')));
-				rows.push(row);
+				base = base.replace('<<notifications>>', utils.escapeHTML(notifications.join('\n')));
+				topicRows.push(base);
 			}, this);
+
+			var finish = new Date(aLog.finish);
+			if (aLog.aborted)
+				finish = bundle.getFormattedString('log_abort_user', [finish]);
+			rows.push(
+				bundle.getFormattedString('log_html_title_row', [
+					utils.escapeHTML(aLog.title),
+					utils.escapeHTML(aLog.source),
+					utils.escapeHTML(new Date(aLog.start)),
+					utils.escapeHTML(finish),
+					utils.escapeHTML(this._getLogTime(aLog.time)),
+					count.success,
+					count.failure,
+					count.error,
+					count.skip
+				])
+			);
+			rows.push(headerRow);
+
+			rows = rows.concat(topicRows);
+
+			for (var i in count) allCount[i] += count[i];
+			totalTime += aLog.time;
 		}, this);
-		return '<table border="1"><tr>'+
-			rows.map(function(aRow) {
-				return '<td>'+aRow.join('</td><td>')+'</td>';
-			}).join('</tr><tr>')+
-			'</tr></table>';
+		var table = bundle.getFormattedString('log_html_table', [rows.join('')]);
+
+		return utils.readFrom(utils.makeURIFromSpec('chrome://uxu/locale/log.html'), 'UTF-8')
+				.replace(/<!--\s*success-count\s*-->/, allCount.success)
+				.replace(/<!--\s*failure-count\s*-->/, allCount.failure)
+				.replace(/<!--\s*error-count\s*-->/, allCount.error)
+				.replace(/<!--\s*skip-count\s*-->/, allCount.skip)
+				.replace(/<!--\s*total-time\s*-->/, this._getLogTime(totalTime))
+				.replace(/<!--\s*result-table\s*-->/, table);
 	},
 
 	_toJSON : function()

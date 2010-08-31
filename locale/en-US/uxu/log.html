@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+	<title>Test Results</title>
+	<style type="text/css">/*<!--*/
+		body {
+			font-size: 90%;
+		}
+		table, th, td {
+			border: 1px solid gray;
+			border-spacing: 0;
+			border-collapse: collapse;
+			margin: 0 0 1em;
+		}
+		pre {
+			white-space: pre-wrap;
+		}
+		.row-title th {
+			text-align: left;
+		}
+		th {
+			background: #efefef;
+		}
+		td.column-result.skip,
+		.summary .skip {
+			background: #bfbfbf;
+		}
+		td.column-result.success,
+		.summary .success {
+			background: #009900;
+			color: white;
+		}
+		td.column-result.failure,
+		.summary .failure {
+			background: #cc0000;
+			color: white;
+		}
+		td.column-result.error,
+		.summary .error {
+			background: #ffdd00;
+		}
+		td.column-count,
+		td.column-time,
+		td.column-detailedTime {
+			text-align: right;
+		}
+	/*-->*/</style>
+</head>
+<body>
+
+<table class="summary">
+	<tr><th class="success">Success</th>
+		<th class="failure">Failure</th>
+		<th class="error">Error</th>
+		<th class="skip">Skipped</th></tr>
+	<tr><td class="column-count success"><!-- success-count --></td>
+		<td class="column-count failure"><!-- failure-count --></td>
+		<td class="column-count error"><!-- error-count --></td>
+		<td class="column-count skip"><!-- skip-count --></td></tr>
+</table>
+
+<!-- result-table -->
+
+</body>
+</html>
