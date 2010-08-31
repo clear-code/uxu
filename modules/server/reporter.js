@@ -31,9 +31,9 @@ function Reporter(aOptions)
 	this.resultStatus = ns.TestCase.prototype.RESULT_SUCCESS;
 	this.badResults   = [];
 
-	if (!aOptions)
-		aOptions = {};
-	this.useColor   = aOptions.useColor;
+	aOptions = aOptions || {};
+	this.useColor = aOptions.useColor;
+	this._onAbort = aOptions.onAbort;
 
 	this._initializeColor();
 }
@@ -73,6 +73,10 @@ Reporter.prototype = {
 				case 'Error':
 					this.onError(aEvent);
 					break;
+
+				case 'Abort':
+					this.onAbort(aEvent);
+					break;
 			}
 		}
 		catch (e) {
@@ -83,6 +87,12 @@ Reporter.prototype = {
 	isFinished : function()
 	{
 		return this.finished;
+	},
+
+	abort : function()
+	{
+		if (this._onAbort && typeof this._onAbort == 'function')
+			this._onAbort();
 	},
 
 	onStart : function(aEvent)
@@ -99,6 +109,12 @@ Reporter.prototype = {
 		this.finished = true;
 
 		aEvent.target.removeListener(this);
+	},
+
+	onAbort : function(aEvent)
+	{
+		this.result += "\n\naborted!";
+		this.onFinish(aEvent);
 	},
 
 	handleTopic : function(aTopic, aTestCase)

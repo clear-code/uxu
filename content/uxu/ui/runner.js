@@ -1181,7 +1181,10 @@ function startServer(aPort)
 	var context = new ns.Context({});
 	context.runTest = function(aOptions/*, aTargets, ...*/) {
 		setTestFile('', true);
-		var reporter = new ns.Reporter(aOptions);
+		var reporter = new ns.Reporter({
+				__ proto__ : aOptions,
+				onAbort : function() { stop(); }
+			});
 		run({
 			targets        : Array.slice(arguments, 1),
 			priority       : aOptions.priority,
