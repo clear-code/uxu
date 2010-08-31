@@ -38,6 +38,7 @@ pref("extensions.uxu.runner.autoStart", false);
 pref("extensions.uxu.runner.autoStart.server", false);
 pref("extensions.uxu.runner.autoStart.oneTime.enabled", true);
 pref("extensions.uxu.runner.autoStart.oneTime", false);
+pref("extensions.uxu.runner.autoStart.oneTime.server", false);
 pref("extensions.uxu.runner.autoStart.oneTime.port", 0);
 pref("extensions.uxu.runner.autoExit", false);
 pref("extensions.uxu.runner.lastPath", "");

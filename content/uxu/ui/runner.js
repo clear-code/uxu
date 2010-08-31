@@ -263,6 +263,7 @@ function startup()
 			jsobj.priority   = gOptions.getProperty('priority');
 			jsobj.autoQuit   = gOptions.getProperty('autoQuit');
 			jsobj.doNotQuit  = gOptions.getProperty('doNotQuit');
+			jsobj.server     = gOptions.getProperty('server');
 			jsobj.serverPort = gOptions.getProperty('serverPort');
 			jsobj.hidden     = gOptions.getProperty('hidden');
 			gOptions = jsobj;
@@ -282,7 +283,8 @@ function startup()
 			gOptions.log = utils.getFilePathFromURLSpec(gOptions.log);
 		if (gOptions.rawLog && gOptions.rawLog.indexOf('file://') > -1)
 			gOptions.rawLog = utils.getFilePathFromURLSpec(gOptions.rawLog);
-		if (gOptions.serverPort ||
+		if (gOptions.server ||
+			gOptions.serverPort ||
 			utils.getPref('extensions.uxu.runner.autoStart.server'))
 			startServer(gOptions.serverPort || 0);
 		if (gOptions.testcase) {
@@ -361,10 +363,13 @@ var restartObserver = {
 	{
 		if (aTopic != 'quit-application-requested') return;
 
-		if (utils.getPref('extensions.uxu.runner.autoStart.oneTime.enabled'))
+		if (utils.getPref('extensions.uxu.runner.autoStart.oneTime.enabled')) {
 			utils.setPref('extensions.uxu.runner.autoStart.oneTime', true);
-			if (gServer)
+			if (gServer) {
+				utils.setPref('extensions.uxu.runner.autoStart.oneTime.server', true);
 				utils.setPref('extensions.uxu.runner.autoStart.oneTime.port', gServer.port);
+			}
+		}
 	}
 };
   

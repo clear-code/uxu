@@ -121,10 +121,12 @@ GlobalService.prototype = {
 		var onetime = Pref.getBoolPref('extensions.uxu.runner.autoStart.oneTime.enabled') &&
 						Pref.getBoolPref('extensions.uxu.runner.autoStart.oneTime');
 		if (Pref.getBoolPref('extensions.uxu.runner.autoStart') || onetime) {
+			let server = onetime ? Pref.getIntPref('extensions.uxu.runner.autoStart.oneTime.server') : false ;
 			let port = onetime ? Pref.getIntPref('extensions.uxu.runner.autoStart.oneTime.port') : 0 ;
 			Pref.setBoolPref('extensions.uxu.runner.autoStart.oneTime', false);
+			Pref.setBoolPref('extensions.uxu.runner.autoStart.oneTime.server', false);
 			Pref.setIntPref('extensions.uxu.runner.autoStart.oneTime.port', 0);
-			this.startRunner(null, { serverPort : port });
+			this.startRunner(null, { server : server, serverPort : port });
 		}
 	},
  
