@@ -324,30 +324,26 @@ GlobalService.prototype = {
 		var target = WindowManager.getMostRecentWindow(aType);
 		if (target) {
 			target.focus();
-			return;
-		}
-
-		var bag = null;
-		if (aOptions) {
-			bag = Cc['@mozilla.org/hash-property-bag;1']
-					.createInstance(Ci.nsIWritablePropertyBag);
-			for (var i in aOptions)
-			{
-				if (aOptions.hasOwnProperty(i))
-					bag.setProperty(i, aOptions[i]);
+			if ('handleOptions' in target) {
+				target.arguments = [aOptions];
+				target.handleOptions();
 			}
+			return;
 		}
 
 		if (aOwner) {
 			aOwner = aOwner.QueryInterface(Ci.nsIDOMWindow)
 						.QueryInterface(Ci.nsIDOMWindowInternal);
-			if (bag)
-				aOwner.openDialog(aURI, '_blank', aFeatures, bag);
-			else
-				aOwner.openDialog(aURI, '_blank', aFeatures);
+			aOwner.openDialog(aURI, '_blank', aFeatures, aOptions);
 		}
 		else {
-			WindowWatcher.openWindow(null, aURI, '_blank', aFeatures, bag);
+			let args = Cc['@mozilla.org/supports-array;1'].createInstance(Ci.nsISupportsArray);
+			let variant = Cc['@mozilla.org/variant;1']
+							.createInstance(Ci.nsIVariant)
+							.QueryInterface(Ci.nsIWritableVariant);
+			variant.setFromVariant(aOptions);
+			args.AppendElement(variant);
+			WindowWatcher.openWindow(null, aURI, '_blank', aFeatures, args);
 		}
 	},
  

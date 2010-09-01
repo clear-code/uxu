@@ -39,7 +39,6 @@ const Ci = Components.interfaces;
 const ObserverService = Cc['@mozilla.org/observer-service;1']
 	.getService(Ci.nsIObserverService);
 
-var gOptions;
 var gLog;
 var gBrowser;
  
@@ -282,58 +281,16 @@ function startup()
 	gBrowser = _('content');
 	gBrowser.addEventListener('load', onContentLoad, true);
 
-	var running = false;
+	var result = handleOptions();
+	if (result && result.path)
+		defaultTestPath = result.path;
 
-	gOptions = {};
-	if ('arguments' in window &&
-		window.arguments &&
-		window.arguments.length) {
-		try {
-			gOptions = window.arguments[0].QueryInterface(Ci.nsIPropertyBag);
-			gOptions = utils.toHash(gOptions);
-		}
-		catch(e) {
-		}
-
-		if (gOptions.testcase) {
-			var path = gOptions.testcase;
-			if (path.indexOf('file://') > -1)
-				path = utils.getFilePathFromURLSpec(path);
-			setTestFile(path);
-			defaultTestPath = path;
-		}
-		if (gOptions.log && gOptions.log.indexOf('file://') > -1)
-			gOptions.log = utils.getFilePathFromURLSpec(gOptions.log);
-		if (gOptions.rawLog && gOptions.rawLog.indexOf('file://') > -1)
-			gOptions.rawLog = utils.getFilePathFromURLSpec(gOptions.rawLog);
-		if (gOptions.testcase) {
-			gRemoteRun.onEvent('start');
-			runWithDelay(gOptions.priority);
-		}
-		if (gOptions.hidden) {
-			window.setTimeout(function() { window.minimize(); }, 0);
-			Array.slice(document.getElementsByTagName('command'))
-				.forEach(function(aNode) {
-					aNode.setAttribute('disabled', true);
-				});
-		}
-
-		if (gOptions.outputHost || gOptions.outputPort) {
-			gRemoteRun.startPinging();
-			running = true;
-		}
-	}
-
-	if (
-		gOptions.server ||
-		gOptions.serverPort ||
-		utils.getPref('extensions.uxu.runner.autoStart.server')
-		)
-		startServer(gOptions.serverPort || 0);
+	if (utils.getPref('extensions.uxu.runner.autoStart.server'))
+		startServer();
 
 	var mainDeck = _('mainDeck');
 	var lastResult = utils.getPref('extensions.uxu.runner.lastResults');
-	if (!running && lastResult) {
+	if (!gRemoteRun.pinging && lastResult) {
 		mainDeck.selectedIndex = 0;
 		try {
 			gLog.items = utils.evalInSandbox(lastResult);
@@ -382,6 +339,57 @@ var alwaysRaisedObserver = {
 		}
 	}
 };
+ 
+var gOptions;
+function handleOptions()
+{
+	var returnValue = {};
+	gOptions = {};
+
+	if (!('arguments' in window) ||
+		!window.arguments ||
+		!window.arguments.length)
+		return returnValue;
+
+	gOptions = window.arguments[0];
+
+	if (gOptions.testcase) {
+		let path = gOptions.testcase;
+		if (path.indexOf('file://') > -1)
+			path = utils.getFilePathFromURLSpec(path);
+		setTestFile(path);
+		returnValue.path = path;
+	}
+
+	if (gOptions.log && gOptions.log.indexOf('file://') > -1)
+		gOptions.log = utils.getFilePathFromURLSpec(gOptions.log);
+	if (gOptions.rawLog && gOptions.rawLog.indexOf('file://') > -1)
+		gOptions.rawLog = utils.getFilePathFromURLSpec(gOptions.rawLog);
+
+	if (gOptions.testcase) {
+		gRemoteRun.onEvent('start');
+		runWithDelay(gOptions.priority);
+	}
+
+	if (gOptions.hidden) {
+		window.setTimeout(function() { window.minimize(); }, 0);
+		Array.slice(document.getElementsByTagName('command'))
+			.forEach(function(aNode) {
+				aNode.setAttribute('disabled', true);
+			});
+	}
+
+	if (gOptions.outputHost || gOptions.outputPort) {
+		gRemoteRun.startPinging();
+	}
+
+	if (gOptions.server || gOptions.serverPort) {
+		stopServer();
+		startServer(gOptions.serverPort || 0);
+	}
+
+	return returnValue;
+}
  
 var restartObserver = { 
 	observe : function(aSubect, aTopic, aData)
@@ -669,6 +677,7 @@ var gRemoteRun = {
 				)
 			)
 			) {
+			this.stopPinging();
 			if (!gOptions.doNotQuit)
 				utils.quitApplication(true);
 			return;
@@ -686,12 +695,17 @@ var gRemoteRun = {
 	{
 		if (this._pingTimer) {
 			window.clearTimeout(this._pingTimer);
+			this._pingTimer = null;
 		}
 	},
 	ping : function()
 	{
 		var message = new ns.Message(ns.TestCase.prototype.PING, gOptions.outputHost, gOptions.outputPort, this);
 		message.send();
+	},
+	get pinging()
+	{
+		return this._pingTimer ? true : false ;
 	},
 	_pingTimer : null
 };
