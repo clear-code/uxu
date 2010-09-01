@@ -290,7 +290,11 @@ function startup()
 
 	var mainDeck = _('mainDeck');
 	var lastResult = utils.getPref('extensions.uxu.runner.lastResults');
-	if (!gRemoteRun.pinging && lastResult) {
+	if (
+		!gRemoteRun.pinging &&
+		!gOptions.testcase &&
+		lastResult
+		) { // restore last result
 		mainDeck.selectedIndex = 0;
 		try {
 			gLog.items = utils.evalInSandbox(lastResult);
@@ -658,6 +662,7 @@ var gRemoteRun = {
 				gOptions.log,
 				'UTF-8'
 			);
+			gOptions.log = null;
 		}
 		if (gOptions.rawLog) {
 			utils.writeTo(
@@ -665,7 +670,10 @@ var gRemoteRun = {
 				gOptions.rawLog,
 				'UTF-8'
 			);
+			gOptions.rawLog = null;
 		}
+		gOptions.outputHost = null
+		gOptions.outputPort = null;
 		if (
 			gOptions.autoQuit ||
 			(

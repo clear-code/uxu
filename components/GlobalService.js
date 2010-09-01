@@ -45,9 +45,6 @@ const kSKIP_INITIALIZE_FILE_NAME = '.uxu-skip-restart';
 
 const ObserverService = Cc['@mozilla.org/observer-service;1']
 			.getService(Ci.nsIObserverService);
-const Pref = Cc['@mozilla.org/preferences;1']
-			.getService(Ci.nsIPrefBranch)
-			.QueryInterface(Ci.nsIPrefBranch2);
 
 var WindowWatcher;
 var WindowManager;
@@ -75,6 +72,26 @@ GlobalService.prototype = {
 	get wrappedJSObject() {
 		return this;
 	},
+ 
+	get utils() {
+		if (!this._utils) {
+			let ns = {};
+			Components.utils.import('resource://uxu-modules/utils.js', ns);
+			this._utils = ns.utils;
+		}
+		return this._utils;
+	},
+	_utils : null,
+ 
+	get prefs() {
+		if (!this._prefs) {
+			let ns = {};
+			Components.utils.import('resource://uxu-modules/lib/prefs.js', ns);
+			this._prefs = ns.prefs;
+		}
+		return this._prefs;
+	},
+	_prefs : null,
  
 	observe : function(aSubject, aTopic, aData) 
 	{
@@ -112,24 +129,13 @@ GlobalService.prototype = {
 
 			case 'uxu-start-runner-request':
 			case 'uxu-start-server-request':
-				this.startRunner(aSubject, this.evalInSandbox(aData));
+				this.startRunner(aSubject, this.utils.evalInSandbox(aData));
 				return;
 
 			case 'uxu-open-config-request':
 				this.openConfig(aSubject);
 				return;
 		}
-	},
- 
-	evalInSandbox : function(aCode, aOwner) 
-	{
-		try {
-			var sandbox = new Components.utils.Sandbox(aOwner || 'about:blank');
-			return Components.utils.evalInSandbox(aCode, sandbox);
-		}
-		catch(e) {
-		}
-		return void(0);
 	},
  
 	init : function() 
@@ -141,7 +147,7 @@ GlobalService.prototype = {
 		PromptService = Cc['@mozilla.org/embedcomp/prompt-service;1']
 				.getService(Ci.nsIPromptService);
 
-		Pref.setBoolPref(kUXU_TEST_RUNNING, false);
+		this.prefs.setPref(kUXU_TEST_RUNNING, false);
 
 		ObserverService.addObserver(this, 'uxu-profile-setup', false);
 		ObserverService.addObserver(this, 'uxu-start-runner-request', false);
@@ -153,14 +159,14 @@ GlobalService.prototype = {
  
 	autoStart : function() 
 	{
-		var onetime = Pref.getBoolPref('extensions.uxu.runner.autoStart.oneTime.enabled') &&
-						Pref.getBoolPref('extensions.uxu.runner.autoStart.oneTime');
-		if (Pref.getBoolPref('extensions.uxu.runner.autoStart') || onetime) {
-			let server = onetime ? Pref.getBoolPref('extensions.uxu.runner.autoStart.oneTime.server') : false ;
-			let port = onetime ? Pref.getIntPref('extensions.uxu.runner.autoStart.oneTime.port') : 0 ;
-			Pref.setBoolPref('extensions.uxu.runner.autoStart.oneTime', false);
-			Pref.setBoolPref('extensions.uxu.runner.autoStart.oneTime.server', false);
-			Pref.setIntPref('extensions.uxu.runner.autoStart.oneTime.port', 0);
+		var onetime = this.prefs.getPref('extensions.uxu.runner.autoStart.oneTime.enabled') &&
+						this.prefs.getPref('extensions.uxu.runner.autoStart.oneTime');
+		if (this.prefs.getPref('extensions.uxu.runner.autoStart') || onetime) {
+			let server = onetime ? this.prefs.getPref('extensions.uxu.runner.autoStart.oneTime.server') : false ;
+			let port = onetime ? this.prefs.getPref('extensions.uxu.runner.autoStart.oneTime.port') : 0 ;
+			this.prefs.setPref('extensions.uxu.runner.autoStart.oneTime', false);
+			this.prefs.setPref('extensions.uxu.runner.autoStart.oneTime.server', false);
+			this.prefs.setPref('extensions.uxu.runner.autoStart.oneTime.port', 0);
 			this.startRunner(null, { server : server, serverPort : port });
 		}
 	},
@@ -185,16 +191,6 @@ GlobalService.prototype = {
 			this.restart();
 	},
  
-	get profileDirectory() 
-	{
-		if (!this._profileDirectory)
-			this._profileDirectory = Cc['@mozilla.org/file/directory_service;1']
-				.getService(Ci.nsIProperties)
-				.get('ProfDS', Ci.nsIFile);
-		return this._profileDirectory;
-	},
-	_profileDirectory : null,
- 
 	setUpUXUPrefs : function(aProfile) 
 	{
 		var skipInitialize = aProfile.clone(true);
@@ -204,7 +200,8 @@ GlobalService.prototype = {
 		var userJSFile = aProfile.clone(true);
 		userJSFile.append('user.js');
 		var userJSContents = '';
-		if (userJSFile.exists()) userJSContents = this.readFrom(userJSFile);
+		if (userJSFile.exists())
+			userJSContents = this.utils.readFrom(userJSFile);
 
 		var lines = [];
 		var prefs = <![CDATA[
@@ -237,32 +234,32 @@ GlobalService.prototype = {
 			switch (prefs[i])
 			{
 				case 'bool':
-					lines.push('user_pref("'+prefs[i+1]+'", '+Pref.getBoolPref(prefs[i+1])+');');
+					lines.push('user_pref("'+prefs[i+1]+'", '+this.prefs.getPref(prefs[i+1])+');');
 					break;
 				case 'int':
-					lines.push('user_pref("'+prefs[i+1]+'", '+Pref.getIntPref(prefs[i+1])+');');
+					lines.push('user_pref("'+prefs[i+1]+'", '+this.prefs.getPref(prefs[i+1])+');');
 					break;
 				case 'char':
-					lines.push('user_pref("'+prefs[i+1]+'", "'+Pref.getCharPref(prefs[i+1])+'");');
+					lines.push('user_pref("'+prefs[i+1]+'", "'+this.prefs.getPref(prefs[i+1])+'");');
 					break;
 			}
 		}
 
-		if (Pref.getBoolPref('extensions.uxu.profile.enableDebugOptions')) {
+		if (this.prefs.getPref('extensions.uxu.profile.enableDebugOptions')) {
 			lines.push('user_pref("browser.dom.window.dump.enabled", true);');
 			lines.push('user_pref("javascript.options.showInConsole", true);');
 		}
-		if (Pref.getBoolPref('extensions.uxu.profile.disableAutoUpdate')) {
+		if (this.prefs.getPref('extensions.uxu.profile.disableAutoUpdate')) {
 			lines.push('user_pref("app.update.enabled", false);');
 			lines.push('user_pref("extensions.update.enabled", false);');
 			lines.push('user_pref("browser.search.update", false);');
 		}
-		if (Pref.getBoolPref('extensions.uxu.profile.disableExitWarning')) {
+		if (this.prefs.getPref('extensions.uxu.profile.disableExitWarning')) {
 			// Firefox
 			lines.push('user_pref("browser.warnOnQuit", false);');
 			lines.push('user_pref("browser.warnOnRestart", false);');
 		}
-		if (Pref.getBoolPref('extensions.uxu.profile.disableCheckDefaultWarning')) {
+		if (this.prefs.getPref('extensions.uxu.profile.disableCheckDefaultWarning')) {
 			// Firefox
 			lines.push('user_pref("browser.shell.checkDefaultBrowser", false);');
 			// Thunderbird
@@ -270,54 +267,18 @@ GlobalService.prototype = {
 			lines.push('user_pref("mail.shell.checkDefaultMail", false);');
 		}
 
-		this.writeTo(userJSContents+'\n'+lines.join('\n')+'\n', userJSFile)
+		this.utils.writeTo(userJSContents+'\n'+lines.join('\n')+'\n', userJSFile)
 	},
 	
 	get skipInitializeFile() 
 	{
 		if (!this._skipInitializeFile) {
-			this._skipInitializeFile = this.profileDirectory.clone(true);
+			this._skipInitializeFile = this.utils.getFileFromKeyword('ProfDS');
 			this._skipInitializeFile.append(kSKIP_INITIALIZE_FILE_NAME);
 		}
 		return this._skipInitializeFile;
 	},
 	_skipInitializeFile : null,
- 
-	readFrom : function(aTarget) 
-	{
-		aTarget = aTarget.QueryInterface(Ci.nsILocalFile)
-		stream = Cc['@mozilla.org/network/file-input-stream;1']
-					.createInstance(Ci.nsIFileInputStream);
-		try {
-			stream.init(aTarget, 1, 0, false); // open as "read only"
-		}
-		catch(ex) {
-			return '';
-		}
-
-		var fileContents = '';
-		try {
-			var scriptableStream = Cc['@mozilla.org/scriptableinputstream;1']
-					.createInstance(Ci.nsIScriptableInputStream);
-			scriptableStream.init(stream);
-			fileContents = scriptableStream.read(scriptableStream.available());
-			scriptableStream.close();
-		}
-		finally {
-			stream.close();
-		}
-
-		return fileContents;
-	},
- 
-	writeTo : function(aContent, aTarget) 
-	{
-		var stream = Cc['@mozilla.org/network/file-output-stream;1']
-				.createInstance(Ci.nsIFileOutputStream);
-		stream.init(aTarget, 2, 0x200, false); // open as "write only"
-		stream.write(aContent, aContent.length);
-		stream.close();
-	},
   
 	openWindow : function(aOwner, aType, aURI, aFeatures, aOptions) 
 	{
@@ -365,7 +326,7 @@ GlobalService.prototype = {
 			'uxu:config',
 			'chrome://uxu/content/ui/config.xul',
 			'chrome,titlebar,toolbar,centerscreen' +
-				(Pref.getBoolPref('browser.preferences.instantApply') ?
+				(this.prefs.getPref('browser.preferences.instantApply') ?
 					',dialog=no' :
 					',modal'
 				),
@@ -378,22 +339,38 @@ GlobalService.prototype = {
 	handle : function(aCommandLine) 
 	{
 		var arg = {
-				server     : CLHHelper.getBooleanValue('uxu-start-server', aCommandLine),
-				serverPort : CLHHelper.getNumericValue('uxu-listen-port', aCommandLine, 0),
+				server     : CLHHelper.getBooleanValue('uxu-server', aCommandLine) ||
+				             CLHHelper.getBooleanValue('uxu-start-server', aCommandLine),
+				serverPort : CLHHelper.getNumericValue('uxu-port', aCommandLine, 0) ||
+				             CLHHelper.getNumericValue('uxu-listen-port', aCommandLine, 0),
 				outputHost : CLHHelper.getStringValue('uxu-output-host', aCommandLine, ''),
 				outputPort : CLHHelper.getNumericValue('uxu-output-port', aCommandLine, 0),
-				testcase   : CLHHelper.getFullPath('uxu-testcase', aCommandLine, ''),
+				testcase   : CLHHelper.getFullPath('uxu-testcase', aCommandLine, '') ||
+				             CLHHelper.getFullPath('uxu-test', aCommandLine, '') ||
+				             CLHHelper.getFullPath('uxu-run', aCommandLine, ''),
 				priority   : CLHHelper.getStringValue('uxu-priority', aCommandLine, null),
 				log        : CLHHelper.getFullPath('uxu-log', aCommandLine, ''),
 				rawLog     : CLHHelper.getFullPath('uxu-rawlog', aCommandLine, ''),
+				quit       : CLHHelper.getBooleanValue('uxu-quit', aCommandLine),
 				autoQuit   : CLHHelper.getBooleanValue('uxu-autoquit', aCommandLine),
 				doNotQuit  : CLHHelper.getBooleanValue('uxu-do-not-quit', aCommandLine),
 				hidden     : CLHHelper.getBooleanValue('uxu-hidden', aCommandLine)
 			};
 
+		let runAndQuit = CLHHelper.getFullPath('uxu-run-and-quit', aCommandLine, '') ||
+						CLHHelper.getFullPath('uxu-run-quit', aCommandLine, '');
+		if (runAndQuit) {
+			arg.testcase = runAndQuit;
+			arg.autoQuit = true;
+		}
+
 		if (arg.testcase || arg.server) {
 			aCommandLine.preventDefault = true;
 			this.startRunner(null, arg);
+		}
+		if (arg.quit) {
+			aCommandLine.preventDefault = true;
+			this.utils.quitApplication(true);
 		}
 	},
  
@@ -401,14 +378,20 @@ GlobalService.prototype = {
 	{
 		if (!this._helpInfo)
 			this._helpInfo =CLHHelper.formatHelpInfo({
-				'uxu-start-server' : 'Starts UnitTest.XUL Server instead of Firefox.',
-				'uxu-listen-port <port>' : 'Listening port of UnitTest.XUL Server.',
-				'uxu-output-host <host>' : 'Output the result of the testcase to the host in raw format.',
-				'uxu-output-port <port>' : 'Listening port of the host specified by the "-uxu-output-host" option.',
-				'uxu-testcase <url>' :  'Run the testcase in UnitTest.XUL.',
+				'uxu-server'              : 'Starts UnitTest.XUL Server instead of Firefox.',
+				'uxu-start-server'        : 'Aliast for -uxu-server.',
+				'uxu-port <port>'         : 'Listening port of UnitTest.XUL Server.',
+				'uxu-listen-port <port>'  : 'Alias for -uxu-listen-port.',
+				'uxu-output-host <host>'  : 'Output the result of the testcase to the host in raw format.',
+				'uxu-output-port <port>'  : 'Listening port of the host specified by the "-uxu-output-host" option.',
+				'uxu-testcase <url>'      : 'Run the testcase in UnitTest.XUL.',
+				'uxu-test <url>'          : 'Alias for -uxu-testcase.',
+				'uxu-run <url>'           : 'Alias for -uxu-testcase.',
+				'uxu-run-and-quit <url>'  : 'Run the testcase, and quit automatically.',
+				'uxu-run-quit <url>'      : 'Alias for -uxu-run-and-quit.',
 				'uxu-priority <priority>' : 'Run all tests in the testcase with the priority.',
-				'uxu-log <url>' : 'Output the result of the testcase.',
-				'uxu-rawlog <url>' : 'Output the result of the testcase in raw format.'
+				'uxu-log <url>'           : 'Output the result of the testcase.',
+				'uxu-rawlog <url>'        : 'Output the result of the testcase in raw format.'
 			});
 		return this._helpInfo;
 	},
@@ -426,21 +409,10 @@ GlobalService.prototype = {
  
 	upgradePrefsInternal : function(aOldBase, aNewBase) 
 	{
-		Pref.getChildList(aOldBase, {}).forEach(function(aPref) {
+		this.prefs.getDescendant(aOldBase).forEach(function(aPref) {
 			var newPref = aPref.replace(aOldBase, aNewBase);
-			switch (Pref.getPrefType(aPref))
-			{
-				case Pref.PREF_STRING:
-					Pref.setCharPref(newPref, Pref.getCharPref(aPref));
-					break;
-				case Pref.PREF_INT:
-					Pref.setIntPref(newPref, Pref.getIntPref(aPref));
-					break;
-				default:
-					Pref.setBoolPref(newPref, Pref.getBoolPref(aPref));
-					break;
-			}
-			Pref.clearUserPref(aPref);
+			this.prefs.setPref(newPref, this.prefs.getPref(aPref));
+			this.prefs.clearPref(aPref);
 		}, this);
 	}
   
