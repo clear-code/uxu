@@ -57,8 +57,6 @@ var prefread = {};
 Components.utils.import('resource://uxu-modules/prefread.js', prefread);
 prefread = prefread.prefread;
 
-ns.primitive.export(this);
-
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
 const IOService = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
@@ -2670,6 +2668,7 @@ bind : function(aFunction, aThis)
 }; 
 ns.encoding.export(Utils.prototype);
 ns.hash.export(Utils.prototype);
+ns.primitive.export(Utils.prototype);
 
 ns.extensions.getInstalledLocation('uxu@clear-code.com', function(aLocation) {
 	Utils.prototype._installedUXU = aLocation;
