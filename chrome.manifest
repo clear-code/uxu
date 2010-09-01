@@ -10,8 +10,8 @@ locale	uxu	ja	jar:chrome/uxu.jar!/locale/ja/uxu/
 
 skin	uxu	classic/1.0	jar:chrome/uxu.jar!/skin/classic/uxu/
 
-style chrome://uxu/content/ui/runner.xul chrome://uxu/skin/style-fx3.7.css appversion>=3.7a1pre
-style chrome://uxu/content/ui/uxu.xul chrome://uxu/skin/style-fx3.7.css appversion>=3.7a1pre
+style chrome://uxu/content/ui/runner.xul chrome://uxu/skin/style-fx4.css appversion>=4.0b5pre
+style chrome://uxu/content/ui/uxu.xul chrome://uxu/skin/style-fx4.css appversion>=4.0b5pre
 
 resource uxu-modules modules/
 
