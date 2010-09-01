@@ -354,11 +354,15 @@ GlobalService.prototype = {
 				outputPort : CLHHelper.getNumericValue('uxu-output-port', aCommandLine, 0)
 			};
 
-		if (arg.testcase && (arg.hidden || arg.log || arg.rawLog)) {
+		if (
+			arg.testcase &&
+			(arg.hidden || arg.log || arg.rawLog) &&
+			!WindowManager.getMostRecentWindow(null)
+			)
 			arg.autoQuit = true;
-			if (CLHHelper.getBooleanValue('uxu-do-not-quit', aCommandLine))
-				arg.autoQuit = false;
-		}
+
+		if (arg.autoQuit && CLHHelper.getBooleanValue('uxu-do-not-quit', aCommandLine))
+			arg.autoQuit = false;
 
 		if (arg.testcase || arg.server) {
 			aCommandLine.preventDefault = true;
