@@ -355,17 +355,23 @@ GlobalService.prototype = {
 			};
 
 		if (
-			arg.testcase &&
-			(arg.hidden || arg.log || arg.rawLog) &&
-			!WindowManager.getMostRecentWindow(null)
-			)
-			arg.autoQuit = true;
-
-		if (arg.autoQuit && CLHHelper.getBooleanValue('uxu-do-not-quit', aCommandLine))
-			arg.autoQuit = false;
-
-		if (arg.testcase || arg.server) {
+			arg.testcase ||
+			arg.server ||
+			arg.outputHost ||
+			arg.outputPort
+			) {
 			aCommandLine.preventDefault = true;
+
+			if (arg.testcase &&
+				(arg.hidden || arg.log || arg.rawLog)) {
+				arg.autoClose = true;
+				arg.autoQuit = !WindowManager.getMostRecentWindow(null);
+			}
+
+			if (arg.autoQuit &&
+				CLHHelper.getBooleanValue('uxu-do-not-quit', aCommandLine))
+				arg.autoQuit = false;
+
 			this.startRunner(null, arg);
 		}
 

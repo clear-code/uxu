@@ -720,6 +720,8 @@ function onAllTestsFinish()
 
 	if (gOptions.autoQuit)
 		utils.quitApplication(true);
+	else if (gOptions.autoClose)
+		window.close();
 };
  
 function updateUIForAllTestsFinish() 
