@@ -362,7 +362,7 @@ function handleOptions()
 		return returnValue;
 
 	gOptions = window.arguments[0];
-	if (gOptions instanceof Ci.nsIProperty)
+	if (gOptions instanceof Ci.nsIPropertyBag)
 		gOptions = utils.toHash(gOptions);
 
 	if (gOptions.testcase) {
@@ -662,29 +662,7 @@ var gRemoteRun = {
 
 	onFinish : function()
 	{
-		if (!gOptions) return;
-
-		if (gOptions.log) {
-			utils.writeTo(
-				gLog.toString(utils.makeFileWithPath(gOptions.log)),
-				gOptions.log,
-				'UTF-8'
-			);
-			gOptions.log = null;
-		}
-		if (gOptions.rawLog) {
-			utils.writeTo(
-				gLog.toString(gLog.FORMAT_RAW),
-				gOptions.rawLog,
-				'UTF-8'
-			);
-			gOptions.rawLog = null;
-		}
-
 		this.stopPinging();
-
-		if (gOptions.autoQuit)
-			utils.quitApplication(true);
 	},
 
 	startPinging : function()
@@ -719,8 +697,29 @@ function onAllTestsFinish()
 		'extensions.uxu.runner.lastResults',
 		gLog.toString(gLog.FORMAT_RAW)
 	);
+
+	if (gOptions.log) {
+		utils.writeTo(
+			gLog.toString(utils.makeFileWithPath(gOptions.log)),
+			gOptions.log,
+			'UTF-8'
+		);
+		gOptions.log = null;
+	}
+	if (gOptions.rawLog) {
+		utils.writeTo(
+			gLog.toString(gLog.FORMAT_RAW),
+			gOptions.rawLog,
+			'UTF-8'
+		);
+		gOptions.rawLog = null;
+	}
+
 	gRemoteRun.onEvent('finish-all');
 	updateUIForAllTestsFinish();
+
+	if (gOptions.autoQuit)
+		utils.quitApplication(true);
 };
  
 function updateUIForAllTestsFinish() 
