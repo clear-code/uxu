@@ -260,7 +260,7 @@ const fileDNDObserver =
    
 /* DOMAIN */ 
 	
-function startup() 
+function Startup() 
 {
 	ns.Utils.internalLoader = $('internal-loader');
 
@@ -288,43 +288,12 @@ function startup()
 	if (utils.getPref('extensions.uxu.runner.autoStart.server'))
 		startServer();
 
-	var mainDeck = _('mainDeck');
-	var lastResult = utils.getPref('extensions.uxu.runner.lastResults');
 	if (
-		!gRemoteRun.pinging &&
-		!gOptions.testcase &&
-		lastResult
-		) { // restore last result
-		mainDeck.selectedIndex = 0;
-		try {
-			gLog.items = utils.evalInSandbox(lastResult);
-			var current = 0;
-			var step = 20;
-			var progress = _('initializingProgress');
-			progress.setAttribute('mode', 'determined');
-
-			var lastResultTimer = window.setInterval(function() {
-					var items = gLog.items.slice(current, step);
-					current += step;
-					if (items.length) {
-						progress.setAttribute('value', Math.min(100, parseInt(current / gLog.items.length * 100)));
-						buildReports(gLog.items);
-					}
-					else {
-						window.clearInterval(lastResultTimer);
-						updateUIForAllTestsFinish();
-						mainDeck.selectedIndex = 1;
-					}
-				}, 50);
-		}
-		catch(e) {
-			alert(e);
-			mainDeck.selectedIndex = 1;
-		}
-	}
-	else {
-		mainDeck.selectedIndex = 1;
-	}
+		gRemoteRun.pinging ||
+		gOptions.testcase ||
+		!restoreLastResult()
+		)
+		_('mainDeck').selectedIndex = 1;
 
 	// ãåî≈ÇÃpersistëÆê´Ç…ÇÊÇ¡Çƒï€ë∂Ç≥ÇÍÇƒÇ¢ÇΩílÇ™ïúå≥Ç≥ÇÍÇƒÇµÇ‹Ç¡ÇΩèÍçáÇÃÇΩÇﬂÇ…
 	window.setTimeout(setTestFile, 0, defaultTestPath, false);
@@ -344,6 +313,43 @@ var alwaysRaisedObserver = {
 	}
 };
  
+function restoreLastResult()
+{
+	var lastResult = utils.getPref('extensions.uxu.runner.lastResults');
+	if (!lastResult)
+		return false;
+		lastResult
+
+	var mainDeck = _('mainDeck');
+	mainDeck.selectedIndex = 0;
+	try {
+		gLog.items = utils.evalInSandbox(lastResult);
+		var current = 0;
+		var step = 20;
+		var progress = _('initializingProgress');
+		progress.setAttribute('mode', 'determined');
+
+		var lastResultTimer = window.setInterval(function() {
+				var items = gLog.items.slice(current, step);
+				current += step;
+				if (items.length) {
+					progress.setAttribute('value', Math.min(100, parseInt(current / gLog.items.length * 100)));
+					buildReports(gLog.items);
+				}
+				else {
+					window.clearInterval(lastResultTimer);
+					updateUIForAllTestsFinish();
+					mainDeck.selectedIndex = 1;
+				}
+			}, 50);
+	}
+	catch(e) {
+		alert(e);
+		mainDeck.selectedIndex = 1;
+	}
+	return true;
+}
+ 
 var gOptions;
 function handleOptions()
 {
@@ -356,6 +362,8 @@ function handleOptions()
 		return returnValue;
 
 	gOptions = window.arguments[0];
+	if (gOptions instanceof Ci.nsIProperty)
+		gOptions = utils.toHash(gOptions);
 
 	if (gOptions.testcase) {
 		let path = gOptions.testcase;
@@ -371,7 +379,8 @@ function handleOptions()
 		gOptions.rawLog = utils.getFilePathFromURLSpec(gOptions.rawLog);
 
 	if (gOptions.testcase) {
-		gRemoteRun.onEvent('start');
+		if (gOptions.outputHost || gOptions.outputPort)
+			gRemoteRun.onEvent('start');
 		runWithDelay(gOptions.priority);
 	}
 
@@ -383,9 +392,8 @@ function handleOptions()
 			});
 	}
 
-	if (gOptions.outputHost || gOptions.outputPort) {
+	if (gOptions.outputHost || gOptions.outputPort)
 		gRemoteRun.startPinging();
-	}
 
 	if (gOptions.server || gOptions.serverPort) {
 		stopServer();
@@ -410,7 +418,7 @@ var restartObserver = {
 	}
 };
   
-function shutdown() 
+function Shutdown() 
 {
 	stopServer();
 

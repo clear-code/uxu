@@ -48,8 +48,6 @@ const ObserverService = Cc['@mozilla.org/observer-service;1']
 
 var WindowWatcher;
 var WindowManager;
-
-var bundle;
  
 function GlobalService() { 
 }
@@ -92,6 +90,16 @@ GlobalService.prototype = {
 		return this._prefs;
 	},
 	_prefs : null,
+ 
+	get bundle() {
+		if (!this._bundle) {
+			let ns = {};
+			Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
+			this._bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
+		}
+		return this._bundle;
+	},
+	_bundle : null,
  
 	observe : function(aSubject, aTopic, aData) 
 	{
@@ -140,13 +148,6 @@ GlobalService.prototype = {
  
 	init : function() 
 	{
-		var ns = {};
-		Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
-		bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
-
-		PromptService = Cc['@mozilla.org/embedcomp/prompt-service;1']
-				.getService(Ci.nsIPromptService);
-
 		this.prefs.setPref(kUXU_TEST_RUNNING, false);
 
 		ObserverService.addObserver(this, 'uxu-profile-setup', false);
@@ -159,6 +160,8 @@ GlobalService.prototype = {
  
 	autoStart : function() 
 	{
+		if (WindowManager.getMostRecentWindow('uxu:runner'))
+			return;
 		var onetime = this.prefs.getPref('extensions.uxu.runner.autoStart.oneTime.enabled') &&
 						this.prefs.getPref('extensions.uxu.runner.autoStart.oneTime');
 		if (this.prefs.getPref('extensions.uxu.runner.autoStart') || onetime) {
@@ -180,10 +183,12 @@ GlobalService.prototype = {
  
 	confirmRestartToApplyChange : function() 
 	{
+		PromptService = Cc['@mozilla.org/embedcomp/prompt-service;1']
+				.getService(Ci.nsIPromptService);
 		if (PromptService.confirmEx(
 				null,
-				bundle.getString('confirm_changePref_restart_title'),
-				bundle.getString('confirm_changePref_restart_text'),
+				this.bundle.getString('confirm_changePref_restart_title'),
+				this.bundle.getString('confirm_changePref_restart_text'),
 				Ci.nsIPromptService.BUTTON_TITLE_YES * Ci.nsIPromptService.BUTTON_POS_0 +
 				Ci.nsIPromptService.BUTTON_TITLE_NO * Ci.nsIPromptService.BUTTON_POS_1,
 				null, null, null, null, {}
@@ -298,13 +303,7 @@ GlobalService.prototype = {
 			aOwner.openDialog(aURI, '_blank', aFeatures, aOptions);
 		}
 		else {
-			let args = Cc['@mozilla.org/supports-array;1'].createInstance(Ci.nsISupportsArray);
-			let variant = Cc['@mozilla.org/variant;1']
-							.createInstance(Ci.nsIVariant)
-							.QueryInterface(Ci.nsIWritableVariant);
-			variant.setFromVariant(aOptions);
-			args.AppendElement(variant);
-			WindowWatcher.openWindow(null, aURI, '_blank', aFeatures, args);
+			WindowWatcher.openWindow(null, aURI, '_blank', aFeatures, this.utils.toPropertyBag(aOptions));
 		}
 	},
  
@@ -343,23 +342,21 @@ GlobalService.prototype = {
 				             CLHHelper.getBooleanValue('uxu-start-server', aCommandLine),
 				serverPort : CLHHelper.getNumericValue('uxu-port', aCommandLine, 0) ||
 				             CLHHelper.getNumericValue('uxu-listen-port', aCommandLine, 0),
-				outputHost : CLHHelper.getStringValue('uxu-output-host', aCommandLine, ''),
-				outputPort : CLHHelper.getNumericValue('uxu-output-port', aCommandLine, 0),
 				testcase   : CLHHelper.getFullPath('uxu-testcase', aCommandLine, '') ||
 				             CLHHelper.getFullPath('uxu-test', aCommandLine, '') ||
 				             CLHHelper.getFullPath('uxu-run', aCommandLine, ''),
 				priority   : CLHHelper.getStringValue('uxu-priority', aCommandLine, null),
 				log        : CLHHelper.getFullPath('uxu-log', aCommandLine, ''),
 				rawLog     : CLHHelper.getFullPath('uxu-rawlog', aCommandLine, ''),
-				quit       : CLHHelper.getBooleanValue('uxu-quit', aCommandLine),
+				hidden     : CLHHelper.getBooleanValue('uxu-hidden', aCommandLine),
 				autoQuit   : CLHHelper.getBooleanValue('uxu-autoquit', aCommandLine),
-				doNotQuit  : CLHHelper.getBooleanValue('uxu-do-not-quit', aCommandLine),
-				hidden     : CLHHelper.getBooleanValue('uxu-hidden', aCommandLine)
+				outputHost : CLHHelper.getStringValue('uxu-output-host', aCommandLine, ''),
+				outputPort : CLHHelper.getNumericValue('uxu-output-port', aCommandLine, 0)
 			};
 
 		if (arg.testcase && (arg.hidden || arg.log || arg.rawLog)) {
 			arg.autoQuit = true;
-			if (arg.doNotQuit)
+			if (CLHHelper.getBooleanValue('uxu-do-not-quit', aCommandLine))
 				arg.autoQuit = false;
 		}
 
@@ -367,7 +364,8 @@ GlobalService.prototype = {
 			aCommandLine.preventDefault = true;
 			this.startRunner(null, arg);
 		}
-		if (arg.quit) {
+
+		if (CLHHelper.getBooleanValue('uxu-quit', aCommandLine)) {
 			aCommandLine.preventDefault = true;
 			this.utils.quitApplication(true);
 		}

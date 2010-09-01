@@ -1110,6 +1110,32 @@ toHash : function(aObject, aProperties)
 	}
 	return hash;
 },
+ 
+toPropertyBag : function(aHash)
+{
+	var bag = Cc['@mozilla.org/hash-property-bag;1']
+				.createInstance(Ci.nsIWritablePropertyBag);
+	for (var i in aHash)
+	{
+		if (aHash.hasOwnProperty(i))
+			bag.setProperty(i, aHash[i]);
+	}
+	return bag;
+},
+ 
+toSupportsArray : function(aArray)
+{
+	let array = Cc['@mozilla.org/supports-array;1']
+				.createInstance(Ci.nsISupportsArray);
+	aArray.forEach(function(aItem) {
+		var variant = Cc['@mozilla.org/variant;1']
+						.createInstance(Ci.nsIVariant)
+						.QueryInterface(Ci.nsIWritableVariant);
+		variant.setFromVariant(aItem);
+		array.AppendElement(variant);
+	});
+	return array;
+},
   
 // ê›íËì«Ç›èëÇ´ 
 	

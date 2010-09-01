@@ -350,17 +350,7 @@ openTestWindow : function(aOptions, aCallback)
 	}
 	else {
 		var info = this.normalizeTestWindowOption(aOptions);
-		var args = null;
-		if (info.arguments.length) {
-			args = Cc['@mozilla.org/supports-array;1'].createInstance(Ci.nsISupportsArray);
-			info.arguments.forEach(function(aArg) {
-				var variant = Cc['@mozilla.org/variant;1']
-								.createInstance(Ci.nsIVariant)
-								.QueryInterface(Ci.nsIWritableVariant);
-				variant.setFromVariant(aArg);
-				args.AppendElement(variant);
-			});
-		}
+		var args = info.arguments.length ? this._utils.toSupportsArray(info.arguments) : null ;
 		win = WindowWatcher.openWindow(null, info.uri, info.name, info.features, args);
 		var id = info.uri+'?'+this.uniqueID;
 		win.addEventListener('load', function() {
