@@ -672,24 +672,11 @@ var gRemoteRun = {
 			);
 			gOptions.rawLog = null;
 		}
-		gOptions.outputHost = null
-		gOptions.outputPort = null;
-		if (
-			gOptions.autoQuit ||
-			(
-				gOptions.testcase &&
-				(
-					gOptions.hidden ||
-					gOptions.log ||
-					gOptions.rawLog
-				)
-			)
-			) {
-			this.stopPinging();
-			if (!gOptions.doNotQuit)
-				utils.quitApplication(true);
-			return;
-		}
+
+		this.stopPinging();
+
+		if (gOptions.autoQuit)
+			utils.quitApplication(true);
 	},
 
 	startPinging : function()

@@ -357,11 +357,10 @@ GlobalService.prototype = {
 				hidden     : CLHHelper.getBooleanValue('uxu-hidden', aCommandLine)
 			};
 
-		let runAndQuit = CLHHelper.getFullPath('uxu-run-and-quit', aCommandLine, '') ||
-						CLHHelper.getFullPath('uxu-run-quit', aCommandLine, '');
-		if (runAndQuit) {
-			arg.testcase = runAndQuit;
+		if (arg.testcase && (arg.hidden || arg.log || arg.rawLog)) {
 			arg.autoQuit = true;
+			if (arg.doNotQuit)
+				arg.autoQuit = false;
 		}
 
 		if (arg.testcase || arg.server) {
@@ -387,8 +386,6 @@ GlobalService.prototype = {
 				'uxu-testcase <url>'      : 'Run the testcase in UnitTest.XUL.',
 				'uxu-test <url>'          : 'Alias for -uxu-testcase.',
 				'uxu-run <url>'           : 'Alias for -uxu-testcase.',
-				'uxu-run-and-quit <url>'  : 'Run the testcase, and quit automatically.',
-				'uxu-run-quit <url>'      : 'Alias for -uxu-run-and-quit.',
 				'uxu-priority <priority>' : 'Run all tests in the testcase with the priority.',
 				'uxu-log <url>'           : 'Output the result of the testcase.',
 				'uxu-rawlog <url>'        : 'Output the result of the testcase in raw format.'
