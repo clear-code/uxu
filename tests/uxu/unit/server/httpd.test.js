@@ -247,12 +247,12 @@ function testResponseWithDelay()
 
 	utils.loadURI('about:blank');
 
-	server.expect('/delayed', { uri : '/hash.txt', status : 301, delay : 3000 });
-	server.expect('/hash.txt', { uri : '/hash.txt', status : 200 });
+	server.expect('/delayed-redirected', { uri : '/redirected', status : 301, delay : 3000 });
+	server.expect('/redirected', { uri : '/hash.txt', status : 200 });
 	assert.finishesOver(3000, function() {
-		utils.loadURI('http://localhost:4445/delayed');
+		utils.loadURI('http://localhost:4445/delayed-redirected');
 	});
-	assert.equals('http://localhost:4445/hash.txt', content.location.href);
+	assert.equals('http://localhost:4445/redirected', content.location.href);
 	assert.equals('hash\n', content.document.body.textContent);
 }
 
