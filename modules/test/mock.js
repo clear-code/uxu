@@ -155,7 +155,7 @@ MockManager.prototype = {
 		aTarget.Mock.prototype = Mock.prototype;
 		Mock.export(aTarget.Mock, this._assert);
 		aTarget.Mock.getMockFor = function(aObject, aName) {
-			var mock = this.getMockFor(aObject, aName, self._assert);
+			var mock = Mock.getMockFor(aObject, aName, self._assert);
 			self.addMock(mock);
 			return mock;
 		};

@@ -2653,7 +2653,8 @@ export : function(aNamespace, aForce, aSelf, aSource)
 		else {
 			(function(aMethod) {
 				aNamespace[aMethod] = self.bind(aSource[aMethod], aSelf);
-			})(i);
+				this.export(aNamespace[aMethod], aForce, aSource[aMethod], aSource[aMethod]);
+			}).call(this, i);
 		}
 	}
 },
