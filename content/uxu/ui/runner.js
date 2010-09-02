@@ -361,7 +361,7 @@ function handleOptions()
 		!window.arguments.length)
 		return returnValue;
 
-	gOptions = window.arguments[0];
+	gOptions = window.arguments[0] || {};
 	if (gOptions instanceof Ci.nsIPropertyBag)
 		gOptions = utils.toHash(gOptions);
 
