@@ -59,7 +59,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 		<command id="runAll"
 			label-normal="&runner.runAll.label;"
 			label-default="&runner.runAll.default;"
-			oncommand="run(null, 'must');"
+			oncommand="run({ priority : 'must' });"
 			disabled="true"/>
 		<command id="runFailed" label="&runner.runFailed.label;" oncommand="runFailed();"
 			disabled="true"/>
