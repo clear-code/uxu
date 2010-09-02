@@ -24,7 +24,6 @@ function testMapping()
 	assertMapped('http://www.google.com/', true);
 	assertNotMapped('about:blank');
 	assertNotMapped('about:config'); // not supported
-	assertRedirected('http://www.example.org/?', true);
 
 	assertMappedXMLHttpRequest('http://www.example.com/');
 	assertMappedImageRequest('http://www.example.jp/test.jpg');

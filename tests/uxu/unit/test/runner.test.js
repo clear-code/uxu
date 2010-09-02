@@ -80,7 +80,7 @@ function test_getTestFiles()
 {
 	var folder = utils.getFileFromURLSpec(baseURL+'../../../samples/');
 	var files = runner._getTestFiles(folder, true);
-	assert.equals(9, files.length);
+	assert.equals(10, files.length);
 }
 
 function test_cleanUpModifications()
