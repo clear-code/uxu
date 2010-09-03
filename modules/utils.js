@@ -2349,7 +2349,7 @@ setPermission : function(aHost, aType, aPermission)
 	if (!PermissionManager) return;
 
 	if (!aHost) aHost = '<file>';
-	if (!aHost.test(/^\w+:/))
+	if (!(/^\w+:/).test(aHost))
 		aHost = 'http://'+aHost;
 
 	try {
@@ -2381,7 +2381,7 @@ rollbackPermissions : function()
 		if (original)
 			PermissionManager.add(this.makeURIFromSpec(host), type, original);
 	}
-	this.backupPermissions = {}:
+	this.backupPermissions = {};
 },
   
 // アプリケーション 
