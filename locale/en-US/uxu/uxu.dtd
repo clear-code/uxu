@@ -51,7 +51,7 @@
 <!ENTITY runner.runPriority.default "Run tests by priorities (default)">
 <!ENTITY runner.runAll.label        "Run all tests ignoring priority">
 <!ENTITY runner.runAll.default      "Run all tests ignoring priority (default)">
-<!ENTITY runner.runFailed.label   "Run again only failed tests">
+<!ENTITY runner.runFailed.label     "Run only failed tests">
 <!ENTITY runner.stop.label     "Stop">
 <!ENTITY runner.stop.accesskey "S">
 <!ENTITY runner.open.label     "Open...">

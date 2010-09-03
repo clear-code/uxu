@@ -51,7 +51,7 @@
 <!ENTITY runner.runPriority.default "優先度に従って実行（通常の実行）">
 <!ENTITY runner.runAll.label        "優先度を無視してすべて実行">
 <!ENTITY runner.runAll.default      "優先度を無視してすべて実行（通常の実行）">
-<!ENTITY runner.runFailed.label   "失敗したテストだけ再実行">
+<!ENTITY runner.runFailed.label     "前回失敗したテストだけを実行">
 <!ENTITY runner.stop.label     "中止">
 <!ENTITY runner.stop.accesskey "S">
 <!ENTITY runner.open.label     "開く...">
