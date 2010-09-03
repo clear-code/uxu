@@ -651,6 +651,9 @@ TestCase.prototype = {
 			statement.reset();
 		}
 
+		if (this._equalsToNever(test.priority))
+			test.shouldSkip = true;
+
 		this._tests.push(test);
 	},
  

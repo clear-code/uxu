@@ -855,8 +855,8 @@ function run(aOptions)
 			var hasFailed = false;
 			aTestCase.tests.forEach(function(aTest) {
 				if (
-					aTest.lastResult == ns.TestCase.prototype.RESULT_FAILURE ||
-					aTest.lastResult == ns.TestCase.prototype.RESULT_ERROR
+					aTest.lastResult != ns.TestCase.prototype.RESULT_SUCCESS &&
+					aTest.lastResult != ns.TestCase.prototype.RESULT_SKIPPED
 					) {
 					aTest.priority = 'must';
 					hasFailed = true;

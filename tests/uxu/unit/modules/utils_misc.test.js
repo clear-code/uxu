@@ -772,9 +772,9 @@ function test_computeHashFromFile()
 	           source, 'sha512');
 }
 
-function createCustomClass()
+function createCustomClass(aFunction)
 {
-	var f = function(aValue) {
+	var f = aFunction || function(aValue) {
 			this.value = aValue;
 		};
 	f.prototype = {
@@ -784,6 +784,17 @@ function createCustomClass()
 		return 'source';
 	};
 	return f;
+}
+
+function createCustomClassReturnObject()
+{
+	return createCustomClass(function(aValue) {
+			this.value = aValue;
+			return {
+				returned    : true,
+				staticValue : aValue
+			};
+		});
 }
 
 function assertBound(aSource, aBound, aNamespace)
@@ -802,14 +813,20 @@ function assertBound(aSource, aBound, aNamespace)
 	assert.equals(aSource.prototype, bound.prototype);
 
 	var instance = new bound('my value');
-	assert.isInstanceOf(aSource, instance);
-	assert.equals('my value', instance.value, utils.inspect(instance));
+	assert.isDefined(instance);
+	if (instance.returned) {
+		assert.equals('my value', instance.staticValue, utils.inspect(instance));
+	}
+	else {
+		assert.isInstanceOf(aSource, instance);
+		assert.equals('my value', instance.value, utils.inspect(instance));
+	}
 }
 
 function test_bind()
 {
-	var source = createCustomClass();
-	assertBound(source);
+	assertBound(createCustomClass());
+	assertBound(createCustomClassReturnObject());
 }
 
 
@@ -834,7 +851,8 @@ function test_export()
 			method : function() {
 				return 'source';
 			},
-			MyClass : createCustomClass()
+			MyClass : createCustomClass(),
+			MyClassReturnObject : createCustomClassReturnObject()
 		};
 
 	var target = {
@@ -866,6 +884,7 @@ function test_export()
 	assert.isFunction(target.method);
 	assert.equals('source', target.method());
 	assertBound(source.MyClass, target.MyClass, source);
+	assertBound(source.MyClassReturnObject, target.MyClassReturnObject, source);
 
 	target = {
 			_internal : 'original',
@@ -895,9 +914,8 @@ function test_export()
 	assert.equals('original bar', target.setterValue);
 	assert.isFunction(target.method);
 	assert.equals('original', target.method());
-
-	assert.isFunction(target.MyClass);
-	assert.equals(source.MyClass.prototype, target.MyClass.prototype);
+	assertBound(source.MyClass, target.MyClass, source);
+	assertBound(source.MyClassReturnObject, target.MyClassReturnObject, source);
 }
 
 function test_export_self()

@@ -2674,7 +2674,8 @@ bind : function(aFunction, aThis)
 
 	var wrapped = function() {
 			if (this instanceof arguments.callee) { // called as a constructor
-				aFunction.apply(this, arguments);
+				let retVal = aFunction.apply(this, arguments);
+				return (retVal === void(0)) ? this : retVal ;
 			}
 			else { // called as a function
 				return aFunction.apply(aThis, arguments);
