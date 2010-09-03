@@ -333,6 +333,7 @@ TestRunner.prototype = {
 	_cleanUpModifications : function(aTestCase) 
 	{
 		aTestCase.suite.rollbackPrefs();
+		aTestCase.suite.rollbackPermissions();
 		aTestCase.suite.cleanUpTempFiles(true);
 	},
   

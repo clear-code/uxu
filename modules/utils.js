@@ -67,6 +67,10 @@ var Application = '@mozilla.org/fuel/application;1' in Cc ?
 			Cc['@mozilla.org/steel/application;1'].getService(Ci.steelIApplication) :
 			null ;
 
+var PermissionManager = '@mozilla.org/permissionmanager;1' in Cc ?
+		Cc['@mozilla.org/permissionmanager;1'].getService(Ci.nsIPermissionManager) :
+		null ;
+
 const isThreadManagerAvailable = '@mozilla.org/thread-manager;1' in Cc;
 
 var _db = null;
@@ -75,6 +79,7 @@ function Utils()
 {
 	this.tempFiles = [];
 	this.backupPrefs = {};
+	this.backupPermissions = {};
 }
 Utils.prototype = {
 	
@@ -1529,6 +1534,7 @@ openDatabase : function(aFile)
 createDatabase : function() 
 {
 	var file = this.makeTempFile();
+
 	return this.openDatabase(file);
 },
  
@@ -2330,6 +2336,52 @@ getDocumentEncoding : function(aSource)
 get internalLoader() 
 {
 	return Utils.internalLoader;
+},
+ 
+allowRemoteXUL : function(aHost)
+{
+	this.setPermission(aHost, 'allowXULXBL', 1);
+},
+allowRemoteXul : function() { return this.allowRemoteXUL(); },
+ 
+setPermission : function(aHost, aType, aPermission)
+{
+	if (!PermissionManager) return;
+
+	if (!aHost) aHost = '<file>';
+	if (!aHost.test(/^\w+:/))
+		aHost = 'http://'+aHost;
+
+	try {
+		var uri = this.makeURIFromSpec(aHost);
+		var key = aType+'\n'+uri.spec;
+		var current = PermissionManager.testPermission(uri, aType);
+
+		if (!(key in this.backupPermissions))
+			this.backupPermissions[key] = current || 0;
+
+		if (current != aPermission)
+			PermissionManager.remove(this.UCS2ToUTF8(aHost), aType);
+		if (aPermission)
+			PermissionManager.add(uri, aType, aPermission);
+	}
+	catch(e) {
+	}
+},
+ 
+rollbackPermissions : function()
+{
+	if (!PermissionManager) return;
+
+	for (var i in this.backupPermissions)
+	{
+		let [type, host] = i.split('\n');
+		let original = this.backupPermissions[i];
+		PermissionManager.remove(this.UCS2ToUTF8(host), type);
+		if (original)
+			PermissionManager.add(this.makeURIFromSpec(host), type, original);
+	}
+	this.backupPermissions = {}:
 },
   
 // アプリケーション 
