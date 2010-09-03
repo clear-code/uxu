@@ -771,3 +771,167 @@ function test_computeHashFromFile()
 	           'CA25CBAEC62C33A3AC0930B5B757FEBB3419809C2E97FDD640FD21EDC4A4733E',
 	           source, 'sha512');
 }
+
+function createCustomClass()
+{
+	var f = function(aValue) {
+			this.value = aValue;
+		};
+	f.prototype = {
+		property : 'source'
+	};
+	f.classMethod = function() {
+		return 'source';
+	};
+	return f;
+}
+
+function assertBound(aSource, aBound, aNamespace)
+{
+	var namespace = aNamespace || {};
+	var bound = aBound || utilsModule.bind(aSource, namespace);
+
+	// as a function
+	assert.isFunction(bound);
+	bound('new value');
+	assert.equals('new value', namespace.value);
+
+	// as constructor
+	assert.isFunction(bound.classMethod);
+	assert.equals('source', bound.classMethod());
+	assert.equals(aSource.prototype, bound.prototype);
+
+	var instance = new bound('my value');
+	assert.isInstanceOf(aSource, instance);
+	assert.equals('my value', instance.value, utils.inspect(instance));
+}
+
+function test_bind()
+{
+	var source = createCustomClass();
+	assertBound(source);
+}
+
+
+function test_export()
+{
+	var source = {
+			__proto__ : {
+				superProperty : 'super'
+			},
+			_internal : 'source',
+			property : 'source',
+			get getter() {
+				return 'source';
+			},
+			get setter() {
+				return this.setterValue;
+			},
+			set setter(aValue) {
+				this.setterValue = 'source '+aValue;
+				return aValue;
+			},
+			method : function() {
+				return 'source';
+			},
+			MyClass : createCustomClass()
+		};
+
+	var target = {
+			_internal : 'original',
+			property : 'original',
+			get getter() {
+				return 'original';
+			},
+			get setter() {
+				return this.setterValue;
+			},
+			set setter(aValue) {
+				this.setterValue = 'original '+aValue;
+				return aValue;
+			},
+			method : function() {
+				return 'original';
+			}
+		};
+	utilsModule.export(target, true, source, source);
+
+	assert.isUndefined(target.superProperty);
+	assert.equals('original', target._internal);
+	assert.equals('source', target.property);
+	assert.equals('source', target.getter);
+	target.setter = 'foo'; // this must be ignored.
+	assert.isUndefined(target.setterValue);
+	assert.isUndefined(source.setterValue);
+	assert.isFunction(target.method);
+	assert.equals('source', target.method());
+	assertBound(source.MyClass, target.MyClass, source);
+
+	target = {
+			_internal : 'original',
+			property : 'original',
+			get getter() {
+				return 'original';
+			},
+			get setter() {
+				return this.setterValue;
+			},
+			set setter(aValue) {
+				this.setterValue = 'original '+aValue;
+				return aValue;
+			},
+			method : function() {
+				return 'original';
+			}
+		};
+	utilsModule.export(target, false, source, source);
+
+	assert.isUndefined(target.superProperty);
+	assert.equals('original', target._internal);
+	assert.equals('original', target.property);
+	assert.equals('original', target.getter);
+	target.setter = 'bar';
+	assert.isUndefined(source.setterValue);
+	assert.equals('original bar', target.setterValue);
+	assert.isFunction(target.method);
+	assert.equals('original', target.method());
+
+	assert.isFunction(target.MyClass);
+	assert.equals(source.MyClass.prototype, target.MyClass.prototype);
+}
+
+function test_export_self()
+{
+	var exported = {};
+	utilsModule.export(exported);
+
+	var properties = [];
+	var methods = [];
+	for (let i in utilsModule.__proto__)
+	{
+		if (!utilsModule.__proto__.hasOwnProperty(i) ||
+			i.indexOf('_') == 0)
+			continue;
+
+		else if (typeof utilsModule.__proto__[i] == 'function')
+			methods.push(i);
+		else
+			properties.push(i);
+	}
+
+	var exportedProperties = [];
+	var exportedMethods = [];
+	for (let i in exported)
+	{
+		if (!exported.hasOwnProperty(i))
+			continue;
+
+		if (typeof exported[i] == 'function')
+			exportedMethods.push(i);
+		else
+			exportedProperties.push(i);
+	}
+
+	assert.equals(methods, exportedMethods);
+	assert.equals(properties, exportedProperties);
+}

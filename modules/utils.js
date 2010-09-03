@@ -2634,11 +2634,20 @@ export : function(aNamespace, aForce, aSelf, aSource)
 		if (
 			!aSource.hasOwnProperty(i) ||
 			i.indexOf('_') == 0 ||
-			(!aForce && (aNamespace.__lookupGetter__(i) || i in aNamespace))
+			(
+				!aForce &&
+				(
+					aNamespace.__lookupGetter__(i) ||
+					i in aNamespace
+				)
+			)
 			)
 			continue;
 
-		if (aSource.__lookupGetter__(i) || (typeof aSource[i] != 'function')) {
+		if (
+			aSource.__lookupGetter__(i) ||
+			(typeof aSource[i] != 'function')
+			) {
 			(function(aProperty) {
 				aNamespace.__defineGetter__(aProperty, function() {
 					return aSelf[aProperty];
@@ -2653,8 +2662,7 @@ export : function(aNamespace, aForce, aSelf, aSource)
 		else {
 			(function(aMethod) {
 				aNamespace[aMethod] = self.bind(aSource[aMethod], aSelf);
-				this.export(aNamespace[aMethod], aForce, aSource[aMethod], aSource[aMethod]);
-			}).call(this, i);
+			})(i);
 		}
 	}
 },
@@ -2663,7 +2671,19 @@ bind : function(aFunction, aThis)
 {
 	if (typeof aFunction != 'function' && typeof aThis == 'function')
 		[aThis, aFunction] = [aFunction, aThis];
-	return function() { return aFunction.apply(aThis, arguments); };
+
+	var wrapped = function() {
+			if (this instanceof arguments.callee) { // called as a constructor
+				aFunction.apply(this, arguments);
+			}
+			else { // called as a function
+				return aFunction.apply(aThis, arguments);
+			}
+		};
+	wrapped.prototype = aFunction.prototype;
+	this.export(wrapped, true, aFunction, aFunction);
+
+	return wrapped;
 }
  
 }; 
