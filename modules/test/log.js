@@ -360,10 +360,16 @@ TestLog.prototype = {
 		if (!this._totalCount) {
 			this._totalCount = this._createNewCount();
 			this._items.forEach(function(aItem) {
-				if (!(aItem.result in this._totalCount))
-					this._totalCount[aItem.result] = 0;
-				this._totalCount[aItem.result]++;
-				this._totalCount.total++;
+				if (!aItem.count)
+					return;
+				for (var i in aItem.count)
+				{
+					if (!aItem.count.hasOwnProperty(i))
+						continue;
+					if (!(i in this._totalCount))
+						this._totalCount[i] = 0;
+					this._totalCount[i] += aItem.count[i];
+				}
 			}, this);
 		}
 		return this._totalCount;
