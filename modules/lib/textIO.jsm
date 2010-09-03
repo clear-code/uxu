@@ -1,7 +1,7 @@
 /**
  * @fileOverview Plaintext File I/O Library for Firefox 3.5 or later
  * @author       ClearCode Inc.
- * @version      2
+ * @version      3
  *
  * @license
  *   The MIT License, Copyright (c) 2010 ClearCode Inc.
@@ -29,7 +29,7 @@ if (typeof namespace == 'undefined') {
 
 var textIO;
 (function() {
-	const currentRevision = 2;
+	const currentRevision = 3;
 
 	var loadedRevision = 'textIO' in namespace ?
 			namespace.textIO.revision :
@@ -41,6 +41,8 @@ var textIO;
 
 	const Cc = Components.classes;
 	const Ci = Components.interfaces;
+
+	const IOService = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
 
 	/**
 	 * @class

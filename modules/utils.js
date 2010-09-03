@@ -452,6 +452,24 @@ makeURIFromSpec : function(aURI)
 	return null;
 },
  
+getRealURL : function(aURI) 
+{
+	if (typeof aURI == 'string')
+		aURI = this.makeURIFromSpec(aURI);
+	if (aURI.schemeIs('chrome')) {
+		return Cc['@mozilla.org/chrome/chrome-registry;1']
+				.getService(Ci.nsIChromeRegistry)
+				.convertChromeURL(aURI);
+	}
+	return null;
+},
+ 
+getRealURLSpec : function(aURI) 
+{
+	var url = this.getRealURL(aURI);
+	return url ? url.spec : '' ;
+},
+ 
 makeFileWithPath : function(aPath) 
 {
 	var newFile = Cc['@mozilla.org/file/local;1']
@@ -476,11 +494,8 @@ getFileFromURLSpec : function(aURI)
 	if (!aURI)
 		aURI = '';
 
-	if (aURI.indexOf('chrome://') == 0) {
-		var ChromeRegistry = Cc["@mozilla.org/chrome/chrome-registry;1"]
-			.getService(Ci.nsIChromeRegistry);
-		aURI = ChromeRegistry.convertChromeURL(this.makeURIFromSpec(aURI)).spec;
-	}
+	if (aURI.indexOf('chrome://') == 0)
+		aURI = this.getRealURLSpec(aURI);
 
 	if (aURI.indexOf('file://') != 0) return null;
 
@@ -544,10 +559,12 @@ getURLSpecFromFilePath : function(aPath)
 // ファイルまたはURIで示された先のリソースを読み込み、文字列として返す 
 readFrom : function(aTarget, aEncoding)
 {
-	var target = this.normalizeToFile(aTarget);
-	if (!target)
-		throw new Error(bundle.getFormattedString('error_utils_read_from', [aTarget]));
-
+	var target = aTarget;
+	if (!target || !(target instanceof Ci.nsIURI)) {
+		target = this.normalizeToFile(target);
+		if (!target)
+			throw new Error(bundle.getFormattedString('error_utils_read_from', [aTarget]));
+	}
 	return ns.textIO.readFrom(target, aEncoding);
 },
  

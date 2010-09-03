@@ -71,7 +71,8 @@ TestLog.prototype = {
 		return this._items;
 	},
 	set items(aValue) {
-		this._items = Array.slice(aValue);
+		this._items = [];
+		this.append(aValue);
 		return aValue;
 	},
 	get lastItem() {
@@ -297,13 +298,11 @@ TestLog.prototype = {
 			rows.push(headerRow);
 
 			rows = rows.concat(topicRows);
-
-			for (var i in aLog.count) allCount[i] += aLog.count[i];
 		}, this);
 		var table = bundle.getFormattedString('log_html_table', [rows.join('')]);
 
 		let total = this.totalCount;
-		return utils.readFrom(utils.makeURIFromSpec('chrome://uxu/locale/log.html'), 'UTF-8')
+		return utils.readFrom(utils.getRealURL('chrome://uxu/locale/log.html'), 'UTF-8')
 				.replace(/<!--\s*success-count\s*-->/, total.success)
 				.replace(/<!--\s*failure-count\s*-->/, total.failure)
 				.replace(/<!--\s*error-count\s*-->/, total.error)
@@ -327,38 +326,22 @@ TestLog.prototype = {
 						{
 							aOneOldItem[i] = aOneNewItem[i];
 						}
-						this._updateMetadata(aOneNewItem[i]);
 						return true;
 					}
 					return false;
 				}, this))
 				return;
 			this._items.push(aOneNewItem);
-			this._updateMetadata(aOneNewItem);
 		}, this);
-	},
-
-	_updateMetadata : function(aItem)
-	{
-		var count = { total : 0 };
-
-		aItem.topics.forEach(function(aTopic) {
-			if (!(aTopic.result in count))
-				count[aTopic.result] = 0;
-			count[aTopic.result]++;
-			count.total++;
-		});
-		aItem.count = count;
-
 		this._totalTime = null;
-		this._totalCount = { total : 0 };
+		this._totalCount = null;
 	},
 
 	clear : function()
 	{
 		this._items = [];
 		this._totalTime = null;
-		this._totalCount = { total : 0 };
+		this._totalCount = null;
 	},
 
 	get totalTime()
@@ -374,7 +357,8 @@ TestLog.prototype = {
 
 	get totalCount()
 	{
-		if (!this._totalCount.total) {
+		if (!this._totalCount) {
+			this._totalCount = this._createNewCount();
 			this._items.forEach(function(aItem) {
 				if (!(aItem.result in this._totalCount))
 					this._totalCount[aItem.result] = 0;
@@ -391,20 +375,40 @@ TestLog.prototype = {
 			start  : Date.now(),
 			title  : aEvent.target.title,
 			source : aEvent.target.source,
-			topics : []
+			topics : [],
+			count  : this._createNewCount()
 		});
+	},
+	_createNewCount : function()
+	{
+		return {
+			total   : 0,
+			success : 0,
+			failure : 0,
+			error   : 0,
+			skip    : 0
+		};
 	},
 
 	onTestFinish : function(aEvent)
 	{
+		var count = this.lastItem.count;
+		if (!(aEvent.data.result in count))
+			count[aEvent.data.result] = 0;
+		count[aEvent.data.result]++;
+		count.total++;
+
+		this._totalTime = null;
+		this._totalCount = null;
+
 		this.lastItem.topics = this.lastItem.topics.concat(aEvent.data.topics);
 	},
 
 	onFinish : function(aEvent)
 	{
-		if (aEvent.data.result == ns.TestCase.prototype.RESULT_ERROR) {
-			this.lastItem.topics = this.lastItem.topics.concat(aEvent.data.topics);
-		}
+		if (aEvent.data.result == ns.TestCase.prototype.RESULT_ERROR)
+			this.onTestFinish(aEvent);
+
 		this.lastItem.finish = Date.now();
 		this.lastItem.time = aEvent.data.time;
 	},

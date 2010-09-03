@@ -344,7 +344,7 @@ function restoreLastResult()
 			}, 50);
 	}
 	catch(e) {
-		alert(e);
+		alert(e+'\n'+lastResult);
 		mainDeck.selectedIndex = 1;
 	}
 	return true;
