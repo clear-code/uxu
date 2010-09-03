@@ -406,10 +406,7 @@ Assertions.prototype = {
 			try {
 				aTask = aTask.call(aContext);
 			}
-			catch(e if e == aExpectedException ||
-			           e.name == aExpectedException ||
-			           e.message == aExpectedException ||
-			           e.result == aExpectedException) {
+			catch(e if this._exceptionMatches(aExpectedException, e)) {
 				raised = true;
 				exception = e;
 			}
@@ -418,22 +415,14 @@ Assertions.prototype = {
 			}
 		}
 		if (aTask && utils.isGeneratedIterator(aTask)) {
-			var _this = this;
+			var self = this;
 			return utils.doIteration(aTask, {
 				onEnd : function(e)
 				{
-					if (
-						!e ||
-						(
-							e != aExpectedException &&
-							e.name != aExpectedException &&
-							e.message != aExpectedException &&
-							e.result != aExpectedException
-						)
-						) {
-						_this._onRaisesFinish(aExpectedException, e, aMessage);
+					if (!e || !self._exceptionMatches(aExpectedException, e)) {
+						self._onRaisesFinish(aExpectedException, e, aMessage);
 					}
-					_this._onSuccess();
+					self._onSuccess();
 				}
 			});
 		}
@@ -445,16 +434,53 @@ Assertions.prototype = {
 	raise : function() { return this.raises.apply(this, arguments); },
 	'throw' : function() { return this.raises.apply(this, arguments); },
 	throws : function() { return this.raises.apply(this, arguments); },
+	_exceptionMatches : function(aExpected, aActual)
+	{
+		if (aExpected == aActual)
+			return true;
+
+		switch (typeof aExpected)
+		{
+			case 'string':
+			case 'number':
+				return (
+					aActual.name == aExpected ||
+					aActual.message == aExpected ||
+					aActual.result == aExpected
+				);
+
+			case 'function':
+				return aActual instanceof aExpected;
+
+			case 'object':
+				if (!aExpected)
+					return false;
+				for (let i in aExpected)
+				{
+					if (aExpected.hasOwnProperty(i) &&
+						aActual[i] != aExpected[i])
+						return false;
+				}
+				return true;
+		}
+
+		return false;
+	},
 	_onRaisesFinish : function(aExpectedException, aActualException, aMessage)
 	{
 		var name = utils.getErrorNameFromNSExceptionCode(aExpectedException);
 		if (name)
 			aExpectedException = aExpectedException+' ('+name+')';
+
+		var expectedReadable = aExpectedException;
+		if (expectedReadable && typeof expectedReadable == 'object')
+			expectedReadable = utils.inspect(expectedReadable);
+
 		if (aActualException) {
 			this._fail({
 			     	expectedRaw : aExpectedException,
 			     	actualRaw   : aActualException,
-			     	expected    : bundle.getFormattedString('assert_raises_expected', [aExpectedException]),
+			     	expected    : bundle.getFormattedString('assert_raises_expected', [expectedReadable]),
 			     	actual      : bundle.getFormattedString('assert_raises_actual', [aActualException])
 			     },
 			     bundle.getString('assert_raises'), aMessage);
@@ -462,7 +488,7 @@ Assertions.prototype = {
 		else {
 			this._fail({
 			     	expectedRaw : aExpectedException,
-			     	expected    : bundle.getFormattedString('assert_raises_expected', [aExpectedException])
+			     	expected    : bundle.getFormattedString('assert_raises_expected', [expectedReadable])
 			     },
 			     bundle.getString('assert_raises'), aMessage);
 		}
@@ -480,10 +506,7 @@ Assertions.prototype = {
 			try {
 				aTask = aTask.call(aContext);
 			}
-			catch(e if e == aUnexpectedException ||
-			           e.name == aUnexpectedException ||
-			           e.message == aUnexpectedException ||
-			           e.result == aUnexpectedException) {
+			catch(e if this._exceptionMatches(aExpectedException, e)) {
 				exception = e;
 				raised = true;
 			}
@@ -494,23 +517,15 @@ Assertions.prototype = {
 				this._onNotRaisesFinish(aUnexpectedException, exception, aMessage);
 		}
 		if (aTask && utils.isGeneratedIterator(aTask)) {
-			var _this = this;
+			var self = this;
 			return utils.doIteration(aTask, {
 				onEnd : function(e)
 				{
-					if (
-						!e ||
-						(
-							e != aUnexpectedException &&
-							e.name != aUnexpectedException &&
-							e.message != aUnexpectedException &&
-							e.result != aUnexpectedException
-						)
-						) {
-						_this._onSuccess();
+					if (!e || !self._exceptionMatches(aExpectedException, e)) {
+						self._onSuccess();
 						return;
 					}
-					_this._onNotRaisesFinish(aUnexpectedException, e, aMessage);
+					self._onNotRaisesFinish(aUnexpectedException, e, aMessage);
 				}
 			});
 		}
@@ -524,10 +539,15 @@ Assertions.prototype = {
 		var name = utils.getErrorNameFromNSExceptionCode(aUnexpectedException);
 		if (name)
 			aUnexpectedException = aUnexpectedException+' ('+name+')';
+
+		var unexpectedReadable = aUnexpectedException;
+		if (unexpectedReadable && typeof unexpectedReadable == 'object')
+			unexpectedReadable = utils.inspect(unexpectedReadable);
+
 		this._fail({
 		     	expectedRaw : aUnexpectedException,
 		     	actualRaw   : aActualException,
-		     	expected    : bundle.getFormattedString('assert_not_raises_expected', [aUnexpectedException]),
+		     	expected    : bundle.getFormattedString('assert_not_raises_expected', [unexpectedReadable]),
 		     	actual      : bundle.getFormattedString('assert_not_raises_actual', [aActualException])
 		     },
 		     bundle.getString('assert_not_raises'), aMessage);
@@ -651,11 +671,11 @@ Assertions.prototype = {
 
 		if (typeof aTask == 'function') aTask = aTask.call(aContext);
 		if (aTask && utils.isGeneratedIterator(aTask)) {
-			var _this = this;
+			var self = this;
 			return utils.doIteration(aTask, {
 				onEnd : function(e)
 				{
-					_this._onDifferenceFinish(startValue, aGetter(), aExpectedDelta, aMessage);
+					self._onDifferenceFinish(startValue, aGetter(), aExpectedDelta, aMessage);
 				},
 				onError : function(e)
 				{
@@ -718,11 +738,11 @@ Assertions.prototype = {
 
 		if (typeof aTask == 'function') aTask = aTask.call(aContext);
 		if (aTask && utils.isGeneratedIterator(aTask)) {
-			var _this = this;
+			var self = this;
 			return utils.doIteration(aTask, {
 				onEnd : function(e)
 				{
-					_this._onNoDifferenceFinish(startValue, aGetter(), aMessage);
+					self._onNoDifferenceFinish(startValue, aGetter(), aMessage);
 				},
 				onError : function(e)
 				{
@@ -941,11 +961,11 @@ Assertions.prototype = {
 		var startAt = Date.now();
 		if (typeof aTask == 'function') aTask = aTask.call(aContext);
 		if (aTask && utils.isGeneratedIterator(aTask)) {
-			var _this = this;
+			var self = this;
 			return utils.doIteration(aTask, {
 				onEnd : function(e)
 				{
-					_this._onFinishesWithinFinish(aExpectedTime, startAt, aMessage);
+					self._onFinishesWithinFinish(aExpectedTime, startAt, aMessage);
 				},
 				onError : function(e)
 				{
@@ -983,11 +1003,11 @@ Assertions.prototype = {
 		var startAt = Date.now();
 		if (typeof aTask == 'function') aTask = aTask.call(aContext);
 		if (aTask && utils.isGeneratedIterator(aTask)) {
-			var _this = this;
+			var self = this;
 			return utils.doIteration(aTask, {
 				onEnd : function(e)
 				{
-					_this._onNotFinishesWithinFinish(aExpectedTime, startAt, aMessage);
+					self._onNotFinishesWithinFinish(aExpectedTime, startAt, aMessage);
 				},
 				onError : function(e)
 				{
@@ -1040,7 +1060,7 @@ Assertions.prototype = {
 			aTask = aTask.call(aContext);
 		}
 		if (aTask && utils.isGeneratedIterator(aTask)) {
-			var _this = this;
+			var self = this;
 			return utils.doIteration(aTask, {
 				onFail : function(e)
 				{
@@ -1052,8 +1072,8 @@ Assertions.prototype = {
 				},
 				onEnd : function(e)
 				{
-					_this._assertionsCountCompare(aExpectedCount, aOperator, _this._successCount - count, aMessage);
-					_this._onSuccess();
+					self._assertionsCountCompare(aExpectedCount, aOperator, self._successCount - count, aMessage);
+					self._onSuccess();
 				}
 			});
 		}

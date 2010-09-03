@@ -1,7 +1,7 @@
 /**
  * @fileOverview Windows Registry I/O Library for Firefox 3.5 or later
  * @author       ClearCode Inc.
- * @version      1
+ * @version      2
  *
  * @license
  *   The MIT License, Copyright (c) 2010 ClearCode Inc.
@@ -10,7 +10,8 @@
  * @url http://www.clear-code.com/repos/svn/js-codemodules/registry.test.js
  */
 
-if (typeof window == 'undefined')
+if (typeof window == 'undefined' ||
+	(window && typeof window.constructor == 'function'))
 	this.EXPORTED_SYMBOLS = ['registry'];
 
 // var namespace;
@@ -29,7 +30,7 @@ if (typeof namespace == 'undefined') {
 
 var registry;
 (function() {
-	const currentRevision = 1;
+	const currentRevision = 2;
 
 	var loadedRevision = 'registry' in namespace ?
 			namespace.registry.revision :
@@ -63,6 +64,17 @@ var registry;
 		ERROR_WRITE_FAILED : 'Failed to write new value!',
 		/** @const */
 		ERROR_CLEAR_FAILED : 'Failed to clear a registry key!',
+
+		/** @const */
+		REASON_UNKNOWN        : 'unknown reason',
+		/** @const */
+		REASON_UNKNOWN_TYPE   : 'unknown type value',
+		/** @const */
+		REASON_NONE           : 'type is TYPE_NONE',
+		/** @const */
+		REASON_INVALID_BLOB   : 'blob contains invalid byte',
+		/** @const */
+		REASON_INVALID_NUMBER : 'given value is not a number',
 
 		/**
 		 * @private
@@ -242,7 +254,15 @@ var registry;
 			function closeAndThrowError(aError)
 			{
 				regKey.close();
-				throw aError || new Error(self.ERROR_WRITE_FAILED);
+				var message = self.ERROR_WRITE_FAILED;
+				if (!aError || typeof aError == 'string') {
+					let reason = aError || self.REASON_UNKNOWN_TYPE;
+					aError = new Error(message);
+					aError.reason = reason;
+				}
+				aError.key    = aKey;
+				aError.value  = aValue;
+				throw aError || new Error(message);
 			}
 
 			try {
@@ -269,7 +289,7 @@ var registry;
 								type = Ci.nsIWindowsRegKey.TYPE_BINARY;
 							}
 							else {
-								closeAndThrowError();
+								closeAndThrowError(this.REASON_UNKNOWN);
 							}
 							break;
 					}
@@ -278,7 +298,7 @@ var registry;
 				switch (type)
 				{
 					case Ci.nsIWindowsRegKey.TYPE_NONE:
-						closeAndThrowError();
+						closeAndThrowError(this.REASON_NONE);
 						break;
 					case Ci.nsIWindowsRegKey.TYPE_STRING:
 						regKey.writeStringValue(name, String(aValue));
@@ -300,12 +320,13 @@ var registry;
 									'length' in aValue &&
 									'forEach' in aValue) {
 									aValue = aValue.map(function(aCode) {
-										if (typeof aCode != 'number') closeAndThrowError();
+										if (typeof aCode != 'number')
+											closeAndThrowError(self.REASON_INVALID_BLOB);
 										return String.fromCharCode(aCode);
 									}).join('');
 								}
 								else {
-									closeAndThrowError();
+									closeAndThrowError(this.REASON_UNKNOWN);
 								}
 								break;
 						}
@@ -320,10 +341,11 @@ var registry;
 							case 'string':
 							case 'number':
 								aValue = parseInt(aValue);
-								if (isNaN(aValue)) closeAndThrowError();
+								if (isNaN(aValue))
+									closeAndThrowError(this.REASON_INVALID_NUMBER);
 								break;
 							case 'object':
-								closeAndThrowError();
+								closeAndThrowError(this.REASON_INVALID_NUMBER);
 								break;
 						}
 						regKey.writeIntValue(name, aValue);
@@ -337,10 +359,10 @@ var registry;
 							case 'string':
 							case 'number':
 								aValue = parseInt(aValue);
-								if (isNaN(aValue)) closeAndThrowError();
+								if (isNaN(aValue)) closeAndThrowError(this.REASON_INVALID_NUMBER);
 								break;
 							case 'object':
-								closeAndThrowError();
+								closeAndThrowError(this.REASON_INVALID_NUMBER);
 								break;
 						}
 						regKey.writeInt64Value(name, aValue);
