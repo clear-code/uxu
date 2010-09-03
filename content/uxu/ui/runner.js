@@ -662,6 +662,11 @@ var gRemoteRun = {
 
 	onFinish : function()
 	{
+		if (gOptions.autoQuit)
+			utils.quitApplication(true);
+		else if (gOptions.autoClose)
+			window.close();
+
 		this.stopPinging();
 	},
 
@@ -718,10 +723,12 @@ function onAllTestsFinish()
 	gRemoteRun.onEvent('finish-all');
 	updateUIForAllTestsFinish();
 
-	if (gOptions.autoQuit)
-		utils.quitApplication(true);
-	else if (gOptions.autoClose)
-		window.close();
+	if (!gRemoteRun.pinging) {
+		if (gOptions.autoQuit)
+			utils.quitApplication(true);
+		else if (gOptions.autoClose)
+			window.close();
+	}
 };
  
 function updateUIForAllTestsFinish() 
