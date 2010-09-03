@@ -182,7 +182,7 @@ function test_waitDOMEvent()
 		assert.inDelta(aTimeout, Date.now() - before, aDelta);
 	}
 
-	utils.loadURI('about:');
+	utils.loadURI('about:blank?wait');
 
 	// standard
 	window.setTimeout(function() {
