@@ -53,8 +53,10 @@ function assertMapped(aURI, aMapToFile)
 function assertRedirectedSubmission()
 {
 	utils.loadURI('http://localhost:4445/html.html');
-	$('form').submit();
-	utils.wait(3000);
+	window.setTimeout(function() {
+		$('form').submit();
+	}, 0);
+	utils.wait({ type : 'load', capturing : true }, gBrowser);
 	assert.equals('hash\n', content.document.documentElement.textContent);
 }
 
