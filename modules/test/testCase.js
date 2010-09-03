@@ -634,6 +634,23 @@ TestCase.prototype = {
 		test.hash = this._utils.computeHash(sources.join('\n'), 'MD5');
 		test.name = this._source + '::' + this.title + '::' + (desc || test.hash);
 
+		var db, statement;
+		try {
+			db = this._utils.getDB();
+			statement = db.createStatement(
+				  'SELECT result, hash FROM result_history WHERE name = ?1'
+				);
+			statement.bindStringParameter(0, test.name);
+			while (statement.executeStep())
+			{
+				test.lastResult = statement.getString(0);
+				test.lastHash   = statement.getString(1);
+			}
+		}
+		finally {
+			statement.reset();
+		}
+
 		this._tests.push(test);
 	},
  
@@ -1377,29 +1394,18 @@ TestCase.prototype = {
 					break;
 			}
 		}
-		if (!shouldDo && !forceNever) {
-			var db, statement;
-			var lastResult;
-			var lastHash;
-			try {
-				db = this._utils.getDB();
-				statement = db.createStatement(
-					  'SELECT result, hash FROM result_history WHERE name = ?1'
-					);
-				statement.bindStringParameter(0, aTest.name);
-				while (statement.executeStep())
-				{
-					lastResult = statement.getString(0);
-					lastHash   = statement.getString(1);
-				}
-			}
-			finally {
-				statement.reset();
-			}
-			if ((lastHash != aTest.hash) ||
-	                    (lastResult != this.RESULT_SUCCESS && lastResult != this.RESULT_SKIPPED)) {
-				shouldDo = true;
-			}
+		if (
+			!shouldDo &&
+			!forceNever &&
+			(
+				(aTest.lastHash != aTest.hash) ||
+				(
+					aTest.lastResult != this.RESULT_SUCCESS &&
+					aTest.lastResult != this.RESULT_SKIPPED
+				)
+			)
+			) {
+			shouldDo = true;
 		}
 		return shouldDo;
 	},

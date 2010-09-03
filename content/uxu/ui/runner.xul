@@ -61,8 +61,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 			label-default="&runner.runAll.default;"
 			oncommand="run({ priority : 'must' });"
 			disabled="true"/>
-		<command id="runFailed" label="&runner.runFailed.label;" oncommand="runFailed();"
-			disabled="true"/>
+		<command id="runFailed" label="&runner.runFailed.label;" oncommand="runFailed();"/>
 		<command id="stop" label="&runner.stop.label;" accesskey="&runner.stop.accesskey;"
 			oncommand="stop();"
 			disabled="true"/>

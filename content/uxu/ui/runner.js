@@ -742,7 +742,6 @@ function updateUIForAllTestsFinish()
 		return;
 	}
 	else if (gFailure || gError) {
-		_('runFailed').removeAttribute('disabled');
 		var failures = getFailureReports();
 		var errors = getErrorReports();
 		scrollReportsTo(failures.length ? failures[0] : errors[0]);
@@ -789,7 +788,6 @@ function reset()
 	gSkipped  = 0;
 	gFailure  = 0;
 	gError    = 0;
-	_('runFailed').setAttribute('disabled', true);
 	_('testResultStatus').setAttribute('label', '');
 	_('testResultStatistical').setAttribute('label', '');
 	_('testResultStatistical').hidden = true;
@@ -812,7 +810,6 @@ function setRunningState(aRunning)
 		_('run').setAttribute('disabled', true);
 		_('runPriority').setAttribute('disabled', true);
 		_('runAll').setAttribute('disabled', true);
-		_('runFailed').setAttribute('disabled', true);
 		_('stop-box').removeAttribute('hidden');
 		_('stop').removeAttribute('disabled');
 		_('toggleServer').setAttribute('disabled', true);
@@ -825,7 +822,6 @@ function setRunningState(aRunning)
 		_('run').removeAttribute('disabled');
 		_('runPriority').removeAttribute('disabled');
 		_('runAll').removeAttribute('disabled');
-		_('runFailed').setAttribute('disabled', true);
 		_('stop-box').setAttribute('hidden', true);
 		_('stop').setAttribute('disabled', true);
 		_('toggleServer').removeAttribute('disabled');
@@ -837,15 +833,6 @@ function setRunningState(aRunning)
 function run(aOptions) 
 {
 	aOptions = aOptions || {};
-
-	var filteredTests = {};
-	if (aOptions.onlyFailed)
-		[].concat(getFailureReports()).concat(getErrorReports())
-			.forEach(function(aTestReport) {
-				var title = aTestReport.parentNode.parentNode.getAttribute('title');
-				if (title in filteredTests) return;
-				filteredTests[title] = true;
-			});
 
 	reset();
 
@@ -865,8 +852,22 @@ function run(aOptions)
 
 	if (aOptions.onlyFailed)
 		gRunner.addTestFilter(function(aTestCase) {
-			aTestCase.masterPriority = 'must';
-			return aTestCase.title in filteredTests;
+			var hasFailed = false;
+			aTestCase.tests.forEach(function(aTest) {
+				if (
+					aTest.lastResult == ns.TestCase.prototype.RESULT_FAILURE ||
+					aTest.lastResult == ns.TestCase.prototype.RESULT_ERROR
+					) {
+					aTest.priority = 'must';
+					hasFailed = true;
+				}
+				else {
+					aTest.shouldSkip = true;
+				}
+			});
+			if (!hasFailed)
+				aTestCase.masterPriority = 'never';
+			return hasFailed;
 		});
 
 	document.documentElement.setAttribute('running', true);
