@@ -496,9 +496,9 @@ Assertions.prototype = {
 
 	notRaises : function(aUnexpectedException, aTask, aContext, aMessage)
 	{
-		if (typeof aExpectedException == 'string' &&
-			aExpectedException in Components.results)
-			aExpectedException = Components.results[aExpectedException];
+		if (typeof aUnexpectedException == 'string' &&
+			aUnexpectedException in Components.results)
+			aUnexpectedException = Components.results[aUnexpectedException];
 
 		var raised = false;
 		var exception;
@@ -506,7 +506,7 @@ Assertions.prototype = {
 			try {
 				aTask = aTask.call(aContext);
 			}
-			catch(e if this._exceptionMatches(aExpectedException, e)) {
+			catch(e if this._exceptionMatches(aUnexpectedException, e)) {
 				exception = e;
 				raised = true;
 			}
@@ -521,7 +521,7 @@ Assertions.prototype = {
 			return utils.doIteration(aTask, {
 				onEnd : function(e)
 				{
-					if (!e || !self._exceptionMatches(aExpectedException, e)) {
+					if (!e || !self._exceptionMatches(aUnexpectedException, e)) {
 						self._onSuccess();
 						return;
 					}

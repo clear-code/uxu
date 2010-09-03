@@ -790,7 +790,16 @@ function testRaises()
 		['test', function() { return true; }, {}, message]
 	);
 	assertSuccess(assertionsModule.raise,
+		[{ bool : true, number : 0 }, function() { throw { bool : true, number : 0, unknown : '' }; }, {}]
+	);
+	assertFailure(assertionsModule.raise,
+		[{ bool : true, number : 0 }, function() { throw { bool : false, number : 1, unknown : '' }; }, {}, message]
+	);
+	assertSuccess(assertionsModule.raise,
 		['SyntaxError', function() { eval('{'); }, {}]
+	);
+	assertSuccess(assertionsModule.raise,
+		[SyntaxError, function() { eval('{'); }, {}]
 	);
 
 	assertSuccess(assertionsModule.raise,
@@ -819,10 +828,19 @@ function testRaises()
 		['test', function() { throw new Error('test'); }, {}, message]
 	);
 	assertSuccess(assertionsModule.notRaise,
+		[{ bool : true, number : 0 }, function() { throw { bool : false, number : 1, unknown : '' }; }, {}]
+	);
+	assertFailure(assertionsModule.notRaise,
+		[{ bool : true, number : 0 }, function() { throw { bool : true, number : 0, unknown : '' }; }, {}, message]
+	);
+	assertSuccess(assertionsModule.notRaise,
 		['SyntaxError', function() { throw 'test'; }, {}]
 	);
 	assertFailure(assertionsModule.notRaise,
 		['SyntaxError', function() { eval('{'); }, {}, message]
+	);
+	assertFailure(assertionsModule.notRaise,
+		[SyntaxError, function() { eval('{'); }, {}, message]
 	);
 	assertSuccess(assertionsModule.notRaise,
 		['NS_OK', function() { window.QueryInterface(Ci.nsIDOMDocument) }, {}]
@@ -837,7 +855,7 @@ function testRaises()
 		[Components.results.NS_NOINTERFACE, function() { window.QueryInterface(Ci.nsIDOMDocument) }, {}, message]
 	);
 
-	assert.equal(12, assertionsModule.successCount);
+	assert.equal(15, assertionsModule.successCount);
 }
 
 var inDeltaListener;
