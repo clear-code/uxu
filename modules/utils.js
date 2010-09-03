@@ -2378,7 +2378,7 @@ setPermission : function(aHost, aType, aPermission)
 			this.backupPermissions[key] = current || 0;
 
 		if (current != aPermission)
-			PermissionManager.remove(this.UCS2ToUTF8(aHost), aType);
+			PermissionManager.remove(this.UCS2ToUTF8(uri.host), aType);
 		if (aPermission)
 			PermissionManager.add(uri, aType, aPermission);
 	}
@@ -2392,11 +2392,12 @@ rollbackPermissions : function()
 
 	for (var i in this.backupPermissions)
 	{
-		let [type, host] = i.split('\n');
+		let [type, uri] = i.split('\n');
 		let original = this.backupPermissions[i];
-		PermissionManager.remove(this.UCS2ToUTF8(host), type);
+		uri = this.makeURIFromSpec(uri);
+		PermissionManager.remove(this.UCS2ToUTF8(uri.host), type);
 		if (original)
-			PermissionManager.add(this.makeURIFromSpec(host), type, original);
+			PermissionManager.add(uri, type, original);
 	}
 	this.backupPermissions = {};
 },
