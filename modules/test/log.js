@@ -115,14 +115,6 @@ TestLog.prototype = {
 	_toText : function(aFormat)
 	{
 		var result = [];
-		var allCount = {
-				total    : 0,
-				success  : 0,
-				skip     : 0,
-				failure  : 0,
-				error    : 0
-			};
-		var totalTime = 0;
 		var testCaseSeparator = bundle.getString('log_separator_testcase');
 		var testSeparator = bundle.getString('log_separator_test');
 		this._items.forEach(function(aLog) {
@@ -130,17 +122,8 @@ TestLog.prototype = {
 			result.push(aLog.source);
 			result.push(bundle.getFormattedString('log_start', [aLog.title, new Date(aLog.start)]));
 			result.push(testCaseSeparator);
-			var count = {
-					total    : 0,
-					success  : 0,
-					skip     : 0,
-					failure  : 0,
-					error    : 0
-				};
 			var outputCount = 0;
 			aLog.topics.forEach(function(aTopic, aIndex) {
-				count[aTopic.result]++;
-				count.total++;
 				if (aFormat & this.IGNORE_SKIPPED &&
 					aTopic.result == ns.TestCase.prototype.RESULT_SKIPPED)
 					return;
@@ -194,16 +177,15 @@ TestLog.prototype = {
 			else
 				result.push(bundle.getFormattedString('log_finish', [new Date(aLog.finish)]));
 			result.push(this._getLogTimeStr(aLog.time));
-			result.push(bundle.getFormattedString('log_result', [count.success, count.failure, count.error, count.skip]));
+			result.push(bundle.getFormattedString('log_result', [aLog.count.success, aLog.count.failure, aLog.count.error, aLog.count.skip]));
 			result.push(testCaseSeparator);
 			result.push('');
-			for (var i in count) allCount[i] += count[i];
-			totalTime += aLog.time;
 		}, this);
 		if (result.length) {
 			result.unshift('');
-			result.unshift(this._getLogTimeStr(totalTime));
-			result.unshift(bundle.getFormattedString('all_result_statistical', [allCount.total, allCount.success, allCount.failure, allCount.error, allCount.skip]));
+			result.unshift(this._getLogTimeStr(this.totalTime));
+			let total = this.totalCount;
+			result.unshift(bundle.getFormattedString('all_result_statistical', [total.total, total.success, total.failure, total.error, total.skip]));
 			result.push('');
 		}
 		return result.join('\n');
@@ -259,32 +241,12 @@ TestLog.prototype = {
 
 	_toHTML : function()
 	{
-		var allCount = {
-				total    : 0,
-				success  : 0,
-				skip     : 0,
-				failure  : 0,
-				error    : 0
-			};
-		var totalTime = 0;
-
 		var props = 'index,description,parameter,timestamp,result,time,detailedTime,error,message,expected,actual,diff,stackTrace'.split(',');
 		var headerRow = bundle.getString('log_html_header_row');
 		var rows = [];
 		this._items.forEach(function(aLog) {
-			var count = {
-					total    : 0,
-					success  : 0,
-					skip     : 0,
-					failure  : 0,
-					error    : 0
-				};
-
 			var topicRows = [];
 			aLog.topics.forEach(function(aTopic) {
-				count[aTopic.result]++;
-				count.total++;
-
 				var base = bundle.getString(aTopic.exception ? 'log_html_topic_row_error' : 'log_html_topic_row' );
 				props.forEach(function(aProp) {
 					let string = !(aProp in aTopic) ? '' :
@@ -326,27 +288,27 @@ TestLog.prototype = {
 					utils.escapeHTML(new Date(aLog.start)),
 					utils.escapeHTML(finish),
 					utils.escapeHTML(this._getLogTime(aLog.time)),
-					count.success,
-					count.failure,
-					count.error,
-					count.skip
+					aLog.count.success,
+					aLog.count.failure,
+					aLog.count.error,
+					aLog.count.skip
 				])
 			);
 			rows.push(headerRow);
 
 			rows = rows.concat(topicRows);
 
-			for (var i in count) allCount[i] += count[i];
-			totalTime += aLog.time;
+			for (var i in aLog.count) allCount[i] += aLog.count[i];
 		}, this);
 		var table = bundle.getFormattedString('log_html_table', [rows.join('')]);
 
+		let total = this.totalCount;
 		return utils.readFrom(utils.makeURIFromSpec('chrome://uxu/locale/log.html'), 'UTF-8')
-				.replace(/<!--\s*success-count\s*-->/, allCount.success)
-				.replace(/<!--\s*failure-count\s*-->/, allCount.failure)
-				.replace(/<!--\s*error-count\s*-->/, allCount.error)
-				.replace(/<!--\s*skip-count\s*-->/, allCount.skip)
-				.replace(/<!--\s*total-time\s*-->/, this._getLogTime(totalTime))
+				.replace(/<!--\s*success-count\s*-->/, total.success)
+				.replace(/<!--\s*failure-count\s*-->/, total.failure)
+				.replace(/<!--\s*error-count\s*-->/, total.error)
+				.replace(/<!--\s*skip-count\s*-->/, total.skip)
+				.replace(/<!--\s*total-time\s*-->/, this._getLogTime(this.totalTime))
 				.replace(/<!--\s*result-table\s*-->/, table);
 	},
 
@@ -365,20 +327,63 @@ TestLog.prototype = {
 						{
 							aOneOldItem[i] = aOneNewItem[i];
 						}
+						this._updateMetadata(aOneNewItem[i]);
 						return true;
 					}
 					return false;
-				}))
+				}, this))
 				return;
 			this._items.push(aOneNewItem);
+			this._updateMetadata(aOneNewItem);
 		}, this);
+	},
+
+	_updateMetadata : function(aItem)
+	{
+		var count = { total : 0 };
+
+		aItem.topics.forEach(function(aTopic) {
+			if (!(aTopic.result in count))
+				count[aTopic.result] = 0;
+			count[aTopic.result]++;
+			count.total++;
+		});
+		aItem.count = count;
+
+		this._totalTime = null;
+		this._totalCount = { total : 0 };
 	},
 
 	clear : function()
 	{
 		this._items = [];
+		this._totalTime = null;
+		this._totalCount = { total : 0 };
 	},
 
+	get totalTime()
+	{
+		if (this._totalTime === null) {
+			this._totalTime = 0;
+			this._items.forEach(function(aItem) {
+				this._totalTime += aItem.time;
+			}, this);
+		}
+		return this._totalTime;
+	},
+
+	get totalCount()
+	{
+		if (!this._totalCount.total) {
+			this._items.forEach(function(aItem) {
+				if (!(aItem.result in this._totalCount))
+					this._totalCount[aItem.result] = 0;
+				this._totalCount[aItem.result]++;
+				this._totalCount.total++;
+			}, this);
+		}
+		return this._totalCount;
+	},
 
 	onStart : function(aEvent)
 	{
