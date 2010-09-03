@@ -175,11 +175,11 @@ function test_wait()
 if (utils.checkPlatformVersion('1.9') < 0) test_waitDOMEvent.priority = 'never';
 function test_waitDOMEvent()
 {
-	function assertWaitSuccess(aConditions, aTimeout)
+	function assertWaitSuccess(aConditions, aTimeout, aDelta)
 	{
 		var before = Date.now();
 		utilsModule.wait.apply(utilsModule, aConditions);
-		assert.inDelta(aTimeout, Date.now() - before, 200);
+		assert.inDelta(aTimeout, Date.now() - before, aDelta);
 	}
 
 	utils.loadURI('about:');
@@ -188,16 +188,16 @@ function test_waitDOMEvent()
 	window.setTimeout(function() {
 		action.clickOn(content.document.documentElement);
 	}, 10);
-	assertWaitSuccess([content.document, 'click', 500], 200);
+	assertWaitSuccess([content.document, 'click', 1000], 500, 499);
 
 	// timeout
-	assertWaitSuccess([content.document, 'click', 500], 500);
+	assertWaitSuccess([content.document, 'click', 1000], 1000, 100);
 
 	// mixed order
 	window.setTimeout(function() {
 		action.clickOn(content.document.documentElement);
 	}, 10);
-	assertWaitSuccess(['click', 500, content.document], 200);
+	assertWaitSuccess(['click', 1000, content.document], 500, 499);
 
 	// multiple events
 	window.setTimeout(function() {
@@ -205,7 +205,7 @@ function test_waitDOMEvent()
 	}, 10);
 	assertWaitSuccess([content.document, 'click',
 	                   content.document, 'keypress',
-	                   500], 200);
+	                   1000], 500, 499);
 
 	// detailed conditions
 	window.setTimeout(function() {
@@ -219,7 +219,7 @@ function test_waitDOMEvent()
 	                     ctrlKey : true
 	                   },
 	                   content.document,
-	                   500], 200);
+	                   1000], 500, 499);
 
 	// callback style
 	var events = [];
