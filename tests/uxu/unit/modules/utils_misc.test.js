@@ -950,6 +950,6 @@ function test_export_self()
 			exportedProperties.push(i);
 	}
 
-	assert.equals(methods, exportedMethods);
-	assert.equals(properties, exportedProperties);
+	assert.equals(methods.sort(), exportedMethods.sort());
+	assert.equals(properties.sort(), exportedProperties.sort());
 }
