@@ -231,6 +231,32 @@ function test_functionMock_assert()
 	assertFail(mock);
 }
 
+function test_functionMock_addError()
+{
+	var mock = createFunctionMock();
+	var mockStack = String(mock._mock.stack);
+	assert.equals([], mock.errors);
+	assert.notEquals('', mockStack);
+
+	var error = new Error('single error');
+	var errorStack = String(error.stack);
+	mock._mock.addError(error);
+	assert.equals([error], mock.errors);
+	assert.equals(mockStack+errorStack, mock.errors[0].stack);
+
+	var errors = [
+			new Error('multiplex error 1'),
+			new Error('multiplex error 2')
+		];
+	var errorStacks = errors.map(function(aError) {
+			return String(aError.stack);
+		});
+	mock._mock.addError(new MultiplexError(errors));
+	assert.equals([error, errors[0], errors[1]], mock.errors);
+	assert.equals(mockStack+errorStacks[0], mock.errors[1].stack);
+	assert.equals(mockStack+errorStacks[1], mock.errors[2].stack);
+}
+
 
 function createGetterMock()
 {
@@ -1041,3 +1067,29 @@ function test_HTTPServerMock_assert()
 	assertFail(mock);
 }
 
+
+
+function test_TypeOf_instance()
+{
+	assert.isInstanceOf(TypeOf, TypeOf.isA(Array));
+	assert.isInstanceOf(TypeOf, new TypeOf(Array));
+	assert.isInstanceOf(TypeOf, TypeOf(Array));
+}
+
+function test_TypeOf_assert()
+{
+	TypeOf('string').assert('primitive string', assert);
+	TypeOf(String).assert(new String('string'), assert);
+	TypeOf(Array).assert([0, 1, 2], assert);
+	TypeOf(Ci.nsIDOMWindow).assert(window, assert);
+	TypeOf({
+		string : 'foo',
+		array  : TypeOf(Array),
+		object : TypeOf({ value : 'OK' })
+	}).assert({
+		string : 'foo',
+		array  : [0, 1, 2],
+		object : { value : 'OK' },
+		extra  : 'bar'
+	}, assert);
+}

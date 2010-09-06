@@ -728,9 +728,17 @@ FunctionMock.prototype = {
 	},
 	addError : function(aError)
 	{
-		if (aError.stack)
-			aError.stack = this.stack + aError.stack;
-		return this.errors.push(aError);
+		if (aError.name == 'MultiplexError') {
+			aError.errors.forEach(function(aOneError) {
+				this.addError(aOneError);
+			}, this);
+		}
+		else {
+			if (aError.stack)
+				aError.stack = this.stack + aError.stack;
+			this.errors.push(aError);
+		}
+		return aError;
 	},
 	isSpecialSpec : function(aArgument)
 	{
@@ -901,8 +909,7 @@ FunctionMock.prototype = {
 			if (aExpected instanceof TypeOf) {
 				let actual = aActualArray[aIndex];
 				try {
-					this._assert.isDefined(actual);
-					this._assert.isInstanceOf(aExpected.expectedConstructor, actual)
+					aExpected.assert(actual, this._assert);
 				}
 				catch(e) {
 					this.addError(e)
@@ -1317,6 +1324,48 @@ function TypeOf(aConstructor) {
 		return new TypeOf(aConstructor);
 	}
 }
+TypeOf.prototype = {
+	assert : function(aActual, aAssertions)
+	{
+		aAssertions = aAssertions || new ns.Assertions();
+
+		aAssertions.isDefined(aActual);
+		aAssertions.isNotNull(aActual);
+
+		var expected = this.expectedConstructor;
+		switch (typeof expected)
+		{
+			case 'string':
+				aAssertions.equals(expected, typeof aActual);
+				break;
+
+			case 'object':
+				if (expected instanceof Ci.nsIJSIID) { // Ci.*
+					aAssertions.isInstanceOf(expected, aActual);
+				}
+				else {
+					let errors = [];
+					for (let i in aActual)
+					{
+						if (!aActual.hasOwnProperty(i))
+							continue;
+						try {
+						}
+						catch(e) {
+							errors.push(e);
+						}
+					}
+					if (errors.length)
+						throw new ns.MultiplexError(errors);
+				}
+				break;
+
+			default:
+				aAssertions.isInstanceOf(expected, aActual);
+				break;
+		}
+	}
+};
 TypeOf.isA = function(aConstructor) {
 	return TypeOf(aConstructor);
 };

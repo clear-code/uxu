@@ -11,13 +11,6 @@ function tearDown()
 {
 }
 
-function test_TypeOf()
-{
-	assert.isInstanceOf(TypeOf, TypeOf.isA(Array));
-	assert.isInstanceOf(TypeOf, new TypeOf(Array));
-	assert.isInstanceOf(TypeOf, TypeOf(Array));
-}
-
 function test_JSMockStyle()
 {
 	var manager = new MockManager();
@@ -46,9 +39,6 @@ function test_JSMockStyle()
 	assertCallAdded(mock, function() {
 		mock.expects().methodWithArg(TypeOf.isA(String));
 	});
-	assertCallAdded(mock, function() {
-		mock.expects().methodWithArg(TypeOf(Array));
-	});
 
 	assertCallRemoved(mock, function() {
 		assert.isUndefined(mock.methodWithoutArg());
@@ -74,9 +64,6 @@ function test_JSMockStyle()
 	});
 	assertCallRemoved(mock, function() {
 		mock.methodWithArg(new String('string'));
-	});
-	assertCallRemoved(mock, function() {
-		mock.methodWithArg(new Array(3));
 	});
 
 	mock.verify();

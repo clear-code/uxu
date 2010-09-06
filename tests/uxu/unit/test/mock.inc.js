@@ -9,6 +9,8 @@ var SetterMock = ns.SetterMock;
 var HTTPServerMock = ns.HTTPServerMock;
 var TypeOf = ns.TypeOf;
 
+var MultiplexError = utils.import(topDir+'modules/multiplexError.js', {}).MultiplexError;
+
 var Assertions = utils.import(topDir+'modules/test/assertions.js', {}).Assertions;
 
 var bundle = utils.import(topDir+'modules/lib/stringBundle.js', {})
