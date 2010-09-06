@@ -1072,7 +1072,7 @@ _comesFromFramework : function(aLine)
 makeStackLine : function(aStack) 
 {
 	if (typeof aStack == 'string') return aStack;
-	return '()@' + aStack.filename + ':' + aStack.lineNumber + '\n';
+	return (aStack.name || '') + '()@' + aStack.filename + ':' + aStack.lineNumber + '\n';
 },
  
 getStackTrace : function() 
