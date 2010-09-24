@@ -56,9 +56,10 @@
 	</menu>
 </menupopup>
 
-<menupopup id="appmenu_developer_popup">
+<menupopup id="appmenu_webDeveloper_popup">
 	<menu id="appmenu-uxu-menu"
-		label="&uxu.tools.menu.label;">
+		label="&uxu.tools.menu.label;"
+		insertbefore="appmenu_pageInspect">
 		<menupopup>
 			<menuitem id="appmenu-uxu-menuitem-runner"
 				label="&uxu.tools.runner.label;"
