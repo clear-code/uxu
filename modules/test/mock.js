@@ -1345,9 +1345,9 @@ TypeOf.prototype = {
 				}
 				else {
 					let errors = [];
-					for (let i in aActual)
+					for (let i in expected)
 					{
-						if (!aActual.hasOwnProperty(i))
+						if (!expected.hasOwnProperty(i))
 							continue;
 						try {
 							aAssertions.equals(expected[i], aActual[i]);
