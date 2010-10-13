@@ -1350,6 +1350,7 @@ TypeOf.prototype = {
 						if (!aActual.hasOwnProperty(i))
 							continue;
 						try {
+							aAssertions.equals(expected[i], aActual[i]);
 						}
 						catch(e) {
 							errors.push(e);
