@@ -88,6 +88,8 @@ MockManager.prototype = {
 		}, this);
 		if (errors.length)
 			throw new ns.MultiplexError(errors);
+		else
+			this._assert.isTrue(true); // to block "there is no assertion" warning
 	},
 	addMock : function(aMock)
 	{
@@ -490,6 +492,8 @@ Mock.prototype = {
 		}
 		if (errors.length)
 			throw new ns.MultiplexError(errors);
+		else
+			this._assert.isTrue(true); // to block "there is no assertion" warning
 	},
 	_assert  : function() { this.assert(); },
 	verify : function() { this.assert(); },
