@@ -1,6 +1,7 @@
 var EXPORTED_SYMBOLS = ['Deferred'];
 var window = {};
 var location = { protocol: 'resource:' };
+var document = { addEventListener : function() {} };
 
 Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', window);
 var setTimeout    = window.setTimeout;
