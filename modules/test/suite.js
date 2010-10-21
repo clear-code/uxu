@@ -562,7 +562,7 @@ loadURIInternal : function(aURI, aOptions)
 
 	var b = this.testFrame;
 	if (!aOptions.inFrame) {
-		var win = this.getTestWindow(aOptions);
+		let win = this.getTestWindow(aOptions);
 		if (win) b = win.gBrowser;
 	}
 	if (!b) return { value : true };
@@ -580,6 +580,42 @@ loadURIInTestFrame : function(aURI, aOptions)
 	if (!aOptions) aOptions = {};
 	aOptions.inFrame = true;
 	return this.loadURI(aURI, aOptions);
+},
+ 
+loadXULAsChrome : function(aURI, aOptions) 
+{
+	if (!aOptions) aOptions = {};
+	aURI = this.fixupIncompleteURI(aURI);
+
+	var completedFlag = { value : false };
+
+	var baseLoadedFlag = this.loadURI(
+			'chrome://uxu/content/lib/base.xul?'+encodeURIComponent(aURI),
+			aOptions
+		);
+	ns.setTimeout(function(aSelf) {
+		aSelf._utils.wait(baseLoadedFlag);
+
+		var b = aSelf.testFrame;
+		if (!aOptions.inFrame) {
+			let win = aSelf.getTestWindow(aOptions);
+			if (win) b = win.gBrowser;
+		}
+		if (!b) {
+			completedFlag.value = true;
+			return;
+		}
+		aSelf._utils.deferredReplaceXULDocument(aURI, b.contentDocument)
+			.next(function() {
+				completedFlag.value = true;
+			})
+			.error(function(e) {
+				completedFlag.value = true;
+			});
+	}, 0, this);
+
+	if (!aOptions.async) this._utils.wait(completedFlag);
+	return completedFlag;
 },
  
 // テスト用のFirefoxウィンドウで新しいタブを開く 

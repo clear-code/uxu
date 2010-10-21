@@ -1300,6 +1300,74 @@ fixupIncompleteURI : function(aURIOrPart)
 	return uri;
 },
  
+deferredReplaceXULDocument : function(aURI, aDocument) 
+{
+	var deferred = new ns.Deferred();
+	var self = this;
+	ns.Deferred.next(function() {
+		self.deferredAsyncHTTPRequest(aURI)
+			.next(function(aRequest) {
+				var doc = aRequest.responseXML;
+
+				// unify root element
+				var root = doc.documentElement;
+				var newRoot = aDocument.createElementNS(root.namespaceURI, root.localName);
+				Array.slice(root.attributes).forEach(function(aAttribute) {
+					newRoot.setAttribute(aAttribute.name, aAttribute.value);
+				});
+				aDocument.removeChild(aDocument.documentElement);
+				aDocument.appendChild(newRoot);
+
+				// create insertion points
+				Array.slice(root.childNodes)
+					.forEach(function(aNode) {
+						if (aNode.nodeType != Ci.nsIDOMNode.ELEMENT_NODE ||
+							!aNode.hasAttribute('id'))
+							return;
+						var node = aDocument.createElementNS(aNode.namespaceURI, aNode.localName);
+						node.setAttribute('id', aNode.getAttribute('id'));
+						newRoot.appendChild(node);
+					});
+
+				aDocument.loadOverlay(aURI, {
+					observe : function() {
+						deferred.call(aDocument);
+					}
+				});
+			})
+			.error(function(e) {
+				deferred.fail(e);
+			});
+	});
+	return deferred;
+},
+ 
+deferredAsyncHTTPRequest : function(aURI) 
+{
+	var deferred = new ns.Deferred();
+
+	var request = Cc['@mozilla.org/xmlextras/xmlhttprequest;1']
+					.createInstance(Ci.nsIXMLHttpRequest);
+	request.open('GET', aURI, true);
+	request.onreadystatechange = function() {
+		if (request.readyState == 4)
+			deferred.call(request);
+	};
+
+	var next = ns.Deferred.next(function() {
+			request.send();
+		});
+	deferred.canceller = function() {
+		next.cancel();
+		try {
+			request.abort();
+		}
+		catch(e) {
+		}
+	};
+	return deferred;
+},
+ 
 // イテレータ操作 
 	
 isGeneratedIterator : function(aObject) 
@@ -2097,7 +2165,7 @@ redirectURI : function(aURI, aMappingDefinition)
 	return this.mapURI.call(this, aURI, aMappingDefinition)
 },
  
-escapeHTML : function(aString)
+escapeHTML : function(aString) 
 {
 	return String(aString)
 			.replace(/&/g, '&amp;')
@@ -2355,13 +2423,13 @@ get internalLoader()
 	return Utils.internalLoader;
 },
  
-allowRemoteXUL : function(aHost)
+allowRemoteXUL : function(aHost) 
 {
 	this.setPermission(aHost, 'allowXULXBL', 1);
 },
 allowRemoteXul : function() { return this.allowRemoteXUL(); },
  
-setPermission : function(aHost, aType, aPermission)
+setPermission : function(aHost, aType, aPermission) 
 {
 	if (!PermissionManager) return;
 
@@ -2386,7 +2454,7 @@ setPermission : function(aHost, aType, aPermission)
 	}
 },
  
-rollbackPermissions : function()
+rollbackPermissions : function() 
 {
 	if (!PermissionManager) return;
 
