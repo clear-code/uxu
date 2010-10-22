@@ -340,20 +340,21 @@ Assertions.prototype = {
 	implementsInterface : function(aExpectedInterface, aActualInstance, aMessage)
 	{
 		var expected = aExpectedInterface;
-		if (expected in Ci)
-			expected = Ci[expected];
+		if (String(expected) in Ci)
+			expected = Ci[String(expected)];
 
 		if (Ci[String(expected)] != String(expected))
 			throw new Error(bundle.getFormattedString('assert_implement_interface_not_interface', [this._appendTypeString(expected)]));
 
-		if (!(aActualInstance instanceof Ci.nsISupports))
+		if (!this._implementsXPCOMInterface(Ci.nsISupports, aActualInstance))
 			throw new Error(bundle.getFormattedString('assert_implement_interface_not_instance', [this._appendTypeString(aActualInstance)]));
 
-		if (!(aActualInstance instanceof expected)) {
-			var actualInterfaces = [];
-			for (var i in Ci)
+		if (!this._implementsXPCOMInterface(expected, aActualInstance)) {
+			let actualInterfaces = [];
+			for (let i in Ci)
 			{
-				if (aActualInstance instanceof Ci[i]) actualInterfaces.push(i);
+				if (this._implementsXPCOMInterface(Ci[i], aActualInstance))
+					actualInterfaces.push(i);
 			}
 			actualInterfaces = actualInterfaces.sort().join('\n');
 			this._fail({
@@ -364,13 +365,32 @@ Assertions.prototype = {
 		}
 		this._onSuccess();
 	},
+	_implementsXPCOMInterface : function(aExpected, aInstance)
+	{
+		if (!aInstance)
+			return false;
+
+		if (aInstance instanceof aExpected)
+			return true;
+
+		var implemented = false;
+		if ('QueryInterface' in aInstance && typeof aInstance.QueryInterface == 'function') {
+			try {
+				aInstance.QueryInterface(aExpected);
+				implemented = true;
+			}
+			catch(e) {
+			}
+		}
+		return implemented;
+	},
 	implementInterface : function() { return this.implementsInterface.apply(this, arguments); },
 
 	isInstanceOf : function(aExpectedClass, aActualInstance, aMessage)
 	{
 		var expected = aExpectedClass;
 
-		if (expected in Ci)
+		if (String(expected) in Ci)
 			return this.implementsInterface(aExpectedClass, aActualInstance, aMessage);
 
 		if (typeof expected != 'function')
