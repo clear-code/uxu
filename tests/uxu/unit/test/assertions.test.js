@@ -750,6 +750,19 @@ function testImplementsInstance()
 	assertSuccess(assertionsModule.implementsInterface, ['nsIDOMWindow', window]);
 	assertFailure(assertionsModule.implementsInterface, [Ci.nsIDOMRange, window, message]);
 	assertFailure(assertionsModule.implementsInterface, ['nsIDOMRange', window, message]);
+
+	var jsObject = {
+			QueryInterface : function(aIID) {
+				if (aIID.equals(Ci.nsISupports) ||
+					aIID.equals(Ci.nsIObserver))
+					return this;
+				throw Cr.NS_ERROR_NO_INTERFACE;
+			}
+		};
+	assertSuccess(assertionsModule.implementsInterface, [Ci.nsIObserver, jsObject]);
+	assertSuccess(assertionsModule.implementsInterface, ['nsIObserver', jsObject]);
+	assertFailure(assertionsModule.implementsInterface, [Ci.nsIDOMWindow, jsObject, message]);
+	assertFailure(assertionsModule.implementsInterface, ['nsIDOMWindow', jsObject, message]);
 }
 
 function testIsInstanceOf()
