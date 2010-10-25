@@ -903,7 +903,12 @@ TestCase.prototype = {
 					return next;
 
 				try {
-					self._suite.mockManager.assertAll();
+					ns.Assertions.prototype.doInternalAssertion.call(
+						self.suite.assert._source,
+						function() {
+							self._suite.mockManager.assertAll();
+						}
+					);
 				}
 				catch(e) {
 					let multiplex = e.name == 'MultiplexError';
@@ -921,11 +926,16 @@ TestCase.prototype = {
 				}
 
 				try {
-					ns.Assertions.prototype.validSuccessCount.call(
+					ns.Assertions.prototype.doInternalAssertion.call(
 						self.suite.assert._source,
-						current.assertions,
-						current.minAssertions,
-						current.maxAssertions
+						function() {
+							ns.Assertions.prototype.validSuccessCount.call(
+								self.suite.assert._source,
+								current.assertions,
+								current.minAssertions,
+								current.maxAssertions
+							);
+						}
 					);
 				}
 				catch(e) {

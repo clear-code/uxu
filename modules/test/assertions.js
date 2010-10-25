@@ -50,6 +50,18 @@ Assertions.prototype = {
 		this._successCount = 0;
 	},
 
+	doInternalAssertion : function()
+	{
+		var assertion = arguments[0];
+		var args = Array.slice(arguments, 1);
+		var count = this._successCount;
+		if (typeof assertion == 'function')
+			assertion();
+		else
+			this[assertion].apply(this, args);
+		this._successCount = count;
+	},
+
 	_onSuccess : function()
 	{
 		this._successCount++;
