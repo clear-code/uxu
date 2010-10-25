@@ -2563,7 +2563,7 @@ var action;
 					Ci.nsIDOMXPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
 					null
 				);
-			for (var i = 0, maxi = popups.snapshotLength; i < maxi; i++)
+			for (var i = popups.snapshotLength-1; i > -1; i--)
 			{
 				var popup = popups.snapshotItem(i);
 				if (popup.state != 'open') continue;
