@@ -7,17 +7,17 @@ var TestCase = utils.import(topDir+'modules/test/testCase.js', {}).TestCase;
 var bundle = utils.import(topDir+'modules/lib/stringBundle.js', {})
 				.stringBundle.get(topDir+'locale/ja/uxu/uxu.properties');
 
+var notificationsTemplate = [
+		{ type    : 'notification',
+		  message : 'info',
+		  stack   : ['traceLine1', 'traceLine2'] },
+		{ type    : 'warning',
+		  message : 'warning',
+		  stack   : ['traceLine1', 'traceLine2'] }
+	];
+
 function createReports(aTestCase)
 {
-	var notifications = [
-			{ type    : 'notification',
-			  message : 'info',
-			  stack   : ['traceLine1', 'traceLine2'] },
-			{ type    : 'warning',
-			  message : 'warning',
-			  stack   : ['traceLine1', 'traceLine2'] }
-		];
-
 	return [
 		(function() {
 			var r = new Report();
@@ -36,7 +36,7 @@ function createReports(aTestCase)
 				result      : TestCase.prototype.RESULT_SUCCESS,
 				description : 'Success with notifications'
 			});
-			r.notifications = notifications;
+			r.notifications = notificationsTemplate;
 			r.testCase = aTestCase;
 			r.id    = 'success';
 			r.index = 1;
@@ -61,7 +61,7 @@ function createReports(aTestCase)
 				description : 'Failure with notifications',
 				exception   : new Error('Failure')
 			});
-			r.notifications = notifications;
+			r.notifications = notificationsTemplate;
 			r.testCase = aTestCase;
 			r.id    = 'success';
 			r.index = 3;
@@ -97,7 +97,7 @@ function createReports(aTestCase)
 				description : 'Error with notifications',
 				exception   : new Error('Error')
 			});
-			r.notifications = notifications;
+			r.notifications = notificationsTemplate;
 			r.testCase = aTestCase;
 			r.id    = 'success';
 			r.index = 6;
@@ -180,20 +180,20 @@ function testOnEvents()
 	var topics = log.items[0].topics;
 	topics.forEach(function(aResult, aIndex) {
 		var report = reports1[aIndex];
-		assert.equals(report.result, aResult.type, aIndex);
-		assert.equals(report.description, aResult.title, aIndex);
+		assert.equals(report.result, aResult.result, aIndex);
+		assert.equals(report.description, aResult.description, aIndex);
 		assert.isNumber(aResult.timestamp, aIndex);
 		assert.isNumber(aResult.time, aIndex);
 		assert.isNumber(aResult.detailedTime, aIndex);
 		assert.equals(report.notifications.length, aResult.notifications.length, aIndex);
 		aResult.notifications.forEach(function(aNotification, aIndex) {
-			var notification = report.notifications[aIndex];
+			var notification = notificationsTemplate[aIndex];
 			var type = notification.type || 'notification';
 			var description = bundle.getFormattedString('notification_message_'+type, [notification.message]) ||
 						notification.message;
-			assert.equals(notification.type, aNotification.type, aIndex);
-			assert.equals(description, aNotification.description, aIndex);
-			assert.isDefined(aNotification.stackTrace, aIndex);
+			assert.equals(notification.type, aNotification.type, aIndex+'\n'+utils.inspect(aNotification));
+			assert.equals(description, aNotification.description, aIndex+'\n'+utils.inspect(aNotification));
+			assert.isDefined(aNotification.stackTrace, aIndex+'\n'+utils.inspect(aNotification));
 		});
 	});
 
