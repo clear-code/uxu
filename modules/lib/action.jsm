@@ -1,7 +1,7 @@
 /**
  * @fileOverview User Action Emulator for Firefox 3.5 or later 
  * @author       ClearCode Inc.
- * @version      2
+ * @version      3
  *
  * @example
  *   Components.utils.import('resource://uxu-modules/lib/action.jsm');
@@ -43,7 +43,7 @@ if (typeof namespace == 'undefined') {
  
 var action; 
 (function() {
-	const currentRevision = 2;
+	const currentRevision = 3;
 
 	var loadedRevision = 'action' in namespace ?
 			namespace.action.revision :
@@ -1189,9 +1189,9 @@ var action;
 		 * @param {number=} aEndY (optional)
 		 *   The Y coordinate on the screen, for the end of mousemove.
 		 * @param {nsIDOMElement=} aStartElement (optional)
-		 *   The target element which you want to start mousemove.
+		 *   The element which you want to start mousemove.
 		 * @param {nsIDOMElement=} aEndElement (optional)
-		 *   The target element which you want to end mousemove.
+		 *   The element which you want to end mousemove.
 		 * @param {{alt: boolean, altKey: boolean,
 		 *          ctrl: boolean, ctrlKey: boolean,
 		 *          control: boolean, controlKey: boolean,
@@ -1202,7 +1202,7 @@ var action;
 		 *   A hash of modifier keys. Default value of each key is
 		 *   <code>false</code>.
 		 * @param {number=} aDuration (optional)
-		 *   The duration for the mousemove, in msec. Default value is "1000".
+		 *   The duration for the mousemove, in msec. Default value is 1000.
 		 *
 		 * @returns {{startX: number,
 		 *           startY: number,
@@ -1311,8 +1311,39 @@ var action;
 			};
 		},
  
-		/** @ignore */ 
-		asyncMouseMove : function()
+		/**
+		 * Fires mousemove event periodically, between two different coordinates
+		 * or elements. This is asynchronus method, so, this doesn't wait that
+		 * completion of the mousemove.
+		 *
+		 * @param {number=} aStartX (optional)
+		 *   The X coordinate on the screen, for the start of mousemove.
+		 * @param {number=} aStartY (optional)
+		 *   The Y coordinate on the screen, for the start of mousemove.
+		 * @param {number=} aEndX (optional)
+		 *   The X coordinate on the screen, for the end of mousemove.
+		 * @param {number=} aEndY (optional)
+		 *   The Y coordinate on the screen, for the end of mousemove.
+		 * @param {nsIDOMElement=} aStartElement (optional)
+		 *   The element which you want to start mousemove.
+		 * @param {nsIDOMElement=} aEndElement (optional)
+		 *   The element which you want to end mousemove.
+		 * @param {{altKey: boolean,
+		 *          ctrlKey: boolean,
+		 *          metaKey: boolean,
+		 *          shiftKey: boolean}=} aModifiers (optional)
+		 *   A hash of modifier keys. Default value of each key is
+		 *   <code>false</code>.
+		 * @param {number=} aDuration (optional)
+		 *   The duration for the mousemove, in msec. Default value is 1000.
+		 *
+		 * @returns {{value: boolean,
+		 *           cancel: function}}
+		 *   A hash including a boolean property "value" which indicates what
+		 *   the mousemove is finished or not. If you call the "cancel" method
+		 *   of the object, asynchronus mousemove is canceled anyway.
+		 */
+		asyncMouseMove : function() 
 		{
 			var args = this._getMouseMoveOptionsFromArguments.apply(this, arguments);
 			var self = this;
@@ -1367,7 +1398,32 @@ var action;
 		/** @see action.asyncMouseMove */
 		asyncmousemove : function() { return this.asyncMouseMove.apply(this, arguments); },
  
-		/** @ignore */ 
+		/**
+		 * Fires mousemove event periodically, between two different coordinates
+		 * or elements. This is synchronus method, so, this stops the main JS
+		 * thread until the mousemove emulation is completely finished.
+		 *
+		 * @param {number=} aStartX (optional)
+		 *   The X coordinate on the screen, for the start of mousemove.
+		 * @param {number=} aStartY (optional)
+		 *   The Y coordinate on the screen, for the start of mousemove.
+		 * @param {number=} aEndX (optional)
+		 *   The X coordinate on the screen, for the end of mousemove.
+		 * @param {number=} aEndY (optional)
+		 *   The Y coordinate on the screen, for the end of mousemove.
+		 * @param {nsIDOMElement=} aStartElement (optional)
+		 *   The element which you want to start mousemove.
+		 * @param {nsIDOMElement=} aEndElement (optional)
+		 *   The element which you want to end mousemove.
+		 * @param {{altKey: boolean,
+		 *          ctrlKey: boolean,
+		 *          metaKey: boolean,
+		 *          shiftKey: boolean}=} aModifiers (optional)
+		 *   A hash of modifier keys. Default value of each key is
+		 *   <code>false</code>.
+		 * @param {number=} aDuration (optional)
+		 *   The duration for the mousemove, in msec. Default value is 1000.
+		 */
 		syncMouseMove : function()
 		{
 			var args = this._getMouseMoveOptionsFromArguments.apply(this, arguments);
