@@ -76,16 +76,19 @@ MockManager.prototype = {
 	assertAll : function()
 	{
 		var errors = [];
-		this.mocks.forEach(function(aMock) {
-			if ('assert' in aMock && typeof aMock.assert == 'function') {
-				try {
-					aMock.assert();
+		var self = this;
+		this._assert.doInternalAssertion(function() {
+			self.mocks.forEach(function(aMock) {
+				if ('assert' in aMock && typeof aMock.assert == 'function') {
+					try {
+						aMock.assert();
+					}
+					catch(e) {
+						errors.push(e);
+					}
 				}
-				catch(e) {
-					errors.push(e);
-				}
-			}
-		}, this);
+			}, self);
+		});
 		if (errors.length)
 			throw new ns.MultiplexError(errors);
 		else
@@ -463,33 +466,36 @@ Mock.prototype = {
 	assert : function()
 	{
 		var errors = [];
-		for (let i in this._getters)
-		{
-			try {
-				this._getters[i].assert();
+		var self = this;
+		this._assert.doInternalAssertion(function() {
+			for (let i in self._getters)
+			{
+				try {
+					self._getters[i].assert();
+				}
+				catch(e) {
+					errors.push(e);
+				}
 			}
-			catch(e) {
-				errors.push(e);
+			for (let i in self._setters)
+			{
+				try {
+					self._setters[i].assert();
+				}
+				catch(e) {
+					errors.push(e);
+				}
 			}
-		}
-		for (let i in this._setters)
-		{
-			try {
-				this._setters[i].assert();
+			for (let i in self._methods)
+			{
+				try {
+					self._methods[i].assert();
+				}
+				catch(e) {
+					errors.push(e);
+				}
 			}
-			catch(e) {
-				errors.push(e);
-			}
-		}
-		for (let i in this._methods)
-		{
-			try {
-				this._methods[i].assert();
-			}
-			catch(e) {
-				errors.push(e);
-			}
-		}
+		});
 		if (errors.length)
 			throw new ns.MultiplexError(errors);
 		else
@@ -872,7 +878,7 @@ FunctionMock.prototype = {
 
 		if (!call.isAnyCall() && !call.isOneTimeAnyCall()) {
 			try {
-				this._assert.equals(
+				this._assert.doInternalAssertion('equals',
 					this.formatArgumentsArray(call.arguments, aArguments),
 					aArguments,
 					bundle.getFormattedString('function_mock_wrong_arguments', [this.name])
@@ -886,7 +892,7 @@ FunctionMock.prototype = {
 
 		if ('context' in call) {
 			try {
-				this._assert.equals(
+				this._assert.doInternalAssertion('equals',
 					call.context,
 					aContext,
 					bundle.getFormattedString('function_mock_wrong_context', [this.name, utils.inspect(aArguments)])
@@ -938,7 +944,7 @@ FunctionMock.prototype = {
 				e.stack = this.stack + e.stack;
 				throw e;
 			}
-			this._assert.equals(expected, success, bundle.getFormattedString(aFailMessageKey, [this.name]));
+			this._assert.doInternalAssertion('equals', expected, success, bundle.getFormattedString(aFailMessageKey, [this.name]));
 		}
 		catch(e) {
 			this.addError(e)
@@ -1041,7 +1047,7 @@ GetterMock.prototype = {
 
 		if ('context' in call) {
 			try {
-				this._assert.equals(
+				this._assert.doInternalAssertion('equals',
 					call.context,
 					aContext,
 					bundle.getFormattedString('getter_mock_wrong_context', [this.name])
@@ -1113,7 +1119,7 @@ SetterMock.prototype = {
 
 		if (!call.isAnyCall() && !call.isOneTimeAnyCall()) {
 			try {
-				this._assert.equals(
+				this._assert.doInternalAssertion('equals',
 					this.formatArgumentsArray(call.arguments, aArguments)[0],
 					aArguments[0],
 					bundle.getFormattedString('setter_mock_wrong_value', [this.name])
@@ -1127,7 +1133,7 @@ SetterMock.prototype = {
 
 		if ('context' in call) {
 			try {
-				this._assert.equals(
+				this._assert.doInternalAssertion('equals',
 					call.context,
 					aContext,
 					bundle.getFormattedString('setter_mock_wrong_context', [this.name, utils.inspect(aArguments[0])])
@@ -1231,13 +1237,13 @@ HTTPServerMock.prototype = {
 		if (!call.isAnyCall() && !call.isOneTimeAnyCall()) {
 			try {
 				if (typeof call.arguments[0] == 'string')
-					this._assert.equals(
+					this._assert.doInternalAssertion('equals',
 						this.formatArgumentsArray(call.arguments, aArguments)[0],
 						aArguments[0],
 						bundle.getFormattedString('server_mock_wrong_value', [this.name])
 					);
 				else
-					this._assert.matches(
+					this._assert.doInternalAssertion('matches',
 						call.arguments[0],
 						String(aArguments[0]),
 						bundle.getFormattedString('server_mock_wrong_value', [this.name])
@@ -1340,12 +1346,12 @@ TypeOf.prototype = {
 		switch (typeof expected)
 		{
 			case 'string':
-				aAssertions.equals(expected, typeof aActual);
+				aAssertions.doInternalAssertion('equals', expected, typeof aActual);
 				break;
 
 			case 'object':
 				if (expected instanceof Ci.nsIJSIID) { // Ci.*
-					aAssertions.isInstanceOf(expected, aActual);
+					aAssertions.doInternalAssertion('isInstanceOf', expected, aActual);
 				}
 				else {
 					let errors = [];
@@ -1357,7 +1363,7 @@ TypeOf.prototype = {
 							if (expected[i] instanceof TypeOf)
 								expected[i].assert(aActual[i]);
 							else
-								aAssertions.equals(expected[i], aActual[i]);
+								aAssertions.doInternalAssertion('equals', expected[i], aActual[i]);
 						}
 						catch(e) {
 							errors.push(e);
@@ -1369,7 +1375,7 @@ TypeOf.prototype = {
 				break;
 
 			default:
-				aAssertions.isInstanceOf(expected, aActual);
+				aAssertions.doInternalAssertion('isInstanceOf', expected, aActual);
 				break;
 		}
 	}
