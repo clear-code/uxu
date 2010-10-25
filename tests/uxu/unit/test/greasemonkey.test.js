@@ -223,7 +223,7 @@ function test_GM_registerMenuCommand()
 	assert.equals('item2', item.getAttribute('label'));
 	assert.equals('i', item.getAttribute('accesskey'));
 	if (navigator.platform.toLowerCase().indexOf('mac') > -1)
-		assert.equals('Control+Shift+A', item.getAttribute('acceltext'));
+		assert.equals('Control+Shift+B', item.getAttribute('acceltext'));
 	else
 		assert.equals('Ctrl+Shift+B', item.getAttribute('acceltext'));
 	item.oncommand();
