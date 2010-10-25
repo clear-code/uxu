@@ -4,7 +4,7 @@
  * @version      2
  *
  * @example
- *   Components.utils.import('resource://my-modules/action.jsm');
+ *   Components.utils.import('resource://uxu-modules/lib/action.jsm');
  *   action.clickOn(someDOMElement);
  *   // See: http://www.clear-code.com/software/uxu/helpers.html.en#actions
  *   // (ja: http://www.clear-code.com/software/uxu/helpers.html#actions )
@@ -16,12 +16,16 @@
  * @url http://www.clear-code.com/repos/svn/js-codemodules/action_tests/
  */
  
-if (typeof window == 'undefined') 
+if (typeof window == 'undefined' ||
+	(window && typeof window.constructor == 'function')) 
 	this.EXPORTED_SYMBOLS = ['action'];
 
 // This depends on boxObject.js
 // http://www.cozmixng.org/repos/piro/fx3-compatibility-lib/trunk/boxObject.js
 const BOX_OBJECT_MODULE = 'resource://uxu-modules/lib/boxObject.js';
+// This depends on jstimer.jsm
+// http://www.cozmixng.org/repos/piro/fx3-compatibility-lib/trunk/jstimer.jsm
+const TIMER_MODULE = 'resource://uxu-modules/lib/jstimer.jsm';
 
 // var namespace;
 if (typeof namespace == 'undefined') {
@@ -84,10 +88,18 @@ var action;
 	
 		get _boxObject() 
 		{
-			delete this.boxObject;
+			delete this._boxObject;
 			var ns = {};
 			Components.utils.import(BOX_OBJECT_MODULE, ns);
-			return this.boxObject = ns.boxObject;
+			return this._boxObject = ns.boxObject;
+		},
+ 
+		get _timer() 
+		{
+			delete this._timer;
+			this._timer = {};
+			Components.utils.import(TIMER_MODULE, this._timer);
+			return this._timer;
 		},
   
 /* zoom */ 
@@ -523,6 +535,23 @@ var action;
 		/** @see action.rightMouseUpOn */
 		rightMouseupOn : function() { return this.rightMouseUpOn.apply(this, arguments); },
   
+// mousemove on element 
+	
+		/**
+		 * Emulates a mouse move on a element.
+		 * Options are just same to action.clickOn.
+		 *
+		 * @see action.clickOn
+		 * @see action.mousemoveOn (alias)
+		 */
+		mouseMoveOn : function()
+		{
+			var options = this._getMouseOptionsFor('mousemove', 0, arguments); 
+			this.fireMouseEventOnElement(options.element, options);
+		},
+		/** @see action.mouseMoveOn */
+		mousemoveOn : function() { return this.mouseMoveOn.apply(this, arguments); },
+  
 // click at position 
 	
 		/**
@@ -761,6 +790,23 @@ var action;
 		/** @see action.rightMouseUpAt */
 		rightMouseupAt : function() { return this.rightMouseUpAt.apply(this, arguments); },
   
+// mousemove at position 
+	
+		/**
+		 * Emulates a mouse move at the coordinates on the screen.
+		 * Options are just same to action.clickAt.
+		 *
+		 * @see action.clickAt
+		 * @see action.mousemoveAt (alias)
+		 */
+		mouseMoveAt : function()
+		{
+			var options = this._getMouseOptionsFor('mousemove', 0, arguments); 
+			this.fireMouseEvent(options.window, options);
+		},
+		/** @see action.mouseMoveAt */
+		mousemoveAt : function() { return this.mouseMoveAt.apply(this, arguments); },
+  
 // low level API 
 	
 		/**
@@ -839,6 +885,7 @@ var action;
 				switch (aOptions.type)
 				{
 					case 'mousemove':
+						detail = 0;
 					case 'mouseover':
 						utils.sendMouseEvent(aOptions.type, x, y, button, detail, flags);
 						break;
@@ -968,6 +1015,8 @@ var action;
 			var options, event;
 			switch (aOptions.type)
 			{
+				case 'mousemove':
+					detail = 0;
 				case 'mousedown':
 				case 'mouseup':
 					break;
@@ -1034,16 +1083,16 @@ var action;
 				('canBubble' in aOptions ? aOptions.canBubble : true ),
 				('cancelable' in aOptions ? aOptions.cancelable : true ),
 				aElement.ownerDocument.defaultView,
-				('detail' in aOptions ? aOptions.detail : 1),
+				('detail' in aOptions ? (aOptions.detail || 0) : 1),
 				aOptions.screenX,
 				aOptions.screenY,
 				aOptions.x,
 				aOptions.y,
-				('ctrlKey' in aOptions ? aOptions.ctrlKey : false ),
-				('altKey' in aOptions ? aOptions.altKey : false ),
-				('shiftKey' in aOptions ? aOptions.shiftKey : false ),
-				('metaKey' in aOptions ? aOptions.metaKey : false ),
-				('button' in aOptions ? aOptions.button : 0 ),
+				('ctrlKey' in aOptions ? (aOptions.ctrlKey || false) : false ),
+				('altKey' in aOptions ? (aOptions.altKey || false) : false ),
+				('shiftKey' in aOptions ? (aOptions.shiftKey || false) : false ),
+				('metaKey' in aOptions ? (aOptions.metaKey || false) : false ),
+				('button' in aOptions ? (aOptions.button || 0) : 0 ),
 				null
 			);
 			return event;
@@ -1125,6 +1174,225 @@ var action;
 			return aOptions;
 		},
     
+/* sequential mouse move */ 
+	
+		/**
+		 * Extracts options from the given arguments array and returns them
+		 * as a normalized hash for mouseMove. Options can be in random order.
+		 *
+		 * @param {number=} aStartX (optional)
+		 *   The X coordinate on the screen, for the start of mousemove.
+		 * @param {number=} aStartY (optional)
+		 *   The Y coordinate on the screen, for the start of mousemove.
+		 * @param {number=} aEndX (optional)
+		 *   The X coordinate on the screen, for the end of mousemove.
+		 * @param {number=} aEndY (optional)
+		 *   The Y coordinate on the screen, for the end of mousemove.
+		 * @param {nsIDOMElement=} aStartElement (optional)
+		 *   The target element which you want to start mousemove.
+		 * @param {nsIDOMElement=} aEndElement (optional)
+		 *   The target element which you want to end mousemove.
+		 * @param {{alt: boolean, altKey: boolean,
+		 *          ctrl: boolean, ctrlKey: boolean,
+		 *          control: boolean, controlKey: boolean,
+		 *          meta: boolean, metaKey: boolean,
+		 *          cmd: boolean, cmdKey: boolean,
+		 *          command: boolean, commandKey: boolean,
+		 *          shift: boolean, shiftKey: boolean}=} (optional)
+		 *   A hash of modifier keys. Default value of each key is
+		 *   <code>false</code>.
+		 * @param {number=} aDuration (optional)
+		 *   The duration for the mousemove, in msec. Default value is "1000".
+		 *
+		 * @returns {{startX: number,
+		 *           startY: number,
+		 *           endX: number,
+		 *           endY: number,
+		 *           startElement: ?nsIDOMElement,
+		 *           endElement: ?nsIDOMElement,
+		 *           modifiers: {altKey: boolean,
+		 *                       ctrlKey: boolean,
+		 *                       metaKey: boolean,
+		 *                       shiftKey: boolean},
+		 *           duration: number}}
+		 *   Options normalized to a hash. "startX", "startY", "endX", and "endY"
+		 *   will be 0 if they are not specified.
+		 *
+		 * @see action.mouseMove
+		 */
+		_getMouseMoveOptionsFromArguments : function() 
+		{
+			var modifierNames = 'alt,ctrl,control,shift,meta,cmd,command'
+									.replace(/([^,]+)/g, '$1,$1Key')
+									.split(',');
+			var sx, sy, ex, ey, modifiers, selement, eelement, duration;
+			Array.slice(arguments).some(function(aArg) {
+				if (typeof aArg == 'number') {
+					if (selement) {
+						if (eelement) {
+							if (duration === void(0))
+								duration = aArg;
+						}
+						else if (ex === void(0))
+							ex = aArg;
+						else if (ey === void(0))
+							ey = aArg;
+						else if (duration === void(0))
+							duration = aArg;
+					}
+					else {
+						if (sx === void(0))
+							sx = aArg;
+						else if (sy === void(0))
+							sy = aArg;
+						else if (ex === void(0))
+							ex = aArg;
+						else if (ey === void(0))
+							ey = aArg;
+						else if (duration === void(0))
+							duration = aArg;
+					}
+				}
+				else if (aArg) {
+					if (aArg instanceof Ci.nsIDOMElement) {
+						if (selement === void(0))
+							selement = aArg;
+						else if (eelement === void(0))
+							eelement = aArg;
+					}
+					else if (modifierNames.some(function(aName) {
+							return aName in aArg;
+						}))
+						modifiers = aArg;
+				}
+				return (sx && sy && ex && ey && modifiers && selement && eelement);
+			}, this);
+
+			if (selement && eelement && sx !== void(0) && sy === void(0)) {
+				duration = sx;
+				sx = void(0);
+			}
+
+			if (selement) {
+				let position = {};
+				this._createMouseEventOnElement(selement, position);
+				sx = position.screenX;
+				sy = position.screenY;
+			}
+			if (eelement) {
+				let position = {};
+				this._createMouseEventOnElement(eelement, position);
+				ex = position.screenX;
+				ey = position.screenY;
+			}
+
+			if (modifiers) {
+				modifiers.altKey = modifiers.altKey || modifiers.alt;
+				modifiers.ctrlKey = modifiers.ctrlKey || modifiers.ctrl ||
+									modifiers.controlKey || modifiers.control;
+				modifiers.shiftKey = modifiers.shiftKey || modifiers.shift;
+				modifiers.metaKey = modifiers.metaKey || modifiers.meta ||
+									modifiers.cmdKey || modifiers.cmd ||
+									modifiers.commandKey || modifiers.command;
+			}
+
+			if (duration === void(0))
+				duration = 1000;
+
+			return {
+				startX : sx,
+				startY : sy,
+				endX : ex,
+				endY : ey,
+				startElement : selement,
+				endElement : eelement,
+				modifiers : modifiers || {},
+				duration : duration
+			};
+		},
+ 
+		/** @ignore */ 
+		asyncMouseMove : function()
+		{
+			var args = this._getMouseMoveOptionsFromArguments.apply(this, arguments);
+			var self = this;
+			var completedFlag = {
+					value : false,
+					id : -1,
+					cancel : function() {
+						if (this.id != -1)
+							self._timer.clearInterval(this.id);
+						this.value = true;
+					}
+				};
+
+			var deltaX = args.endX - args.startX;
+			var deltaY = args.endY - args.startY;
+			if (!deltaX && !deltaY) {
+				completedFlag.value = true;
+				return completedFlag;
+			}
+
+			var start = Date.now();
+
+			function Movement()
+			{
+				while (true)
+				{
+					let now = Date.now();
+					let progress = Math.min(1, (now - start) / args.duration);
+					let x = args.startX + (deltaX * progress);
+					let y = args.startY + (deltaY * progress);
+					this.mouseMoveAt(x, y, args.modifiers);
+					yield;
+					if (progress == 1) break;
+				}
+			}
+			var move = Movement.call(this);
+			completedFlag.id = this._timer.setInterval(function() {
+					try {
+						move.next();
+					}
+					catch(e) {
+						completedFlag.cancel();
+					}
+				}, 10);
+			this.mouseMoveAt(args.startX, args.startY, args.modifiers);
+			return completedFlag;
+		},
+		/** @see action.asyncMouseMove */
+		asyncMousemove : function() { return this.asyncMouseMove.apply(this, arguments); },
+		/** @see action.asyncMouseMove */
+		asyncmouseMove : function() { return this.asyncMouseMove.apply(this, arguments); },
+		/** @see action.asyncMouseMove */
+		asyncmousemove : function() { return this.asyncMouseMove.apply(this, arguments); },
+ 
+		/** @ignore */ 
+		syncMouseMove : function()
+		{
+			var args = this._getMouseMoveOptionsFromArguments.apply(this, arguments);
+			var completed = this.asyncMouseMove.apply(this, arguments);
+			var lastRun = Date.now();
+			var timeout = Math.max(0, args.duration) + 5000;
+			var thread = Cc['@mozilla.org/thread-manager;1'].getService().mainThread;
+			while (!completed.value)
+			{
+				thread.processNextEvent(true);
+				if (Date.now() - lastRun >= timeout)
+					throw new Error('timeout '+parseInt(timeout / 1000)+'sec');
+			}
+		},
+		/** @see action.syncMouseMove */
+		syncMousemove : function() { return this.syncMouseMove.apply(this, arguments); },
+		/** @see action.syncMouseMove */
+		syncmouseMove : function() { return this.syncMouseMove.apply(this, arguments); },
+		/** @see action.syncMouseMove */
+		syncmousemove : function() { return this.syncMouseMove.apply(this, arguments); },
+		/** @see action.syncMouseMove */
+		mouseMove : function() { return this.syncMouseMove.apply(this, arguments); },
+		/** @see action.syncMouseMove */
+		mousemove : function() { return this.syncMouseMove.apply(this, arguments); },
+  
 // drag and drop: under construction 
 	
 		/** @ignore */
