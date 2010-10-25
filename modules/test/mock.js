@@ -1354,7 +1354,10 @@ TypeOf.prototype = {
 						if (!expected.hasOwnProperty(i))
 							continue;
 						try {
-							aAssertions.equals(expected[i], aActual[i]);
+							if (expected[i] instanceof TypeOf)
+								expected[i].assert(aActual[i]);
+							else
+								aAssertions.equals(expected[i], aActual[i]);
 						}
 						catch(e) {
 							errors.push(e);

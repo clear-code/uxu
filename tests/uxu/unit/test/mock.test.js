@@ -1089,7 +1089,7 @@ function test_TypeOf_assert()
 	}).assert({
 		string : 'foo',
 		array  : [0, 1, 2],
-		object : { value : 'OK' },
+		object : { value : 'OK', another : true },
 		extra  : 'bar'
 	}, assert);
 }
