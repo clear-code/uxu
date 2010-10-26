@@ -304,10 +304,6 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 					</menu>
 				</menubar>
 			</toolbaritem>
-			<spacer flex="1"/>
-			<toolbaritem id="toolbar-throbber">
-				<button id="throbber"/>
-			</toolbaritem>
 		</toolbar>
 	</toolbox>
 
@@ -351,7 +347,10 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 				</toolbarbutton>
 			</hbox>
 			<hbox id="stop-box" hidden="true">
-				<button command="stop" flex="1" style="font-weight: bold;"/>
+				<button class="throbber"
+					command="stop"
+					flex="1"
+					style="font-weight: bold;"/>
 			</hbox>
 
 			<hbox flex="1">
