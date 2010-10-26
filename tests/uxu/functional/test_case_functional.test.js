@@ -8,7 +8,7 @@ var testcase;
 function setUp()
 {
 	testcase = new TestCase('description');
-	testcase.suite = new TestSuite(null, baseURL, gBrowser);
+	testcase.suite = new TestSuite({ uri : fileURL, browser :  gBrowser });
 	yield 0; // to run tests progressively
 }
 
