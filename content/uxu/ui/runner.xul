@@ -250,9 +250,9 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 <hbox id="wholeBox" flex="1">
 <vbox id="mainBox" flex="1">
 	<toolbox>
-		<toolbar>
-			<toolbaritem>
-				<menubar>
+		<toolbar id="menubar-toolbar">
+			<toolbaritem id="menubar-item">
+				<menubar id="menubar">
 					<menu id="file-menu" label="&runner.fileMenu.label;" accesskey="&runner.fileMenu.accesskey;">
 						<menupopup>
 							<menuitem command="new" key="key-new"/>
@@ -305,7 +305,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 				</menubar>
 			</toolbaritem>
 			<spacer flex="1"/>
-			<toolbaritem>
+			<toolbaritem id="toolbar-throbber">
 				<button id="throbber"/>
 			</toolbaritem>
 		</toolbar>
