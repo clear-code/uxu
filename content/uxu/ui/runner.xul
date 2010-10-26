@@ -329,13 +329,14 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 					<label id="file"
 						flex="1"
 						value=""
-						style="font-weight: bold;"
 						crop="center"/>
 				</toolbaritem>
 				<toolbarbutton command="edit"/>
 			</toolbar>
 			<hbox id="run-box">
-				<button command="run" flex="1" style="font-weight: bold;"/>
+				<button id="run-button"
+					command="run"
+					flex="1"/>
 				<toolbarbutton label="&runner.run.options;" type="menu"
 					id="runOptions-button">
 					<menupopup onpopupshowing="updateRunMode();">
@@ -347,10 +348,10 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 				</toolbarbutton>
 			</hbox>
 			<hbox id="stop-box" hidden="true">
-				<button class="throbber"
+				<button id="stop-button"
+					class="throbber"
 					command="stop"
-					flex="1"
-					style="font-weight: bold;"/>
+					flex="1"/>
 			</hbox>
 
 			<hbox flex="1">
