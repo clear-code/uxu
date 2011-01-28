@@ -2141,11 +2141,10 @@ mapURI : function(aURI, aMappingDefinition)
 			targets.push(aMappingDefinition[prop]);
 		}
 	}
-	var regexp = new RegExp();
 	matchers.some(function(aMatcher, aIndex) {
 		var matcher = utils.isRegExp(aMatcher) ?
 				aMatcher :
-				regexp.compile(
+				new RegExp(
 					'^'+
 					String(aMatcher).replace(/([^*?\w])/g, '\\$1')
 						.replace(/\?/g, '(.)')
