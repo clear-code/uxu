@@ -1909,7 +1909,7 @@ isObject : function(aObject)
  
 isDeferred : function(aObject) 
 {
-	return aObject && aObject.__proto__ == ns.Deferred.prototype;
+	return ns.Deferred.isDeferred(aObject);
 },
   
 // î‰är 
