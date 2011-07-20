@@ -15,7 +15,7 @@
  * The Original Code is UxU - UnitTest.XUL.
  *
  * The Initial Developer of the Original Code is SHIMODA Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2010
+ * Portions created by the Initial Developer are Copyright (C) 2010-2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): SHIMODA Hiroshi <shimoda@clear-code.com>
@@ -298,8 +298,9 @@ GlobalService.prototype = {
 		}
 
 		if (aOwner) {
-			aOwner = aOwner.QueryInterface(Ci.nsIDOMWindow)
-						.QueryInterface(Ci.nsIDOMWindowInternal);
+			aOwner = aOwner.QueryInterface(Ci.nsIDOMWindow);
+			if ('nsIDOMWindowInternal' in Ci) // for Firefox 7 or olders
+				aOwner = aOwner.QueryInterface(Ci.nsIDOMWindowInternal);
 			aOwner.openDialog(aURI, '_blank', aFeatures, aOptions);
 		}
 		else {

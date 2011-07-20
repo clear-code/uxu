@@ -15,7 +15,7 @@
  * The Original Code is UxU - UnitTest.XUL.
  *
  * The Initial Developer of the Original Code is Kouhei Sutou.
- * Portions created by the Initial Developer are Copyright (C) 2010
+ * Portions created by the Initial Developer are Copyright (C) 2010-2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): Kouhei Sutou <kou@clear-code.com>
@@ -156,8 +156,9 @@ Context.prototype = {
 		var targets = WindowManager.getEnumerator('navigator:browser');
 		while (targets.hasMoreElements())
 		{
-			var target;
-			target = targets.getNext().QueryInterface(Ci.nsIDOMWindowInternal);
+			let target = targets.getNext().QueryInterface(Ci.nsIDOMWindow);
+			if ('nsIDOMWindowInternal' in Ci) // for Firefox 7 or olders
+				target = target.QueryInterface(Ci.nsIDOMWindowInternal);
 			target.close();
 		}
 	},

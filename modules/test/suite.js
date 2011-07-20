@@ -15,7 +15,7 @@
  * The Original Code is UxU - UnitTest.XUL.
  *
  * The Initial Developer of the Original Code is SHIMODA Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2010
+ * Portions created by the Initial Developer are Copyright (C) 2010-2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): SHIMODA Hiroshi <shimoda@clear-code.com>
@@ -437,7 +437,9 @@ getChromeWindows : function(aOptions)
 	while (targets.hasMoreElements())
 	{
 		let target = targets.getNext().
-			QueryInterface(Ci.nsIDOMWindowInternal);
+			QueryInterface(Ci.nsIDOMWindow);
+		if ('nsIDOMWindowInternal' in Ci) // for Firefox 7 or olders
+			target = target.QueryInterface(Ci.nsIDOMWindowInternal);
 		if (info.type)
 			result.push(target);
 		else if (info.uri == target.location.href)

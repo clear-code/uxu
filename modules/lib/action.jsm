@@ -10,7 +10,7 @@
  *   // (ja: http://www.clear-code.com/software/uxu/helpers.html#actions )
  *
  * @license
- *   The MIT License, Copyright (c) 2010 ClearCode Inc.
+ *   The MIT License, Copyright (c) 2010-2011 ClearCode Inc.
  *   http://www.clear-code.com/repos/svn/js-codemodules/license.txt
  * @url http://www.clear-code.com/repos/svn/js-codemodules/action.jsm
  * @url http://www.clear-code.com/repos/svn/js-codemodules/action_tests/
@@ -2423,7 +2423,9 @@ var action;
 			if (windows.hasMoreElements()) {
 				while (windows.hasMoreElements())
 				{
-					let w = windows.getNext().QueryInterface(Ci.nsIDOMWindowInternal);
+					let w = windows.getNext().QueryInterface(Ci.nsIDOMWindow);
+					if ('nsIDOMWindowInternal' in Ci) // for Firefox 7 or olders
+						w = w.QueryInterface(Ci.nsIDOMWindowInternal);
 					if (this._isInside({
 							x      : w.screenX,
 							y      : w.screenY,
@@ -2441,7 +2443,10 @@ var action;
 			var array = [];
 			while (windows.hasMoreElements())
 			{
-				array.push(windows.getNext().QueryInterface(Ci.nsIDOMWindowInternal));
+				let w = windows.getNext().QueryInterface(Ci.nsIDOMWindow);
+				if ('nsIDOMWindowInternal' in Ci) // for Firefox 7 or olders
+					w = w.QueryInterface(Ci.nsIDOMWindowInternal);
+				array.push(w);
 			}
 			var youngest;
 			array.reverse()
