@@ -1314,7 +1314,7 @@ TestCase.prototype = {
 		}
 
 		try {
-			var useContinuation = aFunction.arity > 0;
+			var useContinuation = aFunction.length > 0;
 			var continuation = function(aResult) {
 					continuation.next = aResult == 'ok' ? aSuccess : aFailed ;
 				};
