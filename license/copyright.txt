@@ -1,7 +1,7 @@
 "UxU - UnitText.XUL" is released under tri-license, MPL1.1/GPL2/LGP2.1.
 Copyright ©2010 ClearCode Inc., SHIMODA Hiroshi, Kouhei Sutou
 Contributor(s):
-	SHIMODA Hiroshi (piro@p.club.ne.jp / shimoda@clear-code.com)
+	SHIMODA Hiroshi (piro.outsider.reflex@gmail.com / shimoda@clear-code.com)
 	Kouhei Sutou (kou at cozmixng.org / kou@clear-code.com)
 
 * Original Version: "MozLab"
