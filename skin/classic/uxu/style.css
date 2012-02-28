@@ -46,6 +46,7 @@
 }
 
 progressmeter[testcase-results] > .progress-bar {
+	appearance: none;
 	-moz-appearance: none;
 }
 
@@ -111,6 +112,7 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 
 *[role=parameter-oneline],
 *[role=parameter-multiline] {
+	appearance: none;
 	-moz-appearance: none;
 	background: transparent;
 	border: 0 none;
@@ -181,10 +183,12 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 }
 
 .uxu-bottom-toolbox {
+	appearance: toolbox;
 	-moz-appearance: toolbox;
 }
 .uxu-bottom-toolbox .uxu-bottom-toolbar {
-/*	-moz-appearance: toolbar; */
+/*	appearance: toolbar;
+	-moz-appearance: toolbar; */
 	border-top: 2px solid;
 	-moz-border-top-colors: threedshadow threedhighlight;
 }
