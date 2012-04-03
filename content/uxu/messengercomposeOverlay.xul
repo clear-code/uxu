@@ -34,5 +34,5 @@
    -
    - ***** END LICENSE BLOCK ***** -->
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-<script type="application/javascript; version=1.7" src="chrome://uxu/content/messengercomposeOverlay.js"/>
+<script type="application/javascript" src="chrome://uxu/content/messengercomposeOverlay.js"/>
 </overlay>

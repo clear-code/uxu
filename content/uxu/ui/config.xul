@@ -359,6 +359,6 @@
 
 </prefpane>
 
-<script type="application/javascript; version=1.7" src="config.js"/>
+<script type="application/javascript" src="config.js"/>
 
 </prefwindow>
