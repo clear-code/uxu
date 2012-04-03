@@ -132,10 +132,10 @@ var primitive;
 		toHash : function(aBag)
 		{
 			var hash = {};
-			var enum = aBag.QueryInterface(Ci.nsIPropertyBag).enumerator;
-			while (enum.hasMoreElements())
+			var enumerator = aBag.QueryInterface(Ci.nsIPropertyBag).enumerator;
+			while (enumerator.hasMoreElements())
 			{
-				let item = enum.getNext().QueryInterface(Ci.nsIProperty);
+				let item = enumerator.getNext().QueryInterface(Ci.nsIProperty);
 				hash[item.name] = item.value;
 			}
 			return hash;
