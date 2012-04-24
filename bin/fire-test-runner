@@ -122,7 +122,13 @@ class Runner
              " runTest(#{options}, #{escaped_target_paths}); " +
              "undefined;")
 
-    show_result while running?
+    begin
+      show_result while running?
+    rescue Interrupt
+      puts "Aborting..."
+      abort
+    end
+
     show_result
     @output.puts
   end
@@ -235,15 +241,6 @@ def run(tests, options)
       runner = Runner.new(socket,
                           tests.collect {|test| Pathname(test).expand_path})
       runner.close_main_windows if options.close_main_windows
-      Signal.trap(:INT) {
-        if runner.aborted?
-          puts "Force exit"
-          exit(true)
-        else
-          puts "Aborting..."
-          runner.abort
-        end
-      }
       runner.run
       runner.quit if options.quit
     rescue SystemCallError
