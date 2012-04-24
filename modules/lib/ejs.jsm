@@ -95,8 +95,11 @@ var EJS;
 					__processTemplate__codes.push(codePart);
 				}
 			});
-			var sandbox = new Components.utils.Sandbox(this._global);
-			sandbox.__proto__ = { __processTemplate__results : [] };
+			var sandbox = new Components.utils.Sandbox(this._global, {
+				sandboxPrototype: {
+					__processTemplate__results : []
+				}
+			});
 			if (aScope) sandbox.__proto__.__proto__ = aScope;
 			Components.utils.evalInSandbox(__processTemplate__codes.join('\n'), sandbox);
 			return sandbox.__processTemplate__results.join('');
