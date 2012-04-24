@@ -135,6 +135,15 @@ class Runner
     evaluate("quitApplication();")
   end
 
+  def abort
+    evaluate("#{@reporter_var_name}.abort()") unless aborted?
+    @aborted = true
+  end
+
+  def aborted?
+    @aborted
+  end
+
   private
   def normalize_separator(path)
     if File::ALT_SEPARATOR
@@ -226,6 +235,15 @@ def run(tests, options)
       runner = Runner.new(socket,
                           tests.collect {|test| Pathname(test).expand_path})
       runner.close_main_windows if options.close_main_windows
+      Signal.trap(:INT) {
+        if runner.aborted?
+          puts "Force exit"
+          exit(true)
+        else
+          puts "Aborting..."
+          runner.abort
+        end
+      }
       runner.run
       runner.quit if options.quit
     rescue SystemCallError
