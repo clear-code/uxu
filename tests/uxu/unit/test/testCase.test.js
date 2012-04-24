@@ -392,8 +392,8 @@ function testPriority()
 	}
 	assert.equals(testCount, setUpCount);
 	assert.equals(testCount, tearDownCount);
-	assert.compare(40, '<', testCount);
-	assert.compare(60, '>', testCount);
+	assert.compare(0, '<', testCount);
+	assert.compare(100, '>', testCount);
 }
 
 function testMasterPriority()
