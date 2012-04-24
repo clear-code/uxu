@@ -40,25 +40,156 @@ if (typeof window == 'undefined')
 var ns = {};
 Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/lib/action.jsm', ns);
- 
-function Action(aSuite) 
+
+function CommonDialogWrapper(aWindow) {
+	this.window = aWindow;
+	this.document = aWindow.document;
+
+	if (aWindow.Dialog) {
+		// Firefox > 10
+		this.dialog = aWindow.Dialog;
+		this.title = this.dialog.args.title;
+		this.message = this.dialog.args.text;
+		this.buttonsCount = this.dialog.numButtons;
+		this.type = aWindow.Dialog.args.promptType;
+	} else {
+		throw Error("Failed to get common dialog parameters");
+	}
+}
+
+CommonDialogWrapper.prototype = {
+	// Checkbox
+
+	get checkbox() {
+		return this.document.getElementById('checkbox');
+	},
+
+	set checked(checkedStatus) {
+		this.checkbox.checked = checkedStatus;
+		this.dialog.onCheckbox();
+	},
+
+	DIALOG_TYPE: {
+		ALERT: "alert",
+		ALERT_CHECK: "alertCheck",
+		CONFIRM_CHECK: "confirmCheck",
+		CONFIRM: "confirm",
+		CONFIRM_EX: "confirmEx",
+		PROMPT: "prompt",
+		PROMPT_USER_AND_PASS: "promptUserAndPass",
+		PROMPT_PASSWORD: "promptPassword"
+	},
+
+	// Button
+
+	BUTTON_TYPE: {
+		ACCEPT: "accept",
+		CANCEL: "cancel",
+		EXTRA1: "extra1"
+	},
+
+	getButtonTypeByIndex: function (buttonIndex) {
+		var buttonType = -1;
+
+		switch (buttonIndex) {
+		case 0:
+			buttonType = this.BUTTON_TYPE.ACCEPT;
+			break;
+		case 1:
+			buttonType = this.BUTTON_TYPE.CANCEL;
+			break;
+		case 2:
+			buttonType = this.BUTTON_TYPE.EXTRA1;
+			break;
+		default:
+			break;
+		}
+
+		return buttonType;
+	},
+
+	getButtonByType: function (buttonType) {
+		return this.document.documentElement.getButton(buttonType);
+	},
+
+	clickButtonByType: function (buttonType) {
+		this.getButtonByType(buttonType).doCommand();
+	},
+
+	getButtonByIndex: function (buttonIndex) {
+		var buttonType = this.getButtonTypeByIndex(buttonIndex);
+		return this.getButtonByType(buttonType);
+	},
+
+	clickButtonByIndex: function (buttonIndex) {
+		this.getButtonByIndex(buttonIndex).doCommand();
+	},
+
+	// Wrapper
+
+	accept: function () {
+		this.clickButtonByType(this.BUTTON_TYPE.ACCEPT);
+	},
+
+	cancel: function () {
+		this.clickButtonByType(this.BUTTON_TYPE.CANCEL);
+	},
+
+	// Input
+
+	get usernameField() {
+		return this.document.getElementById('loginTextbox');
+	},
+
+	get password1Field() {
+		return this.document.getElementById('password1Textbox');
+	},
+
+	set username(value) {
+		this.usernameField.value = value;
+	},
+
+	set password1(value) {
+		this.password1Field.value = value;
+	}
+};
+
+CommonDialogWrapper.isCommonDialog = function (aWindow) {
+	return !!aWindow.CommonDialog;
+};
+
+CommonDialogWrapper.onReady = function (aWindow, onReadyFunction) {
+	function onDialogReady() {
+		try {
+			onReadyFunction(new CommonDialogWrapper(aWindow));
+		} catch (x) {
+			utils.log("Failed => " + x);
+			utils.log("Stack => " + x.stack);
+		}
+	}
+
+	aWindow.setTimeout(onDialogReady, 0);
+};
+
+
+function Action(aSuite)
 {
 	this._suite = aSuite;
 	this._readiedActionListener = null;
 }
- 
-Action.prototype = { 
-	
-destroy : function() 
+
+Action.prototype = {
+
+destroy : function()
 {
 	this.cancelReadiedActions();
 	delete this._suite;
 },
- 
-/* ダイアログ操作の予約 */ 
+
+/* ダイアログ操作の予約 */
 COMMON_DIALOG_URL : 'chrome://global/content/commonDialog.xul',
 SELECT_DIALOG_URL : 'chrome://global/content/selectDialog.xul',
-	
+
 _getWindowWatcherListener : function()
 {
 	if (this._readiedActionListener)
@@ -103,54 +234,32 @@ _removeWindowWatcherListener : function(aListener)
 		this._readiedActionListener = null;
 	}
 },
- 
-readyToOK : function(aOptions) 
+
+readyToOK : function(aOptions)
 {
 	aOptions = aOptions || {};
 
 	var self = this;
 	var listener = function(aWindow) {
-			if (
-				aWindow.location.href != self.COMMON_DIALOG_URL ||
-				(!aWindow.gCommonDialogParam && !aWindow.gArgs) ||
-				aWindow.__uxu__willBeClosed
-				)
+			if (aWindow.location.href != self.COMMON_DIALOG_URL ||
+				!CommonDialogWrapper.isCommonDialog(aWindow) ||
+				aWindow.__uxu__willBeClosed)
 				return false;
 
-			var buttonsCount, title, message;
-			if (aWindow.gCommonDialogParam) { // -Firefox 3.6
-				let params = aWindow.gCommonDialogParam;
-				buttonsCount = params.GetInt(2);
-				title = params.GetString(12);
-				message = params.GetString(0);
-			}
-			else { // Firefox 4.0-
-				let params = aWindow.gArgs;
-				buttonsCount = aWindow.numButtons;
-				title = params.getProperty('title');
-				message = params.getProperty('text');
-			}
+			CommonDialogWrapper.onReady(aWindow, function (commonDialog) {
+				var { buttonsCount, title, message } = commonDialog;
 
-			if (
-				(buttonsCount != 1) ||
-				('title' in aOptions && aOptions.title != title) ||
-				('message' in aOptions && aOptions.message != message)
-				)
-				return false;
+				if ((buttonsCount != 1) ||
+					('title' in aOptions && aOptions.title != title) ||
+					('message' in aOptions && aOptions.message != message))
+					throw Error("Invalid Dialog");
 
-			aWindow.__uxu__willBeClosed = true;
+				aWindow.__uxu__willBeClosed = true;
 
-			aWindow.setTimeout(function() {
-				var doc = aWindow.document;
-
-				var checkbox = doc.getElementById('checkbox');
-				if (checkbox.boxObject.width && 'checked' in aOptions) {
-					checkbox.checked = aOptions.checked;
-					aWindow.onCheckboxClick(checkbox);
-				}
-
-				doc.documentElement.getButton('accept').doCommand();
-			}, 0);
+				if ('checked' in aOptions)
+					commonDialog.checked = aOptions.checked;
+				commonDialog.accept();
+			});
 
 			return true;
 		};
@@ -158,159 +267,96 @@ readyToOK : function(aOptions)
 	return listener;
 },
 readyToOk : function(aOptions) { return this.readyToOK(aOptions); },
- 
-readyToConfirm : function(aYes, aOptions) 
+
+readyToConfirm : function(aYes, aOptions)
 {
 	aOptions = aOptions || {};
 
 	var self = this;
 	var listener = function(aWindow) {
-			if (
-				aWindow.location.href != self.COMMON_DIALOG_URL ||
-				(!aWindow.gCommonDialogParam && !aWindow.gArgs) ||
-				aWindow.__uxu__willBeClosed
-				)
+			if (aWindow.location.href != self.COMMON_DIALOG_URL ||
+				!CommonDialogWrapper.isCommonDialog(aWindow) ||
+				aWindow.__uxu__willBeClosed)
 				return false;
 
-			var buttonsCount, title, message;
-			if (aWindow.gCommonDialogParam) { // -Firefox 3.6
-				let params = aWindow.gCommonDialogParam;
-				buttonsCount = params.GetInt(2);
-				title = params.GetString(12);
-				message = params.GetString(0);
-			}
-			else { // Firefox 4.0-
-				let params = aWindow.gArgs;
-				buttonsCount = aWindow.numButtons;
-				title = params.getProperty('title');
-				message = params.getProperty('text');
-			}
+			CommonDialogWrapper.onReady(aWindow, function (commonDialog) {
+				var { buttonsCount, title, message } = commonDialog;
 
-			if (
-				(buttonsCount != 2 && buttonsCount != 3) ||
-				('title' in aOptions && aOptions.title != title) ||
-				('message' in aOptions && aOptions.message != message)
-				)
-				return false;
+				if ((buttonsCount != 2 && buttonsCount != 3) ||
+					('title' in aOptions && aOptions.title != title) ||
+					('message' in aOptions && aOptions.message != message))
+					throw Error("Invalid Dialog");
 
-			aWindow.__uxu__willBeClosed = true;
+				aWindow.__uxu__willBeClosed = true;
 
-			aWindow.setTimeout(function() {
-				var doc = aWindow.document;
-
-				var checkbox = doc.getElementById('checkbox');
-				if (checkbox.boxObject.width && 'checked' in aOptions) {
-					checkbox.checked = aOptions.checked;
-					aWindow.onCheckboxClick(checkbox);
+				if ('checked' in aOptions) {
+					commonDialog.checked = aOptions.checked;
 				}
 
-				var button = (typeof aYes == 'number') ?
-						aYes :
-						(aYes ? 0 : 1 ) ;
-				button = Math.min(button, buttonsCount-1);
-				var buttonType;
-				switch (button)
-				{
-					default:
-					case 0: buttonType = 'accept'; break;
-					case 1: buttonType = 'cancel'; break;
-					case 2: buttonType = 'extra1'; break;
-				}
+				var button = (typeof aYes == 'number') ? aYes : (aYes ? 0 : 1 );
+				button = Math.min(button, buttonsCount - 1);
+				commonDialog.clickButtonByIndex(button);
+			});
 
-				doc.documentElement.getButton(buttonType).doCommand();
-			}, 0);
 
 			return true;
 		};
 	this._addWindowWatcherListener(listener);
 	return listener;
 },
- 
-readyToPrompt : function(aInput, aOptions) 
+
+readyToPrompt : function(aInput, aOptions)
 {
 	aOptions = aOptions || {};
 
 	var self = this;
 	var listener = function(aWindow) {
-			if (
-				aWindow.location.href != self.COMMON_DIALOG_URL ||
-				(!aWindow.gCommonDialogParam && !aWindow.gArgs) ||
-				aWindow.__uxu__willBeClosed
-				)
+			if (aWindow.location.href != self.COMMON_DIALOG_URL ||
+				!CommonDialogWrapper.isCommonDialog(aWindow) ||
+				aWindow.__uxu__willBeClosed)
 				return false;
 
-			var inputFieldsCount, passwordType, title, message;
-			if (aWindow.gCommonDialogParam) { // -Firefox 3.6
-				let params = aWindow.gCommonDialogParam;
-				inputFieldsCount = params.GetInt(3);
-				passwordType = params.GetInt(4) == 1;
-				title = params.GetString(12);
-				message = params.GetString(0);
-			}
-			else { // Firefox 4.0-
-				let params = aWindow.gArgs;
-				inputFieldsCount = 0;
-				let loginShown = !aWindow.document.getElementById('loginContainer').hidden;
-				let passwordShown = !aWindow.document.getElementById('password1Container').hidden;
-				if (loginShown)
-					inputFieldsCount++;
-				if (passwordShown)
-					inputFieldsCount++;
-				passwordType = !loginShown && passwordShown;
-				title = params.getProperty('title');
-				message = params.getProperty('text');
-			}
+			CommonDialogWrapper.onReady(aWindow, function (commonDialog) {
+				var { type, title, message } = commonDialog;
 
-			if (
-				(aOptions.inputFieldsType == 'both' ?
-					(inputFieldsCount != 2) :
-					(inputFieldsCount != 1)) ||
-				(passwordType != (aOptions.inputFieldsType == 'password')) ||
-				('title' in aOptions && aOptions.title != title) ||
-				('message' in aOptions && aOptions.message != message)
-				)
-				return false;
+				if ((aOptions.inputFieldsType === 'both' &&
+						commonDialog.type !== commonDialog.DIALOG_TYPE.PROMPT_USER_AND_PASS) ||
+					((aOptions.inputFieldsType === 'password') &&
+						commonDialog.type !== commonDialog.DIALOG_TYPE.PROMPT_PASSWORD) ||
+					('title' in aOptions && aOptions.title !== title) ||
+					('message' in aOptions && aOptions.message !== message))
+					throw Error("Not a prompt dialog");
 
-			aWindow.__uxu__willBeClosed = true;
+				aWindow.__uxu__willBeClosed = true;
 
-			aWindow.setTimeout(function() {
-				var doc = aWindow.document;
-
-				var checkbox = doc.getElementById('checkbox');
-				if (checkbox.boxObject.width && 'checked' in aOptions) {
-					checkbox.checked = aOptions.checked;
-					aWindow.onCheckboxClick(checkbox);
+				if ('checked' in aOptions) {
+					commonDialog.checked = aOptions.checked;
 				}
 
-				var usernameField = doc.getElementById('loginTextbox');
-				var password1Field = doc.getElementById('password1Textbox');
-
-				switch (aOptions.inputFieldsType)
-				{
-					default:
-						usernameField.value = aInput;
-						break;
-
-					case 'password':
-						password1Field.value = aOptions.password;
-						break;
-
-					case 'both':
-						usernameField.value = aOptions.username;
-						password1Field.value = aOptions.password;
-						break;
+				switch (aOptions.inputFieldsType) {
+				case 'password':
+					commonDialog.password1 = aOptions.password;
+					break;
+				case 'both':
+					commonDialog.username = aOptions.username;
+					commonDialog.password1 = aOptions.password;
+					break;
+				default:
+					commonDialog.username = aInput;
+					break;
 				}
 
-				doc.documentElement.getButton('accept').doCommand();
-			}, 0);
+				commonDialog.accept();
+			});
+
 
 			return true;
 		};
 	this._addWindowWatcherListener(listener);
 	return listener;
 },
- 
-readyToPromptPassword : function(aPassword, aOptions) 
+
+readyToPromptPassword : function(aPassword, aOptions)
 {
 	this.readyToPrompt(
 		null,
