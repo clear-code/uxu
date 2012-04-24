@@ -390,41 +390,21 @@ readyToSelect : function(aSelectedIndexes, aOptions)
 
 	var self = this;
 	var listener = function(aWindow) {
-			if (
-				aWindow.location.href != self.SELECT_DIALOG_URL ||
-				aWindow.__uxu__willBeClosed
-				)
+			if (aWindow.location.href != self.SELECT_DIALOG_URL ||
+				aWindow.__uxu__willBeClosed)
 				return false;
 
-			var params = aWindow.gArgs || aWindow.gCommonDialogParam;
-			if (!params) {
-				try {
-					params = aWindow.arguments[0].QueryInterface(Ci.nsIDialogParamBlock);
-				}
-				catch(e) {
-				}
-				if (!params) return false;
-			}
+			aWindow.setTimeout(function () {
+				var params = aWindow.gArgs;
+				var title = params.getProperty('title');
+				var message = params.getProperty('text');
 
-			var title, message;
-			if (aWindow.gArgs) { // Firefox 4.0-
-				title = params.getProperty('title');
-				message = params.getProperty('text');
-			}
-			else { // -Firefox 3.6
-				title = params.GetString(0);
-				message = params.GetString(1);
-			}
+				if (('title' in aOptions && aOptions.title != title) ||
+					('message' in aOptions && aOptions.message != message))
+					return false;
 
-			if (
-				('title' in aOptions && aOptions.title != title) ||
-				('message' in aOptions && aOptions.message != message)
-				)
-				return false;
+				aWindow.__uxu__willBeClosed = true;
 
-			aWindow.__uxu__willBeClosed = true;
-
-			aWindow.setTimeout(function() {
 				var doc = aWindow.document;
 
 				var list = doc.getElementById('list');
