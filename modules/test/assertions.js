@@ -363,11 +363,12 @@ Assertions.prototype = {
 
 		if (!this._implementsXPCOMInterface(expected, aActualInstance)) {
 			let actualInterfaces = [];
-			for (let i in Ci)
-			{
-				if (this._implementsXPCOMInterface(Ci[i], aActualInstance))
-					actualInterfaces.push(i);
-			}
+			Object.keys(Ci).forEach(function (interfaceName) {
+				if (Ci[interfaceName] instanceof Ci.nsIJSIID &&
+					this._implementsXPCOMInterface(Ci[interfaceName], aActualInstance)) {
+					actualInterfaces.push(interfaceName);
+				}
+			}, this);
 			actualInterfaces = actualInterfaces.sort().join('\n');
 			this._fail({
 			     	expected    : bundle.getFormattedString('assert_implement_interface_expected', [expected]),
