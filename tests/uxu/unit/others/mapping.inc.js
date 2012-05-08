@@ -41,9 +41,9 @@ function assertMapped(aURI, aMapToFile)
 	}
 
 	assertScriptExecuted();
-        // force reload
-        utils.loadURI('about:blank');
-        utils.loadURI(aURI);
+	// force reload
+	utils.loadURI('about:blank');
+	utils.loadURI(aURI);
 	assertScriptExecuted();
 }
 
