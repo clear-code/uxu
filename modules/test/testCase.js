@@ -1056,7 +1056,7 @@ TestCase.prototype = {
 			!this._profile.exists() ||
 			this.neverRun
 			)
-			return false;
+			throw bundle.getString('error_remote_profile_not_found');
 
 		if (this.targetProduct &&
 			String(this.targetProduct).toLowerCase() != this._utils.product.toLowerCase() &&
@@ -1066,7 +1066,10 @@ TestCase.prototype = {
 				this._application = application;
 			}
 			else {
-				return false;
+				throw bundle.getFormattedString(
+					'error_remote_cannot_find_application',
+					[this.targetProduct]
+				);
 			}
 		}
 
