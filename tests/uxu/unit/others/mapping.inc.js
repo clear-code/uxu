@@ -14,9 +14,6 @@ function tearDown()
 
 function assertMapped(aURI, aMapToFile)
 {
-	utils.setPref('general.useragent.vendor', '');
-	utils.wait(300);
-
 	var referrer = aURI.indexOf('about:') > -1 ?
 				null :
 				utils.makeURIFromSpec('http://www.example.com/referer?'+Date.now());
@@ -31,23 +28,23 @@ function assertMapped(aURI, aMapToFile)
 			assert.equals(referrer.spec, content.document.referrer);
 	}
 
-	// for example:
-	// Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.9.0.10) Gecko/2009042316 Firefox/3.0.10 (.NET CLR 3.5.30729)
-	// Mozilla/5.0 (Windows NT 6.1; rv:2.0b5pre) Gecko/20100824 Minefield/4.0b5pre
-	var regexp = /Mozilla\/([\.0-9]+) \((?:(?:[^;]*); (?:[UI]*); )?([^;]*); (?:(?:[^;]*); )?rv:([^\)]+)\) Gecko\/([\.0-9]+)\s+(.+)/;
-	assert.match(regexp, $('script').textContent);
+	function assertScriptExecuted() {
+		// for example:
+		// Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.9.0.10) Gecko/2009042316 Firefox/3.0.10 (.NET CLR 3.5.30729)
+		// Mozilla/5.0 (Windows NT 6.1; rv:2.0b5pre) Gecko/20100824 Minefield/4.0b5pre
+		var regexp = /Mozilla\/([\.0-9]+) \((?:(?:[^;]*); (?:[UI]*); )?([^;]*); (?:(?:[^;]*); )?rv:([^\)]+)\) Gecko\/([\.0-9]+)\s+(.+)/;
+		assert.match(regexp, $('script').textContent);
 
-	var match = $('script').textContent.match(regexp);
-	assert.equals('5.0', match[1]);
-	assert.match(/^[0-9]+\.[0-9]+([ab]([0-9]+)?(pre)?)?/, match[3]);
+		var match = $('script').textContent.match(regexp);
+		assert.equals('5.0', match[1]);
+		assert.match(/^[0-9]+\.[0-9]+([ab]([0-9]+)?(pre)?)?/, match[3]);
+	}
 
-	assert.notContains('foobar', $('script').textContent);
-	utils.setPref('general.useragent.vendor', 'foobar');
-	utils.wait(300);
-	// force reload
-	utils.loadURI('about:blank');
-	utils.loadURI(aURI);
-	assert.contains('foobar', $('script').textContent);
+	assertScriptExecuted();
+        // force reload
+        utils.loadURI('about:blank');
+        utils.loadURI(aURI);
+	assertScriptExecuted();
 }
 
 function assertRedirectedSubmission()
