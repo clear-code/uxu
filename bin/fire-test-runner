@@ -70,6 +70,9 @@ opts = OptionParser.new("Usage: #{$0} [options] test_or_directory...") do |opts|
   opts.on("--retries=N", Integer,
           "how many times to retry to connect",
           "(#{options.n_retries})") {|options.n_retries|}
+  opts.on("--[no-]run-all",
+          "whether run all tests or only tests with high priority",
+          "(#{options.run_all})") {|options.run_all|}
   opts.on("--[no-]quit",
           "whether quit or not on finish (#{options.quit})") {|options.quit|}
   opts.on("--[no-]close-main-windows",
@@ -90,7 +93,19 @@ if tests.empty?
   exit 1
 end
 
+module RubyToJS
+  def hash_to_jsobject(hash)
+    hash_content_string = hash.map do |name, value|
+      "#{name}: #{value}"
+    end.join(", ")
+
+    "{#{hash_content_string}}"
+  end
+end
+
 class Runner
+  include RubyToJS
+
   def initialize(socket, target_paths, output=$stdout)
     @socket = socket
     @output = output
@@ -110,16 +125,21 @@ class Runner
     @use_color = guess_use_color if @use_color.nil?
   end
 
-  def run
+  def run(options)
     escaped_target_paths = @target_paths.collect do |path|
       normalized_path = normalize_separator(path)
       escaped_path = escape_path(normalized_path.to_s)
       "'#{escaped_path}'"
     end.join(", ")
-    options = "{useColor: #{use_color?}}"
+
+    reporter_options = {}
+    reporter_options["useColor"] = use_color?
+    reporter_options["priority"] = "'must'" if options.run_all
+    reporter_options_string = hash_to_jsobject(reporter_options)
+
     evaluate("var #{@reporter_var_name};")
     evaluate("#{@reporter_var_name} =" +
-             " runTest(#{options}, #{escaped_target_paths}); " +
+             " runTest(#{reporter_options_string}, #{escaped_target_paths}); " +
              "undefined;")
 
     begin
@@ -241,7 +261,7 @@ def run(tests, options)
       runner = Runner.new(socket,
                           tests.collect {|test| Pathname(test).expand_path})
       runner.close_main_windows if options.close_main_windows
-      runner.run
+      runner.run(options)
       runner.quit if options.quit
     rescue SystemCallError
       puts "#{$!.class}: #{$!}"
