@@ -1189,7 +1189,7 @@ getWindowsRegistry : function(aKey)
 	}
 	catch(e) {
 		if (e.message == ns.registry.ERROR_NOT_WINDOWS)
-			throw new Error(bundle.getString('error_utils_platform_is_not_windows'));
+			throw new Error(this.ERROR_PLATFORM_IS_NOT_WINDOWS);
 		else
 			throw e;
 	}
@@ -1203,6 +1203,8 @@ setWindowsRegistry : function(aKey, aValue)
 	catch(e) {
 		if (e.message == ns.registry.ERROR_WRITE_FAILED)
 			throw new Error(bundle.getFormattedString('error_utils_failed_to_write_registry', [aKey, aValue]));
+		else if (e.message == ns.registry.ERROR_NOT_WINDOWS)
+			throw new Error(this.ERROR_PLATFORM_IS_NOT_WINDOWS);
 		else
 			throw e;
 	}
@@ -2822,8 +2824,16 @@ bind : function(aFunction, aThis)
 	this.export(wrapped, true, aFunction, aFunction);
 
 	return wrapped;
+},
+
+// Errors
+get ERROR_PLATFORM_IS_NOT_WINDOWS() {
+	if (!this.ERROR_PLATFORM_IS_NOT_WINDOWS_)
+		this.ERROR_PLATFORM_IS_NOT_WINDOWS_
+			= bundle.getString('error_utils_platform_is_not_windows');
+	return this.ERROR_PLATFORM_IS_NOT_WINDOWS_;
 }
- 
+
 }; 
 ns.encoding.export(Utils.prototype);
 ns.hash.export(Utils.prototype);
