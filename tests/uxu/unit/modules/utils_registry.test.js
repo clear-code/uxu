@@ -94,9 +94,9 @@ function tearDown()
 {
 }
 
-function test_getWindowsResigtory()
+function test_getWindowsRegistry()
 {
-	function assertGetWindowsResigtory(aExpected, aKey)
+	function assertGetWindowsRegistry(aExpected, aKey)
 	{
 		if (isWindows) {
 			assert.strictlyEquals(
@@ -115,12 +115,12 @@ function test_getWindowsResigtory()
 	}
 
 	// REG_SZ
-	assertGetWindowsResigtory(
+	assertGetWindowsRegistry(
 		'text/plain',
 		'HKCR\\.txt\\Content Type'
 	);
 	// REG_DWORD
-	assertGetWindowsResigtory(
+	assertGetWindowsRegistry(
 		0,
 		'HKLM\\Software\\Microsoft\\Windows\\'+
 			'CurrentVersion\\explorer\\Advanced\\TaskbarSizeMove'
@@ -135,8 +135,8 @@ var testData = [
 		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-binary',
 		  value    : [0, 2, 9, 29] }
 	];
-test_setWindowsResigtory.parameters = testData;
-function test_setWindowsResigtory(aData)
+test_setWindowsRegistry.parameters = testData;
+function test_setWindowsRegistry(aData)
 {
 	if (isWindows) {
 		utilsModule.setWindowsRegistry(aData.key, aData.value);
@@ -152,8 +152,8 @@ function test_setWindowsResigtory(aData)
 	}
 }
 
-test_setWindowsResigtory_overwrite.shouldSkip = !isWindows;
-test_setWindowsResigtory_overwrite.parameters = [
+test_setWindowsRegistry_overwrite.shouldSkip = !isWindows;
+test_setWindowsRegistry_overwrite.parameters = [
 		{ key      : 'HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-string',
 		  old      : 's',
 		  value    : true,
@@ -204,11 +204,11 @@ test_setWindowsResigtory_overwrite.parameters = [
 		               ['HKCU\\Software\\ClearCode Inc.\\UxU\\test\\test-binary',
 		                [{ value : true }, { value : false }]]) }
 	];
-test_setWindowsResigtory_overwrite.setUp = function(aData)
+test_setWindowsRegistry_overwrite.setUp = function(aData)
 {
 	utilsModule.setWindowsRegistry(aData.key, aData.old);
 };
-function test_setWindowsResigtory_overwrite(aData)
+function test_setWindowsRegistry_overwrite(aData)
 {
 	if (aData.error) {
 		assert.raises(
