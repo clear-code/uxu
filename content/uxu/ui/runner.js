@@ -769,7 +769,36 @@ function updateUIForAllTestsFinish()
 			[gAllTests.length, gSuccess, gFailure, gError, gSkipped]
 		)
 	);
+	updateTestCountInModeButtons();
 };
+ 
+function updateTestCountInModeButtons()
+{
+	var buttonIdToCounts = {
+		"mode-all"           : gAllTests.length,
+		"mode-success"       : gSuccess,
+		"mode-failure"       : gFailure,
+		"mode-error"         : gError,
+		"mode-skip"          : gSkipped,
+		"mode-failure-error" : gFailure + gError
+	};
+
+	for (var buttonId in buttonIdToCounts) {
+		if (buttonIdToCounts.hasOwnProperty(buttonId)) {
+			var modeButton = _(buttonId);
+			var count = buttonIdToCounts[buttonId];
+			updateTestCountInModeButton(modeButton, count);
+		}
+	}
+}
+ 
+function updateTestCountInModeButton(modeButton, count)
+{
+	var baseLabel = modeButton.label.replace(/ (.*)$/, "");
+	var labelWithCount = baseLabel + " (" + count + ")";
+	modeButton.label = labelWithCount;
+	modeButton.setAttribute("data-count", count);
+}
  
 function displayStackTrace(aException, aListbox) 
 {
