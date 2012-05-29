@@ -370,6 +370,9 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 				<toolbarbutton type="radio" group="mode"
 					id="mode-skip" label="&runner.modeSkipped.label;" oncommand="changeMode('skip')">
 				</toolbarbutton>
+				<toolbarbutton type="radio" group="mode"
+					id="mode-failure-error" label="&runner.modeFailureError.label;" oncommand="changeMode('failure-error')">
+				</toolbarbutton>
 			</toolbar>
 			<hbox flex="1">
 				<vbox flex="1" style="padding-top: 1em;">

@@ -120,7 +120,7 @@
 <!ENTITY runner.modeFailure.label "Failure">
 <!ENTITY runner.modeError.label "Error">
 <!ENTITY runner.modeSkipped.label "Skipped">
-
+<!ENTITY runner.modeFailureError.label "Failure+Error">
 
 
 <!ENTITY config.title  "UnitTest.XUL Configuration">

@@ -238,3 +238,9 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 {
 	display: none;
 }
+
+#testcase-reports[data-mode="failure-error"] > vbox[data-result-type="success"],
+#testcase-reports[data-mode="failure-error"] > vbox[data-result-type="skip"]
+{
+	display: none;
+}
