@@ -117,9 +117,12 @@ function test_handleResponse_htaccess()
 	assert.equals(4, result.length);
 	assert.isInstanceOf(Ci.nsIFile, result[2]);
 	result[2] = result[2].path;
-	file = utils.getFileFromURLSpec(fixtures+'notexist');
-	file.normalize();
-	assert.equals([true, '/notexist', file.path, 0], result);
+	// nsIFile#normalize() throws exception if the path doesn't exist
+	var baseDirectory = utils.getFileFromURLSpec(fixtures); // exist
+	baseDirectory.normalize();
+	var notExistFile = baseDirectory.clone();
+	notExistFile.append('notexist'); // not exist
+	assert.equals([true, '/notexist', notExistFile.path, 0], result);
 
 
 	result = server.handleResponse('/redirect/match/hash.txt', server.mServer._handler);
