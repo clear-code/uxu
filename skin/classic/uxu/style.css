@@ -205,3 +205,36 @@ progressmeter[testcase-results~="error"] > .progress-bar {
 :root[running="true"] .throbber {
 	list-style-image: url("jar:resource:///chrome/classic.jar!/skin/classic/global/icons/loading_16.png");
 }
+
+/*  */
+
+/* :::::::::: hiding and showing of rows for each mode :::::::::: */
+
+
+#testcase-reports[data-mode="success"] > vbox[data-result-type="failure"],
+#testcase-reports[data-mode="success"] > vbox[data-result-type="error"],
+#testcase-reports[data-mode="success"] > vbox[data-result-type="skip"]
+{
+	display: none;
+}
+
+#testcase-reports[data-mode="failure"] > vbox[data-result-type="success"],
+#testcase-reports[data-mode="failure"] > vbox[data-result-type="error"],
+#testcase-reports[data-mode="failure"] > vbox[data-result-type="skip"]
+{
+	display: none;
+}
+
+#testcase-reports[data-mode="error"] > vbox[data-result-type="success"],
+#testcase-reports[data-mode="error"] > vbox[data-result-type="failure"],
+#testcase-reports[data-mode="error"] > vbox[data-result-type="skip"]
+{
+	display: none;
+}
+
+#testcase-reports[data-mode="skip"] > vbox[data-result-type="success"],
+#testcase-reports[data-mode="skip"] > vbox[data-result-type="failure"],
+#testcase-reports[data-mode="skip"] > vbox[data-result-type="error"]
+{
+	display: none;
+}

@@ -115,6 +115,11 @@
 <!ENTITY runner.toggleServer.checkbox.tooltiptext "Accept connections as a server">
 
 
+<!ENTITY runner.modeAll.label "All">
+<!ENTITY runner.modeSuccess.label "Success">
+<!ENTITY runner.modeFailure.label "Failure">
+<!ENTITY runner.modeError.label "Error">
+<!ENTITY runner.modeSkipped.label "Skipped">
 
 
 

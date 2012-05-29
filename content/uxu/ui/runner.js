@@ -297,6 +297,8 @@ function Startup()
 
 	// ãåî≈ÇÃpersistëÆê´Ç…ÇÊÇ¡Çƒï€ë∂Ç≥ÇÍÇƒÇ¢ÇΩílÇ™ïúå≥Ç≥ÇÍÇƒÇµÇ‹Ç¡ÇΩèÍçáÇÃÇΩÇﬂÇ…
 	window.setTimeout(setTestFile, 0, defaultTestPath, false);
+
+	initializeMode();
 }
 	
 var alwaysRaisedObserver = { 
@@ -933,6 +935,32 @@ function getReportNode(aTestCase)
 		})();
 }
  
+function decideResultTypeForReportNode(aReportNode, aTopic)
+{
+	var currentResultType = aReportNode.getAttribute("data-result-type");
+	if (!currentResultType)
+		return aTopic.result;
+
+	// If at least one topic ends with failure / error, containing
+	// test case is regarded as failure / error (and error is
+	// stronger than failure).
+
+	if (currentResultType === ns.TestCase.prototype.RESULT_ERROR
+		|| aTopic.result === ns.TestCase.prototype.RESULT_ERROR)
+		return ns.TestCase.prototype.RESULT_ERROR;
+
+	if (aTopic.result === ns.TestCase.prototype.RESULT_FAILURE)
+		return ns.TestCase.prototype.RESULT_FAILURE;
+
+	// Test case is regarded as skipped only if *ALL* topics in the
+	// test case are skipped.
+	if (currentResultType === ns.TestCase.prototype.RESULT_SKIPPED
+		&& aTopic.result !== ns.TestCase.prototype.RESULT_SKIPPED)
+		return aTopic.result;
+
+	return currentResultType;
+}
+ 
 function fillReportFromTopic(aTopic, aTestCase) 
 {
 	var testId = 'test-report-'+encodeURIComponent(aTestCase.title)
@@ -943,6 +971,10 @@ function fillReportFromTopic(aTopic, aTestCase)
 
 	var reportNode = getReportNode(aTestCase);
 
+	reportNode.setAttribute(
+		"data-result-type",
+		decideResultTypeForReportNode(_(reportNode), aTopic)
+	);
 	_(reportNode, 'bar').setAttribute('mode', 'determined');
 	_(reportNode, 'bar').setAttribute('value', aTopic.percentage);
 	_(reportNode, 'running-status').removeAttribute('value');
@@ -1219,6 +1251,18 @@ function stopAllProgressMeters()
 	).forEach(function(aNode) {
 		aNode.setAttribute('mode', 'determined');
 	}, this);
+}
+ 
+function initializeMode()
+{
+	// TODO: save mode (persistent)?
+	_('mode-all').checked = true;
+	changeMode('all');
+}
+ 
+function changeMode(modeName)
+{
+	_('testcase-reports').setAttribute('data-mode', modeName);
 }
   
 /* server */ 

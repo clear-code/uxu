@@ -354,6 +354,23 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 					flex="1"/>
 			</hbox>
 
+			<toolbar>
+				<toolbarbutton type="radio" group="mode"
+					id="mode-all" label="&runner.modeAll.label;" oncommand="changeMode('all')">
+				</toolbarbutton>
+				<toolbarbutton type="radio" group="mode"
+					id="mode-success" label="&runner.modeSuccess.label;" oncommand="changeMode('success')">
+				</toolbarbutton>
+				<toolbarbutton type="radio" group="mode"
+					id="mode-failure" label="&runner.modeFailure.label;" oncommand="changeMode('failure')">
+				</toolbarbutton>
+				<toolbarbutton type="radio" group="mode"
+					id="mode-error" label="&runner.modeError.label;" oncommand="changeMode('error')">
+				</toolbarbutton>
+				<toolbarbutton type="radio" group="mode"
+					id="mode-skip" label="&runner.modeSkipped.label;" oncommand="changeMode('skip')">
+				</toolbarbutton>
+			</toolbar>
 			<hbox flex="1">
 				<vbox flex="1" style="padding-top: 1em;">
 					<scrollbox id="testcase-reports"

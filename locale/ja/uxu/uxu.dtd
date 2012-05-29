@@ -115,6 +115,11 @@
 <!ENTITY runner.toggleServer.checkbox.tooltiptext "サーバとして接続を受け付ける">
 
 
+<!ENTITY runner.modeAll.label "すべて">
+<!ENTITY runner.modeSuccess.label "成功">
+<!ENTITY runner.modeFailure.label "失敗">
+<!ENTITY runner.modeError.label "エラー">
+<!ENTITY runner.modeSkipped.label "除外">
 
 <!ENTITY config.title  "UnitTest.XULの設定">
 <!ENTITY config.size   "max-width: 50em;">
