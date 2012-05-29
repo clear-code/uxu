@@ -586,6 +586,7 @@ var runnerListener = {
 	{
 		this.onTestCaseTestFinish(aEvent);
 		gRemoteRun.onEvent('finish');
+		updateTestCountInModeButtons();
 	}
 };
  
@@ -769,13 +770,12 @@ function updateUIForAllTestsFinish()
 			[gAllTests.length, gSuccess, gFailure, gError, gSkipped]
 		)
 	);
-	updateTestCountInModeButtons();
 };
  
 function updateTestCountInModeButtons()
 {
 	var buttonIdToCounts = {
-		"mode-all"           : gAllTests.length,
+		"mode-all"           : gSuccess + gFailure + gError + gSkipped,
 		"mode-success"       : gSuccess,
 		"mode-failure"       : gFailure,
 		"mode-error"         : gError,
@@ -826,6 +826,7 @@ function reset()
 	gSkipped  = 0;
 	gFailure  = 0;
 	gError    = 0;
+	updateTestCountInModeButtons();
 	_('testResultStatus').setAttribute('label', '');
 	_('testResultStatistical').setAttribute('label', '');
 	_('testResultStatistical').hidden = true;
