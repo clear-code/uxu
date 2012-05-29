@@ -772,15 +772,31 @@ function updateUIForAllTestsFinish()
 	);
 };
  
-function updateTestCountInModeButtons()
+function testUnitCountsForResult(aResultType)
+{
+	var reports = _('testcase-reports').childNodes;
+	return Array.filter(reports, function (report) {
+		return  report.getAttribute("data-result-type") === aResultType;
+	}).length;
+}
+
+function updateTestCountInModeButtons() {
+	var success = testUnitCountsForResult("success");
+	var failure = testUnitCountsForResult("failure");
+	var error = testUnitCountsForResult("error");
+	var skipped = testUnitCountsForResult("skip");
+	updateTestCountInModeButtonsByCounts(success, failure, error, skipped);
+}
+
+function updateTestCountInModeButtonsByCounts(success, failure, error, skipped)
 {
 	var buttonIdToCounts = {
-		"mode-all"           : gSuccess + gFailure + gError + gSkipped,
-		"mode-success"       : gSuccess,
-		"mode-failure"       : gFailure,
-		"mode-error"         : gError,
-		"mode-skip"          : gSkipped,
-		"mode-failure-error" : gFailure + gError
+		"mode-all"           : success + failure + error + skipped,
+		"mode-success"       : success,
+		"mode-failure"       : failure,
+		"mode-error"         : error,
+		"mode-skip"          : skipped,
+		"mode-failure-error" : failure + error
 	};
 
 	for (var buttonId in buttonIdToCounts) {
@@ -826,7 +842,7 @@ function reset()
 	gSkipped  = 0;
 	gFailure  = 0;
 	gError    = 0;
-	updateTestCountInModeButtons();
+	updateTestCountInModeButtonsByCounts(0, 0, 0, 0);
 	_('testResultStatus').setAttribute('label', '');
 	_('testResultStatistical').setAttribute('label', '');
 	_('testResultStatistical').hidden = true;
