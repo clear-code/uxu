@@ -154,7 +154,7 @@ GreasemonkeyUtils.prototype = {
 		sandbox.importFunction(ns.utils.bind(this.GM_log, self), "GM_log");
 		sandbox.importFunction(ns.utils.bind(this.GM_registerMenuCommand, self), "GM_registerMenuCommand");
 
-		// TODO: implement GM_deleteValue()
+		sandbox.importFunction(ns.utils.bind(this.GM_deleteValue, self), "GM_deleteValue");
 		sandbox.importFunction(ns.utils.bind(this.GM_getValue, self), "GM_getValue");
 		sandbox.importFunction(ns.utils.bind(this.GM_setValue, self), "GM_setValue");
 
@@ -168,7 +168,7 @@ GreasemonkeyUtils.prototype = {
 			return self.GM_getResourceText.call(self, aKey, headers);
 		}, "GM_getResourceText");
 
-		// TODO: implement GM_listValues
+		sandbox.GM_listValues           = ns.utils.bind(this.GM_listValues, self);
 		sandbox.GM_openInTab            = ns.utils.bind(this.GM_openInTab, self);
 		sandbox.GM_xmlhttpRequest       = ns.utils.bind(this.GM_xmlhttpRequest, self);
 
@@ -300,6 +300,23 @@ GreasemonkeyUtils.prototype = {
 		this.storage[aKey] = aValue;
 	},
 
+	GM_deleteValue : function(aKey)
+	{
+		this.fireEvent({ type : 'GM_deleteValueCall', key : aKey });
+		delete this.storage[aKey];
+	},
+
+	GM_listValues : function()
+	{
+		this.fireEvent({ type : 'GM_listValuesCall' });
+		var keys = [];
+		for (var key in this.storage) {
+			if (this.storage.hasOwnProperty(key)) {
+				keys.push(key);
+			}
+		}
+		return keys;
+	},
 
 	GM_registerMenuCommand : function(aName, aFunction, aAccelKey, aAccelModifiers, aAccessKey)
 	{

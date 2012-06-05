@@ -203,6 +203,25 @@ function test_GM_setValue()
 	assert.equals(navigator.userAgent, sandboxGet.userAgent);
 }
 
+function test_GM_deleteValue()
+{
+	var sandboxGet;
+	yield Do(GMUtils.load('about:blank'));
+	GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_setValue.user.js');
+	sandboxGet = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_getValue.user.js');
+	assert.equals(navigator.userAgent, sandboxGet.userAgent);
+	GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_deleteValue.user.js');
+	sandboxGet = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_getValue.user.js');
+	assert.isUndefined(sandboxGet.userAgent);
+}
+
+function test_GM_listValues()
+{
+	yield Do(GMUtils.load('about:blank'));
+	var sandbox = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_listValues.user.js');
+	assert.equals(['userAgent', 'foo', 'bar'], sandbox.values);
+}
+
 function test_GM_registerMenuCommand()
 {
 	var sandbox = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_registerMenuCommand.user.js');
