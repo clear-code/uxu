@@ -143,35 +143,35 @@ GreasemonkeyUtils.prototype = {
 
 		var self = this;
 		var win = (this.frame || this.frameInTestRunner).contentWindow;
+
+		var sandbox = new Components.utils.Sandbox(win, { sandboxPrototype: win });
+
+		sandbox.unsafeWindow = win.wrappedJSObject,
+		sandbox.XPathResult  = Ci.nsIDOMXPathResult,
+		sandbox.console = { log : ns.utils.bind(this.GM_log, self) };
+
+		sandbox.importFunction(ns.utils.bind(this.GM_addStyle, self), "GM_addStyle");
+		sandbox.importFunction(ns.utils.bind(this.GM_log, self), "GM_log");
+		sandbox.importFunction(ns.utils.bind(this.GM_registerMenuCommand, self), "GM_registerMenuCommand");
+
+		// TODO: implement GM_deleteValue()
+		sandbox.importFunction(ns.utils.bind(this.GM_getValue, self), "GM_getValue");
+		sandbox.importFunction(ns.utils.bind(this.GM_setValue, self), "GM_setValue");
+
+		// Resource (TODO: sandbox.GM_headers allows users to modify the content of GM_headers)
 		var headers = [];
-		var sandbox = {
-			get window() {
-				return self.frame.contentWindow;
-			},
-			get unsafeWindow() {
-				return self.frame.contentWindow.wrappedJSObject;
-			},
-			get document() {
-				return self.frame.contentDocument;
-			},
-			XPathResult : Ci.nsIDOMXPathResult,
-			GM_log                 : ns.utils.bind(this.GM_log, self),
-			GM_getValue            : ns.utils.bind(this.GM_getValue, self),
-			GM_setValue            : ns.utils.bind(this.GM_setValue, self),
-			GM_registerMenuCommand : ns.utils.bind(this.GM_registerMenuCommand, self),
-			GM_xmlhttpRequest      : ns.utils.bind(this.GM_xmlhttpRequest, self),
-			GM_addStyle            : ns.utils.bind(this.GM_addStyle, self),
-			GM_getResourceURL      : function(aKey) { return self.GM_getResourceURL.call(self, aKey, headers); },
-			GM_getResourceText     : function(aKey) { return self.GM_getResourceText.call(self, aKey, headers); },
-			GM_openInTab           : ns.utils.bind(this.GM_openInTab, self),
-			console : {
-				log : ns.utils.bind(this.GM_log, self)
-			},
-			get GM_headers() {
-				return headers;
-			}
-		};
-		sandbox.__proto__ = win; // set this later to avoid "redeclaration of const document" error
+		sandbox.GM_headers = headers;
+		sandbox.importFunction(function(aKey) {
+			return self.GM_getResourceURL.call(self, aKey, headers);
+		}, "GM_getResourceURL");
+		sandbox.importFunction(function(aKey) {
+			return self.GM_getResourceText.call(self, aKey, headers);
+		}, "GM_getResourceText");
+
+		// TODO: implement GM_listValues
+		sandbox.GM_openInTab            = ns.utils.bind(this.GM_openInTab, self);
+		sandbox.GM_xmlhttpRequest       = ns.utils.bind(this.GM_xmlhttpRequest, self);
+
 		this.sandboxes[aURI] = sandbox;
 		return sandbox;
 	},
@@ -184,19 +184,36 @@ GreasemonkeyUtils.prototype = {
 	kHEADER_END   : /==\/UserScript==/i,
 	kHEADER_LINE  : /^[^\@]*(\@[^\s]+)\s+(.*)$/,
 
+	defaultEncoding: "UTF-8",
+	maxJSVersion: "ECMAv5",
+
+	readScriptContent: function (aURI, aEncoding) {
+		var completeURI = ns.utils.fixupIncompleteURI(aURI);
+		var scriptContent = ns.utils.readFrom(aURI, aEncoding || this.defaultEncoding) || "";
+		return scriptContent;
+	},
+
+	loadScriptInSandbox: function (aURI, aSandbox, aEncoding) {
+		var scriptContent = this.readScriptContent(aURI, aEncoding);
+		Components.utils.evalInSandbox(scriptContent, aSandbox, this.maxJSVersion);
+		return scriptContent;
+	},
+
 	loadScript : function(aURI, aEncoding)
 	{
 		var sandbox = this.getSandboxFor(aURI);
-		var script;
+		var scriptContent;
 		try {
-			script = this._suite.include(aURI, sandbox, aEncoding);
+			scriptContent = this.loadScriptInSandbox(aURI, sandbox, aEncoding);
 		}
 		catch(e) {
 			throw new Error('Error: GMUtils::loadScript() failed to read specified script.\n'+e);
 		}
+
+		// Parse headers and stock parsed information into sandbox.GM_headers
 		var headers = sandbox.GM_headers;
-		if (this.kHEADER_START.test(script) && this.kHEADER_END.test(script)) {
-			script.split(this.kHEADER_START)[1].split(this.kHEADER_END)[0]
+		if (this.kHEADER_START.test(scriptContent) && this.kHEADER_END.test(scriptContent)) {
+			scriptContent.split(this.kHEADER_START)[1].split(this.kHEADER_END)[0]
 				.split(/[\n\r]+/)
 				.forEach(function(aLine) {
 					var match = aLine.match(this.kHEADER_LINE);
