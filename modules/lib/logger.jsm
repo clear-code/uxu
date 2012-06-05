@@ -4,6 +4,14 @@
  * @version      1
  * @license
  *   The MIT License, Copyright (c) 2012 ClearCode Inc.
+ *
+ * Simple Usage
+ * ============
+ *
+ * var { Logger } = Components.utils.import('resource://uxu-modules/lib/logger.jsm', {});
+ * var logger = new Logger("/tmp/log.txt");
+ * logger.log();
+ *
  */
 
 var EXPORTED_SYMBOLS = ["Logger"];
