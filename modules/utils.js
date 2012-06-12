@@ -1681,8 +1681,15 @@ inspect : function(aObject, aIndent)
 		if (index != -1)
 			return inspectedResults[index];
 
-		if (!aTarget.__proto__)
-			return aTarget.toString();
+		if (!aTarget.__proto__) {
+			try {
+				// In certain cases, toString() throws
+				// Error("XrayToString called on an incompatible object")
+				return aTarget.toString();
+			} catch (x) {
+				return Object.prototype.toString.call(aTarget);
+			}
+		}
 
 		if (self.isArray(aTarget)) {
 			index = inspectedObjects.length;
