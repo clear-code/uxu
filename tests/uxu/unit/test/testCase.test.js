@@ -7,7 +7,9 @@ var testcase;
 
 function setUp()
 {
-	testcase = new TestCase('description');
+	testcase = new TestCase('description', {
+		ignoreLastResult : true
+	});
 	testcase.suite = new TestSuite({
 		uri        : baseURL,
 		browser    : gBrowser,

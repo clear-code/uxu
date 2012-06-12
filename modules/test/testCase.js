@@ -98,12 +98,13 @@ function TestCase(aTitle, aOptions)
 	this._registeredTests = [];
 	this._suite           = null;
 
-	this.title          = aTitle;
-	this.masterPriority = aOptions.priority || null;
-	this.shouldSkip     = aOptions.shouldSkip || false;
-	this.context        = aOptions.context;
-	this.targetProduct  = aOptions.targetProduct || null;
-	this.mapping        = aOptions.mapping || aOptions.redirect || null;
+	this.title            = aTitle;
+	this.masterPriority   = aOptions.priority || null;
+	this.shouldSkip       = aOptions.shouldSkip || false;
+	this.ignoreLastResult = !!aOptions.ignoreLastResult;
+	this.context          = aOptions.context;
+	this.targetProduct    = aOptions.targetProduct || null;
+	this.mapping          = aOptions.mapping || aOptions.redirect || null;
 
 	this.done = false;
 	this.aborted = false;
@@ -1413,17 +1414,20 @@ TestCase.prototype = {
 		if (
 			!shouldDo &&
 			!forceNever &&
-			(
-				(aTest.lastHash != aTest.hash) ||
-				(
-					aTest.lastResult != this.RESULT_SUCCESS &&
-					aTest.lastResult != this.RESULT_SKIPPED
-				)
-			)
+			this._shouldDoByLastResult(aTest)
 			) {
 			shouldDo = true;
 		}
 		return shouldDo;
+	},
+	_shouldDoByLastResult : function(aTest) {
+		return !this.ignoreLastResult && (
+			(aTest.lastHash != aTest.hash) ||
+				(
+					aTest.lastResult != this.RESULT_SUCCESS &&
+					aTest.lastResult != this.RESULT_SKIPPED
+				)
+		);
 	},
 	_equalsToNever : function(aPriority)
 	{
