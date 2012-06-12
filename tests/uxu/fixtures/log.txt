@@ -28,7 +28,7 @@ info
 所要時間：0 ミリ秒
 Failure
 
-()@<%= baseURL %>log.test.js:50,createReports([object Object])@<%= baseURL %>log.test.js:45,setUp()@<%= baseURL %>log.test.js:154
+()@<%= baseURL %>log.test.js
 ----------------------------------------------------------------------
 テスト名：Failure with notifications
 進度：4/0
@@ -37,7 +37,7 @@ Failure
 所要時間：0 ミリ秒
 Failure
 
-()@<%= baseURL %>log.test.js:62,createReports([object Object])@<%= baseURL %>log.test.js:57,setUp()@<%= baseURL %>log.test.js:154
+()@<%= baseURL %>log.test.js
 
 info
 
@@ -56,7 +56,7 @@ info
 所要時間：0 ミリ秒
 Error
 
-()@<%= baseURL %>log.test.js:86,createReports([object Object])@<%= baseURL %>log.test.js:81,setUp()@<%= baseURL %>log.test.js:154
+()@<%= baseURL %>log.test.js
 ----------------------------------------------------------------------
 テスト名：Error with notifications
 進度：7/0
@@ -65,7 +65,7 @@ Error
 所要時間：0 ミリ秒
 Error
 
-()@<%= baseURL %>log.test.js:98,createReports([object Object])@<%= baseURL %>log.test.js:93,setUp()@<%= baseURL %>log.test.js:154
+()@<%= baseURL %>log.test.js
 
 info
 

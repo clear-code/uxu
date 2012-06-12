@@ -222,6 +222,14 @@ function test_clear()
 
 function test_toString()
 {
+	function normalizeStackTraces(logString) {
+		return logString.replace(/^(\(\)@.*?):[0-9].*$/mg, "$1");
+	}
+
+        function compareAfterNormalization(logString1, logString2) {
+		assert.equals(normalizeStackTraces(logString1), normalizeStackTraces(logString2));
+	}
+
 	log.onStart(createStartEvent(testcase1));
 	var events = createTestFinishEvents(testcase1, reports1);
 	events.forEach(function(aEvent) {
@@ -251,18 +259,18 @@ function test_toString()
 			utils.readFrom('../../fixtures/log.txt', 'UTF-8'),
 			params
 		);
-	assert.equals(textVersion, log.toString(log.FORMAT_TEXT));
+	compareAfterNormalization(textVersion, log.toString(log.FORMAT_TEXT));
 
 	textVersion = utils.parseTemplate(
 			utils.readFrom('../../fixtures/log_ignore_skipped.txt', 'UTF-8'),
 			params
 		);
-	assert.equals(textVersion, log.toString());
-	assert.equals(textVersion, log.toString(log.FORMAT_TEXT | log.IGNORE_SKIPPED));
+	compareAfterNormalization(textVersion, log.toString());
+	compareAfterNormalization(textVersion, log.toString(log.FORMAT_TEXT | log.IGNORE_SKIPPED));
 
 	textVersion = utils.parseTemplate(
 			utils.readFrom('../../fixtures/log_ignore_skipped_and_success.txt', 'UTF-8'),
 			params
 		);
-	assert.equals(textVersion, log.toString(log.FORMAT_TEXT | log.IGNORE_SKIPPED | log.IGNORE_SUCCESS));
+	compareAfterNormalization(textVersion, log.toString(log.FORMAT_TEXT | log.IGNORE_SKIPPED | log.IGNORE_SUCCESS));
 }
