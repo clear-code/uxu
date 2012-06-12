@@ -76,7 +76,7 @@ window.addEventListener('DOMContentLoaded', function() {
 	window.removeEventListener('DOMContentLoaded', arguments.callee, false);
 
 	eval('window.ComposeStartup = '+window.ComposeStartup.toSource().replace(
-		/(gMsgCompose) = ((sMsgComposeService|composeSvc).InitCompose\(window, params\);)/,
+		/(gMsgCompose) = ((?:sMsgComposeService|composeSvc).(?:I|i)nitCompose\((?:window, params|params, window, editorElement.docShell)\);)/,
 		'$1 = $2 if (!("_real" in $1)) { $1 = new UXUMailComposeProxy($1); }'
 	));
 
