@@ -271,6 +271,8 @@ GlobalService.prototype = {
 			lines.push('user_pref("mail.shell.checkDefaultClient", false);');
 			lines.push('user_pref("mail.shell.checkDefaultMail", false);');
 		}
+		lines.push('user_pref("extensions.autoDisableScopes", 0);');
+		lines.push('user_pref("extensions.showMismatchUI", false);');
 
 		this.utils.writeTo(userJSContents+'\n'+lines.join('\n')+'\n', userJSFile)
 	},
