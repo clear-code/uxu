@@ -129,6 +129,30 @@ Assertions.prototype = {
 	},
 	notStrictlyEqual : function() { return this.notStrictlyEquals.apply(this, arguments); },
 
+	same : function (aExpected, aActual, aMessage) {
+		if (aExpected === aActual)
+			this._onSuccess();
+		else
+			this._fail({
+				expectedRaw : this._appendTypeString(aExpected),
+				actualRaw   : this._appendTypeString(aActual),
+				expected    : bundle.getFormattedString('assert_same_expected', [this._appendTypeString(aExpected)]),
+				actual      : bundle.getFormattedString('assert_same_actual', [this._appendTypeString(aActual)])
+			}, bundle.getString('assert_same'), aMessage);
+	},
+
+	notSame : function (aExpected, aActual, aMessage) {
+		if (aExpected !== aActual)
+			this._onSuccess();
+		else
+			this._fail({
+				expectedRaw : this._appendTypeString(aExpected),
+				actualRaw   : this._appendTypeString(aActual),
+				expected    : bundle.getFormattedString('assert_not_same_expected', [this._appendTypeString(aExpected)]),
+				actual      : bundle.getFormattedString('assert_not_same_actual', [this._appendTypeString(aActual)])
+			}, bundle.getString('assert_not_same'), aMessage);
+	},
+
 	isTrue : function(aActual, aMessage)
 	{
 		if (!aActual)

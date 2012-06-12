@@ -206,6 +206,39 @@ function testStrictlyEquals()
 	assert.equal(4, assertionsModule.successCount);
 }
 
+function testSame()
+{
+	var message = Math.random() * 65000;
+
+	assertSuccess(assertionsModule.same, [1, 1]);
+	assertFailure(assertionsModule.same, [new Number(1), new Number(1), message]);
+	assertFailure(assertionsModule.same, [new String("foo"), new String("foo"), message]);
+	assertFailure(assertionsModule.same, [
+		new Date(2007, 5, 27, 7, 23, 54),
+		new Date(2007, 5, 27, 7, 23, 54),
+		message
+	]);
+	var table1 = {my: 1, name: "is", Nakano: "NO!"};
+	assertSuccess(assertionsModule.same, [table1, table1]);
+
+	var node = document.createElement('box');
+	assertSuccess(assertionsModule.same, [
+		node,
+		node
+	]);
+	assertFailure(assertionsModule.same, [
+		node,
+		document.createElement('box'),
+		message
+	]);
+
+	assertSuccess(assertionsModule.notSame, [0, 1]);
+	assertSuccess(assertionsModule.notSame, [new String("foo"), new String("foo")]);
+	assertFailure(assertionsModule.notSame, [1, 1, message]);
+
+	assert.equal(5, assertionsModule.successCount);
+}
+
 function testContainsString()
 {
 	var message = Math.random() * 65000;
@@ -1491,6 +1524,8 @@ function testExport()
 	assert.isFunction(namespace.assert.strictlyEqual);
 	assert.isFunction(namespace.assert.notStrictlyEquals);
 	assert.isFunction(namespace.assert.notStrictlyEqual);
+	assert.isFunction(namespace.assert.same);
+	assert.isFunction(namespace.assert.notSame);
 	assert.isFunction(namespace.assert.isTrue);
 	assert.isFunction(namespace.assert.true);
 	assert.isFunction(namespace.assert.isFalse);
@@ -1582,6 +1617,8 @@ function testExport()
 	assert.isFunction(namespace.assertStrictlyEqual);
 	assert.isFunction(namespace.assertNotStrictlyEquals);
 	assert.isFunction(namespace.assertNotStrictlyEqual);
+	assert.isFunction(namespace.assertSame);
+	assert.isFunction(namespace.assertNotSame);
 	assert.isFunction(namespace.assertIsTrue);
 	assert.isFunction(namespace.assertTrue);
 	assert.isFunction(namespace.assertIsFalse);
