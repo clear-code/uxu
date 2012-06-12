@@ -108,16 +108,28 @@ function test_openAndClose_async()
 
 function test_getSandbox()
 {
+	function isWrapped(object) {
+		return /XrayWrapper/.test(object.toString());
+	}
+
+	function assertWrapped(object) {
+		assert.isTrue(isWrapped(object));
+	}
+
+	function assertNotWrapped(object) {
+		assert.isFalse(isWrapped(object));
+	}
+
 	var sandbox1 = GMUtils.getSandboxFor('about:blank');
 	assert.isTrue(sandbox1);
-
 	assert.isTrue(sandbox1.window);
 	assert.isTrue(sandbox1.window instanceof Ci.nsIDOMWindow);
-	assert.matches(/XPCNativeWrapper/, String(sandbox1.window));
+	assertWrapped(sandbox1.window);
 	assert.isTrue(sandbox1.unsafeWindow);
 	assert.isTrue(sandbox1.unsafeWindow instanceof Ci.nsIDOMWindow);
-	assert.notMatches(/XPCNativeWrapper/, String(sandbox1.unsafeWindow));
-	assert.equals(sandbox1.window, sandbox1.unsafeWindow);
+	assertNotWrapped(sandbox1.unsafeWindow);
+
+	assert.same(sandbox1.window.wrappedJSObject, sandbox1.unsafeWindow);
 
 	assert.isUndefined(sandbox1.window.foobar);
 	assert.isUndefined(sandbox1.unsafeWindow.foobar);
@@ -133,8 +145,8 @@ function test_getSandbox()
 
 	assert.isTrue(sandbox1.document);
 	assert.isTrue(sandbox1.document instanceof Ci.nsIDOMDocument);
-	assert.matches(/XPCNativeWrapper/, String(sandbox1.document));
-	assert.equals(sandbox1.window.document, sandbox1.document);
+	assertWrapped(sandbox1.document);
+	assert.same(sandbox1.unsafeWindow.document, sandbox1.document.wrappedJSObject);
 
 	assert.equals(sandbox1.XPathResult, Ci.nsIDOMXPathResult);
 
@@ -151,17 +163,17 @@ function test_getSandbox()
 	assert.isFunction(sandbox1.console.log);
 
 	var sandbox2 = GMUtils.getSandboxFor('about:blank');
-	assert.equals(sandbox1, sandbox2);
+	assert.same(sandbox1, sandbox2);
 
 	var sandbox3 = GMUtils.getSandBoxFor('about:blank');
-	assert.equals(sandbox1, sandbox3);
+	assert.same(sandbox1, sandbox3);
 
 	var sandbox4 = GMUtils.getSandboxFor('about:mozilla');
-	assert.notEquals(sandbox1, sandbox4);
+	assert.notSame(sandbox1, sandbox4);
 
 	var sandbox5 = GMUtils.getSandBoxFor('about:mozilla');
-	assert.notEquals(sandbox1, sandbox5);
-	assert.equals(sandbox4, sandbox5);
+	assert.notSame(sandbox1, sandbox5);
+	assert.same(sandbox4, sandbox5);
 }
 
 function test_loadScript()
