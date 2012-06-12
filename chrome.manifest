@@ -5,6 +5,10 @@ overlay	chrome://messenger/content/messenger.xul	chrome://uxu/content/messengerO
 overlay	chrome://messenger/content/messengerWindow.xul	chrome://uxu/content/messengerOverlay.xul
 overlay	chrome://messenger/content/messengercompose/messengercompose.xul	chrome://uxu/content/messengercomposeOverlay.xul
 
+overlay	chrome://messenger/content/messenger.xul	chrome://uxu/content/autoConfigWizardOverlay.xul
+overlay	chrome://messenger/content/messageWindow.xul	chrome://uxu/content/autoConfigWizardOverlay.xul
+overlay	chrome://messenger/content/AccountManager.xul	chrome://uxu/content/autoConfigWizardOverlay.xul
+
 locale	uxu	en-US	jar:chrome/uxu.jar!/locale/en-US/uxu/
 locale	uxu	ja	jar:chrome/uxu.jar!/locale/ja/uxu/
 

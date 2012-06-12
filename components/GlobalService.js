@@ -273,6 +273,7 @@ GlobalService.prototype = {
 		}
 		lines.push('user_pref("extensions.autoDisableScopes", 0);');
 		lines.push('user_pref("extensions.showMismatchUI", false);');
+		lines.push('user_pref("extensions.uxu.profile.suppressAutoConfigWizard", true);');
 
 		this.utils.writeTo(userJSContents+'\n'+lines.join('\n')+'\n', userJSFile)
 	},
