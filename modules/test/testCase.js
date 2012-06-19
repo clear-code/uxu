@@ -633,7 +633,7 @@ TestCase.prototype = {
 		sources.push('assertions:'+test.assertions);
 		sources.push('minAssertions:'+test.minAssertions);
 
-		test.hash = this._utils.computeHash(sources.join('\n'), 'MD5');
+		test.hash = this._utils.computeHash(sources.join('\n'), 'SHA1');
 		test.name = this._source + '::' + this.title + '::' + (desc || test.hash);
 
 		var db, statement;

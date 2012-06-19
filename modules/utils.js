@@ -771,14 +771,22 @@ include : function(aSource, aEncoding, aScope)
 	var temporaryFile;
 	try {
 		script = this.readFrom(uri, encoding) || '';
+		var sha1hash = this.computeHash(script, 'SHA1');
 		if (allowOverrideConstants) {
 			let overriddenScript = script.replace(/^\bconst\s+/gm, 'var ');
 			if (overriddenScript != script) {
 				temporaryFile = this.makeTempFile(uri);
 				uri = this.getURLSpecFromFile(temporaryFile) +
 						'?includeSource=' +
-						encodeURIComponent(uri);
+						encodeURIComponent(uri) +
+						';sha1hash=' + sha1hash;
 			}
+		}
+		else if (uri.indexOf('?') > -1) {
+			uri += ';sha1hash=' + sha1hash;
+		}
+		else {
+			uri += '?sha1hash=' + sha1hash;
 		}
 	}
 	catch(e) {
@@ -996,7 +1004,7 @@ formatStackTraceForDisplay : function(aException)
  
 lineRegExp : /@(.+?):\d+$/, 
 JSFrameLocationRegExp : /JS frame :: (.+) :: .+ :: line (\d+)/,
-differentSourceRegExp : /@.+includeSource=([^;,:]+):(\d+)$/i,
+differentSourceRegExp : /@.+includeSource=([^;,:]+)(?:;sha1hash=[^;,:]+)?:(\d+)$/i,
  
 formatStackTrace : function(aException, aOptions) 
 {
@@ -1045,7 +1053,14 @@ formatStackTrace : function(aException, aOptions)
 			let file = RegExp.$1;
 			if (file.indexOf(' -> ') > -1) {
 				let files = file.split(' -> ');
-				aLine = aLine.replace(file, files[files.length-1]);
+				let lastFile = files[files.length-1];
+				aLine = aLine.replace(file, lastFile);
+				file = lastFile;
+			}
+			if (file.indexOf('sha1hash=') > -1) {
+				let plainFile = file.replace(/[\?&;]sha1hash=.+/, '');
+				aLine = aLine.replace(file, plainFile);
+				file = plainFile;
 			}
 		}
 
