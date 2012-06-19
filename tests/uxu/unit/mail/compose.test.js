@@ -7,6 +7,8 @@ var Compose = utils.import(topDir+'modules/mail/compose.js', {}).Compose;
 var compose;
 var composeWindow;
 
+var profile = '../../fixtures/tbprofile/';
+
 function closeAllComposeWindows()
 {
 	utils.getChromeWindows({ type : 'msgcompose' })
