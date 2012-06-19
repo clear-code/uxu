@@ -2592,7 +2592,7 @@ get installedUXU() {
  
 getInstalledLocationOfProduct : function(aProduct) 
 {
-	if (!aProduct || this.XULAppInfo.OS.toLowerCase().indexOf('win') < 0)
+	if (!aProduct)
 		return null;
 
 	aProduct = String(aProduct).toLowerCase();
@@ -2602,6 +2602,9 @@ getInstalledLocationOfProduct : function(aProduct)
 		file = this.makeFileWithPath(file);
 		if (file.exists()) return file;
 	}
+
+	if (this.XULAppInfo.OS.toLowerCase().indexOf('win') < 0)
+		return null;
 
 	switch (aProduct)
 	{
