@@ -765,27 +765,37 @@ include : function(aSource, aEncoding, aScope)
 		aScope = scope;
 	}
 
-	aSource = this.fixupIncompleteURI(aSource);
-	var encoding = aEncoding || this.getDocumentEncoding(aSource) || this.getPref('extensions.uxu.defaultEncoding');
+	var uri = this.fixupIncompleteURI(aSource);
+	var encoding = aEncoding || this.getDocumentEncoding(uri) || this.getPref('extensions.uxu.defaultEncoding');
 	var script;
+	var temporaryFile;
 	try {
-		script = this.readFrom(aSource, encoding) || '';
-		if (allowOverrideConstants)
-			script = script.replace(/^\bconst\s+/gm, 'var ');
+		script = this.readFrom(uri, encoding) || '';
+		if (allowOverrideConstants) {
+			let overriddenScript = script.replace(/^\bconst\s+/gm, 'var ');
+			if (overriddenScript != script) {
+				temporaryFile = this.makeTempFile(uri);
+				uri = this.getURLSpecFromFile(temporaryFile) +
+						'?includeSource=' +
+						encodeURIComponent(uri);
+			}
+		}
 	}
 	catch(e) {
 		throw new Error(bundle.getFormattedString('error_utils_include', [e]));
 	}
 	aScope = aScope || {};
-	aScope._lastEvaluatedScript = script;
 	Cc['@mozilla.org/moz/jssubscript-loader;1']
 		.getService(Ci.mozIJSSubScriptLoader)
 		.loadSubScript(
-			'chrome://uxu/content/lib/subScriptRunner.js?includeSource='+
-				encodeURIComponent(aSource)+
-				';encoding='+encoding,
-			aScope
+			uri,
+			aScope,
+			encoding
 		);
+
+	if (temporaryFile)
+		temporaryFile.remove(true);
+
 	return script;
 },
  
@@ -984,9 +994,9 @@ formatStackTraceForDisplay : function(aException)
 	return lines;
 },
  
-lineRegExp : /@\w+:.+:\d+/, 
+lineRegExp : /@(.+?):\d+$/, 
 JSFrameLocationRegExp : /JS frame :: (.+) :: .+ :: line (\d+)/,
-subScriptRegExp : /@chrome:\/\/uxu\/content\/lib\/subScriptRunner\.js(?:\?includeSource=([^;,:]+)(?:;encoding=[^;,:]+)?|\?code=([^;,:]+))?:(\d+)$/i,
+differentSourceRegExp : /@.+includeSource=([^;,:]+):(\d+)$/i,
  
 formatStackTrace : function(aException, aOptions) 
 {
@@ -1000,22 +1010,19 @@ formatStackTrace : function(aException, aOptions)
 		exceptionPosition = "@" + aException.fileName;
 		exceptionPosition += ":" + aException.lineNumber;
 
-		if (exceptionPosition.match(this.subScriptRegExp)) {
+		if (exceptionPosition.match(this.differentSourceRegExp)) {
 			var i;
 			var lines = (aException.stack || "").split("\n");
-
 			for (i = 0; i < lines.length; i++) {
-				var line = lines[i];
+				let line = lines[i];
 				if (line.match(/^eval\("(.*)"\)@:0$/)) {
-					var source, errorLine;
-
+					let source, errorLine;
 					source = eval('"\\\"' + RegExp.$1 + '\\\""');
 					errorLine = source.split("\n")[aException.lineNumber - 1];
 					exceptionPosition = errorLine + exceptionPosition;
 					break;
 				}
 			}
-
 			stackLines.push(exceptionPosition);
 		}
 	}
@@ -1024,7 +1031,9 @@ formatStackTrace : function(aException, aOptions)
 		stackLines = stackLines.concat(String(aException.stack).split('\n'));
 	}
 	if (aException.location && this.JSFrameLocationRegExp.test(aException.location)) {
-		stackLines = stackLines.concat(['()@' + RegExp.$1 + ':' + RegExp.$2]);
+		let file = RegExp.$1;
+		let lineNumber = RegExp.$2;
+		stackLines = stackLines.concat(['()@' + file + ':' + lineNumber]);
 	}
 
 	stackLines.forEach(function(aLine) {
@@ -1032,24 +1041,26 @@ formatStackTrace : function(aException, aOptions)
 
 		aLine = String(aLine).replace(/\\n/g, '\n');
 
+		if (this.lineRegExp.test(aLine)) {
+			let file = RegExp.$1;
+			if (file.indexOf(' -> ') > -1) {
+				let files = file.split(' -> ');
+				aLine = aLine.replace(file, files[files.length-1]);
+			}
+		}
+
 		if ('maxLength' in aOptions &&
 			aLine.length > aOptions.maxLength)
 			aLine = aLine.substr(0, aOptions.maxLength) + '[...]\n';
 
-		if (aLine.match(this.subScriptRegExp)) {
-			var lineNum = RegExp.$3;
+		if (aLine.match(this.differentSourceRegExp)) {
+			let lineNum = RegExp.$2;
 			if (RegExp.$1) {
-				var includeSource = decodeURIComponent(RegExp.$1);
-				aLine = aLine.replace(this.subScriptRegExp, '@'+includeSource+':'+lineNum);
-			}
-			else if (RegExp.$2) {
-				if (aOptions.onlyFile) return;
-				var code = decodeURIComponent(RegExp.$2);
-				aLine = '(eval):' +
-					aLine.replace(this.subScriptRegExp, '') +
-					lineNum + ':' + code;
+				let includeSource = decodeURIComponent(RegExp.$1);
+				aLine = aLine.replace(this.differentSourceRegExp, '@'+includeSource+':'+lineNum);
 			}
 		}
+
 		if (
 			(aOptions.onlyExternal && this._comesFromFramework(aLine)) ||
 			(aOptions.onlyTraceLine && !this.lineRegExp.test(aLine))
@@ -2375,7 +2386,6 @@ _convertParameterType : function(aInput, aType)
 },
  
 getErrorNameFromNSExceptionCode : function(aCode) 
-
 {
 	if (typeof aCode != 'number')
 		return null;

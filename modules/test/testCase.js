@@ -175,8 +175,9 @@ TestCase.prototype = {
 			while (stack)
 			{
 				path = stack.filename || '';
+				if (!source) source = path;
 				if (path.indexOf('chrome://uxu/content/lib/subScriptRunner.js?') != 0) {
-					stack = stack.caller
+					stack = stack.caller;
 					continue;
 				}
 				/.+includeSource=([^;]+)/.test(path);
