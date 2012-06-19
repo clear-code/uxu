@@ -1002,7 +1002,7 @@ formatStackTraceForDisplay : function(aException)
 	return lines;
 },
  
-lineRegExp : /@(.+?):\d+$/, 
+lineRegExp : /@(.+?)(:\d+)?$/, 
 JSFrameLocationRegExp : /JS frame :: (.+) :: .+ :: line (\d+)/,
 differentSourceRegExp : /@.+includeSource=([^;,:]+)(?:;sha1hash=[^;,:]+)?:(\d+)$/i,
  
@@ -1096,22 +1096,9 @@ _comesFromFramework : function(aLine)
 			/\(function \(aExitResult\) \{if \(aEventHandlers/.test(aLine))
 },
  
-makeStackLine : function(aStack) 
-{
-	if (typeof aStack == 'string') return aStack;
-	return (aStack.name || '') + '()@' + aStack.filename + ':' + aStack.lineNumber + '\n';
-},
- 
 getStackTrace : function() 
 {
-	var callerStack = '';
-	var caller = Components.stack;
-	while (caller)
-	{
-		callerStack += this.makeStackLine(caller);
-		caller = caller.caller;
-	}
-	return callerStack;
+	return (new Error()).stack;
 },
  
 unformatStackLine : function(aLine) 
