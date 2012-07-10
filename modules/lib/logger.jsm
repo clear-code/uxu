@@ -65,5 +65,21 @@ Logger.prototype = {
   // with line termination
   log: function (message) {
     this.logRawString(new Date() + " || " + message + "\n");
+  logObject: function (object) {
+    this.logRawString(this.objectToString(object) + "\n");
+  },
+
+  objectToString: function (object) {
+    try {
+      return JSON.stringify(object, null, 2);
+    } catch (x) {
+      var keys = [];
+      for (var key in object)
+        keys.push(key);
+      return "{\n" + keys.reduce(function (keyValueStrings, key) {
+        keyValueStrings.push("  " + key + ": " + object[key]);
+        return keyValueStrings;
+      }, []).join(",\n") + "\n}";
+    }
   }
 };
