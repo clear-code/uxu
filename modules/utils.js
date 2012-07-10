@@ -776,6 +776,8 @@ include : function(aSource, aEncoding, aScope)
 			let overriddenScript = script.replace(/^\bconst\s+/gm, 'var ');
 			if (overriddenScript != script) {
 				temporaryFile = this.makeTempFile(uri);
+				temporaryFile.remove(true);
+				this.writeTo(overriddenScript, temporaryFile, encoding);
 				uri = this.getURLSpecFromFile(temporaryFile) +
 						'?includeSource=' +
 						encodeURIComponent(uri) +
