@@ -1440,6 +1440,7 @@ TestCase.prototype = {
  
 	_saveResult : function(aTest, aResult) 
 	{
+		aTest.lastResult = aResult;
 		var db, statement;
 		try {
 			db = this._utils.getDB();
