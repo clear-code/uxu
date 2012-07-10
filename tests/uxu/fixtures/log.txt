@@ -2,7 +2,7 @@
 所要時間：0 ミリ秒
 
 ======================================================================
-<%= baseURL %>../../../../modules/test/testCase.js
+<%= testTargetURL %>
 テストケース「test1」実行開始（<%= start %>）
 ======================================================================
 テスト名：Success
@@ -28,7 +28,7 @@ info
 所要時間：0 ミリ秒
 Failure
 
-()@<%= baseURL %>log.test.js
+()@<%= testFileURL %>
 ----------------------------------------------------------------------
 テスト名：Failure with notifications
 進度：4/0
@@ -37,7 +37,7 @@ Failure
 所要時間：0 ミリ秒
 Failure
 
-()@<%= baseURL %>log.test.js
+()@<%= testFileURL %>
 
 info
 
@@ -56,7 +56,7 @@ info
 所要時間：0 ミリ秒
 Error
 
-()@<%= baseURL %>log.test.js
+()@<%= testFileURL %>
 ----------------------------------------------------------------------
 テスト名：Error with notifications
 進度：7/0
@@ -65,7 +65,7 @@ Error
 所要時間：0 ミリ秒
 Error
 
-()@<%= baseURL %>log.test.js
+()@<%= testFileURL %>
 
 info
 

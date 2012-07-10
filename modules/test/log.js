@@ -120,7 +120,7 @@ TestLog.prototype = {
 		var testSeparator = bundle.getString('log_separator_test');
 		this._items.forEach(function(aLog) {
 			result.push(testCaseSeparator);
-			result.push(aLog.source);
+			result.push(utils.removeParametersFromURL(utils.extractActualURL(aLog.source)));
 			result.push(bundle.getFormattedString('log_start', [aLog.title, new Date(aLog.start)]));
 			result.push(testCaseSeparator);
 			var outputCount = 0;

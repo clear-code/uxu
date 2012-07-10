@@ -1053,16 +1053,12 @@ formatStackTrace : function(aException, aOptions)
 
 		if (this.lineRegExp.test(aLine)) {
 			let file = RegExp.$1;
-			if (file.indexOf(' -> ') > -1) {
-				let files = file.split(' -> ');
-				let lastFile = files[files.length-1];
-				aLine = aLine.replace(file, lastFile);
-				file = lastFile;
-			}
-			if (file.indexOf('sha1hash=') > -1) {
-				let plainFile = file.replace(/[\?&;]sha1hash=.+/, '');
-				aLine = aLine.replace(file, plainFile);
-				file = plainFile;
+			let actualURL = this.extractActualURL(file);
+			aLine = aLine.replace(file, actualURL);
+			if (actualURL.indexOf('sha1hash=') > -1) {
+				let plainFile = actualURL.replace(/[\?&;]sha1hash=.+/, '');
+				aLine = aLine.replace(actualURL, plainFile);
+				actualURL = plainFile;
 			}
 		}
 
@@ -1087,6 +1083,20 @@ formatStackTrace : function(aException, aOptions)
 	}, this);
 
 	return trace;
+},
+
+extractActualURL : function(aURL)
+{
+	var delimiter = " -> ";
+	if (aURL.indexOf(delimiter) >= 0)
+		return aURL.split(delimiter).pop();
+	return aURL;
+},
+removeParametersFromURL : function(aURL) {
+	var delimiter = "?";
+	if (aURL.indexOf(delimiter) >= 0)
+		return aURL.split(delimiter)[0];
+	return aURL;
 },
 	
 _comesFromFramework : function(aLine) 

@@ -237,6 +237,13 @@ function test_toString()
 	});
 	log.onFinish(createFinishEvent(testcase1, reports1));
 
+	function getNormalizedSpecFromPath(aPath) {
+		var file = utils.normalizeToFile(aPath);
+		file.normalize();
+		var url = utils.getURLFromFile(file).spec;
+		return url;
+	}
+
 	var start = Date.now();
 	var now = start + 500;
 	var finish = now + 500;
@@ -244,7 +251,9 @@ function test_toString()
 			now : new Date(now),
 			start : new Date(start),
 			finish : new Date(finish),
-			baseURL : baseURL
+			baseURL : baseURL,
+			testFileURL : getNormalizedSpecFromPath("log.test.js"),
+			testTargetURL : getNormalizedSpecFromPath("../../../../modules/test/testCase.js")
 		};
 
 	log.lastItem.start = start;
