@@ -451,6 +451,9 @@ function testMasterPriority_overriddenByEachPriority()
 	assert.isTrue(testcase.done);
 }
 
+testForceRetry.setUp = function() {
+	testcase.ignoreLastResult = false;
+};
 function testForceRetry()
 {
 	var neverRunTest = new MockFunction('neverRunTest');
