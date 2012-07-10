@@ -573,6 +573,7 @@ function test_include_hashStyle()
 
 	assert.isDefined(namespace.constant);
 	assert.equals('定数', namespace.constant);
+	var originalConstantValue = namespace.constant;
 	assert.notRaises(
 		'TypeError: redeclaration of const constant',
 		function() {
@@ -582,7 +583,7 @@ function test_include_hashStyle()
 			);
 		}
 	);
-	assert.equals('foo', namespace.constant);
+	assert.equals(originalConstantValue, namespace.constant);
 }
 
 
