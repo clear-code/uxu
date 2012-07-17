@@ -421,7 +421,6 @@ TestLog.prototype = {
 
 	onTestFinish : function(aEvent)
 	{
-dump('[log]onTestFinish '+aEvent.target.title+'\n');
 		var item = this.getItemFor(aEvent.target);
 		var count = item.count;
 		if (!(aEvent.data.result in count))
@@ -440,7 +439,6 @@ dump('[log]onTestFinish '+aEvent.target.title+'\n');
 		if (aEvent.data.result == ns.TestCase.prototype.RESULT_ERROR)
 			this.onTestFinish(aEvent);
 
-dump('[log]onFinish '+aEvent.target.title+'\n');
 		var item = this.getItemFor(aEvent.target);
 		item.finish = Date.now();
 		item.time = aEvent.data.time;

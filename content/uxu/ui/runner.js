@@ -545,13 +545,13 @@ var runnerListener = {
 
 
 	// events from testcases
-	doneTopicsCount : 0,
 	onTestCaseStart : function(aEvent)
 	{
-		this.doneTopicsCount = 0;
 		gLog.items = aEvent.data.log.items;
 		gRemoteRun.onEvent('progress');
 		var node = getReportNode(aEvent.data.testCase);
+		var item = gLog.getItemFor(aEvent.data.testCase);
+		item.doneTopicsCount = 0;
 		node.setAttribute('source', aEvent.data.testCase.source);
 	},
 	onTestCaseTestStart : function(aEvent)
@@ -567,11 +567,11 @@ var runnerListener = {
 		gRemoteRun.onEvent('progress');
 		var item = gLog.getItemFor(aEvent.data.testCase);
 		item.topics
-			.slice(this.doneTopicsCount)
+			.slice(item.doneTopicsCount || 0)
 			.forEach(function(aOneTopic) {
 				fillReportFromTopic(aOneTopic, aEvent.data.testCase);
 			});
-		this.doneTopicsCount = item.topics.length;
+		item.doneTopicsCount = item.topics.length;
 	},
 	onTestCaseRemoteTestFinish : function(aEvent)
 	{
