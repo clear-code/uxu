@@ -14,9 +14,6 @@ locale	uxu	ja	jar:chrome/uxu.jar!/locale/ja/uxu/
 
 skin	uxu	classic/1.0	jar:chrome/uxu.jar!/skin/classic/uxu/
 
-style chrome://uxu/content/ui/runner.xul chrome://uxu/skin/style-fx4.css appversion>=4.0b5pre
-style chrome://uxu/content/ui/uxu.xul chrome://uxu/skin/style-fx4.css appversion>=4.0b5pre
-
 resource uxu-modules modules/
 
 component	{dd385d40-9e6f-11dd-ad8b-0800200c9a66}	components/GlobalService.js
