@@ -1,3 +1,4 @@
+var parallel = false;
 var topDir = baseURL+'../../../../';
 
 var ServerUtils = utils.import(topDir+'modules/server/utils.js', {}).ServerUtils;

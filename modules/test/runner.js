@@ -178,6 +178,7 @@ TestRunner.prototype = {
 						options       : env.options,
 						priority      : env.priority,
 						shouldSkip    : env.shouldSkip,
+						parallel      : env.parallel || !env.sequential,
 						context       : env.testContext,
 						targetProduct : env.targetProduct,
 						mapping       : env.mapping || env.redirect
@@ -210,6 +211,7 @@ TestRunner.prototype = {
 		this._shouldAbort = false;
 		this._current     = 0;
 		this._testsCount  = aTests.length;
+		this._finishedCount = 0;
 
 		var self = this;
 		this._stoppers = [];
@@ -217,9 +219,8 @@ TestRunner.prototype = {
 				if (self._shouldAbort)
 					return true;
 
-				self._current++;
 				self.fireEvent('Progress',
-					parseInt(((self._current) / (self._testsCount + 1)) * 100));
+					parseInt(((self._finishedCount+1) / (self._testsCount + 1)) * 100));
 				try {
 					aTest.addListener(self);
 					let stopper = aTest.run();
@@ -233,26 +234,43 @@ TestRunner.prototype = {
 
 		var maxCount = Math.max(1, utils.getPref('extensions.uxu.runner.maxRunningTests'));
 		var runningTests = [];
+		var sequentialTests = [];
+		var parallelTests = aTests.filter(function(aTest) {
+				if (!aTest.parallel)
+					sequentialTests.push(aTest);
+				return aTest.parallel;
+			});
 		ns.setTimeout(function() {
-			let aborted = false;
 			runningTests = runningTests.filter(function(aTest) {
 				return aTest && !aTest.done && !aTest.aborted;
 			});
-			while (runningTests.length < maxCount && aTests.length)
-			{
-				let test = aTests.shift();
-				if (test) {
+			var runningSequential = runningTests.some(function(aTest) {
+					return !aTest.parallel;
+				});
+			var aborted = false;
+			if (!runningSequential || maxCount > 1) {
+				while (
+					runningTests.length < maxCount &&
+					(parallelTests.length || sequentialTests.length)
+					)
+				{
+					let test = (!runningSequential && sequentialTests.length) ?
+								sequentialTests.shift() :
+								parallelTests.shift() ;
+					if (!test) continue;
 					let oneAborted = runTest(test);
 					if (!oneAborted)
 						runningTests.push(test);
 					aborted = aborted || oneAborted;
+					if (!test.parallel)
+						runningSequential = true;
 				}
 			}
 			if (aborted || self._shouldAbort) {
 				self.abort(); // to stop running tests
 				self.fireEvent('Abort');
 			}
-			else if (aTests.length) {
+			else if (parallelTests.length || sequentialTests.length) {
 				ns.setTimeout(arguments.callee, 100);
 			}
 		}, 100);
@@ -304,10 +322,11 @@ TestRunner.prototype = {
 			case 'Finish':
 				this._log.onFinish(aEvent);
 				this.runningCount--;
+				this._finishedCount++;
 				this._onTestCaseEvent(aEvent);
 				this._cleanUpModifications(aEvent.target);
 				aEvent.target.removeListener(this);
-				if (this._current == this._testsCount) {
+				if (this._finishedCount == this._testsCount) {
 					utils.setPref(RUNNING, false);
 					this.fireEvent('Finish');
 				}

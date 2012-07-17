@@ -1,3 +1,4 @@
+var parallel = false;
 var targetProduct = 'Firefox';
 
 var topDir = baseURL+'../../../../';

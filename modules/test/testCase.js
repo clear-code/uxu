@@ -101,6 +101,7 @@ function TestCase(aTitle, aOptions)
 	this.title            = aTitle;
 	this.masterPriority   = aOptions.priority || null;
 	this.shouldSkip       = aOptions.shouldSkip || false;
+	this.parallel         = aOptions.parallel || false;
 	this.ignoreLastResult = !!aOptions.ignoreLastResult;
 	this.context          = aOptions.context;
 	this.targetProduct    = aOptions.targetProduct || null;

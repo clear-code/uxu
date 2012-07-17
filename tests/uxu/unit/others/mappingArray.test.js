@@ -1,3 +1,4 @@
+var parallel = false;
 utils.include('./mapping.inc.js');
 
 var mapping = [

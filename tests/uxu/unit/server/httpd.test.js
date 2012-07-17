@@ -1,3 +1,4 @@
+var parallel = false;
 var shouldSkip = utils.checkPlatformVersion('1.9') < 0;
 
 var topDir = baseURL+'../../../../';

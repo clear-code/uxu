@@ -1,3 +1,4 @@
+var parallel = false;
 var topDir = baseURL+'../../../../';
 
 var Action = utils.import(topDir+'modules/test/action.js', {}).Action;
