@@ -15,7 +15,7 @@
  * The Original Code is UxU - UnitTest.XUL.
  *
  * The Initial Developer of the Original Code is Kouhei Sutou.
- * Portions created by the Initial Developer are Copyright (C) 2010
+ * Portions created by the Initial Developer are Copyright (C) 2010-2012
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): Kouhei Sutou <kou@clear-code.com>
@@ -231,30 +231,31 @@ TestRunner.prototype = {
 				return false;
 			};
 
-		if (utils.getPref('extensions.uxu.runner.runParallel')) {
-			if (aTests.some(runTest)) {
-				this.abort(); // to stop running tests
-				this.fireEvent('Abort');
+		var maxCount = Math.max(1, utils.getPref('extensions.uxu.runner.maxRunningTests'));
+		var runningTests = [];
+		ns.setTimeout(function() {
+			let aborted = false;
+			runningTests = runningTests.filter(function(aTest) {
+				return aTest && !aTest.done && !aTest.aborted;
+			});
+			while (runningTests.length < maxCount && aTests.length)
+			{
+				let test = aTests.shift();
+				if (test) {
+					let oneAborted = runTest(test);
+					if (!oneAborted)
+						runningTests.push(test);
+					aborted = aborted || oneAborted;
+				}
 			}
-		}
-		else {
-			var test;
-			ns.setTimeout(function() {
-				let aborted = false;
-				if ((!test || test.done || test.aborted) && aTests.length) {
-					test = aTests.shift();
-					if (test)
-						aborted = runTest(test);
-				}
-				if (aborted || self._shouldAbort) {
-					self.abort(); // to stop running tests
-					self.fireEvent('Abort');
-				}
-				else if (aTests.length) {
-					ns.setTimeout(arguments.callee, 100);
-				}
-			}, 100);
-		}
+			if (aborted || self._shouldAbort) {
+				self.abort(); // to stop running tests
+				self.fireEvent('Abort');
+			}
+			else if (aTests.length) {
+				ns.setTimeout(arguments.callee, 100);
+			}
+		}, 100);
 	},
   
 	abort : function() 

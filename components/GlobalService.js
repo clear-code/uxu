@@ -226,7 +226,7 @@ GlobalService.prototype = {
 				char extensions.uxu.priority.low
 				bool extensions.uxu.warnOnNoAssertion
 				char extensions.uxu.runner.runMode
-				bool extensions.uxu.runner.runParallel
+				int extensions.uxu.runner.maxRunningTests
 				bool extensions.uxu.runner.autoShowContent
 				bool extensions.uxu.runner.coloredDiff
 				int  extensions.uxu.port

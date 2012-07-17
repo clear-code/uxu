@@ -152,9 +152,9 @@
 <!ENTITY config.runner.editor.caption "テストの編集に使用するエディタ">
 <!ENTITY config.runner.editor.label   "起動コマンド：">
 <!ENTITY config.runner.editor.desctiption "※空欄にすると次回編集時にファイル選択ダイアログを表示します">
-<!ENTITY config.runner.runParallel "複数テストの実行時">
-<!ENTITY config.runner.runParallel.true  "複数テストを平行して実行する">
-<!ENTITY config.runner.runParallel.false "テストを一つずつ実行する">
+<!ENTITY config.runner.maxRunningTests "複数テストの並列実行">
+<!ENTITY config.runner.maxRunningTests.before "最大で">
+<!ENTITY config.runner.maxRunningTests.after  "個までのテストを並列に実行する">
 <!ENTITY config.runner.runMode   "テストの実行ポリシー">
 <!ENTITY config.runner.runMode.0 "前回失敗したテストや未実行のテストは必ず実行し、それ以外は優先度を落とす（推奨）">
 <!ENTITY config.runner.runMode.1 "すべてのテストを必ず実行する">

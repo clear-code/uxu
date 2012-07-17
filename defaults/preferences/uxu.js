@@ -14,7 +14,7 @@
  * The Original Code is UxU - UnitTest.XUL.
  *
  * The Initial Developer of the Original Code is SHIMODA Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2010
+ * Portions created by the Initial Developer are Copyright (C) 2010-2012
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): SHIMODA Hiroshi <shimoda@clear-code.com>
@@ -55,7 +55,7 @@ pref("extensions.uxu.warnOnNoAssertion",  true);
 pref("extensions.uxu.httpd.noCache",      false);
 
 pref("extensions.uxu.runner.runMode", 0); // 0 = run by priority, 1 = run all
-pref("extensions.uxu.runner.runParallel", false);
+pref("extensions.uxu.runner.maxRunningTests", 1);
 pref("extensions.uxu.runner.editor", "/usr/bin/gedit +%L %F");
 pref("extensions.uxu.runner.editor.defaultOptions.hidemaru.exe", "/j%L,%C \"%F\"");
 pref("extensions.uxu.runner.editor.defaultOptions.terapad.exe", "/j=%L \"%F\"");

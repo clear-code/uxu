@@ -153,9 +153,9 @@
 <!ENTITY config.runner.editor.caption "Text editor for testcases">
 <!ENTITY config.runner.editor.label   "Command line:">
 <!ENTITY config.runner.editor.desctiption "*If you set it blank, you can choose an editor when you edit a testcase.">
-<!ENTITY config.runner.runParallel "Running multiple tests">
-<!ENTITY config.runner.runParallel.true  "Parallelly">
-<!ENTITY config.runner.runParallel.false "Sequentially">
+<!ENTITY config.runner.maxRunningTests "Parallel running of multiple tests">
+<!ENTITY config.runner.maxRunningTests.before "Run">
+<!ENTITY config.runner.maxRunningTests.after  "test(s) parallely in a time">
 <!ENTITY config.runner.runMode   "Policy to run tests">
 <!ENTITY config.runner.runMode.0 "Run tests by their priority, but regard failed or uncompleted tests as MUST to run (recommended)">
 <!ENTITY config.runner.runMode.1 "Run any test always">
