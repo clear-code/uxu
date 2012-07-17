@@ -223,7 +223,7 @@ function test_clear()
 function test_toString()
 {
 	function normalizeStackTraces(logString) {
-		return logString.replace(/^(\(\)@.*?):[0-9].*$/mg, "$1");
+		return logString.replace(/^(?:\(\))?(@.*?):[0-9].*$/mg, "()$1");
 	}
 
 	function compareAfterNormalization(logString1, logString2) {
