@@ -830,6 +830,7 @@ function displayStackTraceLines(aLines, aListbox)
 		var unformatted = utils.unformatStackLine(aLine);
 		if (unformatted.source) item.setAttribute('source', unformatted.source);
 		if (unformatted.line) item.setAttribute('line', unformatted.line);
+		if (utils.comesFromFramework(aLine)) item.setAttribute('internal', true);
 		aListbox.appendChild(item);
 	});
 }
