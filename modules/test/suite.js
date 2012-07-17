@@ -324,7 +324,7 @@ getTestWindow : function(aOptions)
 	{
 		target = targets.getNext().
 			QueryInterface(Ci.nsIDOMWindow);
-		if ('nsIDOMWindowInternal' in Ci) // for Firefox 7 or olders		
+		if ('nsIDOMWindowInternal' in Ci) // for Firefox 7 or olders
 			target = target.QueryInterface(Ci.nsIDOMWindowInternal);
 		if (target[key] == target.location.href+'?'+this.uniqueID ||
 			target.document.documentElement.getAttribute(key) == target.location.href+'?'+this.uniqueID)
