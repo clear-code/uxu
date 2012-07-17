@@ -760,6 +760,7 @@ TestCase.prototype = {
 				this._run();
 		}
 		catch(e) {
+			this.done = true;
 			var report = new ns.Report();
 			report.testCase = this;
 			report.addTopic({
@@ -1053,6 +1054,8 @@ TestCase.prototype = {
 	
 	_runByRemote : function() 
 	{
+		this.fireEvent('Start');
+
 		if (
 			!this._profile ||
 			!this._profile.exists() ||
@@ -1074,8 +1077,6 @@ TestCase.prototype = {
 				));
 			}
 		}
-
-		this.fireEvent('Start');
 
 		var profile = this._utils.getFileFromKeyword('TmpD');
 		profile.append(this.REMOTE_PROFILE_PREFIX);
