@@ -370,8 +370,13 @@ GreasemonkeyUtils.prototype = {
 		var uri = aDetails.url;
 		if (typeof uri != 'string')
 			throw new Error('Invalid url: url must be of type string');
-		if (!/^(http|https|ftp):\/\//.test(uri))
-			throw new Error('Invalid url: '+uri);
+		if (!/^(http|https|ftp):\/\//.test(uri)) {
+			// Apply same origin policy (UxU's extension)
+			var protocolAndHost = /^\w+:\/\/[^/]*/.exec(uri);
+			if (!protocolAndHost || this._suite.baseURL.indexOf(protocolAndHost) < 0) {
+				throw new Error('Invalid url: ' + uri);
+			}
+		}
 
 		var request = Cc['@mozilla.org/xmlextras/xmlhttprequest;1']
 				.createInstance(Ci.nsIXMLHttpRequest)

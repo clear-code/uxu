@@ -16,14 +16,14 @@ function setAndGetValue() {
 	return GM_getValue('testKey');
 }
 
-var servicePageTitle = null;
-function getServicesPageTitle() {
+var pageTitle = null;
+function getPageTitle(aPageURL) {
 	GM_xmlhttpRequest({
 		method : 'GET',
-		url    : 'http://www.clear-code.com/services/',
+		url    : aPageURL,
 		onload : function(aState) {
 			/<title>([^<]+)<\/title>/.test(aState.responseText);
-			servicePageTitle = RegExp.$1;
+			pageTitle = RegExp.$1;
 		}
 	});
 }

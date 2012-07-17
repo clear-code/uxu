@@ -52,10 +52,10 @@ function testGMFunctionResult() {
 
 testGMXMLHttpRequest.description = 'GM_xmlhttpRequestを使った関数のテストの例';
 function testGMXMLHttpRequest() {
-	assert.isNull(sandbox.servicePageTitle);
+	assert.isNull(sandbox.pageTitle);
 	yield Do(greasemonkey.doAndWaitLoad(function() {
-			sandbox.getServicesPageTitle();
+			sandbox.getPageTitle(utils.fixupIncompleteURI("service.html"));
 		}));
-	assert.equals('サービス -ClearCode Inc.', sandbox.servicePageTitle);
+	assert.equals('サービス - クリアコード', sandbox.pageTitle);
 }
 
