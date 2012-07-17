@@ -189,8 +189,8 @@ GreasemonkeyUtils.prototype = {
 	maxJSVersion: "ECMAv5",
 
 	readScriptContent: function (aURI, aEncoding) {
-		var completeURI = ns.utils.fixupIncompleteURI(aURI);
-		var scriptContent = ns.utils.readFrom(aURI, aEncoding || this.defaultEncoding) || "";
+		var completeURI = this._suite.fixupIncompleteURI(aURI);
+		var scriptContent = ns.utils.readFrom(completeURI, aEncoding || this.defaultEncoding) || "";
 		return scriptContent;
 	},
 
