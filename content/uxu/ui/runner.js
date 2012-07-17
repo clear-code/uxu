@@ -565,12 +565,13 @@ var runnerListener = {
 	{
 		gLog.items = aEvent.data.log.items;
 		gRemoteRun.onEvent('progress');
-		gLog.lastItem.topics
+		var item = gLog.getItemFor(aEvent.data.testCase);
+		item.topics
 			.slice(this.doneTopicsCount)
 			.forEach(function(aOneTopic) {
 				fillReportFromTopic(aOneTopic, aEvent.data.testCase);
 			});
-		this.doneTopicsCount = gLog.lastItem.topics.length;
+		this.doneTopicsCount = item.topics.length;
 	},
 	onTestCaseRemoteTestFinish : function(aEvent)
 	{

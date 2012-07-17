@@ -14,7 +14,7 @@
  * The Original Code is UxU - UnitTest.XUL.
  *
  * The Initial Developer of the Original Code is SHIMODA Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2010
+ * Portions created by the Initial Developer are Copyright (C) 2010-2012
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): SHIMODA Hiroshi <shimoda@clear-code.com>
@@ -77,6 +77,29 @@ TestLog.prototype = {
 	},
 	get lastItem() {
 		return this._items[this._items.length-1];
+	},
+	get runningItems() {
+		return this._items.filter(function(aItem) {
+			return !aItem.finish;
+		});
+	},
+	get lastRunningItem() {
+		for (let i = this._items.length-1, item; i > -1; i--)
+		{
+			let item = this._items[i];
+			if (!item.finish)
+				return item;
+		}
+		return null;
+	},
+	getItemFor: function(aTestCase) {
+		for (let i = 0, item, maxi = this._items.length; i < maxi; i++)
+		{
+			let item = this._items[i];
+			if (item.title == aTestCase.title && item.source == aTestCase.source)
+				return item;
+		}
+		return null;
 	},
 
 	toString : function(aFormat)
@@ -398,7 +421,9 @@ TestLog.prototype = {
 
 	onTestFinish : function(aEvent)
 	{
-		var count = this.lastItem.count;
+dump('[log]onTestFinish '+aEvent.target.title+'\n');
+		var item = this.getItemFor(aEvent.target);
+		var count = item.count;
 		if (!(aEvent.data.result in count))
 			count[aEvent.data.result] = 0;
 		count[aEvent.data.result]++;
@@ -407,7 +432,7 @@ TestLog.prototype = {
 		this._totalTime = null;
 		this._totalCount = null;
 
-		this.lastItem.topics = this.lastItem.topics.concat(aEvent.data.topics);
+		item.topics = item.topics.concat(aEvent.data.topics);
 	},
 
 	onFinish : function(aEvent)
@@ -415,13 +440,17 @@ TestLog.prototype = {
 		if (aEvent.data.result == ns.TestCase.prototype.RESULT_ERROR)
 			this.onTestFinish(aEvent);
 
-		this.lastItem.finish = Date.now();
-		this.lastItem.time = aEvent.data.time;
+dump('[log]onFinish '+aEvent.target.title+'\n');
+		var item = this.getItemFor(aEvent.target);
+		item.finish = Date.now();
+		item.time = aEvent.data.time;
 	},
 
 	onAbort : function(aEvent)
 	{
-		this.lastItem.aborted = true;
+		this.runningItems.forEach(function(aItem) {
+			aItem.aborted = true;
+		});
 	}
 
 };

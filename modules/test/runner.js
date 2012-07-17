@@ -209,7 +209,6 @@ TestRunner.prototype = {
 	_runTests : function(aTests) 
 	{
 		this._shouldAbort = false;
-		this._current     = 0;
 		this._testsCount  = aTests.length;
 		this._finishedCount = 0;
 
