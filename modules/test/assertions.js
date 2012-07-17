@@ -496,6 +496,7 @@ Assertions.prototype = {
 		if (aExpected == aActual)
 			return true;
 
+		var NSErrorName = utils.getErrorNameFromNSExceptionCode(aActual.result);
 		switch (typeof aExpected)
 		{
 			case 'string':
@@ -503,7 +504,9 @@ Assertions.prototype = {
 				return (
 					aActual.name == aExpected ||
 					aActual.message == aExpected ||
-					aActual.result == aExpected
+					aActual.name+': '+aActual.message == aExpected ||
+					aActual.result == aExpected ||
+					(NSErrorName && NSErrorName == aExpected)
 				);
 
 			case 'function':
@@ -512,13 +515,29 @@ Assertions.prototype = {
 			case 'object':
 				if (!aExpected)
 					return false;
-				for (let i in aExpected)
+				switch (Object.prototype.toString.apply(aExpected))
 				{
-					if (aExpected.hasOwnProperty(i) &&
-						aActual[i] != aExpected[i])
-						return false;
+					case '[object RegExp]':
+						return (
+							aExpected.test(aActual.name) ||
+							aExpected.test(aActual.message) ||
+							aExpected.test(aActual.name+': '+aActual.message) ||
+							aExpected.test(aActual.result) ||
+							(NSErrorName && aExpected.test(NSErrorName))
+						);
+
+					default:
+						let (checked = false) {
+							for (let i in aExpected)
+							{
+								if (aExpected.hasOwnProperty(i) &&
+									aActual[i] != aExpected[i])
+									return false;
+								checked = true;
+							}
+							return checked;
+						}
 				}
-				return true;
 		}
 
 		return false;
