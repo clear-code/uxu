@@ -552,8 +552,12 @@ function test_include_hashStyle()
 
 	assert.isDefined(namespace.constant);
 	assert.equals('定数', namespace.constant);
+	// If the the message text of constants redeclaration error
+	// changes too frequently, we should use "TypeError" checking only
+	// type of the error instead of a regular expression covering all
+	// the messages.
 	assert.raises(
-		"TypeError",
+		/TypeError: (redeclaration of const constant|can't redefine non-configurable property 'constant')/,
 		function() {
 			namespace.__defineGetter__(
 				'constant',

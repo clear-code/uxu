@@ -1075,7 +1075,7 @@ formatStackTrace : function(aException, aOptions)
 		}
 
 		if (
-			(aOptions.onlyExternal && this._comesFromFramework(aLine)) ||
+			(aOptions.onlyExternal && this.comesFromFramework(aLine)) ||
 			(aOptions.onlyTraceLine && !this.lineRegExp.test(aLine))
 			)
 			return;
@@ -1099,11 +1099,10 @@ removeParametersFromURL : function(aURL) {
 	return aURL;
 },
 	
-_comesFromFramework : function(aLine) 
+comesFromFramework : function(aLine) 
 {
 	return (/@chrome:\/\/uxu\/content\//.test(aLine) ||
-			/file:.+\/uxu@clear-code\.com\/modules\//.test(aLine) || // -Firefox 3.6
-			/resource:\/\/uxu-modules\//.test(aLine) || // Firefox 4.0-
+			/resource:\/\/uxu-modules\//.test(aLine) ||
 			// Following is VERY kludgy
 			/\(function \(aExitResult\) \{if \(aEventHandlers/.test(aLine))
 },

@@ -34,15 +34,15 @@
 }
 
 .test-success {
-	list-style-image: url("jar:resource:///chrome/classic.jar!/skin/classic/global/icons/information-32.png");
+	list-style-image: url("resource:///chrome/toolkit/skin/classic/global/icons/information-32.png");
 }
 
 .report-notification {
-	list-style-image: url("jar:resource:///chrome/classic.jar!/skin/classic/global/icons/information-16.png");
+	list-style-image: url("resource:///chrome/toolkit/skin/classic/global/icons/information-16.png");
 }
 
 .report-warning {
-	list-style-image: url("jar:resource:///chrome/classic.jar!/skin/classic/global/icons/warning-16.png");
+	list-style-image: url("resource:///chrome/toolkit/skin/classic/global/icons/warning-16.png");
 }
 
 progressmeter[testcase-results] > .progress-bar {
@@ -179,6 +179,11 @@ listbox[role=stack-trace] {
 	resize: vertical;
 }
 
+listbox[role=stack-trace] listitem[internal="true"] {
+	opacity: 0.6;
+}
+
+
 
 
 #file,
@@ -199,7 +204,7 @@ listbox[role=stack-trace] {
 }
 
 .throbber {
-	list-style-image: url("jar:resource:///chrome/classic.jar!/skin/classic/global/icons/notloading_16.png");
+	list-style-image: url("resource:///chrome/toolkit/skin/classic/global/icons/notloading_16.png");
 }
 
 .throbber image {
@@ -208,7 +213,11 @@ listbox[role=stack-trace] {
 }
 
 :root[running="true"] .throbber {
-	list-style-image: url("jar:resource:///chrome/classic.jar!/skin/classic/global/icons/loading_16.png");
+	list-style-image: url("resource:///chrome/toolkit/skin/classic/global/icons/loading_16.png");
+}
+
+#menubar-toolbar {
+	-moz-appearance: menubar;
 }
 
 /*  */

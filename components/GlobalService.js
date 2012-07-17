@@ -303,8 +303,6 @@ GlobalService.prototype = {
 
 		if (aOwner) {
 			aOwner = aOwner.QueryInterface(Ci.nsIDOMWindow);
-			if ('nsIDOMWindowInternal' in Ci) // for Firefox 7 or olders
-				aOwner = aOwner.QueryInterface(Ci.nsIDOMWindowInternal);
 			aOwner.openDialog(aURI, '_blank', aFeatures, aOptions);
 		}
 		else {

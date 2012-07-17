@@ -7,7 +7,7 @@ var PromptService = Cc['@mozilla.org/embedcomp/prompt-service;1']
 
 var actionModule;
 
-var ACCEPT_DELAY = 1000;
+var ACCEPT_DELAY = 2000;
 
 function setUp()
 {
