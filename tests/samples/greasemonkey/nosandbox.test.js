@@ -13,7 +13,7 @@ function tearDown() {
 testNormalFunction.description = 'GM関数にアクセスしない例';
 function testNormalFunction() {
 	assert.equals(
-		'test\n'+baseURL+'../../uxu/fixtures/html.html',
+		document.title+'\n'+window.location.href,
 		getDocumentTitleAndURI()
 	);
 }
