@@ -553,7 +553,7 @@ function test_include_hashStyle()
 	assert.isDefined(namespace.constant);
 	assert.equals('定数', namespace.constant);
 	assert.raises(
-		"TypeError: redeclaration of const constant",
+		/TypeError: (redeclaration of const constant|can't redefine non-configurable property 'constant')/,
 		function() {
 			namespace.__defineGetter__(
 				'constant',
