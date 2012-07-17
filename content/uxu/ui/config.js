@@ -14,7 +14,7 @@
  * The Original Code is UxU - UnitTest.XUL.
  *
  * The Initial Developer of the Original Code is SHIMODA Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2010
+ * Portions created by the Initial Developer are Copyright (C) 2010-2012
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): SHIMODA Hiroshi <shimoda@clear-code.com>
@@ -38,6 +38,11 @@ var Ci = Components.interfaces;
 
 function init()
 {
+	// workaround: filepicker doesn't initialized correctly, so we have to do it manually!!
+	var filefields = document.getElementsByTagName('filefield');
+	Array.forEach(filefields, function(aField) {
+		aField.file = document.getElementById(aField.getAttribute('preference')).value;
+	});
 }
 
 function showFilePicker(aTarget, aTitle)
