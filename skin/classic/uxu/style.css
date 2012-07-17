@@ -211,6 +211,10 @@ listbox[role=stack-trace] {
 	list-style-image: url("resource:///chrome/toolkit/skin/classic/global/icons/loading_16.png");
 }
 
+#menubar-toolbar {
+	-moz-appearance: menubar;
+}
+
 /*  */
 
 /* :::::::::: hiding and showing of rows for each mode :::::::::: */
