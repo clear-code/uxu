@@ -149,15 +149,15 @@ GreasemonkeyUtils.prototype = {
 
 		sandbox.unsafeWindow = win.wrappedJSObject,
 		sandbox.XPathResult  = Ci.nsIDOMXPathResult,
-		sandbox.console = { log : ns.utils.bind(this.GM_log, self) };
+		sandbox.console = { log : this._suite.bind(this.GM_log, self) };
 
-		sandbox.importFunction(ns.utils.bind(this.GM_addStyle, self), "GM_addStyle");
-		sandbox.importFunction(ns.utils.bind(this.GM_log, self), "GM_log");
-		sandbox.importFunction(ns.utils.bind(this.GM_registerMenuCommand, self), "GM_registerMenuCommand");
+		sandbox.importFunction(this._suite.bind(this.GM_addStyle, self), "GM_addStyle");
+		sandbox.importFunction(this._suite.bind(this.GM_log, self), "GM_log");
+		sandbox.importFunction(this._suite.bind(this.GM_registerMenuCommand, self), "GM_registerMenuCommand");
 
-		sandbox.importFunction(ns.utils.bind(this.GM_deleteValue, self), "GM_deleteValue");
-		sandbox.importFunction(ns.utils.bind(this.GM_getValue, self), "GM_getValue");
-		sandbox.importFunction(ns.utils.bind(this.GM_setValue, self), "GM_setValue");
+		sandbox.importFunction(this._suite.bind(this.GM_deleteValue, self), "GM_deleteValue");
+		sandbox.importFunction(this._suite.bind(this.GM_getValue, self), "GM_getValue");
+		sandbox.importFunction(this._suite.bind(this.GM_setValue, self), "GM_setValue");
 
 		// Resource (TODO: sandbox.GM_headers allows users to modify the content of GM_headers)
 		var headers = [];
@@ -169,9 +169,9 @@ GreasemonkeyUtils.prototype = {
 			return self.GM_getResourceText.call(self, aKey, headers);
 		}, "GM_getResourceText");
 
-		sandbox.GM_listValues           = ns.utils.bind(this.GM_listValues, self);
-		sandbox.GM_openInTab            = ns.utils.bind(this.GM_openInTab, self);
-		sandbox.GM_xmlhttpRequest       = ns.utils.bind(this.GM_xmlhttpRequest, self);
+		sandbox.GM_listValues           = this._suite.bind(this.GM_listValues, self);
+		sandbox.GM_openInTab            = this._suite.bind(this.GM_openInTab, self);
+		sandbox.GM_xmlhttpRequest       = this._suite.bind(this.GM_xmlhttpRequest, self);
 
 		this.sandboxes[aURI] = sandbox;
 		return sandbox;
@@ -190,7 +190,7 @@ GreasemonkeyUtils.prototype = {
 
 	readScriptContent: function (aURI, aEncoding) {
 		var completeURI = this._suite.fixupIncompleteURI(aURI);
-		var scriptContent = ns.utils.readFrom(completeURI, aEncoding || this.defaultEncoding) || "";
+		var scriptContent = this._suite.readFrom(completeURI, aEncoding || this.defaultEncoding) || "";
 		return scriptContent;
 	},
 
@@ -335,7 +335,7 @@ GreasemonkeyUtils.prototype = {
 			var modifiers = '';
 			if (aAccelModifiers) {
 				modifiers = [];
-				var isMac = ns.utils.XULAppInfo.OS.toLowerCase().indexOf('darwin') > -1;
+				var isMac = this._suite.XULAppInfo.OS.toLowerCase().indexOf('darwin') > -1;
 				if (!isMac && /ctrl|control|accel/i.test(aAccelModifiers))
 					modifiers.push('Ctrl');
 				if (isMac && /ctrl|control/i.test(aAccelModifiers))
@@ -583,7 +583,7 @@ GreasemonkeyUtils.prototype = {
 						});
 				}
 				else {
-					aNamespace[alias] = ns.utils.bind(prototype[aMethod], self);
+					aNamespace[alias] = self._suite.bind(prototype[aMethod], self);
 				}
 			})(aMethod, 'greasemonkey');
 		}
