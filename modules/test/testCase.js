@@ -754,6 +754,7 @@ TestCase.prototype = {
 			this.done = false;
 			this.aborted = false;
 
+			this.fireEvent('Start');
 			if (this.shouldRunInRemote)
 				this._runByRemote();
 			else
@@ -818,7 +819,6 @@ TestCase.prototype = {
 		var self = this;
 		var states = {
 			start : function() {
-				self.fireEvent('Start');
 				return 'doStartUp';
 			},
 			doStartUp : function() {
@@ -1054,8 +1054,6 @@ TestCase.prototype = {
 	
 	_runByRemote : function() 
 	{
-		this.fireEvent('Start');
-
 		if (
 			!this._profile ||
 			!this._profile.exists() ||
