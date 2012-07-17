@@ -55,8 +55,25 @@ Logger.prototype = {
     }
   },
 
+  indentation_: 0,
+  withIndentation: function (block, self) {
+    var indentationAmount = 4;
+    try {
+      this.indentation_ += indentationAmount;
+      block.call(self);
+    } finally {
+      this.indentation_ -= indentationAmount;
+    }
+  },
+
   // without line termination
   logRawString: function (rawString) {
+    var indentation = this.indentation_;
+    if (indentation > 0) {
+      rawString = rawString.split("\n").map(function (line) {
+        return (new Array(indentation + 1)).join(" ") + line;
+      }).join("\n");
+    }
     this.withAppendOnlyLogFileStreamForEncoding(this.encoding, function (os) {
       os.writeString(rawString);
     });
@@ -64,7 +81,9 @@ Logger.prototype = {
 
   // with line termination
   log: function (message) {
-    this.logRawString(new Date() + " || " + message + "\n");
+    this.logRawString(message + "\n");
+  },
+
   logObject: function (object) {
     this.logRawString(this.objectToString(object) + "\n");
   },
