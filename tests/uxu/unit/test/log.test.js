@@ -226,8 +226,8 @@ function test_toString()
 		return logString.replace(/^(?:\(\))?(@.*?):[0-9].*$/mg, "()$1");
 	}
 
-	function compareAfterNormalization(logString1, logString2) {
-		assert.equals(normalizeStackTraces(logString1), normalizeStackTraces(logString2));
+	function compareAfterNormalization(expected, actual) {
+		assert.equals(normalizeStackTraces(expected), normalizeStackTraces(actual));
 	}
 
 	log.onStart(createStartEvent(testcase1));
