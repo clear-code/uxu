@@ -14,7 +14,7 @@
  * The Original Code is UxU - UnitTest.XUL.
  *
  * The Initial Developer of the Original Code is SHIMODA Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2010
+ * Portions created by the Initial Developer are Copyright (C) 2010-2012
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): SHIMODA Hiroshi <shimoda@clear-code.com>
@@ -246,9 +246,9 @@ Mock.prototype = {
 			if (i in this)
 				continue;
 
-			let getter = aSource.__lookupGetter__(i);
+			let getter = utils.lookupGetter(aSource, i);
 			if (getter) this.addGetter(i);
-			let setter = aSource.__lookupSetter__(i);
+			let setter = utils.lookupSetter(aSource, i);
 			if (setter) this.addSetter(i);
 			if (!getter && !setter) {
 				if (typeof aSource[i] != 'function') {
@@ -520,12 +520,12 @@ Mock.addMethod = function(aObject, aName, aAssertions) {
 };
 Mock.addGetter = function(aObject, aName, aAssertions) {
 	var getter = this.getMockFor(aObject).addGetter(aName, aAssertions);
-	if (aObject.__lookupGetter__(aName) != getter) aObject.__defineGetter__(aName, getter);
+	if (utils.lookupGetter(aObject, aName) != getter) aObject.__defineGetter__(aName, getter);
 	return getter;
 };
 Mock.addSetter = function(aObject, aName, aAssertions) {
 	var setter = this.getMockFor(aObject).addSetter(aName, aAssertions);
-	if (aObject.__lookupSetter__(aName) != setter) aObject.__defineSetter__(aName, setter);
+	if (utils.lookupSetter(aObject, aName) != setter) aObject.__defineSetter__(aName, setter);
 	return setter;
 };
 

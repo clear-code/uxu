@@ -138,7 +138,7 @@ TestRunner.prototype = {
 		var env = aSuite.environment;
 		for (var i in env)
 		{
-			if (!env.hasOwnProperty(i) || env.__lookupGetter__(i))
+			if (!env.hasOwnProperty(i) || utils.lookupGetter(env, i))
 				continue;
 
 			obj = env[i];

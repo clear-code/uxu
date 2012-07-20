@@ -2817,7 +2817,7 @@ export : function(aNamespace, aForce, aSelf, aSource)
 			(
 				!aForce &&
 				(
-					aNamespace.__lookupGetter__(i) ||
+					this.lookupGetter(aNamespace, i) ||
 					i in aNamespace
 				)
 			)
@@ -2825,7 +2825,7 @@ export : function(aNamespace, aForce, aSelf, aSource)
 			continue;
 
 		if (
-			aSource.__lookupGetter__(i) ||
+			this.lookupGetter(aSource, i) ||
 			(typeof aSource[i] != 'function')
 			) {
 			(function(aProperty) {
@@ -2845,6 +2845,28 @@ export : function(aNamespace, aForce, aSelf, aSource)
 			})(i);
 		}
 	}
+},
+lookupGetter : function(aSubject, aProperty)
+{
+	var descriptor;
+	return aSubject.__lookupGetter__(aProperty) ||
+		( // on Firefox 15, we cannot get the getter via __lookupGetter__...
+			Object.getOwnPropertyDescriptor &&
+			(descriptor = Object.getOwnPropertyDescriptor(aSubject, aProperty)) &&
+			descriptor.get
+		) ||
+		undefined;
+},
+lookupSetter : function(aSubject, aProperty)
+{
+	var descriptor;
+	return aSubject.__lookupSetter__(aProperty) ||
+		(
+			Object.getOwnPropertyDescriptor &&
+			(descriptor = Object.getOwnPropertyDescriptor(aSubject, aProperty)) &&
+			descriptor.set
+		) ||
+		undefined;
 },
  
 bind : function(aFunction, aThis) 

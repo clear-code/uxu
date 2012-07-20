@@ -164,8 +164,8 @@ CommonDialogWrapper.onReady = function (aWindow, onReadyFunction) {
 		try {
 			onReadyFunction(new CommonDialogWrapper(aWindow));
 		} catch (x) {
-			utils.log("Failed => " + x);
-			utils.log("Stack => " + x.stack);
+			ns.utils.log("Failed => " + x);
+			ns.utils.log("Stack => " + x.stack);
 		}
 	}
 
@@ -459,16 +459,16 @@ export : function(aNamespace, aForce)
 			typeof prototype[aMethod] != 'function' ||
 			aMethod.charAt(0) == '_' ||
 			aMethod == 'export' ||
-			(!aForce && (aNamespace.__lookupGetter__(aMethod) || aMethod in aNamespace))
+			(!aForce && (ns.utils.lookupGetter(aNamespace, aMethod) || aMethod in aNamespace))
 			)
 			continue;
 
 		(function(aMethod, aPrefix) {
 			var alias = aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1);
-			if (!aForce && (aNamespace.__lookupGetter__(alias) || alias in aNamespace))
+			if (!aForce && (ns.utils.lookupGetter(aNamespace, alias) || alias in aNamespace))
 				return;
 
-			if (prototype.__lookupGetter__(aMethod) || (typeof prototype[aMethod] != 'function')){
+			if (ns.utils.lookupGetter(prototype, aMethod) || (typeof prototype[aMethod] != 'function')){
 				aNamespace.__defineGetter__(alias, function() {
 					return self[aMethod];
 				});

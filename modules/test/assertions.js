@@ -1279,7 +1279,7 @@ Assertions.prototype = {
 			return self;
 		});
 
-		if (aForce || !(aNamespace.__lookupGetter__('assert') || 'assert' in aNamespace)) {
+		if (aForce || !(utils.lookupGetter(aNamespace, 'assert') || 'assert' in aNamespace)) {
 			aNamespace.__defineGetter__('assert', function(aValue) {
 				return assertIsTrue;
 			});
@@ -1299,18 +1299,18 @@ Assertions.prototype = {
 
 			(function(aMethod, aPrefix) {
 				var alias = aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1);
-				if (prototype.__lookupGetter__(aMethod) || (typeof prototype[aMethod] != 'function')){
+				if (utils.lookupGetter(prototype, aMethod) || (typeof prototype[aMethod] != 'function')){
 					assertIsTrue.__defineGetter__(aMethod, function() {
 						return self[aMethod];
 					});
-					if (aForce || !(aNamespace.__lookupGetter__(alias) || alias in aNamespace))
+					if (aForce || !(utils.lookupGetter(aNamespace, alias) || alias in aNamespace))
 						aNamespace.__defineGetter__(alias, function() {
 							return self[aMethod];
 						});
 				}
 				else {
 					assertIsTrue[aMethod] = utils.bind(prototype[aMethod], self);
-					if (aForce || !(aNamespace.__lookupGetter__(alias) || alias in aNamespace))
+					if (aForce || !(utils.lookupGetter(aNamespace, alias) || alias in aNamespace))
 						aNamespace[alias] = assertIsTrue[aMethod];
 				}
 			})(aMethod, 'assert');

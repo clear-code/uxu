@@ -557,7 +557,7 @@ GreasemonkeyUtils.prototype = {
 		var self = this;
 		var prototype = GreasemonkeyUtils.prototype;
 
-		if (aForce || !(aNamespace.__lookupGetter__('greasemonkey') || 'greasemonkey' in aNamespace)) {
+		if (aForce || !(ns.utils.lookupGetter(aNamespace, 'greasemonkey') || 'greasemonkey' in aNamespace)) {
 			aNamespace.__defineGetter__('greasemonkey', function(aValue) {
 				return self;
 			});
@@ -579,10 +579,10 @@ GreasemonkeyUtils.prototype = {
 				var alias = aMethod.indexOf('GM_') == 0 ?
 						aMethod :
 						aPrefix+aMethod.charAt(0).toUpperCase()+aMethod.substring(1) ;
-				if (!aForce && (aNamespace.__lookupGetter__(alias) || alias in aNamespace))
+				if (!aForce && (ns.utils.lookupGetter(aNamespace, alias) || alias in aNamespace))
 					return;
 
-				if (prototype.__lookupGetter__(aMethod) || (typeof prototype[aMethod] != 'function')){
+				if (ns.utils.lookupGetter(prototype, aMethod) || (typeof prototype[aMethod] != 'function')){
 						aNamespace.__defineGetter__(alias, function() {
 							return self[aMethod];
 						});
