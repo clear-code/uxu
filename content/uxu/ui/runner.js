@@ -893,11 +893,15 @@ function run(aOptions)
 
 	reset();
 
+	var maxParallelCount = aOptions.maxParallelCount;
+	if (maxParallelCount <= 0)
+		maxParallelCount = utils.getPref('extensions.uxu.runner.maxParallelCount');
+
 	gRunner = new ns.TestRunner(
 		{
 			browser    : _('content'),
 			envCreator : function() { return {}; }
-			maxParallelCount : utils.getPref('extensions.uxu.runner.maxParallelCount')
+			maxParallelCount : maxParallelCount
 		},
 		aOptions.targets || _('file').value
 	);

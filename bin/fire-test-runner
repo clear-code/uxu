@@ -50,6 +50,7 @@ options.named_profile = nil
 options.profile = nil
 options.wait = 3
 options.n_retries = 3
+options.max_parallel_count = -1
 options.quit = false
 options.close_main_windows = false
 options.use_color = nil
@@ -68,6 +69,9 @@ opts = OptionParser.new("Usage: #{$0} [options] test_or_directory...") do |opts|
           "path to Firefox's profile (#{options.profile})") {|options.profile|}
   opts.on("--wait=SECONDS", Float,
           "how long wait to start Firefox (#{options.wait})") {|options.wait|}
+  opts.on("--max-parallel-count=N", Integer,
+          "how many testcases to process tmem parallelly",
+          "(#{options.n_retries})") {|options.max_parallel_count|}
   opts.on("--retries=N", Integer,
           "how many times to retry to connect",
           "(#{options.n_retries})") {|options.n_retries|}
@@ -283,6 +287,9 @@ rescue SystemCallError
     command += ["-p", options.named_profile] if options.named_profile
     command += ["-profile", options.profile] if options.profile
     command += ["-no-remote"] if options.named_profile or options.profile
+    if options.options.max_parallel_count > -1
+      command += ["-uxu-max-parallel-count", options.options.max_parallel_count]
+    end
     command += ["&"]
     system(command.join(" "))
     sleep options.wait

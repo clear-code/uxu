@@ -354,7 +354,8 @@ GlobalService.prototype = {
 				hidden     : CLHHelper.getBooleanValue('uxu-hidden', aCommandLine),
 				autoQuit   : CLHHelper.getBooleanValue('uxu-autoquit', aCommandLine),
 				outputHost : CLHHelper.getStringValue('uxu-output-host', aCommandLine, ''),
-				outputPort : CLHHelper.getNumericValue('uxu-output-port', aCommandLine, 0)
+				outputPort : CLHHelper.getNumericValue('uxu-output-port', aCommandLine, 0),
+				maxParallelCount : CLHHelper.getNumericValue('uxu-max-parallel-count', aCommandLine, -1)
 			};
 
 		if (
@@ -398,6 +399,8 @@ GlobalService.prototype = {
 				'uxu-test <url>'          : 'Alias for -uxu-testcase.',
 				'uxu-run <url>'           : 'Alias for -uxu-testcase.',
 				'uxu-priority <priority>' : 'Run all tests in the testcase with the priority.',
+				'uxu-max-parallel-count <count>' :
+				                            'The maximum count of testcases processed parallely in a time.',
 				'uxu-log <url>'           : 'Output the result of the testcase.',
 				'uxu-rawlog <url>'        : 'Output the result of the testcase in raw format.'
 			});
