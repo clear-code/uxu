@@ -62,8 +62,8 @@
 		<preference id="extensions.uxu.showInternalStacks"
 			name="extensions.uxu.showInternalStacks"
 			type="bool"/>
-		<preference id="extensions.uxu.runner.maxRunningTests"
-			name="extensions.uxu.runner.maxRunningTests"
+		<preference id="extensions.uxu.runner.maxParallelCount"
+			name="extensions.uxu.runner.maxParallelCount"
 			type="int"/>
 		<preference id="extensions.uxu.runner.runMode"
 			name="extensions.uxu.runner.runMode"
@@ -104,16 +104,16 @@
 		preference="extensions.uxu.showInternalStacks"
 		label="&config.showInternalStacks;"/>
 	<groupbox orient="vertical">
-		<caption label="&config.runner.maxRunningTests;"/>
+		<caption label="&config.runner.maxParallelCount;"/>
 		<hbox align="center">
-			<label value="&config.runner.maxRunningTests.before;"
-				control="extensions.uxu.runner.maxRunningTests-textbox"/>
-			<textbox id="extensions.uxu.runner.maxRunningTests-textbox"
-				preference="extensions.uxu.runner.maxRunningTests"
+			<label value="&config.runner.maxParallelCount.before;"
+				control="extensions.uxu.runner.maxParallelCount-textbox"/>
+			<textbox id="extensions.uxu.runner.maxParallelCount-textbox"
+				preference="extensions.uxu.runner.maxParallelCount"
 				type="number"
 				min="1" increment="1" style="width:5em;"/>
-			<label value="&config.runner.maxRunningTests.after;"
-				control="extensions.uxu.runner.maxRunningTests-textbox"/>
+			<label value="&config.runner.maxParallelCount.after;"
+				control="extensions.uxu.runner.maxParallelCount-textbox"/>
 		</hbox>
 	</groupbox>
 	<groupbox orient="vertical">

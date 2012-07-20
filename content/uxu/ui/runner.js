@@ -897,6 +897,7 @@ function run(aOptions)
 		{
 			browser    : _('content'),
 			envCreator : function() { return {}; }
+			maxParallelCount : utils.getPref('extensions.uxu.runner.maxParallelCount')
 		},
 		aOptions.targets || _('file').value
 	);

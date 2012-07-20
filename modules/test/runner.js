@@ -65,6 +65,7 @@ function TestRunner(aOptions/*, aFile, ...*/)
 	this.files = Array.slice(arguments, 1);
 	if (utils.isArray(this.files[0])) this.files = this.files[0];
 
+	this.maxParallelCount = aOptions.maxParallelCount || 1;
 	this._browser    = aOptions.browser;
 	this._envCreator = aOptions.envCreator;
 	this._filters = [];
@@ -231,7 +232,7 @@ TestRunner.prototype = {
 				return false;
 			};
 
-		var maxCount = Math.max(1, utils.getPref('extensions.uxu.runner.maxRunningTests'));
+		var maxCount = Math.max(1, this.maxParallelCount);
 		var runningTests = [];
 		var sequentialTests = [];
 		var parallelTests = aTests.filter(function(aTest) {

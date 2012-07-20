@@ -55,7 +55,7 @@ pref("extensions.uxu.warnOnNoAssertion",  true);
 pref("extensions.uxu.httpd.noCache",      false);
 
 pref("extensions.uxu.runner.runMode", 0); // 0 = run by priority, 1 = run all
-pref("extensions.uxu.runner.maxRunningTests", 1);
+pref("extensions.uxu.runner.maxParallelCount", 1);
 pref("extensions.uxu.runner.editor", "/usr/bin/gedit +%L %F");
 pref("extensions.uxu.runner.editor.defaultOptions.hidemaru.exe", "/j%L,%C \"%F\"");
 pref("extensions.uxu.runner.editor.defaultOptions.terapad.exe", "/j=%L \"%F\"");
