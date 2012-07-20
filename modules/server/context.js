@@ -128,9 +128,13 @@ Context.prototype = {
 
 	evaluate : function(aCode)
 	{
+		var temporaryFile = utils.makeTempFile();
 		try {
 			this._lastEvaluatedScript = aCode;
-			return this.load('chrome://uxu/content/lib/subScriptRunner.js?code='+encodeURIComponent(aCode));
+			temporaryFile.remove(true);
+			utils.writeTo(aCode, temporaryFile, 'UTF-8');
+			var uri = utils.getURLSpecFromFile(temporaryFile);
+			return this.load(uri+'?'+Date.now()); // the URI must be unique to avoid cache
 		}
 		catch(e) {
 			let parser;
@@ -143,6 +147,9 @@ Context.prototype = {
 					throw new Error(this.RETURNABLE_SYNTAX_ERROR);
 			}
 			return utils.formatError(utils.normalizeError(e));
+		}
+		finally {
+			temporaryFile.remove(true);
 		}
 	},
 

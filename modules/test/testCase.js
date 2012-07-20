@@ -177,10 +177,7 @@ TestCase.prototype = {
 			{
 				path = stack.filename || '';
 				if (!source) source = path;
-				if (path.indexOf('chrome://uxu/content/lib/subScriptRunner.js?') != 0) {
-					stack = stack.caller;
-					continue;
-				}
+				stack = stack.caller;
 				/.+includeSource=([^;]+)/.test(path);
 				source = decodeURIComponent(RegExp.$1);
 				break;
