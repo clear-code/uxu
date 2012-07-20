@@ -949,14 +949,14 @@ normalizeError : function(e)
 				break;
 			}
 			e = new Error(msg);
-			e.stack = this.reduceOneStackLine(e.stack);
+			e.stack = this.reduceTopStackLine(e.stack);
 			break;
 
 		case 'string':
 		case 'boolean':
 			var msg = bundle.getFormattedString('unknown_exception', [e]);
 			e = new Error(msg);
-			e.stack = this.reduceOneStackLine(e.stack);
+			e.stack = this.reduceTopStackLine(e.stack);
 			break;
 
 		case 'object':
@@ -1109,9 +1109,9 @@ comesFromFramework : function(aLine)
  
 getStackTrace : function() 
 {
-	return this.reduceOneStackLine((new Error()).stack);
+	return this.reduceTopStackLine((new Error()).stack);
 },
-removeOneStackLine : function(stack)
+reduceTopStackLine : function(stack)
 {
 	return stack
 			.split('\n')
@@ -1432,7 +1432,7 @@ doIteration : function(aGenerator, aCallbacks)
 	if (!this.isGeneratedIterator(iterator))
 		throw new Error(bundle.getFormattedString('error_utils_invalid_generator', [aGenerator]));
 
-	var callerStack = this.reduceOneStackLine(this.getStackTrace());
+	var callerStack = this.reduceTopStackLine(this.getStackTrace());
 
 	var retVal = { value : false };
 	var lastRun = Date.now();
