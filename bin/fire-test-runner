@@ -57,34 +57,58 @@ options.use_color = nil
 
 parser = OptionParser.new("Usage: #{$0} [options] test_or_directory...")
 parser.on("--host=HOST",
-          "host name to connect Firefox (#{options.host})") {|options.host|}
+          "host name to connect Firefox (#{options.host})") do |host|
+  options.host = host
+end
 parser.on("-pPORT", "--port=PORT", Integer,
-          "port number to connect Firefox (#{options.port})") {|options.port|}
+          "port number to connect Firefox (#{options.port})") do |port|
+  options.port = port
+end
 parser.on("--firefox=FIREFOX",
-          "command to start Firefox (#{options.firefox})") {|options.firefox|}
+          "command to start Firefox (#{options.firefox})")  do |firefox|
+  options.firefox = firefox
+end
 parser.on("--named-profile=PROFILE",
           "name of Firefox's profile",
-          "(#{options.named_profile})") {|options.named_profile|}
+          "(#{options.named_profile})") do |named_profile|
+  options.named_profile = named_profile
+end
 parser.on("--profile=PROFILE",
-          "path to Firefox's profile (#{options.profile})") {|options.profile|}
+          "path to Firefox's profile (#{options.profile})") do |profile|
+  options.profile = profile
+end
 parser.on("--wait=SECONDS", Float,
-          "how long wait to start Firefox (#{options.wait})") {|options.wait|}
+          "how long wait to start Firefox (#{options.wait})") do |wait|
+  options.wait = wait
+end
 parser.on("--max-parallel-count=N", Integer,
           "how many testcases to process tmem parallelly",
-          "(#{options.max_parallel_count})") {|options.max_parallel_count|}
+          "(#{options.max_parallel_count})") do |max_parallel_count|
+  options.max_parallel_count = max_parallel_count
+end
 parser.on("--retries=N", Integer,
           "how many times to retry to connect",
-          "(#{options.n_retries})") {|options.n_retries|}
+          "(#{options.n_retries})") do |n_retries|
+  options.n_retries = n_retries
+end
 parser.on("--[no-]run-all",
           "whether run all tests or only tests with high priority",
-          "(#{options.run_all})") {|options.run_all|}
+          "(#{options.run_all})") do |run_all|
+  options.run_all = run_all
+end
 parser.on("--[no-]quit",
-          "whether quit or not on finish (#{options.quit})") {|options.quit|}
+          "whether quit or not on finish (#{options.quit})") do |quit|
+  options.quit = quit
+end
 parser.on("--[no-]close-main-windows",
           "whether close main windows or not",
-          "(#{options.close_main_windows})") {|options.close_main_windows|}
+          "(#{options.close_main_windows})") do |close_main_windows|
+  options.close_main_windows = close_main_windows
+end
 parser.on("--[no-]use-color",
-          "whether use colorized output or not", "(auto)") {|options.use_color|}
+          "whether use colorized output or not", "(auto)") do |use_color|
+  options.use_color = use_color
+end
 
 parser.separator ""
 parser.on_tail("--help", "Show this message") do
