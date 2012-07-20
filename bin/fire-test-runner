@@ -71,7 +71,7 @@ opts = OptionParser.new("Usage: #{$0} [options] test_or_directory...") do |opts|
           "how long wait to start Firefox (#{options.wait})") {|options.wait|}
   opts.on("--max-parallel-count=N", Integer,
           "how many testcases to process tmem parallelly",
-          "(#{options.n_retries})") {|options.max_parallel_count|}
+          "(#{options.max_parallel_count})") {|options.max_parallel_count|}
   opts.on("--retries=N", Integer,
           "how many times to retry to connect",
           "(#{options.n_retries})") {|options.n_retries|}
