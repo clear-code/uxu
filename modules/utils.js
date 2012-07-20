@@ -949,14 +949,14 @@ normalizeError : function(e)
 				break;
 			}
 			e = new Error(msg);
-			e.stack = this.reduceOneStackLine(this.getStackTrace());
+			e.stack = this.reduceOneStackLine(e.stack);
 			break;
 
 		case 'string':
 		case 'boolean':
 			var msg = bundle.getFormattedString('unknown_exception', [e]);
 			e = new Error(msg);
-			e.stack = this.reduceOneStackLine(this.getStackTrace());
+			e.stack = this.reduceOneStackLine(e.stack);
 			break;
 
 		case 'object':
