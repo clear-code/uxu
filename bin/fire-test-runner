@@ -55,43 +55,43 @@ options.quit = false
 options.close_main_windows = false
 options.use_color = nil
 
-parser = OptionParser.new("Usage: #{$0} [options] test_or_directory...") do |parser|
-  parser.on("--host=HOST",
+parser = OptionParser.new("Usage: #{$0} [options] test_or_directory...")
+parser.on("--host=HOST",
           "host name to connect Firefox (#{options.host})") {|options.host|}
-  parser.on("-pPORT", "--port=PORT", Integer,
+parser.on("-pPORT", "--port=PORT", Integer,
           "port number to connect Firefox (#{options.port})") {|options.port|}
-  parser.on("--firefox=FIREFOX",
+parser.on("--firefox=FIREFOX",
           "command to start Firefox (#{options.firefox})") {|options.firefox|}
-  parser.on("--named-profile=PROFILE",
+parser.on("--named-profile=PROFILE",
           "name of Firefox's profile",
           "(#{options.named_profile})") {|options.named_profile|}
-  parser.on("--profile=PROFILE",
+parser.on("--profile=PROFILE",
           "path to Firefox's profile (#{options.profile})") {|options.profile|}
-  parser.on("--wait=SECONDS", Float,
+parser.on("--wait=SECONDS", Float,
           "how long wait to start Firefox (#{options.wait})") {|options.wait|}
-  parser.on("--max-parallel-count=N", Integer,
+parser.on("--max-parallel-count=N", Integer,
           "how many testcases to process tmem parallelly",
           "(#{options.max_parallel_count})") {|options.max_parallel_count|}
-  parser.on("--retries=N", Integer,
+parser.on("--retries=N", Integer,
           "how many times to retry to connect",
           "(#{options.n_retries})") {|options.n_retries|}
-  parser.on("--[no-]run-all",
+parser.on("--[no-]run-all",
           "whether run all tests or only tests with high priority",
           "(#{options.run_all})") {|options.run_all|}
-  parser.on("--[no-]quit",
+parser.on("--[no-]quit",
           "whether quit or not on finish (#{options.quit})") {|options.quit|}
-  parser.on("--[no-]close-main-windows",
+parser.on("--[no-]close-main-windows",
           "whether close main windows or not",
           "(#{options.close_main_windows})") {|options.close_main_windows|}
-  parser.on("--[no-]use-color",
+parser.on("--[no-]use-color",
           "whether use colorized output or not", "(auto)") {|options.use_color|}
 
-  parser.separator ""
-  parser.on_tail("--help", "Show this message") do
-    puts parser
-    exit
-  end
+parser.separator ""
+parser.on_tail("--help", "Show this message") do
+  puts parser
+  exit
 end
+
 tests = parser.parse!(ARGV)
 if tests.empty?
   $stderr.puts parser
