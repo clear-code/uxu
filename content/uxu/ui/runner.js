@@ -894,13 +894,15 @@ function run(aOptions)
 	reset();
 
 	var maxParallelCount = aOptions.maxParallelCount;
-	if (maxParallelCount <= 0)
+	if (maxParallelCount === undefined || maxParallelCount <= 0)
+		maxParallelCount = gOptions.maxParallelCount;
+	if (maxParallelCount === undefined || maxParallelCount <= 0)
 		maxParallelCount = utils.getPref('extensions.uxu.runner.maxParallelCount');
 
 	gRunner = new ns.TestRunner(
 		{
-			browser    : _('content'),
-			envCreator : function() { return {}; }
+			browser          : _('content'),
+			envCreator       : function() { return {}; },
 			maxParallelCount : maxParallelCount
 		},
 		aOptions.targets || _('file').value
@@ -1343,9 +1345,10 @@ function startServer(aPort)
 				onAbort : function() { stop(); }
 			});
 		run({
-			targets        : Array.slice(arguments, 1),
-			priority       : aOptions.priority,
-			extraListeners : [reporter]
+			targets          : Array.slice(arguments, 1),
+			priority         : aOptions.priority,
+			maxParallelCount : aOptions.maxParallelCount,
+			extraListeners   : [reporter]
 		});
 		return reporter;
 	};

@@ -140,6 +140,9 @@ class Runner
     reporter_options = {}
     reporter_options["useColor"] = use_color?
     reporter_options["priority"] = "'must'" if options.run_all
+    if options.max_parallel_count > -1
+      reporter_options["maxParallelCount"] = options.max_parallel_count
+    end
     reporter_options_string = hash_to_jsobject(reporter_options)
 
     evaluate("var #{@reporter_var_name};")
@@ -287,8 +290,8 @@ rescue SystemCallError
     command += ["-p", options.named_profile] if options.named_profile
     command += ["-profile", options.profile] if options.profile
     command += ["-no-remote"] if options.named_profile or options.profile
-    if options.options.max_parallel_count > -1
-      command += ["-uxu-max-parallel-count", options.options.max_parallel_count]
+    if options.max_parallel_count > -1
+      command += ["-uxu-max-parallel-count", options.max_parallel_count]
     end
     command += ["&"]
     system(command.join(" "))
