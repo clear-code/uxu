@@ -160,7 +160,7 @@ function tearDown()
 {
 }
 
-function testOnEvents()
+function testOnStart()
 {
 	log.onStart(createStartEvent(testcase1));
 	assert.equals(1, log.items.length);
@@ -173,6 +173,11 @@ function testOnEvents()
 		topics: log.items[0].topics,
 		aborted: log.items[0].aborted
 	});
+}
+
+function testOnTestFinish()
+{
+	log.onStart(createStartEvent(testcase1));
 
 	var events = createTestFinishEvents(testcase1, reports1);
 	events.forEach(function(aEvent) {
@@ -208,21 +213,34 @@ function testOnEvents()
 			assert.isDefined(aNotification.stackTrace, aIndex+'\n'+utils.inspect(aNotification));
 		});
 	});
+}
 
+function testOnEventsFinishCase()
+{
+	log.onStart(createStartEvent(testcase1));
 	log.onFinish(createFinishEvent(testcase1, reports1));
 	assert.equals(1, log.items.length);
 	assert.equals({
-		topicsLength: reports1.length,
+		topicsLength: 1,
 		aborted: false
 	}, {
 		topicsLength: log.items[0].topics.length,
 		aborted: log.items[0].aborted
 	});
+}
 
+function testOnEventsAbortCase()
+{
+	log.onStart(createStartEvent(testcase1));
 	log.onAbort({ type : 'Abort' });
 	assert.equals(1, log.items.length);
-	assert.equals(reports1.length, log.items[0].topics.length);
-	assert.isTrue(log.items[0].aborted);
+	assert.equals({
+		topicsLength: 0,
+		aborted: true
+	}, {
+		topicsLength: log.items[0].topics.length,
+		aborted: log.items[0].aborted
+	});
 }
 
 function test_clear()
