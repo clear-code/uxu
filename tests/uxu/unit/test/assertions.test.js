@@ -586,10 +586,11 @@ function testBoolean()
 	assertSuccess(assertionsModule.isFalse, [0]);
 	assertSuccess(assertionsModule.isFalse, ['']);
 	assertSuccess(assertionsModule.isFalse, [null]);
+	assertSuccess(assertionsModule.isFalse, [void 0]);
 	assertFailure(assertionsModule.isFalse, [true, message]);
 	assertFailure(assertionsModule.isFalse, [{}, message]);
 
-	assert.equal(6, assertionsModule.successCount);
+	assert.equal(7, assertionsModule.successCount);
 }
 
 function testType()
