@@ -164,9 +164,13 @@ function test_setAndGetClipBoard()
 	utils.setClipBoard(random);
 	assert.equals(random, utils.getClipBoard());
 }
+
 test_setUpTearDownTestWindow.setUp = function() {
 	utils.tearDownTestWindow();
 	assert.isNull(utils.getTestWindow());
+};
+test_setUpTearDownTestWindow.tearDown = function() {
+	utils.tearDownTestWindow(); // teadown it even if this test is failed.
 };
 function test_setUpTearDownTestWindow()
 {
