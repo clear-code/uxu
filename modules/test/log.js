@@ -401,11 +401,12 @@ TestLog.prototype = {
 	onStart : function(aEvent)
 	{
 		this._items.push({
-			start  : Date.now(),
-			title  : aEvent.target.title,
-			source : aEvent.target.source,
-			topics : [],
-			count  : this._createNewCount()
+			start   : Date.now(),
+			title   : aEvent.target.title,
+			source  : aEvent.target.source,
+			topics  : [],
+			count   : this._createNewCount(),
+			aborted : false
 		});
 	},
 	_createNewCount : function()

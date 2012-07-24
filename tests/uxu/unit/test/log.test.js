@@ -164,18 +164,30 @@ function testOnEvents()
 {
 	log.onStart(createStartEvent(testcase1));
 	assert.equals(1, log.items.length);
-	assert.equals('test1', log.items[0].title);
-	assert.equals([], log.items[0].topics);
-	assert.isFalse(log.items[0].aborted);
+	assert.equals({
+		title: 'test1',
+		topics: [],
+		aborted: false
+	}, {
+		title: log.items[0].title,
+		topics: log.items[0].topics,
+		aborted: log.items[0].aborted
+	});
 
 	var events = createTestFinishEvents(testcase1, reports1);
 	events.forEach(function(aEvent) {
 		log.onTestFinish(aEvent);
 	});
 	assert.equals(1, log.items.length);
-	assert.equals('test1', log.items[0].title);
-	assert.equals(reports1.length-1, log.items[0].topics.length);
-	assert.isFalse(log.items[0].aborted);
+	assert.equals({
+		title: 'test1',
+		topicsLength: reports1.length-1,
+		aborted: false
+	}, {
+		title: log.items[0].title,
+		topicsLength: log.items[0].topics.length,
+		aborted: log.items[0].aborted
+	});
 
 	var topics = log.items[0].topics;
 	topics.forEach(function(aResult, aIndex) {
@@ -199,8 +211,13 @@ function testOnEvents()
 
 	log.onFinish(createFinishEvent(testcase1, reports1));
 	assert.equals(1, log.items.length);
-	assert.equals(reports1.length, log.items[0].topics.length);
-	assert.isFalse(log.items[0].aborted);
+	assert.equals({
+		topicsLength: reports1.length,
+		aborted: false
+	}, {
+		topicsLength: log.items[0].topics.length,
+		aborted: log.items[0].aborted
+	});
 
 	log.onAbort({ type : 'Abort' });
 	assert.equals(1, log.items.length);
