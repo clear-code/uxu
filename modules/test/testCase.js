@@ -178,9 +178,6 @@ TestCase.prototype = {
 				path = stack.filename || '';
 				if (!source) source = path;
 				stack = stack.caller;
-				/.+includeSource=([^;]+)/.test(path);
-				source = decodeURIComponent(RegExp.$1);
-				break;
 			}
 		}
 		this._source = source;
