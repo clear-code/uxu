@@ -176,6 +176,7 @@ TestRunner.prototype = {
 						source        : env.fileURL,
 						profile       : env.profile,
 						application   : env.application,
+						addons        : env.requiredAddons || env.dependingAddons,
 						options       : env.options,
 						priority      : env.priority,
 						shouldSkip    : env.shouldSkip,

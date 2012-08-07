@@ -98,6 +98,8 @@ function TestCase(aTitle, aOptions)
 	this._registeredTests = [];
 	this._suite           = null;
 
+	this._addons = [];
+
 	this.title            = aTitle;
 	this.masterPriority   = aOptions.priority || null;
 	this.shouldSkip       = aOptions.shouldSkip || false;
@@ -105,6 +107,7 @@ function TestCase(aTitle, aOptions)
 	this.ignoreLastResult = !!aOptions.ignoreLastResult;
 	this.context          = aOptions.context;
 	this.targetProduct    = aOptions.targetProduct || null;
+	this.addons           = aOptions.addons || [];
 	this.mapping          = aOptions.mapping || aOptions.redirect || null;
 
 	this.done = false;
@@ -195,9 +198,9 @@ TestCase.prototype = {
 		runningProfile = runningProfile.replace(/([^\/])$/, '$1/');
 		this._runningProfile = this._utils.getFileFromURLSpec(runningProfile);
 
-		this._profile = null;
+		this._profile     = null;
 		this._application = null;
-		this._options = [];
+		this._options     = [];
 
 		this.profile = aOptions.profile;
 		this.application = aOptions.application;
@@ -236,6 +239,31 @@ TestCase.prototype = {
 	},
 	get application() {
 		return this._application;
+	},
+
+	set addons(aAddons)
+	{
+		var AM = {};
+		Components.utils.import('resource://gre/modules/AddonManager.jsm', AM);
+		var results = []
+		aAddons.forEach(function(aId) {
+			AM.AddonManager.getAddonByID(aId, function(aAddon) {
+				var result = { id : aId, file : null, active : false };
+				if (aAddon) {
+					result.file = aAddon.getResourceURI('/').QueryInterface(Ci.nsIFileURL).file.clone();
+					result.active = aAddon.isActive;
+				}
+				results.push(result);
+			});
+		}, this);
+		this._utils.wait(function() {
+			return results.length == aAddons.length;
+		});
+		this._addons = results;
+		return this._addons;
+	},
+	get addons() {
+		return this._addons;
 	},
 
 	set options(aValue) {
@@ -788,6 +816,27 @@ TestCase.prototype = {
 			this.masterPriority = 'never';
 		}
 
+		var notInstalledAddons = this.addons.filter(function(aAddon) {
+				return !aAddon.file;
+			});
+		var disabledAddons = this.addons.filter(function(aAddon) {
+				return aAddon.file && !aAddon.active;
+			});
+		if (notInstalledAddons.length || disabledAddons.length) {
+			let messages = [];
+			if (notInstalledAddons.length)
+				messages.push(bundle.getFormattedString(
+					'error_missing_required_addons',
+					[notInstalledAddons.map(function(aAddon) { return aAddon.id; }).join('\n')]
+				));
+			if (disabledAddons.length)
+				messages.push(bundle.getFormattedString(
+					'error_disabled_required_addons',
+					[disabledAddons.map(function(aAddon) { return aAddon.id; }).join('\n')]
+				));
+			throw new Error(messages.join('\n'));
+		}
+
 		var testsToBeSkipped = this._tests.filter(function(aTest) {
 				if (aTest.targetProduct &&
 					String(aTest.targetProduct).toLowerCase() != this._utils.product.toLowerCase())
@@ -1082,10 +1131,19 @@ TestCase.prototype = {
 		this._utils.dbFile.copyTo(profile, this._utils.dbFile.leafName);
 
 		if (!this._utils.getPref('extensions.uxu.global')) {
-			var extensions = profile.clone();
+			let extensions = profile.clone();
 			extensions.append('extensions');
 			if (!extensions.exists()) extensions.create(extensions.DIRECTORY_TYPE, 0777);
 			this._utils.installedUXU.copyTo(extensions, this._utils.installedUXU.leafName);
+
+			this.addons.forEach(function(aAddon) {
+				if (!aAddon.file)
+					return;
+				var destination = extensions.clone();
+				destination.append(aAddon.file.leafName);
+				if (!destination.exists())
+					aAddon.file.copyTo(extensions, aAddon.file.leafName);
+			}, this);
 		}
 
 		ObserverService.notifyObservers(profile, 'uxu-profile-setup', null);
