@@ -22,7 +22,7 @@
   *
   * Contributor(s):
   *   Darin Fisher <darin@meer.net>
-  *   SHIMODA Hiroshi <shimoda@clear-code.com> (porting to JavaScript)
+  *   YUKI "Piro" Hiroshi <shimoda@clear-code.com> (porting to JavaScript)
   *
   * Alternatively, the contents of this file may be used under the terms of
   * either the GNU General Public License Version 2 or later (the "GPL"), or

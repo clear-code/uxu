@@ -19,7 +19,7 @@
  *
  */
 
-// Modified by SHIMODA Hiroshi <shimoda@clear-code.com>
+// Modified by YUKI "Piro" Hiroshi <shimoda@clear-code.com>
  
 if (typeof window == 'undefined') 
 	this.EXPORTED_SYMBOLS = ['TestCase'];
