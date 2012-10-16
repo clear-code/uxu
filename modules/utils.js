@@ -1915,12 +1915,7 @@ isString : function(aObject)
  
 isArray : function(aObject) 
 {
-	return (
-		aObject &&
-		typeof aObject == 'object' &&
-		aObject.constructor &&
-		aObject.constructor.toSource().indexOf('function Array()') == 0
-	);
+	return Array.isArray(aObject);
 },
  
 isDate : function(aObject) 
