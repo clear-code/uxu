@@ -1464,7 +1464,8 @@ function test_appendTypeString()
 	assert.equals('[] (Array)',     assertionsModule._appendTypeString([]));
 	assert.equals('null',           assertionsModule._appendTypeString(null));
 	assert.equals('undefined',      assertionsModule._appendTypeString(void(0)));
-	assert.equals('function () {\n} (function)', assertionsModule._appendTypeString(function() {}));
+	var f = function() {};
+	assert.equals(f.toString() + ' (function)', assertionsModule._appendTypeString(f));
 }
 
 function testSuccessCount()
