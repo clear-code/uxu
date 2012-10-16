@@ -271,6 +271,7 @@ test_GM_xmlhttpRequest.tearDown = function() {
 function test_GM_xmlhttpRequest()
 {
 	var sandbox = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_xmlHttpRequest.user.js');
+	assert.isFunction(sandbox.loadAsciiFile);
 	sandbox.loadAsciiFile();
 	yield function() { return sandbox.data; };
 	assert.equals('ASCII', sandbox.data);
@@ -476,6 +477,7 @@ test_doAndWaitLoad.tearDown = function() {
 function test_doAndWaitLoad()
 {
 	var sandbox = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_xmlHttpRequest.user.js');
+	assert.isFunction(sandbox.loadAsciiFile);
 	yield Do(GMUtils.doAndWaitLoad(function() {
 			sandbox.loadAsciiFile();
 		}));

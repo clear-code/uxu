@@ -171,7 +171,9 @@ GreasemonkeyUtils.prototype = {
 
 		sandbox.GM_listValues           = this._suite.bind(this.GM_listValues, self);
 		sandbox.GM_openInTab            = this._suite.bind(this.GM_openInTab, self);
-		sandbox.GM_xmlhttpRequest       = this._suite.bind(this.GM_xmlhttpRequest, self);
+		sandbox.GM_xmlhttpRequest       = function(aDetails) {
+			return self.GM_xmlhttpRequest(aDetails, sandbox);
+		};
 
 		this.sandboxes[aURI] = sandbox;
 		return sandbox;
@@ -360,7 +362,7 @@ GreasemonkeyUtils.prototype = {
 	},
 
 
-	GM_xmlhttpRequest : function(aDetails)
+	GM_xmlhttpRequest : function(aDetails, aSandbox)
 	{
 		this.fireEvent({ type : 'GM_xmlhttpRequestCall', detail : aDetails });
 
@@ -386,31 +388,24 @@ GreasemonkeyUtils.prototype = {
 				request : request,
 				handleEvent : function(aEvent)
 				{
-					var state = {
-						responseText : this.request.responseText,
-						readyState : this.request.readyState,
-						responseHeaders : (
-							this.request.readyState == 4 ?
-								this.request.getAllResponseHeaders() :
-								''
-						),
-						status : (
-							this.request.readyState == 4 ?
-								this.request.status :
-								''
-						),
-						statusText : (
-							this.request.readyState == 4 ?
-								this.request.statusText :
-								''
-						),
-						finalUrl : (
-							this.request.readyState == 4 ?
-								this.request.channel.URI.spec :
-								''
-						),
-						handled : false // extended spec of UxU
-					};
+					// callback functions in GM scripts cannot get objects generated as a chrome namespace.
+					// we have to use instances generated from the constructor in the sandboxed namespace.
+					var state = aSandbox ? new aSandbox.Object() : new Object();
+					state.responseText = this.request.responseText;
+					state.readyState = this.request.readyState;
+					state.responseHeaders = this.request.readyState == 4 ?
+						this.request.getAllResponseHeaders() :
+						'';
+					state.status = this.request.readyState == 4 ?
+						this.request.status :
+						'';
+					state.statusText = this.request.readyState == 4 ?
+						this.request.statusText :
+						'';
+					state.finalUrl = this.request.readyState == 4 ?
+						this.request.channel.URI.spec :
+						'';
+					state.handled = false; // extended spec of UxU
 
 					var eventType = aEvent.type.charAt(0).toUpperCase()+aEvent.type.substring(1);
 					var event = {
@@ -424,10 +419,10 @@ GreasemonkeyUtils.prototype = {
 					if ('on'+aEvent.type in this) {
 						state.handled = event.handled = true;
 						var func = this['on'+aEvent.type];
-						this.frame.contentWindow.setTimeout(function(aState) {
-							func(aState);
+						this.frame.contentWindow.setTimeout(function() {
+							func(state);
 							_this.fireEvent(event);
-						}, 0, state);
+						}, 0);
 						return;
 					}
 					_this.fireEvent(event);
