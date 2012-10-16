@@ -63,6 +63,9 @@ Deferred.prototype = {
 	},
 
 	_fire : function (okng, value) {
+		// ********************* INSERTED FOR UxU ***********************
+		this.fired = true;
+		// ********************* INSERTED FOR UxU ***********************
 		var next = "ok";
 		try {
 			value = this.callback[okng].call(this, value);
