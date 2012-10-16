@@ -75,10 +75,20 @@ function UXUGetFileFromArguments(aArgs)
 window.addEventListener('DOMContentLoaded', function() {
 	window.removeEventListener('DOMContentLoaded', arguments.callee, false);
 
-	eval('window.ComposeStartup = '+window.ComposeStartup.toSource().replace(
-		/(gMsgCompose) = ((?:sMsgComposeService|composeSvc).(?:I|i)nitCompose\((?:window, params|params, window, editorElement.docShell)\);)/,
-		'$1 = $2 if (!("_real" in $1)) { $1 = new UXUMailComposeProxy($1); }'
-	));
+	let (source = window.ComposeStartup.toSource()) {
+		if (source.indexOf('gMsgCompose = ') > -1) {
+			eval('window.ComposeStartup = '+source.replace(
+				/(gMsgCompose) = ((?:sMsgComposeService|composeSvc).(?:I|i)nitCompose\((?:window, params|params, window, editorElement.docShell)\);)/,
+				'$1 = $2 if (!("_real" in $1)) { $1 = new UXUMailComposeProxy($1); }'
+			));
+		}
+		else { // Thunderbird 17 and later
+			eval('window.ComposeStartup = '+source.replace(
+				'{',
+				'{ if (!("_real" in gMsgCompose)) { gMsgCompose = new UXUMailComposeProxy(gMsgCompose); }'
+			));
+		}
+	}
 
 	if (!('AddFileAttachment' in window)) { // only for Thunderbird 2
 		eval('window.AttachFile = '+window.AttachFile.toSource().replace(
