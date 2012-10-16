@@ -130,7 +130,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 					<stack flex="1">
 						<progressmeter role="bar" mode="undetermined" value="0" flex="1"/>
 						<hbox flex="1" align="center">
-							<label role="running-status" flex="1"/>
+							<label role="running-status" flex="1" crop="center"/>
 						</hbox>
 					</stack>
 					<label value="&runner.successes;"/>
