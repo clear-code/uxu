@@ -30,12 +30,12 @@ function test_createDatabase()
 
 function test_createDatabaseFromSQL()
 {
-	var db = utilsModule.createDatabaseFromSQL(<![CDATA[
-DROP TABLE IF EXISTS "foo_table";
-CREATE TABLE "foo_table" ("key" TEXT PRIMARY KEY  NOT NULL , "value" TEXT);
-INSERT INTO "foo_table" VALUES('foo','bar');
-INSERT INTO "foo_table" VALUES('hoge','fuga');
-	]]>.toString());
+	var db = utilsModule.createDatabaseFromSQL(
+			'DROP TABLE IF EXISTS "foo_table";\n' +
+			'CREATE TABLE "foo_table" ("key" TEXT PRIMARY KEY  NOT NULL , "value" TEXT);\n' +
+			'INSERT INTO "foo_table" VALUES("foo","bar");\n' +
+			'INSERT INTO "foo_table" VALUES("hoge","fuga");'
+		);
 
 	assert.isTrue(db instanceof Ci.mozIStorageConnection);
 	assert.equals(utilsModule.getFileFromKeyword('TmpD').path, db.databaseFile.parent.path);

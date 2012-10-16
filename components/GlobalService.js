@@ -210,31 +210,29 @@ GlobalService.prototype = {
 			userJSContents = this.utils.readFrom(userJSFile);
 
 		var lines = [];
-		var prefs = <![CDATA[
-				bool extensions.uxu.profile.enableDebugOptions
-				bool extensions.uxu.profile.disableAutoUpdate
-				bool extensions.uxu.profile.disableExitWarning
-				bool extensions.uxu.profile.disableCheckDefaultWarning
-				int  extensions.uxu.run.timeout
-				int  extensions.uxu.run.timeout.application
-				int  extensions.uxu.run.history.expire.days
-				char extensions.uxu.defaultEncoding
-				bool extensions.uxu.showInternalStacks
-				char extensions.uxu.priority.important
-				char extensions.uxu.priority.high
-				char extensions.uxu.priority.normal
-				char extensions.uxu.priority.low
-				bool extensions.uxu.warnOnNoAssertion
-				char extensions.uxu.runner.runMode
-				int extensions.uxu.runner.maxParallelCount
-				bool extensions.uxu.runner.autoShowContent
-				bool extensions.uxu.runner.coloredDiff
-				int  extensions.uxu.port
-				bool extensions.uxu.allowAccessesFromRemote
-				char extensions.uxu.allowAccessesFromRemote.allowedList
-			]]>.toString()
-				.replace(/^\s+|\s+$/g, '')
-				.split(/\s+/);
+		var prefs = [
+				'bool', 'extensions.uxu.profile.enableDebugOptions',
+				'bool', 'extensions.uxu.profile.disableAutoUpdate',
+				'bool', 'extensions.uxu.profile.disableExitWarning',
+				'bool', 'extensions.uxu.profile.disableCheckDefaultWarning',
+				'int',  'extensions.uxu.run.timeout',
+				'int',  'extensions.uxu.run.timeout.application',
+				'int',  'extensions.uxu.run.history.expire.days',
+				'char', 'extensions.uxu.defaultEncoding',
+				'bool', 'extensions.uxu.showInternalStacks',
+				'char', 'extensions.uxu.priority.important',
+				'char', 'extensions.uxu.priority.high',
+				'char', 'extensions.uxu.priority.normal',
+				'char', 'extensions.uxu.priority.low',
+				'bool', 'extensions.uxu.warnOnNoAssertion',
+				'char', 'extensions.uxu.runner.runMode',
+				'int',  'extensions.uxu.runner.maxParallelCount',
+				'bool', 'extensions.uxu.runner.autoShowContent',
+				'bool', 'extensions.uxu.runner.coloredDiff',
+				'int',  'extensions.uxu.port',
+				'bool', 'extensions.uxu.allowAccessesFromRemote',
+				'char', 'extensions.uxu.allowAccessesFromRemote.allowedList'
+			];
 		for (var i = 0, maxi = prefs.length; i < maxi; i += 2)
 		{
 			switch (prefs[i])

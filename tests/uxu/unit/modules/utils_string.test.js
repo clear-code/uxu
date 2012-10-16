@@ -40,12 +40,10 @@ function test_convertEncoding()
 
 function test_processTemplate()
 {
-	var str = <![CDATA[
-			<% for (var i = 0; i < 3; i++) { %>
-			256の16進数表現は<%= (256).toString(16) %>です。
-			<% } %>
-			<%= foo %><%= this.foo %><%= \u65e5\u672c\u8a9e %>
-		]]>.toString();
+	var str = '<% for (var i = 0; i < 3; i++) { %>\n' +
+				'256の16進数表現は<%= (256).toString(16) %>です。\n' +
+				'<% } %>\n' +
+				'<%= foo %><%= this.foo %><%= \u65e5\u672c\u8a9e %>';
 	var params = {
 			foo : 'bar',
 			__processTemplate__results : null,
@@ -54,16 +52,12 @@ function test_processTemplate()
 	params["日本語"] = true;
 
 	assert.equals(
-		<![CDATA[
-			
-			256の16進数表現は100です。
-			
-			256の16進数表現は100です。
-			
-			256の16進数表現は100です。
-			
-			barbartrue
-		]]>.toString(),
+		'\n' +
+		'256の16進数表現は100です。\n' +
+		'256の16進数表現は100です。\n' +
+		'256の16進数表現は100です。\n' +
+		'\n' +
+		'barbartrue',
 		utilsModule.processTemplate(str, params)
 	);
 }

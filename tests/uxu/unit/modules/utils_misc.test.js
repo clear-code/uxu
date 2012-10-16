@@ -676,15 +676,16 @@ function test_isArray()
 	assert.isFalse(utilsModule.isArray(29));
 	assert.isFalse(utilsModule.isArray(null));
 	assert.isFalse(utilsModule.isArray(void(0)));
-	isArrayTestWindow.setTimeout(<![CDATA[
-		window.testArrayLiteral = [];
-		window.testArrayInstance = new Array();
-		window.testDate = new Date();
-		window.testString = 'string';
-		window.testNumber = 29;
-		window.testNull = null;
-		window.testUndefined = void(0);
-	]]>.toString(), 0);
+	isArrayTestWindow.setTimeout(
+		'window.testArrayLiteral = [];\n' +
+		'window.testArrayInstance = new Array();\n' +
+		'window.testDate = new Date();\n' +
+		'window.testString = "string";\n' +
+		'window.testNumber = 29;\n' +
+		'window.testNull = null;\n' +
+		'window.testUndefined = void(0);',
+		0
+	);
 	yield 100;
 	assert.isDefined(isArrayTestWindow.testArrayLiteral);
 	assert.isTrue(utilsModule.isArray(isArrayTestWindow.testArrayLiteral));
@@ -713,15 +714,16 @@ function test_isDate()
 	assert.isFalse(utilsModule.isDate(29));
 	assert.isFalse(utilsModule.isDate(null));
 	assert.isFalse(utilsModule.isDate(void(0)));
-	isDateTestWindow.setTimeout(<![CDATA[
-		window.testArrayLiteral = [];
-		window.testArrayInstance = new Array();
-		window.testDate = new Date();
-		window.testString = 'string';
-		window.testNumber = 29;
-		window.testNull = null;
-		window.testUndefined = void(0);
-	]]>.toString(), 0);
+	isDateTestWindow.setTimeout(
+		'window.testArrayLiteral = [];\n' +
+		'window.testArrayInstance = new Array();\n' +
+		'window.testDate = new Date();\n' +
+		'window.testString = "string";\n' +
+		'window.testNumber = 29;\n' +
+		'window.testNull = null;\n' +
+		'window.testUndefined = void(0);',
+		0
+	);
 	yield 100;
 	assert.isDefined(isDateTestWindow.testArrayLiteral);
 	assert.isFalse(utilsModule.isDate(isDateTestWindow.testArrayLiteral));

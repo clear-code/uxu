@@ -47,14 +47,12 @@ function _initDB()
 {
 	var SCHEME_VERSION_HASH = 1;
 	var CURRENT_SCHEME = SCHEME_VERSION_HASH;
-	var tableDefinitionSQL = <![CDATA[
-		  CREATE TABLE result_history
-		    (name        TEXT PRIMARY KEY,
-		     description TEXT,
-		     result      TEXT,
-		     date        DATETIME,
-		     hash        TEXT)
-		]]>.toString();
+	var tableDefinitionSQL = 'CREATE TABLE result_history ' +
+								'(name        TEXT PRIMARY KEY,' +
+								' description TEXT,' +
+								' result      TEXT,' +
+								' date        DATETIME,' +
+								' hash        TEXT)';
 	var db = ns.utils.getDB();
 	if (!db.tableExists('result_history')) {
 		db.executeSimpleSQL(tableDefinitionSQL);
@@ -1496,11 +1494,11 @@ TestCase.prototype = {
 		var db, statement;
 		try {
 			db = this._utils.getDB();
-			statement = db.createStatement(<![CDATA[
-			  INSERT OR REPLACE INTO result_history
-			          (name, description, result, date, hash)
-			    VALUES(?1, ?2, ?3, ?4, ?5)
-			]]>.toString());
+			statement = db.createStatement(
+				'INSERT OR REPLACE INTO result_history ' +
+				'  (name, description, result, date, hash)' +
+				'  VALUES(?1, ?2, ?3, ?4, ?5)'
+			);
 		}
 		catch(e) {
 			return;

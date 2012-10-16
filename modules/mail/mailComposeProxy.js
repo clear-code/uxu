@@ -50,11 +50,7 @@ function MailComposeProxy(aReal)
 {
 	this._real = aReal;
 
-	properties
-		.replace(/^\s+|\s+$/g, '')
-		.replace(/^\s*\/\/.+$/mg, '')
-		.split(/\s+/)
-		.forEach(function(aProp) {
+	properties.forEach(function(aProp) {
 			if (aProp in this || !(aProp in this._real)) return;
 			this.__defineGetter__(aProp, function() {
 				return this._real[aProp];
@@ -63,10 +59,7 @@ function MailComposeProxy(aReal)
 				return this._real[aProp] = aValue;
 			});
 		}, this);
-	(readOnlyProperties+methods)
-		.replace(/^\s+|\s+$/g, '')
-		.replace(/^\s*\/\/.+$/mg, '')
-		.split(/\s+/)
+	readOnlyProperties.concat(methods)
 		.forEach(function(aProp) {
 			if (aProp in this || !(aProp in this._real)) return;
 			this.__defineGetter__(aProp, function() {
@@ -185,49 +178,49 @@ __noSuchMethod__ : function(aName, aArgs)
 };
 
 
-var properties = <![CDATA[
-		type
-		bodyModified
-		savedFolderURI
-		recyclingListener
-		recycledWindow
-		deleteDraft
-		insertingQuotedContent
-	]]>.toString();
-var readOnlyProperties = <![CDATA[
-		messageSend
-		editor
-		domWindow
-		compFields
-		composeHTML
-		wrapLength
-		progress
-		originalMsgURI
-	]]>.toString();
-var methods = <![CDATA[
-		Initialize 
-		SetDocumentCharset
-		RegisterStateListener
-		UnregisterStateListener
-		SendMsg
-		CloseWindow
-		abort
-		quoteMessage
-		AttachmentPrettyName
-		checkAndPopulateRecipients
-		CheckAndPopulateRecipients
-		bodyConvertible
-		SetSignature
-		checkCharsetConversion
-		initEditor
-		addMsgSendListener
-		removeMsgSendListener
+var properties = [
+		'type',
+		'bodyModified',
+		'savedFolderURI',
+		'recyclingListener',
+		'recycledWindow',
+		'deleteDraft',
+		'insertingQuotedContent'
+	];
+var readOnlyProperties = [
+		'messageSend',
+		'editor',
+		'domWindow',
+		'compFields',
+		'composeHTML',
+		'wrapLength',
+		'progress',
+		'originalMsgURI'
+	];
+var methods = [
+		'Initialize',
+		'SetDocumentCharset',
+		'RegisterStateListener',
+		'UnregisterStateListener',
+		'SendMsg',
+		'CloseWindow',
+		'abort',
+		'quoteMessage',
+		'AttachmentPrettyName',
+		'checkAndPopulateRecipients',
+		'CheckAndPopulateRecipients',
+		'bodyConvertible',
+		'SetSignature',
+		'checkCharsetConversion',
+		'initEditor',
+		'addMsgSendListener',
+		'removeMsgSendListener',
 
-		onStartSending
-		onProgress
-		onStatus
-		onStopSending
-		onGetDraftFolderURI
-		onSendNotPerformed
-	]]>.toString();
+		'onStartSending',
+		'onProgress',
+		'onStatus',
+		'onStopSending',
+		'onGetDraftFolderURI',
+		'onSendNotPerformed'
+	];
 
