@@ -54,7 +54,9 @@ function test_processTemplate()
 	assert.equals(
 		'\n' +
 		'256の16進数表現は100です。\n' +
+		'\n' +
 		'256の16進数表現は100です。\n' +
+		'\n' +
 		'256の16進数表現は100です。\n' +
 		'\n' +
 		'barbartrue',
