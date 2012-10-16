@@ -119,7 +119,7 @@ var hankakuZenkakuCharacters = [
 		'\uff9c', '\u30ef',
 		'\uff9d', '\u30f3',
 		'\uff9e', '\u309b',
-		'\uff9f', '\u309c
+		'\uff9f', '\u309c'
 	];
 hankakuZenkakuCharacters.forEach(function(aChar, aIndex) {
 	if (aIndex % 2) return;
