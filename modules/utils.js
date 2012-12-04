@@ -1699,6 +1699,16 @@ inspect : function(aObject, aIndent)
 			count      : 0
 		};
 
+	function hasOwnToString(aObject)
+	{
+		if (aObject.hasOwnProperty("toString"))
+			return true;
+		var topmost = (function climbUpPrototypeChain(aTarget) {
+			return aTarget.__proto__ ? climbUpPrototypeChain(aTarget.__proto__) : aTarget ;
+		})(aObject);
+		return aObject.toString !== topmost.toString;
+	}
+
 	var self = this;
 	function _inspect(aTarget, aIndent)
 	{
@@ -1748,9 +1758,12 @@ inspect : function(aObject, aIndent)
 		else if (self.isString(aTarget)) {
 			return '"' + aTarget.replace(/\"/g, '\\"') + '"';
 		}
-		else if (aTarget.toString == (function(aTarget) {
-						return aTarget.__proto__ ? arguments.callee(aTarget.__proto__) : aTarget ;
-					})(aTarget).toString) {
+		else if (aTarget instanceof Ci.nsISupports || hasOwnToString(aTarget)) {
+			/* Have original toString method */
+			return aTarget.toString();
+		}
+		else {
+			/* Object.prototype.toString() is not useful */
 			index = inspectedObjects.length;
 			inspectedObjects.push(aTarget);
 			inspectedResults[index] = aTarget.toString();
@@ -1798,9 +1811,6 @@ inspect : function(aObject, aIndent)
 				inspectedResults[index] = "{" + values.join(", ") + "}";
 			}
 			return inspectedResults[index];
-		}
-		else {
-			return aTarget.toString();
 		}
 	}
 
