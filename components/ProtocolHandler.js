@@ -238,8 +238,9 @@ ProtocolHandlerProxy.prototype = {
 		return this.mProtocolHandler.newChannel(aURI);
 	},
  
+	
 	// nsIProxiedProtocolHandler 
-	newProxiedChannel : function(aURI, aProxyInfo)
+	newProxiedChannel : function(aURI, aProxyInfo, aProxyResolveFlags, aProxyURI)
 	{
 		if (URIMappingResolver.available) {
 			var uri = URIMappingResolver.resolve(aURI.spec);
@@ -247,14 +248,14 @@ ProtocolHandlerProxy.prototype = {
 				var handler = URIMappingResolver.getNativeProtocolHandler(uri.scheme);
 				try {
 					return handler.QueryInterface(Ci.nsIProxiedProtocolHandler)
-									.newProxiedChannel(uri, aProxyInfo);
+									.newProxiedChannel(uri, aProxyInfo, aProxyResolveFlags, aProxyURI);
 				}
 				catch(e) {
 					return handler.newChannel(uri);
 				}
 			}
 		}
-		return this.mProtocolHandler.newProxiedChannel(aURI, aProxyInfo);
+		return this.mProtocolHandler.newProxiedChannel(aURI, aProxyInfo, aProxyResolveFlags, aProxyURI);
 	},
  
 	// nsIObserver 
