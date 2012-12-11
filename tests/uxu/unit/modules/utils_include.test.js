@@ -31,23 +31,25 @@ function test_include_hashStyle()
 
 	assert.isDefined(namespace.string);
 	assert.equals('文字列', namespace.string);
+}
 
+function test_include_preprocessor_constant()
+{
+	function variableIsConstantIn(aVariableName, aContext) {
+		var descriptor = Object.getOwnPropertyDescriptor(aContext, aVariableName);
+		return !descriptor.writable;
+	}
+
+	var namespace = {};
+	utilsModule.include({
+		uri : '../../fixtures/test.js',
+		encoding : 'UTF-8',
+		namespace : namespace,
+		allowOverrideConstants : false
+	});
 	assert.isDefined(namespace.constant);
 	assert.equals('定数', namespace.constant);
-	// If the the message text of constants redeclaration error
-	// changes too frequently, we should use "TypeError" checking only
-	// type of the error instead of a regular expression covering all
-	// the messages.
-	assert.raises(
-		/TypeError: (redeclaration of const constant|can't redefine non-configurable property 'constant')/,
-		function() {
-			namespace.__defineGetter__(
-				'constant',
-				function() { return 'foo'; }
-			);
-		}
-	);
-	assert.equals('定数', namespace.constant);
+	assert.isTrue(variableIsConstantIn('constant', namespace)); // not overridden
 
 	namespace = {};
 	utilsModule.include({
@@ -56,18 +58,7 @@ function test_include_hashStyle()
 		namespace : namespace,
 		allowOverrideConstants : true
 	});
-
 	assert.isDefined(namespace.constant);
 	assert.equals('定数', namespace.constant);
-	var originalConstantValue = namespace.constant;
-	assert.notRaises(
-		'TypeError: redeclaration of const constant',
-		function() {
-			namespace.__defineGetter__(
-				'constant',
-				function() { return 'foo'; }
-			);
-		}
-	);
-	assert.equals(originalConstantValue, namespace.constant);
+	assert.isFalse(variableIsConstantIn('constant', namespace)); // overridden
 }
