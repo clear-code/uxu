@@ -744,10 +744,20 @@ stopScheduledRemove : function()
 	ns.clearTimeout(this.scheduledRemoveTimer);
 	this.scheduledRemoveTimer = null;
 },
+ 
+preprocessScript : function(aSource, aOptions) 
+{
+	if (aOptions.overrideConstants) {
+		aSource = aSource.replace(/^\bconst\s+/gm, 'var ');
+	}
+	return aSource;
+},
   
 include : function(aSource, aEncoding, aScope) 
 {
-	var allowOverrideConstants = false;
+	var preprocessOptions = {
+		overrideConstants : false
+	};
 
 	if (aSource &&
 		aEncoding === void(0) &&
@@ -757,7 +767,7 @@ include : function(aSource, aEncoding, aScope)
 		aSource = options.source || options.uri || options.url ;
 		aEncoding = options.encoding || options.charset;
 		aScope = options.scope || options.namespace || options.ns;
-		allowOverrideConstants = options.allowOverrideConstants;
+		preprocessOptions.overrideConstants = options.allowOverrideConstants;
 	}
 	else if (typeof aEncoding == 'object') { // for backward compatibility
 		let scope = aEncoding;
@@ -771,20 +781,16 @@ include : function(aSource, aEncoding, aScope)
 	var temporaryFile;
 	try {
 		script = this.readFrom(uri, encoding) || '';
-		var sha1hash = this.computeHash(script, 'SHA1');
-		if (allowOverrideConstants) {
-			let overriddenScript = script.replace(/^\bconst\s+/gm, 'var ');
-			if (overriddenScript != script) {
-				temporaryFile = this.makeTempFile(uri);
-				temporaryFile.remove(true);
-				this.writeTo(overriddenScript, temporaryFile, encoding);
-				uri = this.getURLSpecFromFile(temporaryFile) +
-						'?includeSource=' +
-						encodeURIComponent(uri) +
-						';sha1hash=' + sha1hash;
-			}
+		var preprocessedScript = this.preprocessScript(script, preprocessOptions);
+		if (preprocessedScript !== script) {
+			temporaryFile = this.makeTempFile(uri);
+			temporaryFile.remove(true);
+			this.writeTo(preprocessedScript, temporaryFile, encoding);
+			uri = this.getURLSpecFromFile(temporaryFile) + '?includeSource=' + encodeURIComponent(uri);
 		}
-		else if (uri.indexOf('?') > -1) {
+
+		var sha1hash = this.computeHash(script, 'SHA1');
+		if (uri.indexOf('?') > -1) {
 			uri += ';sha1hash=' + sha1hash;
 		}
 		else {
