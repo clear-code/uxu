@@ -242,6 +242,8 @@ ProtocolHandlerProxy.prototype = {
 	// nsIProxiedProtocolHandler 
 	newProxiedChannel : function(aURI, aProxyInfo, aProxyResolveFlags, aProxyURI)
 	{
+		aProxyResolveFlags = typeof aProxyResolveFlags === "undefined" ? 0 : aProxyResolveFlags;
+		aProxyURI = typeof aProxyURI === "undefined" ? null : aProxyURI;
 		if (URIMappingResolver.available) {
 			var uri = URIMappingResolver.resolve(aURI.spec);
 			if (uri) {
