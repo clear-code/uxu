@@ -552,12 +552,16 @@ Assertions.prototype = {
 		if (expectedReadable && typeof expectedReadable == 'object')
 			expectedReadable = utils.inspect(expectedReadable);
 
+		var actualReadable = aActualException;
+		if (actualReadable && typeof actualReadable == 'object')
+			actualReadable = utils.inspect(actualReadable);
+
 		if (aActualException) {
 			this._fail({
 			     	expectedRaw : aExpectedException,
 			     	actualRaw   : aActualException,
 			     	expected    : bundle.getFormattedString('assert_raises_expected', [expectedReadable]),
-			     	actual      : bundle.getFormattedString('assert_raises_actual', [aActualException])
+			     	actual      : bundle.getFormattedString('assert_raises_actual', [actualReadable])
 			     },
 			     bundle.getString('assert_raises'), aMessage);
 		}
@@ -620,11 +624,15 @@ Assertions.prototype = {
 		if (unexpectedReadable && typeof unexpectedReadable == 'object')
 			unexpectedReadable = utils.inspect(unexpectedReadable);
 
+		var actualReadable = aActualException;
+		if (actualReadable && typeof actualReadable == 'object')
+			actualReadable = utils.inspect(actualReadable);
+
 		this._fail({
 		     	expectedRaw : aUnexpectedException,
 		     	actualRaw   : aActualException,
 		     	expected    : bundle.getFormattedString('assert_not_raises_expected', [unexpectedReadable]),
-		     	actual      : bundle.getFormattedString('assert_not_raises_actual', [aActualException])
+		     	actual      : bundle.getFormattedString('assert_not_raises_actual', [actualReadable])
 		     },
 		     bundle.getString('assert_not_raises'), aMessage);
 	},
