@@ -442,7 +442,7 @@ Assertions.prototype = {
 			     	expected    : bundle.getFormattedString('assert_instance_expected', [expected]),
 			     	actual      : bundle.getFormattedString('assert_instance_actual', [actualConstructor])
 			     },
-			     bundle.getString('assert_instance'), aMessage);
+			     bundle.getString('assert_instanceof'), aMessage);
 		}
 		this._onSuccess();
 	},
