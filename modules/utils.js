@@ -2013,7 +2013,8 @@ _equals : function(aCompare, aObject1, aObject2, aStrict, aAltTable)
  
 _equalObject : function(aCompare, aObject1, aObject2, aStrict, aAltTable) 
 {
-	if (!aCompare(aObject1.__proto__, aObject2.__proto__))
+	if ((aObject1 === null) !== (aObject2 === null))
+		return aCompare(aObject1, aObject2);
 
 	aAltTable = this._createAltTable(aAltTable);
 	aObject1 = this._getAltTextForCircularReference(aObject1, aStrict, aAltTable);
