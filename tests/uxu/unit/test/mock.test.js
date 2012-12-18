@@ -64,9 +64,7 @@ function test_functionMock_expect()
 	assertCallAdded(mock, function() {
 		mock.expect(29);
 	});
-	assertCallNotModified(mock, function() {
-		assertCallRaise(mock, [290], 'AssertionFailed');
-	});
+	assertCallRaise(mock, [290], 'AssertionFailed');
 }
 
 function test_functionMock_specialSpec()
@@ -174,21 +172,28 @@ function test_functionMock_expectThrows()
 	assertCallAdded(mock, function() {
 		mock.expectThrows(29, message);
 	});
-	assertCallNotModified(mock, function() {
-		assertCallRaise(mock, [290], 'AssertionFailed');
+	assertCallRaise(mock, [290], 'AssertionFailed');
+}
+
+function test_functionMock_bindTo_success()
+{
+	var mock = createFunctionMock();
+	var object = {};
+	mock.expect([0]).boundTo(object);
+	object.method = mock;
+	assertCallRemoved(mock, function() {
+		object.method(0);
 	});
 }
 
-function test_functionMock_bindTo()
+function test_functionMock_bindTo_fail()
 {
 	var mock = createFunctionMock();
 	var object = {};
 	mock.expect([0]).boundTo(object);
 	assertCallRaise(mock, [0], 'AssertionFailed');
 	object.method = mock;
-	assertCallRemoved(mock, function() {
-		object.method(0);
-	});
+	assertCallRaise(mock, [0], 'Error');
 }
 
 function test_functionMock_reset()
@@ -242,7 +247,7 @@ function test_functionMock_addError()
 	var errorStack = String(error.stack);
 	mock._mock.addError(error);
 	assert.equals([error], mock.errors);
-	assert.equals(mockStack+errorStack, mock.errors[0].stack);
+	assert.equals(errorStack + mockStack, mock.errors[0].stack);
 
 	var errors = [
 			new Error('multiplex error 1'),
@@ -253,8 +258,8 @@ function test_functionMock_addError()
 		});
 	mock._mock.addError(new MultiplexError(errors));
 	assert.equals([error, errors[0], errors[1]], mock.errors);
-	assert.equals(mockStack+errorStacks[0], mock.errors[1].stack);
-	assert.equals(mockStack+errorStacks[1], mock.errors[2].stack);
+	assert.equals(errorStacks[0] + mockStack, mock.errors[1].stack);
+	assert.equals(errorStacks[1] + mockStack, mock.errors[2].stack);
 }
 
 
@@ -357,6 +362,10 @@ function test_getterMock_bindTo()
 	var object = {};
 	mock.expect(29).boundTo(object);
 	assertCallRaise(mock, [], 'AssertionFailed');
+	assertCallRaise(mock, [], 'Error');
+
+	mock = createGetterMock();
+	mock.expect(29).boundTo(object);
 	object.__defineGetter__('property', mock);
 	assertCallRemoved(mock, function() {
 		assert.equals(29, object.property);
@@ -523,6 +532,10 @@ function test_setterMock_bindTo()
 	var object = {};
 	mock.expect(29).boundTo(object);
 	assertCallRaise(mock, [], 'AssertionFailed');
+	assertCallRaise(mock, [], 'Error');
+
+	mock = createSetterMock();
+	mock.expect(29).boundTo(object);
 	object.__defineSetter__('property', mock);
 	assertCallRemoved(mock, function() {
 		object.property = 29;
@@ -595,10 +608,10 @@ function test_mockMethod()
 			mock.expect('method');
 		});
 		assertCallAdded(mock, function() {
-			mock.expect('args', [0, 1, 2], true);
+			mock.expectThrows('error', [], 'error message');
 		});
 		assertCallAdded(mock, function() {
-			mock.expectThrows('error', [], 'error message');
+			mock.expect('args', [0, 1, 2], true);
 		});
 		return mock;
 	}
@@ -612,11 +625,11 @@ function test_mockMethod()
 		'Error',
 		function() { mock.method(); }
 	);
-	assert.isTrue(mock.args(0, 1, 2));
 	assert.raises(
 		'error message',
 		function() { mock.error(); }
 	);
+	assert.isTrue(mock.args(0, 1, 2));
 	assert.notRaises('MultiplexError', function() { mock.assert(); });
 }
 
@@ -626,13 +639,13 @@ function test_mockGetter()
 	{
 		var mock = new Mock();
 		assertCallAdded(mock, function() {
+			mock.expectGetThrows('getterError', Error, 'error message');
+		});
+		assertCallAdded(mock, function() {
 			mock.expectGet('getterUndefined');
 		});
 		assertCallAdded(mock, function() {
 			mock.expectGet('getterArray', [0, 1, 2]);
-		});
-		assertCallAdded(mock, function() {
-			mock.expectGetThrows('getterError', Error, 'error message');
 		});
 		return mock;
 	}
@@ -642,6 +655,10 @@ function test_mockGetter()
 	assert.notRaises('MultiplexError', function() { mock.assert(); });
 
 	mock = setUpMock();
+	assert.raises(
+		'error message',
+		function() { var value = mock.getterError; }
+	);
 	assert.notRaises(
 		'Error',
 		function() {
@@ -649,10 +666,6 @@ function test_mockGetter()
 		}
 	);
 	assert.equals([0, 1, 2], mock.getterArray);
-	assert.raises(
-		'error message',
-		function() { var value = mock.getterError; }
-	);
 	assert.notRaises('MultiplexError', function() { mock.assert(); });
 }
 
@@ -723,11 +736,11 @@ function test_mockAccessOrder()
 		'AssertionFailed',
 		function() { mock.third = true; }
 	);
-	assert.raises(
+	assert.notRaises(
 		'AssertionFailed',
 		function() { mock.second; }
 	);
-	assert.notRaises(
+	assert.raises(
 		'AssertionFailed',
 		function() { mock.first(); }
 	);
@@ -782,7 +795,15 @@ function test_Mock_method()
 			object.method();
 		}
 	);
-	assert.equals('OK', object.method(0, 1));
+	assert.raises(
+		'Error',
+		function() {
+			assert.equals('OK', object.method(0, 1));
+		}
+	);
+
+	Mock.expect(object, 'method', [2, 3], 'OK');
+	assert.equals('OK', object.method(2, 3));
 	assert.raises(
 		'Error',
 		function() {
@@ -790,7 +811,7 @@ function test_Mock_method()
 		}
 	);
 
-	Mock.expectThrows(object, 'methodError', [0, 1], 'custom error');
+	Mock.expectThrows(object, 'methodError', [4, 5], 'custom error');
 	assert.isFunction(object.methodError);
 	assert.raises(
 		'AssertionFailed',
@@ -799,9 +820,17 @@ function test_Mock_method()
 		}
 	);
 	assert.raises(
+		'Error',
+		function() {
+			object.methodError(4, 5);
+		}
+	);
+
+	Mock.expectThrows(object, 'methodError', [4, 5], 'custom error');
+	assert.raises(
 		'custom error',
 		function() {
-			object.methodError(0, 1);
+			object.methodError(4, 5);
 		}
 	);
 	assert.notRaises(
@@ -854,7 +883,7 @@ function test_Mock_setter()
 			object.setter = 290;
 		}
 	);
-	object.setter = 29;
+	// this raises "unexpected call" error, because the expected call was already processed by the previous access.
 	assert.raises(
 		'Error',
 		function() {
@@ -862,7 +891,16 @@ function test_Mock_setter()
 		}
 	);
 
-	Mock.expectSetThrows(object, 'setterError', 29, 'custom error');
+	Mock.expectSet(object, 'setter', 290, 'OK');
+	object.setter = 290;
+	assert.raises(
+		'Error',
+		function() {
+			object.setter = 290;
+		}
+	);
+
+	Mock.expectSetThrows(object, 'setterError', 2900, 'custom error');
 	assert.isFunction(object.__lookupSetter__('setterError'));
 	assert.raises(
 		'AssertionFailed',
@@ -870,16 +908,26 @@ function test_Mock_setter()
 			object.setterError = 290;
 		}
 	);
+	// this raises "unexpected call" error, because the expected call was already processed by the previous access.
+	assert.raises(
+		'Error',
+		function() {
+			object.setterError = 2900;
+		}
+	);
+
+	Mock.expectSetThrows(object, 'setterError', 2900, 'custom error');
 	assert.raises(
 		'custom error',
 		function() {
-			object.setterError = 29;
+			object.setterError = 2900;
 		}
 	);
-	assert.notRaises(
-		'custom error',
+	// this raises "unexpected call" error, because the expected call was already processed by the previous access.
+	assert.raises(
+		'Error',
 		function() {
-			object.setterError = 29;
+			object.setterError = 2900;
 		}
 	);
 }
@@ -951,7 +999,7 @@ function test_HTTPServerMock_expect()
 	assertCallAdded(mock, function() {
 		mock.expect('/expected');
 	});
-	assertCallNotModified(mock, function() {
+	assertCallRemoved(mock, function() {
 		assertCallRaise(mock, ['/unexpected'], 'AssertionFailed');
 	});
 
@@ -959,8 +1007,12 @@ function test_HTTPServerMock_expect()
 	assertCallAdded(mock, function() {
 		mock.expect(/FooBar/i, '/expected');
 	});
-	assertCallNotModified(mock, function() {
+	assertCallRemoved(mock, function() {
 		assertCallRaise(mock, ['/foo'], 'AssertionFailed');
+	});
+
+	assertCallAdded(mock, function() {
+		mock.expect(/FooBar/i, '/expected');
 	});
 	assertCallSuccess(mock, ['/foobar'],
 		{ uri : '/expected', file : null, status : 200, statusText : '' });
@@ -1046,7 +1098,7 @@ function test_HTTPServerMock_expectThrows()
 	assertCallAdded(mock, function() {
 		mock.expectThrows('/expected', 400);
 	});
-	assertCallNotModified(mock, function() {
+	assertCallRemoved(mock, function() {
 		assertCallRaise(mock, ['/unexpected'], 'AssertionFailed');
 	});
 }

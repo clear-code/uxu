@@ -306,12 +306,21 @@ Mock.prototype = {
 		this._expectedCalls.push(aCall);
 		aCall.addHandler(function() {
 			self._handleCall.call(self, this.firstExpectedCall);
+		}, function(aError) {
+			self._expectedCalls.shift();
 		});
 	},
 	_handleCall : function(aCall)
 	{
-		this._assert.equals(this._expectedCalls[0], aCall);
-		this._expectedCalls.shift();
+		try {
+			this._assert.isObject(aCall);
+			this._assert.isNotNull(aCall);
+			this._assert.notEquals(0, this._expectedCalls.length);
+			this._assert.equals(this._expectedCalls[0], aCall);
+		}
+		finally {
+			this._expectedCalls.shift();
+		}
 	},
 
 	expect : function(aName)
@@ -607,6 +616,7 @@ function ExpectedCall(aOptions)
 {
 	this._arguments = [];
 	this.handlers   = [];
+	this.errorHandlers = [];
 
 	if ('arguments' in aOptions)
 		this.arguments = aOptions.arguments;
@@ -618,15 +628,23 @@ function ExpectedCall(aOptions)
 		this.exceptionMessage = aOptions.exceptionMessage;
 }
 ExpectedCall.prototype = {
-	addHandler : function(aHandler)
+	addHandler : function(aHandler, aErrorHandler)
 	{
 		this.handlers.push(aHandler);
+		this.errorHandlers.push(aErrorHandler);
 	},
 	onCall : function(aMock, aArguments)
 	{
 		this.handlers.forEach(function(aHandler) {
 			if (aHandler && typeof aHandler == 'function')
 				aHandler.apply(aMock, aArguments);
+		}, aMock);
+	},
+	onError : function(aMock, aError)
+	{
+		this.errorHandlers.forEach(function(aHandler) {
+			if (aHandler && typeof aHandler == 'function')
+				aHandler.call(aMock, aError);
 		}, aMock);
 	},
 	finish : function(aArguments)
@@ -682,13 +700,11 @@ FunctionMock.prototype = {
 
 		this._assert = aAssertions || new ns.Assertions();
 
-		this.reset(false);
+		this.reset();
 	},
-	reset : function(aKeepErrors)
+	reset : function()
 	{
-		if (!aKeepErrors) {
-			this.errors = [];
-		}
+		this.errors = [];
 		this.inExpectationChain = false;
 		this.expectedCalls = [];
 		this.anyCall = null;
@@ -745,7 +761,7 @@ FunctionMock.prototype = {
 		}
 		else {
 			if (aError.stack)
-				aError.stack = this.stack + aError.stack;
+				aError.stack += this.stack;
 			this.errors.push(aError);
 		}
 		return aError;
@@ -871,55 +887,52 @@ FunctionMock.prototype = {
 
 	onCall : function(aContext, aArguments)
 	{
-		var call = this.getCurrentCall(bundle.getFormattedString(
-						'function_mock_unexpected_call',
-						[this.name, utils.inspect(aArguments)]
-					));
+		var call;
+		try {
+			call = this.getCurrentCall(bundle.getFormattedString(
+				'function_mock_unexpected_call',
+				[this.name, utils.inspect(aArguments)]
+			));
 
-		if (!call.isAnyCall() && !call.isOneTimeAnyCall()) {
-			try {
+			if (!call.isAnyCall() && !call.isOneTimeAnyCall()) {
+				let message = bundle.getFormattedString('function_mock_wrong_arguments', [this.name]);
 				this._assert.doInternalAssertion('equals',
-					this.formatArgumentsArray(call.arguments, aArguments),
+					this.formatArgumentsArray(call.arguments, aArguments, message),
 					aArguments,
-					bundle.getFormattedString('function_mock_wrong_arguments', [this.name])
+					message
 				);
 			}
-			catch(e) {
-				this.addError(e)
-				throw e;
-			}
-		}
 
-		if ('context' in call) {
-			try {
+			if ('context' in call) {
 				this._assert.doInternalAssertion('equals',
 					call.context,
 					aContext,
 					bundle.getFormattedString('function_mock_wrong_context', [this.name, utils.inspect(aArguments)])
 				);
 			}
-			catch(e) {
-				this.addError(e)
-				throw e;
-			}
+
+			call.onCall(this, aArguments);
+		}
+		catch(e) {
+			if (call) call.onError(this, e);
+			this.addError(e);
+			throw e;
+		}
+		finally {
+			if (!this.anyCall)
+				this.expectedCalls.shift();
 		}
 
-		call.onCall(this, aArguments);
-
-		if (!this.anyCall)
-			this.expectedCalls.shift();
-
 		this.successCount++;
-
 		return call.finish(aArguments);
 	},
-	formatArgumentsArray : function(aExpectedArray, aActualArray)
+	formatArgumentsArray : function(aExpectedArray, aActualArray, aMessage)
 	{
 		return aExpectedArray.map(function(aExpected, aIndex) {
 			if (aExpected instanceof TypeOf) {
 				let actual = aActualArray[aIndex];
 				try {
-					aExpected.assert(actual, this._assert);
+					aExpected.assert(actual, this._assert, aMessage);
 				}
 				catch(e) {
 					this.addError(e)
@@ -936,20 +949,25 @@ FunctionMock.prototype = {
 	{
 		var expected = this.expectedCount;
 		var success = this.successCount;
-		var errors = this.errorCount;
-		this.reset(true);
-		try {
-			if (errors) {
-				let e = new Error(bundle.getFormattedString(aErrorMessageKey, [this.name, errors]));
-				e.stack = this.stack + e.stack;
-				throw e;
-			}
-			this._assert.doInternalAssertion('equals', expected, success, bundle.getFormattedString(aFailMessageKey, [this.name]));
+		var preErrorsCount = this.errorCount;
+		var errors = this.errors;
+
+		this.reset();
+
+		if (preErrorsCount) {
+			let error = new Error(bundle.getFormattedString(aErrorMessageKey, [this.name, preErrorsCount]));
+			error.stack += this.stack;
+			throw error;
 		}
-		catch(e) {
-			this.addError(e)
-			throw e;
+		if (errors.length) {
+			throw errors.length > 1 ? new ns.MultiplexError(errors) : errors[0] ;
 		}
+		this._assert.doInternalAssertion(
+			'equals',
+			expected,
+			success,
+			bundle.getFormattedString(aFailMessageKey, [this.name])
+		);
 	},
 	assert : function()
 	{
@@ -1043,29 +1061,31 @@ GetterMock.prototype = {
 	},
 	onCall : function(aContext)
 	{
-		var call = this.getCurrentCall(bundle.getFormattedString('getter_mock_unexpected_call', [this.name]));
+		var call;
+		try {
+			call = this.getCurrentCall(bundle.getFormattedString('getter_mock_unexpected_call', [this.name]));
 
-		if ('context' in call) {
-			try {
+			if ('context' in call) {
 				this._assert.doInternalAssertion('equals',
 					call.context,
 					aContext,
 					bundle.getFormattedString('getter_mock_wrong_context', [this.name])
 				);
 			}
-			catch(e) {
-				this.addError(e)
-				throw e;
-			}
+
+			call.onCall(this, []);
+		}
+		catch(e) {
+			if (call) call.onError(this, e);
+			this.addError(e);
+			throw e;
+		}
+		finally {
+			if (!this.anyCall)
+				this.expectedCalls.shift();
 		}
 
-		call.onCall(this, []);
-
-		if (!this.anyCall)
-			this.expectedCalls.shift();
-
 		this.successCount++;
-
 		return call.finish([]);
 	},
 	assert : function()
@@ -1112,46 +1132,43 @@ SetterMock.prototype = {
 	{
 		if (!aArguments.length) aArguments = [void(0)];
 
-		var call = this.getCurrentCall(bundle.getFormattedString(
+		var call;
+		try {
+			call = this.getCurrentCall(bundle.getFormattedString(
 				'setter_mock_unexpected_call',
 				[this.name, utils.inspect(aArguments[0])]
 			));
 
-		if (!call.isAnyCall() && !call.isOneTimeAnyCall()) {
-			try {
+			if (!call.isAnyCall() && !call.isOneTimeAnyCall()) {
+				let message = bundle.getFormattedString('setter_mock_wrong_value', [this.name]);
 				this._assert.doInternalAssertion('equals',
-					this.formatArgumentsArray(call.arguments, aArguments)[0],
+					this.formatArgumentsArray(call.arguments, aArguments, message)[0],
 					aArguments[0],
-					bundle.getFormattedString('setter_mock_wrong_value', [this.name])
+					message
 				);
 			}
-			catch(e) {
-				this.addError(e)
-				throw e;
-			}
-		}
 
-		if ('context' in call) {
-			try {
+			if ('context' in call) {
 				this._assert.doInternalAssertion('equals',
 					call.context,
 					aContext,
 					bundle.getFormattedString('setter_mock_wrong_context', [this.name, utils.inspect(aArguments[0])])
 				);
 			}
-			catch(e) {
-				this.addError(e)
-				throw e;
-			}
+
+			call.onCall(this, aArguments);
+		}
+		catch(e) {
+			if (call) call.onError(this, e);
+			this.addError(e);
+			throw e;
+		}
+		finally {
+			if (!this.anyCall)
+				this.expectedCalls.shift();
 		}
 
-		call.onCall(this, aArguments);
-
-		if (!this.anyCall)
-			this.expectedCalls.shift();
-
 		this.successCount++;
-
 		var returnValue = call.finish([]);
 		return !('returnValue' in call) && !this.isSpecialSpec(call.arguments[0]) ?
 				aArguments[0] :
@@ -1229,45 +1246,50 @@ HTTPServerMock.prototype = {
 	{
 		if (!aArguments.length) aArguments = [void(0)];
 
-		var call = this.getCurrentCall(bundle.getFormattedString(
+		var call;
+		try {
+			call = this.getCurrentCall(bundle.getFormattedString(
 				'server_mock_unexpected_call',
 				[this.name, utils.inspect(aArguments[0])]
 			));
 
-		if (!call.isAnyCall() && !call.isOneTimeAnyCall()) {
-			try {
-				if (typeof call.arguments[0] == 'string')
+			if (!call.isAnyCall() && !call.isOneTimeAnyCall()) {
+				if (typeof call.arguments[0] == 'string') {
+					let message = bundle.getFormattedString('server_mock_wrong_value', [this.name]);
 					this._assert.doInternalAssertion('equals',
-						this.formatArgumentsArray(call.arguments, aArguments)[0],
+						this.formatArgumentsArray(call.arguments, aArguments, message)[0],
 						aArguments[0],
-						bundle.getFormattedString('server_mock_wrong_value', [this.name])
+						message
 					);
-				else
+				}
+				else {
 					this._assert.doInternalAssertion('matches',
 						call.arguments[0],
 						String(aArguments[0]),
 						bundle.getFormattedString('server_mock_wrong_value', [this.name])
 					);
+				}
 			}
-			catch(e) {
-				this.addError(e)
-				throw e;
+
+			if (typeof call.arguments[0] != 'string') {
+				let flags = call.arguments[0].ignoreCase ? 'i' : '' ;
+				let regexp = new RegExp('^.*?(?:'+call.arguments[0].source+').*?$', flags);
+				call.returnValue.uri = String(aArguments[0]).replace(regexp, call.returnValue.uri || '');
 			}
+
+			call.onCall(this, aArguments);
 		}
-
-		if (typeof call.arguments[0] != 'string') {
-			let flags = call.arguments[0].ignoreCase ? 'i' : '' ;
-			let regexp = new RegExp('^.*?(?:'+call.arguments[0].source+').*?$', flags);
-			call.returnValue.uri = String(aArguments[0]).replace(regexp, call.returnValue.uri || '');
+		catch(e) {
+			if (call) call.onError(this, e);
+			this.addError(e);
+			throw e;
 		}
-
-		call.onCall(this, aArguments);
-
-		if (!this.anyCall)
-			this.expectedCalls.shift();
+		finally {
+			if (!this.anyCall)
+				this.expectedCalls.shift();
+		}
 
 		this.successCount++;
-
 		var returnValue = call.finish([]);
 		return !returnValue.uri && !returnValue.file && this.isSpecialSpec(call.arguments[0]) ?
 				this.formatReturnValue(aArguments[0]) :
@@ -1335,23 +1357,23 @@ function TypeOf(aConstructor) {
 	}
 }
 TypeOf.prototype = {
-	assert : function(aActual, aAssertions)
+	assert : function(aActual, aAssertions, aMessage)
 	{
 		aAssertions = aAssertions || new ns.Assertions();
 
-		aAssertions.isDefined(aActual);
-		aAssertions.isNotNull(aActual);
+		aAssertions.isDefined(aActual, aMessage);
+		aAssertions.isNotNull(aActual, aMessage);
 
 		var expected = this.expectedConstructor;
 		switch (typeof expected)
 		{
 			case 'string':
-				aAssertions.doInternalAssertion('equals', expected, typeof aActual);
+				aAssertions.doInternalAssertion('equals', expected, typeof aActual, aMessage);
 				break;
 
 			case 'object':
 				if (expected instanceof Ci.nsIJSIID) { // Ci.*
-					aAssertions.doInternalAssertion('isInstanceOf', expected, aActual);
+					aAssertions.doInternalAssertion('isInstanceOf', expected, aActual, aMessage);
 				}
 				else {
 					let errors = [];
@@ -1361,9 +1383,9 @@ TypeOf.prototype = {
 							continue;
 						try {
 							if (expected[i] instanceof TypeOf)
-								expected[i].assert(aActual[i]);
+								expected[i].assert(aActual[i], aMessage);
 							else
-								aAssertions.doInternalAssertion('equals', expected[i], aActual[i]);
+								aAssertions.doInternalAssertion('equals', expected[i], aActual[i], aMessage);
 						}
 						catch(e) {
 							errors.push(e);
@@ -1375,7 +1397,7 @@ TypeOf.prototype = {
 				break;
 
 			default:
-				aAssertions.doInternalAssertion('isInstanceOf', expected, aActual);
+				aAssertions.doInternalAssertion('isInstanceOf', expected, aActual, aMessage);
 				break;
 		}
 	}
