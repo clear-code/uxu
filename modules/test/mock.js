@@ -1368,7 +1368,28 @@ TypeOf.prototype = {
 		switch (typeof expected)
 		{
 			case 'string':
-				aAssertions.doInternalAssertion('equals', expected, typeof aActual, aMessage);
+				switch (expected)
+				{
+					case 'bool':
+					case 'boolean':
+						aAssertions.doInternalAssertion('isBoolean', aActual, aMessage);
+						break;
+					case 'number':
+						aAssertions.doInternalAssertion('isNumber', aActual, aMessage);
+						break;
+					case 'string':
+						aAssertions.doInternalAssertion('isString', aActual, aMessage);
+						break;
+					case 'object':
+						aAssertions.doInternalAssertion('isObject', aActual, aMessage);
+						break;
+					case 'array':
+						aAssertions.doInternalAssertion('isArray', aActual, aMessage);
+						break;
+					default:
+						aAssertions.doInternalAssertion('equals', expected, typeof aActual, aMessage);
+						break;
+				}
 				break;
 
 			case 'object':
