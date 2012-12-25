@@ -126,27 +126,58 @@ Report.prototype = {
 	{
 		return this._topics.map(this._formatTopic, this);
 	},
-	_setDiffInfoFromAssertionError : function(aTopic, aError) {
-	if ('expectedRaw' in aError && 'actualRaw' in aError) {
-		var _diff = ns.Diff.readable(aError.expectedRaw, aError.actualRaw);
-		if (ns.Diff.isInterested(_diff)) {
-			aTopic.diff = _diff;
-			if (ns.Diff.needFold(_diff)) {
-				aTopic.foldedDiff = ns.Diff.foldedReadable(
-					aError.expectedRaw,
-					aError.actualRaw
-				);
-			}
-			aTopic.encodedDiff = ns.Diff.readable(
-				aError.expectedRaw,
-				aError.actualRaw,
-				true
+	_setDiffInfoFromAssertionError : function(aTopic, aError)
+	{
+	var _diff = ns.Diff.readable(aError.expected, aError.actual);
+	if (ns.Diff.isInterested(_diff)) {
+		aTopic.diff = _diff;
+		if (ns.Diff.needFold(_diff)) {
+			aTopic.foldedDiff = ns.Diff.foldedReadable(
+				aError.expected,
+				aError.actual
 			);
 		}
+		aTopic.encodedDiff = ns.Diff.readable(
+			aError.expected,
+			aError.actual,
+			true
+		);
 	}
 	if (!('diff' in aError)) aTopic.diff = '';
 	if (!('foldedDiff' in aError)) aTopic.foldedDiff = aError.diff;
-},
+	},
+	_appendTypeString : function(aValue)
+	{
+		if (aValue === null) return 'null';
+		if (aValue === void(0)) return 'undefined';
+		var args = (aValue instanceof Ci.nsIDOMNode) ?
+				[utils.inspectDOMNode(aValue), utils.inspect(aValue)] :
+				[utils.inspect(aValue), utils.inspectType(aValue)];
+		return bundle.getFormattedString('typed_value', args);
+	},
+	_formatAssertionValue : function(aAssertionName, aValue, aAssertionType)
+	{
+		if (!aAssertionName) return aValue;
+
+		var bundleKey = aAssertionName + '_' + aAssertionType;
+		var stringFormatArguments = [];
+		switch (aAssertionName) {
+			case 'assert_finishes_within':
+			case 'assert_not_finishes_within':
+				let msec = aValue;
+				let seconds = msec < 1000
+				 ? ''
+				 : bundle.getFormattedString(bundleKey + '_long', [Math.round(msec / 1000)]);
+				stringFormatArguments.push(msec);
+				stringFormatArguments.push(seconds);
+			break;
+			default:
+				stringFormatArguments.push(this._appendTypeString(aValue));
+			break;
+		}
+
+		return bundle.getFormattedString(bundleKey, stringFormatArguments);
+	},
 	_formatTopic : function(aTopic)
 	{
 		if (aTopic._formatted)
@@ -163,16 +194,19 @@ Report.prototype = {
 
 		if (aTopic.exception) {
 			let e = aTopic.exception;
+			let assertionName = e.assertionName;
 			if (e.expected)
-				aTopic.expected = e.expected;
+				aTopic.expected = this._formatAssertionValue(assertionName, e.expected, "expected");
 			if (e.actual)
-				aTopic.actual = e.actual;
-			this._setDiffInfoFromAssertionError(aTopic, e);
-			aTopic.message = e.message.replace(/^\s+/, '');
-			if (e.assertionName) {
-				// Add assertion name to the message
-				aTopic.message += "\n" + bundle.getString(e.assertionName);
+				aTopic.actual = this._formatAssertionValue(assertionName, e.actual, "actual");
+
+			if (e.showDiff) {
+				this._setDiffInfoFromAssertionError(aTopic, e);
 			}
+
+			aTopic.message = e.message.replace(/^\s+/, '');
+			// Add assertion name to the message
+			aTopic.message += "\n" + bundle.getString(assertionName);
 			if (utils.hasStackTrace(e))
 				aTopic.stackTrace = utils.formatStackTraceForDisplay(e);
 
