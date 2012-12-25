@@ -3,7 +3,6 @@
 var topDir = baseURL+'../../../../';
 
 var Assertions = utils.import(topDir+'modules/test/assertions.js', {}).Assertions;
-var Diff = utils.import(topDir+'modules/diff.js', {}).Diff;
 
 var bundle = utils.import(topDir+'modules/lib/stringBundle.js', {})
 				.stringBundle.get('chrome://uxu/locale/uxu.properties');
@@ -1369,8 +1368,6 @@ function test_fail()
 	assert.isUndefined(exception.actualRaw);
 	assert.isUndefined(exception.expected);
 	assert.isUndefined(exception.actual);
-	assert.equals('', exception.diff);
-	assert.equals('', exception.foldedDiff);
 	assert.equals('2\n1\n0', exception.message);
 
 
@@ -1395,8 +1392,6 @@ function test_fail()
 	assert.equals(0, exception.actualRaw);
 	assert.isUndefined(exception.expected);
 	assert.equals(1, exception.actual);
-	assert.equals('', exception.diff);
-	assert.equals('', exception.foldedDiff);
 	assert.equals('4\n3\n2', exception.message);
 
 
@@ -1421,8 +1416,6 @@ function test_fail()
 	assert.isUndefined(exception.actualRaw);
 	assert.equals(1, exception.expected);
 	assert.isUndefined(exception.actual);
-	assert.equals('', exception.diff);
-	assert.equals('', exception.foldedDiff);
 	assert.equals('4\n3\n2', exception.message);
 
 
@@ -1449,8 +1442,6 @@ function test_fail()
 	assert.equals('1aaaaaaaaaa', exception.actualRaw);
 	assert.equals(2, exception.expected);
 	assert.equals(3, exception.actual);
-	assert.equals(Diff.readable('0aaaaaaaaaa', '1aaaaaaaaaa'), exception.diff);
-	assert.equals(Diff.foldedReadable('0aaaaaaaaaa', '1aaaaaaaaaa'), exception.foldedDiff);
 	assert.equals('6\n5\n4', exception.message);
 }
 
