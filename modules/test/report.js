@@ -169,6 +169,10 @@ Report.prototype = {
 				aTopic.actual = e.actual;
 			this._setDiffInfoFromAssertionError(aTopic, e);
 			aTopic.message = e.message.replace(/^\s+/, '');
+			if (e.assertionName) {
+				// Add assertion name to the message
+				aTopic.message += "\n" + bundle.getString(e.assertionName);
+			}
 			if (utils.hasStackTrace(e))
 				aTopic.stackTrace = utils.formatStackTraceForDisplay(e);
 
