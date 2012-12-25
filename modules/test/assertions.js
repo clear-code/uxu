@@ -374,6 +374,7 @@ Assertions.prototype = {
 	},
 	'notNull' : function() { return this.isNotNull.apply(this, arguments); },
 
+	// @mozilla-specific@
 	implementsInterface : function(aExpectedInterface, aActualInstance, aMessage)
 	{
 		var expected = aExpectedInterface;
@@ -454,6 +455,7 @@ Assertions.prototype = {
 
 	raises : function(aExpectedException, aTask, aContext, aMessage)
 	{
+		// @mozilla-specific@
 		if (typeof aExpectedException == 'string' &&
 			aExpectedException in Components.results)
 			aExpectedException = Components.results[aExpectedException];
