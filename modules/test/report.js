@@ -128,23 +128,16 @@ Report.prototype = {
 	},
 	_setDiffInfoFromAssertionError : function(aTopic, aError)
 	{
-	var _diff = ns.Diff.readable(aError.expected, aError.actual);
-	if (ns.Diff.isInterested(_diff)) {
-		aTopic.diff = _diff;
-		if (ns.Diff.needFold(_diff)) {
-			aTopic.foldedDiff = ns.Diff.foldedReadable(
-				aError.expected,
-				aError.actual
-			);
+		var expected = this._appendTypeString(aError.expected);
+		var actual = this._appendTypeString(aError.actual);
+		var _diff = ns.Diff.readable(expected, actual);
+		if (ns.Diff.isInterested(_diff)) {
+			aTopic.diff = _diff;
+			if (ns.Diff.needFold(_diff)) {
+				aTopic.foldedDiff = ns.Diff.foldedReadable(expected, actual);
+			}
+			aTopic.encodedDiff = ns.Diff.readable(expected, actual, true);
 		}
-		aTopic.encodedDiff = ns.Diff.readable(
-			aError.expected,
-			aError.actual,
-			true
-		);
-	}
-	if (!('diff' in aError)) aTopic.diff = '';
-	if (!('foldedDiff' in aError)) aTopic.foldedDiff = aError.diff;
 	},
 	_appendTypeString : function(aValue)
 	{
@@ -200,9 +193,10 @@ Report.prototype = {
 			if (e.actual)
 				aTopic.actual = this._formatAssertionValue(assertionName, e.actual, "actual");
 
-			if (e.showDiff) {
+			if (e.showDiff)
 				this._setDiffInfoFromAssertionError(aTopic, e);
-			}
+			if (!('diff' in aTopic)) aTopic.diff = '';
+			if (!('foldedDiff' in aTopic)) aTopic.foldedDiff = aTopic.diff;
 
 			aTopic.message = e.message.replace(/^\s+/, '');
 			// Add assertion name to the message
