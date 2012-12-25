@@ -42,6 +42,7 @@ const Ci = Components.interfaces;
 var ns = {};
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/utils.js', ns);
+Components.utils.import('resource://uxu-modules/diff.js', ns);
 Components.utils.import('resource://uxu-modules/test/testCase.js', ns);
 
 var utils = ns.utils;
@@ -125,6 +126,27 @@ Report.prototype = {
 	{
 		return this._topics.map(this._formatTopic, this);
 	},
+	_setDiffInfoFromAssertionError : function(aTopic, aError) {
+	if ('expectedRaw' in aError && 'actualRaw' in aError) {
+		var _diff = ns.Diff.readable(aError.expectedRaw, aError.actualRaw);
+		if (ns.Diff.isInterested(_diff)) {
+			aTopic.diff = _diff;
+			if (ns.Diff.needFold(_diff)) {
+				aTopic.foldedDiff = ns.Diff.foldedReadable(
+					aError.expectedRaw,
+					aError.actualRaw
+				);
+			}
+			aTopic.encodedDiff = ns.Diff.readable(
+				aError.expectedRaw,
+				aError.actualRaw,
+				true
+			);
+		}
+	}
+	if (!('diff' in aError)) aTopic.diff = '';
+	if (!('foldedDiff' in aError)) aTopic.foldedDiff = aError.diff;
+},
 	_formatTopic : function(aTopic)
 	{
 		if (aTopic._formatted)
@@ -145,10 +167,7 @@ Report.prototype = {
 				aTopic.expected = e.expected;
 			if (e.actual)
 				aTopic.actual = e.actual;
-			if (e.diff)
-				aTopic.diff = e.foldedDiff || e.diff;
-			if (e.encodedDiff)
-				aTopic.encodedDiff = e.encodedDiff;
+			this._setDiffInfoFromAssertionError(aTopic, e);
 			aTopic.message = e.message.replace(/^\s+/, '');
 			if (utils.hasStackTrace(e))
 				aTopic.stackTrace = utils.formatStackTraceForDisplay(e);

@@ -25,7 +25,6 @@ var Ci = Components.interfaces;
 var ns = {};
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/utils.js', ns);
-Components.utils.import('resource://uxu-modules/diff.js', ns);
 Components.utils.import('resource://uxu-modules/eventTarget.js', ns);
 
 var utils = ns.utils;
@@ -1246,21 +1245,6 @@ Assertions.prototype = {
 		error.actualRaw = results.actualRaw;
 		error.expected = results.expected;
 		error.actual = results.actual;
-		if ('expectedRaw' in results && 'actualRaw' in results) {
-			var _diff = ns.Diff.readable(error.expectedRaw, error.actualRaw);
-			if (ns.Diff.isInterested(_diff)) {
-				error.diff = _diff;
-				if (ns.Diff.needFold(_diff)) {
-					error.foldedDiff = ns.Diff.foldedReadable(error.expectedRaw,
-														      error.actualRaw);
-				}
-				error.encodedDiff = ns.Diff.readable(error.expectedRaw,
-												     error.actualRaw,
-												     true);
-			}
-		}
-		if (!('diff' in error)) error.diff = '';
-		if (!('foldedDiff' in error)) error.foldedDiff = error.diff;
 		error.message = args.reverse().join('\n');
 		throw error;
 	},
