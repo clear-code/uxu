@@ -1,0 +1,29 @@
+language: javascript
+
+env:
+  global:
+    - DISPLAY=":99.0"
+    - XRE_PROFILE_PATH="tests/uxu-test-profile"
+
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq language-pack-ja
+  - sudo apt-get install -qq thunderbird
+  - sudo apt-get install -qq pulseaudio
+  # for travis/travis-cookbooks #155
+  - sudo rm -rf /dev/shm && sudo ln -s /run/shm /dev/shm
+  - git submodule update --init --recursive
+
+before_script:
+  - make
+  - sh -e /etc/init.d/xvfb start
+  - tests/setup-extension.sh $XRE_PROFILE_PATH
+
+script:
+  - LC_ALL=ja_JP.UTF-8 tests/run-test.sh --profile=$XRE_PROFILE_PATH --quit --close-main-windows
+
+after_script:
+  - rm -rf $XRE_PROFILE_PATH
+  - firefox --version
+  - thunderbird --version
+  - sh -e /etc/init.d/xvfb stop
