@@ -130,6 +130,11 @@ Reporter.prototype = {
 			this._onAbort();
 	},
 
+	wasSuccessful : function()
+	{
+		return (this.nFailures === 0) && (this.nErrors === 0);
+	},
+
 	onStart : function(aEvent)
 	{
 		this.finished = false;

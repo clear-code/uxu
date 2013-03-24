@@ -142,8 +142,11 @@ class Runner
     @target_paths = target_paths
     @reporter_var_name = "reporter"
     @shown_result_index = 0
+    @exit_code = 0
     self.use_color = nil
   end
+
+  attr_reader :exit_code
 
   def use_color?
     @use_color
@@ -179,10 +182,15 @@ class Runner
     rescue Interrupt
       puts "Aborting..."
       abort
+      @exit_code = 1
     end
 
     show_result
     @output.puts
+
+    evaluate("#{@reporter_var_name}.wasSuccessful()", false)
+    result = read.chomp
+    @exit_code = 1 if result === "false"
   end
 
   def close_main_windows
@@ -299,6 +307,7 @@ def run(tests, options)
       puts "#{$!.class}: #{$!}"
       puts $@
     end
+    exit runner.exit_code
   end
 end
 
