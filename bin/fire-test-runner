@@ -142,11 +142,8 @@ class Runner
     @target_paths = target_paths
     @reporter_var_name = "reporter"
     @shown_result_index = 0
-    @exit_code = 0
     self.use_color = nil
   end
-
-  attr_reader :exit_code
 
   def use_color?
     @use_color
@@ -182,7 +179,6 @@ class Runner
     rescue Interrupt
       puts "Aborting..."
       abort
-      @exit_code = 1
     end
 
     show_result
@@ -190,7 +186,7 @@ class Runner
 
     evaluate("#{@reporter_var_name}.wasSuccessful()", false)
     result = read.chomp
-    @exit_code = 1 if result === "false"
+    !aborted? and result == "true"
   end
 
   def close_main_windows
@@ -296,24 +292,27 @@ class Runner
 end
 
 def run(tests, options)
+  succeeded = true
   TCPSocket.open(options.host, options.port) do |socket|
     begin
       runner = Runner.new(socket,
                           tests.collect {|test| Pathname(test).expand_path})
       runner.close_main_windows if options.close_main_windows
-      runner.run(options)
+      succeeded = runner.run(options)
       runner.quit if options.quit
     rescue SystemCallError
       puts "#{$!.class}: #{$!}"
       puts $@
+      succeeded = false
     end
-    exit runner.exit_code
   end
+  succeeded
 end
 
 n_retried = 0
+succeeded = false
 begin
-  run(tests, options)
+  succeeded = run(tests, options)
 rescue SystemCallError
   n_retried += 1
   if n_retried <= options.n_retries
@@ -331,4 +330,6 @@ rescue SystemCallError
     sleep options.wait
     retry
   end
+  succeeded = false
 end
+exit(succeeded)
