@@ -113,13 +113,13 @@ end
 parser.separator ""
 parser.on_tail("--help", "Show this message") do
   puts parser
-  exit
+  exit(true)
 end
 
 tests = parser.parse!(ARGV)
 if tests.empty?
   $stderr.puts parser
-  exit 1
+  exit(false)
 end
 
 module RubyToJS
