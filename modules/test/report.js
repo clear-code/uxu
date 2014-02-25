@@ -72,6 +72,7 @@ function Report()
 }
 
 Report.prototype = {
+	bundle : bundle, // this can be replaced
 
 	/**
 	 * The description for the context. If there is no specified value,
@@ -229,7 +230,7 @@ Report.prototype = {
 	{
 		return this._notifications = aValue.map(function(aNotification) {
 					var type = aNotification.type || 'notification';
-					var description = bundle.getFormattedString(
+					var description = this.bundle.getFormattedString(
 										'notification_message_'+type,
 										[aNotification.message]
 									) ||

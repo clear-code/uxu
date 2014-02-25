@@ -21,6 +21,7 @@ function createReports(aTestCase)
 	return [
 		(function() {
 			var r = new Report();
+			r.bundle = bundle;
 			r.addTopic({
 				result      : TestCase.prototype.RESULT_SUCCESS,
 				description : 'Success'
@@ -32,6 +33,7 @@ function createReports(aTestCase)
 		})(),
 		(function() {
 			var r = new Report();
+			r.bundle = bundle;
 			r.addTopic({
 				result      : TestCase.prototype.RESULT_SUCCESS,
 				description : 'Success with notifications'
@@ -44,6 +46,7 @@ function createReports(aTestCase)
 		})(),
 		(function() {
 			var r = new Report();
+			r.bundle = bundle;
 			r.addTopic({
 				result      : TestCase.prototype.RESULT_FAILURE,
 				description : 'Failure',
@@ -56,6 +59,7 @@ function createReports(aTestCase)
 		})(),
 		(function() {
 			var r = new Report();
+			r.bundle = bundle;
 			r.addTopic({
 				result      : TestCase.prototype.RESULT_FAILURE,
 				description : 'Failure with notifications',
@@ -69,6 +73,7 @@ function createReports(aTestCase)
 		})(),
 		(function() {
 			var r = new Report();
+			r.bundle = bundle;
 			r.addTopic({
 				result      : TestCase.prototype.RESULT_SKIPPED,
 				description : 'Skipped'
@@ -80,6 +85,7 @@ function createReports(aTestCase)
 		})(),
 		(function() {
 			var r = new Report();
+			r.bundle = bundle;
 			r.addTopic({
 				result      : TestCase.prototype.RESULT_ERROR,
 				description : 'Error',
@@ -92,6 +98,7 @@ function createReports(aTestCase)
 		})(),
 		(function() {
 			var r = new Report();
+			r.bundle = bundle;
 			r.addTopic({
 				result      : TestCase.prototype.RESULT_ERROR,
 				description : 'Error with notifications',
