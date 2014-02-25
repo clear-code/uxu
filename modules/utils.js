@@ -1747,7 +1747,7 @@ inspect : function(aObject, aIndent)
 			try {
 				// In certain cases, toString() throws
 				// Error("XrayToString called on an incompatible object")
-				return aTarget.toString();
+				return String(aTarget);
 			} catch (x) {
 				return Object.prototype.toString.call(aTarget);
 			}
@@ -1756,7 +1756,7 @@ inspect : function(aObject, aIndent)
 		if (self.isArray(aTarget)) {
 			index = inspectedObjects.length;
 			inspectedObjects.push(aTarget);
-			inspectedResults[index] = aTarget.toString();
+			inspectedResults[index] = String(aTarget);
 
 			var values = aTarget.map(function(aObject) {
 							return _inspect(aObject, aIndent);
