@@ -142,18 +142,16 @@ var log,
 
 function startUp()
 {
-	utils.setPref('general.useragent.locale', 'ja');
 }
 
 function setUp()
 {
-	utils.setPref('general.useragent.locale', 'ja');
-
 	testcase1 = new TestCase('test1');
 	testcase2 = new TestCase('test2');
 	reports1 = createReports(testcase1);
 	reports2 = createReports(testcase2);
 	log = new TestLog();
+	log.bundle = bundle;
 }
 
 function tearDown()

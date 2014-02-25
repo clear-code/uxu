@@ -102,6 +102,8 @@ TestLog.prototype = {
 		return null;
 	},
 
+	bundle : bundle, // this can be overridden
+
 	toString : function(aFormat)
 	{
 		aFormat = aFormat || this.FORMAT_DEFAULT;
@@ -139,12 +141,12 @@ TestLog.prototype = {
 	_toText : function(aFormat)
 	{
 		var result = [];
-		var testCaseSeparator = bundle.getString('log_separator_testcase');
-		var testSeparator = bundle.getString('log_separator_test');
+		var testCaseSeparator = this.bundle.getString('log_separator_testcase');
+		var testSeparator = this.bundle.getString('log_separator_test');
 		this._items.forEach(function(aLog) {
 			result.push(testCaseSeparator);
 			result.push(utils.removeParametersFromURL(utils.extractActualURL(aLog.source)));
-			result.push(bundle.getFormattedString('log_start', [aLog.title, new Date(aLog.start)]));
+			result.push(this.bundle.getFormattedString('log_start', [aLog.title, new Date(aLog.start)]));
 			result.push(testCaseSeparator);
 			var outputCount = 0;
 			aLog.topics.forEach(function(aTopic, aIndex) {
@@ -159,27 +161,27 @@ TestLog.prototype = {
 					result.push(testSeparator);
 				outputCount++;
 
-				result.push(bundle.getFormattedString('log_test_title', [aTopic.description]));
+				result.push(this.bundle.getFormattedString('log_test_title', [aTopic.description]));
 				if (aTopic.parameter) {
 					let parameter = aTopic.parameter;
 					if (parameter.length > this.MAX_PARAMETER_LENGTH_TEXT)
 						parameter = parameter.substr(0, this.MAX_PARAMETER_LENGTH_TEXT)+'...';
-					result.push(bundle.getFormattedString('log_test_parameter', [parameter]));
+					result.push(this.bundle.getFormattedString('log_test_parameter', [parameter]));
 				}
-				result.push(bundle.getFormattedString('log_test_step', [aTopic.step]));
-				result.push(bundle.getFormattedString('log_test_timestamp', [new Date(aTopic.timestamp)]));
-				result.push(bundle.getFormattedString('log_test_result', [bundle.getString('report_result_'+aTopic.result)]));
+				result.push(this.bundle.getFormattedString('log_test_step', [aTopic.step]));
+				result.push(this.bundle.getFormattedString('log_test_timestamp', [new Date(aTopic.timestamp)]));
+				result.push(this.bundle.getFormattedString('log_test_result', [this.bundle.getString('report_result_'+aTopic.result)]));
 				result.push(this._getLogTimeStr(aTopic.time));
 				if (aTopic.detailedTime && aTopic.time != aTopic.detailedTime)
 					result.push(this._getLogTimeStr(aTopic.detailedTime, true));
 				if (aTopic.message)
 					result.push(aTopic.message);
 				if (aTopic.expected)
-					result.push(bundle.getFormattedString('log_test_expected', [aTopic.expected]));
+					result.push(this.bundle.getFormattedString('log_test_expected', [aTopic.expected]));
 				if (aTopic.actual)
-					result.push(bundle.getFormattedString('log_test_actual', [aTopic.actual]));
+					result.push(this.bundle.getFormattedString('log_test_actual', [aTopic.actual]));
 				if (aTopic.diff)
-					result.push(bundle.getFormattedString('log_test_diff', [aTopic.diff]));
+					result.push(this.bundle.getFormattedString('log_test_diff', [aTopic.diff]));
 				if (aTopic.stackTrace && aTopic.stackTrace.length) {
 					result.push('');
 					result.push(aTopic.stackTrace);
@@ -197,11 +199,11 @@ TestLog.prototype = {
 			}, this);
 			result.push(testCaseSeparator);
 			if (aLog.aborted)
-				result.push(bundle.getFormattedString('log_abort_user', [new Date(aLog.finish)]));
+				result.push(this.bundle.getFormattedString('log_abort_user', [new Date(aLog.finish)]));
 			else
-				result.push(bundle.getFormattedString('log_finish', [new Date(aLog.finish)]));
+				result.push(this.bundle.getFormattedString('log_finish', [new Date(aLog.finish)]));
 			result.push(this._getLogTimeStr(aLog.time));
-			result.push(bundle.getFormattedString('log_result', [aLog.count.success, aLog.count.failure, aLog.count.error, aLog.count.skip]));
+			result.push(this.bundle.getFormattedString('log_result', [aLog.count.success, aLog.count.failure, aLog.count.error, aLog.count.skip]));
 			result.push(testCaseSeparator);
 			result.push('');
 		}, this);
@@ -209,7 +211,7 @@ TestLog.prototype = {
 			result.unshift('');
 			result.unshift(this._getLogTimeStr(this.totalTime));
 			let total = this.totalCount;
-			result.unshift(bundle.getFormattedString('all_result_statistical', [total.total, total.success, total.failure, total.error, total.skip]));
+			result.unshift(this.bundle.getFormattedString('all_result_statistical', [total.total, total.success, total.failure, total.error, total.skip]));
 			result.push('');
 		}
 		return result.join('\n');
@@ -217,14 +219,14 @@ TestLog.prototype = {
 	_getLogTimeStr : function(aTime, aDetailed)
 	{
 		var key = aDetailed ? 'log_test_detailedTime' : 'log_test_time' ;
-		return bundle.getFormattedString(key, [this._getLogTime(aTime, aDetailed)]);
+		return this.bundle.getFormattedString(key, [this._getLogTime(aTime, aDetailed)]);
 	},
 	_getLogTime : function(aTime, aDetailed)
 	{
 		var key = aDetailed ? 'log_test_detailedTime' : 'log_test_time' ;
 		var formatted = aTime;
 		if (aTime >= 1000)
-			formatted += ' '+bundle.getFormattedString(key+'_long', [Math.round(aTime / 1000)]);
+			formatted += ' '+this.bundle.getFormattedString(key+'_long', [Math.round(aTime / 1000)]);
 		return formatted;
 	},
 
@@ -266,16 +268,16 @@ TestLog.prototype = {
 	_toHTML : function()
 	{
 		var props = 'index,description,parameter,timestamp,result,time,detailedTime,error,message,expected,actual,diff,stackTrace'.split(',');
-		var headerRow = bundle.getString('log_html_header_row');
+		var headerRow = this.bundle.getString('log_html_header_row');
 		var rows = [];
 		this._items.forEach(function(aLog) {
 			var topicRows = [];
 			aLog.topics.forEach(function(aTopic) {
-				var base = bundle.getString(aTopic.exception ? 'log_html_topic_row_error' : 'log_html_topic_row' );
+				var base = this.bundle.getString(aTopic.exception ? 'log_html_topic_row_error' : 'log_html_topic_row' );
 				props.forEach(function(aProp) {
 					let string = !(aProp in aTopic) ? '' :
 							aProp == 'result' ?
-								bundle.getString('report_result_'+aTopic.result) :
+								this.bundle.getString('report_result_'+aTopic.result) :
 							aProp == 'timestamp' ?
 								new Date(aTopic.timestamp) :
 							aProp == 'time' ?
@@ -304,9 +306,9 @@ TestLog.prototype = {
 
 			var finish = new Date(aLog.finish);
 			if (aLog.aborted)
-				finish = bundle.getFormattedString('log_abort_user', [finish]);
+				finish = this.bundle.getFormattedString('log_abort_user', [finish]);
 			rows.push(
-				bundle.getFormattedString('log_html_title_row', [
+				this.bundle.getFormattedString('log_html_title_row', [
 					utils.escapeHTML(aLog.title),
 					utils.escapeHTML(aLog.source),
 					utils.escapeHTML(new Date(aLog.start)),
@@ -322,7 +324,7 @@ TestLog.prototype = {
 
 			rows = rows.concat(topicRows);
 		}, this);
-		var table = bundle.getFormattedString('log_html_table', [rows.join('')]);
+		var table = this.bundle.getFormattedString('log_html_table', [rows.join('')]);
 
 		let total = this.totalCount;
 		return utils.readFrom(utils.getRealURL('chrome://uxu/locale/log.html'), 'UTF-8')
