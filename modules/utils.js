@@ -1010,9 +1010,9 @@ formatStackTraceForDisplay : function(aException)
 	return lines;
 },
  
-lineRegExp : /@(.+?)(:\d+)?$/, 
+lineRegExp : /@(.+?)(:\d+(:\d+)?)?$/, 
 JSFrameLocationRegExp : /JS frame :: (.+) :: .+ :: line (\d+)/,
-differentSourceRegExp : /@.+includeSource=([^;,:]+)(?:;sha1hash=[^;,:]+)?:(\d+)$/i,
+differentSourceRegExp : /@.+includeSource=([^;,:]+)(?:;sha1hash=[^;,:]+)?:(\d+)(?::(\d+))?$/i,
  
 formatStackTrace : function(aException, aOptions) 
 {
@@ -1127,10 +1127,24 @@ reduceTopStackLine : function(stack)
  
 unformatStackLine : function(aLine) 
 {
-	/@(\w+:.*)?:(\d+)/.test(aLine);
+	if (/@(\w+:.*)?:(\d+):(\d+)$/.test(aLine)) {
+		return {
+			source : (RegExp.$1 || ''),
+			line   : (RegExp.$2 || ''),
+			column : (RegExp.$3 || '')
+		};
+	}
+	if (/@(\w+:.*)?:(\d+)$/.test(aLine)) {
+		return {
+			source : (RegExp.$1 || ''),
+			line   : (RegExp.$2 || ''),
+			column : ''
+		};
+	}
 	return {
-		source : (RegExp.$1 || ''),
-		line   : (RegExp.$2 || '')
+		source : '',
+		line   : '',
+		column : ''
 	};
 },
   
