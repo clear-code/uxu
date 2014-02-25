@@ -34,7 +34,7 @@ function test_contentFrames()
 	assert.equals(win.gBrowser.contentWindow, utils.content);
 	assert.equals(win.gBrowser.contentWindow, utils.contentWindow);
 
-	utils.tearDownTestWindow();
+	yield utils.tearDownTestWindow();
 
 	var frame = document.getElementById('content');
 	assert.equals(frame, utils.gBrowser);
