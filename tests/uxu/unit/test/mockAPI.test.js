@@ -218,13 +218,6 @@ function test_JsMockitoStyle_functionMock()
 			count += 10;
 		});
 	});
-	var context = {};
-	assertCallAdded(mock, function() {
-		manager.when(mock).call(context, 10).thenReturn('OK');
-	});
-	assertCallAdded(mock, function() {
-		manager.when(mock)(Mock.prototype.ANY_ONETIME).thenReturn('ANY');
-	});
 
 	assertCallRemoved(mock, function() {
 		assert.isUndefined(mock());
@@ -248,7 +241,34 @@ function test_JsMockitoStyle_functionMock()
 		assert.equals(2.9, mock(29000));
 		assert.equals(11, count);
 	});
+}
+
+function test_JsMockitoStyle_functionMock_withWrongContext()
+{
+	var manager = new MockManager();
+	var mock = new FunctionMock();
+
+	var context = {};
+	assertCallAdded(mock, function() {
+		manager.when(mock).call(context, 10).thenReturn('OK');
+	});
+
 	assertCallRaise(mock, [10], 'AssertionFailed');
+}
+
+function test_JsMockitoStyle_functionMock_withCorrectContext()
+{
+	var manager = new MockManager();
+	var mock = new FunctionMock();
+
+	var context = {};
+	assertCallAdded(mock, function() {
+		manager.when(mock).call(context, 10).thenReturn('OK');
+	});
+	assertCallAdded(mock, function() {
+		manager.when(mock)(Mock.prototype.ANY_ONETIME).thenReturn('ANY');
+	});
+
 	assertCallRemoved(mock, function() {
 		context.method = mock;
 		context.method(10);
@@ -284,20 +304,6 @@ function test_JsMockitoStyle_functionMock_withoutManager()
 			count += 10;
 		});
 	});
-	var context = {};
-	assertCallAdded(mock, function() {
-		mock.when.call(context, 10).thenReturn('OK');
-	});
-	var context2 = { method : mock };
-	assertCallAdded(mock, function() {
-		context2.method.when(11).thenReturn('OK');
-	});
-	assertCallAdded(mock, function() {
-		context2.method.when.call(context, 12).thenReturn('OK');
-	});
-	assertCallAdded(mock, function() {
-		mock.when(Mock.prototype.ANY_ONETIME).thenReturn('ANY');
-	});
 
 	assertCallRemoved(mock, function() {
 		assert.isUndefined(mock());
@@ -321,7 +327,38 @@ function test_JsMockitoStyle_functionMock_withoutManager()
 		assert.equals(2.9, mock(29000));
 		assert.equals(11, count);
 	});
+}
+
+function test_JsMockitoStyle_functionMock_withoutManager_withWrongContext()
+{
+	var mock = new FunctionMock();
+
+	var context = {};
+	assertCallAdded(mock, function() {
+		mock.when.call(context, 10).thenReturn('OK');
+	});
 	assertCallRaise(mock, [10], 'AssertionFailed');
+}
+
+function test_JsMockitoStyle_functionMock_withoutManager_withCorrectContext()
+{
+	var mock = new FunctionMock();
+
+	var context = {};
+	assertCallAdded(mock, function() {
+		mock.when.call(context, 10).thenReturn('OK');
+	});
+	var context2 = { method : mock };
+	assertCallAdded(mock, function() {
+		context2.method.when(11).thenReturn('OK');
+	});
+	assertCallAdded(mock, function() {
+		context2.method.when.call(context, 12).thenReturn('OK');
+	});
+	assertCallAdded(mock, function() {
+		mock.when(Mock.prototype.ANY_ONETIME).thenReturn('ANY');
+	});
+
 	assertCallRemoved(mock, function() {
 		context.method = mock;
 		context.method(10);
