@@ -174,11 +174,11 @@ test_setUpTearDownTestWindow.tearDown = function() {
 };
 function test_setUpTearDownTestWindow()
 {
-	utils.setUpTestWindow({ width : 290, height : 292, x : 29, y : 92 });
+	utils.setUpTestWindow({ width : 350, height : 292, x : 29, y : 92 });
 	yield 300;
 	var win = utils.getTestWindow();
 	assert.isNotNull(win);
-	assert.equals(290, win.outerWidth);
+	assert.equals(350, win.outerWidth);
 	assert.equals(292, win.outerHeight);
 	assert.equals(29, win.screenX);
 	assert.equals(92, win.screenY);
