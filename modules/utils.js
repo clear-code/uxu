@@ -980,7 +980,7 @@ formatError : function(e)
 	var lines = this.formatStackTrace(e, { onlyFile : true, onlyExternal : true, onlyTraceLine : true });
 	if (!lines || this.getPref('extensions.uxu.showInternalStacks'))
 		lines = this.formatStackTrace(e, { onlyFile : true, onlyTraceLine : true });
-	var formatted = e.toString();
+	var formatted = String(e);
 	if ('result' in e) {
 		let name = this.getErrorNameFromNSExceptionCode(e.result);
 		if (name)
@@ -1780,13 +1780,12 @@ inspect : function(aObject, aIndent)
 		}
 		else if (aTarget instanceof Ci.nsISupports || hasOwnToString(aTarget)) {
 			/* Have original toString method */
-			return aTarget.toString();
+			return String(aTarget);
 		}
 		else {
-			/* Object.prototype.toString() is not useful */
 			index = inspectedObjects.length;
 			inspectedObjects.push(aTarget);
-			inspectedResults[index] = aTarget.toString();
+			inspectedResults[index] = String(aTarget);
 
 			var names = [];
 			for (var name in aTarget) {
@@ -2047,7 +2046,7 @@ isTargetInRange : function(aTarget, aRange)
 		}
 		return false;
 	}
-	return aRange.toString().indexOf(aTarget.toString()) > -1;
+	return String(aRange).indexOf(String(aTarget)) > -1;
 },
  
 isTargetInSelection : function(aTarget, aSelection) 
