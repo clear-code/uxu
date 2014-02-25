@@ -240,7 +240,7 @@ Report.prototype = {
 						description : description,
 						stackTrace  : utils.formatStackTraceForDisplay(aNotification)
 					};
-				});
+				}, this);
 	},
 	_notifications : [],
 
