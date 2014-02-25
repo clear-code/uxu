@@ -1873,7 +1873,7 @@ isString : function(aObject)
 		aObject &&
 		typeof aObject == 'object' &&
 		aObject.constructor &&
-		aObject.constructor.toSource().indexOf('function String()') == 0
+		(aObject.constructor + '').indexOf('function String()') == 0
 	);
 },
  
@@ -1888,7 +1888,7 @@ isDate : function(aObject)
 		aObject &&
 		typeof aObject == 'object' &&
 		aObject.constructor &&
-		aObject.constructor.toSource().indexOf('function Date()') == 0
+		(aObject.constructor + '').indexOf('function Date()') == 0
 	);
 },
  
@@ -1898,7 +1898,7 @@ isRegExp : function(aObject)
 		aObject &&
 		typeof aObject == 'object' &&
 		aObject.constructor &&
-		aObject.constructor.toSource().indexOf('function RegExp()') == 0
+		(aObject.constructor + '').indexOf('function RegExp()') == 0
 	);
 },
  
