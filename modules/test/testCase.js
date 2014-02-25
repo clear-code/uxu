@@ -1059,7 +1059,7 @@ TestCase.prototype = {
 						// wait until the continuation function is called
 						while (!next.next)
 						{
-							yield;
+							yield undefined;
 						}
 						next = next.next;
 					}
@@ -1070,7 +1070,7 @@ TestCase.prototype = {
 					let now = Date.now();
 					if (now - start >= interval) {
 						start = now;
-						yield;
+						yield undefined;
 					}
 
 					aCurrent = aStates[next];

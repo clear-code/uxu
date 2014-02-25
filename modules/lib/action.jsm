@@ -1375,7 +1375,7 @@ var action;
 					let x = args.startX + (deltaX * progress);
 					let y = args.startY + (deltaY * progress);
 					this.mouseMoveAt(x, y, args.modifiers);
-					yield;
+					yield undefined;
 					if (progress == 1) break;
 				}
 			}
@@ -1522,7 +1522,7 @@ var action;
 					aOptions.screenX = x;
 					aOptions.screenY = y;
 					_this.fireMouseEvent(aFrame, aOptions);
-					yield;
+					yield undefined;
 					if (x == aToX && y == aToY) break;
 				}
 			}
