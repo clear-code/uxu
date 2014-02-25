@@ -1088,7 +1088,7 @@ formatStackTrace : function(aException, aOptions)
 		trace += aLine + '\n';
 	}, this);
 
-	return trace;
+	return trace.replace(/\s+$/, '');
 },
 
 extractActualURL : function(aURL)
