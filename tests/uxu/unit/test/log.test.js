@@ -16,6 +16,13 @@ var notificationsTemplate = [
 		  stack   : ['traceLine1', 'traceLine2'] }
 	];
 
+var errors = {
+	failure                 : new Error('Failure'),
+	failureWithNotification : new Error('Failure with notification'),
+	error                   : new Error('Error'),
+	errorWithNotification   : new Error('Error with notification')
+};
+
 function createReports(aTestCase)
 {
 	return [
@@ -36,7 +43,7 @@ function createReports(aTestCase)
 			r.bundle = bundle;
 			r.addTopic({
 				result      : TestCase.prototype.RESULT_SUCCESS,
-				description : 'Success with notifications'
+				description : 'Success with notification'
 			});
 			r.notifications = notificationsTemplate;
 			r.testCase = aTestCase;
@@ -50,7 +57,7 @@ function createReports(aTestCase)
 			r.addTopic({
 				result      : TestCase.prototype.RESULT_FAILURE,
 				description : 'Failure',
-				exception   : new Error('Failure')
+				exception   : errors.failure
 			});
 			r.testCase = aTestCase;
 			r.id    = 'success';
@@ -62,8 +69,8 @@ function createReports(aTestCase)
 			r.bundle = bundle;
 			r.addTopic({
 				result      : TestCase.prototype.RESULT_FAILURE,
-				description : 'Failure with notifications',
-				exception   : new Error('Failure')
+				description : 'Failure with notification',
+				exception   : errors.failureWithNotification
 			});
 			r.notifications = notificationsTemplate;
 			r.testCase = aTestCase;
@@ -89,7 +96,7 @@ function createReports(aTestCase)
 			r.addTopic({
 				result      : TestCase.prototype.RESULT_ERROR,
 				description : 'Error',
-				exception   : new Error('Error')
+				exception   : errors.error
 			});
 			r.testCase = aTestCase;
 			r.id    = 'success';
@@ -101,8 +108,8 @@ function createReports(aTestCase)
 			r.bundle = bundle;
 			r.addTopic({
 				result      : TestCase.prototype.RESULT_ERROR,
-				description : 'Error with notifications',
-				exception   : new Error('Error')
+				description : 'Error with notification',
+				exception   : errors.errorWithNotification
 			});
 			r.notifications = notificationsTemplate;
 			r.testCase = aTestCase;
@@ -283,7 +290,9 @@ function test_toString()
 		var url = utils.getURLFromFile(file).spec;
 		return url;
 	}
-
+	var stackTraceOptions = {
+		onlyExternal : true
+	};
 	var start = Date.now();
 	var now = start + 500;
 	var finish = now + 500;
@@ -292,7 +301,10 @@ function test_toString()
 			start : new Date(start),
 			finish : new Date(finish),
 			baseURL : baseURL,
-			testFileURL : getNormalizedSpecFromPath("log.test.js"),
+			testStackTrace_failure                 : utils.formatStackTrace(errors.failure, stackTraceOptions),
+			testStackTrace_failureWithNotification : utils.formatStackTrace(errors.failureWithNotification, stackTraceOptions),
+			testStackTrace_error                   : utils.formatStackTrace(errors.error, stackTraceOptions),
+			testStackTrace_errorWithNotification   : utils.formatStackTrace(errors.errorWithNotification, stackTraceOptions),
 			testTargetURL : getNormalizedSpecFromPath("../../../../modules/test/testCase.js")
 		};
 

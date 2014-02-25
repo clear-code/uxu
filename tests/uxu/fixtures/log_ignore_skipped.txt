@@ -11,7 +11,7 @@
 結果：成功
 所要時間：0 ミリ秒
 ----------------------------------------------------------------------
-テスト名：Success with notifications
+テスト名：Success with notification
 進度：2/0
 時刻：<%= now %>
 結果：成功
@@ -28,16 +28,16 @@ info
 所要時間：0 ミリ秒
 Failure
 
-()@<%= testFileURL %>:50,createReports([object Object])@<%= testFileURL %>:45,setUp()@<%= testFileURL %>:154
+<%= testStackTrace_failure %>
 ----------------------------------------------------------------------
-テスト名：Failure with notifications
+テスト名：Failure with notification
 進度：4/0
 時刻：<%= now %>
 結果：失敗
 所要時間：0 ミリ秒
-Failure
+Failure with notification
 
-()@<%= testFileURL %>:62,createReports([object Object])@<%= testFileURL %>:57,setUp()@<%= testFileURL %>:154
+<%= testStackTrace_failureWithNotification %>
 
 info
 
@@ -50,16 +50,16 @@ info
 所要時間：0 ミリ秒
 Error
 
-()@<%= testFileURL %>:86,createReports([object Object])@<%= testFileURL %>:81,setUp()@<%= testFileURL %>:154
+<%= testStackTrace_error %>
 ----------------------------------------------------------------------
-テスト名：Error with notifications
+テスト名：Error with notification
 進度：7/0
 時刻：<%= now %>
 結果：エラー
 所要時間：0 ミリ秒
-Error
+Error with notification
 
-()@<%= testFileURL %>:98,createReports([object Object])@<%= testFileURL %>:93,setUp()@<%= testFileURL %>:154
+<%= testStackTrace_errorWithNotification %>
 
 info
 
