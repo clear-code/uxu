@@ -6,6 +6,12 @@ var topDir = baseURL+'../../../../';
 var GreasemonkeyUtils = utils.import(topDir+'modules/test/greasemonkey.js', {}).GreasemonkeyUtils;
 
 var GMUtils;
+var lastBlankPageURI;
+
+function loadBlankPage() {
+	lastBlankPageURI = 'about:blank?'+parseInt(Math.random() * 65000);
+	return utils.loadURI(lastBlankPageURI);
+}
 
 function setUp()
 {
@@ -15,15 +21,15 @@ function setUp()
 	utils.setPref('browser.warnOnQuit', false);
 	utils.setPref('browser.warnOnRestart', false);
 
-	yield Do(utils.loadURI('about:blank'));
-	assert.equals('about:blank', content.location.href);
+	yield Do(loadBlankPage());
+	assert.equals(lastBlankPageURI, content.location.href);
 	GMUtils = new GreasemonkeyUtils(utils);
 }
 
 function tearDown()
 {
 	GMUtils.destroy();
-	yield Do(utils.loadURI('about:blank'));
+	yield Do(loadBlankPage());
 	yield Do(GMUtils.close());
 }
 
@@ -121,7 +127,7 @@ function test_getSandbox()
 		assert.isFalse(isWrapped(object));
 	}
 
-	var sandbox1 = GMUtils.getSandboxFor('about:blank');
+	var sandbox1 = GMUtils.getSandboxFor(lastBlankPageURI);
 	assert.isTrue(sandbox1);
 	assert.isTrue(sandbox1.window);
 	assert.isTrue(sandbox1.window instanceof Ci.nsIDOMWindow);
@@ -163,10 +169,10 @@ function test_getSandbox()
 	assert.isTrue(sandbox1.console);
 	assert.isFunction(sandbox1.console.log);
 
-	var sandbox2 = GMUtils.getSandboxFor('about:blank');
+	var sandbox2 = GMUtils.getSandboxFor(lastBlankPageURI);
 	assert.same(sandbox1, sandbox2);
 
-	var sandbox3 = GMUtils.getSandBoxFor('about:blank');
+	var sandbox3 = GMUtils.getSandBoxFor(lastBlankPageURI);
 	assert.same(sandbox1, sandbox3);
 
 	var sandbox4 = GMUtils.getSandboxFor('about:mozilla');
@@ -210,7 +216,7 @@ function test_GM_getValue()
 
 function test_GM_setValue()
 {
-	yield Do(GMUtils.load('about:blank'));
+	yield Do(loadBlankPage());
 	var sandboxSet = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_setValue.user.js');
 	var sandboxGet = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_getValue.user.js');
 	assert.equals(navigator.userAgent, sandboxGet.userAgent);
@@ -219,7 +225,7 @@ function test_GM_setValue()
 function test_GM_deleteValue()
 {
 	var sandboxGet;
-	yield Do(GMUtils.load('about:blank'));
+	yield Do(loadBlankPage());
 	GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_setValue.user.js');
 	sandboxGet = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_getValue.user.js');
 	assert.equals(navigator.userAgent, sandboxGet.userAgent);
@@ -230,7 +236,7 @@ function test_GM_deleteValue()
 
 function test_GM_listValues()
 {
-	yield Do(GMUtils.load('about:blank'));
+	yield Do(loadBlankPage());
 	var sandbox = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_listValues.user.js');
 	assert.equals(['userAgent', 'foo', 'bar'], sandbox.values);
 }
