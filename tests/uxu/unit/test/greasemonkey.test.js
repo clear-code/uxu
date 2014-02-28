@@ -315,7 +315,7 @@ function test_GM_getResourceURL()
 }
 
 test_GM_openInTab.tearDown = function() {
-	utils.tearDownTestWindow();
+	yield Do(utils.tearDownTestWindow());
 };
 function test_GM_openInTab()
 {
@@ -331,7 +331,7 @@ function test_GM_openInTab()
 
 
 test_listeningEvents.tearDown = function() {
-	utils.tearDownTestWindow();
+	yield Do(utils.tearDownTestWindow());
 };
 function test_listeningEvents()
 {
