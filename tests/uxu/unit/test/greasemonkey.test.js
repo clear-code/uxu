@@ -321,10 +321,11 @@ function test_GM_openInTab()
 {
 	yield Do(GMUtils.open('about:'));
 	var win = utils.getTestWindow();
-	var tabs = win.gBrowser.mTabs;
+	var tabs = win.gBrowser.visibleTabs || win.gBrowser.mTabs;
 	var count = tabs.length;
 	GMUtils.GM_openInTab('about:config');
 	yield 200;
+	tabs = win.gBrowser.visibleTabs || win.gBrowser.mTabs; // update "tabs", because visibleTabs is not live.
 	assert.equals(count+1, tabs.length);
 	assert.equals('about:config', tabs[tabs.length-1].linkedBrowser.currentURI.spec);
 }
