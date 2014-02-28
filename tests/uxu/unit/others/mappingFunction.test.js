@@ -14,7 +14,7 @@ function testMapping()
 	assertMapped('http://localhost:4445/notfound.html', false);
 	assertNotMapped('about:blank');
 	// http://www.example.com/ is redirected to the following URL
-	assertNotMapped('http://www.iana.org/domains/example/');
+	assertNotMapped('http://www.iana.org/domains/reserved');
 	assertNotMapped('about:blank');
 	assertMapped('http://www.google.com/', true);
 
