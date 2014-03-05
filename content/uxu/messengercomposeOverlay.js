@@ -78,7 +78,7 @@ window.addEventListener('DOMContentLoaded', function() {
 	let (source = window.ComposeStartup.toSource()) {
 		if (source.indexOf('gMsgCompose = ') > -1) {
 			eval('window.ComposeStartup = '+source.replace(
-				/(gMsgCompose) = ((?:sMsgComposeService|composeSvc).(?:I|i)nitCompose\((?:window, params|params, window, editorElement.docShell)\);)/,
+				/(gMsgCompose) = ((?:sMsgComposeService|composeSvc|MailServices.compose).(?:I|i)nitCompose\((?:(?:window, )?params|params, window, editorElement.docShell)\);)/,
 				'$1 = $2 if (!("_real" in $1)) { $1 = new UXUMailComposeProxy($1); }'
 			));
 		}
