@@ -1851,7 +1851,7 @@ inspectType : function(aObject)
 inspectDOMNode : function(aNode) 
 {
 	var ownerWindowSerializer = aNode.ownerDocument.defaultView.XMLSerializer;
-	return (new ownerWindowSerializer()).serializeToString(aNode);
+	return (new ownerWindowSerializer()).serializeToString(aNode).replace(/ +\/>/g, '/>');
 },
  
 p : function() 
