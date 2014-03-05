@@ -179,7 +179,6 @@ function testAddressTypes()
 function testDummyRows()
 {
 	var nodes = $X('//*[@id="addressingWidget"]/descendant::*[@class="dummy-row"]', composeWindow.document);
-	assert.equals(3, nodes.length);
 	assert.equals(nodes, compose.dummyRows);
 	assert.equals(nodes[0], compose.firstDummyRow);
 
