@@ -15,7 +15,7 @@
    - The Original Code is UxU - UnitTest.XUL.
    -
    - The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
-   - Portions created by the Initial Developer are Copyright (C) 2010
+   - Portions created by the Initial Developer are Copyright (C) 2010-2014
    - the Initial Developer. All Rights Reserved.
    -
    - Contributor(s): YUKI "Piro" Hiroshi <shimoda@clear-code.com>
@@ -50,6 +50,21 @@
 				label="&uxu.tools.runner.label;"
 				oncommand="openUxURunner()"/>
 			<menuitem id="tools-uxu-menuitem-config"
+				label="&uxu.tools.config.label;"
+				oncommand="openUXUConfig()"/>
+		</menupopup>
+	</menu>
+</menupopup>
+
+<menupopup id="appmenu_taskPopup">
+	<menu id="appmenu-uxu-menu"
+		insertbefore="devToolsSeparator"
+		label="&uxu.tools.menu.label;">
+		<menupopup>
+			<menuitem id="appmenu-uxu-menuitem-runner"
+				label="&uxu.tools.runner.label;"
+				oncommand="openUxURunner()"/>
+			<menuitem id="appmenu-uxu-menuitem-config"
 				label="&uxu.tools.config.label;"
 				oncommand="openUXUConfig()"/>
 		</menupopup>
