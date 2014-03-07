@@ -1,19 +1,19 @@
 /**
  * @fileOverview User Action Emulator for Firefox 3.5 or later 
  * @author       ClearCode Inc.
- * @version      3
+ * @version      4
  *
  * @example
- *   Components.utils.import('resource://uxu-modules/lib/action.jsm');
+ *   Components.utils.import('resource://my-modules/action.jsm');
  *   action.clickOn(someDOMElement);
  *   // See: http://www.clear-code.com/software/uxu/helpers.html.en#actions
  *   // (ja: http://www.clear-code.com/software/uxu/helpers.html#actions )
  *
  * @license
- *   The MIT License, Copyright (c) 2010-2011 ClearCode Inc.
- *   http://www.clear-code.com/repos/svn/js-codemodules/license.txt
- * @url http://www.clear-code.com/repos/svn/js-codemodules/action.jsm
- * @url http://www.clear-code.com/repos/svn/js-codemodules/action_tests/
+ *   The MIT License, Copyright (c) 2010-2014 ClearCode Inc.
+ *   https://github.com/clear-code/js-codemodules/blob/master/license.txt
+ * @url https://github.com/clear-code/js-codemodules/blob/master/action.jsm
+ * @url https://github.com/clear-code/js-codemodules/blob/master/action_tests/
  */
  
 if (typeof window == 'undefined' ||
@@ -21,16 +21,16 @@ if (typeof window == 'undefined' ||
 	this.EXPORTED_SYMBOLS = ['action'];
 
 // This depends on boxObject.js
-// http://www.cozmixng.org/repos/piro/fx3-compatibility-lib/trunk/boxObject.js
+// https://github.com/piroor/fxaddonlibs/blob/master/boxObject.js
 const BOX_OBJECT_MODULE = 'resource://uxu-modules/lib/boxObject.js';
 // This depends on jstimer.jsm
-// http://www.cozmixng.org/repos/piro/fx3-compatibility-lib/trunk/jstimer.jsm
+// https://github.com/piroor/fxaddonlibs/blob/master/jstimer.jsm
 const TIMER_MODULE = 'resource://uxu-modules/lib/jstimer.jsm';
 
 // var namespace;
 if (typeof namespace == 'undefined') {
 	// If namespace.jsm is available, export symbols to the shared namespace.
-	// See: http://www.cozmixng.org/repos/piro/fx3-compatibility-lib/trunk/namespace.jsm
+	// See: https://github.com/piroor/fxaddonlibs/blob/master/namespace.jsm
 	try {
 		let ns = {};
 		Components.utils.import('resource://uxu-modules/lib/namespace.jsm', ns);
