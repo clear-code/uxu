@@ -71,6 +71,13 @@
 	</menu>
 </menupopup>
 
+<menupopup id="menuWebDeveloperPopup">
+	<menuitem id="webDeveloper-uxu-menuitem-runner"
+		insertbefore="devToolsEndSeparator"
+		label="&uxu.tools.runner.label.full;"
+		oncommand="openUxURunner()"/>
+</menupopup>
+
 
 </overlay>
 

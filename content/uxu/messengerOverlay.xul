@@ -43,7 +43,7 @@
 
 <menupopup id="taskPopup">
 	<menu id="tools-uxu-menu"
-		insertbefore="devToolsSeparator"
+		insertafter="tasksMenuAfterDeleteSeparator"
 		label="&uxu.tools.menu.label;">
 		<menupopup>
 			<menuitem id="tools-uxu-menuitem-runner"
@@ -58,7 +58,7 @@
 
 <menupopup id="appmenu_taskPopup">
 	<menu id="appmenu-uxu-menu"
-		insertbefore="devToolsSeparator"
+		insertafter="taskMenuAfterDeleteSeparator"
 		label="&uxu.tools.menu.label;">
 		<menupopup>
 			<menuitem id="appmenu-uxu-menuitem-runner"
