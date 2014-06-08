@@ -29,15 +29,13 @@ function assertMapped(aURI, aMapToFile)
 	}
 
 	function assertScriptExecuted() {
-		// for example:
-		// Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.9.0.10) Gecko/2009042316 Firefox/3.0.10 (.NET CLR 3.5.30729)
-		// Mozilla/5.0 (Windows NT 6.1; rv:2.0b5pre) Gecko/20100824 Minefield/4.0b5pre
-		var regexp = /Mozilla\/([\.0-9]+) \((?:(?:[^;]*); (?:[UI]*); )?([^;]*); (?:(?:[^;]*); )?rv:([^\)]+)\) Gecko\/([\.0-9]+)\s+(.+)/;
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Gecko_user_agent_string_reference
+		var regexp = /Mozilla\/([\.0-9]+) \((?:[^;]+;\s+)+rv:([^\)]+)\) Gecko\/([\.0-9]+)\s+(.+)/;
 		assert.match(regexp, $('script').textContent);
 
 		var match = $('script').textContent.match(regexp);
 		assert.equals('5.0', match[1]);
-		assert.match(/^[0-9]+\.[0-9]+([ab]([0-9]+)?(pre)?)?/, match[3]);
+		assert.match(/^[0-9]+\.[0-9]+([ab]([0-9]+)?(pre)?)?/, match[2]);
 	}
 
 	assertScriptExecuted();
