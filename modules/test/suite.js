@@ -405,9 +405,10 @@ setUpTestWindow : function(aContinuation, aOptions)
 setUpTestWindowInternal : function(aContinuation, aOptions) 
 {
 	var loadedFlag = { value : false };
-	if (this.getTestWindow(aOptions)) {
+	var win = this.getTestWindow(aOptions);
+	if (win) {
 		if (aContinuation) aContinuation("ok");
-		loadedFlag.value = true;
+		loadedFlag.value = win;
 	}
 	else {
 		this.openTestWindow(
@@ -415,7 +416,7 @@ setUpTestWindowInternal : function(aContinuation, aOptions)
 			function(win) {
 				ns.setTimeout(function() {
 					if (aContinuation) aContinuation('ok');
-					loadedFlag.value = true;
+					loadedFlag.value = win;
 				}, 0);
 			}
 		);

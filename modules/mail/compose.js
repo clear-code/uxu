@@ -173,9 +173,12 @@ Compose.prototype = {
 	setUp : function() 
 	{
 		return utils.doIteration((function(aSelf) {
-			yield aSelf._suite.setUpTestWindow();
+			var openedTestWindow = aSelf._suite.setUpTestWindow();
+			yield openedTestWindow;
 
-			var mainWindow = aSelf._suite.getTestWindow();
+			//XXX this fails sometimes. why??? we must fix this issue...
+			// var mainWindow = aSelf._suite.getTestWindow();
+			var mainWindow = openedTestWindow.value;
 			yield (function() {
 					return 'MsgNewMessage' in mainWindow;
 				});
