@@ -15,7 +15,7 @@
  * The Original Code is UxU - UnitTest.XUL.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2010
+ * Portions created by the Initial Developer are Copyright (C) 2010-2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <shimoda@clear-code.com>
@@ -40,12 +40,37 @@ if (typeof window == 'undefined')
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
+Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
+
 var ns = {};
 Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/test/action.js', ns);
 var utils = ns.utils;
 
 const ADDRESS_TYPE_FRAGMENT = '//*[@id="addressingWidget"]/descendant::*[local-name()="menulist" and starts-with(@value, "addr_")]';
+
+function FilesEnumerator(aFiles)
+{
+	this.files = aFiles;
+}
+FilesEnumerator.prototype = {
+	QueryInterface : XPCOMUtils.generateQI([ 
+		Ci.nsISimpleEnumerator
+	]),
+
+	hasMoreElements : function()
+	{
+		return this.files.length > 0;
+	},
+
+	getNext : function(aInterface)
+	{
+		var file = this.files.shift();
+		if (aInterface)
+			file = file.QueryInterface(aInterface);
+		return file;
+	}
+};
 	
 function Compose(aMailUtils, aSuite) 
 {
@@ -316,7 +341,9 @@ Compose.prototype = {
 		aFile = this._suite.normalizeToFile(aFile);
 		if (!aFile || !aFile.exists()) return;
 		aComposeWindow = this._ensureWindowReady(aComposeWindow);
-		if ('AddFileAttachment' in aComposeWindow) { // Thunderbird 3 or later
+		if ('AttachFiles' in aComposeWindow) { // Thunderbird 31 or later
+			aComposeWindow.AttachFiles(new FilesEnumerator([aFile]));
+		} else if ('AddFileAttachment' in aComposeWindow) { // Thunderbird 3 or later
 			aComposeWindow.AddFileAttachment(aFile);
 		}
 		else { // Thunderbird 2
