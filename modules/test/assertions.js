@@ -502,18 +502,18 @@ Assertions.prototype = {
 			case 'string':
 			case 'number':
 				return (
-					aActual.name == aExpected ||
-					aActual.message == aExpected ||
-					aActual.name+': '+aActual.message == aExpected ||
+					aActual.name == String(aExpected) ||
+					aActual.message == String(aExpected) ||
+					aActual.name+': '+aActual.message == String(aExpected) ||
 					aActual.result == aExpected ||
-					(NSErrorName && NSErrorName == aExpected)
+					(NSErrorName !== null && NSErrorName == String(aExpected))
 				);
 
 			case 'function':
 				return aActual instanceof aExpected;
 
 			case 'object':
-				if (!aExpected)
+				if (aExpected === null)
 					return false;
 				switch (Object.prototype.toString.apply(aExpected))
 				{
@@ -523,7 +523,7 @@ Assertions.prototype = {
 							aExpected.test(aActual.message) ||
 							aExpected.test(aActual.name+': '+aActual.message) ||
 							aExpected.test(aActual.result) ||
-							(NSErrorName && aExpected.test(NSErrorName))
+							(NSErrorName !== null && aExpected.test(NSErrorName))
 						);
 
 					default:
