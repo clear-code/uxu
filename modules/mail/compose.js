@@ -198,7 +198,7 @@ Compose.prototype = {
 	tearDown : function() 
 	{
 		if (this._close()) {
-			this._suite.tearDownTestWindow();
+			return this._suite.tearDownTestWindow();
 		}
 	},
 	

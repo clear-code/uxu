@@ -384,7 +384,12 @@ openTestWindow : function(aOptions, aCallback)
 closeTestWindow : function(aOptions)
 {
 	var win = this.getTestWindow(aOptions);
-	if (win) win.close();
+	if (win) {
+	  win.close();
+	  return (function() {
+	    return win.closed;
+	  });
+	}
 },
  
 setUpTestWindow : function(aContinuation, aOptions) 

@@ -30,7 +30,7 @@ function setUp()
 
 function tearDown()
 {
-	utils.tearDownTestWindow();
+	yield Do(utils.tearDownTestWindow());
 	if (compose) {
 		compose.destroy();
 	}
@@ -40,7 +40,7 @@ function tearDown()
 
 testWindowOperations.setUp = function()
 {
-	compose.tearDown();
+	yield Do(compose.tearDown());
 }
 function testWindowOperations()
 {
@@ -58,7 +58,7 @@ function testWindowOperations()
 	assert.equals(composeWindow, compose.windows[0]);
 
 	assert.isFunction(compose.tearDown);
-	compose.tearDown();
+	yield Do(compose.tearDown());
 
 	assert.isNull(utils.getTestWindow());
 	assert.isNull(compose.window);
@@ -70,7 +70,7 @@ function testWindowOperations()
 	assert.isNotNull(compose.window);
 
 	assert.isFunction(compose.tearDownAll);
-	compose.tearDownAll();
+	yield Do(compose.tearDownAll());
 
 	assert.isNull(utils.getTestWindow());
 	assert.isNull(compose.window);
@@ -96,7 +96,7 @@ function testAddressFields()
 	assert.equals(nodes[0], compose.firstAddressField);
 	assert.equals(nodes[1], compose.lastAddressField);
 
-	compose.tearDown();
+	yield Do(compose.tearDown());
 	assert.isNull(compose.window);
 	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.addressFields;
@@ -130,7 +130,7 @@ function testBlankAddressFields()
 	assert.equals(fields[1], compose.firstBlankAddressField);
 	assert.equals(fields[1], compose.lastBlankAddressField);
 
-	compose.tearDown();
+	yield Do(compose.tearDown());
 	assert.isNull(compose.window);
 	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.blankAddressFields;
@@ -163,7 +163,7 @@ function testAddressTypes()
 	assert.equals(nodes, compose.addressTypes);
 	assert.equals(nodes[1], compose.lastAddressType);
 
-	compose.tearDown();
+	yield Do(compose.tearDown());
 	assert.isNull(compose.window);
 	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.addressTypes;
@@ -182,7 +182,7 @@ function testDummyRows()
 	assert.equals(nodes, compose.dummyRows);
 	assert.equals(nodes[0], compose.firstDummyRow);
 
-	compose.tearDown();
+	yield Do(compose.tearDown());
 	assert.isNull(compose.window);
 	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.dummyRows;
@@ -252,7 +252,7 @@ function testRecipients()
 		compose.recipients
 	);
 
-	compose.tearDown();
+	yield Do(compose.tearDown());
 	assert.isNull(compose.window);
 	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.recipients;
@@ -268,7 +268,7 @@ function testSubject()
 	assert.equals('test subject', compose.subject);
 	assert.equals('test subject', field.value);
 
-	compose.tearDown();
+	yield Do(compose.tearDown());
 	assert.isNull(compose.window);
 	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.subject;
@@ -333,7 +333,7 @@ function testBody()
 		assert.equals('<BR/>', utils.inspectDOMNode(body.childNodes[2]));
 	assert.equals('hoge', utils.inspectDOMNode(body.childNodes[3]));
 
-	compose.tearDown();
+	yield Do(compose.tearDown());
 	assert.isNull(compose.window);
 	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.body;
@@ -363,7 +363,7 @@ function testAttachments()
 	assert.equals(utils.getFilePathFromURLSpec(baseURL+'utils.test.js'), attachments[1].path);
 	assert.equals(utils.getFilePathFromURLSpec(baseURL+'overlay.test.js'), attachments[2].path);
 
-	compose.tearDown();
+	yield Do(compose.tearDown());
 	assert.isNull(compose.window);
 	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.attachments;
