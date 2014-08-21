@@ -344,8 +344,9 @@ Compose.prototype = {
 		aFile = this._suite.normalizeToFile(aFile);
 		if (!aFile || !aFile.exists()) return;
 		aComposeWindow = this._ensureWindowReady(aComposeWindow);
-		if ('AttachFiles' in aComposeWindow) { // Thunderbird 31 or later
-			aComposeWindow.AttachFiles(new FilesEnumerator([aFile]));
+		if ('AddAttachments' in aComposeWindow &&
+			'FileToAttachment' in aComposeWindow) { // Thunderbird 31 or later
+			aComposeWindow.AddAttachments([aComposeWindow.FileToAttachment(aFile)]);
 		} else if ('AddFileAttachment' in aComposeWindow) { // Thunderbird 3 or later
 			aComposeWindow.AddFileAttachment(aFile);
 		}
