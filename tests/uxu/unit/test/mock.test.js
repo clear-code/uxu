@@ -559,7 +559,7 @@ function test_setterMock_assert()
 }
 
 
-function test_createMock()
+function test_createMockNativeObject()
 {
 	var mock = new Mock('window', window);
 	assert.raises(
@@ -571,8 +571,11 @@ function test_createMock()
 			mock.alert(0);
 		}
 	);
+}
 
-	mock = new Mock('mock array', []);
+function test_createMockArray()
+{
+	var mock = new Mock('mock array', []);
 	assert.raises(
 		bundle.getFormattedString(
 			'mock_unexpected_call',
