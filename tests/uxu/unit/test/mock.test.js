@@ -561,14 +561,14 @@ function test_setterMock_assert()
 
 function test_createMockNativeObject()
 {
-	var mock = new Mock('window', window);
+	var mock = new Mock('document', content.document);
 	assert.raises(
 		bundle.getFormattedString(
 			'mock_unexpected_call',
-			['window', 'alert', utils.inspect([0])]
+			['document', 'write', utils.inspect([0])]
 		),
 		function() {
-			mock.alert(0);
+			mock.write(0);
 		}
 	);
 }
