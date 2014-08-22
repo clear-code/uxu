@@ -170,7 +170,7 @@ abort : function()
 __noSuchMethod__ : function(aName, aArgs)
 {
 	if (!(aName in this._real)) {
-		throw 'MailComposeProxy: the property "'+aName+'" is undefined.';
+		throw new Error('MailComposeProxy: the property "'+aName+'" is undefined.');
 	}
 	return this._real[aName].apply(this._real, aArgs);
 }
