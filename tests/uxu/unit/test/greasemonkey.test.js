@@ -74,8 +74,8 @@ function test_openAndClose()
 	var retVal = GMUtils.open('about:');
 	assert.isTrue(retVal.value);
 	assert.isNotNull(retVal.window);
-	assert.isTrue(retVal.window instanceof Ci.nsIDOMWindow);
-	assert.isTrue(retVal.window instanceof Ci.nsIDOMChromeWindow);
+	assert.isTrue(retVal.window instanceof retVal.window.Window);
+	assert.isTrue(retVal.window instanceof retVal.window.ChromeWindow);
 	assert.equals('about:', retVal.window.content.location.href);
 
 	GMUtils.close();
@@ -104,8 +104,8 @@ function test_openAndClose_async()
 	yield 100;
 	assert.isTrue(retVal.value);
 	assert.isNotNull(retVal.window);
-	assert.isTrue(retVal.window instanceof Ci.nsIDOMWindow);
-	assert.isTrue(retVal.window instanceof Ci.nsIDOMChromeWindow);
+	assert.isTrue(retVal.window instanceof retVal.window.Window);
+	assert.isTrue(retVal.window instanceof retVal.window.ChromeWindow);
 	assert.equals('about:', retVal.window.content.location.href);
 
 	GMUtils.close();
@@ -130,10 +130,10 @@ function test_getSandbox()
 	var sandbox1 = GMUtils.getSandboxFor(lastBlankPageURI);
 	assert.isTrue(sandbox1);
 	assert.isTrue(sandbox1.window);
-	assert.isTrue(sandbox1.window instanceof Ci.nsIDOMWindow);
+	assert.isTrue(sandbox1.window instanceof sandbox1.window.Window);
 	assertWrapped(sandbox1.window);
 	assert.isTrue(sandbox1.unsafeWindow);
-	assert.isTrue(sandbox1.unsafeWindow instanceof Ci.nsIDOMWindow);
+	assert.isTrue(sandbox1.unsafeWindow instanceof sandbox1.window.Window);
 	assertNotWrapped(sandbox1.unsafeWindow);
 
 	assert.same(sandbox1.window.wrappedJSObject, sandbox1.unsafeWindow);
@@ -151,7 +151,7 @@ function test_getSandbox()
 	assert.isDefined(sandbox1.unsafeWindow.hoge);
 
 	assert.isTrue(sandbox1.document);
-	assert.isTrue(sandbox1.document instanceof Ci.nsIDOMDocument);
+	assert.isTrue(sandbox1.document instanceof sandbox1.window.Document);
 	assertWrapped(sandbox1.document);
 	assert.same(sandbox1.unsafeWindow.document, sandbox1.document.wrappedJSObject);
 
@@ -288,7 +288,7 @@ function test_GM_addStyle()
 	yield Do(GMUtils.load('about:'));
 	var body = content.document.body;
 	assert.isTrue(body);
-	assert.isTrue(body instanceof Ci.nsIDOMNode);
+	assert.isTrue(body instanceof content.Node);
 	var style = content.getComputedStyle(body, null);
 	assert.notEquals('red', style.getPropertyValue('color'));
 	GMUtils.GM_addStyle(content.document, '* { color: rgb(255, 0, 0) !important; }');
