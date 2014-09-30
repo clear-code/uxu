@@ -1,7 +1,7 @@
 /**
- * @fileOverview User Action Emulator for Firefox 3.5 or later 
+ * @fileOverview User Action Emulator for Firefox 31 or later 
  * @author       ClearCode Inc.
- * @version      4
+ * @version      6
  *
  * @example
  *   Components.utils.import('resource://my-modules/action.jsm');
@@ -134,7 +134,7 @@ var action;
 		getZoom : function(aFrame) 
 		{
 			if (!aFrame ||
-				!(aFrame instanceof Ci.nsIDOMWindow))
+				!this._isDOMWindow(aFrame))
 				throw new Error('action.getZoom::['+aFrame+'] is not a frame!');
 			var markupDocumentViewer = aFrame.top
 					.QueryInterface(Ci.nsIInterfaceRequestor)
@@ -148,6 +148,35 @@ var action;
 /* mouse event */ 
 	
 // utils 
+		_isDOMWindow : function(aTarget)
+		{
+			return (
+				aTarget &&
+				typeof aTarget == 'object' &&
+				typeof aTarget.Window == 'function' &&
+				aTarget instanceof aTarget.Window
+			);
+		},
+		_isDOMElement : function(aTarget)
+		{
+			return (
+				aTarget &&
+				typeof aTarget == 'object' &&
+				aTarget.ownerDocument &&
+				typeof aTarget.ownerDocument.defaultView.Element == 'function' &&
+				aTarget instanceof aTarget.ownerDocument.defaultView.Element
+			);
+		},
+		_isDOMXULElement : function(aTarget)
+		{
+			return (
+				aTarget &&
+				typeof aTarget == 'object' &&
+				aTarget.ownerDocument &&
+				typeof aTarget.ownerDocument.defaultView.XULElement == 'function' &&
+				aTarget instanceof aTarget.ownerDocument.defaultView.XULElement
+			);
+		},
 	
 		/**
 		 * Returns given options as a normalized hash for fireMouseEvent and
@@ -259,9 +288,9 @@ var action;
 						y = aArg;
 				}
 				else if (aArg) {
-					if (aArg instanceof Ci.nsIDOMWindow)
+					if (this._isDOMWindow(aArg))
 						w = aArg;
-					else if (aArg instanceof Ci.nsIDOMElement)
+					else if (this._isDOMElement(aArg)
 						element = aArg;
 					else if (modifierNames.some(function(aName) {
 							return aName in aArg;
@@ -494,6 +523,7 @@ var action;
 		 * @see action.leftMouseupOn (alias)
 		 */
 		mouseUpOn : function() 
+
 		{
 			var options = this._getMouseOptionsFor('mouseup', 0, arguments);
 			this.fireMouseEventOnElement(options.element, options);
@@ -850,7 +880,7 @@ var action;
 		fireMouseEvent : function(aFrame, aOptions) 
 		{
 			if (!aFrame ||
-				!(aFrame instanceof Ci.nsIDOMWindow))
+				!this._isDOMWindow(aFrame))
 				throw new Error('action.fireMouseEvent::['+aFrame+'] is not a frame!');
 
 			if (!aOptions) aOptions = {};
@@ -863,7 +893,7 @@ var action;
 
 			var win = this.getFrameAt(aFrame, screenX, screenY);
 			if (!win ||
-				!(win instanceof Ci.nsIDOMWindow))
+				!this._isDOMWindow(win))
 				throw new Error('action.fireMouseEvent::there is no frame at ['+screenX+', '+screenY+']!');
 
 			var node = this.getElementFromScreenPoint(aFrame, screenX, screenY);
@@ -998,7 +1028,7 @@ var action;
 		fireMouseEventOnElement : function(aElement, aOptions) 
 		{
 			if (!aElement ||
-				!(aElement instanceof Ci.nsIDOMElement))
+				!this._isDOMElement(aElement))
 				throw new Error('action.fireMouseEventOnElement::['+aElement+'] is not an element!');
 
 			var utils = this._getWindowUtils(aElement.ownerDocument.defaultView);
@@ -1013,6 +1043,20 @@ var action;
 
 			var detail = 1;
 			var options, event;
+			var mousedownOptions = Object.create(aOptions, {
+					type   : {
+						writable     : true,
+						configurable : true,
+						enumerable   : true,
+						value        : 'mousedown'
+					},
+					detail : {
+						writable     : true,
+						configurable : true,
+						enumerable   : true,
+						value        : 'detail'
+					},
+				});
 			switch (aOptions.type)
 			{
 				case 'mousemove':
@@ -1021,22 +1065,14 @@ var action;
 				case 'mouseup':
 					break;
 				case 'dblclick':
-					options = {
-						type      : 'mousedown',
-						detail    : detail,
-						__proto__ : aOptions
-					};
+					options = mousedownOptions;
 					this.fireMouseEventOnElement(aElement, options);
 					options.type = 'mouseup';
 					this.fireMouseEventOnElement(aElement, options);
 					detail++;
 				case 'click':
 				default:
-					options = {
-						type      : 'mousedown',
-						detail    : detail,
-						__proto__ : aOptions
-					};
+					options = mousedownOptions;
 					this.fireMouseEventOnElement(aElement, options);
 					options.type = 'mouseup';
 					this.fireMouseEventOnElement(aElement, options);
@@ -1070,7 +1106,7 @@ var action;
 		_createMouseEventOnElement : function(aElement, aOptions) 
 		{
 			if (!aElement ||
-				!(aElement instanceof Ci.nsIDOMElement))
+				!this._isDOMElement(aElement))
 				throw new Error('action._createMouseEventOnElement::['+aElement+'] is not an element!');
 
 			if (!aOptions) aOptions = {};
@@ -1254,7 +1290,7 @@ var action;
 					}
 				}
 				else if (aArg) {
-					if (aArg instanceof Ci.nsIDOMElement) {
+					if (this._isDOMElement(aArg)) {
 						if (selement === void(0))
 							selement = aArg;
 						else if (eelement === void(0))
@@ -1664,7 +1700,7 @@ var action;
 					}
 				}
 				else if (aArg) {
-					if (aArg instanceof Ci.nsIDOMElement)
+					if (this._isDOMElement(aArg))
 						element = aArg;
 					else if (modifierNames.some(function(aName) {
 							return aName in aArg;
@@ -1790,10 +1826,10 @@ var action;
 		fireKeyEventOnElement : function(aElement, aOptions) 
 		{
 			if (!aElement ||
-				!(aElement instanceof Ci.nsIDOMElement))
+				!this._isDOMElement(aElement))
 				throw new Error('action.fireKeyEventOnElement::['+aElement+'] is not an element!');
 
-			if (aElement instanceof Ci.nsIDOMXULElement) {
+			if (this._isDOMXULElement(aElement)) {
 				let dispatcher = this._getXULKeyEventDispatcher(aElement);
 				if (!dispatcher || dispatcher.getAttribute('disabled') == 'true')
 					return;
@@ -1804,7 +1840,7 @@ var action;
 
 			if (aElement.localName == 'textbox' &&
 				'inputField' in aElement &&
-				aElement.inputField instanceof Ci.nsIDOMElement)
+				this._isDOMElement(aElement.inputField))
 				aElement = aElement.inputField;
 
 			var doc = this._getDocumentFromEventTarget(aElement);
@@ -1866,7 +1902,7 @@ var action;
 		_createKeyEventOnElement : function(aElement, aOptions) 
 		{
 			if (!aElement ||
-				!(aElement instanceof Ci.nsIDOMElement))
+				!this._isDOMElement(aElement))
 				throw new Error('action._createKeyEventOnElement::['+aElement+'] is not an element!');
 
 			if (!aOptions) aOptions = {};
@@ -1945,7 +1981,7 @@ var action;
 		fireXULCommandEvent : function(aFrame, aOptions) 
 		{
 			if (!aFrame ||
-				!(aFrame instanceof Ci.nsIDOMWindow))
+				!this._isDOMWindow(aFrame))
 				throw new Error('action.fireXULCommandEvent::['+aFrame+'] is not a frame!');
 
 			if (!aOptions) aOptions = {};
@@ -1980,7 +2016,7 @@ var action;
 		fireXULCommandEventOnElement : function(aElement, aOptions) 
 		{
 			if (!aElement ||
-				!(aElement instanceof Ci.nsIDOMElement))
+				!this._isDOMElement(aElement))
 				throw new Error('action.fireXULCommandEventOnElement:['+aElement+'] is not an element!');
 
 			aElement = this._getXULCommandEventDispatcher(aElement);
@@ -2231,7 +2267,7 @@ var action;
 					input = aArg;
 				}
 				else if (aArg) {
-					if (aArg instanceof Ci.nsIDOMElement)
+					if (this._isDOMElement(aArg))
 						element = aArg;
 				}
 				return (input !== void(0) && element);
@@ -2359,7 +2395,7 @@ var action;
 			if (!aElement) {
 				throw new Error('action.inputTextToField::no target!');
 			}
-			else if (aElement instanceof Ci.nsIDOMElement) {
+			else if (this._isDOMElement(aElement)) {
 				if (aElement.localName != 'textbox' &&
 					!(aElement instanceof Ci.nsIDOMNSEditableElement))
 					throw new Error('action.inputTextToField::['+aElement+'] is not an input field!');
@@ -2475,7 +2511,7 @@ var action;
 						y = aArg;
 				}
 				else if (aArg) {
-					if (aArg instanceof Ci.nsIDOMWindow)
+					if (this._isDOMWindow(aArg))
 						w = aArg;
 				}
 				return (x !== void(0) && y !== void(0));
@@ -2509,7 +2545,7 @@ var action;
 		{
 			var [aFrame, aScreenX, aScreenY] = this._getFrameAndScreenPointFromArguments.apply(this, arguments);
 			if (!aFrame ||
-				!(aFrame instanceof Ci.nsIDOMWindow))
+				!this._isDOMWindow(aFrame))
 				throw new Error('action.getElementFromScreenPoint::['+aFrame+'] is not a frame!');
 
 			var popup = this._getPopupElementAt(aFrame, aScreenX, aScreenY);
@@ -2659,7 +2695,7 @@ var action;
 		{
 			var [aFrame, aScreenX, aScreenY] = this._getFrameAndScreenPointFromArguments.apply(this, arguments);
 			if (!aFrame ||
-				!(aFrame instanceof Ci.nsIDOMWindow))
+				!this._isDOMWindow(aFrame))
 				throw new Error('action.getFrameAt::['+aFrame+'] is not a frame!');
 
 			var elem = this.getElementAt(aFrame, aScreenX, aScreenY);
@@ -2705,7 +2741,7 @@ var action;
 		_calculateClientPointFromScreenPoint : function(aFrame, aScreenX, aScreenY) 
 		{
 			if (!aFrame ||
-				!(aFrame instanceof Ci.nsIDOMWindow))
+				!this._isDOMWindow(aFrame))
 				throw new Error('action._calculateClientPointFromScreenPoint::['+aFrame+'] is not a frame!');
 
 			var box = this.getBoxObjectFor(aFrame.document.documentElement);
@@ -2739,7 +2775,7 @@ var action;
 		_normalizeScreenAndClientPoint : function(aOptions, aFrame) 
 		{
 			if (!aFrame ||
-				!(aFrame instanceof Ci.nsIDOMWindow))
+				!this._isDOMWindow(aFrame))
 				throw new Error('action._normalizeScreenAndClientPoint::['+aFrame+'] is not a frame!');
 
 			var zoom = this.isFullZoom() ? this.getZoom(aFrame) : 1 ;
