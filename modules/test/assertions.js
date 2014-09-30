@@ -953,12 +953,12 @@ Assertions.prototype = {
 	contains : function(aExpected, aActual, aMessage)
 	{
 		if (
-			(aActual instanceof Ci.nsIDOMRange) ?
-				!utils.isTargetInRange(aExpected, aActual) :
 			(aActual instanceof Ci.nsISelection) ?
 				!utils.isTargetInSelection(aExpected, aActual) :
 			(aActual instanceof Ci.nsIDOMNode) ?
 				!utils.isTargetInSubTree(aExpected, aActual) :
+			(aActual instanceof Ci.nsIDOMRange) ?
+				!utils.isTargetInRange(aExpected, aActual) :
 				(utils.isArray(aActual) ? aActual : String(aActual) ).indexOf(aExpected) < 0
 			)
 			this._fail({
@@ -999,12 +999,12 @@ Assertions.prototype = {
 	contained : function(aExpected, aActual, aMessage)
 	{
 		if (
-			(aExpected instanceof Ci.nsIDOMRange) ?
-				!utils.isTargetInRange(aActual, aExpected) :
 			(aExpected instanceof Ci.nsISelection) ?
 				!utils.isTargetInSelection(aActual, aExpected) :
 			(aExpected instanceof Ci.nsIDOMNode) ?
 				!utils.isTargetInSubTree(aActual, aExpected) :
+			(aExpected instanceof Ci.nsIDOMRange) ?
+				!utils.isTargetInRange(aActual, aExpected) :
 				(utils.isArray(aExpected) ? aExpected : String(aExpected) ).indexOf(aActual) < 0
 			)
 			this._fail({
@@ -1269,7 +1269,9 @@ Assertions.prototype = {
 	{
 		if (aValue === null) return 'null';
 		if (aValue === void(0)) return 'undefined';
-		var args = (aValue instanceof Ci.nsIDOMNode) ?
+		var args = (aValue &&
+					typeof aValue == 'object' &&
+					aValue.ownerDocument) ? // Node
 				[utils.inspectDOMNode(aValue), utils.inspect(aValue)] :
 				[utils.inspect(aValue), utils.inspectType(aValue)]
 		return bundle.getFormattedString('typed_value', args);
