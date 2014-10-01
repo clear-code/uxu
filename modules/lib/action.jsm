@@ -1,7 +1,7 @@
 /**
  * @fileOverview User Action Emulator for Firefox 31 or later 
  * @author       ClearCode Inc.
- * @version      7
+ * @version      8
  *
  * @example
  *   Components.utils.import('resource://my-modules/action.jsm');
@@ -43,7 +43,7 @@ if (typeof namespace == 'undefined') {
  
 var action; 
 (function() {
-	const currentRevision = 7;
+	const currentRevision = 8;
 
 	var loadedRevision = 'action' in namespace ?
 			namespace.action.revision :
@@ -81,7 +81,7 @@ var action;
 		/** @private */
 		getBoxObjectFor : function(aNode) 
 		{
-			return ('getBoxObjectFor' in aNode.ownerDocument) ?
+			return (aNode.ownerDocument && 'getBoxObjectFor' in aNode.ownerDocument) ?
 					aNode.ownerDocument.getBoxObjectFor(aNode) :
 					this._boxObject.getBoxObjectFor(aNode) ;
 		},
@@ -175,7 +175,7 @@ var action;
 						aTarget.ownerDocument &&
 						typeof aTarget.ownerDocument.defaultView.Element == 'function' &&
 						aTarget instanceof aTarget.ownerDocument.defaultView.Element
-					)||
+					) ||
 					aTarget instanceof Ci.nsIDOMElement
 				)
 			);
@@ -935,29 +935,29 @@ var action;
 					case 'mousemove':
 						detail = 0;
 					case 'mouseover':
-						utils.sendMouseEvent(aOptions.type, x, y, button, detail, flags);
+						utils.sendMouseEventToWindow(aOptions.type, x, y, button, detail, flags);
 						break;
 					case 'mousedown':
-						utils.sendMouseEvent('mousedown', x, y, button, detail, flags);
+						utils.sendMouseEventToWindow('mousedown', x, y, button, detail, flags);
 						break;
 					case 'mouseup':
-						utils.sendMouseEvent('mouseup', x, y, button, detail, flags);
+						utils.sendMouseEventToWindow('mouseup', x, y, button, detail, flags);
 						break;
 					case 'dblclick':
-						utils.sendMouseEvent('mousedown', x, y, button, detail, flags);
-						utils.sendMouseEvent('mouseup', x, y, button, detail, flags);
+						utils.sendMouseEventToWindow('mousedown', x, y, button, detail, flags);
+						utils.sendMouseEventToWindow('mouseup', x, y, button, detail, flags);
 						detail = 2;
 					case 'click':
 					default:
-						utils.sendMouseEvent('mousedown', x, y, button, detail, flags);
-						utils.sendMouseEvent('mouseup', x, y, button, detail, flags);
+						utils.sendMouseEventToWindow('mousedown', x, y, button, detail, flags);
+						utils.sendMouseEventToWindow('mouseup', x, y, button, detail, flags);
 						// this._emulateClickOnXULElement(node, aOptions);
 						break;
 				}
 				return;
 			}
 
-			// DOMWindowUtils.sendMouseEvent() fails to send events in popups, so I emulate it manually.
+			// DOMWindowUtils.sendMouseEventToWindow() fails to send events in popups, so I emulate it manually.
 
 			if (node) {
 				this.fireMouseEventOnElement(node, aOptions);
@@ -1057,7 +1057,7 @@ var action;
 				return;
 			}
 
-			// DOMWindowUtils.sendMouseEvent() fails to send events in popups, so I emulate it manually.
+			// DOMWindowUtils.sendMouseEventToWindow() fails to send events in popups, so I emulate it manually.
 
 			var detail = 1;
 			var options, event;
