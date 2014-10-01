@@ -40,11 +40,12 @@ var Cc = Components.classes;
 var Ci = Components.interfaces;
 
 var ns = {}; 
+Components.utils.import('resource://uxu-modules/lib/inherit.jsm', ns);
 Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/mail/utils.js', ns);
 
 var utils = ns.utils;
-var mailUtils = new ns.MailUtils({ __proto__ : utils, utils : utils });
+var mailUtils = new ns.MailUtils(ns.inherit(utils, { utils : utils }));
 
 function MailComposeProxy(aReal)
 {

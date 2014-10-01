@@ -19,6 +19,7 @@
  */
 var ns = {}; 
 Components.utils.import('resource://uxu-modules/utils.js', ns);
+Components.utils.import('resource://uxu-modules/lib/inherit.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/server/message.js', ns);
 Components.utils.import('resource://uxu-modules/server/server.js', ns);
@@ -1340,10 +1341,9 @@ function startServer(aPort)
 	var context = new ns.Context({});
 	context.runTest = function(aOptions/*, aTargets, ...*/) {
 		setTestFile('', true);
-		var reporter = new ns.Reporter({
-				__proto__ : aOptions,
+		var reporter = new ns.Reporter(ns.inherit(aOptions, {
 				onAbort : function() { stop(); }
-			});
+			}));
 		run({
 			targets          : Array.slice(arguments, 1),
 			priority         : aOptions.priority,

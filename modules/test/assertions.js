@@ -23,6 +23,7 @@ if (typeof window == 'undefined')
 var Ci = Components.interfaces;
 
 var ns = {};
+Components.utils.import('resource://uxu-modules/lib/inherit.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/diff.js', ns);
@@ -38,8 +39,7 @@ function Assertions()
 	this.resetSuccessCount();
 }
 
-Assertions.prototype = {
-	__proto__ : ns.EventTarget.prototype,
+Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 
 	get successCount() {
 		return this._successCount;
@@ -1340,4 +1340,4 @@ Assertions.prototype = {
 			})(aMethod, 'assert');
 		}
 	}
-};
+});

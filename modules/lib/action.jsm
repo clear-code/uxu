@@ -1,7 +1,7 @@
 /**
  * @fileOverview User Action Emulator for Firefox 31 or later 
  * @author       ClearCode Inc.
- * @version      6
+ * @version      7
  *
  * @example
  *   Components.utils.import('resource://my-modules/action.jsm');
@@ -43,7 +43,7 @@ if (typeof namespace == 'undefined') {
  
 var action; 
 (function() {
-	const currentRevision = 3;
+	const currentRevision = 7;
 
 	var loadedRevision = 'action' in namespace ?
 			namespace.action.revision :
@@ -290,7 +290,7 @@ var action;
 				else if (aArg) {
 					if (this._isDOMWindow(aArg))
 						w = aArg;
-					else if (this._isDOMElement(aArg)
+					else if (this._isDOMElement(aArg))
 						element = aArg;
 					else if (modifierNames.some(function(aName) {
 							return aName in aArg;
@@ -1869,10 +1869,13 @@ var action;
 					break;
 				case 'keypress':
 				default:
-					var options = {
-							type      : 'keydown',
-							__proto__ : aOptions
-						};
+					var options = Object.create(aOptions, {
+							type : {
+								value        : 'keydown',
+								writable     : true,
+								configurable : true
+							}
+						});
 					this.fireKeyEventOnElement(aElement, options);
 					options.type = 'keyup';
 					this.fireKeyEventOnElement(aElement, options);

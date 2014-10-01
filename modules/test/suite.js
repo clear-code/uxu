@@ -42,6 +42,7 @@ const Ci = Components.interfaces;
 const Cr = Components.results;
 
 var ns = {};
+Components.utils.import('resource://uxu-modules/lib/inherit.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/jsdeferred.js', ns);
 Components.utils.import('resource://uxu-modules/eventTarget.js', ns);
@@ -65,8 +66,7 @@ function TestSuite(aOptions)
 	this.init(aOptions);
 }
 
-TestSuite.prototype = {
-	__proto__ : ns.EventTarget.prototype,
+TestSuite.prototype = ns.inherit(ns.EventTarget.prototype, {
 	
 init : function(aOptions) 
 {
@@ -76,13 +76,10 @@ init : function(aOptions)
 	var aBrowser    = aOptions.browser;
 
 	let global = aBrowser ? aBrowser.ownerDocument.defaultView : null ;
-	this.environment = aEnvCreator ? aEnvCreator() :
-						global ? new global.Object() :
-						{};
-	this.environment.__proto__ =
-		this.environment.utils = aEnvCreator ? aEnvCreator() :
+	let utils = aEnvCreator ? aEnvCreator() :
 								global ? new global.Object() :
 								{};
+	this.environment = ns.inherit(utils, { utils : utils });
 
 	var baseURL = aURI.replace(/[^/]*$/, '');
 
@@ -729,7 +726,7 @@ createDatabaseFromSQLFile : function(aFile, aEncoding, aNamespace)
  
 processTemplate : function(aCode, aNamespace) 
 {
-	var env = {};
+	var env = ns.inherit(this.environment, {});
 	if (aNamespace) {
 		for (var i in aNamespace)
 		{
@@ -737,9 +734,7 @@ processTemplate : function(aCode, aNamespace)
 				env[i] = aNamespace[i];
 		}
 	}
-	env.__proto__ = this.environment;
 	var result = this._utils.processTemplate(aCode, env);
-	env.__proto__ = void(0);
 	env = null;
 	return result;
 },
@@ -773,7 +768,7 @@ log : function()
 	this.fireEvent('Notify', message);
 }
   
-}; 
+}); 
   
 function WindowWatcherListener(aListener, aTargets, aSuite) 
 {
