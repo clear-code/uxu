@@ -174,6 +174,10 @@ function test_wait()
 }
 
 if (utils.checkPlatformVersion('1.9') < 0) test_waitDOMEvent.priority = 'never';
+test_waitDOMEvent.setUp = function()
+{
+	yield Do(utils.loadURI('about:blank?wait'));
+}
 function test_waitDOMEvent()
 {
 	function assertWaitSuccess(aConditions, aTimeout, aDelta)
@@ -183,35 +187,38 @@ function test_waitDOMEvent()
 		assert.inDelta(aTimeout, Date.now() - before, aDelta);
 	}
 
-	utils.loadURI('about:blank?wait');
+	function clickWithDelay(aTarget, aDelay)
+	{
+		window.setTimeout(function() {
+			try{
+				action.clickOn(aTarget);
+			}
+			catch(e){
+				utils.log('ERROR: failed to fire click event');
+				utils.log(e);
+			}
+		}, aDelay || 10);
+	}
 
 	// standard
-	window.setTimeout(function() {
-		action.clickOn(content.document.documentElement);
-	}, 10);
+	clickWithDelay(content.document.documentElement);
 	assertWaitSuccess([content.document, 'click', 1000], 500, 499);
 
 	// timeout
 	assertWaitSuccess([content.document, 'click', 1000], 1000, 100);
 
 	// mixed order
-	window.setTimeout(function() {
-		action.clickOn(content.document.documentElement);
-	}, 10);
+	clickWithDelay(content.document.documentElement);
 	assertWaitSuccess(['click', 1000, content.document], 500, 499);
 
 	// multiple events
-	window.setTimeout(function() {
-		action.clickOn(content.document.documentElement);
-	}, 10);
+	clickWithDelay(content.document.documentElement);
 	assertWaitSuccess([content.document, 'click',
 	                   content.document, 'keypress',
 	                   1000], 500, 499);
 
 	// detailed conditions
-	window.setTimeout(function() {
-		action.clickOn(content.document.documentElement);
-	}, 10);
+	clickWithDelay(content.document.documentElement);
 	window.setTimeout(function() {
 		action.rightClickOn(content.document.documentElement, { ctrlKey : true });
 	}, 20);
@@ -236,9 +243,7 @@ function test_waitDOMEvent()
 		);
 	assert.isFalse(result.value);
 	assert.equals([], events);
-	window.setTimeout(function() {
-		action.clickOn(content.document.documentElement);
-	}, 10);
+	clickWithDelay(content.document.documentElement);
 	utils.wait(100);
 	assert.isTrue(result.value);
 	assert.equals(['click', 'click'],
