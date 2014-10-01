@@ -42,6 +42,7 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 var ns = {};
+Components.utils.import('resource://uxu-modules/lib/inherit.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
 Components.utils.import('resource://uxu-modules/lib/prefs.js', ns);
 Components.utils.import('resource://uxu-modules/lib/encoding.jsm', ns);
@@ -84,6 +85,11 @@ function Utils()
 }
 Utils.prototype = {
 	
+inherit : function(aPrototype, aNewProperties)
+{
+	return ns.inherit(aPrototype, aNewProperties);
+},
+
 evalInSandbox : function(aCode, aOwner) 
 {
 	try {
