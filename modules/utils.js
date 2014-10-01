@@ -101,11 +101,11 @@ _getDocument : function(aOwner)
 {
 	var doc = !aOwner ?
 				null :
-			aOwner instanceof Ci.nsIDOMDocument ?
-				aOwner :
-			aOwner instanceof Ci.nsIDOMNode ?
+			aOwner.defaultView ? // Document
+				aOwner.defaultView.document :
+			aOwner.ownerDocument ? // Node
 				aOwner.ownerDocument :
-			aOwner instanceof Ci.nsIDOMWindow ?
+			aOwner.document ? // Window
 				aOwner.document :
 				null;
 	if (!doc) throw new Error(bundle.getFormattedString('error_utils_invalid_owner', [aOwner]));
@@ -231,7 +231,11 @@ wait : function(aWaitCondition)
 	if (
 		arguments.length > 1 &&
 		Array.slice(arguments).some(function(aArg) {
-			return aArg instanceof Ci.nsIDOMEventTarget;
+			return ( // EventTarget?
+				aArg &&
+				typeof aArg == 'object' &&
+				typeof aArg.addEventListener == 'function'
+			);
 		})
 		)
 		return this.waitDOMEvent.apply(this, arguments);
@@ -330,12 +334,13 @@ waitDOMEvent : function()
 	for (let i = 0, count = args.length; i < count; i += 2)
 	{
 		let [target, conditions] = [args[i], args[i+1]];
-		if (conditions instanceof Ci.nsIDOMEventTarget)
+		if (conditions &&
+			typeof conditions == 'object' &&
+			typeof conditions.addEventListener == 'function') // EventTarget
 			[target, conditions] = [conditions, target];
 		let definition = { target : target };
 
 		if (typeof conditions == 'object' &&
-			'type' in conditions &&
 			typeof conditions.type == 'string') {
 			definition.type = conditions.type;
 			definition.conditions = conditions;
@@ -2023,7 +2028,7 @@ _getAltTextForCircularReference : function(aObject, aStrict, aAltTable)
 isTargetInRange : function(aTarget, aRange) 
 {
 	var targetRangeCreated = false;
-	if (aTarget instanceof Ci.nsIDOMNode) {
+	if (aTarget.ownerDocument) { // Node
 		try {
 			var range = aTarget.ownerDocument.createRange();
 			range.selectNode(aTarget);
@@ -2033,7 +2038,9 @@ isTargetInRange : function(aTarget, aRange)
 		catch(e) {
 		}
 	}
-	if (aTarget instanceof Ci.nsIDOMRange) {
+	if (aTarget &&
+		typeof aTarget == 'object' &&
+		typeof aTarget.compareBoundaryPoints == 'function') { // Range
 		try {
 			var inRange = (
 					aTarget.compareBoundaryPoints(Ci.nsIDOMRange.START_TO_START, aRange) >= 0 &&
