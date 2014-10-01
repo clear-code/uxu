@@ -135,7 +135,7 @@ var action;
 		{
 			if (!aFrame ||
 				!this._isDOMWindow(aFrame))
-				throw new Error('action.getZoom::['+aFrame+'] is not a frame!');
+				throw new Error('action.getZoom::['+aFrame+'] ('+(typeof aFrame)+') is not a frame!');
 			var markupDocumentViewer = aFrame.top
 					.QueryInterface(Ci.nsIInterfaceRequestor)
 					.getInterface(Ci.nsIWebNavigation)
@@ -896,7 +896,7 @@ var action;
 		{
 			if (!aFrame ||
 				!this._isDOMWindow(aFrame))
-				throw new Error('action.fireMouseEvent::['+aFrame+'] is not a frame!');
+				throw new Error('action.fireMouseEvent::['+aFrame+'] ('+(typeof aFrame)+') is not a frame!');
 
 			if (!aOptions) aOptions = {};
 
@@ -2000,7 +2000,7 @@ var action;
 		{
 			if (!aFrame ||
 				!this._isDOMWindow(aFrame))
-				throw new Error('action.fireXULCommandEvent::['+aFrame+'] is not a frame!');
+				throw new Error('action.fireXULCommandEvent::['+aFrame+'] ('+(typeof aFrame)+') is not a frame!');
 
 			if (!aOptions) aOptions = {};
 			aOptions = this._normalizeScreenAndClientPoint(aOptions, aFrame);
@@ -2564,7 +2564,7 @@ var action;
 			var [aFrame, aScreenX, aScreenY] = this._getFrameAndScreenPointFromArguments.apply(this, arguments);
 			if (!aFrame ||
 				!this._isDOMWindow(aFrame))
-				throw new Error('action.getElementFromScreenPoint::['+aFrame+'] is not a frame!');
+				throw new Error('action.getElementFromScreenPoint::['+aFrame+'] ('+(typeof aFrame)+') is not a frame!');
 
 			var popup = this._getPopupElementAt(aFrame, aScreenX, aScreenY);
 			if (popup) return popup;
@@ -2714,7 +2714,7 @@ var action;
 			var [aFrame, aScreenX, aScreenY] = this._getFrameAndScreenPointFromArguments.apply(this, arguments);
 			if (!aFrame ||
 				!this._isDOMWindow(aFrame))
-				throw new Error('action.getFrameAt::['+aFrame+'] is not a frame!');
+				throw new Error('action.getFrameAt::['+aFrame+'] ('+(typeof aFrame)+') is not a frame!');
 
 			var elem = this.getElementAt(aFrame, aScreenX, aScreenY);
 			return elem ? elem.ownerDocument.defaultView : null ;
@@ -2760,7 +2760,7 @@ var action;
 		{
 			if (!aFrame ||
 				!this._isDOMWindow(aFrame))
-				throw new Error('action._calculateClientPointFromScreenPoint::['+aFrame+'] is not a frame!');
+				throw new Error('action._calculateClientPointFromScreenPoint::['+aFrame+'] ('+(typeof aFrame)+') is not a frame!');
 
 			var box = this.getBoxObjectFor(aFrame.document.documentElement);
 			return {
@@ -2794,7 +2794,7 @@ var action;
 		{
 			if (!aFrame ||
 				!this._isDOMWindow(aFrame))
-				throw new Error('action._normalizeScreenAndClientPoint::['+aFrame+'] is not a frame!');
+				throw new Error('action._normalizeScreenAndClientPoint::['+aFrame+'] ('+(typeof aFrame)+') is not a frame!');
 
 			var zoom = this.isFullZoom() ? this.getZoom(aFrame) : 1 ;
 			var box = this.getBoxObjectFor(aFrame.document.documentElement);
