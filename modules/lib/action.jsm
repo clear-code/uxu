@@ -153,8 +153,13 @@ var action;
 			return (
 				aTarget &&
 				typeof aTarget == 'object' &&
-				typeof aTarget.Window == 'function' &&
-				aTarget instanceof aTarget.Window
+				(
+					(
+						typeof aTarget.Window == 'function' &&
+						aTarget instanceof aTarget.Window
+					) ||
+					aTarget instanceof Ci.nsIDOMWindow
+				)
 			);
 		},
 		_isDOMElement : function(aTarget)
@@ -162,9 +167,14 @@ var action;
 			return (
 				aTarget &&
 				typeof aTarget == 'object' &&
-				aTarget.ownerDocument &&
-				typeof aTarget.ownerDocument.defaultView.Element == 'function' &&
-				aTarget instanceof aTarget.ownerDocument.defaultView.Element
+				(
+					(
+						aTarget.ownerDocument &&
+						typeof aTarget.ownerDocument.defaultView.Element == 'function' &&
+						aTarget instanceof aTarget.ownerDocument.defaultView.Element
+					)||
+					aTarget instanceof Ci.nsIDOMElement
+				)
 			);
 		},
 		_isDOMXULElement : function(aTarget)
@@ -172,9 +182,14 @@ var action;
 			return (
 				aTarget &&
 				typeof aTarget == 'object' &&
-				aTarget.ownerDocument &&
-				typeof aTarget.ownerDocument.defaultView.XULElement == 'function' &&
-				aTarget instanceof aTarget.ownerDocument.defaultView.XULElement
+				(
+					(
+						aTarget.ownerDocument &&
+						typeof aTarget.ownerDocument.defaultView.XULElement == 'function' &&
+						aTarget instanceof aTarget.ownerDocument.defaultView.XULElement
+					) ||
+					aTarget instanceof Ci.nsIDOMXULElement
+				)
 			);
 		},
 	

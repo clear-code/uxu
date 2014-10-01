@@ -523,8 +523,14 @@ Compose.prototype = {
 			range.deleteContents();
 		}
 		range.collapse(false);
-		if (aContents instanceof frame.DocumentFragment ||
-			aContents instanceof frame.Node) {
+		if ((typeof frame.DocumentFragment == 'function' &&
+				aContents instanceof frame.DocumentFragment) ||
+			(typeof frame.Node == 'function' &&
+				aContents instanceof frame.Node) ||
+			// fallback to XPCOM interfaces for old environments
+			aContents instanceof Ci.nsIDOMDocumentFragment ||
+			aContents instanceof Ci.nsIDOMNode
+			) {
 			aContents = doc.importNode(aContents, true);
 			range.insertNode(aContents);
 		}
