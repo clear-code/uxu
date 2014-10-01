@@ -124,12 +124,12 @@ function test_getSandbox()
 	}
 
 	var sandbox1 = GMUtils.getSandboxFor(lastBlankPageURI);
-	assert.isTrue(sandbox1);
-	assert.isTrue(sandbox1.window);
-	assert.isTrue(sandbox1.window instanceof sandbox1.window.Window);
+	assert.isDefined(sandbox1);
+	assert.isDefined(sandbox1.window);
+	assert.isInstanceOf(sandbox1.window.Window, sandbox1.window);
 	assertWrapped(sandbox1.window);
-	assert.isTrue(sandbox1.unsafeWindow);
-	assert.isTrue(sandbox1.unsafeWindow instanceof sandbox1.window.Window);
+	assert.isDefined(sandbox1.unsafeWindow);
+	assert.isInstanceOf(sandbox1.window.Window, sandbox1.unsafeWindow);
 	assertNotWrapped(sandbox1.unsafeWindow);
 
 	assert.same(sandbox1.window.wrappedJSObject, sandbox1.unsafeWindow);
@@ -146,8 +146,8 @@ function test_getSandbox()
 	assert.isUndefined(sandbox1.window.hoge);
 	assert.isDefined(sandbox1.unsafeWindow.hoge);
 
-	assert.isTrue(sandbox1.document);
-	assert.isTrue(sandbox1.document instanceof sandbox1.window.Document);
+	assert.isDefined(sandbox1.document);
+	assert.isInstanceOf(sandbox1.window.Document, sandbox1.document);
 	assertWrapped(sandbox1.document);
 	assert.same(sandbox1.unsafeWindow.document, sandbox1.document.wrappedJSObject);
 
@@ -162,7 +162,7 @@ function test_getSandbox()
 	assert.isFunction(sandbox1.GM_getResourceURL);
 	assert.isFunction(sandbox1.GM_getResourceText);
 	assert.isFunction(sandbox1.GM_openInTab);
-	assert.isTrue(sandbox1.console);
+	assert.isDefined(sandbox1.console);
 	assert.isFunction(sandbox1.console.log);
 
 	var sandbox2 = GMUtils.getSandboxFor(lastBlankPageURI);
