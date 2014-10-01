@@ -538,8 +538,7 @@ test_setAndGetClipBoard.setUp = function() {
 	assert.contains('/fixtures/html.html', content.location.href);
 }
 test_setAndGetClipBoard.tearDown = function() {
-	utils.tearDownTestWindow();
-
+	yield Do(utils.tearDownTestWindow());
 }
 function test_setAndGetClipBoard()
 {
