@@ -140,7 +140,10 @@ var action;
 					.QueryInterface(Ci.nsIInterfaceRequestor)
 					.getInterface(Ci.nsIWebNavigation)
 					.QueryInterface(Ci.nsIDocShell)
-					.contentViewer
+					.contentViewer;
+			// no need to QI for Firefox 35, but this is still required for old environments.
+			if (!('fullZoom' in markupDocumentViewer))
+				markupDocumentViewer = markupDocumentViewer
 					.QueryInterface(Ci.nsIMarkupDocumentViewer);
 			return markupDocumentViewer.fullZoom;
 		},
