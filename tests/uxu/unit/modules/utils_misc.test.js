@@ -770,10 +770,11 @@ function test_bind()
 
 function test_export()
 {
-	var source = {
-			__proto__ : {
+	var source = utils.inherit(
+		{
 				superProperty : 'super'
-			},
+		},
+		{
 			_internal : 'source',
 			property : 'source',
 			get getter() {
@@ -791,7 +792,8 @@ function test_export()
 			},
 			MyClass : createCustomClass(),
 			MyClassReturnObject : createCustomClassReturnObject()
-		};
+		}
+	);
 
 	var target = {
 			_internal : 'original',
