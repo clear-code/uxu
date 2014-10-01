@@ -2533,7 +2533,7 @@ var action;
 						w = aArg;
 				}
 				return (x !== void(0) && y !== void(0));
-			});
+			}, this);
 			if (!w)
 				w = this._getWindowAt(x, y);
 			return [w, x, y];
