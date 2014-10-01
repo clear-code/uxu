@@ -115,16 +115,12 @@ function test_openAndClose_async()
 
 function test_getSandbox()
 {
-	function isWrapped(object) {
-		return /XrayWrapper/.test(object.toString());
-	}
-
 	function assertWrapped(object) {
-		assert.isTrue(isWrapped(object));
+		assert.matches(/XrayWrapper/, object.toString());
 	}
 
 	function assertNotWrapped(object) {
-		assert.isFalse(isWrapped(object));
+		assert.notMatches(/XrayWrapper/, object.toString());
 	}
 
 	var sandbox1 = GMUtils.getSandboxFor(lastBlankPageURI);
