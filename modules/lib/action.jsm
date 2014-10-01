@@ -2274,7 +2274,7 @@ var action;
 						element = aArg;
 				}
 				return (input !== void(0) && element);
-			});
+			}, this);
 			return { input : input, element : element };
 		},
   
