@@ -955,9 +955,9 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		if (
 			(aActual instanceof Ci.nsISelection) ?
 				!utils.isTargetInSelection(aExpected, aActual) :
-			this._isDOMNode(aActual) ?
+			utils.isDOMNode(aActual) ?
 				!utils.isTargetInSubTree(aExpected, aActual) :
-			this._isDOMRange(aActual) ?
+			utils.isDOMRange(aActual) ?
 				!utils.isTargetInRange(aExpected, aActual) :
 				(utils.isArray(aActual) ? aActual : String(aActual) ).indexOf(aExpected) < 0
 			)
@@ -972,31 +972,15 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		this._onSuccess();
 	},
 	contain : function() { return this.contains.apply(this, arguments); },
-	_isDOMNode : function(aTarget)
-	{
-		return (
-			aTarget &&
-			typeof aTarget == 'object' &&
-			(aTarget.ownerDocument || aTarget.defaultView)
-		);
-	},
-	_isDOMRange : function(aTarget)
-	{
-		return (
-			aTarget &&
-			typeof aTarget == 'object' &&
-			typeof aTarget.compareBoundaryPoints == 'function'
-		);
-	},
 
 	notContains : function(aExpected, aActual, aMessage)
 	{
 		if (
 			(aActual instanceof Ci.nsISelection) ?
 				utils.isTargetInSelection(aExpected, aActual) :
-			this._isDOMNode(aActual) ?
+			utils.isDOMNode(aActual) ?
 				utils.isTargetInSubTree(aExpected, aActual) :
-			this._isDOMRange(aActual) ?
+			utils.isDOMRange(aActual) ?
 				utils.isTargetInRange(aExpected, aActual) :
 				(utils.isArray(aActual) ? aActual : String(aActual) ).indexOf(aExpected) > -1
 			)
@@ -1017,9 +1001,9 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		if (
 			(aExpected instanceof Ci.nsISelection) ?
 				!utils.isTargetInSelection(aActual, aExpected) :
-			this._isDOMNode(aExpected) ?
+			utils.isDOMNode(aExpected) ?
 				!utils.isTargetInSubTree(aActual, aExpected) :
-			this._isDOMRange(aExpected) ?
+			utils.isDOMRange(aExpected) ?
 				!utils.isTargetInRange(aActual, aExpected) :
 				(utils.isArray(aExpected) ? aExpected : String(aExpected) ).indexOf(aActual) < 0
 			)
@@ -1039,9 +1023,9 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		if (
 			(aExpected instanceof Ci.nsISelection) ?
 				utils.isTargetInSelection(aActual, aExpected) :
-			this._isDOMNode(aExpected) ?
+			utils.isDOMNode(aExpected) ?
 				utils.isTargetInSubTree(aActual, aExpected) :
-			this._isDOMRange(aExpected) ?
+			utils.isDOMRange(aExpected) ?
 				utils.isTargetInRange(aActual, aExpected) :
 				(utils.isArray(aExpected) ? aExpected : String(aExpected) ).indexOf(aActual) > -1
 			)
@@ -1285,7 +1269,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 	{
 		if (aValue === null) return 'null';
 		if (aValue === void(0)) return 'undefined';
-		var args = this._isDOMNode(aValue) ?
+		var args = utils.isDOMNode(aValue) ?
 				[utils.inspectDOMNode(aValue), utils.inspect(aValue)] :
 				[utils.inspect(aValue), utils.inspectType(aValue)]
 		return bundle.getFormattedString('typed_value', args);

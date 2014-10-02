@@ -1922,6 +1922,35 @@ isDeferred : function(aObject)
 {
 	return ns.Deferred.isDeferred(aObject);
 },
+ 
+isDOMNode : function(aObject) 
+{
+	return Boolean(
+		aObject &&
+		typeof aObject == 'object' &&
+		(
+			aObject.ownerDocument || // not the document node
+			aObject.defaultView // the document node
+		)
+	);
+},
+ 
+isDOMElement : function(aObject) 
+{
+	return Boolean(
+		this.isDOMNode(aObject) &&
+		aObject.nodeType == Ci.nsIDOMNode.ELEMENT_NODE
+	);
+},
+ 
+isDOMRange : function(aObject)
+{
+	return Boolean(
+		aObject &&
+		typeof aObject == 'object' &&
+		typeof aObject.compareBoundaryPoints == 'function'
+	);
+},
   
 // î‰är 
 	
