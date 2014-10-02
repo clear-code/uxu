@@ -169,9 +169,9 @@ GreasemonkeyUtils.prototype = {
 			return self.GM_getResourceText.call(self, aKey, headers);
 		};
 
-		sandbox.GM_listValues           = this._suite.bind(this.GM_listValues, self);
-		sandbox.GM_openInTab            = this._suite.bind(this.GM_openInTab, self);
-		sandbox.GM_xmlhttpRequest       = function(aDetails) {
+		sandbox.GM_listValues     = this._suite.bind(this.GM_listValues, self);
+		sandbox.GM_openInTab      = this._suite.bind(this.GM_openInTab, self);
+		sandbox.GM_xmlhttpRequest = function(aDetails) {
 			// we need to unwrap it to get functional properties...
 			aDetails = XPCNativeWrapper.unwrap(aDetails);
 			return self.GM_xmlhttpRequest(aDetails, sandbox);
