@@ -147,8 +147,11 @@ GreasemonkeyUtils.prototype = {
 
 		var sandbox = new Components.utils.Sandbox(win, { sandboxPrototype: win });
 
-		sandbox.unsafeWindow = win.wrappedJSObject,
-		sandbox.XPathResult  = Ci.nsIDOMXPathResult,
+		// see: https://bugzilla.mozilla.org/show_bug.cgi?id=1043958
+		var unsafeWindowGetter = new sandbox.Function('return window.wrappedJSObject || window;');
+		Object.defineProperty(sandbox, 'unsafeWindow', { get: unsafeWindowGetter });
+
+		sandbox.XPathResult = Ci.nsIDOMXPathResult;
 		sandbox.console = { log : this._suite.bind(this.GM_log, self) };
 
 		sandbox.GM_addStyle = this._suite.bind(this.GM_addStyle, self);

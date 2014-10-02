@@ -6,11 +6,12 @@ var topDir = baseURL+'../../../../';
 var GreasemonkeyUtils = utils.import(topDir+'modules/test/greasemonkey.js', {}).GreasemonkeyUtils;
 
 var GMUtils;
-var lastBlankPageURI;
+var lastPageURI;
 
-function loadBlankPage() {
-	lastBlankPageURI = 'about:blank?'+parseInt(Math.random() * 65000);
-	return utils.loadURI(lastBlankPageURI);
+function loadPage(aURI) {
+	aURI = aURI || 'about:blank';
+	lastPageURI = aURI+'?'+parseInt(Math.random() * 65000);
+	return utils.loadURI(lastPageURI);
 }
 
 function setUp()
@@ -21,15 +22,15 @@ function setUp()
 	utils.setPref('browser.warnOnQuit', false);
 	utils.setPref('browser.warnOnRestart', false);
 
-	yield Do(loadBlankPage());
-	assert.equals(lastBlankPageURI, content.location.href);
+	yield Do(loadPage());
+	assert.equals(lastPageURI, content.location.href);
 	GMUtils = new GreasemonkeyUtils(utils);
 }
 
 function tearDown()
 {
 	GMUtils.destroy();
-	yield Do(loadBlankPage());
+	yield Do(loadPage());
 	yield Do(GMUtils.close());
 }
 
@@ -113,45 +114,26 @@ function test_openAndClose_async()
 	assert.isTrue(retVal.window.closed);
 }
 
+test_getSandbox.setUp = function() {
+	yield Do(loadPage('../../fixtures/page_with_script.html'));
+}
 function test_getSandbox()
 {
-	function assertWrapped(object) {
-		assert.matches(/XrayWrapper/, object.toString());
-	}
-
-	function assertNotWrapped(object) {
-		assert.notMatches(/XrayWrapper/, object.toString());
-	}
-
-	var sandbox1 = GMUtils.getSandboxFor(lastBlankPageURI);
+	var sandbox1 = GMUtils.getSandboxFor(lastPageURI);
 	assert.isDefined(sandbox1);
 	assert.isDefined(sandbox1.window);
 	assert.isInstanceOf(sandbox1.window.Window, sandbox1.window);
-	assertWrapped(sandbox1.window);
 	assert.isDefined(sandbox1.unsafeWindow);
 	assert.isInstanceOf(sandbox1.window.Window, sandbox1.unsafeWindow);
-	assertNotWrapped(sandbox1.unsafeWindow);
 
-	assert.same(sandbox1.window.wrappedJSObject, sandbox1.unsafeWindow);
-
-	assert.isUndefined(sandbox1.window.foobar);
-	assert.isUndefined(sandbox1.unsafeWindow.foobar);
-	sandbox1.window.foobar = true;
-	assert.isDefined(sandbox1.window.foobar);
-	assert.isUndefined(sandbox1.unsafeWindow.foobar);
-
-	assert.isUndefined(sandbox1.window.hoge);
-	assert.isUndefined(sandbox1.unsafeWindow.hoge);
-	sandbox1.unsafeWindow.hoge = true;
-	assert.isUndefined(sandbox1.window.hoge);
-	assert.isDefined(sandbox1.unsafeWindow.hoge);
+	assert.isUndefined(sandbox1.window.PROPERTY_DEFINED_BY_PAGE_SCRIPT);
+	assert.isUndefined(Components.utils.evalInSandbox('window.PROPERTY_DEFINED_BY_PAGE_SCRIPT', sandbox1));
+	assert.isDefined(Components.utils.evalInSandbox('unsafeWindow.PROPERTY_DEFINED_BY_PAGE_SCRIPT', sandbox1));
 
 	assert.isDefined(sandbox1.document);
 	assert.isInstanceOf(sandbox1.window.Document, sandbox1.document);
-	assertWrapped(sandbox1.document);
-	assert.same(sandbox1.unsafeWindow.document, sandbox1.document.wrappedJSObject);
 
-	assert.equals(sandbox1.XPathResult, Ci.nsIDOMXPathResult);
+	assert.isDefined(sandbox1.XPathResult);
 
 	assert.isFunction(sandbox1.GM_log);
 	assert.isFunction(sandbox1.GM_getValue);
@@ -165,10 +147,10 @@ function test_getSandbox()
 	assert.isDefined(sandbox1.console);
 	assert.isFunction(sandbox1.console.log);
 
-	var sandbox2 = GMUtils.getSandboxFor(lastBlankPageURI);
+	var sandbox2 = GMUtils.getSandboxFor(lastPageURI);
 	assert.same(sandbox1, sandbox2);
 
-	var sandbox3 = GMUtils.getSandBoxFor(lastBlankPageURI);
+	var sandbox3 = GMUtils.getSandBoxFor(lastPageURI);
 	assert.same(sandbox1, sandbox3);
 
 	var sandbox4 = GMUtils.getSandboxFor('about:mozilla');
@@ -212,7 +194,7 @@ function test_GM_getValue()
 
 function test_GM_setValue()
 {
-	yield Do(loadBlankPage());
+	yield Do(loadPage());
 	var sandboxSet = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_setValue.user.js');
 	var sandboxGet = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_getValue.user.js');
 	assert.equals(navigator.userAgent, sandboxGet.userAgent);
@@ -221,7 +203,7 @@ function test_GM_setValue()
 function test_GM_deleteValue()
 {
 	var sandboxGet;
-	yield Do(loadBlankPage());
+	yield Do(loadPage());
 	GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_setValue.user.js');
 	sandboxGet = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_getValue.user.js');
 	assert.equals(navigator.userAgent, sandboxGet.userAgent);
@@ -232,7 +214,7 @@ function test_GM_deleteValue()
 
 function test_GM_listValues()
 {
-	yield Do(loadBlankPage());
+	yield Do(loadPage());
 	var sandbox = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_listValues.user.js');
 	assert.equals(['userAgent', 'foo', 'bar'], sandbox.values);
 }
