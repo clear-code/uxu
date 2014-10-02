@@ -75,8 +75,14 @@ function test_openAndClose()
 	var retVal = GMUtils.open('about:');
 	assert.isTrue(retVal.value);
 	assert.isNotNull(retVal.window);
-	assert.isInstanceOf(retVal.window.Window, retVal.window);
-	assert.isInstanceOf(retVal.window.ChromeWindow, retVal.window);
+	if (utils.checkPlatformVersion('35') < 0) {
+		assert.isInstanceOf(Components.interfaces.nsIDOMWindow, retVal.window);
+		assert.isInstanceOf(Components.interfaces.nsIDOMChromeWindow, retVal.window);
+	}
+	else {
+		assert.isInstanceOf(retVal.window.Window, retVal.window);
+		assert.isInstanceOf(retVal.window.ChromeWindow, retVal.window);
+	}
 	assert.equals('about:', retVal.window.content.location.href);
 
 	GMUtils.close();
@@ -105,8 +111,14 @@ function test_openAndClose_async()
 	yield 100;
 	assert.isTrue(retVal.value);
 	assert.isNotNull(retVal.window);
-	assert.isInstanceOf(retVal.window.Window, retVal.window);
-	assert.isInstanceOf(retVal.window.ChromeWindow, retVal.window);
+	if (utils.checkPlatformVersion('35') < 0) {
+		assert.isInstanceOf(Components.interfaces.nsIDOMWindow, retVal.window);
+		assert.isInstanceOf(Components.interfaces.nsIDOMChromeWindow, retVal.window);
+	}
+	else {
+		assert.isInstanceOf(retVal.window.Window, retVal.window);
+		assert.isInstanceOf(retVal.window.ChromeWindow, retVal.window);
+	}
 	assert.equals('about:', retVal.window.content.location.href);
 
 	GMUtils.close();
@@ -122,16 +134,27 @@ function test_getSandbox()
 	var sandbox1 = GMUtils.getSandboxFor(lastPageURI);
 	assert.isDefined(sandbox1);
 	assert.isDefined(sandbox1.window);
-	assert.isInstanceOf(sandbox1.window.Window, sandbox1.window);
 	assert.isDefined(sandbox1.unsafeWindow);
-	assert.isInstanceOf(sandbox1.window.Window, sandbox1.unsafeWindow);
+	if (utils.checkPlatformVersion('35') < 0) {
+		assert.isInstanceOf(Components.interfaces.nsIDOMWindow, sandbox1.window);
+		assert.isInstanceOf(Components.interfaces.nsIDOMWindow, sandbox1.unsafeWindow);
+	}
+	else {
+		assert.isInstanceOf(sandbox1.window.Window, sandbox1.window);
+		assert.isInstanceOf(sandbox1.window.Window, sandbox1.unsafeWindow);
+	}
 
 	assert.isUndefined(sandbox1.window.PROPERTY_DEFINED_BY_PAGE_SCRIPT);
 	assert.isUndefined(Components.utils.evalInSandbox('window.PROPERTY_DEFINED_BY_PAGE_SCRIPT', sandbox1));
 	assert.isDefined(Components.utils.evalInSandbox('unsafeWindow.PROPERTY_DEFINED_BY_PAGE_SCRIPT', sandbox1));
 
 	assert.isDefined(sandbox1.document);
-	assert.isInstanceOf(sandbox1.window.Document, sandbox1.document);
+	if (utils.checkPlatformVersion('35') < 0) {
+		assert.isInstanceOf(Components.interfaces.nsIDOMDocument, sandbox1.document);
+	}
+	else {
+		assert.isInstanceOf(sandbox1.window.Document, sandbox1.document);
+	}
 
 	assert.isDefined(sandbox1.XPathResult);
 
