@@ -7,13 +7,13 @@ utils.include('utils_common.inc.js');
 function test_getDB()
 {
 	var db = utilsModule.getDB();
-	assert.isTrue(db instanceof Ci.mozIStorageConnection);
+	assert.isInstanceOf(Ci.mozIStorageConnection, db);
 }
 
 function test_openDatabase()
 {
 	var db = utilsModule.openDatabase(baseURL+'../../fixtures/test.sqlite');
-	assert.isTrue(db instanceof Ci.mozIStorageConnection);
+	assert.isInstanceOf(Ci.mozIStorageConnection, db);
 
 	var statement = db.createStatement('SELECT value FROM test_table WHERE key = "key1"');
 	statement.executeStep();
@@ -23,7 +23,7 @@ function test_openDatabase()
 function test_createDatabase()
 {
 	var db = utilsModule.createDatabase();
-	assert.isTrue(db instanceof Ci.mozIStorageConnection);
+	assert.isInstanceOf(Ci.mozIStorageConnection, db);
 	assert.equals(utilsModule.getFileFromKeyword('TmpD').path, db.databaseFile.parent.path);
 	utils.scheduleToRemove(db.databaseFile);
 }
@@ -37,7 +37,7 @@ function test_createDatabaseFromSQL()
 			'INSERT INTO "foo_table" VALUES("hoge","fuga");'
 		);
 
-	assert.isTrue(db instanceof Ci.mozIStorageConnection);
+	assert.isInstanceOf(Ci.mozIStorageConnection, db);
 	assert.equals(utilsModule.getFileFromKeyword('TmpD').path, db.databaseFile.parent.path);
 
 	var statement = db.createStatement('SELECT value FROM foo_table WHERE key = "hoge"');
@@ -51,7 +51,7 @@ function test_createDatabaseFromSQLFile()
 {
 	var db = utilsModule.createDatabaseFromSQLFile(baseURL+'../../fixtures/test.sql', 'UTF-8');
 
-	assert.isTrue(db instanceof Ci.mozIStorageConnection);
+	assert.isInstanceOf(Ci.mozIStorageConnection, db);
 	assert.equals(utilsModule.getFileFromKeyword('TmpD').path, db.databaseFile.parent.path);
 
 	var statement = db.createStatement('SELECT value FROM test_table WHERE key = "key2"');

@@ -75,8 +75,8 @@ function test_openAndClose()
 	var retVal = GMUtils.open('about:');
 	assert.isTrue(retVal.value);
 	assert.isNotNull(retVal.window);
-	assert.isTrue(retVal.window instanceof retVal.window.Window);
-	assert.isTrue(retVal.window instanceof retVal.window.ChromeWindow);
+	assert.isInstanceOf(retVal.window.Window, retVal.window);
+	assert.isInstanceOf(retVal.window.ChromeWindow, retVal.window);
 	assert.equals('about:', retVal.window.content.location.href);
 
 	GMUtils.close();
@@ -105,8 +105,8 @@ function test_openAndClose_async()
 	yield 100;
 	assert.isTrue(retVal.value);
 	assert.isNotNull(retVal.window);
-	assert.isTrue(retVal.window instanceof retVal.window.Window);
-	assert.isTrue(retVal.window instanceof retVal.window.ChromeWindow);
+	assert.isInstanceOf(retVal.window.Window, retVal.window);
+	assert.isInstanceOf(retVal.window.ChromeWindow, retVal.window);
 	assert.equals('about:', retVal.window.content.location.href);
 
 	GMUtils.close();
@@ -266,7 +266,7 @@ function test_GM_addStyle()
 	yield Do(GMUtils.load('about:'));
 	var body = content.document.body;
 	assert.isTrue(body);
-	assert.isTrue(body instanceof content.Node);
+	assert.isInstanceOf(content.Node, body);
 	var style = content.getComputedStyle(body, null);
 	assert.notEquals('red', style.getPropertyValue('color'));
 	GMUtils.GM_addStyle(content.document, '* { color: rgb(255, 0, 0) !important; }');

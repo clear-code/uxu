@@ -19,19 +19,19 @@ function test_makeURIFromSpec()
 	var uri;
 
 	uri = utilsModule.makeURIFromSpec('about:blank');
-	assert.isTrue(uri instanceof Ci.nsIURI);
+	assert.isInstanceOf(Ci.nsIURI, uri);
 	assert.equals('about:blank', uri.spec);
 	assert.equals('about', uri.scheme);
 
 	uri = utilsModule.makeURIFromSpec('http://www.clear-code.com/');
-	assert.isTrue(uri instanceof Ci.nsIURI);
+	assert.isInstanceOf(Ci.nsIURI, uri);
 	assert.equals('http://www.clear-code.com/', uri.spec);
 	assert.equals('http', uri.scheme);
 	assert.equals('www.clear-code.com', uri.host);
 
 	uri = utilsModule.makeURIFromSpec('file:///c:/windows/');
-	assert.isTrue(uri instanceof Ci.nsIURI);
-	assert.isTrue(uri instanceof Ci.nsIFileURL);
+	assert.isInstanceOf(Ci.nsIURI, uri);
+	assert.isInstanceOf(Ci.nsIFileURL, uri);
 	assert.matches(/file:\/\/\/C:\/Windows\/?/i, uri.spec);
 	assert.equals('file', uri.scheme);
 }
@@ -50,8 +50,8 @@ function test_makeFileWithPath()
     }
 
 	assert.isTrue(file);
-	assert.isTrue(file instanceof Ci.nsIFile);
-	assert.isTrue(file instanceof Ci.nsILocalFile);
+	assert.isInstanceOf(Ci.nsIFile, file);
+	assert.isInstanceOf(Ci.nsILocalFile, file);
 	assert.equals(expected.path, file.path);
 	assert.equals(expected.exists(), file.exists());
 }
@@ -75,8 +75,8 @@ function test_getFileFromURL()
 
 	file = utilsModule.getFileFromURL(uri);
 	assert.isTrue(file);
-	assert.isTrue(file instanceof Ci.nsIFile);
-	assert.isTrue(file instanceof Ci.nsILocalFile);
+	assert.isInstanceOf(Ci.nsIFile, file);
+	assert.isInstanceOf(Ci.nsILocalFile, file);
 	assert.equals(expected.path, file.path);
 	assert.equals(expected.exists(), file.exists());
 
@@ -84,8 +84,8 @@ function test_getFileFromURL()
 
 	file = utilsModule.getFileFromURLSpec(uriSpec);
 	assert.isTrue(file);
-	assert.isTrue(file instanceof Ci.nsIFile);
-	assert.isTrue(file instanceof Ci.nsILocalFile);
+	assert.isInstanceOf(Ci.nsIFile, file);
+	assert.isInstanceOf(Ci.nsILocalFile, file);
 	assert.equals(expected.path, file.path);
 	assert.equals(expected.exists(), file.exists());
 
@@ -109,8 +109,8 @@ function test_getURLFromFile()
 
 	uri = utilsModule.getURLFromFile(file);
 	assert.isTrue(uri);
-	assert.isTrue(uri instanceof Ci.nsIURI);
-	assert.isTrue(uri instanceof Ci.nsIFileURL);
+	assert.isInstanceOf(Ci.nsIURI, uri);
+	assert.isInstanceOf(Ci.nsIFileURL, uri);
 	assert.matches(uriPattern, uri.spec);
 	assert.equals('file', uri.scheme);
 
@@ -118,8 +118,8 @@ function test_getURLFromFile()
 
 	uri = utilsModule.getURLFromFilePath(path);
 	assert.isTrue(uri);
-	assert.isTrue(uri instanceof Ci.nsIURI);
-	assert.isTrue(uri instanceof Ci.nsIFileURL);
+	assert.isInstanceOf(Ci.nsIURI, uri);
+	assert.isInstanceOf(Ci.nsIFileURL, uri);
 	assert.matches(uriPattern, uri.spec);
 	assert.equals('file', uri.scheme);
 
