@@ -75,7 +75,8 @@ function UXUGetFileFromArguments(aArgs)
 window.addEventListener('DOMContentLoaded', function() {
 	window.removeEventListener('DOMContentLoaded', arguments.callee, false);
 
-	let (source = window.ComposeStartup.toSource()) {
+	{
+		let source = window.ComposeStartup.toSource();
 		if (source.indexOf('gMsgCompose = ') > -1) {
 			eval('window.ComposeStartup = '+source.replace(
 				/(gMsgCompose) = ((?:sMsgComposeService|composeSvc|MailServices.compose).(?:I|i)nitCompose\((?:(?:window, )?params|params, window, editorElement.docShell)\);)/,
