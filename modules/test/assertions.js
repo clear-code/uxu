@@ -527,7 +527,8 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 						);
 
 					default:
-						let (checked = false) {
+						{
+							let checked = false;
 							for (let i in aExpected)
 							{
 								if (aExpected.hasOwnProperty(i) &&
