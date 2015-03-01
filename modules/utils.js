@@ -1826,7 +1826,7 @@ inspect : function(aObject, aIndent)
 							value = inaccessible.values[objIndex][propIndex];
 						}
 					}
-					return aName.quote() + ': ' + value;
+					return JSON.stringify(aName) + ': ' + value;
 				});
 			if (aIndent) {
 				inspectedResults[index] = "{\n" +
