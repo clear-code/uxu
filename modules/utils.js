@@ -2423,6 +2423,8 @@ getErrorNameFromNSExceptionCode : function(aCode)
  
 getDocumentEncoding : function(aSource) 
 {
+	return null;
+
 	if (
 		!this.internalLoader ||
 		!aSource ||
