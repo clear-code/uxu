@@ -5,6 +5,12 @@ var TestSuite = utils.import(topDir+'modules/test/suite.js', {}).TestSuite;
 
 var testcase;
 
+function startUp()
+{
+	// if it is zero, this test will fail.
+	utils.setPref('dom.max_chrome_script_run_time', 20);
+}
+
 function setUp()
 {
 	testcase = new TestCase('description', {
@@ -637,7 +643,8 @@ function testStopper()
 	assert.isFalse(testcase.done);
 	assert.isTrue(testcase.aborted);
 }
-function testPrivSetUpTearDown()
+
+function testPrivSetUpTearDown()
 {
 	var pass = new FunctionMock('pass');
 	pass.expect('startUp')
