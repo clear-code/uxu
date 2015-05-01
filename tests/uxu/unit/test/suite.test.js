@@ -174,12 +174,12 @@ test_setUpTestWindow.tearDown = function() {
 };
 function test_setUpTestWindow()
 {
-	utils.setUpTestWindow({ width : 350, height : 292, x : 129, y : 192 });
+	utils.setUpTestWindow({ width : 450, height : 292, x : 129, y : 192 });
 	yield 300;
 	var win = utils.getTestWindow();
 	assert.isNotNull(win);
 	assert.equals(
-		{ outerWidth:  350,
+		{ outerWidth:  450,
 		  outerHeight: 292,
 		  screenX:     129,
 		  screenY:     192 },
