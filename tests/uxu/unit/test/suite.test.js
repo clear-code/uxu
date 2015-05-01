@@ -165,24 +165,45 @@ function test_setAndGetClipBoard()
 	assert.equals(random, utils.getClipBoard());
 }
 
-test_setUpTearDownTestWindow.setUp = function() {
+test_setUpTestWindow.setUp = function() {
 	yield utils.tearDownTestWindow();
 	assert.isNull(utils.getTestWindow());
 };
-test_setUpTearDownTestWindow.tearDown = function() {
-	utils.tearDownTestWindow(); // teadown it even if this test is failed.
+test_setUpTestWindow.tearDown = function() {
+	yield Do(utils.tearDownTestWindow());
 };
-function test_setUpTearDownTestWindow()
+function test_setUpTestWindow()
 {
 	utils.setUpTestWindow({ width : 350, height : 292, x : 129, y : 192 });
 	yield 300;
 	var win = utils.getTestWindow();
 	assert.isNotNull(win);
-	assert.equals(350, win.outerWidth);
-	assert.equals(292, win.outerHeight);
-	assert.equals(129, win.screenX);
-	assert.equals(192, win.screenY);
-	utils.tearDownTestWindow();
+	assert.equals(
+		{ outerWidth:  350,
+		  outerHeight: 292,
+		  screenX:     129,
+		  screenY:     192 },
+		{ outerWidth:  win.outerWidth,
+		  outerHeight: win.outerHeight,
+		  screenX:     win.screenX,
+		  screenY:     win.screenY });
+}
+
+test_tearDownTestWindow.setUp = function() {
+
+	yield utils.tearDownTestWindow();
+	assert.isNull(utils.getTestWindow());
+	utils.setUpTestWindow({ width : 350, height : 292, x : 129, y : 192 });
+	yield 300;
+	assert.isNotNull(utils.getTestWindow());
+};
+test_tearDownTestWindow.tearDown = function() {
+	yield Do(utils.tearDownTestWindow()); // teadown it even if this test is failed.
+};
+function test_tearDownTestWindow()
+{
+	var win = utils.getTestWindow();
+	yield Do(utils.tearDownTestWindow());
 	yield 100;
 	assert.isTrue(win.closed);
 }
