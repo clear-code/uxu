@@ -102,10 +102,15 @@ function padLeft(aThing, aWidth, aPadder)
 function scrollReportsTo(aTarget) 
 {
 	if (!aTarget) return;
-	_('testcase-reports')
-		.boxObject
-		.QueryInterface(Ci.nsIScrollBoxObject)
-		.ensureElementIsVisible(aTarget);
+	var boxObject = _('testcase-reports').boxObject;
+	try { // for old Gecko
+		if (boxObject instanceof Ci.nsIBoxObject &&
+			'nsIScrollBoxObject' in Ci)
+			boxObject = boxObject.QueryInterface(Ci.nsIScrollBoxObject);
+	}
+	catch(e) {
+	}
+	boxObject.ensureElementIsVisible(aTarget);
 };
  
 function getFailureReports() 
