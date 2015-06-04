@@ -319,6 +319,20 @@ function test_doIteration()
 	assert.isTrue(flagFunction);
 }
 
+function test_doIterationWithError()
+{
+	function TestGenerator()
+	{
+		throw new Error('error');
+		yield 1;
+	}
+
+	var iterator = TestGenerator();
+	var retVal = utilsModule.doIteration(iterator);
+	yield 100;
+	assert.isInstanceOf(Error, retVal.error);
+}
+
 function test_doIterationCallbacks()
 {
 	var onEnd = false;

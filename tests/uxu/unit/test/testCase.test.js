@@ -972,3 +972,20 @@ function testWithHashParameters()
 	              'success', 'success',
 	              'success', 'success');
 }
+
+function testErrorInGenerator()
+{
+	testcase.tests = {
+		'test'   : function() {
+			yield Do(function() {
+				throw new Error('error from generator');
+				yield 1;
+			});
+		}
+	};
+	testcase.masterPriority = 'must';
+	testcase.run();
+	yield 100;
+	assert.isTrue(testcase.done);
+	assertResults('error');
+}
