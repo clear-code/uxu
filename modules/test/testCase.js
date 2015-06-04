@@ -1183,52 +1183,48 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 		var afterReadyTimeout = this.PING_INTERVAL + Math.max(0, this._utils.getPref('extensions.uxu.run.timeout'));
 		var afterReadyInterval = 50;
 		var report = new ns.Report();
-		this._utils.doIteration(
-			function() {
-				var last = Date.now();
-				var current;
-				var timeout;
-				var interval;
-				while (!self.done)
-				{
-					timeout = self._remoteReady ? afterReadyTimeout : beforeReadyTimeout ;
-					interval = self._remoteReady ? afterReadyInterval : beforeReadyInterval ;
-					if (!self.aborted && self._stopper.called) {
-						self.aborted = true;
-					}
-					if (Date.now() - self._lastRemoteResponse > timeout) {
-						throw new Error(bundle.getFormattedString('error_remote_timeout', [parseInt(timeout / 1000)]));
-					}
-					yield interval;
-				}
-			},
+		this._utils.doIteration(function() {
+			var last = Date.now();
+			var current;
+			var timeout;
+			var interval;
+			while (!self.done)
 			{
-				onEnd : function(e) {
-					report.addTopic({
-						result : self.RESULT_SUCCESS
-					});
-					report.onFinish();
-					self._onFinishRemoteResult(report);
-
-					server.destroy();
-					server = null;
-					self._utils.scheduleToRemove(profile);
-				},
-				onError : function(e) {
-					report.addTopic({
-						result      : self.RESULT_ERROR,
-						description : bundle.getFormattedString('report_description_remote', [self.title]),
-						exception   : e
-					});
-					report.onFinish();
-					self._onFinishRemoteResult(report);
-
-					server.destroy();
-					server = null;
-					self._utils.scheduleToRemove(profile);
+				timeout = self._remoteReady ? afterReadyTimeout : beforeReadyTimeout ;
+				interval = self._remoteReady ? afterReadyInterval : beforeReadyInterval ;
+				if (!self.aborted && self._stopper.called) {
+					self.aborted = true;
 				}
+				if (Date.now() - self._lastRemoteResponse > timeout) {
+					throw new Error(bundle.getFormattedString('error_remote_timeout', [parseInt(timeout / 1000)]));
+				}
+				yield interval;
 			}
-		);
+		})
+		.then(function() {
+			report.addTopic({
+				result : self.RESULT_SUCCESS
+			});
+			report.onFinish();
+			self._onFinishRemoteResult(report);
+
+			server.destroy();
+			server = null;
+			self._utils.scheduleToRemove(profile);
+		})
+		.catch(function(e) {
+			report.addTopic({
+				result      : self.RESULT_ERROR,
+				description : bundle.getFormattedString('report_description_remote', [self.title]),
+				exception   : e
+			});
+			report.onFinish();
+			self._onFinishRemoteResult(report);
+
+			server.destroy();
+			server = null;
+			self._utils.scheduleToRemove(profile);
+		});
 
 		return true;
 	},
@@ -1328,27 +1324,21 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 
 		try {
 			var result = aTest.code.call(this.context);
-			if (this._utils.isGeneratedIterator(result)) {
-				var continuation = function() {
-						continuation.next = aNext;
-					};
-				ns.Deferred.next(function() {
-					self._utils.doIteration(result, {
-						onEnd : function(e) {
-							aReport.onDetailedFinish();
-							onSuccess();
-							continuation();
-						},
-						onError : function(e) {
-							aReport.onDetailedFinish();
-							onError(e);
-							continuation();
-						}
-					});
+			var continuation = function() {
+					continuation.next = aNext;
+				};
+			self._utils.doIteration(result)
+				.then(function() {
+					aReport.onDetailedFinish();
+					onSuccess();
+					continuation();
+				})
+				.catch(function(e) {
+					aReport.onDetailedFinish();
+					onError(e);
+					continuation();
 				});
-				return continuation;
-			}
-			onSuccess();
+			return continuation;
 		}
 		catch(e) {
 			onError(e);
@@ -1376,28 +1366,23 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 			var result = useContinuation ?
 					aFunction.call(this.context, continuation) :
 					aFunction.call(this.context);
-			if (this._utils.isGeneratedIterator(result)) {
-				let self = this;
-				this._utils.doIteration(result, {
-					onEnd : function(e) {
-						aReport.onFinish();
-						if (!useContinuation)
-							continuation.next = aSuccess;
-					},
-					onError : function(e) {
-						aReport.addTopic({
-							result      : self.RESULT_ERROR,
-							description : aDescription,
-							exception   : self._utils.normalizeError(e)
-						});
-						aReport.onFinish();
-						continuation.next = aFailed;
-					}
+			let self = this;
+			this._utils.doIteration(result)
+				.then(function() {
+					aReport.onFinish();
+					if (!useContinuation)
+						continuation.next = aSuccess;
+				})
+				.catch(function(e) {
+					aReport.addTopic({
+						result      : self.RESULT_ERROR,
+						description : aDescription,
+						exception   : self._utils.normalizeError(e)
+					});
+					aReport.onFinish();
+					continuation.next = aFailed;
 				});
-				return continuation;
-			}
-			aReport.onFinish();
-			return useContinuation ? continuation : aSuccess ;
+			return continuation;
 		}
 		catch(e) {
 			let multiplex = e.name == 'MultiplexError';

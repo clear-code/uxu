@@ -976,7 +976,7 @@ function testWithHashParameters()
 function testErrorInGenerator()
 {
 	testcase.tests = {
-		'test'   : function() {
+		'test' : function() {
 			yield Do(function() {
 				throw new Error('error from generator');
 				yield 1;

@@ -473,14 +473,11 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		}
 		if (aTask && utils.isGeneratedIterator(aTask)) {
 			var self = this;
-			return utils.doIteration(aTask, {
-				onEnd : function(e)
-				{
-					if (!e || !self._exceptionMatches(aExpectedException, e)) {
-						self._onRaisesFinish(aExpectedException, e, aMessage);
-					}
-					self._onSuccess();
+			return utils.doIteration(aTask).catch(function(e) {
+				if (!e || !self._exceptionMatches(aExpectedException, e)) {
+					self._onRaisesFinish(aExpectedException, e, aMessage);
 				}
+				self._onSuccess();
 			});
 		}
 		else if (!raised) {
@@ -599,15 +596,12 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		}
 		if (aTask && utils.isGeneratedIterator(aTask)) {
 			var self = this;
-			return utils.doIteration(aTask, {
-				onEnd : function(e)
-				{
-					if (!e || !self._exceptionMatches(aUnexpectedException, e)) {
-						self._onSuccess();
-						return;
-					}
-					self._onNotRaisesFinish(aUnexpectedException, e, aMessage);
+			return utils.doIteration(aTask).catch(function(e) {
+				if (!e || !self._exceptionMatches(aUnexpectedException, e)) {
+					self._onSuccess();
+					return;
 				}
+				self._onNotRaisesFinish(aUnexpectedException, e, aMessage);
 			});
 		}
 		this._onSuccess();
@@ -757,15 +751,8 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		if (typeof aTask == 'function') aTask = aTask.call(aContext);
 		if (aTask && utils.isGeneratedIterator(aTask)) {
 			var self = this;
-			return utils.doIteration(aTask, {
-				onEnd : function(e)
-				{
-					self._onDifferenceFinish(startValue, aGetter(), aExpectedDelta, aMessage);
-				},
-				onError : function(e)
-				{
-					throw e;
-				}
+			return utils.doIteration(aTask).then(function() {
+				self._onDifferenceFinish(startValue, aGetter(), aExpectedDelta, aMessage);
 			});
 		}
 		else {
@@ -824,15 +811,8 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		if (typeof aTask == 'function') aTask = aTask.call(aContext);
 		if (aTask && utils.isGeneratedIterator(aTask)) {
 			var self = this;
-			return utils.doIteration(aTask, {
-				onEnd : function(e)
-				{
-					self._onNoDifferenceFinish(startValue, aGetter(), aMessage);
-				},
-				onError : function(e)
-				{
-					throw e;
-				}
+			return utils.doIteration(aTask).then(function() {
+				self._onNoDifferenceFinish(startValue, aGetter(), aMessage);
 			});
 		}
 		else {
@@ -1047,15 +1027,8 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		if (typeof aTask == 'function') aTask = aTask.call(aContext);
 		if (aTask && utils.isGeneratedIterator(aTask)) {
 			var self = this;
-			return utils.doIteration(aTask, {
-				onEnd : function(e)
-				{
-					self._onFinishesWithinFinish(aExpectedTime, startAt, aMessage);
-				},
-				onError : function(e)
-				{
-					throw e;
-				}
+			return utils.doIteration(aTask).then(function() {
+				self._onFinishesWithinFinish(aExpectedTime, startAt, aMessage);
 			});
 		}
 		else {
@@ -1089,15 +1062,8 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		if (typeof aTask == 'function') aTask = aTask.call(aContext);
 		if (aTask && utils.isGeneratedIterator(aTask)) {
 			var self = this;
-			return utils.doIteration(aTask, {
-				onEnd : function(e)
-				{
-					self._onNotFinishesWithinFinish(aExpectedTime, startAt, aMessage);
-				},
-				onError : function(e)
-				{
-					throw e;
-				}
+			return utils.doIteration(aTask).then(function() {
+				self._onNotFinishesWithinFinish(aExpectedTime, startAt, aMessage);
 			});
 		}
 		else {
@@ -1146,20 +1112,9 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		}
 		if (aTask && utils.isGeneratedIterator(aTask)) {
 			var self = this;
-			return utils.doIteration(aTask, {
-				onFail : function(e)
-				{
-					throw e;
-				},
-				onError : function(e)
-				{
-					throw e;
-				},
-				onEnd : function(e)
-				{
-					self._assertionsCountCompare(aExpectedCount, aOperator, self._successCount - count, aMessage);
-					self._onSuccess();
-				}
+			return utils.doIteration(aTask).then(function() {
+				self._assertionsCountCompare(aExpectedCount, aOperator, self._successCount - count, aMessage);
+				self._onSuccess();
 			});
 		}
 		this._assertionsCountCompare(aExpectedCount, aOperator, this._successCount - count, aMessage);

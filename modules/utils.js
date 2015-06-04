@@ -1468,230 +1468,156 @@ isGeneratedIterator : function(aObject)
 	return false;
 },
  
-doIteration : function(aGenerator, aCallbacks) 
+doIteration : function(aIterationTarget) 
 {
-	if (!aGenerator)
-		throw new Error(bundle.getString('error_utils_no_generator'));
-
-	var iterator = aGenerator;
-	if (typeof aGenerator == 'function')
-		iterator = aGenerator();
-	if (!this.isGeneratedIterator(iterator))
-		throw new Error(bundle.getFormattedString('error_utils_invalid_generator', [aGenerator]));
-
 	var callerStack = this.reduceTopStackLine(this.getStackTrace());
 
-	var retVal = { value : false };
+	var self = this;
 	var lastRun = Date.now();
 	var timeout = Math.max(0, this.getPref('extensions.uxu.run.timeout'));
-	var self = this;
-	(function(aObject) {
-		var loop = arguments.callee;
+
+	return new Promise(function(aResolve, aReject) {
+		if (typeof aIterationTarget == 'function')
+			aIterationTarget = aIterationTarget();
+
+		var initialResult;
+		var iterator = null;
+		if (self.isGeneratedIterator(aIterationTarget))
+			iterator = aIterationTarget;
+		else
+			initialResult = aIterationTarget;
+
+		ns.setTimeout(function loop(aResult) {
 		try {
 			if (Date.now() - lastRun >= timeout)
 				throw new Error(bundle.getFormattedString('error_generator_timeout', [parseInt(timeout / 1000)]));
 
-			if (aObject !== void(0)) {
-				var continueAfterDelay = false;
-				if (aObject instanceof Error) {
-					throw aObject;
+			var continueAfterDelay = false;
+			if (aResult && aResult.stack)
+				throw aResult;
+
+			if (typeof aResult == 'number') {
+				// TraceMonkeyのバグなのかなんなのか、指定時間経つ前にタイマーが発動することがあるようだ……
+				continueAfterDelay = (Date.now() - lastRun < aResult);
+			}
+			else if (aResult && typeof aResult == 'object') {
+				if (self.isGeneratedIterator(aResult)) {
+					self.doIteration(aResult).then(loop).catch(loop);
+					return;
 				}
-				else if (typeof aObject == 'number') {
-					// TraceMonkeyのバグなのかなんなのか、指定時間経つ前にタイマーが発動することがあるようだ……
-					continueAfterDelay = (Date.now() - lastRun < aObject);
+
+				if (typeof aResult.then == 'function') {
+					aResult.then(loop).catch(loop);
+					return;
 				}
-				else if (aObject && typeof aObject == 'object') {
-					if (self.isGeneratedIterator(aObject)) {
-						return ns.Deferred.next(function() { loop(self.doIteration(aObject)); });
-					}
-					else if (aObject.then && typeof aObject.then == 'function') {
-						let finished = { value : false };
-						aObject
-							.then(function() {
-								finished.value = true;
-							})
-							.catch(function() {
-								finished.value = true;
-							});
-						return Promise.resolve().then(function() { loop(finished); });
-					}
-					else if (self.isDeferred(aObject)) {
-						let finished = { value : false };
-						if (aObject.fired) {
-							finished.value = true;
-						}
-						else {
-							aObject
-								.next(function() {
-									finished.value = true;
-								})
-								.error(function() {
-									finished.value = true;
-								});
-						}
-						return ns.Deferred.next(function() { loop(finished); });
-					}
-					else if ('error' in aObject && aObject.error instanceof Error) {
-						throw aObject.error;
-					}
-					else if (!aObject.value) {
-						continueAfterDelay = true;
-					}
+				if (self.isDeferred(aResult)) {
+					if (aResult.fired)
+						ns.Deferred.next(function() {
+							loop({ value: true });
+						});
+					else
+						aResult.next(loop).error(loop);
+					return;
 				}
-				else if (typeof aObject == 'function') {
-					var val;
-					try {
-						val = aObject();
-					}
-					catch(e) {
-						e.stack += callerStack;
-						throw e;
-					}
-					if (!val)
-						continueAfterDelay = true;
-					else if (val instanceof Error)
-						throw val;
-					else if (self.isGeneratedIterator(val))
-						return ns.Deferred.next(function() { loop(self.doIteration(val)); });
+
+				if (aResult.error) {
+					throw aResult.error;
 				}
-				if (continueAfterDelay)
-					return ns.setTimeout(loop, 10, aObject);
+				else if (!aResult.value) {
+					continueAfterDelay = true;
+				}
+				else if (aResult.value) {
+					aResolve(aResult);
+					return;
+				}
+			}
+			else if (typeof aResult == 'function') {
+				let newResult = aResult();
+				if (!newResult) {
+					continueAfterDelay = true;
+				}
+				else if (newResult.stack) {
+					throw newResult;
+				}
+				else if (self.isGeneratedIterator(newResult)) {
+					self.doIteration(newResult).then(loop).catch(loop);
+					return;
+				}
+			}
+			if (continueAfterDelay) {
+				ns.setTimeout(loop, 10, aResult);
+				return;
 			}
 
-			var returnedValue = iterator.next();
+			if (!iterator) {
+				aResolve({ value: true });
+				return;
+			}
+
+			var newResult = iterator.next() || 0;
 			lastRun = Date.now();
 
-			if (!returnedValue) returnedValue = 0;
-			switch (typeof returnedValue)
+			switch (typeof newResult)
 			{
 				default:
-					returnedValue = Number(returnedValue);
-					if (isNaN(returnedValue))
-						returnedValue = 0;
-
+					newResult = Number(newResult);
+					if (isNaN(newResult))
+						newResult = 0;
 				case 'number':
-					if (returnedValue >= 0) {
-						ns.setTimeout(loop, returnedValue, returnedValue);
+					if (newResult >= 0) {
+						ns.setTimeout(loop, newResult, newResult);
 						return;
 					}
-					throw new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(returnedValue)]));
+					throw new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(newResult)]));
 
 				case 'object':
-					if (returnedValue) {
-						if ('value' in returnedValue || self.isGeneratedIterator(returnedValue)) {
-							ns.setTimeout(loop, 10, returnedValue);
-							return;
-						}
-						else if (returnedValue.then && typeof returnedValue.then == 'function') {
-							returnedValue
-								.then(function(aReturnedValue) { loop(); })
-								.catch(function(aException) { loop(); });
-							return;
-						}
-						else if (self.isDeferred(returnedValue)) {
-							if (returnedValue.fired) {
-								ns.Deferred.next(function() { loop(); });
-							}
-							else {
-								returnedValue
-									.next(function(aReturnedValue) { loop(); })
-									.error(function(aException) { loop(); });
-							}
-							return;
-						}
-						else if (returnedValue.error) {
-							throw returnedValue.error;
-						}
+					if (newResult && typeof newResult.then == 'function') {
+						newResult.then(loop).catch(loop);
+						return;
 					}
-					throw new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(returnedValue)]));
-
+					if (self.isDeferred(aResult)) {
+						if (newResult.fired)
+							ns.Deferred.next(function() {
+								loop({ value: true });
+							});
+						else
+							newResult.next(loop).error(loop);
+						return;
+					}
 				case 'function':
-					ns.setTimeout(loop, 10, returnedValue);
+					ns.setTimeout(loop, 10, newResult);
 					return;
 			}
 		}
 		catch(e if e instanceof StopIteration) {
-			try {
-				e.stack += callerStack;
-			}
-			catch(e) {
-			}
-			retVal.error = e;
-			retVal.value = true;
-			if (!aCallbacks)
-				return retVal;
-
-			try {
-				if (aCallbacks.onEnd)
-					aCallbacks.onEnd(e);
-			}
-			catch(e) {
-				retVal.error = e;
-			}
+			aResolve({ value: true });
 		}
 		catch(e if e.name == 'AssertionFailed') {
 			try {
 				e.stack += callerStack;
+				aReject(e);
 			}
 			catch(e) {
-			}
-			retVal.error = e;
-			retVal.value = true;
-			if (!aCallbacks)
-				return retVal;
-
-			try {
-				if (aCallbacks.onFail)
-					aCallbacks.onFail(e);
-				else if (aCallbacks.onError)
-					aCallbacks.onError(e);
-				else if (aCallbacks.onEnd)
-					aCallbacks.onEnd(e);
-			}
-			catch(e) {
-				retVal.error = e;
+				aReject(e);
 			}
 		}
 		catch(e) {
 			e = self.normalizeError(e);
 			try {
 				e.stack += callerStack;
+				aReject(e);
 			}
 			catch(e) {
-			}
-			retVal.error = e;
-			retVal.value = true;
-			if (!aCallbacks)
-				return retVal;
-
-			try {
-				if (aCallbacks.onError)
-					aCallbacks.onError(e);
-				else if (aCallbacks.onEnd)
-					aCallbacks.onEnd(e);
-			}
-			catch(e) {
-				retVal.error = e;
+				aReject(e);
 			}
 		}
-	})(null);
-
-	return retVal;
+		}, 0, initialResult);
+	});
 },
  
-Do : function(aObject) 
+Do : function(aIterationTarget) // for backward compatibility 
 {
-	if (!aObject)
-		return aObject;
-	if (this.isGeneratedIterator(aObject))
-		return this.doIteration(aObject);
-	if (typeof aObject != 'function')
-		return aObject;
-
-	var retVal = aObject();
-	return (this.isGeneratedIterator(retVal)) ?
-				this.doIteration(retVal) :
-				retVal;
+	return aIterationTarget;
 },
   
 // データベース操作 
