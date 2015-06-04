@@ -328,9 +328,9 @@ function test_doIterationWithError()
 	}
 
 	var iterator = TestGenerator();
-	assert.raises(Error, function() {
-		utilsModule.doIteration(iterator);
-	});
+	var retVal = utilsModule.doIteration(iterator);
+	yield 100;
+	assert.isInstanceOf(Error, retVal.error);
 }
 
 function test_doIterationCallbacks()
