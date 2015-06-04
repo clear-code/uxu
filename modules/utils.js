@@ -15,7 +15,7 @@
  * The Original Code is UxU - UnitTest.XUL.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2010-2014
+ * Portions created by the Initial Developer are Copyright (C) 2010-2015
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <shimoda@clear-code.com>
@@ -286,6 +286,15 @@ wait : function(aWaitCondition)
 		case 'object':
 			if (this.isGeneratedIterator(aWaitCondition)) {
 				finished = this.doIteration(aWaitCondition);
+			}
+			else if (typeof aWaitCondition.then == 'function') {
+				aWaitCondition
+					.then(function() {
+						finished.value = true;
+					})
+					.catch(function() {
+						finished.value = true;
+					});
 			}
 			else if (this.isDeferred(aWaitCondition)) {
 				if (aWaitCondition.fired)
