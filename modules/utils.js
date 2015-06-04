@@ -1619,7 +1619,7 @@ doIteration : function(aGenerator, aCallbacks)
 			retVal.error = e;
 			retVal.value = true;
 			if (!aCallbacks)
-				return retVal;
+				throw e;
 
 			try {
 				if (aCallbacks.onEnd)
@@ -1638,7 +1638,7 @@ doIteration : function(aGenerator, aCallbacks)
 			retVal.error = e;
 			retVal.value = true;
 			if (!aCallbacks)
-				return retVal;
+				throw e;
 
 			try {
 				if (aCallbacks.onFail)
@@ -1662,7 +1662,7 @@ doIteration : function(aGenerator, aCallbacks)
 			retVal.error = e;
 			retVal.value = true;
 			if (!aCallbacks)
-				return retVal;
+				throw e;
 
 			try {
 				if (aCallbacks.onError)
