@@ -447,6 +447,7 @@ function testMasterPriority()
 		'2'      : new MockFunction('neverRunTest1')
 	};
 	testcase.masterPriority = 'never';
+	testcase.run();
 	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.isTrue(testcase.done);
 }
