@@ -41,6 +41,13 @@ if (typeof window == 'undefined')
 const Cc = Components.classes; 
 const Ci = Components.interfaces;
 
+try {
+	var { Promise } = Components.utils.import('resource://gre/modules/Promise.jsm', {});
+}
+catch(e) {
+	var Promise = null;
+}
+
 var ns = {};
 Components.utils.import('resource://uxu-modules/lib/inherit.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
