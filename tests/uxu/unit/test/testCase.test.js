@@ -214,6 +214,7 @@ function testBDDFunctionCallStyle()
 	assertInitialized(testcase.tests[0], '1');
 	testcase.masterPriority = 'must';
 	testcase.verify();
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.isTrue(testcase.done);
 }
 
@@ -230,6 +231,7 @@ function testBDDHashStyle()
 	assertInitialized(testcase.tests[0], '1');
 	testcase.masterPriority = 'must';
 	testcase.verify();
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.isTrue(testcase.done);
 }
 
