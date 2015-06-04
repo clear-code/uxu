@@ -1599,6 +1599,9 @@ doIteration : function(aGenerator, aCallbacks)
 							}
 							return;
 						}
+						else if (returnedValue.error) {
+							throw returnedValue.error;
+						}
 					}
 					throw new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(returnedValue)]));
 
@@ -1615,7 +1618,8 @@ doIteration : function(aGenerator, aCallbacks)
 			}
 			retVal.error = e;
 			retVal.value = true;
-			if (!aCallbacks) return;
+			if (!aCallbacks)
+				return retVal;
 
 			try {
 				if (aCallbacks.onEnd)
@@ -1633,7 +1637,8 @@ doIteration : function(aGenerator, aCallbacks)
 			}
 			retVal.error = e;
 			retVal.value = true;
-			if (!aCallbacks) return;
+			if (!aCallbacks)
+				return retVal;
 
 			try {
 				if (aCallbacks.onFail)
@@ -1656,7 +1661,8 @@ doIteration : function(aGenerator, aCallbacks)
 			}
 			retVal.error = e;
 			retVal.value = true;
-			if (!aCallbacks) return;
+			if (!aCallbacks)
+				return retVal;
 
 			try {
 				if (aCallbacks.onError)
