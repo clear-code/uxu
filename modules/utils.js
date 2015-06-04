@@ -294,7 +294,7 @@ wait : function(aWaitCondition)
 			if (this.isGeneratedIterator(aWaitCondition)) {
 				finished = this.doIteration(aWaitCondition);
 			}
-			else if (typeof aWaitCondition.then == 'function') {
+			else if (aWaitCondition.then && typeof aWaitCondition.then == 'function') {
 				aWaitCondition
 					.then(function() {
 						finished.value = true;
@@ -1504,6 +1504,17 @@ doIteration : function(aGenerator, aCallbacks)
 					if (self.isGeneratedIterator(aObject)) {
 						return ns.Deferred.next(function() { loop(self.doIteration(aObject)); });
 					}
+					else if (aObject.then && typeof aObject.then == 'function') {
+						let finished = { value : false };
+						aObject
+							.then(function() {
+								finished.value = true;
+							})
+							.catch(function() {
+								finished.value = true;
+							});
+						return Promise.resolve().then(function() { loop(finished); });
+					}
 					else if (self.isDeferred(aObject)) {
 						let finished = { value : false };
 						if (aObject.fired) {
@@ -1571,7 +1582,7 @@ doIteration : function(aGenerator, aCallbacks)
 							ns.setTimeout(loop, 10, returnedValue);
 							return;
 						}
-						else if (typeof returnedValue.then == 'function') {
+						else if (returnedValue.then && typeof returnedValue.then == 'function') {
 							returnedValue
 								.then(function(aReturnedValue) { loop(); })
 								.catch(function(aException) { loop(); });
