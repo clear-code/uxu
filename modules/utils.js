@@ -1564,6 +1564,12 @@ doIteration : function(aGenerator, aCallbacks)
 							ns.setTimeout(loop, 10, returnedValue);
 							return;
 						}
+						else if (typeof returnedValue.then == 'function') {
+							returnedValue
+								.then(function(aReturnedValue) { loop(); })
+								.catch(function(aException) { loop(); });
+							return;
+						}
 						else if (self.isDeferred(returnedValue)) {
 							if (returnedValue.fired) {
 								ns.Deferred.next(function() { loop(); });
