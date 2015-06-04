@@ -32,7 +32,7 @@ function tearDown()
 function assertResults()
 {
 	testcase.run();
-	utils.wait(function() { return testcase.done; });
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.equals(
 		Array.slice(arguments),
 		testcase.tests.map(function(aTest) {
@@ -164,6 +164,7 @@ function testRegisterFunctionCallStyle()
 	assertInitialized(testcase.tests[0], '1');
 	testcase.masterPriority = 'must';
 	testcase.run();
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.isTrue(testcase.done);
 }
 
@@ -180,6 +181,7 @@ function testRegisterOperationStyle()
 	assertInitialized(testcase.tests[0], 'test0');
 	testcase.masterPriority = 'must';
 	testcase.run();
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.isTrue(testcase.done);
 }
 
@@ -197,6 +199,7 @@ function testRegisterHashStyle()
 	assertInitialized(testcase.tests[0], '1');
 	testcase.masterPriority = 'must';
 	testcase.run();
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.isTrue(testcase.done);
 }
 
@@ -264,7 +267,7 @@ function testAsync_yield()
 	testcase.masterPriority = 'must';
 	var start = Date.now();
 	testcase.run();
-	utils.wait(function() { return testcase.done; });
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.compare(Date.now() - start, '>=', (100 * 3) * 3);
 }
 
@@ -302,6 +305,7 @@ function testAsync_wait()
 	testcase.masterPriority = 'must';
 	var start = Date.now();
 	testcase.run();
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.isTrue(testcase.done);
 	assert.compare(Date.now() - start, '>=', (100 * 3) * 3);
 }
@@ -327,6 +331,7 @@ function testReuseFunctions()
 	testcase.tests = tests;
 	testcase.masterPriority = 'must';
 	testcase.run();
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.isTrue(testcase.done);
 
 	mocks.setUp.assert();
@@ -350,6 +355,7 @@ function testReuseFunctions()
 	testcase.tests = tests;
 	testcase.masterPriority = 'must';
 	testcase.run();
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.isTrue(testcase.done);
 }
 
@@ -364,6 +370,7 @@ function testNoFunction()
 	assert.equals(0, testcase.tests.length);
 	testcase.masterPriority = 'must';
 	testcase.run();
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.isTrue(testcase.done);
 }
 
@@ -395,7 +402,7 @@ function testPriority()
 			delete aTest.shouldSkip;
 		});
 		testcase.run();
-		utils.wait(function() { return testcase.done; });
+		utils.wait(function() { return testcase.done || testcase.aborted; });
 		utils.wait(1);
 	}
 	assert.equals(testCount, setUpCount);
@@ -422,6 +429,7 @@ function testMasterPriority()
 	assert.equals(2, testcase.tests.length);
 	testcase.masterPriority = 'must';
 	testcase.run();
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.isTrue(testcase.done);
 
 	testcase = new TestCase('description2');
@@ -437,7 +445,7 @@ function testMasterPriority()
 		'2'      : new MockFunction('neverRunTest1')
 	};
 	testcase.masterPriority = 'never';
-	testcase.run();
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.isTrue(testcase.done);
 }
 
@@ -454,6 +462,7 @@ function testMasterPriority_overriddenByEachPriority()
 	};
 	testcase.masterPriority = 'must';
 	testcase.run();
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.isTrue(testcase.done);
 }
 
@@ -472,6 +481,7 @@ function testForceRetry()
 	assert.equals(1, testcase.tests.length);
 	testcase.masterPriority = 'must';
 	testcase.run();
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.isTrue(testcase.done);
 
 	tests.setUp.assert();
@@ -486,6 +496,7 @@ function testForceRetry()
 			testcase.done = false;
 			testcase.masterPriority = 'normal';
 			testcase.run();
+			utils.wait(function() { return testcase.done || testcase.aborted; });
 			assert.isTrue(testcase.done);
 		})
 	);
@@ -505,6 +516,7 @@ function testPreventForceRetryByMasterPriorityNever()
 
 	testcase.masterPriority = 'must';
 	testcase.run();
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.isTrue(testcase.done);
 
 	mocks.setUp.assert();
@@ -514,6 +526,7 @@ function testPreventForceRetryByMasterPriorityNever()
 
 	testcase.masterPriority = 'never';
 	testcase.run();
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.isTrue(testcase.done);
 }
 
@@ -533,6 +546,7 @@ function testContext()
 
 	testcase.masterPriority = 'must';
 	testcase.run();
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.isTrue(testcase.done);
 
 	testcase.done = false;
@@ -545,6 +559,7 @@ function testContext()
 
 	testcase.masterPriority = 'must';
 	testcase.run();
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.isTrue(testcase.done);
 }
 
@@ -579,6 +594,7 @@ function testListener()
 	assert.equals(3, testcase.tests.length);
 	testcase.masterPriority = 'must';
 	testcase.run();
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.isTrue(testcase.done);
 
 	mocks.setUp.assert();
@@ -598,6 +614,7 @@ function testListener()
 	testcase.done = false;
 	testcase.masterPriority = 'must';
 	testcase.run();
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 	assert.isTrue(testcase.done);
 }
 
@@ -698,7 +715,7 @@ function testPrivSetUpTearDown()
 	testcase.masterPriority = 'must';
 	testcase.randomOrder = false;
 	testcase.run();
-	utils.wait(function() { return testcase.done; });
+	utils.wait(function() { return testcase.done || testcase.aborted; });
 }
 
 function testAssertionsCount()

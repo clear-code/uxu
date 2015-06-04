@@ -1476,18 +1476,43 @@ doIteration : function(aIterationTarget)
 	var lastRun = Date.now();
 	var timeout = Math.max(0, this.getPref('extensions.uxu.run.timeout'));
 
-	return new Promise(function(aResolve, aReject) {
-		if (typeof aIterationTarget == 'function')
+	if (typeof aIterationTarget == 'function') {
+		try {
 			aIterationTarget = aIterationTarget();
+		}
+		catch(e) {
+			return Promise.reject(e);
+		}
+	}
 
-		var initialResult;
-		var iterator = null;
-		if (self.isGeneratedIterator(aIterationTarget))
-			iterator = aIterationTarget;
-		else
-			initialResult = aIterationTarget;
+	var iterator = null;
+	var initialResult = aIterationTarget;
+	if (this.isGeneratedIterator(aIterationTarget)) {
+		iterator = aIterationTarget;
+		initialResult = null;
+	}
+	else if (aIterationTarget && typeof aIterationTarget.then == 'function') {
+		initialResult = { value: false };
+		aIterationTarget
+			.then(function() {
+				initialResult.value = true;
+			}).catch(function(e) {
+				initialResult.error = e;
+			});
+	}
+	else if (this.isDeferred(aIterationTarget)) {
+		initialResult = { value: false };
+		aIterationTarget
+			.next(function() {
+				initialResult.value = true;
+			})
+			.error(function(e) {
+				initialResult.error = e;
+			});
+	}
 
-		ns.setTimeout(function loop(aResult) {
+	return new Promise(function(aResolve, aReject) {
+		var loop = function(aResult) {
 		try {
 			if (Date.now() - lastRun >= timeout)
 				throw new Error(bundle.getFormattedString('error_generator_timeout', [parseInt(timeout / 1000)]));
@@ -1611,7 +1636,10 @@ doIteration : function(aIterationTarget)
 				aReject(e);
 			}
 		}
-		}, 0, initialResult);
+		};
+		ns.Deferred.next(function() {
+			loop(initialResult);
+		});
 	});
 },
  
