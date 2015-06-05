@@ -1468,9 +1468,11 @@ isGeneratedIterator : function(aObject)
 	return false;
 },
  
-doIteration : function(aIterationTarget) 
+doIteration : function(aIterationTarget, aCallerStack) 
 {
 	var callerStack = this.reduceTopStackLine(this.getStackTrace());
+	if (aCallerStack)
+		callerStack += aCallerStack;
 
 	var self = this;
 	var lastRun = Date.now();
@@ -1528,7 +1530,7 @@ doIteration : function(aIterationTarget)
 			}
 			else if (aResult && typeof aResult == 'object') {
 				if (self.isGeneratedIterator(aResult)) {
-					self.doIteration(aResult).then(function() {
+					self.doIteration(aResult, callerStack).then(function() {
 						loop();
 					}).catch(loop);
 					return;
@@ -1556,7 +1558,7 @@ doIteration : function(aIterationTarget)
 				else if (self.isGeneratedIterator(newResult) ||
 					typeof newResult.then == 'function' ||
 					ns.Deferred.isDeferred(newResult)) {
-					self.doIteration(newResult).then(function() {
+					self.doIteration(newResult, callerStack).then(function() {
 						loop();
 					}).catch(loop);
 					return;
@@ -1575,7 +1577,7 @@ doIteration : function(aIterationTarget)
 			var newResult = iterator.next() || 0;
 			lastRun = Date.now();
 
-			self.doIteration(newResult).then(function() {
+			self.doIteration(newResult, callerStack).then(function() {
 				loop();
 			}).catch(loop);
 		}
