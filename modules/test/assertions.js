@@ -480,7 +480,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 				self._onSuccess();
 			});
 		}
-		else if (!raised) {
+		if (!raised) {
 			this._onRaisesFinish(aExpectedException, exception, aMessage);
 		}
 		this._onSuccess();
@@ -755,9 +755,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 				self._onDifferenceFinish(startValue, aGetter(), aExpectedDelta, aMessage);
 			});
 		}
-		else {
-			this._onDifferenceFinish(startValue, aGetter(), aExpectedDelta, aMessage);
-		}
+		this._onDifferenceFinish(startValue, aGetter(), aExpectedDelta, aMessage);
 	},
 	_onDifferenceFinish : function(aStartValue, aEndValue, aExpectedDelta, aMessage)
 	{
@@ -815,9 +813,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 				self._onNoDifferenceFinish(startValue, aGetter(), aMessage);
 			});
 		}
-		else {
-			this._onNoDifferenceFinish(startValue, aGetter(), aMessage);
-		}
+		this._onNoDifferenceFinish(startValue, aGetter(), aMessage);
 	},
 	_onNoDifferenceFinish : function(aStartValue, aEndValue, aMessage)
 	{
@@ -1031,9 +1027,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 				self._onFinishesWithinFinish(aExpectedTime, startAt, aMessage);
 			});
 		}
-		else {
-			this._onFinishesWithinFinish(aExpectedTime, startAt, aMessage);
-		}
+		this._onFinishesWithinFinish(aExpectedTime, startAt, aMessage);
 	},
 	finishWithin : function() { return this.finishesWithin.apply(this, arguments); },
 	_onFinishesWithinFinish : function(aExpectedTime, aStartAt, aMessage)
@@ -1066,9 +1060,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 				self._onNotFinishesWithinFinish(aExpectedTime, startAt, aMessage);
 			});
 		}
-		else {
-			this._onNotFinishesWithinFinish(aExpectedTime, startAt, aMessage);
-		}
+		this._onNotFinishesWithinFinish(aExpectedTime, startAt, aMessage);
 	},
 	notFinishWithin : function() { return this.notFinishesWithin.apply(this, arguments); },
 	finishesOver : function() { return this.notFinishesWithin.apply(this, arguments); },
