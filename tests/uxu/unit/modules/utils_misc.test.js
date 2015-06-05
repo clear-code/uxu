@@ -385,18 +385,14 @@ function test_Do()
 	var func = function() {
 		return 'foobar';
 	};
-	assert.equals('foobar', utilsModule.Do(func));
+	assert.equals(func, utilsModule.Do(func));
 
 	function Generator()
 	{
 		yield 100;
 	};
 	var result = utilsModule.Do(Generator);
-	assert.equals('object', typeof result);
-	assert.isDefined(result.value);
-	result = utilsModule.Do(Generator());
-	assert.equals('object', typeof result);
-	assert.isDefined(result.value);
+	assert.equals(Generator, result);
 }
 
 var simpleObject = {string: "String", 29: 10};
