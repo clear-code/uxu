@@ -1528,21 +1528,9 @@ doIteration : function(aIterationTarget)
 			}
 			else if (aResult && typeof aResult == 'object') {
 				if (self.isGeneratedIterator(aResult)) {
-					self.doIteration(aResult).then(loop).catch(loop);
-					return;
-				}
-
-				if (typeof aResult.then == 'function') {
-					aResult.then(loop).catch(loop);
-					return;
-				}
-				if (self.isDeferred(aResult)) {
-					if (aResult.fired)
-						ns.Deferred.next(function() {
-							loop({ value: true });
-						});
-					else
-						aResult.next(loop).error(loop);
+					self.doIteration(aResult).then(function() {
+						loop();
+					}).catch(loop);
 					return;
 				}
 
@@ -1565,8 +1553,12 @@ doIteration : function(aIterationTarget)
 				else if (newResult.stack) {
 					throw newResult;
 				}
-				else if (self.isGeneratedIterator(newResult)) {
-					self.doIteration(newResult).then(loop).catch(loop);
+				else if (self.isGeneratedIterator(newResult) ||
+					typeof newResult.then == 'function' ||
+					ns.Deferred.isDeferred(newResult)) {
+					self.doIteration(newResult).then(function() {
+						loop();
+					}).catch(loop);
 					return;
 				}
 			}
@@ -1576,44 +1568,16 @@ doIteration : function(aIterationTarget)
 			}
 
 			if (!iterator) {
-				aResolve({ value: true });
+				aResolve(aResult);
 				return;
 			}
 
 			var newResult = iterator.next() || 0;
 			lastRun = Date.now();
 
-			switch (typeof newResult)
-			{
-				default:
-					newResult = Number(newResult);
-					if (isNaN(newResult))
-						newResult = 0;
-				case 'number':
-					if (newResult >= 0) {
-						ns.setTimeout(loop, newResult, newResult);
-						return;
-					}
-					throw new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(newResult)]));
-
-				case 'object':
-					if (newResult && typeof newResult.then == 'function') {
-						newResult.then(loop).catch(loop);
-						return;
-					}
-					if (self.isDeferred(aResult)) {
-						if (newResult.fired)
-							ns.Deferred.next(function() {
-								loop({ value: true });
-							});
-						else
-							newResult.next(loop).error(loop);
-						return;
-					}
-				case 'function':
-					ns.setTimeout(loop, 10, newResult);
-					return;
-			}
+			self.doIteration(newResult).then(function() {
+				loop();
+			}).catch(loop);
 		}
 		catch(e if e instanceof StopIteration) {
 			aResolve({ value: true });
