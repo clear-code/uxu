@@ -1189,25 +1189,28 @@ function testFinishesWithin()
 		]
 	);
 
-	yield Do(assertionsModule.finishesWithin(
+	yield assertionsModule.finishesWithin(
 		1000,
 		function() {
 			yield 10;
 		},
 		{}
-	));
+	);
 
-	var result = Do(assertionsModule.finishesWithin(
+	var done = { value: false };
+	assertionsModule.finishesWithin(
 		10,
 		function() {
-			yield 500;
+			yield 100;
 		},
 		{}
-	));
-	yield (function() { return result.value; });
-	assert.isDefined(result.error);
-	assert.isNotNull(result.error);
-	assert.equals('AssertionFailed', result.error.name);
+	)
+	.catch(function(e) {
+		done.error = e;
+	});
+	yield 150;
+	assert.isDefined(done.error);
+	assert.equals('AssertionFailed', done.error.name);
 
 	assert.equal(2, assertionsModule.successCount);
 }
@@ -1251,25 +1254,28 @@ function testFinishesOver()
 		]
 	);
 
-	yield Do(assertionsModule.finishesOver(
+	yield assertionsModule.finishesOver(
 		10,
 		function() {
 			yield 500;
 		},
 		{}
-	));
+	);
 
-	var result = Do(assertionsModule.finishesOver(
-		500,
+	var done = { value: false };
+	assertionsModule.finishesOver(
+		100,
 		function() {
 			yield 10;
 		},
 		{}
-	));
-	yield (function() { return result.value; });
-	assert.isDefined(result.error);
-	assert.isNotNull(result.error);
-	assert.equals('AssertionFailed', result.error.name);
+	)
+	.catch(function(e) {
+		done.error = e;
+	});
+	yield 150;
+	assert.isDefined(done.error);
+	assert.equals('AssertionFailed', done.error.name);
 
 	assert.equal(2, assertionsModule.successCount);
 }
