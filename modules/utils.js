@@ -1496,7 +1496,8 @@ doIteration : function(aIterationTarget)
 		aIterationTarget
 			.then(function() {
 				initialResult.value = true;
-			}).catch(function(e) {
+			})
+			.catch(function(e) {
 				initialResult.error = e;
 			});
 	}
