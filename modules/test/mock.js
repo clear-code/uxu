@@ -37,7 +37,7 @@
 //  * MockObject.js http://micampe.it/projects/jsmock
 //  * JSMock http://jsmock.sourceforge.net/
 
-const EXPORTED_SYMBOLS = [
+var EXPORTED_SYMBOLS = [
 		'MockManager', 'Mock', 'FunctionMock', 'MockFunction', 'GetterMock', 'SetterMock',
 		'TypeOf'
 	];
