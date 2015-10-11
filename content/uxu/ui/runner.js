@@ -199,7 +199,7 @@ function pickFileUrl(aMode, aOptions)
 		return utils.getURLSpecFromFilePath(file.path);
 }
  
-const fileDNDObserver = 
+var fileDNDObserver = 
 {
 	
 	mayBeTestCase : function(aFile) 
