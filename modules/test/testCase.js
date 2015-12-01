@@ -1084,13 +1084,23 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 					try {
 						iterator.next();
 					}
-					catch(e if e instanceof StopIteration) {
-						ns.clearInterval(timer);
+					catch(e) {
+						if (e instanceof StopIteration) {
+							ns.clearInterval(timer);
+						}
+						else {
+							throw e;
+						}
 					}
 				}, 1);
 		}
-		catch(e if e instanceof StopIteration) {
-			// finished
+		catch(e) {
+			if (e instanceof StopIteration) {
+				// finished
+			}
+			else {
+				throw e;
+			}
 		}
 	},
 	

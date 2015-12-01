@@ -463,11 +463,10 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			try {
 				aTask = aTask.call(aContext);
 			}
-			catch(e if this._exceptionMatches(aExpectedException, e)) {
-				raised = true;
-				exception = e;
-			}
 			catch(e) {
+				if (this._exceptionMatches(aExpectedException, e)) {
+					raised = true;
+				}
 				exception = e;
 			}
 		}
@@ -587,11 +586,10 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			try {
 				aTask = aTask.call(aContext);
 			}
-			catch(e if this._exceptionMatches(aUnexpectedException, e)) {
-				exception = e;
-				raised = true;
-			}
 			catch(e) {
+				if (this._exceptionMatches(aUnexpectedException, e)) {
+					raised = true;
+				}
 				exception = e;
 			}
 			if (raised)

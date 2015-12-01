@@ -1610,68 +1610,70 @@ doIteration : function(aGenerator, aCallbacks)
 					return;
 			}
 		}
-		catch(e if e instanceof StopIteration) {
-			try {
-				e.stack += callerStack;
-			}
-			catch(e) {
-			}
-			retVal.error = e;
-			retVal.value = true;
-			if (!aCallbacks)
-				return retVal;
-
-			try {
-				if (aCallbacks.onEnd)
-					aCallbacks.onEnd(e);
-			}
-			catch(e) {
-				retVal.error = e;
-			}
-		}
-		catch(e if e.name == 'AssertionFailed') {
-			try {
-				e.stack += callerStack;
-			}
-			catch(e) {
-			}
-			retVal.error = e;
-			retVal.value = true;
-			if (!aCallbacks)
-				return retVal;
-
-			try {
-				if (aCallbacks.onFail)
-					aCallbacks.onFail(e);
-				else if (aCallbacks.onError)
-					aCallbacks.onError(e);
-				else if (aCallbacks.onEnd)
-					aCallbacks.onEnd(e);
-			}
-			catch(e) {
-				retVal.error = e;
-			}
-		}
 		catch(e) {
-			e = self.normalizeError(e);
-			try {
-				e.stack += callerStack;
-			}
-			catch(e) {
-			}
-			retVal.error = e;
-			retVal.value = true;
-			if (!aCallbacks)
-				return retVal;
-
-			try {
-				if (aCallbacks.onError)
-					aCallbacks.onError(e);
-				else if (aCallbacks.onEnd)
-					aCallbacks.onEnd(e);
-			}
-			catch(e) {
+			if (e instanceof StopIteration) {
+				try {
+					e.stack += callerStack;
+				}
+				catch(e) {
+				}
 				retVal.error = e;
+				retVal.value = true;
+				if (!aCallbacks)
+					return retVal;
+
+				try {
+					if (aCallbacks.onEnd)
+						aCallbacks.onEnd(e);
+				}
+				catch(e) {
+					retVal.error = e;
+				}
+			}
+			else if (e.name == 'AssertionFailed') {
+				try {
+					e.stack += callerStack;
+				}
+				catch(e) {
+				}
+				retVal.error = e;
+				retVal.value = true;
+				if (!aCallbacks)
+					return retVal;
+
+				try {
+					if (aCallbacks.onFail)
+						aCallbacks.onFail(e);
+					else if (aCallbacks.onError)
+						aCallbacks.onError(e);
+					else if (aCallbacks.onEnd)
+						aCallbacks.onEnd(e);
+				}
+				catch(e) {
+					retVal.error = e;
+				}
+			}
+			else {
+				e = self.normalizeError(e);
+				try {
+					e.stack += callerStack;
+				}
+				catch(e) {
+				}
+				retVal.error = e;
+				retVal.value = true;
+				if (!aCallbacks)
+					return retVal;
+
+				try {
+					if (aCallbacks.onError)
+						aCallbacks.onError(e);
+					else if (aCallbacks.onEnd)
+						aCallbacks.onEnd(e);
+				}
+				catch(e) {
+					retVal.error = e;
+				}
 			}
 		}
 	})(null);
