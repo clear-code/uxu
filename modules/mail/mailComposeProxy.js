@@ -168,7 +168,7 @@ abort : function()
 */
 
 // fallback
-__noSuchMethod__ : function(aName, aArgs)
+_callRealMethod: function(aName, aArgs)
 {
 	if (!(aName in this._real)) {
 		throw new Error('MailComposeProxy: the property "'+aName+'" is undefined.');
@@ -176,6 +176,20 @@ __noSuchMethod__ : function(aName, aArgs)
 	return this._real[aName].apply(this._real, aArgs);
 }
 
+};
+
+MailComposeProxy.create = function(aReal) {
+  var proxied = new MailComposeProxy(aReal);
+  return new Proxy(aReal, {
+    get: function(aTarget, aName) {
+      if (aName in aTarget)
+        return proxied[aName];
+
+      return function(...aArgs) {
+        return proxied._callRealMethod(aName, aArgs);
+      };
+    }
+  });
 };
 
 

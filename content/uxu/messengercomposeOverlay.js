@@ -14,7 +14,7 @@
  * The Original Code is UxU - UnitTest.XUL.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2010-2014
+ * Portions created by the Initial Developer are Copyright (C) 2010-2015
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <shimoda@clear-code.com>
@@ -80,13 +80,13 @@ window.addEventListener('DOMContentLoaded', function() {
 		if (source.indexOf('gMsgCompose = ') > -1) {
 			eval('window.ComposeStartup = '+source.replace(
 				/(gMsgCompose) = ((?:sMsgComposeService|composeSvc|MailServices.compose).(?:I|i)nitCompose\((?:(?:window, )?params|params, window, editorElement.docShell)\);)/,
-				'$1 = $2 if (!("_real" in $1)) { $1 = new UXUMailComposeProxy($1); }'
+				'$1 = $2 if (!("_real" in $1)) { $1 = UXUMailComposeProxy.create($1); }'
 			));
 		}
 		else { // Thunderbird 17 and later
 			eval('window.ComposeStartup = '+source.replace(
 				'{',
-				'{ if (!("_real" in gMsgCompose)) { gMsgCompose = new UXUMailComposeProxy(gMsgCompose); }'
+				'{ if (!("_real" in gMsgCompose)) { gMsgCompose = UXUMailComposeProxy.create(gMsgCompose); }'
 			));
 		}
 	}

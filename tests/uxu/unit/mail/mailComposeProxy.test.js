@@ -17,7 +17,7 @@ function setUp()
 {
 	assert.equals('Thunderbird', utils.product);
 	mailComposeStub = createMailComposeStub();
-	proxy = new MailComposeProxy(mailComposeStub);
+	proxy = MailComposeProxy.create(mailComposeStub);
 }
 
 function tearDown()
