@@ -232,6 +232,16 @@ function Mock(aName, aSource, aAssertions)
 	else {
 		this._name = this._name || this._defaultName;
 	}
+
+	return new Proxy(this, {
+		get: function(aTarget, aName) {
+			if (aName in aTarget)
+				return aTarget[aName];
+			return function(...aArgs) {
+				aTarget.__noSuchMethod__.call(this, aName, aArgs);
+			};
+		}
+	});
 }
 Mock.prototype = {
 	ANY         : '0f18acc8-9b1f-4261-a220-32e1dfed83d2',
@@ -427,8 +437,7 @@ Mock.prototype = {
 	{
 		var self = this;
 		this._inExpectationChain = true;
-		return {
-			__noSuchMethod__ : function(aName, aArguments) {
+		var noSuchMethod = function(aName, aArguments) {
 				var method = self.addMethod(aName);
 				var last = method.lastExpectedCall;
 				method.expect(aArguments);
@@ -436,8 +445,16 @@ Mock.prototype = {
 					self._addExpectedCall(method.lastExpectedCall);
 				self._inExpectationChain = false;
 				return method;
+			};
+		return new Proxy({}, {
+			get: function(aTarget, aName) {
+				if (aName in aTarget)
+					return aTarget[aName];
+				return function(...aArgs) {
+					noSuchMethod.call(this, aName, aArgs);
+				};
 			}
-		};
+		});
 	},
 	get when()
 	{
