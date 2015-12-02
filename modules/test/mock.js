@@ -238,7 +238,7 @@ function Mock(aName, aSource, aAssertions)
 			if (aName in aTarget)
 				return aTarget[aName];
 			return function(...aArgs) {
-				aTarget.__noSuchMethod__.call(this, aName, aArgs);
+				return aTarget.__noSuchMethod__.call(this, aName, aArgs);
 			};
 		}
 	});
@@ -451,7 +451,7 @@ Mock.prototype = {
 				if (aName in aTarget)
 					return aTarget[aName];
 				return function(...aArgs) {
-					noSuchMethod.call(this, aName, aArgs);
+					return noSuchMethod.call(this, aName, aArgs);
 				};
 			}
 		});
