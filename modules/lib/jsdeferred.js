@@ -390,13 +390,13 @@ this.Deferred = Deferred;
 
 
 Deferred.postie_for_message_manager = function (manager) {
-	var ret = Object.create(manager, {
-			__noSuchMethod__ : {
-				writable     : true,
-				configurable : true,
-				value        : function (name, args) {
-					return manager[name].apply(manager, args);
-				}
+	var ret = new Proxy(Object.create(manager), {
+			get: function(aTarget, aName) {
+				if (aName in aTarget)
+					return aTarget[aName];
+				return function(...aArgs) {
+					return manager[aName].apply(manager, aArgs);
+				};
 			}
 		});
 	var id  = 0;
