@@ -80,7 +80,7 @@ var PermissionManager = '@mozilla.org/permissionmanager;1' in Cc ?
 		Cc['@mozilla.org/permissionmanager;1'].getService(Ci.nsIPermissionManager) :
 		null ;
 
-const isThreadManagerAvailable = '@mozilla.org/thread-manager;1' in Cc;
+var isThreadManagerAvailable = '@mozilla.org/thread-manager;1' in Cc;
 
 var _db = null;
  

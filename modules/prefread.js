@@ -17,7 +17,7 @@
   * The Original Code is Mozilla.
   *
   * The Initial Developer of the Original Code is Darin Fisher.
-  * Portions created by the Initial Developer are Copyright (C) 2003-2010
+  * Portions created by the Initial Developer are Copyright (C) 2003-2016
   * the Initial Developer. All Rights Reserved.
   *
   * Contributor(s):
@@ -44,41 +44,41 @@ if (typeof window == 'undefined')
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-const ERROR_MALFORMED_PREF_FILE = 'malformed pref file';
-const ERROR_NO_NAME             = 'invalid pref: no name';
-const ERROR_INVALID_TYPE        = 'invalid pref: invalid type';
+var ERROR_MALFORMED_PREF_FILE = 'malformed pref file';
+var ERROR_NO_NAME             = 'invalid pref: no name';
+var ERROR_INVALID_TYPE        = 'invalid pref: invalid type';
 
-const PREF_PARSE_INIT                    = 0;
-const PREF_PARSE_MATCH_STRING            = 1 << 0;
-const PREF_PARSE_QUOTED_STRING           = 1 << 1;
-const PREF_PARSE_UNTIL_NAME              = 1 << 2;
-const PREF_PARSE_UNTIL_COMMA             = 1 << 3;
-const PREF_PARSE_UNTIL_VALUE             = 1 << 4;
-const PREF_PARSE_INT_VALUE               = 1 << 5;
-const PREF_PARSE_COMMENT_MAYBE_START     = 1 << 6;
-const PREF_PARSE_COMMENT_BLOCK           = 1 << 7;
-const PREF_PARSE_COMMENT_BLOCK_MAYBE_END = 1 << 8;
-const PREF_PARSE_ESC_SEQUENCE            = 1 << 9;
-const PREF_PARSE_HEX_ESCAPE              = 1 << 10;
-const PREF_PARSE_UTF16_LOW_SURROGATE     = 1 << 11;
-const PREF_PARSE_UNTIL_OPEN_PAREN        = 1 << 12;
-const PREF_PARSE_UNTIL_CLOSE_PAREN       = 1 << 13;
-const PREF_PARSE_UNTIL_SEMICOLON         = 1 << 14;
-const PREF_PARSE_UNTIL_EOL               = 1 << 15;
+var PREF_PARSE_INIT                    = 0;
+var PREF_PARSE_MATCH_STRING            = 1 << 0;
+var PREF_PARSE_QUOTED_STRING           = 1 << 1;
+var PREF_PARSE_UNTIL_NAME              = 1 << 2;
+var PREF_PARSE_UNTIL_COMMA             = 1 << 3;
+var PREF_PARSE_UNTIL_VALUE             = 1 << 4;
+var PREF_PARSE_INT_VALUE               = 1 << 5;
+var PREF_PARSE_COMMENT_MAYBE_START     = 1 << 6;
+var PREF_PARSE_COMMENT_BLOCK           = 1 << 7;
+var PREF_PARSE_COMMENT_BLOCK_MAYBE_END = 1 << 8;
+var PREF_PARSE_ESC_SEQUENCE            = 1 << 9;
+var PREF_PARSE_HEX_ESCAPE              = 1 << 10;
+var PREF_PARSE_UTF16_LOW_SURROGATE     = 1 << 11;
+var PREF_PARSE_UNTIL_OPEN_PAREN        = 1 << 12;
+var PREF_PARSE_UNTIL_CLOSE_PAREN       = 1 << 13;
+var PREF_PARSE_UNTIL_SEMICOLON         = 1 << 14;
+var PREF_PARSE_UNTIL_EOL               = 1 << 15;
 
-const UTF16_ESC_NUM_DIGITS = 4;
-const HEX_ESC_NUM_DIGITS   = 2;
-const BITS_PER_HEX_DIGIT   = 4;
+var UTF16_ESC_NUM_DIGITS = 4;
+var HEX_ESC_NUM_DIGITS   = 2;
+var BITS_PER_HEX_DIGIT   = 4;
 
-const PREF_INVALID = 0;
-const PREF_BOOL    = 1 << 0;
-const PREF_INT     = 1 << 1;
-const PREF_STRING  = 1 << 2;
+var PREF_INVALID = 0;
+var PREF_BOOL    = 1 << 0;
+var PREF_INT     = 1 << 1;
+var PREF_STRING  = 1 << 2;
 
-const kUserPref = 'user_pref';
-const kPref     = 'pref';
-const kTrue     = 'true';
-const kFalse    = 'false';
+var kUserPref = 'user_pref';
+var kPref     = 'pref';
+var kTrue     = 'true';
+var kFalse    = 'false';
 
 const IOService = Cc['@mozilla.org/network/io-service;1']
 		.getService(Ci.nsIIOService);
