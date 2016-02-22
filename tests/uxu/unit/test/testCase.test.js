@@ -29,12 +29,12 @@ function tearDown()
 }
 
 
-function assertResults()
+function assertResults(...aArgs)
 {
 	testcase.run();
 	utils.wait(function() { return testcase.done; });
 	assert.equals(
-		Array.slice(arguments),
+		aArgs,
 		testcase.tests.map(function(aTest) {
 			return aTest.report.result;
 		})
