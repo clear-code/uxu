@@ -53,7 +53,7 @@ Components.utils.import('resource://uxu-modules/test/log.js', ns);
 var utils = ns.utils;
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
-const RUNNING = 'extensions.uxu.running';
+var RUNNING = 'extensions.uxu.running';
 	
 function TestRunner(aOptions/*, aFile, ...*/) 
 {
