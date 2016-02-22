@@ -22,10 +22,10 @@ if (typeof window == 'undefined' ||
 
 // This depends on boxObject.js
 // https://github.com/piroor/fxaddonlibs/blob/master/boxObject.js
-const BOX_OBJECT_MODULE = 'resource://uxu-modules/lib/boxObject.js';
+var BOX_OBJECT_MODULE = 'resource://my-modules/boxObject.js';
 // This depends on jstimer.jsm
 // https://github.com/piroor/fxaddonlibs/blob/master/jstimer.jsm
-const TIMER_MODULE = 'resource://uxu-modules/lib/jstimer.jsm';
+var TIMER_MODULE = 'resource://my-modules/jstimer.jsm';
 
 // var namespace;
 if (typeof namespace == 'undefined') {
