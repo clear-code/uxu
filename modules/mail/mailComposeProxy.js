@@ -124,7 +124,7 @@ _fakeSendMsg : function(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgr
 		var win = this._real.domWindow;
 		if (compFields.fcc) {
 			if (compFields.fcc.toLowerCase() == 'nocopy://') {
-				if (progress) {
+				if (progress && typeof progress.unregisterListener == 'function') {
 					progress.unregisterListener(this._real);
 		//			progress.closeProgressDialog(false);
 				}
@@ -132,7 +132,7 @@ _fakeSendMsg : function(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgr
 			}
 		}
 		else {
-			if (progress) {
+			if (progress && typeof progress.unregisterListener == 'function') {
 				progress.unregisterListener(this._real);
 		//		progress.closeProgressDialog(false);
 			}
