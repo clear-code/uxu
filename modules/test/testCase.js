@@ -1294,6 +1294,7 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 			catch(e) {
 				console.logStringMessage('Failed to receive log from child process: ' + e);
 			}
+			this.fireEvent('ResponseRequest', responseId+'\n');
 			return;
 		}
 		this._onReceiveRemoteResult(input);
