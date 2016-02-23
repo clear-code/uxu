@@ -649,7 +649,7 @@ var gRemoteRun = {
 				.then((function(aResponseText) {
 					this.sending = false;
 					this.handleResponse(aResponseText);
-				}).bind(this);
+				}).bind(this));
 		}
 	},
 	sending : false,
