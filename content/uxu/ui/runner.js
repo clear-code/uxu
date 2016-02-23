@@ -40,6 +40,9 @@ const Ci = Components.interfaces;
 const ObserverService = Cc['@mozilla.org/observer-service;1']
 	.getService(Ci.nsIObserverService);
 
+const WindowMediator = Cc['@mozilla.org/appshell/window-mediator;1']
+	.getService(Ci.nsIWindowMediator);
+
 var gLog;
 var gBrowser;
  
@@ -211,9 +214,7 @@ const fileDNDObserver =
  
 	get browserWindow() 
 	{
-		return Cc['@mozilla.org/appshell/window-mediator;1']
-				.getService(Ci.nsIWindowMediator)
-				.getMostRecentWindow('navigator:browser');
+		return WindowMediator.getMostRecentWindow('navigator:browser');
 	},
  
 	onDrop : function(aEvent, aTransferData, aSession) 
@@ -393,7 +394,15 @@ function handleOptions()
 	}
 
 	if (gOptions.hidden) {
-		window.setTimeout(function() { window.minimize(); }, 0);
+		window.setTimeout(function() {
+			window.minimize();
+			var console = WindowMediator.getMostRecentWindow('global:console');
+			if (console)
+				console.minimize();
+			var browserConsole = WindowMediator.getMostRecentWindow('devtools:webconsole');
+			if (browserConsole)
+				browserConsole.minimize();
+		}, 0);
 		Array.slice(document.getElementsByTagName('command'))
 			.forEach(function(aNode) {
 				aNode.setAttribute('disabled', true);
@@ -672,10 +681,15 @@ var gRemoteRun = {
 
 	onFinish : function()
 	{
-		if (gOptions.autoQuit)
+		this.reportLogsToParent();
+
+		if (gOptions.autoQuit) {
 			utils.quitApplication(true);
-		else if (gOptions.autoClose)
+		}
+		else if (gOptions.autoClose) {
+			this.closeConsoleWindows();
 			window.close();
+		}
 
 		this.stopPinging();
 	},
@@ -703,7 +717,36 @@ var gRemoteRun = {
 	{
 		return this._pingTimer ? true : false ;
 	},
-	_pingTimer : null
+	_pingTimer : null,
+
+	reportLogsToParent : function()
+	{
+		var console = WindowMediator.getMostRecentWindow('global:console');
+		if (!console)
+			return;
+
+		var logs = [];
+		var rows = console.document.getElementById('ConsoleBox').mConsoleRowBox.children;
+		for (let row of rows)
+		{
+			if (row.boxObject.height > 0) {
+				logs.push(row.toString().trim());
+			}
+		}
+		var allLogs = ns.TestCase.prototype.LOG_MESSAGE + JSON.stringify(logs.join('\n---\n'));
+
+		var message = new ns.Message(allLogs, gOptions.outputHost, gOptions.outputPort, this);
+		message.send();
+	},
+	closeConsoleWindows : function()
+	{
+		var console = WindowMediator.getMostRecentWindow('global:console');
+		if (console)
+			console.close();
+		var browserConsole = WindowMediator.getMostRecentWindow('devtools:webconsole');
+		if (browserConsole)
+			browserConsole.close();
+	}
 };
  
 function onAllTestsFinish() 
@@ -1673,9 +1716,7 @@ function goDoCommand(aCommand)
  
 function showPage(aURI) 
 {
-	var recentWindow = Cc['@mozilla.org/appshell/window-mediator;1']
-		.getService(Ci.nsIWindowMediator)
-		.getMostRecentWindow('navigator:browser');
+	var recentWindow = WindowMediator.getMostRecentWindow('navigator:browser');
 	if (recentWindow) {
 		if (recentWindow.content.location.href == 'about:blank')
 			recentWindow.loadURI(aURI);
