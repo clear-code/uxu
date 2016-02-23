@@ -68,15 +68,17 @@ function Message(aMessage, aHost, aPort)
 Message.prototype = {
 	send : function()
 	{
+		var promise = new Promise((function(aResolve, aReject) {
+			this._resolver = aResolve;
+			this._rejecter = aReject;
+		}).bind(this));
+
 		var pump = Cc['@mozilla.org/network/input-stream-pump;1']
 				.createInstance(Ci.nsIInputStreamPump);
 		pump.init(this._input, -1, -1, 0, 0, false);
 		pump.asyncRead(this, null);
 
-		return new Promise((function(aResolve, aReject) {
-			this._resolver = aResolve;
-			this._rejecter = aReject;
-		}).bind(this));
+		return promise;
 	},
 
 	onStartRequest : function(aRequest, aContext)

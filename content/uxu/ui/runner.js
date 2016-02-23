@@ -656,7 +656,6 @@ var gRemoteRun = {
 
 	handleResponse : function(aResponseText)
 	{
-
 		if (aResponseText.indexOf(ns.TestCase.prototype.TESTCASE_ABORTED) == 0) {
 			if (gRunner) {
 				stop();
@@ -668,16 +667,17 @@ var gRemoteRun = {
 			return;
 		}
 
-		if (this.lastResponse == aResponseText) return;
+		if (this.lastResponse != aResponseText) {
 		this.lastResponse = aResponseText;
 
-		var sent = this.messages.shift();
+		let sent = this.messages.shift();
 		if (sent) {
 			sent.destroy();
 			if (sent.message.indexOf(ns.TestCase.prototype.ALL_TESTS_FINISHED) == 0) {
 				this.onFinish();
 				return;
 			}
+		}
 		}
 		this.sendMessage();
 	},
