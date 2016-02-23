@@ -14,7 +14,7 @@
  * The Original Code is UxU - UnitTest.XUL.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2010-2014
+ * Portions created by the Initial Developer are Copyright (C) 2010-2016
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <shimoda@clear-code.com>
@@ -50,39 +50,23 @@ var mailUtils = new ns.MailUtils(ns.inherit(utils, { utils : utils }));
 function MailComposeProxy(aReal)
 {
 	this._real = aReal;
-
-	properties.forEach(function(aProp) {
-			if (aProp in this || !(aProp in this._real)) return;
-			this.__defineGetter__(aProp, function() {
-				return this._real[aProp];
-			});
-			this.__defineSetter__(aProp, function(aValue) {
-				return this._real[aProp] = aValue;
-			});
-		}, this);
-	readOnlyProperties.concat(methods)
-		.forEach(function(aProp) {
-			if (aProp in this || !(aProp in this._real)) return;
-			this.__defineGetter__(aProp, function() {
-				return this._real[aProp];
-			});
-		}, this);
-
-
 	this.DEBUG = false;
+
+	this.SendMsg = this.SendMsg.bind(this);
 }
 
 MailComposeProxy.prototype = {
 
 
-SendMsg : function(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgress)
+SendMsg : function(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgress, ...aArgs)
 {
+	var allArgs = [aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgress].concat(aArgs);
 	if (this.DEBUG ||
 		utils.getPref('extensions.uxu.running')) {
-		this._fakeSendMsg.apply(this, arguments);
+		this._fakeSendMsg.apply(this, allArgs);
 	}
 	else {
-		return this._real.SendMsg.apply(this._real, arguments);
+		return this._real.SendMsg.apply(this._real, allArgs);
 	}
 },
 
@@ -159,22 +143,15 @@ _fakeSendMsg : function(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgr
 	catch(e) {
 		if (!this.DEBUG) throw e;
 	}
-},
+}
 
 /*
+,
+
 abort : function()
 {
-},
-*/
-
-// fallback
-_callRealMethod: function(aName, aArgs)
-{
-	if (!(aName in this._real)) {
-		throw new Error('MailComposeProxy: the property "'+aName+'" is undefined.');
-	}
-	return this._real[aName].apply(this._real, aArgs);
 }
+*/
 
 };
 
@@ -182,64 +159,10 @@ MailComposeProxy.create = function(aReal) {
   var proxied = new MailComposeProxy(aReal);
   return new Proxy(aReal, {
     get: function(aTarget, aName) {
-      if (aName in aTarget)
+      if (aName == 'SendMsg')
         return proxied[aName];
 
-      return function(...aArgs) {
-        return proxied._callRealMethod(aName, aArgs);
-      };
+      return aTarget[aName];
     }
   });
 };
-
-
-var properties = [
-		'identity',
-		'type',
-		'bodyModified',
-		'savedFolderURI',
-		'recyclingListener',
-		'recycledWindow',
-		'deleteDraft',
-		'insertingQuotedContent'
-	];
-var readOnlyProperties = [
-		'messageSend',
-		'editor',
-		'domWindow',
-		'compFields',
-		'composeHTML',
-		'wrapLength',
-		'progress',
-		'originalMsgURI'
-	];
-var methods = [
-		'initialize',
-		'Initialize', // obsolete
-		'SetDocumentCharset',
-		'RegisterStateListener',
-		'UnregisterStateListener',
-		'SendMsg',
-		'CloseWindow',
-		'abort',
-		'quoteMessage',
-		'AttachmentPrettyName',
-		'expandMailingLists',
-		'checkAndPopulateRecipients', // obsolete
-		'CheckAndPopulateRecipients', // obsolete
-		'determineHTMLAction',
-		'bodyConvertible',
-		'SetSignature', // obsolete
-		'checkCharsetConversion',
-		'initEditor',
-		'addMsgSendListener',
-		'removeMsgSendListener',
-
-		'onStartSending',
-		'onProgress',
-		'onStatus',
-		'onStopSending',
-		'onGetDraftFolderURI',
-		'onSendNotPerformed'
-	];
-
