@@ -668,16 +668,16 @@ var gRemoteRun = {
 		}
 
 		if (this.lastResponse != aResponseText) {
-		this.lastResponse = aResponseText;
+			this.lastResponse = aResponseText;
 
-		let sent = this.messages.shift();
-		if (sent) {
-			sent.destroy();
-			if (sent.message.indexOf(ns.TestCase.prototype.ALL_TESTS_FINISHED) == 0) {
-				this.onFinish();
-				return;
+			let sent = this.messages.shift();
+			if (sent) {
+				sent.destroy();
+				if (sent.message.indexOf(ns.TestCase.prototype.ALL_TESTS_FINISHED) == 0) {
+					this.onFinish();
+					return;
+				}
 			}
-		}
 		}
 		this.sendMessage();
 	},
@@ -686,15 +686,15 @@ var gRemoteRun = {
 	{
 		this.reportLogsToParent()
 			.then((function() {
-		if (gOptions.autoQuit) {
-			utils.quitApplication(true);
-		}
-		else if (gOptions.autoClose) {
-			this.closeConsoleWindows();
-			window.close();
-		}
+				if (gOptions.autoQuit) {
+					utils.quitApplication(true);
+				}
+				else if (gOptions.autoClose) {
+					this.closeConsoleWindows();
+					window.close();
+				}
 
-		this.stopPinging();
+				this.stopPinging();
 			}).bind(this));
 	},
 
