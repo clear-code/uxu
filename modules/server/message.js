@@ -42,12 +42,13 @@ const Ci = Components.interfaces;
 var TransportService = Cc['@mozilla.org/network/socket-transport-service;1'] 
 		.getService(Ci.nsISocketTransportService);
 
-function Message(aMessage, aHost, aPort, aListener) 
+Components.utils.import('resource://gre/modules/Promise.jsm');
+
+function Message(aMessage, aHost, aPort) 
 {
 	if (!aHost) aHost = 'localhost';
 
 	this._message = (aMessage || '')+'\n';
-	this._listener = aListener;
 	this._buffer = '';
 
 	var transport = TransportService.createTransport(null, 0, aHost, aPort, null);
@@ -71,6 +72,11 @@ Message.prototype = {
 				.createInstance(Ci.nsIInputStreamPump);
 		pump.init(this._input, -1, -1, 0, 0, false);
 		pump.asyncRead(this, null);
+
+		return new Promise((function(aResolve, aReject) {
+			this._resolver = aResolve;
+			this._rejecter = aReject;
+		}).bind(this));
 	},
 
 	onStartRequest : function(aRequest, aContext)
@@ -90,8 +96,8 @@ Message.prototype = {
 				chunk = this._buffer + chunk;
 				this._buffer = '';
 			}
-			if (this._listener && this._listener.onResponse) {
-				this._listener.onResponse(chunk.replace(/[\r\n]+$/, ''));
+			if (this._resolver) {
+				this._resolver(chunk.replace(/[\r\n]+$/, ''));
 			}
 		}
 		else {

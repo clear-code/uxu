@@ -639,20 +639,23 @@ var gRemoteRun = {
 
 	addMessage : function(aMessage)
 	{
-		this.messages.push(new ns.Message(aMessage, gOptions.outputHost, gOptions.outputPort, this));
+		this.messages.push(new ns.Message(aMessage, gOptions.outputHost, gOptions.outputPort));
 	},
 	sendMessage : function()
 	{
 		if (!this.sending && this.messages.length) {
 			this.sending = true;
-			this.messages[0].send();
+			this.messages[0].send()
+				.then((function(aResponseText) {
+					this.sending = false;
+					this.handleResponse(aResponseText);
+				}).bind(this);
 		}
 	},
 	sending : false,
 
-	onResponse : function(aResponseText)
+	handleResponse : function(aResponseText)
 	{
-		this.sending = false;
 
 		if (aResponseText.indexOf(ns.TestCase.prototype.TESTCASE_ABORTED) == 0) {
 			if (gRunner) {
@@ -681,8 +684,8 @@ var gRemoteRun = {
 
 	onFinish : function()
 	{
-		this.reportLogsToParent();
-
+		this.reportLogsToParent()
+			.then((function() {
 		if (gOptions.autoQuit) {
 			utils.quitApplication(true);
 		}
@@ -692,6 +695,7 @@ var gRemoteRun = {
 		}
 
 		this.stopPinging();
+			}).bind(this));
 	},
 
 	startPinging : function()
@@ -710,7 +714,7 @@ var gRemoteRun = {
 	},
 	ping : function()
 	{
-		var message = new ns.Message(ns.TestCase.prototype.PING, gOptions.outputHost, gOptions.outputPort, this);
+		var message = new ns.Message(ns.TestCase.prototype.PING, gOptions.outputHost, gOptions.outputPort);
 		message.send();
 	},
 	get pinging()
@@ -723,7 +727,7 @@ var gRemoteRun = {
 	{
 		var console = WindowMediator.getMostRecentWindow('global:console');
 		if (!console)
-			return;
+			return Promise.resolve();
 
 		var logs = [];
 		var rows = console.document.getElementById('ConsoleBox').mConsoleRowBox.children;
@@ -734,9 +738,8 @@ var gRemoteRun = {
 			}
 		}
 		var allLogs = ns.TestCase.prototype.LOG_MESSAGE + JSON.stringify(logs.join('\n---\n'));
-
-		var message = new ns.Message(allLogs, gOptions.outputHost, gOptions.outputPort, this);
-		message.send();
+		var message = new ns.Message(allLogs, gOptions.outputHost, gOptions.outputPort);
+		return message.send();
 	},
 	closeConsoleWindows : function()
 	{

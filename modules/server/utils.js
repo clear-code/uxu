@@ -61,19 +61,10 @@ function ServerUtils(aMockManager)
 
 ServerUtils.prototype = ns.inherit(ns.EventTarget.prototype, {
 
-	sendMessage : function(aMessage, aHost, aPort, aListener) 
+	sendMessage : function(aMessage, aHost, aPort) 
 	{
-		var message = new ns.Message(aMessage, aHost, aPort, {
-				onResponse : function(aResponse)
-				{
-					if (!aListener) return;
-					if (typeof aListener == 'function')
-						aListener(aResponse);
-					else if (aListener.onResponse && typeof aListener.onResponse == 'function')
-						aListener.onResponse(aResponse);
-				}
-			});
-		message.send();
+		var message = new ns.Message(aMessage, aHost, aPort);
+		return message.send();
 	},
 	 
 	startListen : function(aPort, aListener) 
