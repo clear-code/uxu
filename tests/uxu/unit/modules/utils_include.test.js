@@ -47,9 +47,12 @@ function test_include_preprocessor_constant()
 		namespace : namespace,
 		allowOverrideConstants : false
 	});
-	assert.isDefined(namespace.constant);
-	assert.equals('定数', namespace.constant);
-	assert.isTrue(variableIsConstantIn('constant', namespace)); // not overridden
+	/**
+	 * Symbols degined by "const" are no longer exported by EcmaScript 6 spec.
+	 */
+	// assert.isDefined(namespace.constant);
+	// assert.equals('定数', namespace.constant);
+	// assert.isTrue(variableIsConstantIn('constant', namespace)); // not overridden
 
 	namespace = {};
 	utilsModule.include({
