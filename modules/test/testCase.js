@@ -1182,6 +1182,14 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 		}
 		args = args.concat(this.options);
 
+		if (args.indexOf('-jsconsole') < 0) {
+			let WM = Cc['@mozilla.org/appshell/window-mediator;1']
+						.getService(Ci.nsIWindowMediator);
+			if (WM.getMostRecentWindow('global:console') ||
+				WM.getMostRecentWindow('devtools:webconsole'))
+				args.push('-jsconsole');
+		}
+
 		var process = Cc['@mozilla.org/process/util;1']
 					.createInstance(Ci.nsIProcess);
 		process.init(this._application || this._utils.productExecutable);
