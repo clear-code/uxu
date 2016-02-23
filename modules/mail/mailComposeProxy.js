@@ -128,7 +128,10 @@ _fakeSendMsg : function(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgr
 					progress.unregisterListener(this._real);
 		//			progress.closeProgressDialog(false);
 				}
-				if (win) this._real.CloseWindow(true);
+				if (win &&
+					typeof this._real.CloseWindow == 'function') {
+					this._real.CloseWindow(true);
+				}
 			}
 		}
 		else {
@@ -136,9 +139,15 @@ _fakeSendMsg : function(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgr
 				progress.unregisterListener(this._real);
 		//		progress.closeProgressDialog(false);
 			}
-			if (win) this._real.CloseWindow(true);
+			if (win &&
+				typeof this._real.CloseWindow == 'function') {
+				this._real.CloseWindow(true);
+			}
 		}
-		if (this._real.deleteDraft) this._real.removeCurrentDraftMessage(this._real, false);
+		if (this._real.deleteDraft &&
+			typeof this._real.removeCurrentDraftMessage == 'function') {
+			this._real.removeCurrentDraftMessage(this._real, false);
+		}
 	}
 	catch(e) {
 		if (!this.DEBUG) throw e;
