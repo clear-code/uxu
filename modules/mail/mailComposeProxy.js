@@ -51,8 +51,6 @@ function MailComposeProxy(aReal)
 {
 	this._real = aReal;
 	this.DEBUG = false;
-
-	this.SendMsg = this.SendMsg.bind(this);
 }
 
 MailComposeProxy.prototype = {
@@ -63,7 +61,7 @@ SendMsg : function(aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgress, 
 	var allArgs = [aDeliverMode, aIdentity, aAccountKey, aMsgWindow, aProgress].concat(aArgs);
 	if (this.DEBUG ||
 		utils.getPref('extensions.uxu.running')) {
-		this._fakeSendMsg.apply(this, allArgs);
+		return this._fakeSendMsg.apply(this, allArgs);
 	}
 	else {
 		return this._real.SendMsg.apply(this._real, allArgs);
@@ -166,12 +164,27 @@ abort : function()
 
 MailComposeProxy.create = function(aReal) {
   var proxied = new MailComposeProxy(aReal);
-  return new Proxy(aReal, {
-    get: function(aTarget, aName) {
-      if (aName == 'SendMsg')
-        return proxied[aName];
-
-      return aTarget[aName];
+  var cachedMethods = {};
+  function proxyMethod(aName) {
+    return cachedMethods[aName] = cachedMethods[aName] || proxied[aName].bind(proxied);
+  }
+  /**
+   * Create a proxy for "{}" instaead of "aReal", because ES6 Proxy
+   * doesn't allow to return different value for writable=false & configurable=false
+   * properties of the original. Otherwise you'll get "TypeError"
+   * as the result. See also:
+   *   https://bugzilla.mozilla.org/show_bug.cgi?id=814892
+   *   https://github.com/tvcutsem/harmony-reflect/blob/master/doc/handler_api.md
+   */
+  return new Proxy({}, {
+    get: function(aTarget, aName, aReceiver) {
+      if (typeof MailComposeProxy.prototype[aName] === 'function') {
+        return proxyMethod(aName);
+      }
+      return aReal[aName];
+    },
+    set: function(aTarget, aName, aValue, aReceiver) {
+      return aReal[aName] = aValue;
     }
   });
 };
