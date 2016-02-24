@@ -684,15 +684,15 @@ var gRemoteRun = {
 
 	onFinish : function()
 	{
-				if (gOptions.autoQuit) {
-					utils.quitApplication(true);
-				}
-				else if (gOptions.autoClose) {
-					this.closeConsoleWindows();
-					window.close();
-				}
+		if (gOptions.autoQuit) {
+			utils.quitApplication(true);
+		}
+		else if (gOptions.autoClose) {
+			this.closeConsoleWindows();
+			window.close();
+		}
 
-				this.stopPinging();
+		this.stopPinging();
 	},
 
 	startPinging : function()
