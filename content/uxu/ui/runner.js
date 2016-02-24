@@ -332,7 +332,7 @@ function restoreLastResult()
 	var mainDeck = _('mainDeck');
 	mainDeck.selectedIndex = 0;
 	try {
-		gLog.items = utils.evalInSandbox(lastResult);
+		gLog.items = utils.evalInSandbox(lastResult).items;
 		var current = 0;
 		var step = 20;
 		var progress = _('initializingProgress');
