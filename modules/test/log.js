@@ -62,6 +62,7 @@ TestLog.prototype = {
 
 	IGNORE_SKIPPED : (1 << 10),
 	IGNORE_SUCCESS : (1 << 11),
+	WITH_CONSOLE_LOGS : (1 << 12),
 
 	FORMAT_DEFAULT : (1 << 1) | (1 << 10),// | (1 << 11),
 
@@ -341,6 +342,9 @@ TestLog.prototype = {
 		var log = {
 			items : this._items
 		};
+		if (aFormat && aFormat & this.WITH_CONSOLE_LOGS) {
+			log.console = utils.collectConsoleContents();
+		}
 		return log.toSource();
 	},
  
@@ -349,6 +353,9 @@ TestLog.prototype = {
 		var log = {
 			items : this._items
 		};
+		if (aFormat && aFormat & this.WITH_CONSOLE_LOGS) {
+			log.console = utils.collectConsoleContents();
+		}
 		return JSON.stringify(log);
 	},
 

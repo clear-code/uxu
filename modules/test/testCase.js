@@ -121,7 +121,6 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 	TESTCASE_FINISED      : '/* uxu-testcase-finished */',
 	TESTCASE_ABORTED      : '/* uxu-testcase-aborted */',
 	ALL_TESTS_FINISHED    : '/* uxu-all-testcases-finished */',
-	LOG_MESSAGE           : '/* uxu-log-message */',
 	PING                  : ' ',
 	PING_INTERVAL         : 3000,
 
@@ -1283,20 +1282,6 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 			this.fireEvent('ResponseRequest', responseId+'\n');
 			return;
 		}
-		if (input .indexOf(this.LOG_MESSAGE) == 0) {
-			let logs = input.replace(this.LOG_MESSAG, '');
-			let console = Cc['@mozilla.org/consoleservice;1'].getService(Ci.nsIConsoleService);
-			(message);
-			try {
-				logs = JSON.parse(logs);
-				console.logStringMessage('Log from child process:\n\n' + logs);
-			}
-			catch(e) {
-				console.logStringMessage('Failed to receive log from child process: ' + e);
-			}
-			this.fireEvent('ResponseRequest', responseId+'\n');
-			return;
-		}
 		this._onReceiveRemoteResult(input);
 		this.fireEvent('ResponseRequest', responseId+'\n');
 	},
@@ -1306,6 +1291,17 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 		var result;
 		try {
 			result = this._utils.evalInSandbox(aResult);
+			var consoleLogs = result.console;
+			if (consoleLogs) {
+				let console = Cc['@mozilla.org/consoleservice;1'].getService(Ci.nsIConsoleService);
+				(message);
+				try {
+					console.logStringMessage('Log from child process:\n\n' + consoleLogs);
+				}
+				catch(e) {
+					console.logStringMessage('Failed to receive log from child process: ' + e);
+				}
+			}
 			result = result.items;
 			result[result.length-1].topics.forEach(function(aTopic) {
 				if (aTopic.test)

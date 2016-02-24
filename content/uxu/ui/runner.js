@@ -623,17 +623,18 @@ var gRemoteRun = {
 				this.addMessage(ns.TestCase.prototype.TESTCASE_STARTED);
 				break;
 			case 'finish':
-				this.addMessage(gLog.toString(gLog.FORMAT_RAW));
+				this.addMessage(gLog.toString(gLog.FORMAT_RAW & gLog.WITH_CONSOLE_LOGS));
 				this.addMessage(ns.TestCase.prototype.TESTCASE_FINISED);
 				break;
 			case 'finish-all':
-				this.addMessage(gLog.toString(gLog.FORMAT_RAW));
+				this.addMessage(gLog.toString(gLog.FORMAT_RAW & gLog.WITH_CONSOLE_LOGS));
 				this.addMessage(ns.TestCase.prototype.ALL_TESTS_FINISHED);
 				break;
 			default:
-				this.addMessage(gLog.toString(gLog.FORMAT_RAW));
+				this.addMessage(gLog.toString(gLog.FORMAT_RAW & gLog.WITH_CONSOLE_LOGS));
 				break;
 		}
+		utils.clearConsoleContents();
 		this.sendMessage();
 	},
 
