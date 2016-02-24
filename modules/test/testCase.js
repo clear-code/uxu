@@ -1294,7 +1294,6 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 			var consoleLogs = result.console;
 			if (consoleLogs) {
 				let console = Cc['@mozilla.org/consoleservice;1'].getService(Ci.nsIConsoleService);
-				(message);
 				try {
 					console.logStringMessage('Log from child process:\n\n' + consoleLogs);
 				}
