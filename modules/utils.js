@@ -1471,216 +1471,104 @@ isGeneratedIterator : function(aObject)
 	return false;
 },
  
-doIteration : function(aGenerator, aCallbacks) 
+doIteration : function(aGenerator) 
 {
 	if (!aGenerator)
-		throw new Error(bundle.getString('error_utils_no_generator'));
+		return Promise.reject(new Error(bundle.getString('error_utils_no_generator')));
 
 	var iterator = aGenerator;
 	if (typeof aGenerator == 'function')
 		iterator = aGenerator();
 	if (!this.isGeneratedIterator(iterator))
-		throw new Error(bundle.getFormattedString('error_utils_invalid_generator', [aGenerator]));
+		return Promise.reject(throw new Error(bundle.getFormattedString('error_utils_invalid_generator', [aGenerator])));
 
 	var callerStack = this.reduceTopStackLine(this.getStackTrace());
 
-	var retVal = { value : false };
 	var lastRun = Date.now();
 	var timeout = Math.max(0, this.getPref('extensions.uxu.run.timeout'));
-	var self = this;
-	(function loop(aObject) {
-		try {
-			if (Date.now() - lastRun >= timeout)
-				throw new Error(bundle.getFormattedString('error_generator_timeout', [parseInt(timeout / 1000)]));
 
-			if (aObject !== void(0)) {
-				var continueAfterDelay = false;
-				if (aObject instanceof Error) {
-					throw aObject;
-				}
-				else if (typeof aObject == 'number') {
-					// TraceMonkeyのバグなのかなんなのか、指定時間経つ前にタイマーが発動することがあるようだ……
-					continueAfterDelay = (Date.now() - lastRun < aObject);
-				}
-				else if (aObject && typeof aObject == 'object') {
-					if (self.isGeneratedIterator(aObject)) {
-						return ns.Deferred.next(function() { loop(self.doIteration(aObject)); });
-					}
-					else if (aObject.then && typeof aObject.then == 'function') {
-						let finished = { value : false };
-						aObject
-							.then(function() {
-								finished.value = true;
-							})
-							.catch(function() {
-								finished.value = true;
-							});
-						return Promise.resolve().then(function() { loop(finished); });
-					}
-					else if (self.isDeferred(aObject)) {
-						let finished = { value : false };
-						if (aObject.fired) {
-							finished.value = true;
-						}
-						else {
-							aObject
-								.next(function() {
-									finished.value = true;
-								})
-								.error(function() {
-									finished.value = true;
-								});
-						}
-						return ns.Deferred.next(function() { loop(finished); });
-					}
-					else if ('error' in aObject && aObject.error instanceof Error) {
-						throw aObject.error;
-					}
-					else if (!aObject.value) {
-						continueAfterDelay = true;
-					}
-				}
-				else if (typeof aObject == 'function') {
-					var val;
-					try {
-						val = aObject();
-					}
-					catch(e) {
-						e.stack += callerStack;
-						throw e;
-					}
-					if (!val)
-						continueAfterDelay = true;
-					else if (val instanceof Error)
-						throw val;
-					else if (self.isGeneratedIterator(val))
-						return ns.Deferred.next(function() { loop(self.doIteration(val)); });
-				}
-				if (continueAfterDelay)
-					return ns.setTimeout(loop, 10, aObject);
+	return new Promise((function(aResolve, aReject) {
+		var onException = (function(aException) {
+			if (aException instanceof StopIteration) {
+				aResolve();
 			}
-
-			var returnedValue = iterator.next();
-			lastRun = Date.now();
-
-			if (!returnedValue) returnedValue = 0;
-			switch (typeof returnedValue)
-			{
-				default:
-					returnedValue = Number(returnedValue);
-					if (isNaN(returnedValue))
-						returnedValue = 0;
-
-				case 'number':
-					if (returnedValue >= 0) {
-						ns.setTimeout(loop, returnedValue, returnedValue);
-						return;
-					}
-					throw new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(returnedValue)]));
-
-				case 'object':
-					if (returnedValue) {
-						if ('value' in returnedValue || self.isGeneratedIterator(returnedValue)) {
-							ns.setTimeout(loop, 10, returnedValue);
-							return;
-						}
-						else if (returnedValue.then && typeof returnedValue.then == 'function') {
-							returnedValue
-								.then(function(aReturnedValue) { loop(); })
-								.catch(function(aException) { loop(); });
-							return;
-						}
-						else if (self.isDeferred(returnedValue)) {
-							if (returnedValue.fired) {
-								ns.Deferred.next(function() { loop(); });
-							}
-							else {
-								returnedValue
-									.next(function(aReturnedValue) { loop(); })
-									.error(function(aException) { loop(); });
-							}
-							return;
-						}
-						else if (returnedValue.error) {
-							throw returnedValue.error;
-						}
-					}
-					throw new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(returnedValue)]));
-
-				case 'function':
-					ns.setTimeout(loop, 10, returnedValue);
-					return;
-			}
-		}
-		catch(e) {
-			if (e instanceof StopIteration) {
+			else if (aException.name == 'AssertionFailed') {
 				try {
-					e.stack += callerStack;
+					aException.stack += callerStack;
 				}
 				catch(e) {
 				}
-				retVal.error = e;
-				retVal.value = true;
-				if (!aCallbacks)
-					return retVal;
-
-				try {
-					if (aCallbacks.onEnd)
-						aCallbacks.onEnd(e);
-				}
-				catch(e) {
-					retVal.error = e;
-				}
-			}
-			else if (e.name == 'AssertionFailed') {
-				try {
-					e.stack += callerStack;
-				}
-				catch(e) {
-				}
-				retVal.error = e;
-				retVal.value = true;
-				if (!aCallbacks)
-					return retVal;
-
-				try {
-					if (aCallbacks.onFail)
-						aCallbacks.onFail(e);
-					else if (aCallbacks.onError)
-						aCallbacks.onError(e);
-					else if (aCallbacks.onEnd)
-						aCallbacks.onEnd(e);
-				}
-				catch(e) {
-					retVal.error = e;
-				}
+				aReject(aException);
 			}
 			else {
-				e = self.normalizeError(e);
+				aException = this.normalizeError(aException);
 				try {
-					e.stack += callerStack;
+					aException.stack += callerStack;
 				}
 				catch(e) {
 				}
-				retVal.error = e;
-				retVal.value = true;
-				if (!aCallbacks)
-					return retVal;
-
-				try {
-					if (aCallbacks.onError)
-						aCallbacks.onError(e);
-					else if (aCallbacks.onEnd)
-						aCallbacks.onEnd(e);
-				}
-				catch(e) {
-					retVal.error = e;
-				}
+				aReject(aException);
 			}
-		}
-	})(null);
+		}).bind(this);
 
-	return retVal;
+		var loop = (function() {
+			try {
+			if (Date.now() - lastRun >= timeout)
+				return aReject(new Error(bundle.getFormattedString('error_generator_timeout', [parseInt(timeout / 1000)])));
+
+			var result = iterator.next() ;
+			lastRun = Date.now();
+
+			if (!result)
+				result = 0;
+
+			switch (typeof result)
+			{
+				default:
+					result = Number(result);
+					if (isNaN(result))
+						result = 0;
+				case 'number':
+					if (result >= 0) {
+						ns.setTimeout(loop, result);
+						return;
+					}
+					return aReject(new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(result)])));
+
+				case 'object':
+					if (result) {
+						if (this.isGeneratedIterator(result)) {
+							this.doIteration(result)
+								.then(loop)
+								.catch(onException);
+							return;
+						}
+						else if (result.then && typeof result.then == 'function') {
+							result
+								.then(loop)
+								.catch(onException);
+							return;
+						}
+						else if (this.isDeferred(result)) {
+							if (result.fired)
+								ns.Deferred.next(loop);
+							else
+								result
+									.next(loop)
+									.error(onException);
+							return;
+						}
+					}
+				case 'function':
+					return aReject(new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(result)])));
+			}
+			}
+			catch(e) {
+				onException(e);
+			}
+		}).bind(this);
+		loop();
+	}).bind(this));
 },
  
 Do : function(aObject) 

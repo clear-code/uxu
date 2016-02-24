@@ -471,16 +471,17 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			}
 		}
 		if (aTask && utils.isGeneratedIterator(aTask)) {
-			var self = this;
-			return utils.doIteration(aTask, {
-				onEnd : function(e)
-				{
-					if (!e || !self._exceptionMatches(aExpectedException, e)) {
-						self._onRaisesFinish(aExpectedException, e, aMessage);
-					}
-					self._onSuccess();
-				}
-			});
+			return utils.doIteration(aTask)
+					.catch((function(aException) {
+						return aException;
+					}).bind(this))
+					.then((function(aException) {
+						if (!aException ||
+							!this._exceptionMatches(aExpectedException, aException)) {
+							this._onRaisesFinish(aExpectedException, aException, aMessage);
+						}
+						this._onSuccess();
+					}).bind(this));
 		}
 		else if (!raised) {
 			this._onRaisesFinish(aExpectedException, exception, aMessage);
@@ -596,17 +597,18 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 				this._onNotRaisesFinish(aUnexpectedException, exception, aMessage);
 		}
 		if (aTask && utils.isGeneratedIterator(aTask)) {
-			var self = this;
-			return utils.doIteration(aTask, {
-				onEnd : function(e)
-				{
-					if (!e || !self._exceptionMatches(aUnexpectedException, e)) {
-						self._onSuccess();
-						return;
-					}
-					self._onNotRaisesFinish(aUnexpectedException, e, aMessage);
-				}
-			});
+			return utils.doIteration(aTask)
+					.catch((function(aException) {
+						return aException;
+					}).bind(this))
+					.then((function(aException) {
+						if (!aException ||
+							!this._exceptionMatches(aUnexpectedException, aException)) {
+							this._onSuccess();
+							return;
+						}
+						this._onNotRaisesFinish(aUnexpectedException, aException, aMessage);
+					}).bind(this));
 		}
 		this._onSuccess();
 	},
@@ -754,17 +756,10 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 
 		if (typeof aTask == 'function') aTask = aTask.call(aContext);
 		if (aTask && utils.isGeneratedIterator(aTask)) {
-			var self = this;
-			return utils.doIteration(aTask, {
-				onEnd : function(e)
-				{
-					self._onDifferenceFinish(startValue, aGetter(), aExpectedDelta, aMessage);
-				},
-				onError : function(e)
-				{
-					throw e;
-				}
-			});
+			return utils.doIteration(aTask)
+					.then((function() {
+						this._onDifferenceFinish(startValue, aGetter(), aExpectedDelta, aMessage);
+					}).bind(this));
 		}
 		else {
 			this._onDifferenceFinish(startValue, aGetter(), aExpectedDelta, aMessage);
@@ -821,17 +816,10 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 
 		if (typeof aTask == 'function') aTask = aTask.call(aContext);
 		if (aTask && utils.isGeneratedIterator(aTask)) {
-			var self = this;
-			return utils.doIteration(aTask, {
-				onEnd : function(e)
-				{
-					self._onNoDifferenceFinish(startValue, aGetter(), aMessage);
-				},
-				onError : function(e)
-				{
-					throw e;
-				}
-			});
+			return utils.doIteration(aTask)
+					.then((function() {
+						this._onNoDifferenceFinish(startValue, aGetter(), aMessage);
+					}).bind(this));
 		}
 		else {
 			this._onNoDifferenceFinish(startValue, aGetter(), aMessage);
@@ -1044,17 +1032,10 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		var startAt = Date.now();
 		if (typeof aTask == 'function') aTask = aTask.call(aContext);
 		if (aTask && utils.isGeneratedIterator(aTask)) {
-			var self = this;
-			return utils.doIteration(aTask, {
-				onEnd : function(e)
-				{
-					self._onFinishesWithinFinish(aExpectedTime, startAt, aMessage);
-				},
-				onError : function(e)
-				{
-					throw e;
-				}
-			});
+			return utils.doIteration(aTask)
+					.then((function() {
+						this._onFinishesWithinFinish(aExpectedTime, startAt, aMessage);
+					}).bind(this));
 		}
 		else {
 			this._onFinishesWithinFinish(aExpectedTime, startAt, aMessage);
@@ -1086,17 +1067,10 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		var startAt = Date.now();
 		if (typeof aTask == 'function') aTask = aTask.call(aContext);
 		if (aTask && utils.isGeneratedIterator(aTask)) {
-			var self = this;
-			return utils.doIteration(aTask, {
-				onEnd : function(e)
-				{
-					self._onNotFinishesWithinFinish(aExpectedTime, startAt, aMessage);
-				},
-				onError : function(e)
-				{
-					throw e;
-				}
-			});
+			return utils.doIteration(aTask)
+					.then((function() {
+						this._onNotFinishesWithinFinish(aExpectedTime, startAt, aMessage);
+					}).bind(this));
 		}
 		else {
 			this._onNotFinishesWithinFinish(aExpectedTime, startAt, aMessage);
@@ -1143,22 +1117,11 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			aTask = aTask.call(aContext);
 		}
 		if (aTask && utils.isGeneratedIterator(aTask)) {
-			var self = this;
-			return utils.doIteration(aTask, {
-				onFail : function(e)
-				{
-					throw e;
-				},
-				onError : function(e)
-				{
-					throw e;
-				},
-				onEnd : function(e)
-				{
-					self._assertionsCountCompare(aExpectedCount, aOperator, self._successCount - count, aMessage);
-					self._onSuccess();
-				}
-			});
+			return utils.doIteration(aTask)
+					.then((function() {
+						this._assertionsCountCompare(aExpectedCount, aOperator, self._successCount - count, aMessage);
+						self._onSuccess();
+					}).this(this));
 		}
 		this._assertionsCountCompare(aExpectedCount, aOperator, this._successCount - count, aMessage);
 		this._onSuccess();

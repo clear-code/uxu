@@ -1201,8 +1201,7 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 		var afterReadyTimeout = this.PING_INTERVAL + Math.max(0, this._utils.getPref('extensions.uxu.run.timeout'));
 		var afterReadyInterval = 50;
 		var report = new ns.Report();
-		this._utils.doIteration(
-			function() {
+		this._utils.doIteration(function() {
 				var last = Date.now();
 				var current;
 				var timeout;
@@ -1219,34 +1218,31 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 					}
 					yield interval;
 				}
-			},
-			{
-				onEnd : function(e) {
-					report.addTopic({
-						result : self.RESULT_SUCCESS
-					});
-					report.onFinish();
-					self._onFinishRemoteResult(report);
+		})
+		.then(function() {
+				report.addTopic({
+					result : self.RESULT_SUCCESS
+				});
+				report.onFinish();
+				self._onFinishRemoteResult(report);
 
-					server.destroy();
-					server = null;
-					self._utils.scheduleToRemove(profile);
-				},
-				onError : function(e) {
-					report.addTopic({
-						result      : self.RESULT_ERROR,
-						description : bundle.getFormattedString('report_description_remote', [self.title]),
-						exception   : e
-					});
-					report.onFinish();
-					self._onFinishRemoteResult(report);
+				server.destroy();
+				server = null;
+				self._utils.scheduleToRemove(profile);
+		})
+		.catch(function(e) {
+				report.addTopic({
+					result      : self.RESULT_ERROR,
+					description : bundle.getFormattedString('report_description_remote', [self.title]),
+					exception   : e
+				});
+				report.onFinish();
+				self._onFinishRemoteResult(report);
 
-					server.destroy();
-					server = null;
-					self._utils.scheduleToRemove(profile);
-				}
-			}
-		);
+				server.destroy();
+				server = null;
+				self._utils.scheduleToRemove(profile);
+		});
 
 		return true;
 	},
@@ -1362,18 +1358,17 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 						continuation.next = aNext;
 					};
 				ns.Deferred.next(function() {
-					self._utils.doIteration(result, {
-						onEnd : function(e) {
+					self._utils.doIteration(result)
+						.then(function() {
 							aReport.onDetailedFinish();
 							onSuccess();
 							continuation();
-						},
-						onError : function(e) {
+						})
+						.catch(function(e) {
 							aReport.onDetailedFinish();
 							onError(e);
 							continuation();
-						}
-					});
+						});
 				});
 				return continuation;
 			}
@@ -1407,13 +1402,13 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 					aFunction.call(this.context);
 			if (this._utils.isGeneratedIterator(result)) {
 				let self = this;
-				this._utils.doIteration(result, {
-					onEnd : function(e) {
+				this._utils.doIteration(result)
+					.then(function() {
 						aReport.onFinish();
 						if (!useContinuation)
 							continuation.next = aSuccess;
-					},
-					onError : function(e) {
+					})
+					.catch(function(e) {
 						aReport.addTopic({
 							result      : self.RESULT_ERROR,
 							description : aDescription,
@@ -1421,8 +1416,7 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 						});
 						aReport.onFinish();
 						continuation.next = aFailed;
-					}
-				});
+					});
 				return continuation;
 			}
 			aReport.onFinish();

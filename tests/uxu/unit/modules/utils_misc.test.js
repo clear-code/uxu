@@ -277,8 +277,7 @@ function test_doIteration()
 {
 	var flagFirst = false;
 	var flagWait = false;
-	var flagValue = false;
-	var flagFunction = false;
+	var flagRecursive = false;
 
 	function TestGenerator()
 	{
@@ -287,36 +286,27 @@ function test_doIteration()
 		yield 100;
 		flagWait = true;
 
-		var  flag = { value : false };
-		window.setTimeout(function() {
-			flag.value = true;
-		}, 100);
-		yield flag;
-		flagValue = true;
-
 		var startAt = Date.now();
 		yield (function() {
-				return (Date.now() - startAt) > 100;
+				while (Date.now() - startAt) < 100) {
+					yield false;
+				}
 			});
-		flagFunction = true;
+		flagRecursive = true;
 	}
 
 	var iterator = TestGenerator();
 	yield Do(utilsModule.doIteration(iterator));
 	assert.isTrue(flagFirst);
 	assert.isTrue(flagWait);
-	assert.isTrue(flagValue);
-	assert.isTrue(flagFunction);
+	assert.isTrue(flagRecursive);
 
 	flagFirst = false;
 	flagWait = false;
-	flagValue = false;
-	flagFunction = false;
 	yield Do(utilsModule.doIteration(TestGenerator));
 	assert.isTrue(flagFirst);
 	assert.isTrue(flagWait);
-	assert.isTrue(flagValue);
-	assert.isTrue(flagFunction);
+	assert.isTrue(flagRecursive);
 }
 
 function test_doIterationWithError()
@@ -328,50 +318,12 @@ function test_doIterationWithError()
 	}
 
 	var iterator = TestGenerator();
-	var retVal = utilsModule.doIteration(iterator);
+	var exception;
+	utilsModule.doIteration(iterator)
+		.then(function() { exception = null; })
+		.catch(function(aException) { exception = aException; });
 	yield 100;
-	assert.isInstanceOf(Error, retVal.error);
-}
-
-function test_doIterationCallbacks()
-{
-	var onEnd = false;
-	var onFail = false;
-	var onError = false;
-	var callbacks = {
-		onEnd : function(e)
-		{
-			onEnd = true;
-		},
-		onFail : function(e)
-		{
-			onFail = true;
-		},
-		onError : function(e)
-		{
-			onError = true;
-		}
-	};
-
-	yield Do(utilsModule.doIteration(function() {
-			yield 100;
-		}, callbacks));
-	assert.isTrue(onEnd);
-
-	utilsModule.doIteration(function() {
-			yield 100;
-			assert.isTrue(false);
-		}, callbacks);
-	yield 200;
-	assert.isTrue(onFail);
-
-	utilsModule.doIteration(function() {
-			yield 100;
-			var val = null;
-			null.foobar();
-		}, callbacks);
-	yield 200;
-	assert.isTrue(onError);
+	assert.isInstanceOf(Error, exception);
 }
 
 function test_Do()
