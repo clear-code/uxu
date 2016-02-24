@@ -1488,8 +1488,7 @@ doIteration : function(aGenerator, aCallbacks)
 	var lastRun = Date.now();
 	var timeout = Math.max(0, this.getPref('extensions.uxu.run.timeout'));
 	var self = this;
-	(function(aObject) {
-		var loop = arguments.callee;
+	(function loop(aObject) {
 		try {
 			if (Date.now() - lastRun >= timeout)
 				throw new Error(bundle.getFormattedString('error_generator_timeout', [parseInt(timeout / 1000)]));
@@ -2942,13 +2941,13 @@ bind : function(aFunction, aThis)
 	if (typeof aFunction != 'function' && typeof aThis == 'function')
 		[aThis, aFunction] = [aFunction, aThis];
 
-	var wrapped = function() {
-			if (this instanceof arguments.callee) { // called as a constructor
-				let retVal = aFunction.apply(this, arguments);
+	var wrapped = function(...aArgs) {
+			if (this instanceof wrapped) { // called as a constructor
+				let retVal = aFunction.apply(this, aArgs);
 				return (retVal === void(0)) ? this : retVal ;
 			}
 			else { // called as a function
-				return aFunction.apply(aThis, arguments);
+				return aFunction.apply(aThis, aArgs);
 			}
 		};
 	wrapped.prototype = aFunction.prototype;
