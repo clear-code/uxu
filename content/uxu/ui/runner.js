@@ -684,8 +684,6 @@ var gRemoteRun = {
 
 	onFinish : function()
 	{
-		this.reportLogsToParent()
-			.then((function() {
 				if (gOptions.autoQuit) {
 					utils.quitApplication(true);
 				}
@@ -695,7 +693,6 @@ var gRemoteRun = {
 				}
 
 				this.stopPinging();
-			}).bind(this));
 	},
 
 	startPinging : function()
@@ -723,24 +720,6 @@ var gRemoteRun = {
 	},
 	_pingTimer : null,
 
-	reportLogsToParent : function()
-	{
-		var console = WindowMediator.getMostRecentWindow('global:console');
-		if (!console)
-			return Promise.resolve();
-
-		var logs = [];
-		var rows = console.document.getElementById('ConsoleBox').mConsoleRowBox.children;
-		for (let row of rows)
-		{
-			if (row.boxObject.height > 0) {
-				logs.push(row.toString().trim());
-			}
-		}
-		var allLogs = ns.TestCase.prototype.LOG_MESSAGE + JSON.stringify(logs.join('\n---\n'));
-		var message = new ns.Message(allLogs, gOptions.outputHost, gOptions.outputPort);
-		return message.send();
-	},
 	closeConsoleWindows : function()
 	{
 		var console = WindowMediator.getMostRecentWindow('global:console');

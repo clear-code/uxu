@@ -15,7 +15,7 @@
  * The Original Code is UxU - UnitTest.XUL.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2010-2015
+ * Portions created by the Initial Developer are Copyright (C) 2010-2016
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <shimoda@clear-code.com>
@@ -79,6 +79,9 @@ var Application = '@mozilla.org/fuel/application;1' in Cc ?
 var PermissionManager = '@mozilla.org/permissionmanager;1' in Cc ?
 		Cc['@mozilla.org/permissionmanager;1'].getService(Ci.nsIPermissionManager) :
 		null ;
+
+var WindowMediator = Cc['@mozilla.org/appshell/window-mediator;1']
+	.getService(Ci.nsIWindowMediator);
 
 var isThreadManagerAvailable = '@mozilla.org/thread-manager;1' in Cc;
 
@@ -2636,9 +2639,7 @@ _quitApplication : function(aForce, aOption)
 
 		if (!cancelQuit.data) {
 			this.notify(null, 'quit-application-granted', null);
-			var windows = Cc['@mozilla.org/appshell/window-mediator;1']
-						.getService(Ci.nsIWindowMediator)
-						.getEnumerator(null);
+			var windows = WindowMediator.getEnumerator(null);
 			while (windows.hasMoreElements())
 			{
 				var target = windows.getNext().QueryInterface(Ci.nsIDOMWindow);
@@ -2835,6 +2836,30 @@ log : function()
 dump : function() 
 {
 	this.log.apply(this, arguments);
+},
+ 
+collectConsoleContents : function()
+{
+	var console = WindowMediator.getMostRecentWindow('global:console');
+	if (!console)
+		return '';
+
+	var logs = [];
+	var rows = console.document.getElementById('ConsoleBox').mConsoleRowBox.children;
+	for (let row of rows)
+	{
+		if (row.boxObject.height > 0) {
+			logs.push(row.toString().trim());
+		}
+	}
+	return logs.join('\n---\n');
+},
+ 
+clearConsoleContents : function()
+{
+	var console = WindowMediator.getMostRecentWindow('global:console');
+	if (console)
+		console.clearConsole();
 },
   
 notify : function(aSubject, aTopic, aData) 
