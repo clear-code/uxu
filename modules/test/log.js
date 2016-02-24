@@ -14,7 +14,7 @@
  * The Original Code is UxU - UnitTest.XUL.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2010-2014
+ * Portions created by the Initial Developer are Copyright (C) 2010-2016
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <shimoda@clear-code.com>
@@ -111,7 +111,7 @@ TestLog.prototype = {
 			aFormat = this._formatForFile(aFormat);
 
 		if (aFormat & this.FORMAT_RAW)
-			return this._items.toSource();
+			return this._toRAW(aFormat);
 
 		if (aFormat & this.FORMAT_CSV)
 			return this._toCSV(',');
@@ -123,7 +123,7 @@ TestLog.prototype = {
 			return this._toHTML();
 
 		if (aFormat & this.FORMAT_JSON)
-			return this._toJSON();
+			return this._toJSON(aFormat);
 
 		return this._toText(aFormat);
 	},
@@ -335,10 +335,21 @@ TestLog.prototype = {
 				.replace(/<!--\s*total-time\s*-->/, this._getLogTime(this.totalTime))
 				.replace(/<!--\s*result-table\s*-->/, table);
 	},
-
-	_toJSON : function()
+ 
+	_toRAW : function(aFormat)
 	{
-		return JSON.stringify(this._items);
+		var log = {
+			items : this._items
+		};
+		return log.toSource();
+	},
+ 
+	_toJSON : function(aFormat)
+	{
+		var log = {
+			items : this._items
+		};
+		return JSON.stringify(log);
 	},
 
 	append : function(aNewItems)

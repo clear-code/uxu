@@ -1306,6 +1306,7 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 		var result;
 		try {
 			result = this._utils.evalInSandbox(aResult);
+			result = result.items;
 			result[result.length-1].topics.forEach(function(aTopic) {
 				if (aTopic.test)
 					this._saveResult(aTopic.test, aTopic.result);
