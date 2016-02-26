@@ -127,7 +127,7 @@ ServerUtils.prototype = ns.inherit(ns.EventTarget.prototype, {
 
 		return null;
 	},
-	getHTTPServer : function() { return this.getHttpServer.apply(this, arguments); },
+	getHTTPServer : function(...aArgs) { return this.getHttpServer.apply(this, aArgs); },
 
 	setUpHttpServer : function(aPort, aBasePath, aAsync)
 	{
@@ -146,7 +146,7 @@ ServerUtils.prototype = ns.inherit(ns.EventTarget.prototype, {
 			return server;
 		});
 	},
-	setUpHTTPServer : function() { return this.setUpHttpServer.apply(this, arguments); },
+	setUpHTTPServer : function(...aArgs) { return this.setUpHttpServer.apply(this, aArgs); },
 
 	tearDownHttpServer : function(aPort, aAsync)
 	{
@@ -164,7 +164,7 @@ ServerUtils.prototype = ns.inherit(ns.EventTarget.prototype, {
 		}
 		return server ? server.stop(aAsync) : { value : true } ;
 	},
-	tearDownHTTPServer : function() { return this.tearDownHttpServer.apply(this, arguments); },
+	tearDownHTTPServer : function(...aArgs) { return this.tearDownHttpServer.apply(this, aArgs); },
 
 	tearDownAllHttpServers : function(aAsync)
 	{
@@ -190,13 +190,13 @@ ServerUtils.prototype = ns.inherit(ns.EventTarget.prototype, {
 			return false;
 		});
 	},
-	tearDownAllHTTPServers : function() { return this.tearDownAllHttpServers.apply(this, arguments); },
-	tearDownHttpServers : function() { return this.tearDownAllHttpServers.apply(this, arguments); },
-	tearDownHTTPServers : function() { return this.tearDownAllHttpServers.apply(this, arguments); },
+	tearDownAllHTTPServers : function(...aArgs) { return this.tearDownAllHttpServers.apply(this, aArgs); },
+	tearDownHttpServers : function(...aArgs) { return this.tearDownAllHttpServers.apply(this, aArgs); },
+	tearDownHTTPServers : function(...aArgs) { return this.tearDownAllHttpServers.apply(this, aArgs); },
 
 	isHttpServerRunning : function()
 	{
 		return this._HTTPServerInstances.length > 0;
 	},
-	isHTTPServerRunning : function() { return this.isHttpServerRunning.apply(this, arguments); }
+	isHTTPServerRunning : function(...aArgs) { return this.isHttpServerRunning.apply(this, aArgs); }
 });
