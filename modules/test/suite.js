@@ -15,7 +15,7 @@
  * The Original Code is UxU - UnitTest.XUL.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2010-2011
+ * Portions created by the Initial Developer are Copyright (C) 2010-2016
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <shimoda@clear-code.com>
@@ -162,11 +162,11 @@ initVariables : function()
 			_this.environment.__defineGetter__(aProperty, function() {
 				return _this[aProperty];
 			});
-			_this.environment.__defineSetter__(aProperty, function(aValue) {
+			_this.environment.__defineSetter__(aProperty, function setter(aValue) {
 				this.__defineGetter__(aProperty, function() {
 					return aValue;
 				});
-				this.__defineSetter__(aProperty, arguments.callee);
+				this.__defineSetter__(aProperty, setter);
 				return aValue;
 			});
 		});
@@ -426,7 +426,7 @@ setUpTestWindowInternal : function(aContinuation, aOptions)
 	return loadedFlag;
 },
   
-tearDownTestWindow : function() { return this.closeTestWindow.apply(this, arguments); }, 
+tearDownTestWindow : function(...aArgs) { return this.closeTestWindow.apply(this, aArgs); }, 
  
 getChromeWindow : function(aOptions) 
 {
@@ -738,7 +738,7 @@ processTemplate : function(aCode, aNamespace)
 	env = null;
 	return result;
 },
-parseTemplate : function() { return this.processTemplate.apply(this, arguments); }, // for backward compatibility
+parseTemplate : function(...aArgs) { return this.processTemplate.apply(this, aArgs); }, // for backward compatibility
  
 $ : function(aNodeOrID, aOwner) 
 {
@@ -761,9 +761,9 @@ getBoxObjectFor : function(aNode)
 				.getBoxObjectFor(aNode);
 },
  
-log : function() 
+log : function(...aArgs) 
 {
-	var message = Array.slice(arguments).join('\n');
+	var message = aArgs.join('\n');
 	this._utils.log(message);
 	this.fireEvent('Notify', message);
 }
