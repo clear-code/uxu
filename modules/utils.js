@@ -1409,14 +1409,14 @@ promisedReplaceXULDocument : function(aURI, aDocument)
 promisedAsyncHTTPRequest : function(aURI) 
 {
 	return new Promise((function(aResolve, aReject) {
-	var request = Cc['@mozilla.org/xmlextras/xmlhttprequest;1']
-					.createInstance(Ci.nsIXMLHttpRequest);
-	request.open('GET', aURI, true);
-	request.onreadystatechange = function() {
-		if (request.readyState == 4)
-			aResolve(request);
-	};
-	request.send();
+		var request = Cc['@mozilla.org/xmlextras/xmlhttprequest;1']
+						.createInstance(Ci.nsIXMLHttpRequest);
+		request.open('GET', aURI, true);
+		request.onreadystatechange = function() {
+			if (request.readyState == 4)
+				aResolve(request);
+		};
+		request.send();
 	}).bind(this));
 },
  
