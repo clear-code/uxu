@@ -239,11 +239,12 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 		return this._application;
 	},
 
-	set addons(aAddons)
+	setAddons : function(aAddons)
 	{
 		var AM = {};
 		Components.utils.import('resource://gre/modules/AddonManager.jsm', AM);
-		var results = []
+		return new Promise((function(aResolve, aReject) {
+			this._addons = [];
 		aAddons.forEach(function(aId) {
 			AM.AddonManager.getAddonByID(aId, function(aAddon) {
 				var result = { id : aId, file : null, active : false };
@@ -251,14 +252,15 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 					result.file = aAddon.getResourceURI('/').QueryInterface(Ci.nsIFileURL).file.clone();
 					result.active = aAddon.isActive;
 				}
-				results.push(result);
+				this._addons.push(result);
+				if (this._addons.length == aAddons.length)
+					aResolve(this._addons);
 			});
 		}, this);
-		this._utils.wait(function() {
-			return results.length == aAddons.length;
-		});
-		this._addons = results;
-		return this._addons;
+		}).bind(this));
+	},
+	set addons(aAddons) {
+		throw new Error('addons=(addons) is no longer supported. Use "setAddons(addons)" instead.');
 	},
 	get addons() {
 		return this._addons;
