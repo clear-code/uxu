@@ -1040,13 +1040,19 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 					);
 			},
 			finished : function() {
+				var onFinished = function() {
+					if (!self.aborted) {
+						self.done = true;
+						self.fireEvent('Finish', testCaseReport);
+					}
+				};
 				if (!allTestsToBeSkipped &&
-					ns.ServerUtils.prototype.isHttpServerRunning.call(self.suite.serverUtils))
-					self._utils.wait(ns.ServerUtils.prototype.tearDownAllHttpServers.call(self.suite.serverUtils));
-
-				if (!self.aborted) {
-					self.done = true;
-					self.fireEvent('Finish', testCaseReport);
+					ns.ServerUtils.prototype.isHttpServerRunning.call(self.suite.serverUtils)) {
+					self._utils.wait(ns.ServerUtils.prototype.tearDownAllHttpServers.call(self.suite.serverUtils))
+						.then(onFinished);
+				}
+				else {
+					onFinished();
 				}
 			}
 		};
