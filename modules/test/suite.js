@@ -332,29 +332,33 @@ getTestWindow : function(aOptions)
 },
  
 // テスト用のFirefoxウィンドウを開き直す 
-reopenTestWindow : function(aOptions, aCallback)
+reopenTestWindow : function(aOptions)
 {
 	var win = this.getTestWindow(aOptions);
 	if (win) win.close();
-	return this.openTestWindow(aOptions, aCallback);
+	return this.openTestWindow(aOptions);
 },
  
 // テスト用のFirefoxウィンドウを開く 
-openTestWindow : function(aOptions, aCallback)
+openTestWindow : function(aOptions)
 {
 	var win = this.getTestWindow(aOptions);
 	if (win) {
 		win.focus();
-		if (aCallback) aCallback(win);
+		if (aCallback)
+			aCallback(win);
+		return Promise.resolve(win);
 	}
-	else {
-		var info = this.normalizeTestWindowOption(aOptions);
-		var args = info.arguments.length ? this._utils.toSupportsArray(info.arguments) : null ;
-		win = WindowWatcher.openWindow(null, info.uri, info.name, info.features, args);
-		var id = info.uri+'?'+this.uniqueID;
-		win.addEventListener('load', function() {
-			win.removeEventListener('load', arguments.callee, false);
-			win[key] = this.uniqueID;
+
+	var info = this.normalizeTestWindowOption(aOptions);
+	var args = info.arguments.length ? this._utils.toSupportsArray(info.arguments) : null ;
+	win = WindowWatcher.openWindow(null, info.uri, info.name, info.features, args);
+	var suiteID = this.uniqueID;
+	var id = info.uri+'?'+suiteID;
+	return new Promise(function(aResolve, aReject) {
+		win.addEventListener('load', function onLoad() {
+			win.removeEventListener('load', onLoad, false);
+			win[key] = suiteID;
 			win.document.documentElement.setAttribute(key, id);
 			win.setTimeout(function() {
 				if (aOptions) {
@@ -368,13 +372,10 @@ openTestWindow : function(aOptions, aCallback)
 					}
 				}
 				win.focus();
-				if (aCallback) {
-					aCallback(win);
-				}
+				aResolve(win);
 			}, 0);
 		}, false);
-	}
-	return win;
+	});
 },
  
 // テスト用のFirefoxウィンドウを閉じる 
@@ -382,48 +383,39 @@ closeTestWindow : function(aOptions)
 {
 	var win = this.getTestWindow(aOptions);
 	if (win) {
-	  win.close();
-	  return (function() {
-	    return win.closed;
-	  });
+		win.close();
+		return wait(function() {
+			return win.closed;
+		});
 	}
+	return Promise.resolve();
 },
  
-setUpTestWindow : function(aContinuation, aOptions) 
+setUpTestWindow : function(...aArgs)
 {
-	if (!aOptions) aOptions = {};
-	if (aContinuation && typeof aContinuation != 'function') {
-		for (var i in aContinuation)
-		{
-			aOptions[i] = aContinuation[i];
-		}
-		aContinuation = void(0);
-	}
-	var completedFlag = this.setUpTestWindowInternal(aContinuation, aOptions);
-	if (!aOptions.async) this._utils.wait(completedFlag);
-	return completedFlag;
-},
-	
-setUpTestWindowInternal : function(aContinuation, aOptions) 
-{
-	var loadedFlag = { value : false };
-	var win = this.getTestWindow(aOptions);
-	if (win) {
-		if (aContinuation) aContinuation("ok");
-		loadedFlag.value = win;
+	var continuation, options;
+	if (aArgs.length > 1 &&
+		typeof aArgs[0] == 'function') {
+		continuation = aArgs[0];
+		options = aArgs[1];
 	}
 	else {
-		this.openTestWindow(
-			aOptions,
-			function(win) {
-				ns.setTimeout(function() {
-					if (aContinuation) aContinuation('ok');
-					loadedFlag.value = win;
-				}, 0);
-			}
-		);
+		options = aArgs[0];
 	}
-	return loadedFlag;
+
+	var win = this.getTestWindow(options);
+	if (win) {
+		if (continuation)
+			continuation('ok');
+		return Promise.resolve(win);
+	}
+
+	return this.openTestWindow(options)
+			.then(function(aWindow) {
+				if (continuation)
+					continuation('ok');
+				return aWindow;
+			});
 },
   
 tearDownTestWindow : function(...aArgs) { return this.closeTestWindow.apply(this, aArgs); }, 
@@ -479,7 +471,7 @@ removeWindowWatcher : function(aListener)
   
 // load page 
 	
-_waitBrowserLoad : function(aTab, aBrowser, aLoadedFlag, aOnComplete) 
+_waitBrowserLoad : function(aTab, aBrowser) 
 {
 	if (aBrowser.localName == 'tabbrowser') {
 		aTab = aBrowser.selectedTab;
@@ -529,25 +521,37 @@ _waitBrowserLoad : function(aTab, aBrowser, aLoadedFlag, aOnComplete)
 			this.stopTimer();
 
 			aBrowser.removeProgressListener(listener);
-			aLoadedFlag.value = true;
-			if (aOnComplete && typeof aOnComplete == 'function')
-				aOnComplete();
+			this.resolver();
 		}
 	};
 	aBrowser.addProgressListener(listener);
-	listener.timeoutTimer = ns.setInterval(function(aSelf) {
-		if (!listener.started) {
-			listener.onFinish();
-		}
-		else if (aBrowser.docShell.busyFlags == Ci.nsIDocShell.BUSY_FLAGS_NONE) {
-			listener.stopTimer();
-			utils.waitDOMEvent(
-				aBrowser.contentWindow, 'load',
-				100,
-				function() { listener.onFinish(); }
-			);
-		}
-	}, 100, this);
+	return new Promise((function(aResolve, aReject) {
+		listener.resolver = aResolve;
+		listener.rejector = aReject;
+		listener.timeoutTimer = ns.setInterval(function(aSelf) {
+			if (!listener.started) {
+				listener.onFinish();
+			}
+			else if (aBrowser.docShell.busyFlags == Ci.nsIDocShell.BUSY_FLAGS_NONE) {
+				listener.stopTimer();
+				utils.waitDOMEvent(
+					aBrowser.contentWindow, 'load',
+					100
+				).then(function() {
+					try {
+						listener.onFinish();
+					}
+					catch(e) {
+						throw e;
+					}
+					finally {
+						listener.resolver = aResolve;
+						listener.rejector = aReject;
+					}
+				});
+			}
+		}, 100, this);
+	}).bind(this));
 },
  
 // テスト用のFirefoxウィンドウの現在のタブにURIを読み込む 
@@ -558,28 +562,23 @@ loadURI : function(aURI, aOptions)
 	if (!aURI) aURI = 'about:blank';
 	aURI = this.fixupIncompleteURI(aURI);
 
-	var completedFlag = this.loadURIInternal(aURI, aOptions);
-	if (!aOptions.async) this._utils.wait(completedFlag);
-	return completedFlag;
-},
-	
-loadURIInternal : function(aURI, aOptions) 
-{
-	var loadedFlag = { value : false };
-
 	var b = this.testFrame;
 	if (!aOptions.inFrame) {
 		let win = this.getTestWindow(aOptions);
 		if (win) b = win.gBrowser;
 	}
-	if (!b) return { value : true };
-	b.stop();
-	ns.setTimeout(function(aSelf) {
-		aSelf._waitBrowserLoad(null, b, loadedFlag);
-		b.loadURI(aURI, aOptions.referrer || null);
-	}, 0, this);
+	if (!b)
+		return Promise.resolve();
 
-	return loadedFlag;
+	return new Promise((function(aResolve, aReject) {
+		b.stop();
+		ns.setTimeout((function() {
+			this._waitBrowserLoad(null, b)
+				.then(aResolve)
+				.catch(aReject);
+			b.loadURI(aURI, aOptions.referrer || null);
+		}).bind(this), 0);
+	}).bind(this));
 },
   
 loadURIInTestFrame : function(aURI, aOptions) 
@@ -594,35 +593,21 @@ loadXULAsChrome : function(aURI, aOptions)
 	if (!aOptions) aOptions = {};
 	aURI = this.fixupIncompleteURI(aURI);
 
-	var completedFlag = { value : false };
-
-	var baseLoadedFlag = this.loadURI(
-			'chrome://uxu/content/lib/base.xul?'+encodeURIComponent(aURI),
-			aOptions
-		);
-	ns.setTimeout(function(aSelf) {
-		aSelf._utils.wait(baseLoadedFlag);
-
-		var b = aSelf.testFrame;
+	return this.loadURI(
+		'chrome://uxu/content/lib/base.xul?'+encodeURIComponent(aURI),
+		aOptions
+	)
+	.then((function() {
+		var b = this.testFrame;
 		if (!aOptions.inFrame) {
 			let win = aSelf.getTestWindow(aOptions);
 			if (win) b = win.gBrowser;
 		}
-		if (!b) {
-			completedFlag.value = true;
-			return;
-		}
-		aSelf._utils.deferredReplaceXULDocument(aURI, b.contentDocument)
-			.next(function() {
-				completedFlag.value = true;
-			})
-			.error(function(e) {
-				completedFlag.value = true;
-			});
-	}, 0, this);
+		if (!b)
+			return win;
 
-	if (!aOptions.async) this._utils.wait(completedFlag);
-	return completedFlag;
+		return this._utils.deferredReplaceXULDocument(aURI, b.contentDocument);
+	}).bind(this));
 },
  
 // テスト用のFirefoxウィンドウで新しいタブを開く 
@@ -630,36 +615,30 @@ addTab : function(aURI, aOptions)
 {
 	if (!aOptions) aOptions = {};
 
-	if (this._utils.product != 'Firefox') return { value : true, tab : null };
+	if (this._utils.product != 'Firefox')
+		return Promise.resolve(null);
 
 	if (!aURI) aURI = 'about:blank';
 	aURI = this.fixupIncompleteURI(aURI);
 
-	var completedFlag = this.addTabInternal(aURI, aOptions);
-	if (!aOptions.async) this._utils.wait(completedFlag);
-	return completedFlag;
-},
-	
-addTabInternal : function(aURI, aOptions) 
-{
-	var loadedFlag = { value : false, tab : null };
-
 	var win = this.getTestWindow(aOptions);
-	if (!win) return null;
+	if (!win)
+		return Promise.resolve(null);
 
 	var tab = win.gBrowser.addTab();
 	tab.linkedBrowser.stop();
-	ns.setTimeout(function(aSelf) {
-		aSelf._waitBrowserLoad(tab, tab.linkedBrowser, loadedFlag, function() {
-			loadedFlag.tab = tab;
-			if (aOptions.selected) {
-				win.gBrowser.selectedTab = tab;
-			}
-		});
-		tab.linkedBrowser.loadURI(aURI, aOptions.referrer || null);
-	}, 0, this);
-
-	return loadedFlag;
+	return new Promise((function(aResolve, aReject) {
+		ns.setTimeout((function() {
+			this._waitBrowserLoad(tab, tab.linkedBrowser)
+				.then(function() {
+					if (aOptions.selected)
+						win.gBrowser.selectedTab = tab;
+					aResolve(tab);
+				})
+				.catch(aReject);
+			tab.linkedBrowser.loadURI(aURI, aOptions.referrer || null);
+		}).bind(this), 0);
+	}).bind(this));
 },
   
 getBrowser : function(aOptions) 
