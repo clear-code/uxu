@@ -245,18 +245,18 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 		Components.utils.import('resource://gre/modules/AddonManager.jsm', AM);
 		return new Promise((function(aResolve, aReject) {
 			this._addons = [];
-		aAddons.forEach(function(aId) {
-			AM.AddonManager.getAddonByID(aId, function(aAddon) {
-				var result = { id : aId, file : null, active : false };
-				if (aAddon) {
-					result.file = aAddon.getResourceURI('/').QueryInterface(Ci.nsIFileURL).file.clone();
-					result.active = aAddon.isActive;
-				}
-				this._addons.push(result);
-				if (this._addons.length == aAddons.length)
-					aResolve(this._addons);
-			});
-		}, this);
+			aAddons.forEach(function(aId) {
+				AM.AddonManager.getAddonByID(aId, function(aAddon) {
+					var result = { id : aId, file : null, active : false };
+					if (aAddon) {
+						result.file = aAddon.getResourceURI('/').QueryInterface(Ci.nsIFileURL).file.clone();
+						result.active = aAddon.isActive;
+					}
+					this._addons.push(result);
+					if (this._addons.length == aAddons.length)
+						aResolve(this._addons);
+				});
+			}, this);
 		}).bind(this));
 	},
 	set addons(aAddons) {
