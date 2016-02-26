@@ -44,6 +44,7 @@ const Ci = Components.interfaces;
 var ns = {};
 Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
 Components.utils.import('resource://uxu-modules/utils.js', ns);
+Components.utils.import('resource://gre/modules/Promise.jsm');
 
 function GreasemonkeyUtils(aSuite)
 {

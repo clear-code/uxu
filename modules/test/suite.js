@@ -54,6 +54,7 @@ Components.utils.import('resource://uxu-modules/test/greasemonkey.js', ns);
 Components.utils.import('resource://uxu-modules/test/testCase.js', ns);
 Components.utils.import('resource://uxu-modules/server/utils.js', ns);
 Components.utils.import('resource://uxu-modules/mail/utils.js', ns);
+Components.utils.import('resource://gre/modules/Promise.jsm');
 
 var WindowManager = Cc['@mozilla.org/appshell/window-mediator;1'].getService(Ci.nsIWindowMediator);
 var WindowWatcher = Cc['@mozilla.org/embedcomp/window-watcher;1'].getService(Ci.nsIWindowWatcher);

@@ -38,6 +38,7 @@ Components.utils.import('resource://uxu-modules/test/assertions.js', ns);
 Components.utils.import('resource://uxu-modules/test/report.js', ns);
 Components.utils.import('resource://uxu-modules/server/server.js', ns);
 Components.utils.import('resource://uxu-modules/server/utils.js', ns);
+Components.utils.import('resource://gre/modules/Promise.jsm');
 
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
 

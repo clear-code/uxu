@@ -41,13 +41,6 @@ if (typeof window == 'undefined')
 const Cc = Components.classes; 
 const Ci = Components.interfaces;
 
-try {
-	var { Promise } = Components.utils.import('resource://gre/modules/Promise.jsm', {});
-}
-catch(e) {
-	var Promise = null;
-}
-
 var ns = {};
 Components.utils.import('resource://uxu-modules/lib/inherit.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
@@ -61,6 +54,7 @@ Components.utils.import('resource://uxu-modules/lib/registry.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/extensions.js', ns);
 Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/jsdeferred.js', ns);
+Components.utils.import('resource://gre/modules/Promise.jsm');
 
 var prefread = {};
 Components.utils.import('resource://uxu-modules/prefread.js', prefread);
