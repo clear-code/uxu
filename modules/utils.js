@@ -1764,10 +1764,10 @@ inspectDOMNode : function(aNode)
 	return (new ownerWindowSerializer()).serializeToString(aNode).replace(/ +\/>/g, '/>');
 },
  
-p : function() 
+p : function(...aArgs) 
 {
-	for (var i = 0; i < arguments.length; i++) {
-		var inspected = this.inspect(arguments[i]);
+	for (var i = 0; i < aArgs.length; i++) {
+		var inspected = this.inspect(aArgs[i]);
 		if (!/\n$/.test(inspected))
 			inspected += "\n";
 		this.dump(inspected);
