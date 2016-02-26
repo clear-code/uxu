@@ -1480,7 +1480,7 @@ doIteration : function(aGenerator)
 	if (typeof aGenerator == 'function')
 		iterator = aGenerator();
 	if (!this.isGeneratedIterator(iterator))
-		return Promise.reject(throw new Error(bundle.getFormattedString('error_utils_invalid_generator', [aGenerator])));
+		return Promise.reject(new Error(bundle.getFormattedString('error_utils_invalid_generator', [aGenerator])));
 
 	var callerStack = this.reduceTopStackLine(this.getStackTrace());
 
