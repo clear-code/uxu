@@ -14,7 +14,7 @@
  * The Original Code is UxU - UnitTest.XUL.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2010-2014
+ * Portions created by the Initial Developer are Copyright (C) 2010-2016
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <shimoda@clear-code.com>
@@ -135,19 +135,16 @@ ServerUtils.prototype = ns.inherit(ns.EventTarget.prototype, {
 		if (this._HTTPServerInstances.some(function(aServer) {
 				return aServer.port == aPort;
 			}))
-			throw new Error(ERROR_USED_PORT);
+			return Promise.reject(new Error(ERROR_USED_PORT));
 
 		var server = new ns.HTTPServer(aPort, aBasePath, this.mMockManager);
 		this._HTTPServerInstances.push(server);
 
-		var completedCheck = function() {
-				return !server.isStopped();
-			};
-
-		if (!aAsync)
-			ns.utils.wait(server);
-
-		return server;
+		return ns.utils.wait(function() {
+			return !server.isStopped();
+		}).then(function() {
+			return server;
+		});
 	},
 	setUpHTTPServer : function() { return this.setUpHttpServer.apply(this, arguments); },
 
@@ -182,21 +179,16 @@ ServerUtils.prototype = ns.inherit(ns.EventTarget.prototype, {
 				errors.push(e);
 			}
 		}
-		var completedCheck = function() {
-				if (stopped.every(function(aStopped) {
-						return aStopped.value;
-					})) {
-					if (errors.length)
-						throw new ns.MultiplexError(errors);
-					return true;
-				}
-				return false;
-			};
-
-		if (!aAsync)
-			ns.utils.wait(completedCheck);
-
-		return completedCheck;
+		return ns.utils.wait(function() {
+			if (stopped.every(function(aStopped) {
+					return aStopped.value;
+				})) {
+				if (errors.length)
+					throw new ns.MultiplexError(errors);
+				return true;
+			}
+			return false;
+		});
 	},
 	tearDownAllHTTPServers : function() { return this.tearDownAllHttpServers.apply(this, arguments); },
 	tearDownHttpServers : function() { return this.tearDownAllHttpServers.apply(this, arguments); },

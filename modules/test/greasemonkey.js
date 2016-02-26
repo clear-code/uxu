@@ -15,7 +15,7 @@
  * The Original Code is UxU - UnitTest.XUL.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2010-2012
+ * Portions created by the Initial Developer are Copyright (C) 2010-2016
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <shimoda@clear-code.com>
@@ -93,37 +93,22 @@ GreasemonkeyUtils.prototype = {
 		aURI = this._suite.fixupIncompleteURI(aURI)
 		this.listeners = [];
 		this.sandboxes = {};
-		var loadedFlag = { value : false, window : null, tab : null };
+		var result = { window : null, tab : null };
+		return this._suite.setUpTestWindow(null, aOptions)
+				.then((function(aWindow) {
+					result.window = this.testWindow = aWindow;
+					var b = aWindow.gBrowser;
+					if (!b)
+						return result;
 
-		var self = this;
-		var postProcess = function() {
-			self._suite.wait(tempFlag);
-
-			self.testWindow = self._suite.getTestWindow(aOptions);
-			loadedFlag.window = self.testWindow;
-
-			var b = loadedFlag.window.gBrowser;
-			if (b) {
-				loadedFlag.tab = self._suite.addTab(aURI).tab;
-				self.frame = loadedFlag.tab.linkedBrowser;
-				b.removeAllTabsBut(loadedFlag.tab);
-				loadedFlag.value = true;
-			}
-			else {
-				loadedFlag.value = true;
-			}
-		};
-
-		var tempFlag = this._suite.setUpTestWindow(null, aOptions);
-		if (!aOptions || !aOptions.async) {
-			this._suite.wait(tempFlag);
-			postProcess();
-		}
-		else {
-			ns.setTimeout(postProcess, 0);
-		}
-
-		return loadedFlag;
+					return this._suite.addTab(aURI)
+						.then((function(aTab) {
+							result.tab = aTab;
+							this.frame = aTab.linkedBrowser;
+							b.removeAllTabsBut(aTab);
+							return result;
+						}).bind(this));
+				}).bind(this));
 	},
 
 	close : function()
@@ -262,24 +247,30 @@ GreasemonkeyUtils.prototype = {
 
 	doAndWaitLoad : function(aFunction, aScope)
 	{
-		var _this = this;
-		var loadedFlag = { value : false };
-		var listener = {
+		return new Promise((function(aResolve, aReject) {
+			var listener = {
+				owner : this,
 				handleEvent : function(aEvent)
 				{
 					switch (aEvent.type)
 					{
 						case 'GM_xmlhttpRequestLoad':
 						case 'GM_xmlhttpRequestError':
-							loadedFlag.value = true;
-							_this.removeListener(this);
+							this.owner.removeListener(listener);
+							aResolve();
 							break;
 					}
 				}
 			};
-		this.addListener(listener);
-		if (aFunction) aFunction.call(aScope);
-		return loadedFlag;
+			this.addListener(listener);
+			try {
+				if (aFunction)
+					aFunction.call(aScope);
+			}
+			catch(e) {
+				aReject(e);
+			}
+		}).bind(this));
 	},
 
 

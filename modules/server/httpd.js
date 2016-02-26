@@ -4686,7 +4686,7 @@ HTTPServer.prototype = {
 	stop : function(aAsync)
 	{
 		if (!this.mServer)
-			return { value : true };
+			return Promise.resolve();
 
 		var stopped = { value : false };
 		var errors = (this.mock && this.mock.errors.length) ? this.mock.errors : null ;
@@ -4701,10 +4701,7 @@ HTTPServer.prototype = {
 		if (errors)
 			throw new ns.MultiplexError(errors);
 
-		if (!aAsync)
-			utils.wait(stopped);
-
-		return stopped;
+		return utils.wait(stopped);
 	},
 
 	isStopped : function()
@@ -4750,7 +4747,7 @@ HTTPServer.prototype = {
 	},
 
 
-	// for yield and utils.wait()
+	// for utils.wait()
 	get value()
 	{
 		return !this.isStopped();
