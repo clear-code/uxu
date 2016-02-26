@@ -2323,39 +2323,38 @@ getErrorNameFromNSExceptionCode : function(aCode)
 getDocumentEncoding : function(aSource) 
 {
 	return null;
-
+},
+ 
+promisedDocumentEncoding : function(aSource) 
+{
 	if (
 		!this.internalLoader ||
 		!aSource ||
 		!/^(jar:)?(file|chrome|resource):/.test(aSource) // only for local resources
 		)
-		return null;
+		return Promise.resolve(null);
 
-	var loader = this.internalLoader;
+	return new Promise((function(aResolve, aReject) {
+		var loader = this.internalLoader;
+		var listener = function() {
+				loader.removeEventListener('load', listener, true);
+				loader.removeEventListener('error', listener, true);
+				loader.stop();
+				aResolve(loader.contentDocument.characterSet);
+			};
+		loader.addEventListener('load', listener, true);
+		loader.addEventListener('error', listener, true);
 
-	var completed = { value : null };
-	var listener = function() {
+		try {
+			// add "view-source:" to ignore loading of external resources
+			loader.loadURI('view-source:'+aSource);
+		}
+		catch(e) {
 			loader.removeEventListener('load', listener, true);
 			loader.removeEventListener('error', listener, true);
-			loader.stop();
-
-			completed.value = loader.contentDocument.characterSet;
-		};
-	loader.addEventListener('load', listener, true);
-	loader.addEventListener('error', listener, true);
-
-	try {
-		// add "view-source:" to ignore loading of external resources
-		loader.loadURI('view-source:'+aSource);
-		this.wait(completed);
-	}
-	catch(e) {
-		loader.removeEventListener('load', listener, true);
-		loader.removeEventListener('error', listener, true);
-		return null;
-	}
-
-	return completed.value;
+			aResolve(null);
+		}
+	}).bind(this));
 },
  
 get internalLoader() 
