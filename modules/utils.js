@@ -83,8 +83,6 @@ var PermissionManager = '@mozilla.org/permissionmanager;1' in Cc ?
 var WindowMediator = Cc['@mozilla.org/appshell/window-mediator;1']
 	.getService(Ci.nsIWindowMediator);
 
-var isThreadManagerAvailable = '@mozilla.org/thread-manager;1' in Cc;
-
 var _db = null;
  
 function Utils() 
@@ -231,22 +229,16 @@ exportToDocument : function(aDOMDocument)
   
 // タイマー操作 
 	
-// http://d.hatena.ne.jp/fls/20090224/p1
 sleep : function(aWait) 
 {
-	if (!isThreadManagerAvailable)
-		throw new Error(bundle.getString('error_utils_sleep_is_not_available'));
-	this.wait(aWait);
+	return this.wait(aWait);
 },
  
-wait : function(aWaitCondition) 
+wait : function(...aArgs) 
 {
-	if (!isThreadManagerAvailable)
-		throw new Error(bundle.getString('error_utils_wait_is_not_available'));
-
 	if (
-		arguments.length > 1 &&
-		Array.slice(arguments).some(function(aArg) {
+		aArgs.length > 1 &&
+		aArgs.some(function(aArg) {
 			return ( // EventTarget?
 				aArg &&
 				typeof aArg == 'object' &&
@@ -256,97 +248,97 @@ wait : function(aWaitCondition)
 		)
 		return this.waitDOMEvent.apply(this, arguments);
 
-	if (!aWaitCondition) aWaitCondition = 0;
+	var waitCondition = aArgs.length > 0 ? aArgs[0] : 0 ;
+	var lastRun = Date.now();
+	var timeout = Math.max(0, this.getPref('extensions.uxu.run.timeout'));
+	var checkTimeout = function() {
+		if (Date.now() - lastRun >= timeout)
+			throw new Error(bundle.getFormattedString('error_utils_wait_timeout', [parseInt(timeout / 1000)]));
+	};
 
-	var finished = { value : false };
-	switch (typeof aWaitCondition)
+	switch (typeof waitCondition)
 	{
 		default:
-			aWaitCondition = Number(aWaitCondition);
-			if (isNaN(aWaitCondition))
-				aWaitCondition = 0;
+			waitCondition = Number(waitCondition);
+			if (isNaN(waitCondition))
+				waitCondition = 0;
 
 		case 'number':
-			if (aWaitCondition < 0)
-				throw new Error(bundle.getFormattedString('error_utils_wait_unknown_condition', [String(aWaitCondition)]));
+			if (waitCondition < 0)
+				throw new Error(bundle.getFormattedString('error_utils_wait_unknown_condition', [String(waitCondition)]));
 
-			var timer = ns.setTimeout(function() {
-					finished.value = true;
+			return new Promise(function(aResolve, aReject) {
+				var timer = ns.setTimeout(function() {
 					ns.clearTimeout(timer);
-				}, aWaitCondition);
+					aResolve();
+				}, waitCondition);
+			});
 			break;
 
 		case 'function':
-			var retVal = aWaitCondition();
+			var retVal = waitCondition();
 			if (this.isGeneratedIterator(retVal)) {
-				finished = this.doIteration(retVal);
+				return this.doIteration(retVal);
 			}
 			else if (retVal) {
-				finished.value = true;
+				// if true or similar value is returned, we are done.
+				return Promise.resolve(retVal);
 			}
 			else {
-				let timer = ns.setInterval(function() {
-						finished.value = aWaitCondition();
-						if (finished.value)
+				// otherwise, retry with delay until true is returned.
+				return new Promise(function(aResolve, aReject) {
+					var timer = ns.setInterval(function() {
+						try {
+							checkTimeout();
+							if (!waitCondition())
+								return; // retry later.
 							ns.clearInterval(timer);
+							aResolve();
+						}
+						catch(e) {
+							ns.clearInterval(timer);
+							aReject(e);
+						}
 					}, 10);
+				});
 			}
 			break;
 
 		case 'object':
-			if (this.isGeneratedIterator(aWaitCondition)) {
-				finished = this.doIteration(aWaitCondition);
+			if (!waitCondition) {
+				return Promise.reject(new Error(bundle.getFormattedString('error_utils_wait_unknown_condition', [String(waitCondition)])));
 			}
-			else if (aWaitCondition.then && typeof aWaitCondition.then == 'function') {
-				aWaitCondition
-					.then(function() {
-						finished.value = true;
-					})
-					.catch(function() {
-						finished.value = true;
-					});
+			else if (this.isGeneratedIterator(waitCondition)) {
+				return this.doIteration(waitCondition);
 			}
-			else if (this.isDeferred(aWaitCondition)) {
-				if (aWaitCondition.fired)
-					return;
-				aWaitCondition
-					.next(function() {
-						finished.value = true;
-					})
-					.error(function() {
-						finished.value = true;
-					});
+			else if (typeof waitCondition.then == 'function') {
+				return new Promise(function(aResolve, aReject) {
+					waitCondition
+						.then(aResolve)
+						.catch(aReject);
+				});
 			}
-			else {
-				if (!aWaitCondition || !('value' in aWaitCondition))
-					throw new Error(bundle.getFormattedString('error_utils_wait_unknown_condition', [String(aWaitCondition)]));
-				finished = aWaitCondition;
+			else if (this.isDeferred(waitCondition)) {
+				if (waitCondition.fired)
+					return Promise.resolve();
+
+				return new Promise(function(aResolve, aReject) {
+					waitCondition
+						.next(aResolve)
+						.error(aReject);
+				});
 			}
 			break;
 	}
-
-	var lastRun = Date.now();
-	var timeout = Math.max(0, this.getPref('extensions.uxu.run.timeout'));
-	var thread = Cc['@mozilla.org/thread-manager;1'].getService().mainThread;
-	while (!finished.value)
-	{
-		thread.processNextEvent(true);
-		if (Date.now() - lastRun >= timeout)
-			throw new Error(bundle.getFormattedString('error_utils_wait_timeout', [parseInt(timeout / 1000)]));
-	}
+	return Promise.reject(new Error(bundle.getFormattedString('error_utils_wait_unknown_condition', [String(waitCondition)])));
 },
  
-waitDOMEvent : function() 
+waitDOMEvent : function(...aArgs) 
 {
-	var args = Array.slice(arguments);
-	var callbacks = [];
 	var timeout = 10 * 1000;
-	args = args.filter(function(aArg) {
+	aArgs = aArgs.filter(function(aArg) {
 			switch (typeof aArg)
 			{
-				case 'function':
-					callbacks.push(aArg);
-					return false;
 				case 'number':
 					timeout = aArg;
 					return false;
@@ -356,9 +348,9 @@ waitDOMEvent : function()
 		});
 
 	var definitions = [];
-	for (let i = 0, count = args.length; i < count; i += 2)
+	for (let i = 0, count = aArgs.length; i < count; i += 2)
 	{
-		let [target, conditions] = [args[i], args[i+1]];
+		let [target, conditions] = [aArgs[i], aArgs[i+1]];
 		if (conditions &&
 			typeof conditions == 'object' &&
 			typeof conditions.addEventListener == 'function') // EventTarget
@@ -380,10 +372,9 @@ waitDOMEvent : function()
 		definitions.push(definition);
 	}
 
-	var TIMEOUT = 'UxUWaitDOMEventTimeout';
-
-	var fired = { value : false };
-	var listener = function(aEvent) {
+	return new Promise((function(aResolve, aReject) {
+		var TIMEOUT = 'UxUWaitDOMEventTimeout';
+		var listener = function(aEvent) {
 			if (
 				aEvent.type != TIMEOUT &&
 				!definitions.some(function(aDefinition) {
@@ -403,25 +394,24 @@ waitDOMEvent : function()
 				)
 				return;
 
-			if (timer) ns.clearTimeout(timer);
+			if (timer)
+				ns.clearTimeout(timer);
 
 			definitions.forEach(function(aDefinition) {
 				aDefinition.target.removeEventListener(aDefinition.type, listener, aDefinition.capture || false);
 			});
-			fired.event = aEvent;
-			fired.value = true;
 
-			if (callbacks.length)
-				callbacks.forEach(function(aCallback) {
-					aCallback(aEvent);
-				});
+			if (aEvent.type == TIMEOUT)
+				aReject(aEvent);
+			else
+				aResolve(aEvent);
 		};
 
-	definitions.forEach(function(aDefinition) {
-		aDefinition.target.addEventListener(aDefinition.type, listener, aDefinition.capture || false);
-	});
+		definitions.forEach(function(aDefinition) {
+			aDefinition.target.addEventListener(aDefinition.type, listener, aDefinition.capture || false);
+		});
 
-	var timer = ns.setTimeout(function() {
+		var timer = ns.setTimeout(function() {
 			timer = null;
 			listener({
 				type           : TIMEOUT,
@@ -430,13 +420,9 @@ waitDOMEvent : function()
 				originalTarget : null
 			});
 		}, timeout);
-
-	if (!callbacks.length)
-		this.wait(fired);
-
-	return fired;
+	}).bind(this));
 },
-waitDOMEvents : function() { return this.waitDOMEvent.apply(this, arguments); },
+waitDOMEvents : function(...aArgs) { return this.waitDOMEvent.apply(this, aArgs); },
   
 // ファイル操作 
 	
@@ -1384,13 +1370,10 @@ fixupIncompleteURI : function(aURIOrPart)
 	return uri;
 },
  
-deferredReplaceXULDocument : function(aURI, aDocument) 
+promisedReplaceXULDocument : function(aURI, aDocument) 
 {
-	var deferred = new ns.Deferred();
-	var self = this;
-	ns.Deferred.next(function() {
-		self.deferredAsyncHTTPRequest(aURI)
-			.next(function(aRequest) {
+	return this.promisedAsyncHTTPRequest(aURI)
+			.then((function(aRequest) {
 				var doc = aRequest.responseXML;
 
 				// unify root element
@@ -1413,43 +1396,28 @@ deferredReplaceXULDocument : function(aURI, aDocument)
 						newRoot.appendChild(node);
 					});
 
-				aDocument.loadOverlay(aURI, {
-					observe : function() {
-						deferred.call(aDocument);
-					}
+				return new Promise(function(aResolve, aReject) {
+					aDocument.loadOverlay(aURI, {
+						observe : function() {
+							aResolve(aDocument);
+						}
+					});
 				});
-			})
-			.error(function(e) {
-				deferred.fail(e);
-			});
-	});
-	return deferred;
+			}).bind(this));
 },
  
-deferredAsyncHTTPRequest : function(aURI) 
+promisedAsyncHTTPRequest : function(aURI) 
 {
-	var deferred = new ns.Deferred();
-
+	return new Promise((function(aResolve, aReject) {
 	var request = Cc['@mozilla.org/xmlextras/xmlhttprequest;1']
 					.createInstance(Ci.nsIXMLHttpRequest);
 	request.open('GET', aURI, true);
 	request.onreadystatechange = function() {
 		if (request.readyState == 4)
-			deferred.call(request);
+			aResolve(request);
 	};
-
-	var next = ns.Deferred.next(function() {
-			request.send();
-		});
-	deferred.canceller = function() {
-		next.cancel();
-		try {
-			request.abort();
-		}
-		catch(e) {
-		}
-	};
-	return deferred;
+	request.send();
+	}).bind(this));
 },
  
 // イテレータ操作 
