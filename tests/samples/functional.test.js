@@ -25,23 +25,19 @@ tc.tests = {
 	},
 
 	'page loading test': function() {
-		var loaded = {
-				value : false
-			};
 		var win = utils.getTestWindow();
-        var browser = utils.getBrowser();
-		browser.addEventListener('load', function() {
-			dump('LOADED');
-			loaded.value = true;
-		}, true);
-		browser.loadURI('http://www.google.com/');
+		var browser = utils.getBrowser();
+		return new Promise(function(aResolve, aReject) {
+				browser.addEventListener('load', function() {
+					dump('LOADED');
+					loaded.value = true;
+				}, true);
+				browser.loadURI('http://www.google.com/');
+			})
+			.then(function() {
+				dump('NEXT STEP\n');
 
-		while (!loaded.value) {
-			dump('NOT LOADED\n');
-			yield 1000;
-		}
-		dump('NEXT STEP\n');
-
-		assert.isTrue(true);
+				assert.isTrue(true);
+			});
 	}
 }

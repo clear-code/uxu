@@ -84,12 +84,12 @@ function assertMappedXMLHttpRequest(aURI)
 
 function assertMappedImageRequest(aURI)
 {
-	var loaded = { value : false };
-	var image = new Image();
-	image.src = aURI
-	image.onload = function() {
-		loaded.value = true;
-	};
-	yield utils.wait(loaded);
+	yield new Promise(function(aResolve, aReject) {
+		var image = new Image();
+		image.src = aURI
+		image.onload = function() {
+			aResolve();
+		};
+	});
 	assert.equals([48, 48], [image.width, image.height]);
 }

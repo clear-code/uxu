@@ -144,17 +144,10 @@ function test_wait()
 	yield assertWaitSuccess([500], 500);
 
 	var object = { value : false };
-	window.setTimeout(function() {
-		object.value = true;
-	}, 500);
-	yield assertWaitSuccess([object], 500);
+	yield assertWaitFail([object], 0);
 
-	var finished = false;
-	var func = function() { return finished; };
-	window.setTimeout(function() {
-		finished = true;
-	}, 500);
-	yield assertWaitSuccess([func], 500);
+	var func = function() { return true; };
+	yield assertWaitSuccess([func], 0);
 
 	yield assertWaitSuccess([true], 100);
 	yield assertWaitSuccess([false], 100);
@@ -244,11 +237,9 @@ function test_waitDOMEvent()
 		.catch(function(aEvent) {
 				events.push(aEvent);
 		});
-	assert.isFalse(result.value);
 	assert.equals([], events);
 	clickWithDelay(content.document.documentElement);
 	yield utils.wait(100);
-	assert.isTrue(result.value);
 	assert.equals(['click', 'click'],
 	              events.map(function(aEvent) aEvent.type));
 }
