@@ -270,7 +270,13 @@ wait : function(...aArgs)
 			break;
 
 		case 'function':
-			var retVal = waitCondition();
+			var retVal;
+			try {
+				retVal = waitCondition();
+			}
+			catch(e) {
+				return Promise.reject(e);
+			}
 			if (this.isGeneratedIterator(retVal)) {
 				return this.doIteration(retVal);
 			}
@@ -1461,13 +1467,18 @@ doIteration : function(aGenerator)
 		return Promise.reject(new Error(bundle.getString('error_utils_no_generator')));
 
 	var iterator = aGenerator;
-	if (typeof aGenerator == 'function')
-		iterator = aGenerator();
-	if (
-		!iterator ||
-		!this.isGeneratedIterator(iterator)
-		)
-		return this.wait(iterator);
+	try {
+		if (typeof aGenerator == 'function')
+			iterator = aGenerator();
+		if (
+			!iterator ||
+			!this.isGeneratedIterator(iterator)
+			)
+			return this.wait(iterator);
+	}
+	catch(e) {
+		return Promise.reject(e);
+	}
 
 	var callerStack = this.reduceTopStackLine(this.getStackTrace());
 
