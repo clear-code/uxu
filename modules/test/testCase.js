@@ -1385,7 +1385,16 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 					continuation.next = aNext;
 				};
 			if (aTest.code.length > 0) {
-				this._utils.wait(aTest.code.call(this.context, continuation))
+				this._utils.wait(aTest.code.call(this.context, function(aError) {
+					aReport.onDetailedFinish();
+					if (aError) {
+						onError(aError);
+					}
+					else {
+						onSuccess();
+					}
+					continuation();
+				}))
 				return continuation;
 			}
 
@@ -1421,49 +1430,62 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 			return aSuccess;
 		}
 
-		try {
-			var useContinuation = aFunction.length > 0;
-			var continuation = function(aResult) {
-					continuation.next = aResult == 'ok' ? aSuccess : aFailed ;
-				};
-			var result = useContinuation ?
-					aFunction.call(this.context, continuation) :
-					aFunction.call(this.context);
-			if (this._utils.isGeneratedIterator(result)) {
-				let self = this;
-				this._utils.doIteration(result)
-					.then(function() {
-						aReport.onFinish();
-						if (!useContinuation)
-							continuation.next = aSuccess;
-					})
-					.catch(function(e) {
-						aReport.addTopic({
-							result      : self.RESULT_ERROR,
-							description : aDescription,
-							exception   : self._utils.normalizeError(e)
-						});
-						aReport.onFinish();
-						continuation.next = aFailed;
+		var onSuccess = (function() {
+				aReport.onFinish();
+			}).bind(this);
+		var onError = (function(aError) {
+				var multiplex = aError.name == 'MultiplexError';
+				(multiplex ? aError.errors : [aError] ).forEach(function(aError, aIndex) {
+					var description = aDescription;
+					if (multiplex)
+						description = bundle.getFormattedString('report_description_multiplex', [description, aIndex+1]);
+					aReport.addTopic({
+						result      : (aError.name == 'AssertionFailed') ? this.RESULT_FAILURE : this.RESULT_ERROR,
+						description : description,
+						exception   : this._utils.normalizeError(aError)
 					});
+				}, this);
+				aReport.onFinish();
+			}).bind(this);
+
+		try {
+			var continuation = function() {
+					continuation.next = aSuccess;
+				};
+			if (aFunction.length > 0) {
+				this._utils.wait(aTest.code.call(this.context, function(aError) {
+					if (aError) {
+						onError(aError);
+						aSuccess = aFailed;
+					}
+					else {
+						onSuccess();
+					}
+					continuation();
+				}))
 				return continuation;
 			}
-			aReport.onFinish();
-			return useContinuation ? continuation : aSuccess ;
+
+			var result = aFunction.call(this.context);
+			this._utils.wait(result)
+				.then(function() {
+					onSuccess();
+					continuation();
+				})
+				.catch(function(aError) {
+					if (aError) {
+						onError(aError);
+						aSuccess = aFailed;
+					}
+					else {
+						onSuccess();
+					}
+					continuation();
+				});
+			return continuation;
 		}
 		catch(e) {
-			let multiplex = e.name == 'MultiplexError';
-			(multiplex ? e.errors : [e] ).forEach(function(e, aIndex) {
-				var description = aDescription;
-				if (multiplex)
-					description = bundle.getFormattedString('report_description_multiplex', [description, aIndex+1]);
-				aReport.addTopic({
-					result      : (e.name == 'AssertionFailed') ? this.RESULT_FAILURE : this.RESULT_ERROR,
-					description : description,
-					exception   : this._utils.normalizeError(e)
-				});
-			}, this);
-			aReport.onFinish();
+			onError(e);
 			return aFailed;
 		}
 	},
