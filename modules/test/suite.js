@@ -385,7 +385,7 @@ closeTestWindow : function(aOptions)
 	var win = this.getTestWindow(aOptions);
 	if (win) {
 		win.close();
-		return wait(function() {
+		return this._utils.wait(function() {
 			return win.closed;
 		});
 	}
@@ -529,13 +529,13 @@ _waitBrowserLoad : function(aTab, aBrowser)
 	return new Promise((function(aResolve, aReject) {
 		listener.resolver = aResolve;
 		listener.rejector = aReject;
-		listener.timeoutTimer = ns.setInterval(function(aSelf) {
+		listener.timeoutTimer = ns.setInterval((function() {
 			if (!listener.started) {
 				listener.onFinish();
 			}
 			else if (aBrowser.docShell.busyFlags == Ci.nsIDocShell.BUSY_FLAGS_NONE) {
 				listener.stopTimer();
-				utils.waitDOMEvent(
+				this._utils.waitDOMEvent(
 					aBrowser.contentWindow, 'load',
 					100
 				).then(function() {
@@ -551,7 +551,7 @@ _waitBrowserLoad : function(aTab, aBrowser)
 					}
 				});
 			}
-		}, 100, this);
+		}).bind(this), 100, this);
 	}).bind(this));
 },
  
@@ -601,7 +601,7 @@ loadXULAsChrome : function(aURI, aOptions)
 	.then((function() {
 		var b = this.testFrame;
 		if (!aOptions.inFrame) {
-			let win = aSelf.getTestWindow(aOptions);
+			let win = this.getTestWindow(aOptions);
 			if (win) b = win.gBrowser;
 		}
 		if (!b)
