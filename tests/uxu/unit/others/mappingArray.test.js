@@ -12,23 +12,41 @@ var mapping = [
 		'http://submission/*',              'http://localhost:4445/redirect/match/hash.txt'
 	];
 
-function testMapping()
+function tearDown()
 {
-	assertMapped('http://localhost:4445/notfound.html', false);
-	assertNotMapped('about:blank');
-	assertMapped('http://www.example.com/', false)
-	assertNotMapped('about:blank');
-	assertMapped('http://www.example.jp/test/foobar', false);
-	assertNotMapped('about:blank');
-	assertMapped('https://addons.mozilla.org/firefox/', true);
-	assertNotMapped('about:blank');
-	assertMapped('http://www.google.com/', true);
-	assertNotMapped('about:blank');
+	yield utils.loadURI('about:blank');
+}
+
+testMapped.patterns = [
+	{ uri : 'http://localhost:4445/notfound.html' },
+	{ uri : 'http://www.example.jp/test/foobar' },
+	{ uri : 'http://www.example.com/' },
+	{ uri : 'http://www.example.jp/test/foobar' },
+	{ uri : 'https://addons.mozilla.org/firefox/', isFile : true },
+	{ uri : 'http://www.google.com/', isFile : true },
+];
+function testMapped(aPattern)
+{
+	assertMapped(aPattern.uri, aPattern.isFile);
+}
+
+function testNotMapped()
+{
 	assertNotMapped('about:config'); // not supported
+}
 
+function testXMLHttpRequest()
+{
 	assertMappedXMLHttpRequest('http://www.example.com/');
-	assertMappedImageRequest('http://www.example.jp/test.jpg');
+}
 
+function testImageRequest()
+{
+	assertMappedImageRequest('http://www.example.jp/test.jpg');
+}
+
+function testRedirectedSubmission()
+{
 	assertRedirectedSubmission();
 }
 

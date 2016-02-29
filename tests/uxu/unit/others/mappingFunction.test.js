@@ -9,18 +9,37 @@ var mapping = function(aURI) {
 				.replace(/^.*\/submission\/.*/, 'http://localhost:4445/redirect/match/hash.txt');
 	};
 
-function testMapping()
+function tearDown()
 {
-	assertMapped('http://localhost:4445/notfound.html', false);
-	assertNotMapped('about:blank');
-	// http://www.example.com/ is redirected to the following URL
-	assertNotMapped('http://www.iana.org/domains/reserved');
-	assertNotMapped('about:blank');
-	assertMapped('http://www.google.com/', true);
-
-	assertMappedXMLHttpRequest('http://www.google.com/');
-	assertMappedImageRequest('http://www.example.jp/test.jpg');
-
-	assertRedirectedSubmission();
+	yield utils.loadURI('about:blank');
 }
 
+testMapped.patterns = [
+	{ uri : 'http://localhost:4445/notfound.html' },
+	{ uri : 'http://www.google.com/', isFile : true },
+];
+function testMapped(aPattern)
+{
+	assertMapped(aPattern.uri, aPattern.isFile);
+}
+
+function testNotMapped()
+{
+	// http://www.example.com/ is redirected to the following URL
+	assertNotMapped('http://www.iana.org/domains/reserved');
+}
+
+function testXMLHttpRequest()
+{
+	assertMappedXMLHttpRequest('http://www.example.com/');
+}
+
+function testImageRequest()
+{
+	assertMappedImageRequest('http://www.example.jp/test.jpg');
+}
+
+function testRedirectedSubmission()
+{
+	assertRedirectedSubmission();
+}
