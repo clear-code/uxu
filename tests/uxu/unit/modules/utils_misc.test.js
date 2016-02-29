@@ -288,7 +288,7 @@ function test_doIteration()
 
 		var startAt = Date.now();
 		yield (function() {
-				while (Date.now() - startAt) < 100) {
+				while (Date.now() - startAt < 100) {
 					yield false;
 				}
 			});
