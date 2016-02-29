@@ -575,7 +575,7 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 		aFunction.minAssertions = aFunction.minAssertions || aFunction.minAssertionsCount;
 		aFunction.maxAssertions = aFunction.maxAssertions || aFunction.maxAssertionsCount;
 
-		aFunction.parameters = aFunction.parameters || aFunction.params;
+		aFunction.parameters = aFunction.parameters || aFunction.params || aFunction.patterns;
 
 		return aFunction;
 	},
