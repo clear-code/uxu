@@ -131,7 +131,10 @@ function test_wait()
 	function assertWaitFail(aConditions, aTimeout)
 	{
 		yield assert.raises(
-			new RegExp('^' + bundle.getFormattedString('error_utils_wait_unknown_condition', [String(aConditions[0])])),
+			new RegExp(
+				bundle.getFormattedString('error_utils_wait_unknown_condition', [String(aConditions[0])])
+					.replace(/([\[\]\.\{\}\(\)])/g, '\\$1')
+			),
 			function() {
 				yield utilsModule.wait.apply(utilsModule, aConditions);
 			}
