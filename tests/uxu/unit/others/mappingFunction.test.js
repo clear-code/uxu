@@ -5,6 +5,7 @@ var mapping = function(aURI) {
 		return aURI.spec
 				.replace(/^.*localhost.*\/notfound.*$/, 'http://localhost:4445/html.html')
 				.replace(/^.*google.*$/, baseURL+'../../fixtures/html.html')
+				.replace(/^.*www.example.com/, baseURL+'../../fixtures/html.html')
 				.replace(/^.*www.example.jp.*\.jpg$/, baseURL+'../../../../skin/classic/uxu/bomb.png')
 				.replace(/^.*\/submission\/.*/, 'http://localhost:4445/redirect/match/hash.txt');
 	};
