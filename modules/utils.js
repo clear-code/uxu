@@ -1464,7 +1464,7 @@ isGeneratedIterator : function(aObject)
 doIteration : function(aGenerator) 
 {
 	if (!aGenerator)
-		return Promise.reject(new Error(bundle.getString('error_utils_no_generator')));
+		return this.wait(0);
 
 	var iterator = aGenerator;
 	try {
@@ -1547,7 +1547,7 @@ doIteration : function(aGenerator)
 						!result ||
 						(
 							typeof result === 'object' &&
-							this.isGeneratedIterator(result) &&
+							!this.isGeneratedIterator(result) &&
 							typeof result.then !== 'function' &&
 							!this.isDeferred(result)
 						)
