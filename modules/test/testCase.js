@@ -288,8 +288,8 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 		if (this._done)
 			return Promise.resolve();
 
-		return new Promise((function(aResolve) {
-			this._doneResolvers.push(aResolve);
+		return new Promise((function(aResolve, aReject) {
+			this._doneResolvers.push({ resolve: aResolve, reject: aReject });
 		}).bind(this));
 	},
 	set done(aValue) {
@@ -302,9 +302,12 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 		}
 		this._done = aValue;
 		if (this._done) {
-			this._doneResolvers.forEach((aResolver) => aResolver());
-			this._doneResolvers = [];
+			this._doneResolvers.forEach((aResolver) => aResolver.resolve());
 		}
+		else {
+			this._doneResolvers.forEach((aResolver) => aResolver.reject());
+		}
+		this._doneResolvers = [];
 		return aValue;
 	},
 	_done : false,
@@ -1275,7 +1278,7 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 				var current;
 				var timeout;
 				var interval;
-				while (!self.done)
+				while (!self._done)
 				{
 					timeout = self._remoteReady ? afterReadyTimeout : beforeReadyTimeout ;
 					interval = self._remoteReady ? afterReadyInterval : beforeReadyInterval ;

@@ -32,7 +32,7 @@ function tearDown()
 function assertResults(...aArgs)
 {
 	testcase.run();
-	yield utils.wait(function() { return testcase.done; });
+	yield testcase.done;
 	assert.equals(
 		aArgs,
 		testcase.tests.map(function(aTest) {
@@ -164,7 +164,8 @@ function testRegisterFunctionCallStyle()
 	assertInitialized(testcase.tests[0], '1');
 	testcase.masterPriority = 'must';
 	testcase.run();
-	assert.isTrue(testcase.done);
+	yield testcase.done;
+	assert.isTrue(testcase._done);
 }
 
 function testRegisterOperationStyle()
@@ -180,7 +181,8 @@ function testRegisterOperationStyle()
 	assertInitialized(testcase.tests[0], 'test0');
 	testcase.masterPriority = 'must';
 	testcase.run();
-	assert.isTrue(testcase.done);
+	yield testcase.done;
+	assert.isTrue(testcase._done);
 }
 
 function testRegisterHashStyle()
@@ -197,7 +199,8 @@ function testRegisterHashStyle()
 	assertInitialized(testcase.tests[0], '1');
 	testcase.masterPriority = 'must';
 	testcase.run();
-	assert.isTrue(testcase.done);
+	yield testcase.done;
+	assert.isTrue(testcase._done);
 }
 
 function testBDDFunctionCallStyle()
@@ -211,7 +214,8 @@ function testBDDFunctionCallStyle()
 	assertInitialized(testcase.tests[0], '1');
 	testcase.masterPriority = 'must';
 	testcase.verify();
-	assert.isTrue(testcase.done);
+	yield testcase.done;
+	assert.isTrue(testcase._done);
 }
 
 function testBDDHashStyle()
@@ -227,7 +231,8 @@ function testBDDHashStyle()
 	assertInitialized(testcase.tests[0], '1');
 	testcase.masterPriority = 'must';
 	testcase.verify();
-	assert.isTrue(testcase.done);
+	yield testcase.done;
+	assert.isTrue(testcase._done);
 }
 
 function testAsync_yield()
@@ -264,7 +269,7 @@ function testAsync_yield()
 	testcase.masterPriority = 'must';
 	var start = Date.now();
 	testcase.run();
-	yield utils.wait(function() { return testcase.done; });
+	yield testcase.done;
 	assert.compare(Date.now() - start, '>=', (100 * 3) * 3);
 }
 
@@ -302,7 +307,7 @@ function testAsync_wait()
 	testcase.masterPriority = 'must';
 	var start = Date.now();
 	testcase.run();
-	assert.isTrue(testcase.done);
+	yield testcase.done;
 	assert.compare(Date.now() - start, '>=', (100 * 3) * 3);
 }
 
@@ -327,7 +332,7 @@ function testReuseFunctions()
 	testcase.tests = tests;
 	testcase.masterPriority = 'must';
 	testcase.run();
-	assert.isTrue(testcase.done);
+	yield testcase.done;
 
 	mocks.setUp.assert();
 	mocks.tearDown.assert();
@@ -350,7 +355,8 @@ function testReuseFunctions()
 	testcase.tests = tests;
 	testcase.masterPriority = 'must';
 	testcase.run();
-	assert.isTrue(testcase.done);
+	yield testcase.done;
+	assert.isTrue(testcase._done);
 }
 
 function testNoFunction()
@@ -364,7 +370,8 @@ function testNoFunction()
 	assert.equals(0, testcase.tests.length);
 	testcase.masterPriority = 'must';
 	testcase.run();
-	assert.isTrue(testcase.done);
+	yield testcase.done;
+	assert.isTrue(testcase._done);
 }
 
 function testPriority()
@@ -395,8 +402,7 @@ function testPriority()
 			delete aTest.shouldSkip;
 		});
 		testcase.run();
-		yield utils.wait(function() { return testcase.done; });
-		yield utils.wait(1);
+		yield testcase.done;
 	}
 	assert.equals(testCount, setUpCount);
 	assert.equals(testCount, tearDownCount);
@@ -422,7 +428,7 @@ function testMasterPriority()
 	assert.equals(2, testcase.tests.length);
 	testcase.masterPriority = 'must';
 	testcase.run();
-	assert.isTrue(testcase.done);
+	yield testcase.done;
 
 	testcase = new TestCase('description2');
 	testcase.suite = new TestSuite({
@@ -438,7 +444,8 @@ function testMasterPriority()
 	};
 	testcase.masterPriority = 'never';
 	testcase.run();
-	assert.isTrue(testcase.done);
+	yield testcase.done;
+	assert.isTrue(testcase._done);
 }
 
 function testMasterPriority_overriddenByEachPriority()
@@ -454,7 +461,8 @@ function testMasterPriority_overriddenByEachPriority()
 	};
 	testcase.masterPriority = 'must';
 	testcase.run();
-	assert.isTrue(testcase.done);
+	yield testcase.done;
+	assert.isTrue(testcase._done);
 }
 
 testForceRetry.setUp = function() {
@@ -472,7 +480,8 @@ function testForceRetry()
 	assert.equals(1, testcase.tests.length);
 	testcase.masterPriority = 'must';
 	testcase.run();
-	assert.isTrue(testcase.done);
+	yield testcase.done;
+	assert.isTrue(testcase._done);
 
 	tests.setUp.assert();
 	tests.tearDown.assert();
@@ -486,7 +495,8 @@ function testForceRetry()
 			testcase.done = false;
 			testcase.masterPriority = 'normal';
 			testcase.run();
-			assert.isTrue(testcase.done);
+			yield testcase.done;
+			assert.isTrue(testcase._done);
 		})
 	);
 }
@@ -505,7 +515,7 @@ function testPreventForceRetryByMasterPriorityNever()
 
 	testcase.masterPriority = 'must';
 	testcase.run();
-	assert.isTrue(testcase.done);
+	yield testcase.done;
 
 	mocks.setUp.assert();
 	mocks.tearDown.assert();
@@ -514,7 +524,8 @@ function testPreventForceRetryByMasterPriorityNever()
 
 	testcase.masterPriority = 'never';
 	testcase.run();
-	assert.isTrue(testcase.done);
+	yield testcase.done;
+	assert.isTrue(testcase._done);
 }
 
 function testContext()
@@ -533,7 +544,7 @@ function testContext()
 
 	testcase.masterPriority = 'must';
 	testcase.run();
-	assert.isTrue(testcase.done);
+	yield testcase.done;
 
 	testcase.done = false;
 	var context = {};
@@ -545,7 +556,8 @@ function testContext()
 
 	testcase.masterPriority = 'must';
 	testcase.run();
-	assert.isTrue(testcase.done);
+	yield testcase.done;
+	assert.isTrue(testcase._done);
 }
 
 function testListener()
@@ -579,7 +591,7 @@ function testListener()
 	assert.equals(3, testcase.tests.length);
 	testcase.masterPriority = 'must';
 	testcase.run();
-	assert.isTrue(testcase.done);
+	yield testcase.done;
 
 	mocks.setUp.assert();
 	mocks.tearDown.assert();
@@ -598,7 +610,8 @@ function testListener()
 	testcase.done = false;
 	testcase.masterPriority = 'must';
 	testcase.run();
-	assert.isTrue(testcase.done);
+	yield testcase.done;
+	assert.isTrue(testcase._done);
 }
 
 function testStopper()
@@ -619,9 +632,9 @@ function testStopper()
 	testcase.masterPriority = 'must';
 	testcase.randomOrder = false;
 	testcase.run();
-	yield utils.wait(function() { return testcase.done || testcase.aborted; });
-	assert.isTrue(testcase.done);
-	assert.isFalse(testcase.aborted);
+	yield Promise.race([testcase.done, testcase.aborted]);
+	assert.isTrue(testcase._done);
+	assert.isFalse(testcase._aborted);
 
 	mocks.setUp.assert();
 	mocks.tearDown.assert();
@@ -639,9 +652,9 @@ function testStopper()
 	stopper = testcase.run();
 	yield 100;
 	shouldStop = true;
-	yield utils.wait(function() { return testcase.done || testcase.aborted; });
-	assert.isFalse(testcase.done);
-	assert.isTrue(testcase.aborted);
+	yield Promise.race([testcase.done, testcase.aborted]);
+	assert.isFalse(testcase._done);
+	assert.isTrue(testcase._aborted);
 }
 
 function testPrivSetUpTearDown()
@@ -698,7 +711,8 @@ function testPrivSetUpTearDown()
 	testcase.masterPriority = 'must';
 	testcase.randomOrder = false;
 	testcase.run();
-	yield utils.wait(function() { return testcase.done; });
+	yield testcase.done;
+	assert.isTrue(testcase._done);
 }
 
 function testAssertionsCount()
@@ -986,6 +1000,6 @@ function testErrorInGenerator()
 	testcase.masterPriority = 'must';
 	testcase.run();
 	yield 100;
-	assert.isTrue(testcase.done);
+	assert.isTrue(testcase._done);
 	assertResults('error');
 }
