@@ -26,19 +26,19 @@ function test_read()
 	assert.equals(userPrefs, prefread.read(file));
 
 	file = this.normalizeToFile('../../fixtures/invalid_calculate.js');
-	assert.raises(
+	yield assert.raises(
 		prefread.ERROR_MALFORMED_PREF_FILE,
 		function() { prefread.read(file); }
 	);
 
 	file = this.normalizeToFile('../../fixtures/invalid_variable.js');
-	assert.raises(
+	yield assert.raises(
 		prefread.ERROR_MALFORMED_PREF_FILE,
 		function() { prefread.read(file); }
 	);
 
 	file = this.normalizeToFile('../../fixtures/invalid_array.js');
-	assert.raises(
+	yield assert.raises(
 		prefread.ERROR_MALFORMED_PREF_FILE,
 		function() { prefread.read(file); }
 	);

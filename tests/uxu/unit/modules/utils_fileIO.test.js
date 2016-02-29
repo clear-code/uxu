@@ -201,7 +201,7 @@ function test_cosmeticClone_file()
 	assert.equals('normal.txt', cloned.leafName);
 
 	var existsPath = cloned.path;
-	assert.raises(
+	yield assert.raises(
 		bundle.getFormattedString('error_utils_cosmeticClone_duplicate', [existsPath]),
 		function() {
 			cloned = utilsModule.cosmeticClone(original, tempDir);
@@ -214,7 +214,7 @@ function test_cosmeticClone_file()
 	assert.equals('different.txt', cloned.leafName);
 
 	original = utils.getFileFromURLSpec(baseURL+'../../fixtures/folder/.dot-file');
-	assert.raises(
+	yield assert.raises(
 		bundle.getFormattedString('error_utils_cosmeticClone_original_hidden', [original.path]),
 		function() {
 			cloned = utilsModule.cosmeticClone(original, tempDir);
@@ -247,7 +247,7 @@ function test_cosmeticClone_folder()
 	assert.isFalse(hiddenFolder.exists());
 
 	var existsPath = cloned.path;
-	assert.raises(
+	yield assert.raises(
 		bundle.getFormattedString('error_utils_cosmeticClone_duplicate', [existsPath]),
 		function() {
 			cloned = utilsModule.cosmeticClone(original, tempDir);
@@ -260,7 +260,7 @@ function test_cosmeticClone_folder()
 	assert.equals('different', cloned.leafName);
 
 	original = utils.getFileFromURLSpec(baseURL+'../../fixtures/folder/.dot-file');
-	assert.raises(
+	yield assert.raises(
 		bundle.getFormattedString('error_utils_cosmeticClone_original_hidden', [original.path]),
 		function() {
 			cloned = utilsModule.cosmeticClone(original, tempDir);
@@ -308,7 +308,7 @@ function test_cosmeticClone_invalidInput(aParameter)
 {
 	tempDir = utils.makeTempFolder();
 	aParameter = aParameter();
-	assert.raises(
+	yield assert.raises(
 		aParameter.error,
 		function() {
 			var cloned = utilsModule.cosmeticClone(aParameter.orig, aParameter.dest);

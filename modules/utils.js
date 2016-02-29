@@ -240,7 +240,7 @@ wait : function(...aArgs)
 			);
 		})
 		)
-		return this.waitDOMEvent.apply(this, arguments);
+		return this.waitDOMEvent.apply(this, aArgs);
 
 	var waitCondition = aArgs.length > 0 ? aArgs[0] : 0 ;
 	var lastRun = Date.now();
@@ -306,11 +306,7 @@ wait : function(...aArgs)
 				return this.doIteration(waitCondition);
 			}
 			if (typeof waitCondition.then === 'function') {
-				return new Promise(function(aResolve, aReject) {
-					waitCondition
-						.then(aResolve)
-						.catch(aReject);
-				});
+				return waitCondition;
 			}
 			if (this.isDeferred(waitCondition)) {
 				if (waitCondition.fired)

@@ -50,10 +50,10 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		this._successCount = 0;
 	},
 
-	doInternalAssertion : function()
+	doInternalAssertion : function(...aArgs)
 	{
-		var assertion = arguments[0];
-		var args = Array.slice(arguments, 1);
+		var assertion = aArgs[0];
+		var args = Array.slice(aArgs, 1);
 		var count = this._successCount;
 		if (typeof assertion == 'function')
 			assertion();
@@ -80,9 +80,9 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     aMessage);
 		this._onSuccess();
 	},
-	equal : function() { return this.equals.apply(this, arguments); },
-	arrayEquals : function() { return this.equals.apply(this, arguments); },
-	arrayEqual : function() { return this.equals.apply(this, arguments); },
+	equal : function(...aArgs) { return this.equals.apply(this, aArgs); },
+	arrayEquals : function(...aArgs) { return this.equals.apply(this, aArgs); },
+	arrayEqual : function(...aArgs) { return this.equals.apply(this, aArgs); },
 
 	notEquals : function(aExpected, aActual, aMessage)
 	{
@@ -97,7 +97,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     aMessage);
 		this._onSuccess();
 	},
-	notEqual : function() { return this.notEquals.apply(this, arguments); },
+	notEqual : function(...aArgs) { return this.notEquals.apply(this, aArgs); },
 
 	strictlyEquals : function(aExpected, aActual, aMessage)
 	{
@@ -112,7 +112,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     aMessage);
 		this._onSuccess();
 	},
-	strictlyEqual : function() { return this.strictlyEquals.apply(this, arguments); },
+	strictlyEqual : function(...aArgs) { return this.strictlyEquals.apply(this, aArgs); },
 
 	notStrictlyEquals : function(aExpected, aActual, aMessage)
 	{
@@ -127,7 +127,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     aMessage);
 		this._onSuccess();
 	},
-	notStrictlyEqual : function() { return this.notStrictlyEquals.apply(this, arguments); },
+	notStrictlyEqual : function(...aArgs) { return this.notStrictlyEquals.apply(this, aArgs); },
 
 	same : function (aExpected, aActual, aMessage) {
 		if (aExpected === aActual)
@@ -163,7 +163,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     bundle.getString('assert_is_true'), aMessage);
 		this._onSuccess();
 	},
-	'true' : function() { return this.isTrue.apply(this, arguments); },
+	'true' : function(...aArgs) { return this.isTrue.apply(this, aArgs); },
 
 	isFalse : function(aActual, aMessage)
 	{
@@ -175,7 +175,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     bundle.getString('assert_is_false'), aMessage);
 		this._onSuccess();
 	},
-	'false' : function() { return this.isFalse.apply(this, arguments); },
+	'false' : function(...aArgs) { return this.isFalse.apply(this, aArgs); },
 
 	isBoolean : function(aActual, aMessage)
 	{
@@ -187,9 +187,9 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     bundle.getString('assert_is_boolean'), aMessage);
 		this._onSuccess();
 	},
-	isBool : function() { return this.isBoolean.apply(this, arguments); },
-	'bool' : function() { return this.isBoolean.apply(this, arguments); },
-	'boolean' : function() { return this.isBoolean.apply(this, arguments); },
+	isBool : function(...aArgs) { return this.isBoolean.apply(this, aArgs); },
+	'bool' : function(...aArgs) { return this.isBoolean.apply(this, aArgs); },
+	'boolean' : function(...aArgs) { return this.isBoolean.apply(this, aArgs); },
 
 	isNotBoolean : function(aActual, aMessage)
 	{
@@ -201,9 +201,9 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     bundle.getString('assert_is_not_boolean'), aMessage);
 		this._onSuccess();
 	},
-	isNotBool : function() { return this.isNotBoolean.apply(this, arguments); },
-	notBool : function() { return this.isNotBoolean.apply(this, arguments); },
-	notBoolean : function() { return this.isNotBoolean.apply(this, arguments); },
+	isNotBool : function(...aArgs) { return this.isNotBoolean.apply(this, aArgs); },
+	notBool : function(...aArgs) { return this.isNotBoolean.apply(this, aArgs); },
+	notBoolean : function(...aArgs) { return this.isNotBoolean.apply(this, aArgs); },
 
 	isString : function(aActual, aMessage)
 	{
@@ -215,7 +215,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     bundle.getString('assert_is_string'), aMessage);
 		this._onSuccess();
 	},
-	'string' : function() { return this.isString.apply(this, arguments); },
+	'string' : function(...aArgs) { return this.isString.apply(this, aArgs); },
 
 	isNotString : function(aActual, aMessage)
 	{
@@ -227,7 +227,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     bundle.getString('assert_is_not_string'), aMessage);
 		this._onSuccess();
 	},
-	notString : function() { return this.isNotString.apply(this, arguments); },
+	notString : function(...aArgs) { return this.isNotString.apply(this, aArgs); },
 
 	isNumber : function(aActual, aMessage)
 	{
@@ -239,7 +239,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     bundle.getString('assert_is_number'), aMessage);
 		this._onSuccess();
 	},
-	'number' : function() { return this.isNumber.apply(this, arguments); },
+	'number' : function(...aArgs) { return this.isNumber.apply(this, aArgs); },
 
 	isNotNumber : function(aActual, aMessage)
 	{
@@ -251,7 +251,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     bundle.getString('assert_is_not_number'), aMessage);
 		this._onSuccess();
 	},
-	notNumber : function() { return this.isNotNumber.apply(this, arguments); },
+	notNumber : function(...aArgs) { return this.isNotNumber.apply(this, aArgs); },
 
 	isFunction : function(aActual, aMessage)
 	{
@@ -263,7 +263,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     bundle.getString('assert_is_function'), aMessage);
 		this._onSuccess();
 	},
-	'function' : function() { return this.isFunction.apply(this, arguments); },
+	'function' : function(...aArgs) { return this.isFunction.apply(this, aArgs); },
 
 	isNotFunction : function(aActual, aMessage)
 	{
@@ -275,7 +275,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     bundle.getString('assert_is_not_function'), aMessage);
 		this._onSuccess();
 	},
-	notFunction : function() { return this.isNotFunction.apply(this, arguments); },
+	notFunction : function(...aArgs) { return this.isNotFunction.apply(this, aArgs); },
 
 	isObject : function(aActual, aMessage)
 	{
@@ -287,7 +287,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     bundle.getString('assert_is_object'), aMessage);
 		this._onSuccess();
 	},
-	'object' : function() { return this.isObject.apply(this, arguments); },
+	'object' : function(...aArgs) { return this.isObject.apply(this, aArgs); },
 
 	isNotObject : function(aActual, aMessage)
 	{
@@ -299,7 +299,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     bundle.getString('assert_is_not_object'), aMessage);
 		this._onSuccess();
 	},
-	notObject : function() { return this.isNotObject.apply(this, arguments); },
+	notObject : function(...aArgs) { return this.isNotObject.apply(this, aArgs); },
 
 	isArray : function(aActual, aMessage)
 	{
@@ -311,7 +311,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     bundle.getString('assert_is_array'), aMessage);
 		this._onSuccess();
 	},
-	'array' : function() { return this.isArray.apply(this, arguments); },
+	'array' : function(...aArgs) { return this.isArray.apply(this, aArgs); },
 
 	isNotArray : function(aActual, aMessage)
 	{
@@ -323,7 +323,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     bundle.getString('assert_is_not_array'), aMessage);
 		this._onSuccess();
 	},
-	notArray : function() { return this.isNotArray.apply(this, arguments); },
+	notArray : function(...aArgs) { return this.isNotArray.apply(this, aArgs); },
 
 	isDefined : function(aActual, aMessage)
 	{
@@ -335,7 +335,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     bundle.getString('assert_is_defined'), aMessage);
 		this._onSuccess();
 	},
-	'defined' : function() { return this.isDefined.apply(this, arguments); },
+	'defined' : function(...aArgs) { return this.isDefined.apply(this, aArgs); },
 
 	isUndefined : function(aActual, aMessage)
 	{
@@ -347,7 +347,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     bundle.getString('assert_is_undefined'), aMessage);
 		this._onSuccess();
 	},
-	'undefined' : function() { return this.isUndefined.apply(this, arguments); },
+	'undefined' : function(...aArgs) { return this.isUndefined.apply(this, aArgs); },
 
 	isNull : function(aActual, aMessage)
 	{
@@ -359,7 +359,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     bundle.getString('assert_is_null'), aMessage);
 		this._onSuccess();
 	},
-	'null' : function() { return this.isNull.apply(this, arguments); },
+	'null' : function(...aArgs) { return this.isNull.apply(this, aArgs); },
 
 	isNotNull : function(aActual, aMessage)
 	{
@@ -371,7 +371,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     bundle.getString('assert_is_not_null'), aMessage);
 		this._onSuccess();
 	},
-	'notNull' : function() { return this.isNotNull.apply(this, arguments); },
+	'notNull' : function(...aArgs) { return this.isNotNull.apply(this, aArgs); },
 
 	implementsInterface : function(aExpectedInterface, aActualInstance, aMessage)
 	{
@@ -421,7 +421,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		}
 		return implemented;
 	},
-	implementInterface : function() { return this.implementsInterface.apply(this, arguments); },
+	implementInterface : function(...aArgs) { return this.implementsInterface.apply(this, aArgs); },
 
 	isInstanceOf : function(aExpectedClass, aActualInstance, aMessage)
 	{
@@ -446,10 +446,10 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		}
 		this._onSuccess();
 	},
-	'instanceOf' : function() { return this.isInstanceOf.apply(this, arguments); },
-	'instanceof' : function() { return this.isInstanceOf.apply(this, arguments); },
-	'isInstance' : function() { return this.isInstanceOf.apply(this, arguments); },
-	'instance' : function() { return this.isInstanceOf.apply(this, arguments); },
+	'instanceOf' : function(...aArgs) { return this.isInstanceOf.apply(this, aArgs); },
+	'instanceof' : function...aArgs() { return this.isInstanceOf.apply(this, aArgs); },
+	'isInstance' : function(...aArgs) { return this.isInstanceOf.apply(this, aArgs); },
+	'instance' : function(...aArgs) { return this.isInstanceOf.apply(this, aArgs); },
 
 	raises : function(aExpectedException, aTask, aContext, aMessage)
 	{
@@ -457,40 +457,25 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			aExpectedException in Components.results)
 			aExpectedException = Components.results[aExpectedException];
 
-		var raised = false;
-		var exception;
-		if (typeof aTask == 'function') {
-			try {
+		return utils.wait(function() {
+			if (typeof aTask === 'function' && aContext)
 				aTask = aTask.call(aContext);
-			}
-			catch(e) {
-				if (this._exceptionMatches(aExpectedException, e)) {
-					raised = true;
-				}
-				exception = e;
-			}
-		}
-		if (aTask && utils.isGeneratedIterator(aTask)) {
-			return utils.doIteration(aTask)
-					.catch((function(aException) {
-						return aException;
-					}).bind(this))
-					.then((function(aException) {
-						if (!aException ||
-							!this._exceptionMatches(aExpectedException, aException)) {
-							this._onRaisesFinish(aExpectedException, aException, aMessage);
-						}
-						this._onSuccess();
-					}).bind(this));
-		}
-		else if (!raised) {
-			this._onRaisesFinish(aExpectedException, exception, aMessage);
-		}
-		this._onSuccess();
+			return utils.wait(aTask);
+		})
+				.catch((function(aException) {
+					return aException;
+				}).bind(this))
+				.then((function(aException) {
+					if (!aException ||
+						!this._exceptionMatches(aExpectedException, aException)) {
+						this._onRaisesFinish(aExpectedException, aException, aMessage);
+					}
+					this._onSuccess();
+				}).bind(this));
 	},
-	raise : function() { return this.raises.apply(this, arguments); },
-	'throw' : function() { return this.raises.apply(this, arguments); },
-	throws : function() { return this.raises.apply(this, arguments); },
+	raise : function(...aArgs) { return this.raises.apply(this, aArgs); },
+	'throw' : function(...aArgs) { return this.raises.apply(this, aArgs); },
+	throws : function(...aArgs) { return this.raises.apply(this, aArgs); },
 	_exceptionMatches : function(aExpected, aActual)
 	{
 		if (aExpected == aActual)
@@ -515,29 +500,25 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			case 'object':
 				if (aExpected === null)
 					return false;
-				switch (Object.prototype.toString.apply(aExpected))
+				if (typeof aExpected.test === 'function') {
+					return (
+						aExpected.test(aActual.name) ||
+						aExpected.test(aActual.message) ||
+						aExpected.test(aActual.name+': '+aActual.message) ||
+						aExpected.test(aActual.result) ||
+						(NSErrorName !== null && aExpected.test(NSErrorName))
+					);
+				}
 				{
-					case '[object RegExp]':
-						return (
-							aExpected.test(aActual.name) ||
-							aExpected.test(aActual.message) ||
-							aExpected.test(aActual.name+': '+aActual.message) ||
-							aExpected.test(aActual.result) ||
-							(NSErrorName !== null && aExpected.test(NSErrorName))
-						);
-
-					default:
-						{
-							let checked = false;
-							for (let i in aExpected)
-							{
-								if (aExpected.hasOwnProperty(i) &&
-									aActual[i] != aExpected[i])
-									return false;
-								checked = true;
-							}
-							return checked;
-						}
+					let checked = false;
+					for (let i in aExpected)
+					{
+						if (aExpected.hasOwnProperty(i) &&
+							aActual[i] != aExpected[i])
+							return false;
+						checked = true;
+					}
+					return checked;
 				}
 		}
 
@@ -581,40 +562,26 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			aUnexpectedException in Components.results)
 			aUnexpectedException = Components.results[aUnexpectedException];
 
-		var raised = false;
-		var exception;
-		if (typeof aTask == 'function') {
-			try {
+		return utils.wait(function() {
+			if (typeof aTask === 'function' && aContext)
 				aTask = aTask.call(aContext);
-			}
-			catch(e) {
-				if (this._exceptionMatches(aUnexpectedException, e)) {
-					raised = true;
-				}
-				exception = e;
-			}
-			if (raised)
-				this._onNotRaisesFinish(aUnexpectedException, exception, aMessage);
-		}
-		if (aTask && utils.isGeneratedIterator(aTask)) {
-			return utils.doIteration(aTask)
-					.catch((function(aException) {
-						return aException;
-					}).bind(this))
-					.then((function(aException) {
-						if (!aException ||
-							!this._exceptionMatches(aUnexpectedException, aException)) {
-							this._onSuccess();
-							return;
-						}
-						this._onNotRaisesFinish(aUnexpectedException, aException, aMessage);
-					}).bind(this));
-		}
-		this._onSuccess();
+			return utils.wait(aTask);
+		})
+				.catch((function(aException) {
+					return aException;
+				}).bind(this))
+				.then((function(aException) {
+					if (!aException ||
+						!this._exceptionMatches(aUnexpectedException, aException)) {
+						this._onSuccess();
+						return;
+					}
+					this._onNotRaisesFinish(aUnexpectedException, aException, aMessage);
+				}).bind(this));
 	},
-	notRaise : function() { return this.notRaises.apply(this, arguments); },
-	notThrow : function() { return this.notRaises.apply(this, arguments); },
-	notThrows : function() { return this.notRaises.apply(this, arguments); },
+	notRaise : function(...aArgs) { return this.notRaises.apply(this, aArgs); },
+	notThrow : function(...aArgs) { return this.notRaises.apply(this, aArgs); },
+	notThrows : function(...aArgs) { return this.notRaises.apply(this, aArgs); },
 	_onNotRaisesFinish : function(aUnexpectedException, aActualException, aMessage)
 	{
 		var name = utils.getErrorNameFromNSExceptionCode(aUnexpectedException);
@@ -650,7 +617,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     bundle.getString('assert_matches'), aMessage);
 		this._onSuccess();
 	},
-	match : function() { return this.matches.apply(this, arguments); },
+	match : function(...aArgs) { return this.matches.apply(this, aArgs); },
 
 	notMatches : function(aUnexpectedPattern, aActualString, aMessage)
 	{
@@ -664,7 +631,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     bundle.getString('assert_not_matches'), aMessage);
 		this._onSuccess();
 	},
-	notMatch : function() { return this.notMatches.apply(this, arguments); },
+	notMatch : function(...aArgs) { return this.notMatches.apply(this, aArgs); },
 
 	pattern : function(aExpectedString, aActualPattern, aMessage)
 	{
@@ -719,11 +686,11 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		this._onSuccess();
 	},
 
-	difference : function()
+	difference : function(...aArgs)
 	{
 		var aGetter, aExpectedDelta, aTask, aContext, aMessage;
 		var startValue, endValue;
-		var args = Array.slice(arguments);
+		var args = Array.slice(aArgs);
 		try {
 			if (typeof args[0] == 'function') {
 				aGetter = function() { return args[0].call(aContext); };
@@ -783,10 +750,10 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		}
 		this._onSuccess();
 	},
-	noDifference : function()
+	noDifference : function(...aArgs)
 	{
 		var aGetter, aTask, aContext, aMessage;
-		var args = Array.slice(arguments);
+		var args = Array.slice(aArgs);
 		try {
 			if (typeof args[0] == 'function') {
 				aGetter = function() { return args[0].call(aContext); };
@@ -856,7 +823,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 				 aMessage);
 		this._onSuccess();
 	},
-	_greater : function() { return this._greaterThan.apply(this, arguments); },
+	_greater : function(...aArgs) { return this._greaterThan.apply(this, aArgs); },
 
 	_greaterOrEqual : function(aExpected, aActual, aMessage)
 	{
@@ -889,7 +856,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 				 aMessage);
 		this._onSuccess();
 	},
-	_less : function() { return this._lessThan.apply(this, arguments); },
+	_less : function(...aArgs) { return this._lessThan.apply(this, aArgs); },
 
 	_lessOrEqual : function(aExpected, aActual, aMessage)
 	{
@@ -958,7 +925,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     aMessage);
 		this._onSuccess();
 	},
-	contain : function() { return this.contains.apply(this, arguments); },
+	contain : function(...aArgs) { return this.contains.apply(this, aArgs); },
 
 	notContains : function(aExpected, aActual, aMessage)
 	{
@@ -981,7 +948,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			     aMessage);
 		this._onSuccess();
 	},
-	notContain : function() { return this.notContains.apply(this, arguments); },
+	notContain : function(...aArgs) { return this.notContains.apply(this, aArgs); },
 
 	contained : function(aExpected, aActual, aMessage)
 	{
@@ -1041,7 +1008,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			this._onFinishesWithinFinish(aExpectedTime, startAt, aMessage);
 		}
 	},
-	finishWithin : function() { return this.finishesWithin.apply(this, arguments); },
+	finishWithin : function(...aArgs) { return this.finishesWithin.apply(this, aArgs); },
 	_onFinishesWithinFinish : function(aExpectedTime, aStartAt, aMessage)
 	{
 		var actualTime = Date.now() - aStartAt;
@@ -1076,9 +1043,9 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			this._onNotFinishesWithinFinish(aExpectedTime, startAt, aMessage);
 		}
 	},
-	notFinishWithin : function() { return this.notFinishesWithin.apply(this, arguments); },
-	finishesOver : function() { return this.notFinishesWithin.apply(this, arguments); },
-	finishOver : function() { return this.notFinishesWithin.apply(this, arguments); },
+	notFinishWithin : function(...aArgs) { return this.notFinishesWithin.apply(this, aArgs); },
+	finishesOver : function(...aArgs) { return this.notFinishesWithin.apply(this, aArgs); },
+	finishOver : function(...aArgs) { return this.notFinishesWithin.apply(this, aArgs); },
 	_onNotFinishesWithinFinish : function(aExpectedTime, aStartAt, aMessage)
 	{
 		var actualTime = Date.now() - aStartAt;
@@ -1127,7 +1094,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		this._onSuccess();
 	},
 	assertionsCountEquals : function(aExpected, aTask, aContext, aMessage) { return this._assertionsCount(aExpected, '==', aTask, aContext, aMessage); },
-	assertionsCountEqual : function() { return this.assertionsCountEquals.apply(this, arguments); },
+	assertionsCountEqual : function(...aArgs) { return this.assertionsCountEquals.apply(this, aArgs); },
 	assertionsMinCount : function(aExpected, aTask, aContext, aMessage) { return this._assertionsCount(aExpected, '<=', aTask, aContext, aMessage); },
 	assertionsMaxCount : function(aExpected, aTask, aContext, aMessage) { return this._assertionsCount(aExpected, '>=', aTask, aContext, aMessage); },
 
@@ -1198,9 +1165,9 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 	},
 
 
-	_fail : function()
+	_fail : function(...aArgs)
 	{
-		var args = Array.slice(arguments);
+		var args = Array.slice(aArgs);
 		var error = new Error();
 		error.name = 'AssertionFailed';
 		var results = args.shift() || {};
@@ -1242,8 +1209,8 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		var self = this;
 		var prototype = Assertions.prototype;
 
-		var assertIsTrue = function() {
-				return self.isTrue.call(self, arguments);
+		var assertIsTrue = function(...aArgs) {
+				return self.isTrue.call(self, aArgs);
 			};
 		assertIsTrue.__defineGetter__('_source', function(aValue) {
 			return self;
