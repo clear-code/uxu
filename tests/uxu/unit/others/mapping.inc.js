@@ -3,7 +3,6 @@ var shouldSkip = utils.checkPlatformVersion('1.9') < 0;
 function setUp()
 {
 	yield utils.setUpHttpServer(4445, baseURL+'../../fixtures/');
-	yield utils.loadURI('about:blank');
 }
 
 function tearDown()
@@ -18,7 +17,6 @@ function assertMapped(aURI, aMapToFile)
 				null :
 				utils.makeURIFromSpec('http://www.example.com/referer?'+Date.now());
 	yield utils.loadURI(aURI, { referrer : referrer });
-	yield utils.wait(100);
 	assert.equals(aURI, content.location.href);
 	assert.equals('test', content.document.title);
 	if (referrer) {
