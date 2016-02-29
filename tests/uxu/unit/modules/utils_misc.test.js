@@ -325,7 +325,7 @@ function test_doIterationWithError()
 	assert.isInstanceOf(Error, exception);
 }
 
-function test_Do()
+function test_doIterationForVariousValues()
 {
 	function assertPromise(aValue)
 	{
@@ -333,11 +333,11 @@ function test_Do()
 		assert.isFunction(aValue.then);
 	}
 
-	assertPromise(utilsModule.Do({}));
-	assertPromise(utilsModule.Do(true));
-	assertPromise(utilsModule.Do(100));
-	assertPromise(utilsModule.Do('string'));
-	assertPromise(utilsModule.Do(function() {
+	assertPromise(utilsModule.doIteration({}));
+	assertPromise(utilsModule.doIteration(true));
+	assertPromise(utilsModule.doIteration(100));
+	assertPromise(utilsModule.doIteration('string'));
+	assertPromise(utilsModule.doIteration(function() {
 		return 'foobar';
 	}));
 
@@ -345,10 +345,34 @@ function test_Do()
 	{
 		yield 100;
 	};
-	var result = utilsModule.Do(Generator);
+	var result = utilsModule.doIteration(Generator);
 	assertPromise(result);
-	result = utilsModule.Do(Generator());
+	result = utilsModule.doIteration(Generator());
 	assertPromise(result);
+}
+
+function test_Do()
+{
+	function assertPassThrough(aValue)
+	{
+		var result = utilsModule.Do(aValue);
+		assertStrictlyEqual(aValue, result);
+	}
+
+	assertPassThrough({});
+	assertPassThrough(true);
+	assertPassThrough(100);
+	assertPassThrough('string');
+	assertPassThrough(function() {
+		return 'foobar';
+	});
+
+	function Generator()
+	{
+		yield 100;
+	};
+	assertPassThrough(Generator);
+	assertPassThrough(Generator());
 }
 
 var simpleObject = {string: "String", 29: 10};
