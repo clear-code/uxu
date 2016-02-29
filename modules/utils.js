@@ -259,7 +259,7 @@ wait : function(...aArgs)
 
 		case 'number':
 			if (waitCondition < 0)
-				throw new Error(bundle.getFormattedString('error_utils_wait_unknown_condition', [String(waitCondition)]));
+				throw new Error(bundle.getFormattedString('error_utils_wait_unknown_condition', [String(waitCondition)]) + '\n' + this.inspect(waitCondition));
 
 			return new Promise(function(aResolve, aReject) {
 				var timer = ns.setTimeout(function() {
@@ -324,7 +324,7 @@ wait : function(...aArgs)
 			}
 			break;
 	}
-	return Promise.reject(new Error(bundle.getFormattedString('error_utils_wait_unknown_condition', [String(waitCondition)])));
+	return Promise.reject(new Error(bundle.getFormattedString('error_utils_wait_unknown_condition', [String(waitCondition)]) + '\n' + this.inspect(waitCondition)));
 },
  
 waitDOMEvent : function(...aArgs) 
@@ -1504,7 +1504,7 @@ doIteration : function(aGenerator)
 						ns.setTimeout(loop, result);
 						return;
 					}
-					return aReject(new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(result)])));
+					return aReject(new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(result)]) + '\n' + this.inspect(result)));
 
 				case 'object':
 					if (result) {
@@ -1530,8 +1530,7 @@ doIteration : function(aGenerator)
 							return;
 						}
 					}
-				case 'function':
-					return aReject(new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(result)])));
+					return aReject(new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(result)]) + '\n' + this.inspect(result)));
 			}
 			}
 			catch(e) {

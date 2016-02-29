@@ -131,7 +131,7 @@ function test_wait()
 	function assertWaitFail(aConditions, aTimeout)
 	{
 		yield assert.raises(
-			bundle.getFormattedString('error_utils_wait_unknown_condition', [String(aConditions[0])]),
+			bundle.getFormattedString('error_utils_wait_unknown_condition', [String(aConditions[0])] + '\n' + utils.inspect(aConditions[0])),
 			function() {
 				yield utilsModule.wait.apply(utilsModule, aConditions);
 			}
