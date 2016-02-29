@@ -11,33 +11,33 @@ var mapping = {
 		'http://submission/*'              : 'http://localhost:4445/redirect/match/hash.txt'
 };
 
-testMapped.patterns = [
+testMapped.parameters = [
 	{ uri : 'http://localhost:4445/notfound.html' },
 	{ uri : 'http://www.example.com/' },
 	{ uri : 'http://www.example.jp/test/foobar' },
 	{ uri : 'https://addons.mozilla.org/firefox/', isFile : true },
 ];
-function testMapped(aPattern)
+function testMapped(aParameter)
 {
-	assertMapped(aPattern.uri, aPattern.isFile);
+	yield assertMapped(aParameter.uri, aParameter.isFile);
 }
 
 function testNotMapped()
 {
-	assertNotMapped('about:config'); // not supported
+	yield assertNotMapped('about:config'); // not supported
 }
 
 function testXMLHttpRequest()
 {
-	assertMappedXMLHttpRequest('http://www.example.com/');
+	yield assertMappedXMLHttpRequest('http://www.example.com/');
 }
 
 function testImageRequest()
 {
-	assertMappedImageRequest('http://www.example.jp/test.jpg');
+	yield assertMappedImageRequest('http://www.example.jp/test.jpg');
 }
 
 function testRedirectedSubmission()
 {
-	assertRedirectedSubmission();
+	yield assertRedirectedSubmission();
 }
