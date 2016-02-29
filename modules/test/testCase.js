@@ -109,8 +109,9 @@ function TestCase(aTitle, aOptions)
 
 	this.setAddons(aOptions.addons || []);
 
-	this.done = false;
-	this.aborted = false;
+	this._doneResolvers = []
+	this._abortedResolvers = []
+
 	this.notifications = [];
 	this.addListener(this);
 }
@@ -284,7 +285,12 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 	},
  
 	get done() {
-		return this._done;
+		if (this._done)
+			return Promise.resolve();
+
+		return new Promise((function(aResolve) {
+			this._doneResolvers.push(aResolve);
+		}).bind(this));
 	},
 	set done(aValue) {
 		if (!aValue) {
@@ -292,11 +298,34 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 				delete aTest._computedSkip;
 			});
 			this.aborted = false;
+			this._doneResolvers = [];
 		}
 		this._done = aValue;
+		if (this._done) {
+			this._doneResolvers.forEach((aResolver) => aResolver());
+			this._doneResolvers = [];
+		}
 		return aValue;
 	},
 	_done : false,
+ 
+	get aborted() {
+		if (this._aborted)
+			return Promise.resolve();
+
+		return new Promise((function(aResolve) {
+			this._abortedResolvers.push(aResolve);
+		}).bind(this));
+	},
+	set aborted(aValue) {
+		this._aborted = aValue;
+		if (this._aborted) {
+			this._abortedResolvers.forEach((aResolver) => aResolver());
+			this._abortedResolvers = [];
+		}
+		return aValue;
+	},
+	_aborted : false,
  
 	onStart : function() 
 	{
