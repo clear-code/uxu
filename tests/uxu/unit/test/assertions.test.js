@@ -22,10 +22,10 @@ function tearDown()
 function assertSuccess(aAssertion, aArgs, aAssertionsCount)
 {
 	var beforeCount = assertionsModule.successCount;
-	assert.notRaises(
+	yield assert.notRaises(
 		'AssertionFailed',
 		function() {
-			aAssertion.apply(assertionsModule, aArgs);
+			yield aAssertion.apply(assertionsModule, aArgs);
 		},
 		null
 	);
@@ -39,19 +39,19 @@ function assertFailure(aAssertion, aArgs, aAssertionsCount)
 {
 	var beforeCount = assertionsModule.successCount;
 	var exception;
-	assert.raises(
+	yield assert.raises(
 		'AssertionFailed',
 		function() {
-			try {
-				aAssertion.apply(assertionsModule, aArgs);
-			}
-			catch(e) {
-				exception = e;
-				throw e;
-			}
+			yield aAssertion.apply(assertionsModule, aArgs);
 		},
 		null
-	);
+	)
+	.then(function(e) {
+		exception = e;
+	})
+	.catch(function(e) {
+		exception = e;
+	});
 	assert.notEquals(-1, exception.message.indexOf(aArgs[aArgs.length-1]));
 	assert.equals(
 		beforeCount+(aAssertionsCount === void(0) ? 0 : aAssertionsCount ),
@@ -62,10 +62,10 @@ function assertFailure(aAssertion, aArgs, aAssertionsCount)
 function assertError(aAssertion, aArgs, aError, aAssertionsCount)
 {
 	var beforeCount = assertionsModule.successCount;
-	assert.raises(
+	yield assert.raises(
 		aError,
 		function() {
-			aAssertion.apply(assertionsModule, aArgs);
+			yield aAssertion.apply(assertionsModule, aArgs);
 		},
 		null
 	);
@@ -103,12 +103,15 @@ function assertFailureWithDelay(aAssertion, aArgs, aAssertionsCount)
 
 	var beforeCount = assertionsModule.successCount;
 	var exception;
-	try {
-		aAssertion.apply(assertionsModule, aArgs);
-	}
-	catch(e) {
+	yield utils.wait(function() {
+		yield aAssertion.apply(assertionsModule, aArgs);
+	})
+	.then(function(e) {
 		exception = e;
-	}
+	})
+	.catch(function(e) {
+		exception = e;
+	});
 	assert.notEquals(-1, exception.message.indexOf(aArgs[aArgs.length-1]));
 	assert.equals(
 		beforeCount+(aAssertionsCount === void(0) ? 0 : aAssertionsCount ),
@@ -116,641 +119,761 @@ function assertFailureWithDelay(aAssertion, aArgs, aAssertionsCount)
 	);
 }
 
-function testEquals()
+function createRandomMessage()
 {
-	var message = Math.random() * 65000;
-
-	assertSuccess(assertionsModule.equals, [1, 1]);
-	assertFailure(assertionsModule.equals, [0, 1, message]);
-
-	assertSuccess(assertionsModule.equals, [[1, "2", true],
-                                              [1, "2", true]]);
-	assertSuccess(assertionsModule.equals, [[1, 2, false],
-                                              [1, "2", false]]);
-
-	assertSuccess(assertionsModule.equals,
-                    [new Date(2007, 5, 27, 7, 23, 54),
-                     new Date(2007, 5, 27, 7, 23, 54)]);
-	assertFailure(assertionsModule.equals,
-                 [new Date(2008, 5, 27, 7, 23, 54),
-                  new Date(2007, 5, 27, 7, 23, 54),
-                  message]);
-
-	assertSuccess(assertionsModule.equals,
-                    [{my: 1, name: "is", Nakano: "NO!"},
-                     {my: "1", name: "is", Nakano: "NO!"}]);
-	assertFailure(assertionsModule.equals,
-                 [{my: 1, name: "is", Nakano: "NO!"},
-                  {my: 9, name: "is", Nakano: "NO!"},
-                  message]);
-	assertFailure(assertionsModule.equals,
-                 [{my: 1, name: "is", Nakano: "NO!"},
-                  {my: 1, name: "is", Nakano: "NO!", additional: 0},
-                  message]);
-	assertFailure(assertionsModule.equals,
-                 [{my: 1, name: "is", Nakano: "NO!", additional: 0},
-                  {my: 1, name: "is", Nakano: "NO!"},
-                  message]);
-
-	var node = document.createElement('box');
-	assertSuccess(assertionsModule.equals,
-                    [node,
-                     node]);
-	assertFailure(assertionsModule.equals,
-                 [node,
-                  document.createElement('box'),
-                  message]);
-
-
-	assertSuccess(assertionsModule.notEquals, [0, 1]);
-	assertFailure(assertionsModule.notEquals, [1, 1, message]);
-	assertSuccess(assertionsModule.notEqual, [0, 1]);
-	assertFailure(assertionsModule.notEqual, [1, 1, message]);
-
-	assert.equal(8, assertionsModule.successCount);
+	return 'messsage:' + (Math.random() * 65000);
 }
 
-function testStrictlyEquals()
+
+// equals
+
+testEquals_success.parameters = [
+	[1, 1],
+	[[1, "2", true],
+	 [1, "2", true]],
+	[[1, 2, false],
+	 [1, "2", false]],
+	[new Date(2007, 5, 27, 7, 23, 54),
+	 new Date(2007, 5, 27, 7, 23, 54)],
+	[{my: 1, name: "is", Nakano: "NO!"},
+	 {my: "1", name: "is", Nakano: "NO!"}]
+];
+function testEquals_success(aParameter)
 {
-	var message = Math.random() * 65000;
-
-	assertSuccess(assertionsModule.strictlyEquals, [1, 1]);
-	assertFailure(assertionsModule.strictlyEquals, [0, 1, message]);
-
-	assertSuccess(assertionsModule.strictlyEquals, [[1, "2", true],
-                                                      [1, "2", true]]);
-	assertFailure(assertionsModule.strictlyEquals, [[1, 2, false],
-                                                   [1, "2", false],
-                                                   message]);
-
-	assertSuccess(assertionsModule.strictlyEquals,
-                    [new Date(2007, 5, 27, 7, 23, 54),
-                     new Date(2007, 5, 27, 7, 23, 54)]);
-	assertFailure(assertionsModule.strictlyEquals,
-                 [new Date(2008, 5, 27, 7, 23, 54),
-                  new Date(2007, 5, 27, 7, 23, 54),
-                  message]);
-
-	assertSuccess(assertionsModule.strictlyEquals,
-                    [{my: 1, name: "is", Nakano: "NO!"},
-                     {my: 1, name: "is", Nakano: "NO!"}]);
-	assertFailure(assertionsModule.strictlyEquals,
-                 [{my: 1, name: "is", Nakano: "NO!"},
-                  {my: "1", name: "is", Nakano: "NO!"},
-                  message]);
-	assertFailure(assertionsModule.strictlyEquals,
-                 [{my: 1, name: "is", Nakano: "NO!", additional: 0},
-                  {my: 1, name: "is", Nakano: "NO!"},
-                  message]);
-
-	assert.equal(4, assertionsModule.successCount);
+	yield assertSuccess(assertionsModule.equals, aParameter);
+	yield assertSuccess(assertionsModule.equal, aParameter);
+	assert.equal(2, assertionsModule.successCount);
 }
 
-function testSame()
+testEquals_fail.parameters = [
+	[0, 1, createRandomMessage()],
+	[new Date(2008, 5, 27, 7, 23, 54),
+	 new Date(2007, 5, 27, 7, 23, 54),
+	 createRandomMessage()],
+	[{my: 1, name: "is", Nakano: "NO!"},
+	 {my: 9, name: "is", Nakano: "NO!"},
+	 createRandomMessage()],
+	[{my: 1, name: "is", Nakano: "NO!"},
+	 {my: 1, name: "is", Nakano: "NO!", additional: 0},
+	 createRandomMessage()],
+	[{my: 1, name: "is", Nakano: "NO!", additional: 0},
+	 {my: 1, name: "is", Nakano: "NO!"},
+	 createRandomMessage()]
+];
+function testEquals_fail(aParameter)
 {
-	var message = Math.random() * 65000;
+	yield assertFailure(assertionsModule.equals, aParameter);
+	yield assertFailure(assertionsModule.equal, aParameter);
+	assert.equal(0, assertionsModule.successCount);
+}
 
-	assertSuccess(assertionsModule.same, [1, 1]);
-	assertFailure(assertionsModule.same, [new Number(1), new Number(1), message]);
-	assertFailure(assertionsModule.same, [new String("foo"), new String("foo"), message]);
-	assertFailure(assertionsModule.same, [
-		new Date(2007, 5, 27, 7, 23, 54),
-		new Date(2007, 5, 27, 7, 23, 54),
-		message
-	]);
-	var table1 = {my: 1, name: "is", Nakano: "NO!"};
-	assertSuccess(assertionsModule.same, [table1, table1]);
-
+function testEquals_DOMNode()
+{
 	var node = document.createElement('box');
-	assertSuccess(assertionsModule.same, [
+
+	yield assertSuccess(assertionsModule.equals,
+	                    [node,
+	                     node]);
+	yield assertSuccess(assertionsModule.equals,
+	                    [node,
+	                     node]);
+	yield assertFailure(assertionsModule.equal,
+	                    [node,
+	                     document.createElement('box'),
+	                     createRandomMessage()]);
+	yield assertFailure(assertionsModule.equal,
+	                    [node,
+	                     document.createElement('box'),
+	                     createRandomMessage()]);
+
+	assert.equal(2, assertionsModule.successCount);
+}
+
+
+// not equals
+
+testNotEquals_success.parameters = [
+	[0, 1]
+];
+function testNotEquals_success(aParameter)
+{
+	yield assertSuccess(assertionsModule.notEquals, aParameter);
+	yield assertSuccess(assertionsModule.notEqual, aParameter);
+	assert.equal(2, assertionsModule.successCount);
+}
+
+testNotEquals_fail.parameters = [
+	[1, 1, createRandomMessage()]
+];
+function testNotEquals_fail(aParameter)
+{
+	yield assertFailure(assertionsModule.notEquals, aParameter);
+	yield assertFailure(assertionsModule.notEqual, aParameter);
+	assert.equal(0, assertionsModule.successCount);
+}
+
+
+// strictly equals
+
+testStrictlyEquals_success.parameters = [
+	[1, 1],
+	[[1, "2", true],
+	 [1, "2", true]],
+	[new Date(2007, 5, 27, 7, 23, 54),
+	 new Date(2007, 5, 27, 7, 23, 54)],
+	[{my: 1, name: "is", Nakano: "NO!"},
+	 {my: 1, name: "is", Nakano: "NO!"}]
+];
+function testStrictlyEquals_success(aParameter)
+{
+	yield assertSuccess(assertionsModule.strictlyEquals, aParameter);
+	yield assertSuccess(assertionsModule.strictlyEqual, aParameter);
+	assert.equal(2, assertionsModule.successCount);
+}
+
+testStrictlyEquals_fail.parameters = [
+	[0, 1, createRandomMessage()],
+	[[1, 2, false],
+	 [1, "2", false],
+	 createRandomMessage()],
+	[new Date(2008, 5, 27, 7, 23, 54),
+	 new Date(2007, 5, 27, 7, 23, 54),
+	 createRandomMessage()],
+	[{my: 1, name: "is", Nakano: "NO!"},
+	 {my: "1", name: "is", Nakano: "NO!"},
+	 createRandomMessage()],
+	[{my: 1, name: "is", Nakano: "NO!", additional: 0},
+	 {my: 1, name: "is", Nakano: "NO!"},
+	 createRandomMessage()]
+];
+function testStrictlyEquals_fail(aParameter)
+{
+	yield assertFailure(assertionsModule.strictlyEquals, aParameter);
+	yield assertFailure(assertionsModule.strictlyEqual, aParameter);
+	assert.equal(0, assertionsModule.successCount);
+}
+
+
+// same
+
+{
+let table1 = {my: 1, name: "is", Nakano: "NO!"};
+testSame_success.parameters = [
+	[1, 1],
+	[table1, table1]
+];
+}
+function testSame_success(aParameter)
+{
+	yield assertSuccess(assertionsModule.same, aParameter);
+	assert.equal(1, assertionsModule.successCount);
+}
+
+testSame_fail.parameters = [
+	[new Number(1), new Number(1), createRandomMessage()],
+	[new String("foo"), new String("foo"), createRandomMessage()],
+	[new Date(2007, 5, 27, 7, 23, 54),
+	 new Date(2007, 5, 27, 7, 23, 54),
+	 createRandomMessage()]
+];
+function testSame_fail(aParameter)
+{
+	yield assertFailure(assertionsModule.same, aParameter);
+	assert.equal(0, assertionsModule.successCount);
+}
+
+function testSame_DOMNode()
+{
+	var node = document.createElement('box');
+	yield assertSuccess(assertionsModule.same, [
 		node,
 		node
 	]);
-	assertFailure(assertionsModule.same, [
+	yield assertFailure(assertionsModule.same, [
 		node,
 		document.createElement('box'),
-		message
+		createRandomMessage()
 	]);
-
-	assertSuccess(assertionsModule.notSame, [0, 1]);
-	assertSuccess(assertionsModule.notSame, [new String("foo"), new String("foo")]);
-	assertFailure(assertionsModule.notSame, [1, 1, message]);
-
-	assert.equal(5, assertionsModule.successCount);
+	assert.equal(1, assertionsModule.successCount);
 }
 
-function testContainsString()
+
+// not same
+
+testNotSame_success.parameters = [
+	[0, 1],
+	[new String("foo"), new String("foo")]
+];
+function testNotSame_success(aParameter)
 {
-	var message = Math.random() * 65000;
-	assertSuccess(assertionsModule.contains,
-                  ['text', 'long text']);
-	assertFailure(assertionsModule.contains,
-                  ['outside', 'long text', message]);
-	assertFailure(assertionsModule.notContains,
-                  ['text', 'long text', message]);
-	assertSuccess(assertionsModule.notContains,
-                  ['outside', 'long text']);
+	yield assertSuccess(assertionsModule.notSame, aParameter);
+	assert.equal(1, assertionsModule.successCount);
+}
+
+testNotSame_fail.parameters = [
+	[1, 1, createRandomMessage()]
+];
+function testNotSame_fail(aParameter)
+{
+	yield assertFailure(assertionsModule.notSame, aParameter);
+	assert.equal(0, assertionsModule.successCount);
+}
+
+
+// contains
+
+var item = { value : true };
+var array = ['string', 29, true, item];
+testContains_success.parameters = [
+	['text', 'long text'],
+	['string', array],
+	[29, array],
+	[true, array],
+	[item, array]
+];
+function testContains_success(aParameter)
+{
+	yield assertSuccess(assertionsModule.contains, aParameter);
+	yield assertSuccess(assertionsModule.contain, aParameter);
 	assert.equal(2, assertionsModule.successCount);
 }
 
-function testContainedString()
+testContains_fail.parameters = [
+	['outside', 'long text', createRandomMessage()],
+	['outside', array, createRandomMessage()]
+];
+function testContains_fail(aParameter)
 {
-	var message = Math.random() * 65000;
-	assertSuccess(assertionsModule.contained,
-                  ['long text', 'text']);
-	assertFailure(assertionsModule.contained,
-                  ['long text', 'outside', message]);
-	assertFailure(assertionsModule.notContained,
-                  ['long text', 'text', message]);
-	assertSuccess(assertionsModule.notContained,
-                  ['long text', 'outside']);
+	yield assertFailure(assertionsModule.contains, aParameter);
+	yield assertFailure(assertionsModule.contain, aParameter);
+	assert.equal(0, assertionsModule.successCount);
+}
+
+
+// not contains
+
+testNotContains_success.parameters = [
+	['outside', 'long text'],
+	['outside', array]
+];
+function testNotContains_success(aParameter)
+{
+	yield assertSuccess(assertionsModule.notContains, aParameter);
+	yield assertSuccess(assertionsModule.notContain, aParameter);
 	assert.equal(2, assertionsModule.successCount);
 }
 
-function testContainsArray()
+testNotContains_fail.parameters = [
+	['text', 'long text', createRandomMessage()],
+	['string', array, createRandomMessage()],
+	[29, array, createRandomMessage()],
+	[true, array, createRandomMessage()],
+	[item, array, createRandomMessage()]
+];
+function testNotContains_fail(aParameter)
 {
-	var message = Math.random() * 65000;
-	var item = { value : true };
-	var array = ['string', 29, true, item];
-	assertSuccess(assertionsModule.contains,
-                  ['string', array]);
-	assertSuccess(assertionsModule.contains,
-                  [29, array]);
-	assertSuccess(assertionsModule.contains,
-                  [true, array]);
-	assertSuccess(assertionsModule.contains,
-                  [item, array]);
-	assertFailure(assertionsModule.contains,
-                  ['outside', array, message]);
-	assertFailure(assertionsModule.notContains,
-                  ['string', array, message]);
-	assertFailure(assertionsModule.notContains,
-                  [29, array, message]);
-	assertFailure(assertionsModule.notContains,
-                  [true, array, message]);
-	assertFailure(assertionsModule.notContains,
-                  [item, array, message]);
-	assertSuccess(assertionsModule.notContains,
-                  ['outside', array]);
-	assert.equal(5, assertionsModule.successCount);
+	yield assertFailure(assertionsModule.notContains, aParameter);
+	yield assertFailure(assertionsModule.notContain, aParameter);
+	assert.equal(0, assertionsModule.successCount);
 }
 
-function testContainedArray()
+
+// contained
+
+testContained_success.parameters = [
+	['long text', 'text'],
+	[array, 'string'],
+	[array, 29],
+	[array, true],
+	[array, item]
+];
+function testContained_success(aParameter)
 {
-	var message = Math.random() * 65000;
-	var item = { value : true };
-	var array = ['string', 29, true, item];
-	assertSuccess(assertionsModule.contained,
-                  [array, 'string']);
-	assertSuccess(assertionsModule.contained,
-                  [array, 29]);
-	assertSuccess(assertionsModule.contained,
-                  [array, true]);
-	assertSuccess(assertionsModule.contained,
-                  [array, item]);
-	assertFailure(assertionsModule.contained,
-                  [array, 'outside', message]);
-	assertFailure(assertionsModule.notContained,
-                  [array, 'string', message]);
-	assertFailure(assertionsModule.notContained,
-                  [array, 29, message]);
-	assertFailure(assertionsModule.notContained,
-                  [array, true, message]);
-	assertFailure(assertionsModule.notContained,
-                  [array, item, message]);
-	assertSuccess(assertionsModule.notContained,
-                  [array, 'outside']);
-	assert.equal(5, assertionsModule.successCount);
+	yield assertSuccess(assertionsModule.contained, aParameter);
+	assert.equal(1, assertionsModule.successCount);
 }
 
+testContained_fail.parameters = [
+	['long text', 'outside', createRandomMessage()],
+	[array, 'outside', createRandomMessage()]
+];
+function testContained_fail(aParameter)
+{
+	yield assertFailure(assertionsModule.contained, aParameter);
+	assert.equal(0, assertionsModule.successCount);
+}
+
+// not contained
+
+testNotContained_success.parameters = [
+	['long text', 'outside'],
+	[array, 'outside']
+];
+function testNotContained_success(aParameter)
+{
+	yield assertSuccess(assertionsModule.notContained, aParameter);
+	assert.equal(1, assertionsModule.successCount);
+}
+
+testNotContained_fail.parameters = [
+	['long text', 'text', createRandomMessage()],
+	[array, 'string', createRandomMessage()],
+	[array, 29, createRandomMessage()],
+	[array, true, createRandomMessage()],
+	[array, item, createRandomMessage()]
+];
+function testNotContained_fail(aParameter)
+{
+	yield assertFailure(assertionsModule.notContained, aParameter);
+	assert.equal(0, assertionsModule.successCount);
+}
+
+
+// contains / not contains for DOM Range
+
+var largeRange, smallRange;
+testContainsAndContainedRange.setUp = function()
+{
+	yield utils.loadURI('../../fixtures/links.html');
+
+};
+testContainsAndContainedRange.tearDown = function()
+{
+	if (largeRange) largeRange.detach();
+	if (smallRange) smallRange.detach();
+};
 function testContainsAndContainedRange()
 {
-	var message = Math.random() * 65000;
+	largeRange = content.document.createRange();
+	largeRange.setStartBefore($('item4'));
+	largeRange.setEndAfter($('item9'));
 
-	utils.loadURI('../../fixtures/links.html');
+	yield assertSuccess(assertionsModule.contains,
+                  [$('link5'), largeRange]);
+	yield assertFailure(assertionsModule.contains,
+                  [$('link10'), largeRange, createRandomMessage()]);
+	yield assertFailure(assertionsModule.notContains,
+                  [$('link5'), largeRange, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.notContains,
+                  [$('link10'), largeRange]);
+	yield assertSuccess(assertionsModule.contained,
+                  [largeRange, $('link5')]);
+	yield assertFailure(assertionsModule.contained,
+                  [largeRange, $('link10'), createRandomMessage()]);
+	yield assertFailure(assertionsModule.notContained,
+                  [largeRange, $('link5'), createRandomMessage()]);
+	yield assertSuccess(assertionsModule.notContained,
+                  [largeRange, $('link10')]);
 
-	var range = content.document.createRange();
-	range.setStartBefore($('item4'));
-	range.setEndAfter($('item9'));
+	yield assertSuccess(assertionsModule.contains,
+                  ['リンク5', largeRange]);
+	yield assertFailure(assertionsModule.contains,
+                  ['リンク10', largeRange, createRandomMessage()]);
+	yield assertFailure(assertionsModule.notContains,
+                  ['リンク5', largeRange, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.notContains,
+                  ['リンク10', largeRange]);
+	yield assertSuccess(assertionsModule.contained,
+                  [largeRange, 'リンク5']);
+	yield assertFailure(assertionsModule.contained,
+                  [largeRange, 'リンク10', createRandomMessage()]);
+	yield assertFailure(assertionsModule.notContained,
+                  [largeRange, 'リンク5', createRandomMessage()]);
+	yield assertSuccess(assertionsModule.notContained,
+                  [largeRange, 'リンク10']);
 
-	assertSuccess(assertionsModule.contains,
-                  [$('link5'), range]);
-	assertFailure(assertionsModule.contains,
-                  [$('link10'), range, message]);
-	assertFailure(assertionsModule.notContains,
-                  [$('link5'), range, message]);
-	assertSuccess(assertionsModule.notContains,
-                  [$('link10'), range]);
-	assertSuccess(assertionsModule.contained,
-                  [range, $('link5')]);
-	assertFailure(assertionsModule.contained,
-                  [range, $('link10'), message]);
-	assertFailure(assertionsModule.notContained,
-                  [range, $('link5'), message]);
-	assertSuccess(assertionsModule.notContained,
-                  [range, $('link10')]);
-
-	assertSuccess(assertionsModule.contains,
-                  ['リンク5', range]);
-	assertFailure(assertionsModule.contains,
-                  ['リンク10', range, message]);
-	assertFailure(assertionsModule.notContains,
-                  ['リンク5', range, message]);
-	assertSuccess(assertionsModule.notContains,
-                  ['リンク10', range]);
-	assertSuccess(assertionsModule.contained,
-                  [range, 'リンク5']);
-	assertFailure(assertionsModule.contained,
-                  [range, 'リンク10', message]);
-	assertFailure(assertionsModule.notContained,
-                  [range, 'リンク5', message]);
-	assertSuccess(assertionsModule.notContained,
-                  [range, 'リンク10']);
-
-	var targetRange = content.document.createRange();
-	targetRange.selectNode($('em5'));
-	targetRange.setEnd($('em5').lastChild, 3);
-	assertSuccess(assertionsModule.contains,
-                  [targetRange, range]);
-	assertFailure(assertionsModule.notContains,
-                  [targetRange, range, message]);
-	assertSuccess(assertionsModule.contained,
-                  [range, targetRange]);
-	assertFailure(assertionsModule.notContained,
-                  [range, targetRange, message]);
-	targetRange.selectNode($('em10'));
-	targetRange.setEnd($('em10').lastChild, 3);
-	assertFailure(assertionsModule.contains,
-                  [targetRange, range, message]);
-	assertSuccess(assertionsModule.notContains,
-                  [targetRange, range]);
-	assertFailure(assertionsModule.contained,
-                  [range, targetRange, message]);
-	assertSuccess(assertionsModule.notContained,
-                  [range, targetRange]);
-
-	range.detach();
-	targetRange.detach();
+	smallRange = content.document.createRange();
+	smallRange.selectNode($('em5'));
+	smallRange.setEnd($('em5').lastChild, 3);
+	yield assertSuccess(assertionsModule.contains,
+                  [smallRange, largeRange]);
+	yield assertFailure(assertionsModule.notContains,
+                  [smallRange, largeRange, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.contained,
+                  [largeRange, smallRange]);
+	yield assertFailure(assertionsModule.notContained,
+                  [largeRange, smallRange, createRandomMessage()]);
+	smallRange.selectNode($('em10'));
+	smallRange.setEnd($('em10').lastChild, 3);
+	yield assertFailure(assertionsModule.contains,
+                  [smallRange, largeRange, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.notContains,
+                  [smallRange, largeRange]);
+	yield assertFailure(assertionsModule.contained,
+                  [largeRange, smallRange, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.notContained,
+                  [largeRange, smallRange]);
 
 	assert.equal(12, assertionsModule.successCount);
 }
 
+var selectionRanges = [];
+testContainsAndContainedRange.setUp = function()
+{
+	yield utils.loadURI('../../fixtures/links.html');
+};
+testContainsAndContainedRange.tearDown = function()
+{
+	selectionRanges.forEach(function(aRange) {
+		try {
+			aRange.detach()
+		}
+		catch(e) {
+		}
+	});
+	selectionRanges = [];
+};
 function testContainsSelection()
 {
-	var message = Math.random() * 65000;
-
-	utils.loadURI('../../fixtures/links.html');
-
 	var selection = content.getSelection();
 	selection.removeAllRanges();
 
 	var range1 = content.document.createRange();
 	range1.setStartBefore($('item4'));
 	range1.setEndAfter($('item9'));
+	selectionRanges.push(range1);
 	selection.addRange(range1);
 
 	var range2 = content.document.createRange();
 	range2.setStartBefore($('item12'));
 	range2.setEndAfter($('item14'));
+	selectionRanges.push(range2);
 	selection.addRange(range2);
 
-	assertSuccess(assertionsModule.contains,
+	yield assertSuccess(assertionsModule.contains,
                   [$('link5'), selection]);
-	assertFailure(assertionsModule.contains,
-                  [$('link10'), selection, message]);
-	assertSuccess(assertionsModule.contains,
+	yield assertFailure(assertionsModule.contains,
+                  [$('link10'), selection, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.contains,
                   [$('link13'), selection]);
-	assertFailure(assertionsModule.notContains,
-                  [$('link5'), selection, message]);
-	assertSuccess(assertionsModule.notContains,
+	yield assertFailure(assertionsModule.notContains,
+                  [$('link5'), selection, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.notContains,
                   [$('link10'), selection]);
-	assertFailure(assertionsModule.notContains,
-                  [$('link13'), selection, message]);
-	assertSuccess(assertionsModule.contained,
+	yield assertFailure(assertionsModule.notContains,
+                  [$('link13'), selection, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.contained,
                   [selection, $('link5')]);
-	assertFailure(assertionsModule.contained,
-                  [selection, $('link10'), message]);
-	assertSuccess(assertionsModule.contained,
+	yield assertFailure(assertionsModule.contained,
+                  [selection, $('link10'), createRandomMessage()]);
+	yield assertSuccess(assertionsModule.contained,
                   [selection, $('link13')]);
-	assertFailure(assertionsModule.notContained,
-                  [selection, $('link5'), message]);
-	assertSuccess(assertionsModule.notContained,
+	yield assertFailure(assertionsModule.notContained,
+                  [selection, $('link5'), createRandomMessage()]);
+	yield assertSuccess(assertionsModule.notContained,
                   [selection, $('link10')]);
-	assertFailure(assertionsModule.notContained,
-                  [selection, $('link13'), message]);
+	yield assertFailure(assertionsModule.notContained,
+                  [selection, $('link13'), createRandomMessage()]);
 
-	assertSuccess(assertionsModule.contains,
+	yield assertSuccess(assertionsModule.contains,
                   ['リンク5', selection]);
-	assertFailure(assertionsModule.contains,
-                  ['リンク10', selection, message]);
-	assertSuccess(assertionsModule.contains,
+	yield assertFailure(assertionsModule.contains,
+                  ['リンク10', selection, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.contains,
                   ['リンク13', selection]);
-	assertFailure(assertionsModule.notContains,
-                  ['リンク5', selection, message]);
-	assertSuccess(assertionsModule.notContains,
+	yield assertFailure(assertionsModule.notContains,
+                  ['リンク5', selection, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.notContains,
                   ['リンク10', selection]);
-	assertFailure(assertionsModule.notContains,
-                  ['リンク13', selection, message]);
-	assertSuccess(assertionsModule.contained,
+	yield assertFailure(assertionsModule.notContains,
+                  ['リンク13', selection, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.contained,
                   [selection, 'リンク5']);
-	assertFailure(assertionsModule.contained,
-                  [selection, 'リンク10', message]);
-	assertSuccess(assertionsModule.contained,
+	yield assertFailure(assertionsModule.contained,
+                  [selection, 'リンク10', createRandomMessage()]);
+	yield assertSuccess(assertionsModule.contained,
                   [selection, 'リンク13']);
-	assertFailure(assertionsModule.notContained,
-                  [selection, 'リンク5', message]);
-	assertSuccess(assertionsModule.notContained,
+	yield assertFailure(assertionsModule.notContained,
+                  [selection, 'リンク5', createRandomMessage()]);
+	yield assertSuccess(assertionsModule.notContained,
                   [selection, 'リンク10']);
-	assertFailure(assertionsModule.notContained,
-                  [selection, 'リンク13', message]);
+	yield assertFailure(assertionsModule.notContained,
+                  [selection, 'リンク13', createRandomMessage()]);
 
-	var targetRange = content.document.createRange();
-	targetRange.selectNode($('em5'));
-	targetRange.setEnd($('em5').lastChild, 3);
-	assertSuccess(assertionsModule.contains,
-                  [targetRange, selection]);
-	assertFailure(assertionsModule.notContains,
-                  [targetRange, selection, message]);
-	assertSuccess(assertionsModule.contained,
-                  [selection, targetRange]);
-	assertFailure(assertionsModule.notContained,
-                  [selection, targetRange, message]);
-	targetRange.selectNode($('em10'));
-	targetRange.setEnd($('em10').lastChild, 3);
-	assertFailure(assertionsModule.contains,
-                  [targetRange, selection, message]);
-	assertSuccess(assertionsModule.notContains,
-                  [targetRange, selection]);
-	assertFailure(assertionsModule.contained,
-                  [selection, targetRange, message]);
-	assertSuccess(assertionsModule.notContained,
-                  [selection, targetRange]);
-	targetRange.selectNode($('em13'));
-	targetRange.setEnd($('em13').lastChild, 3);
-	assertSuccess(assertionsModule.contains,
-                  [targetRange, selection]);
-	assertFailure(assertionsModule.notContains,
-                  [targetRange, selection, message]);
-	assertSuccess(assertionsModule.contained,
-                  [selection, targetRange]);
-	assertFailure(assertionsModule.notContained,
-                  [selection, targetRange, message]);
-
-	targetRange.detach();
-	selection.removeAllRanges();
+	var smallRange = content.document.createRange();
+	smallRange.selectNode($('em5'));
+	smallRange.setEnd($('em5').lastChild, 3);
+	selectionRanges.push(smallRange);
+	yield assertSuccess(assertionsModule.contains,
+                  [smallRange, selection]);
+	yield assertFailure(assertionsModule.notContains,
+                  [smallRange, selection, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.contained,
+                  [selection, smallRange]);
+	yield assertFailure(assertionsModule.notContained,
+                  [selection, smallRange, createRandomMessage()]);
+	smallRange.selectNode($('em10'));
+	smallRange.setEnd($('em10').lastChild, 3);
+	yield assertFailure(assertionsModule.contains,
+                  [smallRange, selection, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.notContains,
+                  [smallRange, selection]);
+	yield assertFailure(assertionsModule.contained,
+                  [selection, smallRange, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.notContained,
+                  [selection, smallRange]);
+	smallRange.selectNode($('em13'));
+	smallRange.setEnd($('em13').lastChild, 3);
+	yield assertSuccess(assertionsModule.contains,
+                  [smallRange, selection]);
+	yield assertFailure(assertionsModule.notContains,
+                  [smallRange, selection, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.contained,
+                  [selection, smallRange]);
+	yield assertFailure(assertionsModule.notContained,
+                  [selection, smallRange, createRandomMessage()]);
 
 	assert.equal(18, assertionsModule.successCount);
 }
 
+testContainsDOMNodeTree.setUp = function()
+{
+	yield utils.loadURI('../../fixtures/links.html');
+};
+testContainsDOMNodeTree.tearDown = function()
+{
+	selectionRanges.forEach((aRange) => aRange.detach());
+	selectionRanges = [];
+};
 function testContainsDOMNodeTree()
 {
-	var message = Math.random() * 65000;
-
-	utils.loadURI('../../fixtures/links.html');
-
 	var root = $('item5');
 
-	assertSuccess(assertionsModule.contains,
+	yield assertSuccess(assertionsModule.contains,
                   [$('link5'), root]);
-	assertFailure(assertionsModule.contains,
-                  [$('link10'), root, message]);
-	assertFailure(assertionsModule.notContains,
-                  [$('link5'), root, message]);
-	assertSuccess(assertionsModule.notContains,
+	yield assertFailure(assertionsModule.contains,
+                  [$('link10'), root, createRandomMessage()]);
+	yield assertFailure(assertionsModule.notContains,
+                  [$('link5'), root, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.notContains,
                   [$('link10'), root]);
-	assertSuccess(assertionsModule.contained,
+	yield assertSuccess(assertionsModule.contained,
                   [root, $('link5')]);
-	assertFailure(assertionsModule.contained,
-                  [root, $('link10'), message]);
-	assertFailure(assertionsModule.notContained,
-                  [root, $('link5'), message]);
-	assertSuccess(assertionsModule.notContained,
+	yield assertFailure(assertionsModule.contained,
+                  [root, $('link10'), createRandomMessage()]);
+	yield assertFailure(assertionsModule.notContained,
+                  [root, $('link5'), createRandomMessage()]);
+	yield assertSuccess(assertionsModule.notContained,
                   [root, $('link10')]);
 
-	assertSuccess(assertionsModule.contains,
+	yield assertSuccess(assertionsModule.contains,
                   ['リンク5', root]);
-	assertFailure(assertionsModule.contains,
-                  ['リンク10', root, message]);
-	assertFailure(assertionsModule.notContains,
-                  ['リンク5', root, message]);
-	assertSuccess(assertionsModule.notContains,
+	yield assertFailure(assertionsModule.contains,
+                  ['リンク10', root, createRandomMessage()]);
+	yield assertFailure(assertionsModule.notContains,
+                  ['リンク5', root, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.notContains,
                   ['リンク10', root]);
-	assertSuccess(assertionsModule.contained,
+	yield assertSuccess(assertionsModule.contained,
                   [root, 'リンク5']);
-	assertFailure(assertionsModule.contained,
-                  [root, 'リンク10', message]);
-	assertFailure(assertionsModule.notContained,
-                  [root, 'リンク5', message]);
-	assertSuccess(assertionsModule.notContained,
+	yield assertFailure(assertionsModule.contained,
+                  [root, 'リンク10', createRandomMessage()]);
+	yield assertFailure(assertionsModule.notContained,
+                  [root, 'リンク5', createRandomMessage()]);
+	yield assertSuccess(assertionsModule.notContained,
                   [root, 'リンク10']);
 
-	var targetRange = content.document.createRange();
-	targetRange.selectNode($('em5'));
-	targetRange.setEnd($('em5').lastChild, 3);
-	assertSuccess(assertionsModule.contains,
-                  [targetRange, root]);
-	assertFailure(assertionsModule.notContains,
-                  [targetRange, root, message]);
-	assertSuccess(assertionsModule.contained,
-                  [root, targetRange]);
-	assertFailure(assertionsModule.notContained,
-                  [root, targetRange, message]);
-	targetRange.selectNode($('em10'));
-	targetRange.setEnd($('em10').lastChild, 3);
-	assertFailure(assertionsModule.contains,
-                  [targetRange, root, message]);
-	assertSuccess(assertionsModule.notContains,
-                  [targetRange, root]);
-	assertFailure(assertionsModule.contained,
-                  [root, targetRange, message]);
-	assertSuccess(assertionsModule.notContained,
-                  [root, targetRange]);
-
-	targetRange.detach();
+	var smallRange = content.document.createRange();
+	smallRange.selectNode($('em5'));
+	smallRange.setEnd($('em5').lastChild, 3);
+	selectionRanges.push(smallRange);
+	yield assertSuccess(assertionsModule.contains,
+                  [smallRange, root]);
+	yield assertFailure(assertionsModule.notContains,
+                  [smallRange, root, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.contained,
+                  [root, smallRange]);
+	yield assertFailure(assertionsModule.notContained,
+                  [root, smallRange, createRandomMessage()]);
+	smallRange.selectNode($('em10'));
+	smallRange.setEnd($('em10').lastChild, 3);
+	yield assertFailure(assertionsModule.contains,
+                  [smallRange, root, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.notContains,
+                  [smallRange, root]);
+	yield assertFailure(assertionsModule.contained,
+                  [root, smallRange, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.notContained,
+                  [root, smallRange]);
 
 	assert.equal(12, assertionsModule.successCount);
 }
 
+
+// type detection
+
 function testBoolean()
 {
-	var message = Math.random() * 65000;
+	yield assertSuccess(assertionsModule.isTrue, [true]);
+	yield assertSuccess(assertionsModule.isTrue, [{}]);
+	yield assertFailure(assertionsModule.isTrue, [false, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isTrue, [0, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isTrue, ['', createRandomMessage()]);
+	yield assertFailure(assertionsModule.isTrue, [null, createRandomMessage()]);
 
-	assertSuccess(assertionsModule.isTrue, [true]);
-	assertSuccess(assertionsModule.isTrue, [{}]);
-	assertFailure(assertionsModule.isTrue, [false, message]);
-	assertFailure(assertionsModule.isTrue, [0, message]);
-	assertFailure(assertionsModule.isTrue, ['', message]);
-	assertFailure(assertionsModule.isTrue, [null, message]);
-
-	assertSuccess(assertionsModule.isFalse, [false]);
-	assertSuccess(assertionsModule.isFalse, [0]);
-	assertSuccess(assertionsModule.isFalse, ['']);
-	assertSuccess(assertionsModule.isFalse, [null]);
-	assertSuccess(assertionsModule.isFalse, [void 0]);
-	assertFailure(assertionsModule.isFalse, [true, message]);
-	assertFailure(assertionsModule.isFalse, [{}, message]);
+	yield assertSuccess(assertionsModule.isFalse, [false]);
+	yield assertSuccess(assertionsModule.isFalse, [0]);
+	yield assertSuccess(assertionsModule.isFalse, ['']);
+	yield assertSuccess(assertionsModule.isFalse, [null]);
+	yield assertSuccess(assertionsModule.isFalse, [void 0]);
+	yield assertFailure(assertionsModule.isFalse, [true, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isFalse, [{}, createRandomMessage()]);
 
 	assert.equal(7, assertionsModule.successCount);
 }
 
 function testType()
 {
-	var message = Math.random() * 65000;
+	yield assertSuccess(assertionsModule.isBoolean, [true]);
+	yield assertFailure(assertionsModule.isBoolean, ['true', createRandomMessage()]);
 
-	assertSuccess(assertionsModule.isBoolean, [true]);
-	assertFailure(assertionsModule.isBoolean, ['true', message]);
+	yield assertSuccess(assertionsModule.isNotBoolean, ['true']);
+	yield assertFailure(assertionsModule.isNotBoolean, [true, createRandomMessage()]);
 
-	assertSuccess(assertionsModule.isNotBoolean, ['true']);
-	assertFailure(assertionsModule.isNotBoolean, [true, message]);
+	yield assertSuccess(assertionsModule.isString, ['1']);
+	yield assertFailure(assertionsModule.isString, [1, createRandomMessage()]);
 
-	assertSuccess(assertionsModule.isString, ['1']);
-	assertFailure(assertionsModule.isString, [1, message]);
+	yield assertSuccess(assertionsModule.isNotString, [1]);
+	yield assertFailure(assertionsModule.isNotString, ['1', createRandomMessage()]);
 
-	assertSuccess(assertionsModule.isNotString, [1]);
-	assertFailure(assertionsModule.isNotString, ['1', message]);
+	yield assertSuccess(assertionsModule.isNumber, [0]);
+	yield assertFailure(assertionsModule.isNumber, ['0', createRandomMessage()]);
 
-	assertSuccess(assertionsModule.isNumber, [0]);
-	assertFailure(assertionsModule.isNumber, ['0', message]);
+	yield assertSuccess(assertionsModule.isNotNumber, ['0']);
+	yield assertFailure(assertionsModule.isNotNumber, [0, createRandomMessage()]);
 
-	assertSuccess(assertionsModule.isNotNumber, ['0']);
-	assertFailure(assertionsModule.isNotNumber, [0, message]);
+	yield assertSuccess(assertionsModule.isFunction, [(function() {})]);
+	yield assertSuccess(assertionsModule.isFunction, [(new Function('foo', 'return foo'))]);
+	yield assertFailure(assertionsModule.isFunction, [true, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isFunction, [false, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isFunction, [0, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isFunction, ['func', createRandomMessage()]);
+	yield assertFailure(assertionsModule.isFunction, [null, createRandomMessage()]);
 
-	assertSuccess(assertionsModule.isFunction, [(function() {})]);
-	assertSuccess(assertionsModule.isFunction, [(new Function('foo', 'return foo'))]);
-	assertFailure(assertionsModule.isFunction, [true, message]);
-	assertFailure(assertionsModule.isFunction, [false, message]);
-	assertFailure(assertionsModule.isFunction, [0, message]);
-	assertFailure(assertionsModule.isFunction, ['func', message]);
-	assertFailure(assertionsModule.isFunction, [null, message]);
+	yield assertSuccess(assertionsModule.isNotFunction, [true]);
+	yield assertSuccess(assertionsModule.isNotFunction, [false]);
+	yield assertSuccess(assertionsModule.isNotFunction, [0]);
+	yield assertSuccess(assertionsModule.isNotFunction, ['func']);
+	yield assertSuccess(assertionsModule.isNotFunction, [null]);
+	yield assertFailure(assertionsModule.isNotFunction, [(function() {}), createRandomMessage()]);
+	yield assertFailure(assertionsModule.isNotFunction, [(new Function('foo', 'return foo')), createRandomMessage()]);
 
-	assertSuccess(assertionsModule.isNotFunction, [true]);
-	assertSuccess(assertionsModule.isNotFunction, [false]);
-	assertSuccess(assertionsModule.isNotFunction, [0]);
-	assertSuccess(assertionsModule.isNotFunction, ['func']);
-	assertSuccess(assertionsModule.isNotFunction, [null]);
-	assertFailure(assertionsModule.isNotFunction, [(function() {}), message]);
-	assertFailure(assertionsModule.isNotFunction, [(new Function('foo', 'return foo')), message]);
+	yield assertSuccess(assertionsModule.isObject, [{}]);
+	yield assertSuccess(assertionsModule.isObject, [new Object()]);
+	yield assertSuccess(assertionsModule.isObject, [[]]);
+	yield assertSuccess(assertionsModule.isObject, [new Array()]);
+	yield assertFailure(assertionsModule.isObject, [true, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isObject, [false, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isObject, [0, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isObject, ['func', createRandomMessage()]);
+	yield assertSuccess(assertionsModule.isObject, [null]);
 
-	assertSuccess(assertionsModule.isObject, [{}]);
-	assertSuccess(assertionsModule.isObject, [new Object()]);
-	assertSuccess(assertionsModule.isObject, [[]]);
-	assertSuccess(assertionsModule.isObject, [new Array()]);
-	assertFailure(assertionsModule.isObject, [true, message]);
-	assertFailure(assertionsModule.isObject, [false, message]);
-	assertFailure(assertionsModule.isObject, [0, message]);
-	assertFailure(assertionsModule.isObject, ['func', message]);
-	assertSuccess(assertionsModule.isObject, [null]);
+	yield assertSuccess(assertionsModule.isNotObject, [true]);
+	yield assertSuccess(assertionsModule.isNotObject, [false]);
+	yield assertSuccess(assertionsModule.isNotObject, [0]);
+	yield assertSuccess(assertionsModule.isNotObject, ['func']);
+	yield assertFailure(assertionsModule.isNotObject, [null, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isNotObject, [{}, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isNotObject, [new Object(), createRandomMessage()]);
+	yield assertFailure(assertionsModule.isNotObject, [[], createRandomMessage()]);
+	yield assertFailure(assertionsModule.isNotObject, [new Array(), createRandomMessage()]);
 
-	assertSuccess(assertionsModule.isNotObject, [true]);
-	assertSuccess(assertionsModule.isNotObject, [false]);
-	assertSuccess(assertionsModule.isNotObject, [0]);
-	assertSuccess(assertionsModule.isNotObject, ['func']);
-	assertFailure(assertionsModule.isNotObject, [null, message]);
-	assertFailure(assertionsModule.isNotObject, [{}, message]);
-	assertFailure(assertionsModule.isNotObject, [new Object(), message]);
-	assertFailure(assertionsModule.isNotObject, [[], message]);
-	assertFailure(assertionsModule.isNotObject, [new Array(), message]);
+	yield assertFailure(assertionsModule.isArray, [{}, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isArray, [new Object(), createRandomMessage()]);
+	yield assertSuccess(assertionsModule.isArray, [[]]);
+	yield assertSuccess(assertionsModule.isArray, [new Array()]);
+	yield assertFailure(assertionsModule.isArray, [true, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isArray, [false, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isArray, [0, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isArray, ['func', createRandomMessage()]);
+	yield assertFailure(assertionsModule.isArray, [null, createRandomMessage()]);
 
-	assertFailure(assertionsModule.isArray, [{}, message]);
-	assertFailure(assertionsModule.isArray, [new Object(), message]);
-	assertSuccess(assertionsModule.isArray, [[]]);
-	assertSuccess(assertionsModule.isArray, [new Array()]);
-	assertFailure(assertionsModule.isArray, [true, message]);
-	assertFailure(assertionsModule.isArray, [false, message]);
-	assertFailure(assertionsModule.isArray, [0, message]);
-	assertFailure(assertionsModule.isArray, ['func', message]);
-	assertFailure(assertionsModule.isArray, [null, message]);
-
-	assertSuccess(assertionsModule.isNotArray, [true]);
-	assertSuccess(assertionsModule.isNotArray, [false]);
-	assertSuccess(assertionsModule.isNotArray, [0]);
-	assertSuccess(assertionsModule.isNotArray, ['func']);
-	assertSuccess(assertionsModule.isNotArray, [null]);
-	assertSuccess(assertionsModule.isNotArray, [{}, message]);
-	assertSuccess(assertionsModule.isNotArray, [new Object(), message]);
-	assertFailure(assertionsModule.isNotArray, [[], message]);
-	assertFailure(assertionsModule.isNotArray, [new Array(), message]);
+	yield assertSuccess(assertionsModule.isNotArray, [true]);
+	yield assertSuccess(assertionsModule.isNotArray, [false]);
+	yield assertSuccess(assertionsModule.isNotArray, [0]);
+	yield assertSuccess(assertionsModule.isNotArray, ['func']);
+	yield assertSuccess(assertionsModule.isNotArray, [null]);
+	yield assertSuccess(assertionsModule.isNotArray, [{}, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.isNotArray, [new Object(), createRandomMessage()]);
+	yield assertFailure(assertionsModule.isNotArray, [[], createRandomMessage()]);
+	yield assertFailure(assertionsModule.isNotArray, [new Array(), createRandomMessage()]);
 
 	assert.equal(31, assertionsModule.successCount);
 }
 
 function testNullAndUndefined()
 {
-	var message = Math.random() * 65000;
+	yield assertSuccess(assertionsModule.isDefined, [true]);
+	yield assertSuccess(assertionsModule.isDefined, [false]);
+	yield assertSuccess(assertionsModule.isDefined, [0]);
+	yield assertSuccess(assertionsModule.isDefined, ['']);
+	yield assertSuccess(assertionsModule.isDefined, [null]);
+	yield assertFailure(assertionsModule.isDefined, [void(0), createRandomMessage()]);
 
-	assertSuccess(assertionsModule.isDefined, [true]);
-	assertSuccess(assertionsModule.isDefined, [false]);
-	assertSuccess(assertionsModule.isDefined, [0]);
-	assertSuccess(assertionsModule.isDefined, ['']);
-	assertSuccess(assertionsModule.isDefined, [null]);
-	assertFailure(assertionsModule.isDefined, [void(0), message]);
+	yield assertSuccess(assertionsModule.isUndefined, [void(0)]);
+	yield assertFailure(assertionsModule.isUndefined, [true, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isUndefined, [false, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isUndefined, [0, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isUndefined, ['', createRandomMessage()]);
+	yield assertFailure(assertionsModule.isUndefined, [null, createRandomMessage()]);
 
-	assertSuccess(assertionsModule.isUndefined, [void(0)]);
-	assertFailure(assertionsModule.isUndefined, [true, message]);
-	assertFailure(assertionsModule.isUndefined, [false, message]);
-	assertFailure(assertionsModule.isUndefined, [0, message]);
-	assertFailure(assertionsModule.isUndefined, ['', message]);
-	assertFailure(assertionsModule.isUndefined, [null, message]);
+	yield assertSuccess(assertionsModule.isNull, [null]);
+	yield assertFailure(assertionsModule.isNull, [true, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isNull, [false, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isNull, [0, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isNull, ['', createRandomMessage()]);
+	yield assertFailure(assertionsModule.isNull, [void(0), createRandomMessage()]);
 
-	assertSuccess(assertionsModule.isNull, [null]);
-	assertFailure(assertionsModule.isNull, [true, message]);
-	assertFailure(assertionsModule.isNull, [false, message]);
-	assertFailure(assertionsModule.isNull, [0, message]);
-	assertFailure(assertionsModule.isNull, ['', message]);
-	assertFailure(assertionsModule.isNull, [void(0), message]);
-
-	assertSuccess(assertionsModule.isNotNull, [true]);
-	assertSuccess(assertionsModule.isNotNull, [false]);
-	assertSuccess(assertionsModule.isNotNull, [0]);
-	assertSuccess(assertionsModule.isNotNull, ['']);
-	assertSuccess(assertionsModule.isNotNull, [void(0)]);
-	assertFailure(assertionsModule.isNotNull, [null, message]);
+	yield assertSuccess(assertionsModule.isNotNull, [true]);
+	yield assertSuccess(assertionsModule.isNotNull, [false]);
+	yield assertSuccess(assertionsModule.isNotNull, [0]);
+	yield assertSuccess(assertionsModule.isNotNull, ['']);
+	yield assertSuccess(assertionsModule.isNotNull, [void(0)]);
+	yield assertFailure(assertionsModule.isNotNull, [null, createRandomMessage()]);
 
 	assert.equal(12, assertionsModule.successCount);
 }
 
 function testRegExp()
 {
-	var message = Math.random() * 65000;
-
-	assertSuccess(assertionsModule.matches,
+	yield assertSuccess(assertionsModule.matches,
 		[/te[sx]t/, 'test']
 	);
-	assertFailure(assertionsModule.matches,
-		[/te[sx]t/, 'tent', message]
+	yield assertFailure(assertionsModule.matches,
+		[/te[sx]t/, 'tent', createRandomMessage()]
 	);
-	assertSuccess(assertionsModule.match,
+	yield assertSuccess(assertionsModule.match,
 		[/te[sx]t/, 'test']
 	);
-	assertFailure(assertionsModule.match,
-		[/te[sx]t/, 'tent', message]
+	yield assertFailure(assertionsModule.match,
+		[/te[sx]t/, 'tent', createRandomMessage()]
 	);
 
-	assertSuccess(assertionsModule.notMatches,
+	yield assertSuccess(assertionsModule.notMatches,
 		[/te[sx]t/, 'tent']
 	);
-	assertFailure(assertionsModule.notMatches,
-		[/te[sx]t/, 'test', message]
+	yield assertFailure(assertionsModule.notMatches,
+		[/te[sx]t/, 'test', createRandomMessage()]
 	);
-	assertSuccess(assertionsModule.notMatch,
+	yield assertSuccess(assertionsModule.notMatch,
 		[/te[sx]t/, 'tent']
 	);
-	assertFailure(assertionsModule.notMatch,
-		[/te[sx]t/, 'test', message]
+	yield assertFailure(assertionsModule.notMatch,
+		[/te[sx]t/, 'test', createRandomMessage()]
 	);
 
-	assertSuccess(assertionsModule.pattern,
+	yield assertSuccess(assertionsModule.pattern,
 		['test', /te[sx]t/]
 	);
-	assertFailure(assertionsModule.pattern,
-		['tent', /te[sx]t/, message]
+	yield assertFailure(assertionsModule.pattern,
+		['tent', /te[sx]t/, createRandomMessage()]
 	);
 
-	assertSuccess(assertionsModule.notPattern,
+	yield assertSuccess(assertionsModule.notPattern,
 		['tent', /te[sx]t/]
 	);
-	assertFailure(assertionsModule.notPattern,
-		['test', /te[sx]t/, message]
+	yield assertFailure(assertionsModule.notPattern,
+		['test', /te[sx]t/, createRandomMessage()]
 	);
 
 	assert.equal(6, assertionsModule.successCount);
@@ -758,19 +881,17 @@ function testRegExp()
 
 function testArray()
 {
-	var message = Math.random() * 65000;
-
-	assertSuccess(assertionsModule.arrayEquals,
+	yield assertSuccess(assertionsModule.arrayEquals,
 		[[0, 1, 2], [0, 1, 2]]
 	);
-	assertFailure(assertionsModule.arrayEquals,
-		[[0, 1, 2], [3, 4, 5], message]
+	yield assertFailure(assertionsModule.arrayEquals,
+		[[0, 1, 2], [3, 4, 5], createRandomMessage()]
 	);
-	assertSuccess(assertionsModule.arrayEqual,
+	yield assertSuccess(assertionsModule.arrayEqual,
 		[[0, 1, 2], [0, 1, 2]]
 	);
-	assertFailure(assertionsModule.arrayEqual,
-		[[0, 1, 2], [3, 4, 5], message]
+	yield assertFailure(assertionsModule.arrayEqual,
+		[[0, 1, 2], [3, 4, 5], createRandomMessage()]
 	);
 
 	assert.equal(2, assertionsModule.successCount);
@@ -778,12 +899,10 @@ function testArray()
 
 function testImplementsInstance()
 {
-	var message = Math.random() * 65000;
-
-	assertSuccess(assertionsModule.implementsInterface, [Ci.nsIDOMWindow, window]);
-	assertSuccess(assertionsModule.implementsInterface, ['nsIDOMWindow', window]);
-	assertFailure(assertionsModule.implementsInterface, [Ci.nsIDOMRange, window, message]);
-	assertFailure(assertionsModule.implementsInterface, ['nsIDOMRange', window, message]);
+	yield assertSuccess(assertionsModule.implementsInterface, [Ci.nsIDOMWindow, window]);
+	yield assertSuccess(assertionsModule.implementsInterface, ['nsIDOMWindow', window]);
+	yield assertFailure(assertionsModule.implementsInterface, [Ci.nsIDOMRange, window, createRandomMessage()]);
+	yield assertFailure(assertionsModule.implementsInterface, ['nsIDOMRange', window, createRandomMessage()]);
 
 	var jsObject = {
 			QueryInterface : function(aIID) {
@@ -793,135 +912,134 @@ function testImplementsInstance()
 				throw Cr.NS_ERROR_NO_INTERFACE;
 			}
 		};
-	assertSuccess(assertionsModule.implementsInterface, [Ci.nsIObserver, jsObject]);
-	assertSuccess(assertionsModule.implementsInterface, ['nsIObserver', jsObject]);
-	assertFailure(assertionsModule.implementsInterface, [Ci.nsIDOMWindow, jsObject, message]);
-	assertFailure(assertionsModule.implementsInterface, ['nsIDOMWindow', jsObject, message]);
+	yield assertSuccess(assertionsModule.implementsInterface, [Ci.nsIObserver, jsObject]);
+	yield assertSuccess(assertionsModule.implementsInterface, ['nsIObserver', jsObject]);
+	yield assertFailure(assertionsModule.implementsInterface, [Ci.nsIDOMWindow, jsObject, createRandomMessage()]);
+	yield assertFailure(assertionsModule.implementsInterface, ['nsIDOMWindow', jsObject, createRandomMessage()]);
 }
 
 function testIsInstanceOf()
 {
-	var message = Math.random() * 65000;
+	yield assertSuccess(assertionsModule.isInstanceOf, [Ci.nsIDOMWindow, window]);
+	yield assertSuccess(assertionsModule.isInstanceOf, ['nsIDOMWindow', window]);
+	yield assertFailure(assertionsModule.isInstanceOf, [Ci.nsIDOMRange, window, createRandomMessage()]);
+	yield assertFailure(assertionsModule.isInstanceOf, ['nsIDOMRange', window, createRandomMessage()]);
 
-	assertSuccess(assertionsModule.isInstanceOf, [Ci.nsIDOMWindow, window]);
-	assertSuccess(assertionsModule.isInstanceOf, ['nsIDOMWindow', window]);
-	assertFailure(assertionsModule.isInstanceOf, [Ci.nsIDOMRange, window, message]);
-	assertFailure(assertionsModule.isInstanceOf, ['nsIDOMRange', window, message]);
-
-	assertSuccess(assertionsModule.isInstanceOf, [Array, []]);
-	assertSuccess(assertionsModule.isInstanceOf, [Object, [], message]);
-	assertSuccess(assertionsModule.isInstanceOf, [Object, {}]);
-	assertFailure(assertionsModule.isInstanceOf, [Array, {}, message]);
-	assertSuccess(assertionsModule.isInstanceOf, [Date, new Date()]);
-	assertFailure(assertionsModule.isInstanceOf, [Date, {}, message]);
+	yield assertSuccess(assertionsModule.isInstanceOf, [Array, []]);
+	yield assertSuccess(assertionsModule.isInstanceOf, [Object, [], createRandomMessage()]);
+	yield assertSuccess(assertionsModule.isInstanceOf, [Object, {}]);
+	yield assertFailure(assertionsModule.isInstanceOf, [Array, {}, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.isInstanceOf, [Date, new Date()]);
+	yield assertFailure(assertionsModule.isInstanceOf, [Date, {}, createRandomMessage()]);
 
 	function MyClass() {}
 	MyClass.prototype = { prop : true };
-	assertSuccess(assertionsModule.isInstanceOf, [MyClass, new MyClass()]);
+	yield assertSuccess(assertionsModule.isInstanceOf, [MyClass, new MyClass()]);
 }
 
 function testRaises()
 {
-	var message = Math.random() * 65000;
-
-	assertSuccess(assertionsModule.raises,
+	yield assertSuccess(assertionsModule.raises,
 		['test', function() { throw 'test'; }, {}]
 	);
-	assertFailure(assertionsModule.raises,
-		['test', function() { return true; }, {}, message]
+	yield assertFailure(assertionsModule.raises,
+		['test', function() { return true; }, {}, createRandomMessage()]
 	);
-	assertSuccess(assertionsModule.raise,
+	yield assertSuccess(assertionsModule.raise,
 		['test', function() { throw new Error('test'); }, {}]
 	);
-	assertFailure(assertionsModule.raise,
-		['test', function() { return true; }, {}, message]
+	yield assertFailure(assertionsModule.raise,
+		['test', function() { return true; }, {}, createRandomMessage()]
 	);
-	assertSuccess(assertionsModule.raise,
+	yield assertSuccess(assertionsModule.raise,
 		[{ bool : true, number : 0 }, function() { throw { bool : true, number : 0, unknown : '' }; }, {}]
 	);
-	assertFailure(assertionsModule.raise,
-		[{ bool : true, number : 0 }, function() { throw { bool : false, number : 1, unknown : '' }; }, {}, message]
+	yield assertFailure(assertionsModule.raise,
+		[{ bool : true, number : 0 }, function() { throw { bool : false, number : 1, unknown : '' }; }, {}, createRandomMessage()]
 	);
-	assertSuccess(assertionsModule.raise,
+	yield assertSuccess(assertionsModule.raise,
 		[/RegExp/i, function() { throw new Error('regexp') }, {}]
 	);
-	assertFailure(assertionsModule.raise,
-		[/RegExp/, function() { throw new Error('regexp') }, {}, message]
+	yield assertFailure(assertionsModule.raise,
+		[/RegExp/, function() { throw new Error('regexp') }, {}, createRandomMessage()]
 	);
-	assertSuccess(assertionsModule.raise,
+	yield assertSuccess(assertionsModule.raise,
 		['SyntaxError', function() { eval('{'); }, {}]
 	);
-	assertSuccess(assertionsModule.raise,
+	yield assertSuccess(assertionsModule.raise,
 		[SyntaxError, function() { eval('{'); }, {}]
 	);
 
-	assertSuccess(assertionsModule.raise,
+	yield assertSuccess(assertionsModule.raise,
 		['NS_NOINTERFACE', function() { window.QueryInterface(Ci.nsIDOMDocument) }, {}]
 	);
-	assertSuccess(assertionsModule.raise,
+	yield assertSuccess(assertionsModule.raise,
 		[Components.results.NS_NOINTERFACE, function() { window.QueryInterface(Ci.nsIDOMDocument) }, {}]
 	);
-	assertSuccess(assertionsModule.raise,
+	yield assertSuccess(assertionsModule.raise,
 		[/nointerface/i, function() { window.QueryInterface(Ci.nsIDOMDocument) }, {}]
 	);
 
-	assertSuccess(assertionsModule.notRaises,
+	yield assertSuccess(assertionsModule.notRaises,
 		['test', function() { return true; }, {}]
 	);
-	assertSuccess(assertionsModule.notRaises,
+	yield assertSuccess(assertionsModule.notRaises,
 		['test', function() { throw 'unknown'; }, {}]
 	);
-	assertFailure(assertionsModule.notRaises,
-		['test', function() { throw 'test'; }, {}, message]
+	yield assertFailure(assertionsModule.notRaises,
+		['test', function() { throw 'test'; }, {}, createRandomMessage()]
 	);
-	assertSuccess(assertionsModule.notRaise,
+	yield assertSuccess(assertionsModule.notRaise,
 		['test', function() { return true; }, {}]
 	);
-	assertSuccess(assertionsModule.notRaise,
+	yield assertSuccess(assertionsModule.notRaise,
 		['test', function() { throw 'unknown'; }, {}]
 	);
-	assertFailure(assertionsModule.notRaise,
-		['test', function() { throw new Error('test'); }, {}, message]
+	yield assertFailure(assertionsModule.notRaise,
+		['test', function() { throw new Error('test'); }, {}, createRandomMessage()]
 	);
-	assertSuccess(assertionsModule.notRaise,
+	yield assertSuccess(assertionsModule.notRaise,
 		[{ bool : true, number : 0 }, function() { throw { bool : false, number : 1, unknown : '' }; }, {}]
 	);
-	assertFailure(assertionsModule.notRaise,
-		[{ bool : true, number : 0 }, function() { throw { bool : true, number : 0, unknown : '' }; }, {}, message]
+	yield assertFailure(assertionsModule.notRaise,
+		[{ bool : true, number : 0 }, function() { throw { bool : true, number : 0, unknown : '' }; }, {}, createRandomMessage()]
 	);
-	assertSuccess(assertionsModule.notRaise,
+	yield assertSuccess(assertionsModule.notRaise,
 		[/RegExp/, function() { throw new Error('regexp') }, {}]
 	);
-	assertFailure(assertionsModule.notRaise,
-		[/RegExp/i, function() { throw new Error('regexp') }, {}, message]
+	yield assertFailure(assertionsModule.notRaise,
+		[/RegExp/i, function() { throw new Error('regexp') }, {}, createRandomMessage()]
 	);
-	assertSuccess(assertionsModule.notRaise,
+	yield assertSuccess(assertionsModule.notRaise,
 		['SyntaxError', function() { throw 'test'; }, {}]
 	);
-	assertFailure(assertionsModule.notRaise,
-		['SyntaxError', function() { eval('{'); }, {}, message]
+	yield assertFailure(assertionsModule.notRaise,
+		['SyntaxError', function() { eval('{'); }, {}, createRandomMessage()]
 	);
-	assertFailure(assertionsModule.notRaise,
-		[SyntaxError, function() { eval('{'); }, {}, message]
+	yield assertFailure(assertionsModule.notRaise,
+		[SyntaxError, function() { eval('{'); }, {}, createRandomMessage()]
 	);
-	assertSuccess(assertionsModule.notRaise,
+	yield assertSuccess(assertionsModule.notRaise,
 		['NS_OK', function() { window.QueryInterface(Ci.nsIDOMDocument) }, {}]
 	);
-	assertSuccess(assertionsModule.notRaise,
+	yield assertSuccess(assertionsModule.notRaise,
 		[Components.results.NS_OK, function() { window.QueryInterface(Ci.nsIDOMDocument) }, {}]
 	);
-	assertFailure(assertionsModule.notRaise,
-		['NS_NOINTERFACE', function() { window.QueryInterface(Ci.nsIDOMDocument) }, {}, message]
+	yield assertFailure(assertionsModule.notRaise,
+		['NS_NOINTERFACE', function() { window.QueryInterface(Ci.nsIDOMDocument) }, {}, createRandomMessage()]
 	);
-	assertFailure(assertionsModule.notRaise,
-		[Components.results.NS_NOINTERFACE, function() { window.QueryInterface(Ci.nsIDOMDocument) }, {}, message]
+	yield assertFailure(assertionsModule.notRaise,
+		[Components.results.NS_NOINTERFACE, function() { window.QueryInterface(Ci.nsIDOMDocument) }, {}, createRandomMessage()]
 	);
-	assertFailure(assertionsModule.notRaise,
-		[/nointerface/i, function() { window.QueryInterface(Ci.nsIDOMDocument) }, {}, message]
+	yield assertFailure(assertionsModule.notRaise,
+		[/nointerface/i, function() { window.QueryInterface(Ci.nsIDOMDocument) }, {}, createRandomMessage()]
 	);
 
 	assert.equal(18, assertionsModule.successCount);
 }
+
+
+// delta
 
 var inDeltaListener;
 testInDelta.setUp = function()
@@ -941,20 +1059,18 @@ testInDelta.tearDown = function()
 }
 function testInDelta()
 {
-	var message = Math.random() * 65000;
-
-	assertSuccess(assertionsModule.inDelta, [1.0, 1.1, 0.11]);
+	yield assertSuccess(assertionsModule.inDelta, [1.0, 1.1, 0.11]);
 	assert.equals(0, inDeltaListener.events.length);
-	assertSuccess(assertionsModule.inDelta, [1.0, 1.1, 0.1]);
+	yield assertSuccess(assertionsModule.inDelta, [1.0, 1.1, 0.1]);
 	assert.equals(1, inDeltaListener.events.length);
-	assertFailure(assertionsModule.inDelta, [1.0, 1.2, 0.1, message]);
+	yield assertFailure(assertionsModule.inDelta, [1.0, 1.2, 0.1, createRandomMessage()]);
 	assert.equals(1, inDeltaListener.events.length);
 
-	assertSuccess(assertionsModule.inDelta, [1.0, 0.9, 0.11]);
+	yield assertSuccess(assertionsModule.inDelta, [1.0, 0.9, 0.11]);
 	assert.equals(1, inDeltaListener.events.length);
-	assertSuccess(assertionsModule.inDelta, [1.0, 0.9, 0.1]);
+	yield assertSuccess(assertionsModule.inDelta, [1.0, 0.9, 0.1]);
 	assert.equals(2, inDeltaListener.events.length);
-	assertFailure(assertionsModule.inDelta, [1.0, 0.8, 0.1, message]);
+	yield assertFailure(assertionsModule.inDelta, [1.0, 0.8, 0.1, createRandomMessage()]);
 	assert.equals(2, inDeltaListener.events.length);
 
 	assert.equal(4, assertionsModule.successCount);
@@ -962,12 +1078,10 @@ function testInDelta()
 
 function testDifference()
 {
-	var message = Math.random() * 65000;
-
 	var count = { value : 0 };
 
 	count.value = 0;
-	assertSuccess(assertionsModule.difference, [
+	yield assertSuccess(assertionsModule.difference, [
 		(function() count.value ),
 		1,
 		(function () {
@@ -977,7 +1091,7 @@ function testDifference()
 	]);
 
 	count.value = 0;
-	assertSuccess(assertionsModule.difference, [
+	yield assertSuccess(assertionsModule.difference, [
 		count,
 		'value',
 		1,
@@ -989,14 +1103,14 @@ function testDifference()
 
 
 	count.value = 0;
-	assertFailure(assertionsModule.difference, [
+	yield assertFailure(assertionsModule.difference, [
 		(function() count.value ),
 		-1,
 		(function () {
 			count.value++;
 		}),
 		{},
-		message
+		createRandomMessage()
 	]);
 
 
@@ -1057,19 +1171,17 @@ function testDifference()
 
 function testNoDifference()
 {
-	var message = Math.random() * 65000;
-
 	var count = { value : 0 };
 
 	count.value = 0;
-	assertSuccess(assertionsModule.noDifference, [
+	yield assertSuccess(assertionsModule.noDifference, [
 		(function() count.value ),
 		(function () {}),
 		{}
 	]);
 
 	count.value = 0;
-	assertSuccess(assertionsModule.noDifference, [
+	yield assertSuccess(assertionsModule.noDifference, [
 		count,
 		'value',
 		1,
@@ -1079,13 +1191,13 @@ function testNoDifference()
 
 
 	count.value = 0;
-	assertFailure(assertionsModule.noDifference, [
+	yield assertFailure(assertionsModule.noDifference, [
 		(function() count.value ),
 		(function () {
 			count.value++;
 		}),
 		{},
-		message
+		createRandomMessage()
 	]);
 
 
@@ -1124,38 +1236,37 @@ function testNoDifference()
 
 function testCompare()
 {
-	var message = Math.random() * 65000;
+	yield assertSuccess(assertionsModule.compare, [10, '<', 20]);
+	yield assertFailure(assertionsModule.compare, [10, '<', 5, createRandomMessage()]);
+	yield assertFailure(assertionsModule.compare, [10, '<', 10, createRandomMessage()]);
 
-	assertSuccess(assertionsModule.compare, [10, '<', 20]);
-	assertFailure(assertionsModule.compare, [10, '<', 5, message]);
-	assertFailure(assertionsModule.compare, [10, '<', 10, message]);
+	yield assertSuccess(assertionsModule.compare, [10, '<=', 20]);
+	yield assertFailure(assertionsModule.compare, [10, '<=', 5, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.compare, [10, '<=', 10]);
+	yield assertSuccess(assertionsModule.compare, [10, '=<', 20]);
+	yield assertFailure(assertionsModule.compare, [10, '=<', 5, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.compare, [10, '=<', 10]);
 
-	assertSuccess(assertionsModule.compare, [10, '<=', 20]);
-	assertFailure(assertionsModule.compare, [10, '<=', 5, message]);
-	assertSuccess(assertionsModule.compare, [10, '<=', 10]);
-	assertSuccess(assertionsModule.compare, [10, '=<', 20]);
-	assertFailure(assertionsModule.compare, [10, '=<', 5, message]);
-	assertSuccess(assertionsModule.compare, [10, '=<', 10]);
+	yield assertSuccess(assertionsModule.compare, [10, '>', 5]);
+	yield assertFailure(assertionsModule.compare, [10, '>', 20, createRandomMessage()]);
+	yield assertFailure(assertionsModule.compare, [10, '>', 10, createRandomMessage()]);
 
-	assertSuccess(assertionsModule.compare, [10, '>', 5]);
-	assertFailure(assertionsModule.compare, [10, '>', 20, message]);
-	assertFailure(assertionsModule.compare, [10, '>', 10, message]);
-
-	assertSuccess(assertionsModule.compare, [10, '>=', 5]);
-	assertFailure(assertionsModule.compare, [10, '>=', 20, message]);
-	assertSuccess(assertionsModule.compare, [10, '>=', 10]);
-	assertSuccess(assertionsModule.compare, [10, '=>', 5]);
-	assertFailure(assertionsModule.compare, [10, '=>', 20, message]);
-	assertSuccess(assertionsModule.compare, [10, '=>', 10]);
+	yield assertSuccess(assertionsModule.compare, [10, '>=', 5]);
+	yield assertFailure(assertionsModule.compare, [10, '>=', 20, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.compare, [10, '>=', 10]);
+	yield assertSuccess(assertionsModule.compare, [10, '=>', 5]);
+	yield assertFailure(assertionsModule.compare, [10, '=>', 20, createRandomMessage()]);
+	yield assertSuccess(assertionsModule.compare, [10, '=>', 10]);
 
 	assert.equal(10, assertionsModule.successCount);
 }
 
+
+// time
+
 function testFinishesWithin()
 {
-	var message = Math.random() * 65000;
-
-	assertSuccess(
+	yield assertSuccess(
 		assertionsModule.finishesWithin,
 		[
 			1000,
@@ -1165,7 +1276,8 @@ function testFinishesWithin()
 			{}
 		]
 	);
-	assertFailure(
+	var message = createRandomMessage();
+	yield assertFailure(
 		assertionsModule.finishesWithin,
 		[
 			1000,
@@ -1176,7 +1288,7 @@ function testFinishesWithin()
 			message
 		]
 	);
-	assertFailure(
+	yield assertFailure(
 		assertionsModule.finishesWithin,
 		[
 			10,
@@ -1185,7 +1297,7 @@ function testFinishesWithin()
 				while (Date.now() - startAt < 50) {}
 			},
 			{},
-			message
+			createRandomMessage()
 		]
 	);
 
@@ -1197,25 +1309,26 @@ function testFinishesWithin()
 		{}
 	));
 
-	var result = Do(assertionsModule.finishesWithin(
+	var exception;
+	yield assertionsModule.finishesWithin(
 		10,
 		function() {
 			yield 500;
 		},
 		{}
-	));
-	yield (function() { return result.value; });
-	assert.isDefined(result.error);
-	assert.isNotNull(result.error);
-	assert.equals('AssertionFailed', result.error.name);
+	)
+	.catch(function(e) {
+		exception = e;
+	});
+	assert.isDefined(exception);
+	assert.isNotNull(exception);
+	assert.equals('AssertionFailed', exception.name);
 
 	assert.equal(2, assertionsModule.successCount);
 }
 
 function testFinishesOver()
 {
-	var message = Math.random() * 65000;
-
 	yield assertSuccess(
 		assertionsModule.finishesOver,
 		[
@@ -1227,6 +1340,7 @@ function testFinishesOver()
 			{}
 		]
 	);
+	var message = createRandomMessage();
 	yield assertFailure(
 		assertionsModule.finishesOver,
 		[
@@ -1239,7 +1353,7 @@ function testFinishesOver()
 			message
 		]
 	);
-	assertFailure(
+	yield assertFailure(
 		assertionsModule.finishesOver,
 		[
 			1000,
@@ -1247,7 +1361,7 @@ function testFinishesOver()
 				assert.isTrue(true);
 			},
 			{},
-			message
+			createRandomMessage()
 		]
 	);
 
@@ -1259,64 +1373,68 @@ function testFinishesOver()
 		{}
 	));
 
-	var result = Do(assertionsModule.finishesOver(
+	var exception;
+	yield assertionsModule.finishesOver(
 		500,
 		function() {
 			yield 10;
 		},
 		{}
-	));
-	yield (function() { return result.value; });
-	assert.isDefined(result.error);
-	assert.isNotNull(result.error);
-	assert.equals('AssertionFailed', result.error.name);
+	)
+	.catch(function(e) {
+		exception = e;
+	});
+	assert.isDefined(exception);
+	assert.isNotNull(exception);
+	assert.equals('AssertionFailed', exception.name);
 
 	assert.equal(2, assertionsModule.successCount);
 }
 
+
+// count
+
 function testAssertionsCount()
 {
-	var message = Math.random() * 65000;
-
-	assertFailure(assertionsModule.assertionsCountEquals, [
+	yield assertFailure(assertionsModule.assertionsCountEquals, [
 		1,
 		function() {
 		},
 		{},
-		message
+		createRandomMessage()
 	], 0);
-	assertSuccess(assertionsModule.assertionsCountEquals, [
+	yield assertSuccess(assertionsModule.assertionsCountEquals, [
 		1,
 		function() {
 			assertionsModule.isTrue(true);
 		},
 		{}
 	], 2);
-	assertFailure(assertionsModule.assertionsCountEquals, [
+	yield assertFailure(assertionsModule.assertionsCountEquals, [
 		1,
 		function() {
 			assertionsModule.isTrue(true);
 			assertionsModule.isTrue(true);
 		},
 		{},
-		message
+		createRandomMessage()
 	], 2);
 
-	assertFailure(assertionsModule.assertionsMinCount, [
+	yield assertFailure(assertionsModule.assertionsMinCount, [
 		1,
 		function() {
 		},
 		{},
-		message
+		createRandomMessage()
 	], 0);
-	assertSuccess(assertionsModule.assertionsMinCount, [
+	yield assertSuccess(assertionsModule.assertionsMinCount, [
 		1,
 		function() {
 			assertionsModule.isTrue(true);
 		},
 		{}
 	], 2);
-	assertSuccess(assertionsModule.assertionsMinCount, [
+	yield assertSuccess(assertionsModule.assertionsMinCount, [
 		1,
 		function() {
 			assertionsModule.isTrue(true);
@@ -1325,29 +1443,32 @@ function testAssertionsCount()
 		{}
 	], 3);
 
-	assertSuccess(assertionsModule.assertionsMaxCount, [
+	yield assertSuccess(assertionsModule.assertionsMaxCount, [
 		1,
 		function() {
 		},
 		{}
 	], 1);
-	assertSuccess(assertionsModule.assertionsMaxCount, [
+	yield assertSuccess(assertionsModule.assertionsMaxCount, [
 		1,
 		function() {
 			assertionsModule.isTrue(true);
 		},
 		{}
 	], 2);
-	assertFailure(assertionsModule.assertionsMaxCount, [
+	yield assertFailure(assertionsModule.assertionsMaxCount, [
 		1,
 		function() {
 			assertionsModule.isTrue(true);
 			assertionsModule.isTrue(true);
 		},
 		{},
-		message
+		createRandomMessage()
 	], 2);
 }
+
+
+// internal
 
 function test_fail()
 {
@@ -1487,41 +1608,37 @@ function testAssertValidSuccessCount()
 
 	function assertAssertValidSuccessCountSucceeded(aExpected, aMin, aMax)
 	{
-		assert.notRaises(
+		yield assert.notRaises(
 			'AssertionFailed',
-			function() {
-				assertionsModule.validSuccessCount(aExpected, aMin, aMax);
-			},
+			() => assertionsModule.validSuccessCount(aExpected, aMin, aMax),
 			null
 		);
 	}
 	function assertAssertValidSuccessCountFailed(aExpected, aMin, aMax)
 	{
-		assert.raises(
+		yield assert.raises(
 			'AssertionFailed',
-			function() {
-				assertionsModule.validSuccessCount(aExpected, aMin, aMax);
-			},
+			() => assertionsModule.validSuccessCount(aExpected, aMin, aMax),
 			null
 		);
 	}
 
-	assertAssertValidSuccessCountSucceeded(-1, -1, -1);
+	yield assertAssertValidSuccessCountSucceeded(-1, -1, -1);
 
 	// expected
-	assertAssertValidSuccessCountFailed(1, -1, -1);
-	assertAssertValidSuccessCountSucceeded(2, -1, -1);
-	assertAssertValidSuccessCountFailed(3, -1, -1);
+	yield assertAssertValidSuccessCountFailed(1, -1, -1);
+	yield assertAssertValidSuccessCountSucceeded(2, -1, -1);
+	yield assertAssertValidSuccessCountFailed(3, -1, -1);
 
 	// min
-	assertAssertValidSuccessCountSucceeded(-1, 1, -1);
-	assertAssertValidSuccessCountSucceeded(-1, 2, -1);
-	assertAssertValidSuccessCountFailed(-1, 3, -1);
+	yield assertAssertValidSuccessCountSucceeded(-1, 1, -1);
+	yield assertAssertValidSuccessCountSucceeded(-1, 2, -1);
+	yield assertAssertValidSuccessCountFailed(-1, 3, -1);
 
 	// max
-	assertAssertValidSuccessCountFailed(-1, -1, 1);
-	assertAssertValidSuccessCountSucceeded(-1, -1, 2);
-	assertAssertValidSuccessCountSucceeded(-1, -1, 3);
+	yield assertAssertValidSuccessCountFailed(-1, -1, 1);
+	yield assertAssertValidSuccessCountSucceeded(-1, -1, 2);
+	yield assertAssertValidSuccessCountSucceeded(-1, -1, 3);
 }
 
 
