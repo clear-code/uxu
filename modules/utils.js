@@ -291,27 +291,8 @@ wait : function(...aArgs)
 			if (this.isGeneratedIterator(retVal)) {
 				return this.doIteration(retVal);
 			}
-			else if (retVal) {
-				// if true or similar value is returned, we are done.
-				return Promise.resolve(retVal);
-			}
 			else {
-				// otherwise, retry with delay until true is returned.
-				return new Promise(function(aResolve, aReject) {
-					var timer = ns.setInterval(function() {
-						try {
-							checkTimeout();
-							if (!waitCondition())
-								return; // retry later.
-							ns.clearInterval(timer);
-							aResolve();
-						}
-						catch(e) {
-							ns.clearInterval(timer);
-							aReject(e);
-						}
-					}, 10);
-				});
+				return Promise.resolve(retVal);
 			}
 			break;
 
@@ -333,23 +314,6 @@ wait : function(...aArgs)
 					waitCondition
 						.next(aResolve)
 						.error(aReject);
-				});
-			}
-			if ('value' in waitCondition) {
-				return new Promise(function(aResolve, aReject) {
-					var timer = ns.setInterval(function() {
-						try {
-							checkTimeout();
-							if (!waitCondition.value)
-								return; // retry later.
-							ns.clearInterval(timer);
-							aResolve();
-						}
-						catch(e) {
-							ns.clearInterval(timer);
-							aReject(e);
-						}
-					}, 10);
 				});
 			}
 			break;
