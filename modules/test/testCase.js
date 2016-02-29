@@ -1350,51 +1350,50 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 			return aNext;
 		}
 
-		var self = this;
-		var onSuccess = function() {
+		var onSuccess = (function() {
 				aReport.addTopic({
-					result      : self.RESULT_SUCCESS,
+					result      : this.RESULT_SUCCESS,
 					description : aTest.description
 				});
-				self._saveResult(aTest, aReport.result);
-			};
-		var onError = function(e) {
+				this._saveResult(aTest, aReport.result);
+			}).bind(this);
+		var onError = (function(e) {
 				var multiplex = e.name == 'MultiplexError';
 				(multiplex ? e.errors : [e] ).forEach(function(e, aIndex) {
 					var description = aTest.description;
 					if (multiplex)
 						description = bundle.getFormattedString('report_description_multiplex', [description, aIndex+1]);
 					aReport.addTopic({
-						result      : (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR,
+						result      : (e.name == 'AssertionFailed') ? this.RESULT_FAILURE : this.RESULT_ERROR,
 						description : description,
-						exception   : self._utils.normalizeError(e)
+						exception   : this._utils.normalizeError(e)
 					});
-				});
-				self._saveResult(aTest, aReport.result);
-			};
+				}, this);
+				this._saveResult(aTest, aReport.result);
+			}).bind(this);
 
 		try {
-			var result = aTest.code.call(this.context);
-			if (this._utils.isGeneratedIterator(result)) {
-				var continuation = function() {
-						continuation.next = aNext;
-					};
-				ns.Deferred.next(function() {
-					self._utils.doIteration(result)
-						.then(function() {
-							aReport.onDetailedFinish();
-							onSuccess();
-							continuation();
-						})
-						.catch(function(e) {
-							aReport.onDetailedFinish();
-							onError(e);
-							continuation();
-						});
-				});
+			var continuation = function() {
+					continuation.next = aNext;
+				};
+			if (aTest.code.length > 0) {
+				this._utils.wait(aTest.code.call(this.context, continuation))
 				return continuation;
 			}
-			onSuccess();
+
+			var result = aTest.code.call(this.context);
+			this._utils.wait(result)
+				.then(function() {
+					aReport.onDetailedFinish();
+					onSuccess();
+					continuation();
+				})
+				.catch(function(e) {
+					aReport.onDetailedFinish();
+					onError(e);
+					continuation();
+				});
+			return continuation;
 		}
 		catch(e) {
 			onError(e);
