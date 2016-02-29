@@ -1512,7 +1512,11 @@ doIteration : function(aGenerator)
 		var loop = (function() {
 			try {
 			if (Date.now() - lastRun >= timeout)
-				return aReject(new Error(bundle.getFormattedString('error_generator_timeout', [parseInt(timeout / 1000)])));
+				return onException(
+					new Error(
+						bundle.getFormattedString('error_generator_timeout', [parseInt(timeout / 1000)])
+					)
+				);
 
 			var result = iterator.next() ;
 			lastRun = Date.now();
@@ -1531,7 +1535,13 @@ doIteration : function(aGenerator)
 						ns.setTimeout(loop, result);
 						return;
 					}
-					return aReject(new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(result)]) + '\n' + this.inspect(result)));
+					return onException(
+						new Error(
+							bundle.getFormattedString('error_yield_unknown_condition', [String(result)]) +
+							'\n' +
+							this.inspect(result)
+						)
+					);
 
 				case 'function':
 					let undeterminedFunction = result;
@@ -1570,7 +1580,13 @@ doIteration : function(aGenerator)
 							return;
 						}
 					}
-					return aReject(new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(result)]) + '\n' + this.inspect(result)));
+					return onException(
+						new Error(
+							bundle.getFormattedString('error_yield_unknown_condition', [String(result)]) +
+							'\n' +
+							this.inspect(result)
+						)
+					);
 			}
 			}
 			catch(e) {
