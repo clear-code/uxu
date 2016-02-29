@@ -1,7 +1,7 @@
 /**
  * @fileOverview User Action Emulator for Firefox 31 or later 
  * @author       ClearCode Inc.
- * @version      8
+ * @version      9
  *
  * @example
  *   Components.utils.import('resource://my-modules/action.jsm');
@@ -40,10 +40,12 @@ if (typeof namespace == 'undefined') {
 		namespace = (typeof window != 'undefined' ? window : null ) || {};
 	}
 }
+
+Components.utils.import('resource://gre/modules/Promise.jsm');
  
 var action; 
 (function() {
-	const currentRevision = 8;
+	const currentRevision = 9;
 
 	var loadedRevision = 'action' in namespace ?
 			namespace.action.revision :
@@ -1391,31 +1393,15 @@ var action;
 		 * @param {number=} aDuration (optional)
 		 *   The duration for the mousemove, in msec. Default value is 1000.
 		 *
-		 * @returns {{value: boolean,
-		 *           cancel: function}}
-		 *   A hash including a boolean property "value" which indicates what
-		 *   the mousemove is finished or not. If you call the "cancel" method
-		 *   of the object, asynchronus mousemove is canceled anyway.
+		 * @returns Promise
 		 */
 		asyncMouseMove : function() 
 		{
 			var args = this._getMouseMoveOptionsFromArguments.apply(this, arguments);
-			var self = this;
-			var completedFlag = {
-					value : false,
-					id : -1,
-					cancel : function() {
-						if (this.id != -1)
-							self._timer.clearInterval(this.id);
-						this.value = true;
-					}
-				};
-
 			var deltaX = args.endX - args.startX;
 			var deltaY = args.endY - args.startY;
 			if (!deltaX && !deltaY) {
-				completedFlag.value = true;
-				return completedFlag;
+				return Promise.resolve();
 			}
 
 			var start = Date.now();
@@ -1434,16 +1420,18 @@ var action;
 				}
 			}
 			var move = Movement.call(this);
-			completedFlag.id = this._timer.setInterval(function() {
+			return new Promise((function(aResolve, aReject) {
+				var timer = this._timer.setInterval(function() {
 					try {
 						move.next();
 					}
 					catch(e) {
-						completedFlag.cancel();
+						this._timer.clearInterval(timer);
+						aResolve();
 					}
 				}, 10);
-			this.mouseMoveAt(args.startX, args.startY, args.modifiers);
-			return completedFlag;
+				this.mouseMoveAt(args.startX, args.startY, args.modifiers);
+			}).bind(this));
 		},
 		/** @see action.asyncMouseMove */
 		asyncMousemove : function() { return this.asyncMouseMove.apply(this, arguments); },
@@ -1452,56 +1440,10 @@ var action;
 		/** @see action.asyncMouseMove */
 		asyncmousemove : function() { return this.asyncMouseMove.apply(this, arguments); },
  
-		/**
-		 * Fires mousemove event periodically, between two different coordinates
-		 * or elements. This is synchronus method, so, this stops the main JS
-		 * thread until the mousemove emulation is completely finished.
-		 *
-		 * @param {number=} aStartX (optional)
-		 *   The X coordinate on the screen, for the start of mousemove.
-		 * @param {number=} aStartY (optional)
-		 *   The Y coordinate on the screen, for the start of mousemove.
-		 * @param {number=} aEndX (optional)
-		 *   The X coordinate on the screen, for the end of mousemove.
-		 * @param {number=} aEndY (optional)
-		 *   The Y coordinate on the screen, for the end of mousemove.
-		 * @param {nsIDOMElement=} aStartElement (optional)
-		 *   The element which you want to start mousemove.
-		 * @param {nsIDOMElement=} aEndElement (optional)
-		 *   The element which you want to end mousemove.
-		 * @param {{altKey: boolean,
-		 *          ctrlKey: boolean,
-		 *          metaKey: boolean,
-		 *          shiftKey: boolean}=} aModifiers (optional)
-		 *   A hash of modifier keys. Default value of each key is
-		 *   <code>false</code>.
-		 * @param {number=} aDuration (optional)
-		 *   The duration for the mousemove, in msec. Default value is 1000.
-		 */
-		syncMouseMove : function()
-		{
-			var args = this._getMouseMoveOptionsFromArguments.apply(this, arguments);
-			var completed = this.asyncMouseMove.apply(this, arguments);
-			var lastRun = Date.now();
-			var timeout = Math.max(0, args.duration) + 5000;
-			var thread = Cc['@mozilla.org/thread-manager;1'].getService().mainThread;
-			while (!completed.value)
-			{
-				thread.processNextEvent(true);
-				if (Date.now() - lastRun >= timeout)
-					throw new Error('timeout '+parseInt(timeout / 1000)+'sec');
-			}
-		},
-		/** @see action.syncMouseMove */
-		syncMousemove : function() { return this.syncMouseMove.apply(this, arguments); },
-		/** @see action.syncMouseMove */
-		syncmouseMove : function() { return this.syncMouseMove.apply(this, arguments); },
-		/** @see action.syncMouseMove */
-		syncmousemove : function() { return this.syncMouseMove.apply(this, arguments); },
-		/** @see action.syncMouseMove */
-		mouseMove : function() { return this.syncMouseMove.apply(this, arguments); },
-		/** @see action.syncMouseMove */
-		mousemove : function() { return this.syncMouseMove.apply(this, arguments); },
+		/** @see action.asyncMouseMove */
+		mouseMove : function() { return this.asyncMouseMove.apply(this, arguments); },
+		/** @see action.asyncMouseMove */
+		mousemove : function() { return this.asyncMouseMove.apply(this, arguments); },
   
 // drag and drop: under construction 
 	
@@ -1541,7 +1483,6 @@ var action;
 		dragMove : function(aFrame, aFromX, aFromY, aToX, aToY, aOptions) 
 		{
 			if (!aOptions) aOptions = {};
-			var dragEndFlag = { value : false };
 
 			var deltaX = aFromX == aToX ? 0 :
 					aFromX > aToX ? -1 :
@@ -1550,8 +1491,7 @@ var action;
 					aFromY > aToY ? -1 :
 					1;
 			if (!deltaX && !deltaY) {
-				dragEndFlag.value = true;
-				return dragEndFlag;
+				return Promise.resolve();
 			}
 
 			if (deltaX) deltaX = deltaX * parseInt(Math.abs(aFromX - aToX) / 20);
@@ -1581,16 +1521,17 @@ var action;
 				}
 			}
 			var dragger = Dragger();
-			aFrame.setTimeout(function() {
-				try {
-					dragger.next();
-					aFrame.setTimeout(arguments.callee, 10);
-				}
-				catch(e) {
-					dragEndFlag.value = true;
-				}
-			}, 0);
-			return dragEndFlag;
+			return new Promise((function(aResolve, aReject) {
+				var timer = aFrame.setInterval((function() {
+					try {
+						dragger.next();
+					}
+					catch(e) {
+						aFrame.clearInterval(timer);
+						aResolve();
+					}
+				}).bind(this), 10);
+			}).bind(this));
 		},
 	
 		/** @ignore */
@@ -1622,20 +1563,12 @@ var action;
 			aOptions.screenX = aFromX;
 			aOptions.screenY = aFromY;
 			this.dragStart(aFrame, aOptions);
-			var dragEndFlag = { value : false };
-			var _this = this;
-			aFrame.setTimeout(function() {
-				var flag = aSelf.dragMove(aFrame, aFromX, aFromY, aToX, aToY, aOptions);
-				var timer = aFrame.setInterval(function() {
-					if (!flag.value) return;
-					aFrame.clearInterval(timer);
+			this.dragMove(aFrame, aFromX, aFromY, aToX, aToY, aOptions)
+				.then((function() {
 					aOptions.screenX = aToX;
 					aOptions.screenY = aToY;
-					aSelf.dragEnd(aFrame, aOptions);
-					dragEndFlag.value = true;
-				}, 10, this);
-			}, 0);
-			return dragEndFlag;
+					this.dragEnd(aFrame, aOptions);
+				}),bind(this));
 		},
 	
 		/** @ignore */
