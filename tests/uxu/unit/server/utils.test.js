@@ -25,14 +25,10 @@ function testSendAndReceiveMessage()
 
 	var message = String(parseInt(Math.random() * 65000));
 	var response;
-	utilsModule.sendMessage(message, 'localhost', listener.port)
+	yield utilsModule.sendMessage(message, 'localhost', listener.port)
 		.then(function(aResponse) {
 			response = aResponse;
 		});
-	var start = Date.now();
-	yield function() {
-			return response || (Date.now() - start > 5000);
-		};
 	assert.equals({ received : message,
 	                response : message },
 	              { received : received,
