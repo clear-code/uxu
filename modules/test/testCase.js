@@ -980,7 +980,7 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 						}
 					);
 				})
-					.catcn(function(aError) {
+					.catch(function(aError) {
 						var done = true;
 						var multiplex = aError.name == 'MultiplexError';
 						(multiplex ? aError.errors : [aError] ).forEach(function(aError, aIndex) {
