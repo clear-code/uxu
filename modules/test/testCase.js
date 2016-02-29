@@ -582,9 +582,17 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
  
 	_createNewTestWithParameter : function(aFunction, aParameter, aSuffix) 
 	{
-		var test = function() {
+		var test;
+		if (aFunction.length > 1) {
+			test = function(aContinuation) {
+				return aFunction.call(this, aParameter, aContinuation);
+			};
+		}
+		else {
+			test = function() {
 				return aFunction.call(this, aParameter);
 			};
+		}
 
 		for (let i in aFunction)
 		{
