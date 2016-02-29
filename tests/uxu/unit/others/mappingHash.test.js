@@ -11,11 +11,6 @@ var mapping = {
 		'http://submission/*'              : 'http://localhost:4445/redirect/match/hash.txt'
 };
 
-function tearDown()
-{
-	yield utils.loadURI('about:blank');
-}
-
 testMapped.patterns = [
 	{ uri : 'http://localhost:4445/notfound.html' },
 	{ uri : 'http://www.example.com/' },

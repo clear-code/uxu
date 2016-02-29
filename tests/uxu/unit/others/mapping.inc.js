@@ -3,7 +3,7 @@ var shouldSkip = utils.checkPlatformVersion('1.9') < 0;
 function setUp()
 {
 	yield utils.setUpHttpServer(4445, baseURL+'../../fixtures/');
-	yield utils.wait(300);
+	yield utils.loadURI('about:blank');
 }
 
 function tearDown()
