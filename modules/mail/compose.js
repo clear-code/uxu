@@ -193,7 +193,7 @@ Compose.prototype = {
 						yield false;
 					}
 				});
-		}).bind(this);
+		}).bind(this));
 	},
  
 	tearDown : function() 
