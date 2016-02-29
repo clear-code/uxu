@@ -300,19 +300,19 @@ wait : function(...aArgs)
 
 		case 'object':
 			if (!waitCondition) {
-				return Promise.reject(new Error(bundle.getFormattedString('error_utils_wait_unknown_condition', [String(waitCondition)])));
+				return this.wait(0);
 			}
-			else if (this.isGeneratedIterator(waitCondition)) {
+			if (this.isGeneratedIterator(waitCondition)) {
 				return this.doIteration(waitCondition);
 			}
-			else if (typeof waitCondition.then == 'function') {
+			if (typeof waitCondition.then === 'function') {
 				return new Promise(function(aResolve, aReject) {
 					waitCondition
 						.then(aResolve)
 						.catch(aReject);
 				});
 			}
-			else if (this.isDeferred(waitCondition)) {
+			if (this.isDeferred(waitCondition)) {
 				if (waitCondition.fired)
 					return Promise.resolve();
 
@@ -320,6 +320,23 @@ wait : function(...aArgs)
 					waitCondition
 						.next(aResolve)
 						.error(aReject);
+				});
+			}
+			if ('value' in waitCondition) {
+				return new Promise(function(aResolve, aReject) {
+					var timer = ns.setInterval(function() {
+						try {
+							checkTimeout();
+							if (!waitCondition.value)
+								return; // retry later.
+							ns.clearInterval(timer);
+							aResolve();
+						}
+						catch(e) {
+							ns.clearInterval(timer);
+							aReject(e);
+						}
+					}, 10);
 				});
 			}
 			break;
@@ -1450,8 +1467,11 @@ doIteration : function(aGenerator)
 	var iterator = aGenerator;
 	if (typeof aGenerator == 'function')
 		iterator = aGenerator();
-	if (!this.isGeneratedIterator(iterator))
-		return Promise.reject(new Error(bundle.getFormattedString('error_utils_invalid_generator', [aGenerator])));
+	if (
+		!iterator ||
+		!this.isGeneratedIterator(iterator)
+		)
+		return this.wait(iterator);
 
 	var callerStack = this.reduceTopStackLine(this.getStackTrace());
 
@@ -1506,6 +1526,19 @@ doIteration : function(aGenerator)
 					}
 					return aReject(new Error(bundle.getFormattedString('error_yield_unknown_condition', [String(result)]) + '\n' + this.inspect(result)));
 
+				case 'function':
+					let undeterminedFunction = result;
+					result = undeterminedFunction();
+					if (
+						!result ||
+						(
+							typeof result === 'object' &&
+							this.isGeneratedIterator(result) &&
+							typeof result.then !== 'function' &&
+							!this.isDeferred(result)
+						)
+						)
+						return this.wait(undeterminedFunction);
 				case 'object':
 					if (result) {
 						if (this.isGeneratedIterator(result)) {
@@ -1514,7 +1547,7 @@ doIteration : function(aGenerator)
 								.catch(onException);
 							return;
 						}
-						else if (result.then && typeof result.then == 'function') {
+						else if (typeof result.then === 'function') {
 							result
 								.then(loop)
 								.catch(onException);
@@ -1543,17 +1576,7 @@ doIteration : function(aGenerator)
  
 Do : function(aObject) 
 {
-	if (!aObject)
-		return aObject;
-	if (this.isGeneratedIterator(aObject))
-		return this.doIteration(aObject);
-	if (typeof aObject != 'function')
-		return aObject;
-
-	var retVal = aObject();
-	return (this.isGeneratedIterator(retVal)) ?
-				this.doIteration(retVal) :
-				retVal;
+	return this.doIteration(aObject);
 },
   
 // データベース操作 

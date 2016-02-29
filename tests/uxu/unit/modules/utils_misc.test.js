@@ -114,7 +114,7 @@ if (utils.checkPlatformVersion('1.9') < 0) test_sleep.priority = 'never';
 function test_sleep()
 {
 	var before = Date.now();
-	utilsModule.sleep(500);
+	yield utilsModule.sleep(500);
 	assert.inDelta(500, Date.now() - before, 200);
 }
 
@@ -328,27 +328,28 @@ function test_doIterationWithError()
 
 function test_Do()
 {
-	var obj = {};
-	assert.equals(obj, utilsModule.Do(obj));
-	assert.isTrue(utilsModule.Do(true));
-	assert.equals(100, utilsModule.Do(100));
-	assert.equals('string', utilsModule.Do('string'));
+	function assertPromise(aValue)
+	{
+		assert.isObject(aValue);
+		assert.isFunction(aValue.then);
+	}
 
-	var func = function() {
+	assertPromise(utilsModule.Do({}));
+	assertPromise(utilsModule.Do(true));
+	assertPromise(utilsModule.Do(100));
+	assertPromise(utilsModule.Do('string'));
+	assertPromise(utilsModule.Do(function() {
 		return 'foobar';
-	};
-	assert.equals('foobar', utilsModule.Do(func));
+	}));
 
 	function Generator()
 	{
 		yield 100;
 	};
 	var result = utilsModule.Do(Generator);
-	assert.equals('object', typeof result);
-	assert.isDefined(result.value);
+	assertPromise(result);
 	result = utilsModule.Do(Generator());
-	assert.equals('object', typeof result);
-	assert.isDefined(result.value);
+	assertPromise(result);
 }
 
 var simpleObject = {string: "String", 29: 10};
