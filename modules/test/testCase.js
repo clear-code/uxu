@@ -1087,7 +1087,7 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 					self.aborted = true;
 					self.fireEvent('Abort');
 				}
-				return !self.aborted && self._tests[++testIndex] ?
+				return !self._aborted && self._tests[++testIndex] ?
 						'prepareTest' :
 						'doShutDown' ;
 			},
@@ -1102,7 +1102,7 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 			},
 			finished : function() {
 				var onFinished = function() {
-					if (!self.aborted) {
+					if (!self._aborted) {
 						self.done = true;
 						self.fireEvent('Finish', testCaseReport);
 					}
@@ -1283,7 +1283,7 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 				{
 					timeout = self._remoteReady ? afterReadyTimeout : beforeReadyTimeout ;
 					interval = self._remoteReady ? afterReadyInterval : beforeReadyInterval ;
-					if (!self.aborted && self._stopper.called) {
+					if (!self._aborted && self._stopper.called) {
 						self.aborted = true;
 					}
 					if (Date.now() - self._lastRemoteResponse > timeout) {
@@ -1336,7 +1336,7 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 			this._remoteResultBuffer += input;
 			return;
 		}
-		if (this.aborted) {
+		if (this._aborted) {
 			this.fireEvent('ResponseRequest', this.TESTCASE_ABORTED+responseId+'\n');
 			this.fireEvent('Abort');
 			return;
@@ -1385,7 +1385,7 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 	_onFinishRemoteResult : function(aReport) 
 	{
 		this.done = true;
-		if (!this.aborted) {
+		if (!this._aborted) {
 			this.fireEvent('Finish', aReport);
 		}
 	},
