@@ -811,6 +811,7 @@ include : function(aSource, aEncoding, aScope)
 		throw new Error(bundle.getFormattedString('error_utils_include', [e]));
 	}
 	aScope = aScope || {};
+	try {
 	Cc['@mozilla.org/moz/jssubscript-loader;1']
 		.getService(Ci.mozIJSSubScriptLoader)
 		.loadSubScript(
@@ -818,9 +819,17 @@ include : function(aSource, aEncoding, aScope)
 			aScope,
 			encoding
 		);
-
+	}
+	catch(e) {
+		throw new Error(JSON.stringify({
+			file          : uri,
+			originalError : String(e)
+		}));
+	}
+	finally {
 	if (temporaryFile)
 		temporaryFile.remove(true);
+	}
 
 	return script;
 },
