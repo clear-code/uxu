@@ -140,11 +140,7 @@ ServerUtils.prototype = ns.inherit(ns.EventTarget.prototype, {
 		var server = new ns.HTTPServer(aPort, aBasePath, this.mMockManager);
 		this._HTTPServerInstances.push(server);
 
-		return ns.utils.wait(function() {
-			return !server.isStopped();
-		}).then(function() {
-			return server;
-		});
+		return server.started;
 	},
 	setUpHTTPServer : function(...aArgs) { return this.setUpHttpServer.apply(this, aArgs); },
 
@@ -162,7 +158,7 @@ ServerUtils.prototype = ns.inherit(ns.EventTarget.prototype, {
 		else {
 			server = this._HTTPServerInstances.pop();
 		}
-		return server ? server.stop(aAsync) : { value : true } ;
+		return server ? server.stop() : Promise.resolve();
 	},
 	tearDownHTTPServer : function(...aArgs) { return this.tearDownHttpServer.apply(this, aArgs); },
 
@@ -179,16 +175,10 @@ ServerUtils.prototype = ns.inherit(ns.EventTarget.prototype, {
 				errors.push(e);
 			}
 		}
-		return ns.utils.wait(function() {
-			if (stopped.every(function(aStopped) {
-					return aStopped.value;
-				})) {
-				if (errors.length)
-					throw new ns.MultiplexError(errors);
-				return true;
-			}
-			return false;
-		});
+		if (errors.length)
+			return Promise.reject(new ns.MultiplexError(errors));
+
+		return Promise.all(stopped);
 	},
 	tearDownAllHTTPServers : function(...aArgs) { return this.tearDownAllHttpServers.apply(this, aArgs); },
 	tearDownHttpServers : function(...aArgs) { return this.tearDownAllHttpServers.apply(this, aArgs); },

@@ -4654,6 +4654,7 @@ Components.utils.import('resource://uxu-modules/utils.js', ns);
 Components.utils.import('resource://uxu-modules/multiplexError.js', ns);
 Components.utils.import('resource://uxu-modules/lib/jstimer.jsm', ns);
 Components.utils.import('resource://uxu-modules/lib/stringBundle.js', ns);
+Components.utils.import('resource://gre/modules/Promise.jsm');
 var utils = ns.utils;
 
 var bundle = ns.stringBundle.get('chrome://uxu/locale/uxu.properties');
@@ -4683,25 +4684,26 @@ function HTTPServer(aPort, aBasePath, aMockManager)
 
 HTTPServer.prototype = {
 
-	stop : function(aAsync)
+	stop : function()
 	{
-		if (!this.mServer)
+		if (!this.mServer) {
 			return Promise.resolve();
+		}
 
-		var stopped = { value : false };
 		var errors = (this.mock && this.mock.errors.length) ? this.mock.errors : null ;
 	//	if (ThreadManager) this.thread.shutdown();
-		this.mServer.stop(function() {
-			stopped.value = true;
-		});
-		delete this.mServer.owner;
-		delete this.mServer;
-		delete this.mMockManager;
-		delete this.mock;
-		if (errors)
-			throw new ns.MultiplexError(errors);
-
-		return utils.wait(stopped);
+		return new Promise((function(aResolve, aReject) {
+			this.mServer.stop((function() {
+				delete this.mServer.owner;
+				delete this.mServer;
+				delete this.mMockManager;
+				delete this.mock;
+				if (errors)
+					aReject(new ns.MultiplexError(errors));
+				else
+					aResolve();
+			}).bind(this));
+		}).bind(this));
 	},
 
 	isStopped : function()
@@ -4709,6 +4711,21 @@ HTTPServer.prototype = {
 		return !this.mServer || this.mServer.isStopped();
 	},
 
+	get started()
+	{
+		return new Promise((function(aResolve, aReject) {
+			utils.promisedAsyncHTTPRequest('http://localhost:' + this.port)
+				.then(function() {
+					aResolve();
+				})
+				.catch((function(e) {
+					ns.utils(100)
+						.then((function() {
+							return this.started.then(aResolve);
+						}).bind(this));
+				}).bind(this));
+		}).bind(this));
+	},
 
 	registerDirectory : function(aPath, aLocalDirectory)
 	{
