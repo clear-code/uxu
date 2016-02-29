@@ -250,6 +250,8 @@ wait : function(...aArgs)
 			throw new Error(bundle.getFormattedString('error_utils_wait_timeout', [parseInt(timeout / 1000)]));
 	};
 
+	var callerStack = this.reduceTopStackLine(this.getStackTrace());
+
 	switch (typeof waitCondition)
 	{
 		default:
@@ -258,8 +260,17 @@ wait : function(...aArgs)
 				waitCondition = 0;
 
 		case 'number':
-			if (waitCondition < 0)
-				throw new Error(bundle.getFormattedString('error_utils_wait_unknown_condition', [String(waitCondition)]) + '\n' + this.inspect(waitCondition));
+			if (waitCondition < 0) {
+				let error = new Error(
+					bundle.getFormattedString('error_utils_wait_unknown_condition', [String(waitCondition)])/* +
+					'\n' +
+					this.inspect(waitCondition) +'\n' +
+					callerStack
+					*/
+				);
+				error.stack += callerStack;
+				return Promise.reject(error);
+			}
 
 			return new Promise(function(aResolve, aReject) {
 				var timer = ns.setTimeout(function() {
@@ -343,7 +354,16 @@ wait : function(...aArgs)
 			}
 			break;
 	}
-	return Promise.reject(new Error(bundle.getFormattedString('error_utils_wait_unknown_condition', [String(waitCondition)]) + '\n' + this.inspect(waitCondition)));
+
+	var error = new Error(
+		bundle.getFormattedString('error_utils_wait_unknown_condition', [String(waitCondition)]) /*+
+		'\n' +
+		this.inspect(waitCondition) +'\n' +
+		callerStack
+		*/
+	);
+	error.stack += callerStack;
+	return Promise.reject(error);
 },
  
 waitDOMEvent : function(...aArgs) 
@@ -1534,9 +1554,10 @@ doIteration : function(aGenerator)
 					}
 					return onException(
 						new Error(
-							bundle.getFormattedString('error_yield_unknown_condition', [String(result)]) +
+							bundle.getFormattedString('error_yield_unknown_condition', [String(result)]) /*+
 							'\n' +
 							this.inspect(result)
+							*/
 						)
 					);
 
@@ -1579,9 +1600,10 @@ doIteration : function(aGenerator)
 					}
 					return onException(
 						new Error(
-							bundle.getFormattedString('error_yield_unknown_condition', [String(result)]) +
+							bundle.getFormattedString('error_yield_unknown_condition', [String(result)]) /*+
 							'\n' +
 							this.inspect(result)
+							*/
 						)
 					);
 			}
