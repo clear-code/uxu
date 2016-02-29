@@ -172,7 +172,7 @@ test_compareVersions.parameters = {
 function test_compareVersions(aParameter)
 {
 	if (aParameter.error) {
-		assert.raises(aParameter.error,
+		yield assert.raises(aParameter.error,
 		              function() {
 		                utilsModule.compareVersions.apply(utilsModule, aParameter.args);
 		              },

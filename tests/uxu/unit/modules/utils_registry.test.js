@@ -105,7 +105,7 @@ function test_getWindowsRegistry()
 			);
 		}
 		else {
-			assert.raises(
+			yield assert.raises(
 				utilsModule.ERROR_PLATFORM_IS_NOT_WINDOWS,
 				function() {
 					utilsModule.getWindowsRegistry(aKey)
@@ -115,12 +115,12 @@ function test_getWindowsRegistry()
 	}
 
 	// REG_SZ
-	assertGetWindowsRegistry(
+	yield assertGetWindowsRegistry(
 		'text/plain',
 		'HKCR\\.txt\\Content Type'
 	);
 	// REG_DWORD
-	assertGetWindowsRegistry(
+	yield assertGetWindowsRegistry(
 		0,
 		'HKLM\\Software\\Microsoft\\Windows\\'+
 			'CurrentVersion\\explorer\\Advanced\\TaskbarSizeMove'
@@ -143,7 +143,7 @@ function test_setWindowsRegistry(aData)
 		assert.strictlyEquals(aData.value, utilsModule.getWindowsRegistry(aData.key));
 	}
 	else {
-		assert.raises(
+		yield assert.raises(
 			utilsModule.ERROR_PLATFORM_IS_NOT_WINDOWS,
 			function() {
 				utilsModule.setWindowsRegistry(aData.key, aData.value)
@@ -211,7 +211,7 @@ test_setWindowsRegistry_overwrite.setUp = function(aData)
 function test_setWindowsRegistry_overwrite(aData)
 {
 	if (aData.error) {
-		assert.raises(
+		yield assert.raises(
 			aData.error,
 			function() {
 				utilsModule.setWindowsRegistry(aData.key, aData.value)
