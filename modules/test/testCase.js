@@ -98,8 +98,6 @@ function TestCase(aTitle, aOptions)
 	this._registeredTests = [];
 	this._suite           = null;
 
-	this._addons = [];
-
 	this.title            = aTitle;
 	this.masterPriority   = aOptions.priority || null;
 	this.shouldSkip       = aOptions.shouldSkip || false;
@@ -107,8 +105,9 @@ function TestCase(aTitle, aOptions)
 	this.ignoreLastResult = !!aOptions.ignoreLastResult;
 	this.context          = aOptions.context;
 	this.targetProduct    = aOptions.targetProduct || null;
-	this.addons           = aOptions.addons || [];
 	this.mapping          = aOptions.mapping || aOptions.redirect || null;
+
+	this.setAddons(aOptions.addons || []);
 
 	this.done = false;
 	this.aborted = false;
@@ -242,21 +241,26 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 
 	setAddons : function(aAddons)
 	{
+		if (!aAddons || aAddons.length === 0)
+			return Promise.resolve([]);
+
 		var AM = {};
 		Components.utils.import('resource://gre/modules/AddonManager.jsm', AM);
-		return new Promise((function(aResolve, aReject) {
-			this._addons = [];
+		return this._addons = new Promise((function(aResolve, aReject) {
+			var addons = [];
 			aAddons.forEach(function(aId) {
-				AM.AddonManager.getAddonByID(aId, function(aAddon) {
+				AM.AddonManager.getAddonByID(aId, (function(aAddon) {
 					var result = { id : aId, file : null, active : false };
 					if (aAddon) {
 						result.file = aAddon.getResourceURI('/').QueryInterface(Ci.nsIFileURL).file.clone();
 						result.active = aAddon.isActive;
 					}
-					this._addons.push(result);
-					if (this._addons.length == aAddons.length)
-						aResolve(this._addons);
-				});
+					addons.push(result);
+					if (addons.length === aAddons.length) {
+						this._addons = Promise.resolve(addons);
+						aResolve(addons);
+					}
+				}).bind(this));
 			}, this);
 		}).bind(this));
 	},
@@ -266,6 +270,7 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 	get addons() {
 		return this._addons;
 	},
+	_addons : Promise.resolve([]),
 
 	set options(aValue) {
 		this._options = aValue || [];
@@ -801,6 +806,10 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 	},
 	_run : function()
 	{
+		return this.addons.then(this._runWithAddons.bind(this));
+	},
+	_runWithAddons : function(aAddons)
+	{
 		if (
 			(
 				this.targetProduct &&
@@ -817,10 +826,10 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 			this.masterPriority = 'never';
 		}
 
-		var notInstalledAddons = this.addons.filter(function(aAddon) {
+		var notInstalledAddons = aAddons.filter(function(aAddon) {
 				return !aAddon.file;
 			});
-		var disabledAddons = this.addons.filter(function(aAddon) {
+		var disabledAddons = aAddons.filter(function(aAddon) {
 				return aAddon.file && !aAddon.active;
 			});
 		if (notInstalledAddons.length || disabledAddons.length) {
@@ -1115,6 +1124,10 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 	
 	_runByRemote : function() 
 	{
+		return this.addons.then(this._runByRemoteWithAddons.bind(this));
+	},
+	_runByRemoteWithAddons : function(aAddons)
+	{
 		if (
 			!this._profile ||
 			!this._profile.exists() ||
@@ -1153,7 +1166,7 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 			if (!extensions.exists()) extensions.create(extensions.DIRECTORY_TYPE, 0777);
 			this._utils.installedUXU.copyTo(extensions, this._utils.installedUXU.leafName);
 
-			this.addons.forEach(function(aAddon) {
+			aAddons.forEach(function(aAddon) {
 				if (!aAddon.file)
 					return;
 				var destination = extensions.clone();
