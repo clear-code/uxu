@@ -722,16 +722,14 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		if (typeof startValue != 'number')
 			throw new Error(bundle.getFormattedString('assert_difference_value_not_number', [this._appendTypeString(startValue)]));
 
-		if (typeof aTask == 'function') aTask = aTask.call(aContext);
-		if (aTask && utils.isGeneratedIterator(aTask)) {
-			return utils.doIteration(aTask)
-					.then((function() {
-						this._onDifferenceFinish(startValue, aGetter(), aExpectedDelta, aMessage);
-					}).bind(this));
-		}
-		else {
-			this._onDifferenceFinish(startValue, aGetter(), aExpectedDelta, aMessage);
-		}
+		return utils.wait(function() {
+			if (typeof aTask === 'function' && aContext)
+				aTask = aTask.call(aContext);
+			return utils.wait(aTask);
+		})
+				.then((function() {
+					this._onDifferenceFinish(startValue, aGetter(), aExpectedDelta, aMessage);
+				}).bind(this));
 	},
 	_onDifferenceFinish : function(aStartValue, aEndValue, aExpectedDelta, aMessage)
 	{
@@ -782,16 +780,14 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		if (typeof startValue != 'number')
 			throw new Error(bundle.getFormattedString('assert_difference_value_not_number', [this._appendTypeString(startValue)]));
 
-		if (typeof aTask == 'function') aTask = aTask.call(aContext);
-		if (aTask && utils.isGeneratedIterator(aTask)) {
-			return utils.doIteration(aTask)
-					.then((function() {
-						this._onNoDifferenceFinish(startValue, aGetter(), aMessage);
-					}).bind(this));
-		}
-		else {
-			this._onNoDifferenceFinish(startValue, aGetter(), aMessage);
-		}
+		return utils.wait(function() {
+			if (typeof aTask === 'function' && aContext)
+				aTask = aTask.call(aContext);
+			return utils.wait(aTask);
+		})
+				.then((function() {
+					this._onNoDifferenceFinish(startValue, aGetter(), aMessage);
+				}).bind(this));
 	},
 	_onNoDifferenceFinish : function(aStartValue, aEndValue, aMessage)
 	{
@@ -998,16 +994,14 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 	finishesWithin : function(aExpectedTime, aTask, aContext, aMessage)
 	{
 		var startAt = Date.now();
-		if (typeof aTask == 'function') aTask = aTask.call(aContext);
-		if (aTask && utils.isGeneratedIterator(aTask)) {
-			return utils.doIteration(aTask)
-					.then((function() {
-						this._onFinishesWithinFinish(aExpectedTime, startAt, aMessage);
-					}).bind(this));
-		}
-		else {
-			this._onFinishesWithinFinish(aExpectedTime, startAt, aMessage);
-		}
+		return utils.wait(function() {
+			if (typeof aTask === 'function' && aContext)
+				aTask = aTask.call(aContext);
+			return utils.wait(aTask);
+		})
+				.then((function() {
+					this._onFinishesWithinFinish(aExpectedTime, startAt, aMessage);
+				}).bind(this));
 	},
 	finishWithin : function(...aArgs) { return this.finishesWithin.apply(this, aArgs); },
 	_onFinishesWithinFinish : function(aExpectedTime, aStartAt, aMessage)
@@ -1033,16 +1027,14 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 	notFinishesWithin : function(aExpectedTime, aTask, aContext, aMessage)
 	{
 		var startAt = Date.now();
-		if (typeof aTask == 'function') aTask = aTask.call(aContext);
-		if (aTask && utils.isGeneratedIterator(aTask)) {
-			return utils.doIteration(aTask)
-					.then((function() {
-						this._onNotFinishesWithinFinish(aExpectedTime, startAt, aMessage);
-					}).bind(this));
-		}
-		else {
-			this._onNotFinishesWithinFinish(aExpectedTime, startAt, aMessage);
-		}
+		return utils.wait(function() {
+			if (typeof aTask === 'function' && aContext)
+				aTask = aTask.call(aContext);
+			return utils.wait(aTask);
+		})
+				.then((function() {
+					this._onNotFinishesWithinFinish(aExpectedTime, startAt, aMessage);
+				}).bind(this));
 	},
 	notFinishWithin : function(...aArgs) { return this.notFinishesWithin.apply(this, aArgs); },
 	finishesOver : function(...aArgs) { return this.notFinishesWithin.apply(this, aArgs); },
@@ -1081,18 +1073,15 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 	{
 		var raised = false;
 		var count = this._successCount;
-		if (typeof aTask == 'function') {
-			aTask = aTask.call(aContext);
-		}
-		if (aTask && utils.isGeneratedIterator(aTask)) {
-			return utils.doIteration(aTask)
-					.then((function() {
-						this._assertionsCountCompare(aExpectedCount, aOperator, self._successCount - count, aMessage);
-						self._onSuccess();
-					}).this(this));
-		}
-		this._assertionsCountCompare(aExpectedCount, aOperator, this._successCount - count, aMessage);
-		this._onSuccess();
+		return utils.wait(function() {
+			if (typeof aTask === 'function' && aContext)
+				aTask = aTask.call(aContext);
+			return utils.wait(aTask);
+		})
+				.then((function() {
+					this._assertionsCountCompare(aExpectedCount, aOperator, self._successCount - count, aMessage);
+					this._onSuccess();
+				}).bind(this));
 	},
 	assertionsCountEquals : function(aExpected, aTask, aContext, aMessage) { return this._assertionsCount(aExpected, '==', aTask, aContext, aMessage); },
 	assertionsCountEqual : function(...aArgs) { return this.assertionsCountEquals.apply(this, aArgs); },
