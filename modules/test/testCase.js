@@ -967,52 +967,63 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 				if (testReport.lastResult != self.RESULT_SUCCESS)
 					return next;
 
-				try {
-					ns.Assertions.prototype.doInternalAssertion.call(
+				var continuation = function() {
+					continuation.next = next;
+				};
+
+				var done = false;
+				self.utils.wait(function() {
+					yield ns.Assertions.prototype.doInternalAssertion.call(
 						self.suite.assert._source,
 						function() {
 							self._suite.mockManager.assertAll();
 						}
 					);
-				}
-				catch(e) {
-					let multiplex = e.name == 'MultiplexError';
-					(multiplex ? e.errors : [e] ).forEach(function(e, aIndex) {
-						var description = bundle.getFormattedString('report_description_mock', [current.description]);
-						if (multiplex)
-							description = bundle.getFormattedString('report_description_multiplex', [description, aIndex+1]);
-						testReport.addTopic({
-							result      : (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR,
-							description : description,
-							exception   : self._utils.normalizeError(e)
+				})
+					.catcn(function(aError) {
+						var done = true;
+						var multiplex = aError.name == 'MultiplexError';
+						(multiplex ? aError.errors : [aError] ).forEach(function(aError, aIndex) {
+							var description = bundle.getFormattedString('report_description_mock', [current.description]);
+							if (multiplex)
+								description = bundle.getFormattedString('report_description_multiplex', [description, aIndex+1]);
+							testReport.addTopic({
+								result      : (aError.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR,
+								description : description,
+								exception   : self._utils.normalizeError(aError)
+							});
 						});
-					});
-					return next;
-				}
-
-				try {
-					ns.Assertions.prototype.doInternalAssertion.call(
-						self.suite.assert._source,
-						function() {
-							ns.Assertions.prototype.validSuccessCount.call(
+						continuation();
+					})
+					.then(function() {
+						if (done)
+							return;
+						return self.utils.wait(function() {
+							yield ns.Assertions.prototype.doInternalAssertion.call(
 								self.suite.assert._source,
-								current.assertions,
-								current.minAssertions,
-								current.maxAssertions
+								function() {
+									yield ns.Assertions.prototype.validSuccessCount.call(
+										self.suite.assert._source,
+										current.assertions,
+										current.minAssertions,
+										current.maxAssertions
+									);
+								}
 							);
-						}
-					);
-				}
-				catch(e) {
-					testReport.addTopic({
-						result      : (e.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR,
-						description : bundle.getFormattedString('report_description_check_success_count', [current.description]),
-						exception   : self._utils.normalizeError(e)
+						})
+					})
+					.then(continuation)
+					.catch(function(aError) {
+						if (done)
+							return;
+						testReport.addTopic({
+							result      : (aError.name == 'AssertionFailed') ? self.RESULT_FAILURE : self.RESULT_ERROR,
+							description : bundle.getFormattedString('report_description_check_success_count', [current.description]),
+							exception   : self._utils.normalizeError(aError)
+						});
+						continuation();
 					});
-					return next;
-				}
-
-				return next;
+				return continuation;
 			},
 			doPrivTearDown : function() {
 				return !current.tearDown ? 'doTearDown' :
