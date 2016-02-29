@@ -172,15 +172,12 @@ Compose.prototype = {
 	
 	setUp : function() 
 	{
-		return utils.doIteration((function() {
-			var openedTestWindow = this._suite.setUpTestWindow();
-			yield openedTestWindow;
-
+		return this._suite.setUpTestWindow()
+		.then((function(aWindow) {
 			//XXX this fails sometimes. why??? we must fix this issue...
 			// var mainWindow = this._suite.getTestWindow();
-			var mainWindow = openedTestWindow.value;
 			yield (function() {
-					while (!('MsgNewMessage' in mainWindow)) {
+					while (!('MsgNewMessage' in aWindow)) {
 						yield false;
 					}
 				});
@@ -188,7 +185,7 @@ Compose.prototype = {
 			yield 500; // wait for initializing processes
 
 			// 新規メッセージのウィンドウを開く
-			mainWindow.MsgNewMessage(null);
+			aWindow.MsgNewMessage(null);
 
 			// ウィンドウが開かれるまで待つ
 			yield (function() {
@@ -196,7 +193,7 @@ Compose.prototype = {
 						yield false;
 					}
 				});
-		}).call(this));
+		}).bind(this);
 	},
  
 	tearDown : function() 
