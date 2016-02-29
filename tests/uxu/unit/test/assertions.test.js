@@ -1216,23 +1216,23 @@ function testFinishesOver()
 {
 	var message = Math.random() * 65000;
 
-	assertSuccess(
+	yield assertSuccess(
 		assertionsModule.finishesOver,
 		[
 			50,
 			function() {
-				utils.wait(100);
+				yield utils.wait(100);
 				assert.isTrue(true);
 			},
 			{}
 		]
 	);
-	assertFailure(
+	yield assertFailure(
 		assertionsModule.finishesOver,
 		[
 			50,
 			function() {
-				utils.wait(100);
+				yield utils.wait(100);
 				assert.isTrue(false, message);
 			},
 			{},

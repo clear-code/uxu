@@ -94,12 +94,12 @@ function test_processRequestByHtaccess()
 
 test_handleResponse_htaccess.setUp = function() {
 	server = new HTTPServer(4445, fixtures, utils.mockManager);
-	utils.wait(function() {
+	yield utils.wait(function() {
 		return !server.isStopped();
 	});
 };
 test_handleResponse_htaccess.tearDown = function() {
-	utils.wait(server.stop());
+	yield utils.wait(server.stop());
 	server = null;
 };
 function test_handleResponse_htaccess()
@@ -142,12 +142,12 @@ function test_handleResponse_htaccess()
 
 test_handleResponse_mock.setUp = function() {
 	server = new HTTPServer(4445, fixtures, utils.mockManager);
-	utils.wait(function() {
+	yield utils.wait(function() {
 		return !server.isStopped();
 	});
 };
 test_handleResponse_mock.tearDown = function() {
-	utils.wait(server.stop());
+	yield utils.wait(server.stop());
 	server = null;
 };
 function test_handleResponse_mock()
@@ -191,17 +191,17 @@ testRedirect.parameters = [
 ];
 testRedirect.setUp = function() {
 	server = new HTTPServer(4445, fixtures);
-	utils.wait(function() {
+	yield utils.wait(function() {
 		return !server.isStopped();
 	});
 };
 testRedirect.tearDown = function() {
-	utils.wait(server.stop());
+	yield utils.wait(server.stop());
 	server = null;
 };
 function testRedirect(aURI)
 {
-	utils.loadURI(aURI);
+	yield utils.loadURI(aURI);
 	assert.equals('http://localhost:4445/hash.txt', content.location.href);
 	assert.equals('hash\n', content.document.body.textContent);
 }
@@ -212,17 +212,17 @@ testRewrite.parameters = [
 ];
 testRewrite.setUp = function() {
 	server = new HTTPServer(4445, fixtures);
-	utils.wait(function() {
+	yield utils.wait(function() {
 		return !server.isStopped();
 	});
 };
 testRewrite.tearDown = function() {
-	utils.wait(server.stop());
+	yield utils.wait(server.stop());
 	server = null;
 };
 function testRewrite(aURI)
 {
-	utils.loadURI(aURI);
+	yield utils.loadURI(aURI);
 	assert.equals(aURI, content.location.href);
 	assert.equals('hash\n', content.document.body.textContent);
 }
@@ -230,17 +230,17 @@ function testRewrite(aURI)
 
 testResponseWithDelay.setUp = function() {
 	server = new HTTPServer(4445, fixtures, utils.mockManager);
-	utils.wait(function() {
+	yield utils.wait(function() {
 		return !server.isStopped();
 	});
 };
 testResponseWithDelay.tearDown = function() {
-	utils.wait(server.stop());
+	yield utils.wait(server.stop());
 	server = null;
 };
 function testResponseWithDelay()
 {
-	utils.loadURI('about:blank');
+	yield utils.loadURI('about:blank');
 
 	server.expect('/delayed', { uri : '/hash.txt', delay : 3000 });
 	assert.finishesOver(3000, function() {
@@ -249,7 +249,7 @@ function testResponseWithDelay()
 	assert.equals('http://localhost:4445/delayed', content.location.href);
 	assert.equals('hash\n', content.document.body.textContent);
 
-	utils.loadURI('about:blank');
+	yield utils.loadURI('about:blank');
 
 	server.expect('/delayed-redirected', { uri : '/redirected', status : 301, delay : 3000 });
 	server.expect('/redirected', { uri : '/hash.txt', status : 200 });

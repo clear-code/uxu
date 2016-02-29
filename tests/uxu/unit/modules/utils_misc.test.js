@@ -124,53 +124,53 @@ function test_wait()
 	function assertWaitSuccess(aConditions, aTimeout)
 	{
 		var before = Date.now();
-		utilsModule.wait.apply(utilsModule, aConditions);
+		yield utilsModule.wait.apply(utilsModule, aConditions);
 		assert.inDelta(aTimeout, Date.now() - before, 200);
 	}
 
 	function assertWaitFail(aConditions, aTimeout)
 	{
-		assert.raises(
+		yield assert.raises(
 			bundle.getFormattedString('error_utils_wait_unknown_condition', [String(aConditions[0])]),
 			function() {
-				utilsModule.wait.apply(utilsModule, aConditions);
+				yield utilsModule.wait.apply(utilsModule, aConditions);
 			}
 		);
 	}
 
-	assertWaitSuccess([500], 500);
+	yield assertWaitSuccess([500], 500);
 
 	var object = { value : false };
 	window.setTimeout(function() {
 		object.value = true;
 	}, 500);
-	assertWaitSuccess([object], 500);
+	yield assertWaitSuccess([object], 500);
 
 	var finished = false;
 	var func = function() { return finished; };
 	window.setTimeout(function() {
 		finished = true;
 	}, 500);
-	assertWaitSuccess([func], 500);
+	yield assertWaitSuccess([func], 500);
 
-	assertWaitSuccess([true], 100);
-	assertWaitSuccess([false], 100);
-	assertWaitSuccess(['string'], 100);
-	assertWaitSuccess([null], 100);
-	assertWaitSuccess([undefined], 100);
+	yield assertWaitSuccess([true], 100);
+	yield assertWaitSuccess([false], 100);
+	yield assertWaitSuccess(['string'], 100);
+	yield assertWaitSuccess([null], 100);
+	yield assertWaitSuccess([undefined], 100);
 
-	assertWaitFail([{}]);
-	assertWaitFail([-100]);
+	yield assertWaitFail([{}]);
+	yield assertWaitFail([-100]);
 
 	var deferred = new Deferred();
 	window.setTimeout(function() {
 		deferred.call();
 	}, 500);
-	assertWaitSuccess([deferred], 500);
+	yield assertWaitSuccess([deferred], 500);
 
 	deferred = new Deferred();
 	deferred.call();
-	assertWaitSuccess([deferred], 0);
+	yield assertWaitSuccess([deferred], 0);
 }
 
 if (utils.checkPlatformVersion('1.9') < 0) test_waitDOMEvent.priority = 'never';
@@ -183,7 +183,7 @@ function test_waitDOMEvent()
 	function assertWaitSuccess(aConditions, aTimeout, aDelta)
 	{
 		var before = Date.now();
-		utilsModule.wait.apply(utilsModule, aConditions);
+		yield utilsModule.wait.apply(utilsModule, aConditions);
 		assert.inDelta(aTimeout, Date.now() - before, aDelta);
 	}
 
@@ -202,18 +202,18 @@ function test_waitDOMEvent()
 
 	// standard
 	clickWithDelay(content.document.documentElement);
-	assertWaitSuccess([content.document, 'click', 1000], 500, 499);
+	yield assertWaitSuccess([content.document, 'click', 1000], 500, 499);
 
 	// timeout
-	assertWaitSuccess([content.document, 'click', 1000], 1000, 100);
+	yield assertWaitSuccess([content.document, 'click', 1000], 1000, 100);
 
 	// mixed order
 	clickWithDelay(content.document.documentElement);
-	assertWaitSuccess(['click', 1000, content.document], 500, 499);
+	yield assertWaitSuccess(['click', 1000, content.document], 500, 499);
 
 	// multiple events
 	clickWithDelay(content.document.documentElement);
-	assertWaitSuccess([content.document, 'click',
+	yield assertWaitSuccess([content.document, 'click',
 	                   content.document, 'keypress',
 	                   1000], 500, 499);
 
@@ -222,7 +222,7 @@ function test_waitDOMEvent()
 	window.setTimeout(function() {
 		action.rightClickOn(content.document.documentElement, { ctrlKey : true });
 	}, 20);
-	assertWaitSuccess([{ type    : 'click',
+	yield assertWaitSuccess([{ type    : 'click',
 	                     button  : 2,
 	                     ctrlKey : true
 	                   },
@@ -231,20 +231,20 @@ function test_waitDOMEvent()
 
 	// callback style
 	var events = [];
-	var result = utilsModule.waitDOMEvent(
+	yield utilsModule.waitDOMEvent(
 			'click', content.document,
-			500,
-			function(aEvent) {
+			500
+		)
+		.then(function(aEvent) {
 				events.push(aEvent);
-			},
-			function(aEvent) {
+		})
+		.catch(function(aEvent) {
 				events.push(aEvent);
-			}
-		);
+		});
 	assert.isFalse(result.value);
 	assert.equals([], events);
 	clickWithDelay(content.document.documentElement);
-	utils.wait(100);
+	yield utils.wait(100);
 	assert.isTrue(result.value);
 	assert.equals(['click', 'click'],
 	              events.map(function(aEvent) aEvent.type));

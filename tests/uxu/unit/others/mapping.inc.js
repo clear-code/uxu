@@ -2,14 +2,14 @@ var shouldSkip = utils.checkPlatformVersion('1.9') < 0;
 
 function setUp()
 {
-	utils.setUpHttpServer(4445, baseURL+'../../fixtures/');
-	utils.wait(300);
+	yield utils.setUpHttpServer(4445, baseURL+'../../fixtures/');
+	yield utils.wait(300);
 }
 
 function tearDown()
 {
-	utils.tearDownAllHttpServers();
-	utils.clearPref('general.useragent.vendor');
+	yield utils.tearDownAllHttpServers();
+	yield utils.clearPref('general.useragent.vendor');
 }
 
 function assertMapped(aURI, aMapToFile)
@@ -17,8 +17,8 @@ function assertMapped(aURI, aMapToFile)
 	var referrer = aURI.indexOf('about:') > -1 ?
 				null :
 				utils.makeURIFromSpec('http://www.example.com/referer?'+Date.now());
-	utils.loadURI(aURI, { referrer : referrer });
-	utils.wait(100);
+	yield utils.loadURI(aURI, { referrer : referrer });
+	yield utils.wait(100);
 	assert.equals(aURI, content.location.href);
 	assert.equals('test', content.document.title);
 	if (referrer) {
@@ -40,18 +40,18 @@ function assertMapped(aURI, aMapToFile)
 
 	assertScriptExecuted();
 	// force reload
-	utils.loadURI('about:blank');
-	utils.loadURI(aURI);
+	yield utils.loadURI('about:blank');
+	yield utils.loadURI(aURI);
 	assertScriptExecuted();
 }
 
 function assertRedirectedSubmission()
 {
-	utils.loadURI('http://localhost:4445/html.html');
+	yield utils.loadURI('http://localhost:4445/html.html');
 	window.setTimeout(function() {
 		$('form').submit();
 	}, 0);
-	utils.wait({ type : 'load', capturing : true }, gBrowser);
+	yield utils.waitDOMEvent({ type : 'load', capturing : true }, gBrowser);
 	assert.equals('hash\n', content.document.documentElement.textContent);
 }
 
@@ -60,7 +60,7 @@ function assertNotMapped(aURI)
 	var referrer = aURI.indexOf('about:') > -1 ?
 				null :
 				utils.makeURIFromSpec('http://www.example.com/referer?'+Date.now());
-	utils.loadURI(aURI, { referrer : referrer });
+	yield utils.loadURI(aURI, { referrer : referrer });
 	assert.equals(aURI, content.location.href);
 	assert.notEquals('test', content.document.title);
 	if (referrer) assert.equals(referrer.spec, content.document.referrer);
@@ -87,6 +87,6 @@ function assertMappedImageRequest(aURI)
 	image.onload = function() {
 		loaded.value = true;
 	};
-	utils.wait(loaded);
+	yield utils.wait(loaded);
 	assert.equals([48, 48], [image.width, image.height]);
 }

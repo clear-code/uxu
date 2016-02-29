@@ -72,7 +72,7 @@ function clearRoot()
 		Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
 		'HKCU\\Software\\ClearCode Inc.\\UxU'
 	);
-	utils.wait(100);
+	yield utils.wait(100);
 }
 
 function shutDown()
