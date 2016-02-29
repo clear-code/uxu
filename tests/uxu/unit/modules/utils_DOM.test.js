@@ -8,11 +8,12 @@ assert.inspectDOMNode = function(aExpected, aNode) {
 	assert.equals(aExpected, utilsModule.inspectDOMNode(aNode));
 };
 
-testInspectDOMNode.priority = 'must';
-function testInspectDOMNode()
-{
+testInspectDOMNodeInXML.priority = 'must';
+testInspectDOMNodeInXML.setUp = function() {
 	yield utils.loadURIInTestFrame('../../fixtures/html.xml');
-
+};
+function testInspectDOMNodeInXML()
+{
 	var p1 = content.document.getElementById('paragraph1');
 	assert.isNotNull(p1);
 	assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em lang="en" class="class">em</em></p>', p1);
@@ -25,10 +26,15 @@ function testInspectDOMNode()
 	fragment.appendChild(p1.cloneNode(true));
 	fragment.appendChild(p2.cloneNode(true));
 	assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em lang="en" class="class">em</em></p><p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em lang="en" class="class">em</em></p>', fragment);
+}
 
+testInspectDOMNodeInHTML.priority = 'must';
+testInspectDOMNodeInHTML.setUp = function() {
 	yield utils.loadURIInTestFrame('../../fixtures/html.html');
-
-	p1 = content.document.getElementById('paragraph1');
+};
+function testInspectDOMNodeInHTML()
+{
+	var p1 = content.document.getElementById('paragraph1');
 	assert.isNotNull(p1);
 	if (p1.localName == p1.localName.toLowerCase()) {
 		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em lang="en" class="class">em</em></p>', p1);
@@ -37,7 +43,7 @@ function testInspectDOMNode()
 		assert.inspectDOMNode('<P id="paragraph1">test<EM lang="en" class="class">em</EM></P>', p1);
 	}
 
-	p2 = content.document.getElementById('paragraph2');
+	var p2 = content.document.getElementById('paragraph2');
 	assert.isNotNull(p2);
 	if (p2.localName == p1.localName.toLowerCase()) {
 		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em lang="en" class="class">em</em></p>', p2);
@@ -46,7 +52,7 @@ function testInspectDOMNode()
 		assert.inspectDOMNode('<P id="paragraph2">test<EM lang="en" class="class">em</EM></P>', p2);
 	}
 
-	fragment = content.document.createDocumentFragment();
+	var fragment = content.document.createDocumentFragment();
 	fragment.appendChild(p1.cloneNode(true));
 	fragment.appendChild(p2.cloneNode(true));
 	if (p1.localName == p1.localName.toLowerCase()) {
@@ -57,10 +63,11 @@ function testInspectDOMNode()
 	}
 }
 
+test_isTargetInRange.setUp = function() {
+	yield utils.loadURI('../../fixtures/links.html');
+};
 function test_isTargetInRange()
 {
-	yield Do(utils.loadURI('../../fixtures/links.html'));
-
 	var range = content.document.createRange();
 	range.setStartBefore($('item4'));
 	range.setEndAfter($('item9'));
@@ -84,10 +91,11 @@ function test_isTargetInRange()
 	targetRange.detach();
 }
 
+test_isTargetInSelection.setUp = function() {
+	yield utils.loadURI('../../fixtures/links.html');
+};
 function test_isTargetInSelection()
 {
-	yield Do(utils.loadURI('../../fixtures/links.html'));
-
 	var selection = content.getSelection();
 	selection.removeAllRanges();
 
@@ -124,10 +132,11 @@ function test_isTargetInSelection()
 	selection.removeAllRanges();
 }
 
+test_isTargetInSubTree.setUp = function() {
+	yield utils.loadURI('../../fixtures/links.html');
+};
 function test_isTargetInSubTree()
 {
-	yield Do(utils.loadURI('../../fixtures/links.html'));
-
 	var root = $('item5');
 
 	assert.isTrue(utilsModule.isTargetInSubTree($('link5'), root));
