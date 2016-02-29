@@ -1518,11 +1518,8 @@ doIteration : function(aGenerator)
 					)
 				);
 
-			var result = iterator.next() ;
+			var result = iterator.next() || 0;
 			lastRun = Date.now();
-
-			if (!result)
-				result = 0;
 
 			switch (typeof result)
 			{
@@ -1597,9 +1594,9 @@ doIteration : function(aGenerator)
 	}).bind(this));
 },
  
-Do : function(aObject) 
+Do : function(aObject) // for backward compatibility 
 {
-	return this.doIteration(aObject);
+	return aObject;
 },
   
 // データベース操作 

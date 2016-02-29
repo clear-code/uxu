@@ -301,8 +301,7 @@ function test_doIteration()
 	assert.isTrue(flagWait);
 	assert.isTrue(flagRecursive);
 
-	flagFirst = false;
-	flagWait = false;
+	flagFirst = flagWait = flagRecursive = false;
 	yield Do(utilsModule.doIteration(TestGenerator));
 	assert.isTrue(flagFirst);
 	assert.isTrue(flagWait);
