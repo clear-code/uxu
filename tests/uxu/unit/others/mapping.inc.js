@@ -1,14 +1,19 @@
 var shouldSkip = utils.checkPlatformVersion('1.9') < 0;
 
-function setUp()
+function startUp()
 {
 	yield utils.setUpHttpServer(4445, baseURL+'../../fixtures/');
 }
 
-function tearDown()
+function shutDown()
 {
 	yield utils.tearDownAllHttpServers();
 	yield utils.clearPref('general.useragent.vendor');
+}
+
+function setUp()
+{
+	yield utils.loadURI('about:blank');
 }
 
 function assertMapped(aURI, aMapToFile)
