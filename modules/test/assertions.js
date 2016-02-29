@@ -447,7 +447,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		this._onSuccess();
 	},
 	'instanceOf' : function(...aArgs) { return this.isInstanceOf.apply(this, aArgs); },
-	'instanceof' : function...aArgs() { return this.isInstanceOf.apply(this, aArgs); },
+	'instanceof' : function(...aArgs) { return this.isInstanceOf.apply(this, aArgs); },
 	'isInstance' : function(...aArgs) { return this.isInstanceOf.apply(this, aArgs); },
 	'instance' : function(...aArgs) { return this.isInstanceOf.apply(this, aArgs); },
 
