@@ -972,7 +972,7 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 				};
 
 				var done = false;
-				self.utils.wait(function() {
+				self._utils.wait(function() {
 					yield ns.Assertions.prototype.doInternalAssertion.call(
 						self.suite.assert._source,
 						function() {
@@ -998,7 +998,7 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 					.then(function() {
 						if (done)
 							return;
-						return self.utils.wait(function() {
+						return self._utils.wait(function() {
 							yield ns.Assertions.prototype.doInternalAssertion.call(
 								self.suite.assert._source,
 								function() {
