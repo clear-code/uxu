@@ -243,7 +243,7 @@ TestRunner.prototype = ns.inherit(ns.EventTarget.prototype, {
 			});
 		ns.setTimeout(function() {
 			runningTests = runningTests.filter(function(aTest) {
-				return aTest && !aTest.done && !aTest.aborted;
+				return aTest && aTest.running;
 			});
 			var runningSequential = runningTests.some(function(aTest) {
 					return !aTest.parallel;
