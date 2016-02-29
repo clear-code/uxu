@@ -57,9 +57,9 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		var count = this._successCount;
 		return utils.wait((function() {
 			if (typeof assertion == 'function')
-				assertion();
+				yield assertion();
 			else
-				this[assertion].apply(this, args);
+				yield this[assertion].apply(this, args);
 		}).bind(this))
 			.then((function() {
 				this._successCount = count;

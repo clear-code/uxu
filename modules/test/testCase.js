@@ -1002,7 +1002,7 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 							yield ns.Assertions.prototype.doInternalAssertion.call(
 								self.suite.assert._source,
 								function() {
-									yield ns.Assertions.prototype.validSuccessCount.call(
+									ns.Assertions.prototype.validSuccessCount.call(
 										self.suite.assert._source,
 										current.assertions,
 										current.minAssertions,
@@ -1010,9 +1010,8 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 									);
 								}
 							);
-						})
+						}).then(continuation);
 					})
-					.then(continuation)
 					.catch(function(aError) {
 						if (done)
 							return;
