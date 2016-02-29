@@ -500,11 +500,12 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			case 'object':
 				if (aExpected === null)
 					return false;
-				if (typeof aExpected.test === 'function') {
+				if (typeof aExpected.test === 'function') { // maybe regexp
 					return (
 						aExpected.test(aActual.name) ||
 						aExpected.test(aActual.message) ||
 						aExpected.test(aActual.name+': '+aActual.message) ||
+						aExpected.test(String(aActual)) ||
 						aExpected.test(aActual.result) ||
 						(NSErrorName !== null && aExpected.test(NSErrorName))
 					);
