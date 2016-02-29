@@ -475,6 +475,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 						this._onRaisesFinish(aExpectedException, aException, aMessage);
 					}
 					this._onSuccess();
+					return aException;
 				}).bind(this));
 	},
 	raise : function(...aArgs) { return this.raises.apply(this, aArgs); },
@@ -579,9 +580,10 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 					if (!aException ||
 						!this._exceptionMatches(aUnexpectedException, aException)) {
 						this._onSuccess();
-						return;
+						return aException;
 					}
 					this._onNotRaisesFinish(aUnexpectedException, aException, aMessage);
+					return aException;
 				}).bind(this));
 	},
 	notRaise : function(...aArgs) { return this.notRaises.apply(this, aArgs); },
@@ -1083,7 +1085,7 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			return utils.wait(aTask);
 		})
 				.then((function() {
-					this._assertionsCountCompare(aExpectedCount, aOperator, self._successCount - count, aMessage);
+					this._assertionsCountCompare(aExpectedCount, aOperator, this._successCount - count, aMessage);
 					this._onSuccess();
 				}).bind(this));
 	},
