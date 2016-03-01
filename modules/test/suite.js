@@ -322,8 +322,6 @@ getTestWindow : function(aOptions)
 	{
 		target = targets.getNext().
 			QueryInterface(Ci.nsIDOMWindow);
-		if ('nsIDOMWindowInternal' in Ci) // for Firefox 7 or olders
-			target = target.QueryInterface(Ci.nsIDOMWindowInternal);
 		if (target[key] == target.location.href+'?'+this.uniqueID ||
 			target.document.documentElement.getAttribute(key) == target.location.href+'?'+this.uniqueID)
 			return target;
@@ -651,7 +649,8 @@ getBrowser : function(aOptions)
 getTestFrameOwner : function(aOptions) 
 {
 	var win = this.getTestWindow(aOptions);
-	if (!win || !win.gBrowser) return this.testFrame;
+	if (!win || win.closed || !win.gBrowser)
+		return this.testFrame;
 	return win.gBrowser;
 },
  
