@@ -303,7 +303,7 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 		}
 		this._done = aValue;
 		if (this._done) {
-			this._doneResolvers.forEach((aResolver) => aResolve());
+			this._doneResolvers.forEach((aResolver) => aResolver());
 			this._doneResolvers = [];
 		}
 		return aValue;
