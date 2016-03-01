@@ -14,7 +14,7 @@
  * The Original Code is UxU - UnitTest.XUL.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2010-2012
+ * Portions created by the Initial Developer are Copyright (C) 2010-2016
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <shimoda@clear-code.com>
@@ -43,6 +43,7 @@ pref("extensions.uxu.profile.disableCheckDefaultWarning", true);
 
 pref("extensions.uxu.run.ignoreHiddenFiles", true);
 pref("extensions.uxu.run.timeout", 30000);
+pref("extensions.uxu.run.timeout.waitDOMEvent", 10000);
 pref("extensions.uxu.run.timeout.application", 300000);
 pref("extensions.uxu.run.history.expire.days", 30); // days
 pref("extensions.uxu.defaultEncoding", "UTF-8");

@@ -336,8 +336,8 @@ wait : function(...aArgs)
  
 waitDOMEvent : function(...aArgs) 
 {
-	var timeout = 10 * 1000;
 	var callerStack = this.reduceTopStackLine(this.getStackTrace());
+	var timeout = Math.max(0, this.getPref('extensions.uxu.run.timeout.waitDOMEvent'));
 	aArgs = aArgs.filter(function(aArg) {
 			switch (typeof aArg)
 			{

@@ -172,6 +172,7 @@ function test_wait()
 if (utils.checkPlatformVersion('1.9') < 0) test_waitDOMEvent.priority = 'never';
 test_waitDOMEvent.setUp = function()
 {
+	utils.setPref('extensions.uxu.run.timeout.waitDOMEvent', 300);
 	yield Do(utils.loadURI('about:blank?wait'));
 }
 function test_waitDOMEvent()
