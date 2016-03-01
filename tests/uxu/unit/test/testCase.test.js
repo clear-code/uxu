@@ -16,6 +16,8 @@ function setUp()
 	testcase = new TestCase('description', {
 		ignoreLastResult : true
 	});
+	testcase.randomOrder = false;
+	testcase.masterPriority = 'must';
 	testcase.suite = new TestSuite({
 		uri        : baseURL,
 		browser    : gBrowser,
@@ -53,6 +55,9 @@ function assertInitialized(aTest, aDescription)
 
 function testProperties()
 {
+	testcase = new TestCase('description', {
+		ignoreLastResult : true
+	});
 	assert.equals('description', testcase.title);
 	assert.isNull(testcase.masterPriority);
 }
@@ -60,28 +65,28 @@ function testProperties()
 function testFunctionsWithProperties()
 {
 	testcase.tests = {
-		'function式' : function() {},
-		'Fuctionコンストラクタ' : (new Function('arg', 'return true')),
-		'各種プロパティ付き' : (function() {
+		'function expression' : function() {},
+		'Fuction constructor' : (new Function('arg', 'return true')),
+		'object with properties' : (function() {
 			var f = function() {};
-			f.description = '説明（ここで定義された説明は、ハッシュのキーで上書きされる）';
+			f.description = 'description (must be overridden by hash key)';
 			f.priority = 'must';
 			f.setUp = function() {};
 			f.tearDown = function() {};
 			return f;
 		})(),
-		'各種プロパティ付き2' : (function() {
+		'object with property 2, without description' : (function() {
 			var f = function() {};
 			f.setup = function() {};
 			f.teardown = function() {};
 			return f;
 		})(),
-		'不正なテスト：数値' : 10,
-		'不正なテスト：文字列' : 'str',
-		'不正なテスト：真偽値' : true
+		'mallformed test: number' : 10,
+		'mallformed test: string' : 'str',
+		'mallformed test: boolean' : true
 	};
 	assert.equals(4, testcase.tests.length);
-	assert.equals('各種プロパティ付き', testcase.tests[2].description);
+	assert.equals('object with properties', testcase.tests[2].description);
 	assert.isNotNull(testcase.tests[2].setUp);
 	assert.isNotNull(testcase.tests[2].tearDown);
 	assert.isNotNull(testcase.tests[3].setUp);
@@ -91,7 +96,7 @@ function testFunctionsWithProperties()
 	testcase.registerTest(new Function('arg', 'return true'));
 	testcase.registerTest((function() {
 		var f = function() {};
-		f.description = '説明';
+		f.description = 'new description';
 		f.priority = 'must';
 		f.setUp = function() {};
 		f.tearDown = function() {};
@@ -107,7 +112,7 @@ function testFunctionsWithProperties()
 	testcase.registerTest('str');
 	testcase.registerTest('true');
 	assert.equals(8, testcase.tests.length);
-	assert.equals('説明', testcase.tests[6].description);
+	assert.equals('new description', testcase.tests[6].description);
 	assert.isNotNull(testcase.tests[6].setUp);
 	assert.isNotNull(testcase.tests[6].tearDown);
 	assert.isNotNull(testcase.tests[7].setUp);
@@ -154,160 +159,170 @@ function createTestMocks(aTestCount, aArguments)
 
 function testRegisterFunctionCallStyle()
 {
-	var mocks = createXUnitMocks(3);
-	testcase.setUp(mocks.setUp);
-	testcase.tearDown(mocks.tearDown);
-	testcase.test(1, mocks.tests[0]);
-	testcase.test(2, mocks.tests[1]);
-	testcase.test(3, mocks.tests[2]);
+	var results = [];
+	testcase.setUp(() => results.push('setUp'));
+	testcase.tearDown(() => results.push('tearDown'));
+	testcase.test('0', () => results.push('test0'));
+	testcase.test('1', () => results.push('test1'));
+	testcase.test('2', () => results.push('test2'));
 	assert.equals(3, testcase.tests.length);
-	assertInitialized(testcase.tests[0], '1');
-	testcase.masterPriority = 'must';
+	assertInitialized(testcase.tests[0], '0');
 	testcase.run();
 	yield testcase.done;
-	assert.isTrue(testcase._done);
+	assert.equals(['setUp', 'test0', 'tearDown',
+	               'setUp', 'test1', 'tearDown',
+	               'setUp', 'test2', 'tearDown'],
+	              results);
 }
 
 function testRegisterOperationStyle()
 {
-	var mocks = createXUnitMocks(3);
-	mocks.tests[0].description = 'test0';
-	testcase.registerSetUp(mocks.setUp);
-	testcase.registerTearDown(mocks.tearDown);
-	testcase.registerTest(mocks.tests[0]);
-	testcase.registerTest(mocks.tests[1]);
-	testcase.registerTest(mocks.tests[2]);
+	var results = [];
+	testcase.registerSetUp(() => results.push('setUp'));
+	testcase.registerTearDown(() => results.push('tearDown'));
+	testcase.registerTest(() => results.push('test0'));
+	testcase.registerTest(() => results.push('test1'));
+	testcase.registerTest(() => results.push('test2'));
 	assert.equals(3, testcase.tests.length);
-	assertInitialized(testcase.tests[0], 'test0');
-	testcase.masterPriority = 'must';
+	assertInitialized(testcase.tests[0], "() => results.push('test0')");
 	testcase.run();
 	yield testcase.done;
-	assert.isTrue(testcase._done);
+	assert.equals(['setUp', 'test0', 'tearDown',
+	               'setUp', 'test1', 'tearDown',
+	               'setUp', 'test2', 'tearDown'],
+	              results);
 }
 
 function testRegisterHashStyle()
 {
-	var mocks = createXUnitMocks(3);
+	var results = [];
 	testcase.tests = {
-		setUp    : mocks.setUp,
-		tearDown : mocks.tearDown,
-		'1'      : mocks.tests[0],
-		'2'      : mocks.tests[1],
-		'3'      : mocks.tests[2]
+		setUp    : () => results.push('setUp'),
+		tearDown : () => results.push('tearDown'),
+		'0'      : () => results.push('test0'),
+		'1'      : () => results.push('test1'),
+		'2'      : () => results.push('test2')
 	};
 	assert.equals(3, testcase.tests.length);
-	assertInitialized(testcase.tests[0], '1');
-	testcase.masterPriority = 'must';
+	assertInitialized(testcase.tests[0], '0');
 	testcase.run();
 	yield testcase.done;
-	assert.isTrue(testcase._done);
+	assert.equals(['setUp', 'test0', 'tearDown',
+	               'setUp', 'test1', 'tearDown',
+	               'setUp', 'test2', 'tearDown'],
+	              results);
 }
 
 function testBDDFunctionCallStyle()
 {
-	var mocks = createBDDMocks(3);
-	testcase.given(mocks.given);
-	testcase.states(1, mocks.tests[0]);
-	testcase.states(2, mocks.tests[1]);
-	testcase.states(3, mocks.tests[2]);
+	var results = [];
+	testcase.given(() => results.push('given'));
+	testcase.states('0', () => results.push('states0'));
+	testcase.states('1', () => results.push('states1'));
+	testcase.states('2', () => results.push('states2'));
 	assert.equals(3, testcase.tests.length);
-	assertInitialized(testcase.tests[0], '1');
-	testcase.masterPriority = 'must';
+	assertInitialized(testcase.tests[0], '0');
 	testcase.verify();
 	yield testcase.done;
-	assert.isTrue(testcase._done);
+	assert.equals(['given', 'states0',
+	               'given', 'states1',
+	               'given', 'states2'],
+	              results);
 }
 
 function testBDDHashStyle()
 {
-	var mocks = createBDDMocks(3);
+	var results = [];
 	testcase.stateThat = {
-		given : mocks.given,
-		'1'   : mocks.tests[0],
-		'2'   : mocks.tests[1],
-		'3'   : mocks.tests[2]
+		given : () => results.push('given'),
+		'0'   : () => results.push('states0'),
+		'1'   : () => results.push('states1'),
+		'2'   : () => results.push('states2')
 	};
 	assert.equals(3, testcase.tests.length);
-	assertInitialized(testcase.tests[0], '1');
-	testcase.masterPriority = 'must';
+	assertInitialized(testcase.tests[0], '0');
 	testcase.verify();
 	yield testcase.done;
-	assert.isTrue(testcase._done);
+	assert.equals(['given', 'states0',
+	               'given', 'states1',
+	               'given', 'states2'],
+	              results);
 }
 
 function testAsync_yield()
 {
-	var mocks = createXUnitMocks(3);
+	var results = [];
 	testcase.tests = {
 		setUp : function()
 		{
-			mocks.setUp();
-			yield 100;
+			results.push('setUp/0');
+			yield 50;
+			results.push('setUp/1');
 		},
 		tearDown : function()
 		{
-			mocks.tearDown();
-			yield 100;
+			results.push('tearDown/0');
+			yield 50;
+			results.push('tearDown/1');
+		},
+		'0' : function()
+		{
+			results.push('test0/0');
+			yield 50;
+			results.push('test0/1');
 		},
 		'1' : function()
 		{
-			mocks.tests[0]();
-			yield 100;
+			results.push('test1/0');
+			yield 50;
+			results.push('test1/1');
 		},
 		'2' : function()
 		{
-			mocks.tests[1]();
-			yield 100;
-		},
-		'3' : function()
-		{
-			mocks.tests[2]();
-			yield 100;
+			results.push('test2/0');
+			yield 50;
+			results.push('test2/1');
 		}
 	};
 	assert.equals(3, testcase.tests.length);
-	testcase.masterPriority = 'must';
 	var start = Date.now();
 	testcase.run();
 	yield testcase.done;
-	assert.compare(Date.now() - start, '>=', (100 * 3) * 3);
+	assert.compare(Date.now() - start, '>=', (50 * 3) * 3);
+	assert.equals(['setUp/0', 'setUp/1', 'test0/0', 'test0/1', 'tearDown/0', 'tearDown/1',
+	               'setUp/0', 'setUp/1', 'test1/0', 'test1/1', 'tearDown/0', 'tearDown/1',
+	               'setUp/0', 'setUp/1', 'test2/0', 'test2/1', 'tearDown/0', 'tearDown/1'],
+	              results);
 }
 
 function testReuseFunctions()
 {
-	var mocks = createXUnitMocks(3);
-
+	var results = [];
 	var tests = {
-		setUp    : mocks.setUp,
-		tearDown : mocks.tearDown,
-		'1'      : mocks.tests[0],
-		'2'      : mocks.tests[1],
-		'3'      : mocks.tests[2]
+		setUp    : () => results.push('setUp'),
+		tearDown : () => results.push('tearDown'),
+		'0'      : () => results.push('test0'),
+		'1'      : () => results.push('test1'),
+		'2'      : () => results.push('test2')
 	};
+	var expectedResult = ['setUp', 'test0', 'tearDown',
+	                      'setUp', 'test1', 'tearDown',
+	                      'setUp', 'test2', 'tearDown']
 
-	testcase = new TestCase('description1');
+	testcase = new TestCase('description0');
 	testcase.suite = new TestSuite({
 		envCreator : function() { return {}; },
 		uri        : baseURL,
 		browser    : gBrowser
 	});
 	testcase.tests = tests;
+	testcase.randomOrder = false;
 	testcase.masterPriority = 'must';
 	testcase.run();
 	yield testcase.done;
+	assert.equals(expectedResult, results);
 
-	mocks.setUp.assert();
-	mocks.tearDown.assert();
-	mocks.tests[0].assert();
-	mocks.tests[1].assert();
-	mocks.tests[2].assert();
-
-	mocks.setUp.expect([]).times(3);
-	mocks.tearDown.expect([]).times(3);
-	mocks.tests[0].expect([]);
-	mocks.tests[1].expect([]);
-	mocks.tests[2].expect([]);
-
+	results = [];
 	testcase = new TestCase('description2');
 	testcase.suite = new TestSuite({
 		envCreator : function() { return {}; },
@@ -315,25 +330,26 @@ function testReuseFunctions()
 		browser    : gBrowser
 	});
 	testcase.tests = tests;
+	testcase.randomOrder = false;
 	testcase.masterPriority = 'must';
 	testcase.run();
 	yield testcase.done;
-	assert.isTrue(testcase._done);
+	assert.equals(expectedResult, results);
 }
 
 function testNoFunction()
 {
-	var setUp = new FunctionMock('setUp');
-	var tearDown = new FunctionMock('setUp');
+	var results = [];
+	var setUp = () => results.push('setUp');
+	var tearDown = () => results.push('setUp');
 	testcase.tests = {
 		setUp    : setUp,
 		tearDown : tearDown
 	};
 	assert.equals(0, testcase.tests.length);
-	testcase.masterPriority = 'must';
 	testcase.run();
 	yield testcase.done;
-	assert.isTrue(testcase._done);
+	assert.equals([], results);
 }
 
 function testPriority()
@@ -342,18 +358,18 @@ function testPriority()
 	var tearDownCount = 0;
 	var testCount     = 0;
 	testcase.tests = {
-		setUp    : function() { setUpCount++; },
-		tearDown : function() { tearDownCount++; },
-		'1'      : function() { testCount++; },
-		'2'      : function() { testCount++; },
-		'3'      : function() { testCount++; },
-		'4'      : function() { testCount++; },
-		'5'      : function() { testCount++; },
-		'6'      : function() { testCount++; },
-		'7'      : function() { testCount++; },
-		'8'      : function() { testCount++; },
-		'9'      : function() { testCount++; },
-		'10'     : function() { testCount++; }
+		setUp    : () => setUpCount++,
+		tearDown : () => tearDownCount++,
+		'0'      : () => testCount++,
+		'1'      : () => testCount++,
+		'2'      : () => testCount++,
+		'3'      : () => testCount++,
+		'4'      : () => testCount++,
+		'5'      : () => testCount++,
+		'6'      : () => testCount++,
+		'7'      : () => testCount++,
+		'8'      : () => testCount++,
+		'9'      : () => testCount++
 	};
 	assert.equals(10, testcase.tests.length);
 
@@ -374,7 +390,7 @@ function testPriority()
 
 function testMasterPriority()
 {
-	var mocks = createXUnitMocks(2);
+	var results = [];
 	testcase = new TestCase('description1');
 	testcase.suite = new TestSuite({
 		envCreator : function() { return {}; },
@@ -382,16 +398,21 @@ function testMasterPriority()
 		browser    : gBrowser
 	});
 	testcase.tests = {
-		setUp    : mocks.setUp,
-		tearDown : mocks.tearDown,
-		'1'      : mocks.tests[0],
-		'2'      : mocks.tests[1]
+		setUp    : () => results.push('setUp'),
+		tearDown : () => results.push('tearDown'),
+		'0'      : () => results.push('test0'),
+		'1'      : () => results.push('test1')
 	};
 	assert.equals(2, testcase.tests.length);
+	testcase.randomOrder = false;
 	testcase.masterPriority = 'must';
 	testcase.run();
 	yield testcase.done;
+	assert.equals(['setUp', 'test0', 'tearDown',
+	               'setUp', 'test1', 'tearDown'],
+	              results);
 
+	results = [];
 	testcase = new TestCase('description2');
 	testcase.suite = new TestSuite({
 		envCreator : function() { return {}; },
@@ -399,17 +420,19 @@ function testMasterPriority()
 		browser    : gBrowser
 	});
 	testcase.tests = {
-		setUp    : new MockFunction('neverRunSetUp'),
-		tearDown : new MockFunction('neverRunTearDown'),
-		'1'      : new MockFunction('neverRunTest0'),
-		'2'      : new MockFunction('neverRunTest1')
+		setUp    : () => results.push('neverRunSetUp'),
+		tearDown : () => results.push('neverRunTearDown'),
+		'0'      : () => results.push('neverRunTest0'),
+		'1'      : () => results.push('neverRunTest1')
 	};
+	testcase.randomOrder = false;
 	testcase.masterPriority = 'never';
 	testcase.run();
 	yield testcase.done;
-	assert.isTrue(testcase._done);
+	assert.equals([], results);
 }
 
+/*
 function testMasterPriority_overriddenByEachPriority()
 {
 	var mocks = createXUnitMocks(1);
@@ -1024,3 +1047,4 @@ function testErrorInGenerator()
 	assert.isTrue(testcase._done);
 	assertResults('error');
 }
+*/
