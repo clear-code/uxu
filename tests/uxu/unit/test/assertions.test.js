@@ -441,9 +441,11 @@ testContainsAndContainedRange.tearDown = function()
 {
 	if (largeRange) largeRange.detach();
 	if (smallRange) smallRange.detach();
+	yield utils.loadURI('about:blank');
 };
 function testContainsAndContainedRange()
 {
+
 	largeRange = content.document.createRange();
 	largeRange.setStartBefore($('item4'));
 	largeRange.setEndAfter($('item9'));
@@ -511,17 +513,13 @@ var selectionRanges = [];
 testContainsSelection.setUp = function()
 {
 	yield utils.loadURI('../../fixtures/links.html');
+	selectionRanges = [];
 };
 testContainsSelection.tearDown = function()
 {
-	selectionRanges.forEach(function(aRange) {
-		try {
-			aRange.detach()
-		}
-		catch(e) {
-		}
-	});
+	selectionRanges.forEach((aRange) => aRange.detach());
 	selectionRanges = [];
+	yield utils.loadURI('about:blank');
 };
 function testContainsSelection()
 {
@@ -629,11 +627,13 @@ function testContainsSelection()
 testContainsDOMNodeTree.setUp = function()
 {
 	yield utils.loadURI('../../fixtures/links.html');
+	selectionRanges = [];
 };
 testContainsDOMNodeTree.tearDown = function()
 {
 	selectionRanges.forEach((aRange) => aRange.detach());
 	selectionRanges = [];
+	yield utils.loadURI('about:blank');
 };
 function testContainsDOMNodeTree()
 {
