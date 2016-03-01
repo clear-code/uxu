@@ -508,11 +508,11 @@ function testContainsAndContainedRange()
 }
 
 var selectionRanges = [];
-testContainsAndContainedRange.setUp = function()
+testContainsSelection.setUp = function()
 {
 	yield utils.loadURI('../../fixtures/links.html');
 };
-testContainsAndContainedRange.tearDown = function()
+testContainsSelection.tearDown = function()
 {
 	selectionRanges.forEach(function(aRange) {
 		try {
