@@ -379,19 +379,7 @@ function testSend()
 	compose.subject = 'foo';
 	compose.body = 'bar';
 	assert.equals(0, mail.deliveries.length);
-	compose.send();
-	assert.equals(1, mail.deliveries.length);
-}
-
-function testSendAsync()
-{
-	compose.recipients = ['test@example.com'];
-	compose.subject = 'foo';
-	compose.body = 'bar';
-	assert.equals(0, mail.deliveries.length);
-	compose.send(true);
-	assert.equals(0, mail.deliveries.length);
-	yield 100;
+	yield compose.send();
 	assert.equals(1, mail.deliveries.length);
 }
 
@@ -402,19 +390,6 @@ function testSendByButtonClick()
 	compose.subject = 'foo';
 	compose.body = 'bar';
 	assert.equals(0, mail.deliveries.length);
-	compose.sendByButtonClick();
-	assert.equals(1, mail.deliveries.length);
-}
-
-testSendByButtonClickAsync.shouldSkip = utils.checkPlatformVersion('1.9') < 0;
-function testSendByButtonClickAsync()
-{
-	compose.recipients = ['test@example.com'];
-	compose.subject = 'foo';
-	compose.body = 'bar';
-	assert.equals(0, mail.deliveries.length);
-	compose.sendByButtonClick(true);
-	assert.equals(0, mail.deliveries.length);
-	yield 100;
+	yield compose.sendByButtonClick();
 	assert.equals(1, mail.deliveries.length);
 }
