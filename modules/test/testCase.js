@@ -850,10 +850,10 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 	{
 		this.callerStack = this._utils.reduceTopStackLine(this._utils.getStackTrace());
 		return this.addons.then(this._runWithAddons.bind(this))
-				.catch(function(aError) {
-					aError.stack += callerStack;
+				.catch((function(aError) {
+					aError.stack += this.callerStack;
 					throw aError;
-				});
+				}).bind(this));
 	},
 	_runWithAddons : function(aAddons)
 	{
@@ -1188,10 +1188,10 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 	{
 		this.callerStack = this._utils.reduceTopStackLine(this._utils.getStackTrace());
 		return this.addons.then(this._runByRemoteWithAddons.bind(this))
-				.catch(function(aError) {
-					aError.stack += callerStack;
+				.catch((function(aError) {
+					aError.stack += this.callerStack;
 					throw aError;
-				});
+				}).bind(this));
 	},
 	_runByRemoteWithAddons : function(aAddons)
 	{
