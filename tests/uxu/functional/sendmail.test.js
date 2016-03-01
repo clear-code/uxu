@@ -26,7 +26,7 @@ function testSend()
 
 	assert.equals(0, mail.deliveries.length);
 
-	mail.compose.send(); // mail.compose.sendByButtonClick();
+	yield mail.compose.send(); // mail.compose.sendByButtonClick();
 
 	assert.equals(1, mail.deliveries.length);
 
