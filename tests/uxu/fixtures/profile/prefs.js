@@ -4,6 +4,7 @@ user_pref("javascript.options.showInConsole", true);
 
 // General
 user_pref("extensions.update.enabled", false);
+user_pref("xpinstall.signatures.required", false);
 
 // Firefox
 user_pref("browser.tabs.warnOnClose", false);
