@@ -56,8 +56,8 @@ function test_openAndClose()
 		assert.isInstanceOf(Components.interfaces.nsIDOMChromeWindow, window);
 	}
 	else {
-		assert.isInstanceOf(retVal.window.Window, window);
-		assert.isInstanceOf(retVal.window.ChromeWindow, window);
+		assert.isInstanceOf(window.Window, window);
+		assert.isInstanceOf(window.ChromeWindow, window);
 	}
 	assert.equals('about:', window.content.location.href);
 
