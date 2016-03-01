@@ -1143,6 +1143,7 @@ comesFromFramework : function(aLine)
 {
 	return (/@chrome:\/\/uxu\/content\//.test(aLine) ||
 			/resource:\/\/uxu-modules\//.test(aLine) ||
+			/resource:\/\/gre\/modules\/Promise-backend.js/.test(aLine) ||
 			// Following is VERY kludgy
 			/\(function \(aExitResult\) \{if \(aEventHandlers/.test(aLine))
 },
