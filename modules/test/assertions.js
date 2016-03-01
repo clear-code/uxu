@@ -435,16 +435,16 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 			return this.implementsInterface(aExpectedClass, aActualInstance, aMessage);
 
 		if (typeof expected != 'function')
-			throw new Error(bundle.getFormattedString('assert_instance_not_constructor', [this._appendTypeString(expected)]));
+			throw new Error(bundle.getFormattedString('assert_instanceof_not_constructor', [this._appendTypeString(expected)]));
 
 		if (!aActualInstance.constructor)
-			throw new Error(bundle.getFormattedString('assert_instance_not_instance', [this._appendTypeString(aActualInstance)]));
+			throw new Error(bundle.getFormattedString('assert_instanceof_not_instance', [this._appendTypeString(aActualInstance)]));
 
 		if (aActualInstance.constructor != expected && !(aActualInstance instanceof expected)) {
 			var actualConstructor = aActualInstance.constructor.toString().match(/function ([^\(\s]*)\(/)[1];
 			this._fail({
-			     	expected    : bundle.getFormattedString('assert_instance_expected', [expected]),
-			     	actual      : bundle.getFormattedString('assert_instance_actual', [actualConstructor])
+			     	expected    : bundle.getFormattedString('assert_instanceof_expected', [expected]),
+			     	actual      : bundle.getFormattedString('assert_instanceof_actual', [actualConstructor])
 			     },
 			     bundle.getString('assert_instanceof'), aMessage);
 		}
