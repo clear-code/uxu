@@ -364,6 +364,10 @@ waitDOMEvent : function(...aArgs)
 		if (!definition.type)
 			continue;
 
+		definitions.capture = definitions.capture ||
+								definitions.capturing ||
+								definitions.useCapture ||
+								false;
 		definitions.push(definition);
 	}
 
@@ -411,7 +415,7 @@ waitDOMEvent : function(...aArgs)
 		};
 
 		definitions.forEach(function(aDefinition) {
-			aDefinition.target.addEventListener(aDefinition.type, listener, aDefinition.capture || false);
+			aDefinition.target.addEventListener(aDefinition.type, listener, aDefinition.capture);
 		});
 
 		var timer = ns.setTimeout(function() {
