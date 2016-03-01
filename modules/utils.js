@@ -230,6 +230,8 @@ sleep : function(aWait)
  
 wait : function(...aArgs) 
 {
+	var callerStack = this.reduceTopStackLine(this.getStackTrace());
+
 	if (
 		aArgs.length > 1 &&
 		aArgs.some(function(aArg) {
@@ -240,7 +242,12 @@ wait : function(...aArgs)
 			);
 		})
 		)
-		return this.waitDOMEvent.apply(this, aArgs);
+		return this.waitDOMEvent.apply(this, aArgs)
+				.catch(function(aError) {
+					if (aError.stack)
+						aError.stack += callerStack;
+					throw aError;
+				});
 
 	var waitCondition = aArgs.length > 0 ? aArgs[0] : 0 ;
 	var lastRun = Date.now();
@@ -253,8 +260,6 @@ wait : function(...aArgs)
 			));
 	};
 
-	var callerStack = this.reduceTopStackLine(this.getStackTrace());
-
 	switch (typeof waitCondition)
 	{
 		default:
@@ -264,14 +269,10 @@ wait : function(...aArgs)
 
 		case 'number':
 			if (waitCondition < 0) {
-				let error = new Error(
-					bundle.getFormattedString('error_utils_wait_unknown_condition', [String(waitCondition)])/* +
-					'\n' +
-					this.inspect(waitCondition) +'\n' +
-					callerStack
-					*/
-				);
-				error.stack += callerStack;
+				let error = new Error(bundle.getFormattedString(
+					'error_utils_wait_unknown_condition',
+					[String(waitCondition)]
+				));
 				return Promise.reject(error);
 			}
 
@@ -316,26 +317,27 @@ wait : function(...aArgs)
 				return new Promise(function(aResolve, aReject) {
 					waitCondition
 						.next(aResolve)
-						.error(aReject);
+						.error(function(aError) {
+							if (aError.stack)
+								aError.stack += callerStack;
+							aReject(aError);
+						});
 				});
 			}
 			break;
 	}
 
-	var error = new Error(
-		bundle.getFormattedString('error_utils_wait_unknown_condition', [String(waitCondition)]) /*+
-		'\n' +
-		this.inspect(waitCondition) +'\n' +
-		callerStack
-		*/
-	);
-	error.stack += callerStack;
+	var error = new Error(bundle.getFormattedString(
+		'error_utils_wait_unknown_condition',
+		[String(waitCondition)]
+	));
 	return Promise.reject(error);
 },
  
 waitDOMEvent : function(...aArgs) 
 {
 	var timeout = 10 * 1000;
+	var callerStack = this.reduceTopStackLine(this.getStackTrace());
 	aArgs = aArgs.filter(function(aArg) {
 			switch (typeof aArg)
 			{
@@ -402,10 +404,12 @@ waitDOMEvent : function(...aArgs)
 			});
 
 			if (aEvent.type === TIMEOUT) {
-				aReject(new Error(bundle.getFormattedString(
+				let error = new Error(bundle.getFormattedString(
 					'error_utils_wait_timeout',
 					[parseInt(aEvent.timeout / 1000)]
-				)));
+				));
+				error.stack += callerStack;
+				aReject(error);
 			}
 			else {
 				aResolve(aEvent);
@@ -1455,6 +1459,8 @@ isGeneratedIterator : function(aObject)
  
 doIteration : function(aGenerator) 
 {
+	var callerStack = this.reduceTopStackLine(this.getStackTrace());
+
 	if (!aGenerator)
 		return this.wait(0);
 
@@ -1471,8 +1477,6 @@ doIteration : function(aGenerator)
 	catch(e) {
 		return Promise.reject(e);
 	}
-
-	var callerStack = this.reduceTopStackLine(this.getStackTrace());
 
 	var lastRun = Date.now();
 	var timeout = Math.max(0, this.getPref('extensions.uxu.run.timeout'));
