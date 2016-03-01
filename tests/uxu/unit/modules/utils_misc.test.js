@@ -324,9 +324,15 @@ function test_doIterationForVariousValues()
 {
 	function assertPromise(aValue)
 	{
-		aValue = utilsModule.doIteration(aValue);
-		assert.isObject(aValue);
-		assert.isFunction(aValue.then);
+		yield assert.notRaises(
+			'Error',
+			function() {
+				aValue = utilsModule.doIteration(aValue);
+				assert.isObject(aValue);
+				assert.isFunction(aValue.then);
+				yield aValue
+			}
+		);
 	}
 
 	function assertUnacceptable(aValue)
