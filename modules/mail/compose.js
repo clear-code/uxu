@@ -199,42 +199,41 @@ Compose.prototype = {
  
 	tearDown : function() 
 	{
-		if (this._close()) {
-			return this._suite.tearDownTestWindow();
-		}
-		return Promise.resolve();
+		return utils.wait(this._close())
+			.then((function() {
+				return this._suite.tearDownTestWindow();
+			}).bind(this));
 	},
 	
-	_close : function(aWindow) 
+	_close : function(aComposeWindow) 
 	{
-		var composeWindow = aWindow || this._getWindow();
+		var composeWindow = aComposeWindow || this._getWindow();
 		if (composeWindow) {
 			composeWindow.SetContentAndBodyAsUnmodified();
-			composeWindow.MsgComposeCloseWindow(true);
-			return true;
+			composeWindow.MsgComposeCloseWindow(false);
+			return utils.wait(function() {
+				while (!composeWindow.closed) {
+					yield;
+				}
+			});
 		}
-		return false;
+		return Promise.resolve();
 	},
   
 	tearDownAll : function() 
 	{
-		if (this._closeAll()) {
-			return this._suite.tearDownTestWindow();
-		}
-		return Promise.resolve();
+		return utils.wait(this._closeAll())
+			.then((function() {
+				return this._suite.tearDownTestWindow();
+			}).bind(this));
 	},
 	
 	_closeAll : function() 
 	{
-		var closed = true;
 		var composeWindows = this._getWindows();
-		for (let i in composeWindows)
-		{
-			if (!this._close(composeWindows[i])) {
-				closed = false;
-			}
-		}
-		return closed;
+		return Promise.all(composeWindows.map(function(aComposeWindow) {
+			return this._close(aComposeWindow);
+		}, this));
 	},
    
 // get input fields 
