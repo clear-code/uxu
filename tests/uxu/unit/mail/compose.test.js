@@ -11,16 +11,21 @@ var profile = '../../fixtures/tbprofile/';
 
 function closeAllComposeWindows()
 {
-	utils.getChromeWindows({ type : 'msgcompose' })
-		.forEach(function(aWindow) {
-			composeWindow.SetContentAndBodyAsUnmodified();
-			composeWindow.MsgComposeCloseWindow(true);
-		}, this);
+	return Promise.all(utils.getChromeWindows({ type : 'msgcompose' })
+		.map(function(aComposeWindow) {
+			aComposeWindow.SetContentAndBodyAsUnmodified();
+			aComposeWindow.MsgComposeCloseWindow(false);
+			return utils.wait(function() {
+				while (!aComposeWindow.closed) {
+					yield;
+				}
+			});
+		}, this));
 }
 
 function setUp()
 {
-	closeAllComposeWindows();
+	yield closeAllComposeWindows();
 
 	compose = new Compose(utils.mail, utils);
 	yield Do(compose.setUp());
@@ -35,7 +40,7 @@ function tearDown()
 		compose.destroy();
 	}
 	compose = null;
-	closeAllComposeWindows();
+	yield closeAllComposeWindows();
 }
 
 testWindowOperations.setUp = function()
@@ -46,12 +51,10 @@ function testWindowOperations()
 {
 	assert.isNull(compose.window);
 	assert.equals(0, compose.windows.length);
-	assert.isNull(utils.getTestWindow());
 
 	assert.isFunction(compose.setUp);
 	yield Do(compose.setUp());
 
-	assert.isNotNull(utils.getTestWindow());
 	var composeWindow = compose.window;
 	assert.isNotNull(composeWindow);
 	assert.equals(1, compose.windows.length);
@@ -60,19 +63,16 @@ function testWindowOperations()
 	assert.isFunction(compose.tearDown);
 	yield Do(compose.tearDown());
 
-	assert.isNull(utils.getTestWindow());
 	assert.isNull(compose.window);
 	assert.equals(0, compose.windows.length);
 
 
 	yield Do(compose.setUp());
-	assert.isNotNull(utils.getTestWindow());
 	assert.isNotNull(compose.window);
 
 	assert.isFunction(compose.tearDownAll);
 	yield Do(compose.tearDownAll());
 
-	assert.isNull(utils.getTestWindow());
 	assert.isNull(compose.window);
 }
 
