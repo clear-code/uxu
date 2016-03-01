@@ -891,31 +891,40 @@ function testShouldSkipForAll_boolean_success()
 
 function testShouldSkipForAll_function_skip()
 {
+	var results = [];
 	testcase.registerTest(function() {});
 	testcase.registerTest(function() {});
 	testcase.registerTest(function() {});
 	testcase.masterPriority = 'must';
-	testcase.shouldSkip = (new MockFunction('shouldSkip'))
-							.expect([], true);
+	testcase.shouldSkip = function() {
+		results.push('shouldSkip');
+		return true;
+	};
 	yield assertResults('skip', 'skip', 'skip');
+	assert.equals(['shouldSkip'],
+	              results);
 }
 
 function testShouldSkipForAll_function_success()
 {
+	var results = [];
 	testcase.registerTest(function() {});
 	testcase.registerTest(function() {});
 	testcase.registerTest(function() {});
 	testcase.masterPriority = 'must';
-	testcase.shouldSkip = (new MockFunction('shouldSkip'))
-							.expect([], false);
+	testcase.shouldSkip = function() {
+		results.push('shouldSkip');
+		return false;
+	};
 	yield assertResults('success', 'success', 'success');
+	assert.equals(['shouldSkip'],
+	              results);
 }
 
 
 function assertRegisterTestWithParameters(aTest, aDescriptions)
 {
 	var lastCount = testcase.tests.length;
-	testcase.registerTest(aTest);
 	assert.equals(aDescriptions.length, testcase.tests.length - lastCount);
 	for (let i = 0; i < aDescriptions.length; i++)
 	{
@@ -924,116 +933,124 @@ function assertRegisterTestWithParameters(aTest, aDescriptions)
 	}
 }
 
-/*
+function createTestWithParameter(aSuffix, aParams, aResults) {
+	var test = function(aParameter) {
+		aResults.push('test' + aSuffix + ':' + JSON.stringify(aParameter));
+	};
+	test.setUp = function(aParameter) {
+		aResults.push('setUp' + aSuffix + ':' + JSON.stringify(aParameter));
+	};
+	test.tearDown = function(aParameter) {
+		aResults.push('tearDown' + aSuffix + ':' + JSON.stringify(aParameter));
+	};
+	test.description = 'test' + aSuffix;
+	test.parameters = aParams;
+	return test;
+}
+
 function testWithArrayParameters()
 {
-	var test;
+	var results = [];
+	var testBoolean = createTestWithParameter(
+			'Boolean',
+			[true, false],
+			results
+		);
+	var testInteger = createTestWithParameter(
+			'Integer',
+			[0, 1, 2],
+			results
+		);
+	var testObject = createTestWithParameter(
+			'Object',
+			[{}],
+			results
+		);
 
-	test = (new MockFunction('test1'))
-			.expect(true).expect(false);
-	test.setUp = (new MockFunction('setUp1'))
-			.expect(true).expect(false);
-	test.tearDown = (new MockFunction('tearDown1'))
-			.expect(true).expect(false);
-	test.description = 'desc1';
-	test.parameters = [true, false];
-	assertRegisterTestWithParameters(test,
-	                                 ['desc1 (1)',
-	                                  'desc1 (2)']);
-
-	test = (new MockFunction('test2'))
-			.expect(0).expect(1).expect(2);
-	test.setUp = (new MockFunction('setUp2'))
-			.expect(0).expect(1).expect(2);
-	test.tearDown = (new MockFunction('tearDown2'))
-			.expect(0).expect(1).expect(2);
-	test.description = 'desc2';
-	test.parameters = [0, 1, 2];
-	assertRegisterTestWithParameters(test,
-	                                 ['desc2 (1)',
-	                                  'desc2 (2)',
-	                                  'desc2 (3)']);
-
-	var obj = {};
-	test = (new MockFunction('test3'))
-			.expect(obj);
-	test.setUp = (new MockFunction('setUp3'))
-			.expect(obj);
-	test.tearDown = (new MockFunction('tearDown3'))
-			.expect(obj);
-	test.description = 'desc3';
-	test.parameters = [obj];
-	assertRegisterTestWithParameters(test,
-	                                 ['desc3 (1)']);
+	testcase.registerTest(testBoolean);
+	testcase.registerTest(testInteger);
+	testcase.registerTest(testObject);
+	assert.equals(['testBoolean (1)',
+	               'testBoolean (2)',
+	               'testInteger (1)',
+	               'testInteger (2)',
+	               'testInteger (3)',
+	               'testObject (1)'],
+	              testcase.tests.map((aTest) => aTest.description));
 
 	testcase.masterPriority = 'must';
 	testcase.randomOrder = false;
 	yield assertResults('success', 'success',
 	                    'success', 'success', 'success',
 	                    'success');
+	assert.equals([
+		'setUpBoolean:true', 'testBoolean:true', 'tearDownBoolean:true',
+		'setUpBoolean:false', 'testBoolean:false', 'tearDownBoolean:false',
+		'setUpInteger:0', 'testInteger:0', 'tearDownInteger:0',
+		'setUpInteger:1', 'testInteger:1', 'tearDownInteger:1',
+		'setUpInteger:2', 'testInteger:2', 'tearDownInteger:2',
+		'setUpObject:{}', 'testObject:{}', 'tearDownObject:{}'
+	], results);
 }
 
 function testWithHashParameters()
 {
-	var test;
+	var results = [];
+	var testBoolean = createTestWithParameter(
+			'Boolean',
+			{ foo : true,
+			  bar : false },
+			results
+		);
+	var testInteger = createTestWithParameter(
+			'Integer',
+			{ hoge : 0,
+			  fuga : 1 },
+			results
+		);
+	var testObject = createTestWithParameter(
+			'Object',
+			{ aaa : {value:true},
+			  bbb : {value:false} },
+			results
+		);
 
-	var params1 = { foo : true,
-	                bar : false }
-	test = (new MockFunction('test1'))
-			.expect(params1.foo).expect(params1.bar);
-	test.setUp = (new MockFunction('setUp1'))
-			.expect(params1.foo).expect(params1.bar);
-	test.tearDown = (new MockFunction('tearDown1'))
-			.expect(params1.foo).expect(params1.bar);
-	test.description = 'desc1';
-	test.parameters = params1;
-	assertRegisterTestWithParameters(test,
-	                                 ['desc1 (foo)',
-	                                  'desc1 (bar)']);
-
-	var params2 = { hoge : 0,
-	                fuga : 1 }
-	test = (new MockFunction('test2'))
-			.expect(params2.hoge).expect(params2.fuga);
-	test.setUp = (new MockFunction('setUp2'))
-			.expect(params2.hoge).expect(params2.fuga);
-	test.tearDown = (new MockFunction('tearDown2'))
-			.expect(params2.hoge).expect(params2.fuga);
-	test.description = 'desc2';
-	test.parameters = params2;
-	assertRegisterTestWithParameters(test,
-	                                 ['desc2 (hoge)',
-	                                  'desc2 (fuga)']);
-
-	var params3 = { aaa : {},
-	                bbb : {} }
-	test = (new MockFunction('test3'))
-			.expect(params3.aaa).expect(params3.bbb);
-	test.setUp = (new MockFunction('setUp3'))
-			.expect(params3.aaa).expect(params3.bbb);
-	test.tearDown = (new MockFunction('tearDown3'))
-			.expect(params3.aaa).expect(params3.bbb);
-	test.description = 'desc3';
-	test.parameters = params3;
-	assertRegisterTestWithParameters(test,
-	                                 ['desc3 (aaa)',
-	                                  'desc3 (bbb)']);
+	testcase.registerTest(testBoolean);
+	testcase.registerTest(testInteger);
+	testcase.registerTest(testObject);
+	assert.equals(['testBoolean (foo)',
+	               'testBoolean (bar)',
+	               'testInteger (hoge)',
+	               'testInteger (fuga)',
+	               'testObject (aaa)',
+	               'testObject (bbb)'],
+	              testcase.tests.map((aTest) => aTest.description));
 
 	testcase.masterPriority = 'must';
 	testcase.randomOrder = false;
 	yield assertResults('success', 'success',
 	                    'success', 'success',
 	                    'success', 'success');
+	assert.equals([
+		'setUpBoolean:true', 'testBoolean:true', 'tearDownBoolean:true',
+		'setUpBoolean:false', 'testBoolean:false', 'tearDownBoolean:false',
+		'setUpInteger:0', 'testInteger:0', 'tearDownInteger:0',
+		'setUpInteger:1', 'testInteger:1', 'tearDownInteger:1',
+		'setUpObject:{"value":true}', 'testObject:{"value":true}',
+		  'tearDownObject:{"value":true}',
+		'setUpObject:{"value":false}', 'testObject:{"value":false}',
+		  'tearDownObject:{"value":false}'
+	], results);
 }
 
 function testErrorInGenerator()
 {
 	testcase.tests = {
 		'test'   : function() {
-			yield Do(function() {
+			yield function() {
 				throw new Error('error from generator');
 				yield 1;
-			});
+			};
 		}
 	};
 	testcase.masterPriority = 'must';
@@ -1042,4 +1059,3 @@ function testErrorInGenerator()
 	assert.isTrue(testcase._done);
 	yield assertResults('error');
 }
-*/
