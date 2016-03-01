@@ -324,26 +324,33 @@ function test_doIterationForVariousValues()
 {
 	function assertPromise(aValue)
 	{
+		aValue = utilsModule.doIteration(aValue);
 		assert.isObject(aValue);
 		assert.isFunction(aValue.then);
 	}
 
-	assertPromise(utilsModule.doIteration({}));
-	assertPromise(utilsModule.doIteration(true));
-	assertPromise(utilsModule.doIteration(100));
-	assertPromise(utilsModule.doIteration('string'));
-	assertPromise(utilsModule.doIteration(function() {
+	function assertUnacceptable(aValue)
+	{
+		yield assert.raises(
+			'Error',
+			() => utilsModule.doIteration(aValue)
+		);
+	}
+
+	yield assertUnacceptable({});
+	yield assertPromise(true);
+	yield assertPromise(100);
+	yield assertPromise('string');
+	yield assertPromise(function() {
 		return 'foobar';
-	}));
+	});
 
 	function Generator()
 	{
 		yield 100;
 	};
-	var result = utilsModule.doIteration(Generator);
-	assertPromise(result);
-	result = utilsModule.doIteration(Generator());
-	assertPromise(result);
+	yield assertPromise(Generator);
+	yield assertPromise(Generator());
 }
 
 function test_Do()
