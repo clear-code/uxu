@@ -273,44 +273,6 @@ function testAsync_yield()
 	assert.compare(Date.now() - start, '>=', (100 * 3) * 3);
 }
 
-function testAsync_wait()
-{
-	var mocks = createXUnitMocks(3);
-	testcase.tests = {
-		setUp : function()
-		{
-			mocks.setUp();
-			yield utils.wait(100);
-		},
-		tearDown : function()
-		{
-			mocks.tearDown();
-			yield utils.wait(100);
-		},
-		'1' : function()
-		{
-			mocks.tests[0]();
-			yield utils.wait(100);
-		},
-		'2' : function()
-		{
-			mocks.tests[1]();
-			yield utils.wait(100);
-		},
-		'3' : function()
-		{
-			mocks.tests[2]();
-			yield utils.wait(100);
-		}
-	};
-	assert.equals(3, testcase.tests.length);
-	testcase.masterPriority = 'must';
-	var start = Date.now();
-	testcase.run();
-	yield testcase.done;
-	assert.compare(Date.now() - start, '>=', (100 * 3) * 3);
-}
-
 function testReuseFunctions()
 {
 	var mocks = createXUnitMocks(3);
