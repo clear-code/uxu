@@ -384,7 +384,9 @@ closeTestWindow : function(aOptions)
 	if (win) {
 		win.close();
 		return this._utils.wait(function() {
-			return win.closed;
+			while(!win.closed) {
+				yield;
+			}
 		});
 	}
 	return Promise.resolve();
@@ -567,13 +569,15 @@ loadURI : function(aURI, aOptions)
 		if (win) b = win.gBrowser;
 	}
 	if (!b)
-		return Promise.resolve();
+		return Promise.resolve(null);
 
 	return new Promise((function(aResolve, aReject) {
 		b.stop();
 		ns.setTimeout((function() {
 			this._waitBrowserLoad(null, b)
-				.then(aResolve)
+				.then(function() {
+					aResolve(b.contentWindow);
+				})
 				.catch(aReject);
 			b.loadURI(aURI, aOptions.referrer || null);
 		}).bind(this), 0);

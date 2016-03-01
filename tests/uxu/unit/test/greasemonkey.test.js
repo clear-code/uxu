@@ -11,7 +11,7 @@ var lastPageURI;
 function loadPage(aURI) {
 	aURI = aURI || 'about:blank';
 	lastPageURI = aURI+'?'+parseInt(Math.random() * 65000);
-	return utils.loadURI(lastPageURI);
+	yield utils.loadURI(lastPageURI);
 }
 
 function setUp()
@@ -22,7 +22,7 @@ function setUp()
 	utils.setPref('browser.warnOnQuit', false);
 	utils.setPref('browser.warnOnRestart', false);
 
-	yield Do(loadPage());
+	yield loadPage();
 	assert.equals(lastPageURI, content.location.href);
 	GMUtils = new GreasemonkeyUtils(utils);
 }
@@ -36,94 +36,33 @@ function tearDown()
 
 function test_loadAndUnload()
 {
-	var retVal = GMUtils.load('about:');
-	assert.isTrue(retVal.value);
+	yield GMUtils.load('about:');
 	assert.equals('about:', content.location.href);
 
-	retVal = GMUtils.unload();
-	assert.isTrue(retVal.value);
-	assert.equals('about:blank', content.location.href);
-}
-
-function test_loadAndUnload_async()
-{
-	var retVal = GMUtils.load('about:', { async: true });
-	assert.isDefined(retVal.value);
-	assert.isFalse(retVal.value);
-	assert.notEquals('about:', content.location.href);
-
-	yield 1000;
-	assert.isTrue(retVal.value);
-	assert.equals('about:', content.location.href);
-
-	retVal = GMUtils.unload({ async: true });
-	assert.isDefined(retVal.value);
-	assert.isFalse(retVal.value);
-	assert.notEquals('about:blank', content.location.href);
-
-	yield 1000;
-	assert.isTrue(retVal.value);
+	yield GMUtils.unload();
 	assert.equals('about:blank', content.location.href);
 }
 
 
-test_openAndClose.tearDown = function() {
-	utils.tearDownTestWindow();
-};
+test_openAndClose.tearDown = utils.tearDownTestWindow;
 function test_openAndClose()
 {
-	var retVal = GMUtils.open('about:');
-	assert.isTrue(retVal.value);
-	assert.isNotNull(retVal.window);
+	var window;
+	yield GMUtils.open('about:').then(function(aWindow) {
+		window = aWindow
+	});
 	if (utils.checkPlatformVersion('35') < 0) {
-		assert.isInstanceOf(Components.interfaces.nsIDOMWindow, retVal.window);
-		assert.isInstanceOf(Components.interfaces.nsIDOMChromeWindow, retVal.window);
+		assert.isInstanceOf(Components.interfaces.nsIDOMWindow, window);
+		assert.isInstanceOf(Components.interfaces.nsIDOMChromeWindow, window);
 	}
 	else {
-		assert.isInstanceOf(retVal.window.Window, retVal.window);
-		assert.isInstanceOf(retVal.window.ChromeWindow, retVal.window);
+		assert.isInstanceOf(retVal.window.Window, window);
+		assert.isInstanceOf(retVal.window.ChromeWindow, window);
 	}
-	assert.equals('about:', retVal.window.content.location.href);
+	assert.equals('about:', window.content.location.href);
 
-	GMUtils.close();
-	yield 300;
-	assert.isTrue(retVal.window.closed);
-}
-
-test_openAndClose_async.tearDown = function() {
-	utils.tearDownTestWindow();
-};
-function test_openAndClose_async()
-{
-	var retVal = GMUtils.open('about:', { async : true });
-	assert.isDefined(retVal.value);
-	assert.isFalse(retVal.value);
-	assert.isDefined(retVal.window);
-	assert.isNull(retVal.window);
-
-	var count = 0;
-	while (count < 10)
-	{
-		count++;
-		yield 1000;
-		if (retVal.value) break;
-	}
-	yield 100;
-	assert.isTrue(retVal.value);
-	assert.isNotNull(retVal.window);
-	if (utils.checkPlatformVersion('35') < 0) {
-		assert.isInstanceOf(Components.interfaces.nsIDOMWindow, retVal.window);
-		assert.isInstanceOf(Components.interfaces.nsIDOMChromeWindow, retVal.window);
-	}
-	else {
-		assert.isInstanceOf(retVal.window.Window, retVal.window);
-		assert.isInstanceOf(retVal.window.ChromeWindow, retVal.window);
-	}
-	assert.equals('about:', retVal.window.content.location.href);
-
-	GMUtils.close();
-	yield 300;
-	assert.isTrue(retVal.window.closed);
+	yield GMUtils.close();
+	assert.isTrue(window.closed);
 }
 
 test_getSandbox.setUp = function() {
@@ -270,17 +209,21 @@ function test_GM_registerMenuCommand()
 }
 
 test_GM_xmlhttpRequest.setUp = function() {
-	utils.setUpHttpServer(4445, topDir+'tests/uxu/fixtures/');
+	yield utils.setUpHttpServer(4445, topDir+'tests/uxu/fixtures/');
 };
 test_GM_xmlhttpRequest.tearDown = function() {
-	utils.tearDownAllHttpServers();
+	yield utils.tearDownAllHttpServers();
 };
 function test_GM_xmlhttpRequest()
 {
 	var sandbox = GMUtils.loadScript(topDir+'tests/uxu/fixtures/gm_xmlHttpRequest.user.js');
 	assert.isFunction(sandbox.loadAsciiFile);
 	sandbox.loadAsciiFile();
-	yield function() { return sandbox.data; };
+	yield function() {
+		while (!sandbox.data) {
+			yield;
+		}
+	};
 	assert.equals('ASCII', sandbox.data);
 }
 
@@ -315,9 +258,7 @@ function test_GM_getResourceURL()
 	assert.equals('data:text/html;base64,', resource.substring(0, 22));
 }
 
-test_GM_openInTab.tearDown = function() {
-	yield Do(utils.tearDownTestWindow());
-};
+test_GM_openInTab.tearDown = utils.tearDownTestWindow;
 function test_GM_openInTab()
 {
 	yield Do(GMUtils.open('about:'));
@@ -332,9 +273,7 @@ function test_GM_openInTab()
 }
 
 
-test_listeningEvents.tearDown = function() {
-	yield Do(utils.tearDownTestWindow());
-};
+test_listeningEvents.tearDown = utils.tearDownTestWindow;
 function test_listeningEvents()
 {
 	function defaultHandler(aEvent) { this.setResult(aEvent); };
@@ -477,10 +416,10 @@ GM_xmlhttpRequestReadystatechange
 
 
 test_doAndWaitLoad.setUp = function() {
-	utils.setUpHttpServer(4445, topDir+'tests/uxu/fixtures/');
+	yield utils.setUpHttpServer(4445, topDir+'tests/uxu/fixtures/');
 };
 test_doAndWaitLoad.tearDown = function() {
-	utils.tearDownAllHttpServers();
+	yield utils.tearDownAllHttpServers();
 };
 function test_doAndWaitLoad()
 {

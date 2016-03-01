@@ -118,8 +118,16 @@ GreasemonkeyUtils.prototype = {
 		this.listeners = [];
 		this.sandboxes = {};
 		this.frame = this.frameInTestRunner;
-		this.testWindow.close();
-		this.testWindow = null;
+		return new Promise((function(aResolve, aReject) {
+			this.testWindow.close();
+			ns.utils.doIteration((function() {
+				while(!this.testWindow.closed) {
+					yield;
+				}
+				this.testWindow = null;
+				aResolve();
+			}).bind(this));
+		}).bind(this));
 	},
 
 
