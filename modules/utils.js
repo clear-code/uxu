@@ -256,6 +256,9 @@ wait : function(...aArgs)
 	switch (typeof waitCondition)
 	{
 		default:
+			return Promise.resolve();
+
+		case 'string':
 			waitCondition = Number(waitCondition);
 			if (isNaN(waitCondition))
 				waitCondition = 0;
@@ -295,7 +298,7 @@ wait : function(...aArgs)
 
 		case 'object':
 			if (!waitCondition) {
-				return this.wait(0);
+				return Promise.resolve();
 			}
 			if (this.isGeneratedIterator(waitCondition)) {
 				return this.doIteration(waitCondition);
@@ -1459,7 +1462,7 @@ isGeneratedIterator : function(aObject)
 doIteration : function(aGenerator) 
 {
 	if (!aGenerator)
-		return this.wait(0);
+		return Promise.resolve();
 
 	var iterator = aGenerator;
 	try {
@@ -1510,6 +1513,10 @@ doIteration : function(aGenerator)
 			switch (typeof result)
 			{
 				default:
+					ns.setTimeout(loop, 0);
+					return;
+
+				case 'string':
 					result = Number(result);
 					if (isNaN(result))
 						result = 0;
