@@ -23,21 +23,21 @@ function tearDown()
 
 function test_readyToOK()
 {
-	assert.finishWithin(
+	yield assert.finishWithin(
 		ACCEPT_DELAY,
 		function() {
 			actionModule.readyToOK();
 			alert('click OK');
 		}
 	);
-	assert.finishWithin(
+	yield assert.finishWithin(
 		ACCEPT_DELAY,
 		function() {
 			actionModule.readyToOK();
 			PromptService.alert(null, 'title', 'click OK');
 		}
 	);
-	assert.finishWithin(
+	yield assert.finishWithin(
 		ACCEPT_DELAY,
 		function() {
 			actionModule.readyToOK({ checked : true });
@@ -50,7 +50,7 @@ function test_readyToOK()
 
 function test_readyToConfirm()
 {
-	assert.finishWithin(
+	yield assert.finishWithin(
 		ACCEPT_DELAY,
 		function() {
 			actionModule.readyToConfirm(true);
@@ -58,7 +58,7 @@ function test_readyToConfirm()
 			assert.isTrue(result);
 		}
 	);
-	assert.finishWithin(
+	yield assert.finishWithin(
 		ACCEPT_DELAY,
 		function() {
 			actionModule.readyToConfirm(false);
@@ -66,7 +66,7 @@ function test_readyToConfirm()
 			assert.isFalse(result);
 		}
 	);
-	assert.finishWithin(
+	yield assert.finishWithin(
 		ACCEPT_DELAY,
 		function() {
 			actionModule.readyToConfirm(true);
@@ -74,7 +74,7 @@ function test_readyToConfirm()
 			assert.isTrue(result);
 		}
 	);
-	assert.finishWithin(
+	yield assert.finishWithin(
 		ACCEPT_DELAY,
 		function() {
 			actionModule.readyToConfirm(false);
@@ -82,7 +82,7 @@ function test_readyToConfirm()
 			assert.isFalse(result);
 		}
 	);
-	assert.finishWithin(
+	yield assert.finishWithin(
 		ACCEPT_DELAY,
 		function() {
 			actionModule.readyToConfirm(true, { checked : true });
@@ -92,7 +92,7 @@ function test_readyToConfirm()
 			assert.isTrue(checked.value);
 		}
 	);
-	assert.finishWithin(
+	yield assert.finishWithin(
 		ACCEPT_DELAY,
 		function() {
 			actionModule.readyToConfirm(false, { checked : true });
@@ -102,7 +102,7 @@ function test_readyToConfirm()
 			assert.isTrue(checked.value);
 		}
 	);
-	assert.finishWithin(
+	yield assert.finishWithin(
 		ACCEPT_DELAY,
 		function() {
 			actionModule.readyToConfirm(0, { checked : true });
@@ -117,7 +117,7 @@ function test_readyToConfirm()
 			assert.isTrue(checked.value);
 		}
 	);
-	assert.finishWithin(
+	yield assert.finishWithin(
 		ACCEPT_DELAY,
 		function() {
 			actionModule.readyToConfirm(1, { checked : true });
@@ -132,7 +132,7 @@ function test_readyToConfirm()
 			assert.isTrue(checked.value);
 		}
 	);
-	assert.finishWithin(
+	yield assert.finishWithin(
 		ACCEPT_DELAY,
 		function() {
 			actionModule.readyToConfirm(2, { checked : true });
@@ -151,7 +151,7 @@ function test_readyToConfirm()
 
 function test_readyToPrompt()
 {
-	assert.finishWithin(
+	yield assert.finishWithin(
 		ACCEPT_DELAY,
 		function() {
 			actionModule.readyToPrompt('input');
@@ -159,7 +159,7 @@ function test_readyToPrompt()
 			assert.equals('input', result);
 		}
 	);
-	assert.finishWithin(
+	yield assert.finishWithin(
 		ACCEPT_DELAY,
 		function() {
 			actionModule.readyToPrompt('input', { checked : true });
@@ -175,7 +175,7 @@ function test_readyToPrompt()
 
 function test_readyToPromptPassword()
 {
-	assert.finishWithin(
+	yield assert.finishWithin(
 		ACCEPT_DELAY,
 		function() {
 			actionModule.readyToPromptPassword('password', { checked : true });
@@ -191,7 +191,7 @@ function test_readyToPromptPassword()
 
 function test_readyToPromptUsernameAndPassword()
 {
-	assert.finishWithin(
+	yield assert.finishWithin(
 		ACCEPT_DELAY,
 		function() {
 			actionModule.readyToPromptUsernameAndPassword('username', 'password', { checked : true });
@@ -209,7 +209,7 @@ function test_readyToPromptUsernameAndPassword()
 
 function test_readyToSelect()
 {
-	assert.finishWithin(
+	yield assert.finishWithin(
 		ACCEPT_DELAY,
 		function() {
 			actionModule.readyToSelect(1);
@@ -227,7 +227,7 @@ function test_multiple()
 	actionModule.readyToOK();
 	actionModule.readyToOK();
 	actionModule.readyToOK({ checked : true });
-	assert.finishWithin(
+	yield assert.finishWithin(
 		ACCEPT_DELAY * 3,
 		function() {
 			alert('click OK');
