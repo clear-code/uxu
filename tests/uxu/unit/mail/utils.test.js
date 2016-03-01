@@ -48,7 +48,7 @@ function testEmulateSendMessage()
 	assert.equals(0, observer.count);
 
 	observer.startObserve('uxu:mail:sent');
-	utilsModule.emulateSendMessage(window, mailCompFields);
+	yield utilsModule.emulateSendMessage(window, mailCompFields);
 	observer.endObserve('uxu:mail:sent');
 
 	assert.equals(1, observer.count);
@@ -80,7 +80,7 @@ function testDeliveries()
 {
 	assert.isDefined(utilsModule.deliveries);
 
-	utilsModule.emulateSendMessage(window, mailCompFields);
+	yield utilsModule.emulateSendMessage(window, mailCompFields);
 	assert.equals(1, utilsModule.deliveries.length);
 
 	var data = utilsModule.deliveries[0];
