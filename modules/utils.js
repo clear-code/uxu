@@ -230,8 +230,6 @@ sleep : function(aWait)
  
 wait : function(...aArgs) 
 {
-	var callerStack = this.reduceTopStackLine(this.getStackTrace());
-
 	if (
 		aArgs.length > 1 &&
 		aArgs.some(function(aArg) {
@@ -242,12 +240,7 @@ wait : function(...aArgs)
 			);
 		})
 		)
-		return this.waitDOMEvent.apply(this, aArgs)
-				.catch(function(aError) {
-					if (aError.stack)
-						aError.stack += callerStack;
-					throw aError;
-				});
+		return this.waitDOMEvent.apply(this, aArgs);
 
 	var waitCondition = aArgs.length > 0 ? aArgs[0] : 0 ;
 	var lastRun = Date.now();
@@ -314,6 +307,7 @@ wait : function(...aArgs)
 				if (waitCondition.fired)
 					return Promise.resolve();
 
+				let callerStack = this.reduceTopStackLine(this.getStackTrace());
 				return new Promise(function(aResolve, aReject) {
 					waitCondition
 						.next(aResolve)
@@ -336,7 +330,6 @@ wait : function(...aArgs)
  
 waitDOMEvent : function(...aArgs) 
 {
-	var callerStack = this.reduceTopStackLine(this.getStackTrace());
 	var timeout = Math.max(0, this.getPref('extensions.uxu.run.timeout.waitDOMEvent'));
 	aArgs = aArgs.filter(function(aArg) {
 			switch (typeof aArg)
@@ -374,6 +367,7 @@ waitDOMEvent : function(...aArgs)
 		definitions.push(definition);
 	}
 
+	var callerStack = this.reduceTopStackLine(this.getStackTrace());
 	return new Promise((function(aResolve, aReject) {
 		var TIMEOUT = 'UxUWaitDOMEventTimeout';
 		var listener = function(aEvent) {
@@ -1460,8 +1454,6 @@ isGeneratedIterator : function(aObject)
  
 doIteration : function(aGenerator) 
 {
-	var callerStack = this.reduceTopStackLine(this.getStackTrace());
-
 	if (!aGenerator)
 		return this.wait(0);
 
@@ -1482,26 +1474,19 @@ doIteration : function(aGenerator)
 	var lastRun = Date.now();
 	var timeout = Math.max(0, this.getPref('extensions.uxu.run.timeout'));
 
+	var callerStack = this.reduceTopStackLine(this.getStackTrace());
 	return new Promise((function(aResolve, aReject) {
 		var onException = (function(aException) {
 			if (aException instanceof StopIteration) {
 				aResolve();
 			}
 			else if (aException.name == 'AssertionFailed') {
-				try {
-					aException.stack += callerStack;
-				}
-				catch(e) {
-				}
+				aException.stack += callerStack;
 				aReject(aException);
 			}
 			else {
 				aException = this.normalizeError(aException);
-				try {
-					aException.stack += callerStack;
-				}
-				catch(e) {
-				}
+				aException.stack += callerStack;
 				aReject(aException);
 			}
 		}).bind(this);

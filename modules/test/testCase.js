@@ -111,6 +111,7 @@ function TestCase(aTitle, aOptions)
 
 	this._doneResolvers = []
 	this._abortedResolvers = []
+	this.callerStack = this._utils.reduceTopStackLine(this._utils.getStackTrace());
 
 	this.notifications = [];
 	this.addListener(this);
@@ -847,7 +848,12 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 	},
 	_run : function()
 	{
-		return this.addons.then(this._runWithAddons.bind(this));
+		this.callerStack = this._utils.reduceTopStackLine(this._utils.getStackTrace());
+		return this.addons.then(this._runWithAddons.bind(this))
+				.catch(function(aError) {
+					aError.stack += callerStack;
+					throw aError;
+				});
 	},
 	_runWithAddons : function(aAddons)
 	{
@@ -1147,6 +1153,8 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 				// all states are done!
 			}).call(this, states, states.start);
 
+		var callerStack = this._utils.reduceTopStackLine(this._utils.getStackTrace()) + this.callerStack;
+		return new Promise((function(aResolve, aReject) {
 		try {
 			iterator.next();
 			var timer = ns.setInterval(function() {
@@ -1156,26 +1164,34 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 					catch(e) {
 						if (e instanceof StopIteration) {
 							ns.clearInterval(timer);
+							aResolve();
 						}
 						else {
-							throw e;
+							e.stack += callerStack;
+							aReject(e);
 						}
 					}
 				}, 1);
 		}
 		catch(e) {
 			if (e instanceof StopIteration) {
-				// finished
+				aResolve();
 			}
 			else {
-				throw e;
+				aReject(e);
 			}
 		}
+		}).bind(this));
 	},
 	
 	_runByRemote : function() 
 	{
-		return this.addons.then(this._runByRemoteWithAddons.bind(this));
+		this.callerStack = this._utils.reduceTopStackLine(this._utils.getStackTrace());
+		return this.addons.then(this._runByRemoteWithAddons.bind(this))
+				.catch(function(aError) {
+					aError.stack += callerStack;
+					throw aError;
+				});
 	},
 	_runByRemoteWithAddons : function(aAddons)
 	{
@@ -1411,6 +1427,7 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 		var onError = (function(e) {
 				var multiplex = e.name == 'MultiplexError';
 				(multiplex ? e.errors : [e] ).forEach(function(e, aIndex) {
+					e.stack += this.callerStack;
 					var description = aTest.description;
 					if (multiplex)
 						description = bundle.getFormattedString('report_description_multiplex', [description, aIndex+1]);

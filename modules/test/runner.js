@@ -213,6 +213,7 @@ TestRunner.prototype = ns.inherit(ns.EventTarget.prototype, {
 		this._shouldAbort = false;
 		this._testsCount  = aTests.length;
 		this._finishedCount = 0;
+		var callerStack = utils.reduceTopStackLine(utils.getStackTrace());
 
 		var self = this;
 		this._stoppers = [];
@@ -224,10 +225,12 @@ TestRunner.prototype = ns.inherit(ns.EventTarget.prototype, {
 					parseInt(((self._finishedCount+1) / (self._testsCount + 1)) * 100));
 				try {
 					aTest.addListener(self);
+					aTest.callerStack = callerStack;
 					let stopper = aTest.run();
 					self._stoppers.push(stopper);
 				}
 				catch(e) {
+					e.stack += callerStack;
 					self.fireEvent('Error', utils.normalizeError(e));
 				}
 				return false;
