@@ -401,10 +401,15 @@ waitDOMEvent : function(...aArgs)
 				aDefinition.target.removeEventListener(aDefinition.type, listener, aDefinition.capture || false);
 			});
 
-			if (aEvent.type == TIMEOUT)
-				aReject(aEvent);
-			else
+			if (aEvent.type === TIMEOUT) {
+				aReject(new Error(bundle.getFormattedString(
+					'error_utils_wait_timeout',
+					[parseInt(aEvent.timeout / 1000)]
+				)));
+			}
+			else {
 				aResolve(aEvent);
+			}
 		};
 
 		definitions.forEach(function(aDefinition) {
