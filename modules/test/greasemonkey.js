@@ -94,20 +94,18 @@ GreasemonkeyUtils.prototype = {
 		aURI = this._suite.fixupIncompleteURI(aURI)
 		this.listeners = [];
 		this.sandboxes = {};
-		var result = { window : null, tab : null };
 		return this._suite.setUpTestWindow(null, aOptions)
 				.then((function(aWindow) {
-					result.window = this.testWindow = aWindow;
+					this.testWindow = aWindow;
 					var b = aWindow.gBrowser;
 					if (!b)
-						return result;
+						return aWindow;
 
 					return this._suite.addTab(aURI)
 						.then((function(aTab) {
-							result.tab = aTab;
 							this.frame = aTab.linkedBrowser;
 							b.removeAllTabsBut(aTab);
-							return result;
+							return aWindow;
 						}).bind(this));
 				}).bind(this));
 	},
