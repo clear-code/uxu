@@ -247,7 +247,10 @@ wait : function(...aArgs)
 	var timeout = Math.max(0, this.getPref('extensions.uxu.run.timeout'));
 	var checkTimeout = function() {
 		if (Date.now() - lastRun >= timeout)
-			throw new Error(bundle.getFormattedString('error_utils_wait_timeout', [parseInt(timeout / 1000)]));
+			throw new Error(bundle.getFormattedString(
+				'error_utils_wait_timeout',
+				[parseInt(timeout / 1000)]
+			));
 	};
 
 	var callerStack = this.reduceTopStackLine(this.getStackTrace());
