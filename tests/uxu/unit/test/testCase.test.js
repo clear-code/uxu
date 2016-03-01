@@ -432,22 +432,21 @@ function testMasterPriority()
 	assert.equals([], results);
 }
 
-/*
 function testMasterPriority_overriddenByEachPriority()
 {
-	var mocks = createXUnitMocks(1);
-	var neverRunTest = new MockFunction('neverRunTest');
+	var results = [];
+	var neverRunTest = () => results.push('neverRunTest');
 	neverRunTest.priority = 'never';
 	testcase.tests = {
-		setUp    : mocks.setUp,
-		tearDown : mocks.tearDown,
-		'1'      : mocks.tests[0],
-		'2'      : neverRunTest
+		setUp    : () => results.push('setUp'),
+		tearDown : () => results.push('tearDown'),
+		'0'      : () => results.push('test0'),
+		'1'      : neverRunTest
 	};
-	testcase.masterPriority = 'must';
 	testcase.run();
 	yield testcase.done;
-	assert.isTrue(testcase._done);
+	assert.equals(['setUp', 'test0', 'tearDown'],
+	              results);
 }
 
 testForceRetry.setUp = function() {
@@ -455,37 +454,40 @@ testForceRetry.setUp = function() {
 };
 function testForceRetry()
 {
-	var neverRunTest = new MockFunction('neverRunTest');
+	var results = [];
 	var tests = {
-		setUp    : new FunctionMock('setUp').expect([]),
-		tearDown : new FunctionMock('tearDown').expect([]),
-		test    : function() { assert.isTrue(false); neverRunTest(); }
+		setUp    : () => results.push('setUp'),
+		tearDown : () => results.push('tearDown'),
+		test     : function() { assert.isTrue(false); results.push('neverRun'); }
 	};
 	testcase.tests = tests;
 	assert.equals(1, testcase.tests.length);
 	testcase.masterPriority = 'must';
 	testcase.run();
 	yield testcase.done;
-	assert.isTrue(testcase._done);
+	var expectedResult = ['setUp', 'tearDown'];
+	assert.equals(expectedResult, results);
 
-	tests.setUp.assert();
-	tests.tearDown.assert();
-	neverRunTest.assert();
+	results = [];
 
-	tests.setUp.expect([]).times(10);
-	tests.tearDown.expect([]).times(10);
-
-	yield utils.wait(
-		Deferred.repeat(10, function() {
+	var allResults = [];
+	for (let i = 0, maxi = 10; i < maxi; i++)
+	{
+		allResults = allResults.concat(expectedResult);
+	}
+	yield utils.wait(function() {
+		for (let i = 0, maxi = 10; i < maxi; i++)
+		{
 			testcase.done = false;
 			testcase.masterPriority = 'normal';
 			testcase.run();
 			yield testcase.done;
-			assert.isTrue(testcase._done);
-		})
-	);
+		}
+	});
+	assert.equals(allResults, results);
 }
 
+/*
 function testPreventForceRetryByMasterPriorityNever()
 {
 	var mocks = createXUnitMocks(1);
