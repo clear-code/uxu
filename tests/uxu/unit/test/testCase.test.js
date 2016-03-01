@@ -475,6 +475,7 @@ function testForceRetry()
 	{
 		allResults = allResults.concat(expectedResult);
 	}
+
 	yield utils.wait(function() {
 		for (let i = 0, maxi = 10; i < maxi; i++)
 		{
@@ -487,75 +488,71 @@ function testForceRetry()
 	assert.equals(allResults, results);
 }
 
-/*
 function testPreventForceRetryByMasterPriorityNever()
 {
-	var mocks = createXUnitMocks(1);
-	var neverRunTest = new MockFunction('neverRunTest');
+	var results = [];
 	testcase.tests = {
-		setUp    : mocks.setUp.expect([]),
-		tearDown : mocks.tearDown.expect([]),
-		'1'      : function() { assert.isTrue(false); neverRunTest(); },
-		'2'      : mocks.tests[0]
+		setUp    : () => results.push('setUp'),
+		tearDown : () => results.push('tearDown'),
+		'0'      : function() { assert.isTrue(false); results.push('neverRun'); },
+		'1'      : () => results.push('test1')
 	};
 	assert.equals(2, testcase.tests.length);
 
 	testcase.masterPriority = 'must';
 	testcase.run();
 	yield testcase.done;
+	assert.equals(['setUp', 'tearDown',
+	               'setUp', 'test1', 'tearDown'],
+	              results);
 
-	mocks.setUp.assert();
-	mocks.tearDown.assert();
-	mocks.tests[0].assert();
-	neverRunTest.assert();
-
+	results = [];
 	testcase.masterPriority = 'never';
 	testcase.run();
 	yield testcase.done;
-	assert.isTrue(testcase._done);
+	assert.equals([],
+	              results);
 }
 
 function testContext()
 {
+	var results = [];
 	var tests = {
-		setUp    : new MockFunction('setUp'),
-		tearDown : new MockFunction('tearDown'),
-		'test'   : new MockFunction('test')
+		setUp    : function() { results.push('setUp '+(this.name || '')) },
+		tearDown : function() { results.push('tearDown '+(this.name || '')) },
+		'test'   : function() { results.push('test '+(this.name || '')) }
 	};
 	testcase.tests = tests;
 	assert.equals(1, testcase.tests.length);
 
-	tests.setUp.expect([]).bindTo(tests);
-	tests.tearDown.expect([]).bindTo(tests);
-	tests.test.expect([]).bindTo(tests);
-
 	testcase.masterPriority = 'must';
 	testcase.run();
 	yield testcase.done;
+	assert.equals(['setUp ', 'test ', 'tearDown '],
+	              results);
 
+	results = [];
 	testcase.done = false;
-	var context = {};
+	var context = {
+		name : 'context'
+	};
 	testcase.context = context;
-
-	tests.setUp.expect([]).bindTo(context);
-	tests.tearDown.expect([]).bindTo(context);
-	tests.test.expect([]).bindTo(context);
-
 	testcase.masterPriority = 'must';
 	testcase.run();
 	yield testcase.done;
-	assert.isTrue(testcase._done);
+	assert.equals(['setUp context', 'test context', 'tearDown context'],
+	              results);
 }
 
 function testListener()
 {
-	var mocks = createXUnitMocks(3);
+	var results = [];
 	var tests = {
-		setUp    : mocks.setUp,
-		tearDown : mocks.tearDown,
-		'1'      : function() { assert.isTrue(false); },
-		'2'      : function() { throw 'test'; },
-		'3'      : mocks.tests[0]
+		setUp    : () => results.push('setUp'),
+		tearDown : () => results.push('tearDown'),
+		'0'      : function() { results.push('test0'); assert.isTrue(false); },
+		'1'      : function() { results.push('test1'); throw 'error from test'; },
+		'2'      : () => results.push('test2')
 	};
 	testcase.tests = tests;
 	var listener = function(aEvent) {
@@ -565,10 +562,10 @@ function testListener()
 				switch (aEvent.data.result)
 				{
 					case 'failure':
-						mocks.tests[1]();
+						results.push('failure');
 						break;
 					case 'error':
-						mocks.tests[2]();
+						results.push('error');
 						break;
 				}
 				break;
@@ -579,40 +576,35 @@ function testListener()
 	testcase.masterPriority = 'must';
 	testcase.run();
 	yield testcase.done;
+	assert.equals(['setUp', 'test0', 'tearDown', 'failure',
+	               'setUp', 'test1', 'tearDown', 'error',
+	               'setUp', 'test2', 'tearDown'],
+	              results);
 
-	mocks.setUp.assert();
-	mocks.tearDown.assert();
-	mocks.tests[0].assert();
-	mocks.tests[1].assert();
-	mocks.tests[2].assert();
-
-	mocks.setUp.expect([]).times(3);
-	mocks.tearDown.expect([]).times(3);
-	mocks.tests[0].expect([]);
-	mocks.tests[1].expect([]);
-	mocks.tests[2].expect([]);
-
+	results = [];
 	testcase.removeListener(listener);
 	testcase.addListener({handleEvent : listener});
 	testcase.done = false;
 	testcase.masterPriority = 'must';
 	testcase.run();
 	yield testcase.done;
-	assert.isTrue(testcase._done);
+	assert.equals(['setUp', 'test0', 'tearDown', 'failure',
+	               'setUp', 'test1', 'tearDown', 'error',
+	               'setUp', 'test2', 'tearDown'],
+	              results);
 }
 
 function testStopper()
 {
-	var shouldStop = false;
 	var stopper = function() {};
+	var results = [];
 
-	var mocks = createXUnitMocks(3);
 	testcase.tests = {
-		setUp    : mocks.setUp,
-		tearDown : mocks.tearDown,
-		'1'      : function() { mocks.tests[0](); stopper(); yield 500; },
-		'2'      : function() { mocks.tests[1](); },
-		'3'      : function() { mocks.tests[2](); }
+		setUp    : () => results.push('setUp'),
+		tearDown : () => results.push('tearDown'),
+		'0'      : function() { results.push('test0'); stopper(); yield 100; },
+		'1'      : () => results.push('test1'),
+		'2'      : () => results.push('test2')
 	};
 	assert.equals(3, testcase.tests.length);
 
@@ -620,78 +612,58 @@ function testStopper()
 	testcase.randomOrder = false;
 	testcase.run();
 	yield Promise.race([testcase.done, testcase.aborted]);
+	assert.isFalse(testcase.running);
 	assert.isTrue(testcase._done);
 	assert.isFalse(testcase._aborted);
+	assert.equals(['setUp', 'test0', 'tearDown',
+	               'setUp', 'test1', 'tearDown',
+	               'setUp', 'test2', 'tearDown'],
+	              results);
 
-	mocks.setUp.assert();
-	mocks.tearDown.assert();
-	mocks.tests[0].assert();
-	mocks.tests[1].assert();
-	mocks.tests[2].assert();
-
-	mocks.setUp.expect([]);
-	mocks.tearDown.expect([]);
-	mocks.tests[0].expect([]);
+	results = [];
 
 	testcase.done = false;
 	testcase.masterPriority = 'must';
 	testcase.randomOrder = false;
 	stopper = testcase.run();
 	yield 100;
-	shouldStop = true;
 	yield Promise.race([testcase.done, testcase.aborted]);
+	assert.isFalse(testcase.running);
 	assert.isFalse(testcase._done);
 	assert.isTrue(testcase._aborted);
+	assert.equals(['setUp', 'test0', 'tearDown'],
+	              results);
 }
 
 function testPrivSetUpTearDown_sync()
 {
-	var pass = new FunctionMock('pass');
-	pass.expect('startUp')
-			.expect('setUp')
-				.expect('setUp1')
-					.expect('test1')
-				.expect('tearDown1')
-			.expect('tearDown')
-			.expect('setUp')
-				.expect('setUp2')
-				.expect('tearDown2')
-			.expect('tearDown')
-			.expect('setUp')
-				.expect('tearDown3')
-			.expect('tearDown')
-			.expect('setUp')
-				.expect('setUp4')
-					.expect('test4')
-			.expect('tearDown')
-		.expect('shutDown');
-
-	testcase.registerStartUp(function() { pass('startUp'); });
-	testcase.registerShutDown(function() { pass('shutDown'); });
-	testcase.registerSetUp(function() { pass('setUp'); });
-	testcase.registerTearDown(function() { pass('tearDown'); });
+	var results = [];
+	testcase.registerStartUp(() => results.push('startUp'));
+	testcase.registerShutDown(() => results.push('shutDown'));
+	testcase.registerSetUp(() => results.push('setUp'));
+	testcase.registerTearDown(() => results.push('tearDown'));
 	testcase.registerTest((function() {
-		var f = function() { pass('test1'); };
-		f.setUp = function() { pass('setUp1'); };
-		f.tearDown = function() { pass('tearDown1'); };
+		var f = () => results.push('test1');
+		f.setUp = () => results.push('setUp1');
+		f.tearDown = () => results.push('tearDown1');
 		return f;
 	})());
 	testcase.registerTest((function() {
-		var f = function() { throw 'error'; pass('test2'); };
-		f.setUp = function() { pass('setUp2'); };
-		f.tearDown = function() { pass('tearDown2'); };
+		var f = function() { throw 'error'; results.push('test2'); };
+		f.setUp = () => results.push('setUp2');
+		f.tearDown = () => results.push('tearDown2');
 		return f;
 	})());
 	testcase.registerTest((function() {
-		var f = function() { pass('test3'); };
-		f.setUp = function() { throw 'error'; pass('setUp3'); };
-		f.tearDown = function() { pass('tearDown3'); };
+		var f = () => results.push('test3');
+		f.setUp = function() { throw 'error'; results.push('setUp3'); };
+		f.tearDown = () => results.push('tearDown3');
 		return f;
 	})());
 	testcase.registerTest((function() {
-		var f = function() { pass('test4'); };
-		f.setUp = function() { pass('setUp4'); };
-		f.tearDown = function() { throw 'error'; pass('tearDown4'); };
+		var f = () => results.push('test4');
+		f.setUp = () => results.push('setUp4');
+		f.tearDown = function() { throw 'error'; results.push('tearDown4'); };
 		return f;
 	})());
 	assert.equals(4, testcase.tests.length);
@@ -699,66 +671,76 @@ function testPrivSetUpTearDown_sync()
 	testcase.randomOrder = false;
 	testcase.run();
 	yield testcase.done;
-	assert.isTrue(testcase._done);
+	assert.equals(['startUp',
+	                 'setUp',
+	                   'setUp1', 'test1', 'tearDown1',
+	                 'tearDown',
+	                 'setUp',
+	                   'setUp2', 'tearDown2',
+	                 'tearDown',
+	                 'setUp',
+	                   'tearDown3',
+	                 'tearDown',
+	                 'setUp',
+	                   'setUp4', 'test4',
+	                 'tearDown',
+	               'shutDown'],
+	              results);
 }
-
 
 function testPrivSetUpTearDown_async()
 {
-	var pass = new FunctionMock('pass');
-	pass.expect('startUp')
-			.expect('setUp')
-				.expect('setUp1')
-					.expect('test1')
-				.expect('tearDown1')
-			.expect('tearDown')
-			.expect('setUp')
-				.expect('setUp2')
-				.expect('tearDown2')
-			.expect('tearDown')
-			.expect('setUp')
-				.expect('tearDown3')
-			.expect('tearDown')
-			.expect('setUp')
-				.expect('setUp4')
-					.expect('test4')
-			.expect('tearDown')
-		.expect('shutDown');
+	var results = [];
 
-	testcase.registerStartUp(function() { yield 1; pass('startUp'); });
-	testcase.registerShutDown(function() { yield 1; pass('shutDown'); });
-	testcase.registerSetUp(function() { yield 1; pass('setUp'); });
-	testcase.registerTearDown(function() { yield 1; pass('tearDown'); });
+	testcase.registerStartUp(function() { yield 1; results.push('startUp'); });
+	testcase.registerShutDown(function() { yield 1; results.push('shutDown'); });
+	testcase.registerSetUp(function() { yield 1; results.push('setUp'); });
+	testcase.registerTearDown(function() { yield 1; results.push('tearDown'); });
 	testcase.registerTest((function() {
-		var f = function() { yield 1; pass('test1'); };
-		f.setUp = function() { yield 1; pass('setUp1'); };
-		f.tearDown = function() { yield 1; pass('tearDown1'); };
+		var f = function() { yield 1; results.push('test1'); };
+		f.setUp = function() { yield 1; results.push('setUp1'); };
+		f.tearDown = function() { yield 1; results.push('tearDown1'); };
 		return f;
 	})());
 	testcase.registerTest((function() {
-		var f = function() { yield 1; throw 'error'; pass('test2'); };
-		f.setUp = function() { yield 1; pass('setUp2'); };
-		f.tearDown = function() { yield 1; pass('tearDown2'); };
+		var f = function() { yield 1; throw 'error'; results.push('test2'); };
+		f.setUp = function() { yield 1; results.push('setUp2'); };
+		f.tearDown = function() { yield 1; results.push('tearDown2'); };
 		return f;
 	})());
 	testcase.registerTest((function() {
-		var f = function() { yield 1; pass('test3'); };
-		f.setUp = function() { yield 1; throw 'error'; pass('setUp3'); };
-		f.tearDown = function() { yield 1; pass('tearDown3'); };
+		var f = function() { yield 1; results.push('test3'); };
+		f.setUp = function() { yield 1; throw 'error'; results.push('setUp3'); };
+		f.tearDown = function() { yield 1; results.push('tearDown3'); };
 		return f;
 	})());
 	testcase.registerTest((function() {
-		var f = function() { yield 1; pass('test4'); };
-		f.setUp = function() { yield 1; pass('setUp4'); };
-		f.tearDown = function() { yield 1; throw 'error'; pass('tearDown4'); };
+		var f = function() { yield 1; results.push('test4'); };
+		f.setUp = function() { yield 1; results.push('setUp4'); };
+		f.tearDown = function() { yield 1; throw 'error'; results.push('tearDown4'); };
 		return f;
 	})());
+
 	assert.equals(4, testcase.tests.length);
 	testcase.masterPriority = 'must';
 	testcase.randomOrder = false;
 	testcase.run();
 	yield testcase.done;
-	assert.isTrue(testcase._done);
+	assert.equals(['startUp',
+	                 'setUp',
+	                   'setUp1', 'test1', 'tearDown1',
+	                 'tearDown',
+	                 'setUp',
+	                   'setUp2', 'tearDown2',
+	                 'tearDown',
+	                 'setUp',
+	                   'tearDown3',
+	                 'tearDown',
+	                 'setUp',
+	                   'setUp4', 'test4',
+	                 'tearDown',
+	               'shutDown'],
+	              results);
 }
 
 function testAssertionsCount()
@@ -789,7 +771,7 @@ function testAssertionsCount()
 	})());
 	testcase.masterPriority = 'must';
 	testcase.randomOrder = false;
-	assertResults('success', 'failure', 'failure');
+	yield assertResults('success', 'failure', 'failure');
 }
 
 function testMinAssertionsCount()
@@ -817,7 +799,7 @@ function testMinAssertionsCount()
 	})());
 	testcase.masterPriority = 'must';
 	testcase.randomOrder = false;
-	assertResults('failure', 'success', 'success');
+	yield assertResults('failure', 'success', 'success');
 }
 
 function testMaxAssertionsCount()
@@ -846,11 +828,12 @@ function testMaxAssertionsCount()
 
 	testcase.masterPriority = 'must';
 	testcase.randomOrder = false;
-	assertResults('success', 'success', 'failure');
+	yield assertResults('success', 'success', 'failure');
 }
 
 function testShouldSkip()
 {
+	var results = [];
 	testcase.registerTest((function() {
 		var f = function() {};
 		f.shouldSkip = true;
@@ -863,18 +846,27 @@ function testShouldSkip()
 	})());
 	testcase.registerTest((function() {
 		var f = function() {};
-		f.shouldSkip = (new MockFunction('shouldSkip-true')).expect([], true);
+		f.shouldSkip = function() {
+			results.push('shouldSkip-true');
+			return true;
+		};
 		return f;
 	})());
 	testcase.registerTest((function() {
 		var f = function() {};
-		f.shouldSkip = (new MockFunction('shouldSkip-false')).expect([], false);
+		f.shouldSkip = function() {
+			results.push('shouldSkip-false');
+			return false;
+		};
 		return f;
 	})());
 
 	testcase.masterPriority = 'must';
 	testcase.randomOrder = false;
-	assertResults('skip', 'success', 'skip', 'success');
+	yield assertResults('skip', 'success', 'skip', 'success');
+	assert.equals(['shouldSkip-true',
+	               'shouldSkip-false'],
+	              results);
 }
 
 function testShouldSkipForAll_boolean_skip()
@@ -884,7 +876,7 @@ function testShouldSkipForAll_boolean_skip()
 	testcase.registerTest(function() {});
 	testcase.masterPriority = 'must';
 	testcase.shouldSkip = true;
-	assertResults('skip', 'skip', 'skip');
+	yield assertResults('skip', 'skip', 'skip');
 }
 
 function testShouldSkipForAll_boolean_success()
@@ -894,7 +886,7 @@ function testShouldSkipForAll_boolean_success()
 	testcase.registerTest(function() {});
 	testcase.masterPriority = 'must';
 	testcase.shouldSkip = false;
-	assertResults('success', 'success', 'success');
+	yield assertResults('success', 'success', 'success');
 }
 
 function testShouldSkipForAll_function_skip()
@@ -905,7 +897,7 @@ function testShouldSkipForAll_function_skip()
 	testcase.masterPriority = 'must';
 	testcase.shouldSkip = (new MockFunction('shouldSkip'))
 							.expect([], true);
-	assertResults('skip', 'skip', 'skip');
+	yield assertResults('skip', 'skip', 'skip');
 }
 
 function testShouldSkipForAll_function_success()
@@ -916,7 +908,7 @@ function testShouldSkipForAll_function_success()
 	testcase.masterPriority = 'must';
 	testcase.shouldSkip = (new MockFunction('shouldSkip'))
 							.expect([], false);
-	assertResults('success', 'success', 'success');
+	yield assertResults('success', 'success', 'success');
 }
 
 
@@ -932,6 +924,7 @@ function assertRegisterTestWithParameters(aTest, aDescriptions)
 	}
 }
 
+/*
 function testWithArrayParameters()
 {
 	var test;
@@ -975,9 +968,9 @@ function testWithArrayParameters()
 
 	testcase.masterPriority = 'must';
 	testcase.randomOrder = false;
-	assertResults('success', 'success',
-	              'success', 'success', 'success',
-	              'success');
+	yield assertResults('success', 'success',
+	                    'success', 'success', 'success',
+	                    'success');
 }
 
 function testWithHashParameters()
@@ -1028,9 +1021,9 @@ function testWithHashParameters()
 
 	testcase.masterPriority = 'must';
 	testcase.randomOrder = false;
-	assertResults('success', 'success',
-	              'success', 'success',
-	              'success', 'success');
+	yield assertResults('success', 'success',
+	                    'success', 'success',
+	                    'success', 'success');
 }
 
 function testErrorInGenerator()
@@ -1047,6 +1040,6 @@ function testErrorInGenerator()
 	testcase.run();
 	yield 100;
 	assert.isTrue(testcase._done);
-	assertResults('error');
+	yield assertResults('error');
 }
 */
