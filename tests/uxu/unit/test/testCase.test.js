@@ -619,7 +619,7 @@ function testStopper()
 	assert.isTrue(testcase._aborted);
 }
 
-function testPrivSetUpTearDown()
+function testPrivSetUpTearDown_sync()
 {
 	var pass = new FunctionMock('pass');
 	pass.expect('startUp')
@@ -667,6 +667,65 @@ function testPrivSetUpTearDown()
 		var f = function() { pass('test4'); };
 		f.setUp = function() { pass('setUp4'); };
 		f.tearDown = function() { throw 'error'; pass('tearDown4'); };
+		return f;
+	})());
+	assert.equals(4, testcase.tests.length);
+	testcase.masterPriority = 'must';
+	testcase.randomOrder = false;
+	testcase.run();
+	yield testcase.done;
+	assert.isTrue(testcase._done);
+}
+
+
+function testPrivSetUpTearDown_async()
+{
+	var pass = new FunctionMock('pass');
+	pass.expect('startUp')
+			.expect('setUp')
+				.expect('setUp1')
+					.expect('test1')
+				.expect('tearDown1')
+			.expect('tearDown')
+			.expect('setUp')
+				.expect('setUp2')
+				.expect('tearDown2')
+			.expect('tearDown')
+			.expect('setUp')
+				.expect('tearDown3')
+			.expect('tearDown')
+			.expect('setUp')
+				.expect('setUp4')
+					.expect('test4')
+			.expect('tearDown')
+		.expect('shutDown');
+
+	testcase.registerStartUp(function() { yield 1; pass('startUp'); });
+	testcase.registerShutDown(function() { yield 1; pass('shutDown'); });
+	testcase.registerSetUp(function() { yield 1; pass('setUp'); });
+	testcase.registerTearDown(function() { yield 1; pass('tearDown'); });
+	testcase.registerTest((function() {
+		var f = function() { yield 1; pass('test1'); };
+		f.setUp = function() { yield 1; pass('setUp1'); };
+		f.tearDown = function() { yield 1; pass('tearDown1'); };
+		return f;
+	})());
+	testcase.registerTest((function() {
+		var f = function() { yield 1; throw 'error'; pass('test2'); };
+		f.setUp = function() { yield 1; pass('setUp2'); };
+		f.tearDown = function() { yield 1; pass('tearDown2'); };
+		return f;
+	})());
+	testcase.registerTest((function() {
+		var f = function() { yield 1; pass('test3'); };
+		f.setUp = function() { yield 1; throw 'error'; pass('setUp3'); };
+		f.tearDown = function() { yield 1; pass('tearDown3'); };
+		return f;
+	})());
+	testcase.registerTest((function() {
+		var f = function() { yield 1; pass('test4'); };
+		f.setUp = function() { yield 1; pass('setUp4'); };
+		f.tearDown = function() { yield 1; throw 'error'; pass('tearDown4'); };
 		return f;
 	})());
 	assert.equals(4, testcase.tests.length);
