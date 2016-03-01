@@ -172,7 +172,7 @@ function test_wait()
 if (utils.checkPlatformVersion('1.9') < 0) test_waitDOMEvent.priority = 'never';
 test_waitDOMEvent.setUp = function()
 {
-	utils.setPref('extensions.uxu.run.timeout.waitDOMEvent', 300);
+	utils.setPref('extensions.uxu.run.timeout.waitDOMEvent', 500);
 	yield Do(utils.loadURI('about:blank?wait'));
 }
 function test_waitDOMEvent()
@@ -180,7 +180,11 @@ function test_waitDOMEvent()
 	function assertWaitSuccess(aConditions, aTimeout, aDelta)
 	{
 		var before = Date.now();
-		yield utilsModule.wait.apply(utilsModule, aConditions);
+		yield utilsModule.waitDOMEvent.apply(utilsModule, aConditions)
+			.catch(function(e) {
+				utils.log('ERROR CONDITIONS:', aConditions, aTimeout, aDelta);
+				throw e;
+			});
 		assert.inDelta(aTimeout, Date.now() - before, aDelta);
 	}
 
@@ -202,7 +206,10 @@ function test_waitDOMEvent()
 	yield assertWaitSuccess([content.document, 'click', 1000], 500, 499);
 
 	// timeout
-	yield assertWaitSuccess([content.document, 'click', 1000], 1000, 100);
+	yield assert.raises(
+		'Error',
+		() => utilsModule.waitDOMEvent(content.document, 'click', 100)
+	);
 
 	// mixed order
 	clickWithDelay(content.document.documentElement);
@@ -228,20 +235,20 @@ function test_waitDOMEvent()
 
 	// callback style
 	var events = [];
-	yield utilsModule.waitDOMEvent(
+	utilsModule.waitDOMEvent(
 			'click', content.document,
-			500
+			100
 		)
 		.then(function(aEvent) {
 				events.push(aEvent);
 		})
-		.catch(function(aEvent) {
-				events.push(aEvent);
+		.catch(function(aError) {
+				events.push(aError);
 		});
 	assert.equals([], events);
 	clickWithDelay(content.document.documentElement);
-	yield utils.wait(100);
-	assert.equals(['click', 'click'],
+	yield utils.wait(200);
+	assert.equals(['click'],
 	              events.map(function(aEvent) aEvent.type));
 }
 
