@@ -15,7 +15,7 @@
  * The Original Code is UxU - UnitTest.XUL.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2010-2014
+ * Portions created by the Initial Developer are Copyright (C) 2010-2016
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <shimoda@clear-code.com>
@@ -174,24 +174,25 @@ Compose.prototype = {
 	{
 		return this._suite.setUpTestWindow()
 		.then((function(aWindow) {
-			//XXX this fails sometimes. why??? we must fix this issue...
-			// var mainWindow = this._suite.getTestWindow();
-			yield (function() {
-					while (!('MsgNewMessage' in aWindow)) {
-						yield false;
-					}
-				});
+			return utils.doIteration((function() {
+				//XXX this fails sometimes. why??? we must fix this issue...
+				// var mainWindow = this._suite.getTestWindow();
+				while (!('MsgNewMessage' in aWindow)) {
+					yield 10;
+				}
 
-			yield 500; // wait for initializing processes
+				yield 500; // wait for initializing processes
 
-			// 新規メッセージのウィンドウを開く
-			aWindow.MsgNewMessage(null);
+				// 新規メッセージのウィンドウを開く
+				aWindow.MsgNewMessage(null);
 
-			// ウィンドウが開かれるまで待つ
-			yield (function() {
-					while (!(composeWindow = this._getWindow())) {
-						yield false;
-					}
+				// ウィンドウが開かれるまで待つ
+				while (!(composeWindow = this._getWindow())) {
+					yield 10;
+				}
+			}).bind(this))
+				.then(function() {
+					return aWindow;
 				});
 		}).bind(this));
 	},
@@ -201,6 +202,7 @@ Compose.prototype = {
 		if (this._close()) {
 			return this._suite.tearDownTestWindow();
 		}
+		return Promise.resolve();
 	},
 	
 	_close : function(aWindow) 
@@ -217,8 +219,9 @@ Compose.prototype = {
 	tearDownAll : function() 
 	{
 		if (this._closeAll()) {
-			this._suite.tearDownTestWindow();
+			return this._suite.tearDownTestWindow();
 		}
+		return Promise.resolve();
 	},
 	
 	_closeAll : function() 
@@ -356,39 +359,45 @@ Compose.prototype = {
 		}
 	},
  
-	send : function(aAsync, aComposeWindow) 
+	send : function(aComposeWindow, ...aArgs) 
 	{
-		this.sendByAPI(aAsync, aComposeWindow);
+		if (aArgs.length > 1)
+			aComposeWindo = aArgs[0];
+		return this.sendByAPI(aComposeWindow);
 	},
 	
-	_send : function(aCommand, aAsync, aComposeWindow) 
+	_send : function(aCommand, aComposeWindow) 
 	{
 		aComposeWindow = this._ensureWindowReady(aComposeWindow);
-		if (aAsync) {
+		return new Promise(function(aResolve, aReject) {
 			// このタイミングでダイアログ等が開かれるとメインスレッドの
 			// 処理が止まってしまうため、タイマーを使って非同期で開く。
-			aComposeWindow.setTimeout(aCommand, 0);
-		}
-		else {
-			aCommand();
-		}
+			aComposeWindow.setTimeout(function() {
+				aCommand();
+				aResolve();
+			}, 0);
+		});
 	},
  
-	sendByAPI : function(aAsync, aComposeWindow) 
+	sendByAPI : function(aComposeWindow, ...aArgs) 
 	{
+		if (aArgs.length > 1)
+			aComposeWindo = aArgs[0];
 		aComposeWindow = this._ensureWindowReady(aComposeWindow);
-		this._send(function() {
+		return this._send(function() {
 			aComposeWindow.SendMessage();
-		}, aAsync);
+		});
 	},
  
-	sendByButtonClick : function(aAsync, aComposeWindow) 
+	sendByButtonClick : function(aComposeWindow, ...aArgs) 
 	{
+		if (aArgs.length > 1)
+			aComposeWindo = aArgs[0];
 		aComposeWindow = this._ensureWindowReady(aComposeWindow);
 		var action = this.action;
-		this._send(function() {
+		return this._send(function() {
 			aComposeWindow.document.getElementById('button-send').click();
-		}, aAsync);
+		});
 	},
    
 // user input emulation 
@@ -476,33 +485,28 @@ Compose.prototype = {
 						});
 
 		var listbox = utils.$('addressingWidget', aComposeWindow);
-		aAddresses.forEach(function(aAddress) {
+		var promises = aAddresses.map(function(aAddress) {
 			let field = this._getFirstBlankAddressField(aComposeWindow);
 			this.getAddressTypeForField(field, aComposeWindow).value = aAddress.typeValue;
 			listbox.ensureElementIsVisible(utils.$X('ancestor::*[local-name()="listitem"]', field, Ci.nsIDOMXPathResult.FIRST_ORDERED_NODE_TYPE));
 			field.focus();
 			this.action.inputTextToField(field, aAddress.address);
 
-			if (utils.isSleepAvailable) {
-				utils.sleep(100);
+			return utils.wait((function() {
 				let next;
 				do {
 					field = this._getLastAddressField(aComposeWindow);
 					field.focus();
 					this.action.fireKeyEventOnElement(field, ENTER_KEY);
-					utils.sleep(100);
+					yield 100;
 					next = this._getFirstBlankAddressField(aComposeWindow);
 				}
 				while (!next);
-			}
-			else {
-				next = this._getFirstBlankAddressField(aComposeWindow);
-				if (!next) {
-					aComposeWindow.awAppendNewRow(true);
-				}
-			}
+			}).bind(this));
 		}, this);
-		return aAddresses;
+		return Promise.all(promises).then(function() {
+			return aAddresses;
+		});
 	},
  
 	_getBodyContents : function(aComposeWindow) 
