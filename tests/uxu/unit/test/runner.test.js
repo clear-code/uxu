@@ -101,7 +101,9 @@ function test_cleanUpModifications()
 	runner._cleanUpModifications(tests[0]);
 	// wait for delayed remove
 	yield function() {
-			return !file.exists();
+			while(file.exists()) {
+				yield;
+			}
 		};
 	assert.isFalse(file.exists());
 	assert.isNull(utils.getPref(key));
