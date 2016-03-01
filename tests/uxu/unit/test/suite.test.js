@@ -19,12 +19,8 @@ function test_properties()
 }
 
 if (utils.product != 'Firefox') test_contentFrames.priority = 'never';
-test_contentFrames.setUp = function() {
-	yield utils.setUpTestWindow();
-}
-test_contentFrames.tearDown = function() {
-	yield utils.tearDownTestWindow();
-}
+test_contentFrames.setUp = utils.setUpTestWindow;
+test_contentFrames.tearDown = utils.tearDownTestWindow;
 function test_contentFrames()
 {
 	var win = utils.getTestWindow();
@@ -45,13 +41,10 @@ function test_contentFrames()
 
 test$.setUp = function()
 {
-	utils.tearDownTestWindow();
-	utils.loadURI('../../fixtures/html.html');
+	yield utils.tearDownTestWindow();
+	yield utils.loadURI('../../fixtures/html.html');
 }
-test$.tearDown = function()
-{
-	utils.tearDownTestWindow();
-}
+test$.tearDown = utils.tearDownTestWindow;
 function test$()
 {
 	var expected = content.document.getElementById('paragraph1');
@@ -67,7 +60,7 @@ function test$()
 	assert.equals(expected, $(node));
 	assert.equals(expected, $(node, document));
 
-	utils.setUpTestWindow();
+	yield utils.setUpTestWindow();
 	expected = utils.getTestWindow().document.getElementById('content');
 	assert.equals(expected, $('content'));
 }
@@ -80,14 +73,14 @@ function test_addTab()
 	var tabs = gBrowser.visibleTabs || Array.slice(gBrowser.mTabContainer.childNodes);
 	assert.equals(1, tabs.length);
 
-	utils.addTab('about:');
+	yield utils.addTab('about:');
 	tabs = gBrowser.visibleTabs || Array.slice(gBrowser.mTabContainer.childNodes);
 	assert.equals(2, tabs.length);
 	assert.notEquals(tabs[1], gBrowser.selectedTab);
 	assert.equals('about:', tabs[1].linkedBrowser.currentURI.spec);
 	gBrowser.removeTab(tabs[1]);
 
-	utils.addTab('../../fixtures/frameTest.html?'+Date.now(), { selected : true });
+	yield utils.addTab('../../fixtures/frameTest.html?'+Date.now(), { selected : true });
 	tabs = gBrowser.visibleTabs || Array.slice(gBrowser.mTabContainer.childNodes);
 	assert.equals(2, tabs.length);
 	assert.equals(tabs[1], gBrowser.selectedTab);
@@ -99,7 +92,7 @@ function test_addTab()
 	assert.notEquals(0, content.frames[2].document.links.length);
 	gBrowser.removeTab(tabs[1]);
 
-	utils.addTab('../../fixtures/frameTestInline.html?'+Date.now(), { selected : true });
+	yield utils.addTab('../../fixtures/frameTestInline.html?'+Date.now(), { selected : true });
 	tabs = gBrowser.visibleTabs || Array.slice(gBrowser.mTabContainer.childNodes);
 	assert.equals(2, tabs.length);
 	assert.contains('/fixtures/frameTestInline.html', tabs[1].linkedBrowser.currentURI.spec);
@@ -112,7 +105,7 @@ function test_addTab()
 
 test_loadURI.setUp = function()
 {
-	utils.tearDownTestWindow();
+	yield utils.tearDownTestWindow();
 	if (utils.product != 'Firefox') {
 		utils.setPref('network.protocol-handler.expose.file', true);
 		utils.setPref('network.protocol-handler.expose.http', true);
@@ -127,10 +120,10 @@ test_loadURI.tearDown = function()
 }
 function test_loadURI()
 {
-	utils.loadURI('about:');
+	yield utils.loadURI('about:');
 	assert.equals('about:', content.location.href);
 
-	utils.loadURI('../../fixtures/frameTest.html?'+Date.now());
+	yield utils.loadURI('../../fixtures/frameTest.html?'+Date.now());
 	assert.contains('/fixtures/frameTest.html', content.location.href);
 	assert.equals(3, content.frames.length);
 	assert.contains('/html.html', content.frames[0].location.href);
@@ -138,7 +131,7 @@ function test_loadURI()
 	assert.contains('/links.html', content.frames[2].location.href);
 	assert.notEquals(0, content.frames[2].document.links.length);
 
-	utils.loadURI('../../fixtures/frameTestInline.html?'+Date.now());
+	yield utils.loadURI('../../fixtures/frameTestInline.html?'+Date.now());
 	assert.contains('/fixtures/frameTestInline.html', content.location.href);
 	assert.equals(2, content.frames.length);
 	assert.contains('/html.html', content.frames[0].location.href);
@@ -174,8 +167,8 @@ test_setUpTestWindow.tearDown = function() {
 };
 function test_setUpTestWindow()
 {
-	utils.setUpTestWindow({ width : 450, height : 292, x : 129, y : 192 });
-	yield 300;
+	yield utils.setUpTestWindow({ width : 450, height : 292, x : 129, y : 192 });
+	yield 300; // wait until the window is actually shown
 	var win = utils.getTestWindow();
 	assert.isNotNull(win);
 	assert.equals(
@@ -193,8 +186,7 @@ test_tearDownTestWindow.setUp = function() {
 
 	yield utils.tearDownTestWindow();
 	assert.isNull(utils.getTestWindow());
-	utils.setUpTestWindow({ width : 350, height : 292, x : 129, y : 192 });
-	yield 300;
+	yield utils.setUpTestWindow({ width : 350, height : 292, x : 129, y : 192 });
 	assert.isNotNull(utils.getTestWindow());
 };
 test_tearDownTestWindow.tearDown = function() {
