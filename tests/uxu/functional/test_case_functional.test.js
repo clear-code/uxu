@@ -33,9 +33,9 @@ function test_testCaseWithHttpDaemons()
 	};
 	assert.equals(1, testcase.tests.length);
 	testcase.masterPriority = 'must';
-	assert.isFalse(testcase.done);
+	assert.isFalse(testcase._done);
 	testcase.run();
 	yield 1500;
-	assert.isTrue(testcase.done);
+	assert.isTrue(testcase._done);
 	assert.isFalse(testcase.suite.serverUtils.isHttpServerRunning());
 }
