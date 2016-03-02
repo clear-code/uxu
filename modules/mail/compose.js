@@ -487,30 +487,32 @@ Compose.prototype = {
 						});
 
 		var listbox = utils.$('addressingWidget', aComposeWindow);
-		var promises = aAddresses.map(function(aAddress) {
-			let field = this._getFirstBlankAddressField(aComposeWindow);
-			if (!field)
-				return Promise.reject(new Error('missing blank field'));
-			this.getAddressTypeForField(field, aComposeWindow).value = aAddress.typeValue;
-			listbox.ensureElementIsVisible(utils.$X('ancestor::*[local-name()="listitem"]', field, Ci.nsIDOMXPathResult.FIRST_ORDERED_NODE_TYPE));
-			field.focus();
-			this.action.inputTextToField(field, aAddress.address);
-
-			return utils.wait((function() {
-				let next;
-				do {
-					field = this._getLastAddressField(aComposeWindow);
-					field.focus();
-					this.action.fireKeyEventOnElement(field, ENTER_KEY);
-					yield 100;
-					next = this._getFirstBlankAddressField(aComposeWindow);
-				}
-				while (!next);
-			}).bind(this));
-		}, this);
-		return Promise.all(promises).then(function() {
-			return aAddresses;
-		});
+		return utils.doIteration((function() {
+			for (let address of aAddresses)
+			{
+				let field = this._getFirstBlankAddressField(aComposeWindow);
+				if (!field)
+					throw Promise.reject(new Error('missing blank field'));
+				this.getAddressTypeForField(field, aComposeWindow).value = address.typeValue;
+				listbox.ensureElementIsVisible(utils.$X('ancestor::*[local-name()="listitem"]', field, Ci.nsIDOMXPathResult.FIRST_ORDERED_NODE_TYPE));
+				field.focus();
+				this.action.inputTextToField(field, address.address);
+				yield utils.doIteration((function() {
+					let next;
+					do {
+						field = this._getLastAddressField(aComposeWindow);
+						field.focus();
+						this.action.fireKeyEventOnElement(field, ENTER_KEY);
+						yield 100;
+						next = this._getFirstBlankAddressField(aComposeWindow);
+					}
+					while (!next);
+				}).bind(this));
+			}
+		}).bind(this))
+			.then(function() {
+				return aAddresses;
+			});
 	},
  
 	_getBodyContents : function(aComposeWindow) 
