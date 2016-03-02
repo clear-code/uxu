@@ -183,10 +183,7 @@ Compose.prototype = {
 
 				aWindow.MsgNewMessage(null);
 				while (!(composeWindow = this._getWindow())) {
-					yield 10;
-				}
-				while (!this._isWindowReady(composeWindow)) {
-					yield 10;
+					yield 100;
 				}
 			}).bind(this))
 				.then(function() {
@@ -488,20 +485,23 @@ Compose.prototype = {
 				let field = this._getFirstBlankAddressField(aComposeWindow);
 				if (!field)
 					throw Promise.reject(new Error('missing blank field'));
+				listbox.ensureElementIsVisible(
+					utils.$X(
+						'ancestor::*[local-name()="listitem"]',
+						field,
+						Ci.nsIDOMXPathResult.FIRST_ORDERED_NODE_TYPE
+					)
+				);
 				this.getAddressTypeForField(field, aComposeWindow).value = address.typeValue;
-				listbox.ensureElementIsVisible(utils.$X('ancestor::*[local-name()="listitem"]', field, Ci.nsIDOMXPathResult.FIRST_ORDERED_NODE_TYPE));
 				field.focus();
 				this.action.inputTextToField(field, address.address);
 				yield utils.doIteration((function() {
-					let next;
-					do {
+					while (!this._getFirstBlankAddressField(aComposeWindow)) {
 						field = this._getLastAddressField(aComposeWindow);
 						field.focus();
 						this.action.fireKeyEventOnElement(field, ENTER_KEY);
 						yield 100;
-						next = this._getFirstBlankAddressField(aComposeWindow);
 					}
-					while (!next);
 				}).bind(this));
 			}
 		}).bind(this))
