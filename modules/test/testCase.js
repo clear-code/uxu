@@ -120,6 +120,7 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 	
 	REMOTE_PROFILE_PREFIX : 'uxu-test-profile', 
 	TESTCASE_STARTED      : '/* uxu-testcase-started */',
+	TEST_STARTED          : '/* uxu-testcase-test-started */',
 	TESTCASE_FINISED      : '/* uxu-testcase-finished */',
 	TESTCASE_ABORTED      : '/* uxu-testcase-aborted */',
 	ALL_TESTS_FINISHED    : '/* uxu-all-testcases-finished */',
@@ -736,7 +737,8 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 		while (this._tests.length)
 		{
 			let index = Math.floor(Math.random() * this._tests.length);
-			tests.push(this._tests.splice(index, 1)[0]);
+			let test = this._tests.splice(index, 1)[0];
+			tests.push(test);
 		}
 		this._tests = tests;
 	},
@@ -1359,6 +1361,18 @@ TestCase.prototype = ns.inherit(ns.EventTarget.prototype, {
 		}
 		if (input.indexOf(this.TESTCASE_STARTED) == 0) {
 			this._remoteReady = true;
+			this.fireEvent('ResponseRequest', responseId+'\n');
+			return;
+		}
+		if (input.indexOf(this.TEST_STARTED) == 0) {
+			let testInfo = JSON.parse(input.replace(this.TEST_STARTED, ''));
+			for (let test of this._tests)
+			{
+				if (test.name === decodeURIComponent(testInfo.name)) {
+					this.fireEvent('RemoteTestStart', test);
+					break;
+				}
+			}
 			this.fireEvent('ResponseRequest', responseId+'\n');
 			return;
 		}

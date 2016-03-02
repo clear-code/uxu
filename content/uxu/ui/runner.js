@@ -571,9 +571,14 @@ var runnerListener = {
 	},
 	onTestCaseTestStart : function(aEvent)
 	{
+		var test = aEvent.data.data;
+		gRemoteRun.onEvent('test-start', {
+			hash : test.hash,
+			name : encodeURIComponent(test.name)
+		});
 		var node = getReportNode(aEvent.data.testCase);
 		_(node, 'running-status').setAttribute('value',
-			bundle.getFormattedString('status_running', [aEvent.data.data.title])
+			bundle.getFormattedString('status_running', [test.title])
 		);
 	},
 	onTestCaseTestFinish : function(aEvent)
@@ -587,6 +592,10 @@ var runnerListener = {
 				fillReportFromTopic(aOneTopic, aEvent.data.testCase);
 			});
 		item.doneTopicsCount = item.topics.length;
+	},
+	onTestCaseRemoteTestStart : function(aEvent)
+	{
+		this.onTestCaseTestStart(aEvent);
 	},
 	onTestCaseRemoteTestFinish : function(aEvent)
 	{
@@ -609,7 +618,7 @@ var runnerListener = {
 var gRemoteRun = { 
 	messages : [],
 
-	onEvent : function(aType)
+	onEvent : function(aType, aData)
 	{
 		if (
 			!gOptions ||
@@ -621,6 +630,9 @@ var gRemoteRun = {
 		{
 			case 'start':
 				this.addMessage(ns.TestCase.prototype.TESTCASE_STARTED);
+				break;
+			case 'test-start':
+				this.addMessage(ns.TestCase.prototype.TEST_STARTED + JSON.stringify(aData));
 				break;
 			case 'finish':
 				this.addMessage(gLog.toString(gLog.FORMAT_RAW | gLog.WITH_CONSOLE_LOGS));

@@ -310,6 +310,7 @@ TestRunner.prototype = ns.inherit(ns.EventTarget.prototype, {
 				break;
 
 			case 'TestStart':
+			case 'RemoteTestStart':
 				this._onTestCaseEvent(aEvent);
 				break;
 
