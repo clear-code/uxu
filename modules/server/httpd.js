@@ -4778,25 +4778,25 @@ HTTPServer.prototype = {
 			this.mock = this.mMockManager.createHTTPServerMock(bundle.getFormattedString('server_mock_name', [this.port]));
 		return this.mock;
 	},
-	expect : function()
+	expect : function(...aArgs)
 	{
 		var mock = this._getMock();
-		return mock.expect.apply(mock, arguments);
+		return mock.expect.apply(mock, aArgs);
 	},
-	expects : function() { return this.expect.apply(this, arguments); },
-	expectThrows : function()
+	expects : function(...aArgs) { return this.expect.apply(this, aArgs); },
+	expectThrows : function(...aArgs)
 	{
 		var mock = this._getMock();
-		return mock.expect.apply(mock, arguments);
+		return mock.expect.apply(mock, aArgs);
 	},
-	expectThrow : function() { return this.expectThrows.apply(this, arguments); },
-	expectRaises : function() { return this.expectThrows.apply(this, arguments); },
-	expectRaise : function() { return this.expectThrows.apply(this, arguments); },
+	expectThrow : function(...aArgs) { return this.expectThrows.apply(this, aArgs); },
+	expectRaises : function(...aArgs) { return this.expectThrows.apply(this, aArgs); },
+	expectRaise : function(...aArgs) { return this.expectThrows.apply(this, aArgs); },
 	assert : function()
 	{
 		return this._getMock().assert();
 	},
-	verify : function() { return this.assert.apply(this, arguments); },
+	verify : function(...aArgs) { return this.assert.apply(this, aArgs); },
 
 
 	handleResponse : function(aPath, aServerHandler, aResponse)
@@ -4840,7 +4840,7 @@ HTTPServer.prototype = {
 			if (htaccess.exists()) {
 				let contents = utils.readFrom(htaccess);
 				let count = 0;
-				if ((function() {
+				if ((function loop() {
 						if (count++ > 30) // too many recursion
 							throw HTTP_500;
 
@@ -4852,7 +4852,7 @@ HTTPServer.prototype = {
 								case 200:
 									aPath = result.uri.replace(/^\w+:\/\/[^\/]+/, '');
 									file = aServerHandler._getFileForPath(aPath);
-									return arguments.callee.call(this);
+									return loop.call(this);
 
 								// RewriteRule
 								case 403:
