@@ -42,7 +42,9 @@ function assertCallSuccess(aMock, aArguments, aReturnValue)
 			function() {
 				returnValue = aMock.apply(null, aArguments || []);
 				done = true;
-			}
+			},
+			null,
+			uneval([aMock, aArguments, aReturnValue])
 		);
 		assert.isTrue(done);
 		assert.equals(aReturnValue, returnValue);
@@ -59,7 +61,9 @@ function assertAnyCallSuccess(aMock, aArguments, aReturnValue)
 			function() {
 				returnValue = aMock.apply(null, aArguments || []);
 				done = true;
-			}
+			},
+			null,
+			uneval([aMock, aArguments, aReturnValue])
 		);
 		assert.isTrue(done);
 		assert.equals(aReturnValue, returnValue);
@@ -70,7 +74,9 @@ function assertCallRaise(aMock, aArguments, aException)
 {
 	return assert.raises(
 		aException,
-		() => aMock.apply(null, aArguments || [])
+		function() { aMock.apply(null, aArguments || []); },
+		null,
+		uneval([aMock, aArguments, aException])
 	);
 }
 
@@ -85,7 +91,9 @@ function assertCallAdded(aMock, aTask)
 	return assert.difference(
 		() => (aMock.expectedCalls || aMock._expectedCalls).length,
 		1,
-		aTask
+		aTask,
+		null,
+		uneval([aMock, aTask])
 	);
 }
 
@@ -94,7 +102,9 @@ function assertAnyCallAdded(aMock, aTask)
 	aMock = aMock._mock || aMock;
 	return assert.noDifference(
 		() => (aMock.expectedCalls || aMock._expectedCalls).length,
-		aTask
+		aTask,
+		null,
+		uneval([aMock, aTask])
 	).then(() => assert.isNotNull(aMock.anyCall))
 }
 
@@ -104,7 +114,9 @@ function assertCallRemoved(aMock, aTask)
 	return assert.difference(
 		() => (aMock.expectedCalls || aMock._expectedCalls).length,
 		-1,
-		aTask
+		aTask,
+		null,
+		uneval([aMock, aTask])
 	);
 }
 
@@ -113,7 +125,9 @@ function assertCallNotModified(aMock, aTask)
 	aMock = aMock._mock || aMock;
 	return assert.noDifference(
 		() => (aMock.expectedCalls || aMock._expectedCalls).length,
-		aTask
+		aTask,
+		null,
+		uneval([aMock, aTask])
 	);
 }
 
