@@ -1,4 +1,4 @@
-utils.include('./mock.inc.js');
+utils.include('./common.inc.js');
 
 var manager;
 var assertions;
