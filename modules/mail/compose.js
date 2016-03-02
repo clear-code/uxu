@@ -185,11 +185,13 @@ Compose.prototype = {
 
 				yield 500; // wait for initializing processes
 
-				// 新規メッセージのウィンドウを開く
 				aWindow.MsgNewMessage(null);
-
-				// ウィンドウが開かれるまで待つ
 				while (!(composeWindow = this._getWindow())) {
+					yield 10;
+				}
+
+				// wait until the initial recipient field is prepared
+				while (!this._getFirstBlankAddressField(composeWindow)) {
 					yield 10;
 				}
 			}).bind(this))
