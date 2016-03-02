@@ -1,10 +1,10 @@
-var description = '「特定のプロファイルを使用して実行するテスト」のテスト（処理待ちを含む）';
+var description = 'Remote test with specific profile';
 var profile = '../fixtures/profile/';
 //var options = ['-console', '-jsconsole'];
 
 function setUp()
 {
-	yield 500;
+	yield 50;
 }
 
 function tearDown()
@@ -14,24 +14,24 @@ function tearDown()
 function testSuccess()
 {
 	var value = utils.getPref('uxu.test.pref.value.boolean');
-	yield 500;
+	yield 50;
 	assert.isNotNull(value);
-	yield 500;
+	yield 50;
 	assert.isTrue(value);
 }
 
 function testFail()
 {
-	yield 500;
+	yield 50;
 	assert.raises('AssertionFailed', function() {
 		assert.isTrue(false);
 	});
-	yield 500;
+	yield 50;
 }
 
 function testError()
 {
-	yield 500;
+	yield 50;
 	try {
 		undefinedFunction();
 		assert.isTrue(false);
@@ -39,5 +39,5 @@ function testError()
 	catch(e) {
 		assert.isTrue(true);
 	}
-	yield 500;
+	yield 50;
 }
