@@ -130,29 +130,28 @@ $ : function(aNodeOrID, aOwner)
 },
  
 // http://lowreal.net/logs/2006/03/16/1
-$X : function() 
+$X : function(...aArgs) 
 {
-	if (!arguments || !arguments.length)
+	if (!aArgs || !aArgs.length)
 		throw new Error(bundle.getString('error_utils_no_xpath_expression'));
 
 	var expression = null,
 		context    = null,
 		resolver   = null,
 		type       = null;
-	arguments = Array.slice(arguments);
-	switch (arguments.length)
+	switch (aArgs.length)
 	{
 		case 1:
-			[expression] = arguments;
+			[expression] = aArgs;
 			break;
 		case 2:
-			[expression, context] = arguments;
+			[expression, context] = aArgs;
 			break;
 		case 3:
-			[expression, context, type] = arguments;
+			[expression, context, type] = aArgs;
 			break;
 		default:
-			[expression, context, resolver, type] = arguments;
+			[expression, context, resolver, type] = aArgs;
 			break;
 	}
 
