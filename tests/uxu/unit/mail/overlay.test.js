@@ -11,9 +11,11 @@ function setUp()
 
 	mainWindow.MsgNewMessage(null);
 
-	yield (function() {
-			return composeWindow = utils.getChromeWindow({ type : 'msgcompose' });
-		});
+	yield function() {
+		while (!(composeWindow = utils.getChromeWindow({ type : 'msgcompose' }))) {
+			yield;
+		}
+	}
 	yield 1000;
 }
 
