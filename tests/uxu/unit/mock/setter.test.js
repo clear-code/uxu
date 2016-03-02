@@ -5,6 +5,7 @@ var manager;
 
 function setUp()
 {
+	mock = new SetterMock();
 }
 
 function tearDown()
@@ -12,11 +13,9 @@ function tearDown()
 }
 
 
-function createSetterMock()
+function test_isFunction()
 {
-	var mock = new SetterMock();
 	assert.isFunction(mock);
-	return mock;
 }
 
 function test_name()
@@ -28,16 +27,15 @@ function test_name()
 
 function test_expect()
 {
-	var mock = createSetterMock();
 	yield assertCallError(mock);
-	yield assertCallAdded(mock, () => mock.expect(0));
+	yield assertCallAdded(mock, function() { mock.expect(0); });
 	yield assertCallSuccess(mock, [0], 0);
 	yield assertCallError(mock);
 
-	yield assertCallAdded(mock, () => mock.expect(29));
+	yield assertCallAdded(mock, function() { mock.expect(29); });
 	yield assertCallSuccess(mock, [29], 29);
 
-	yield assertCallAdded(mock, () => mock.expect([29]));
+	yield assertCallAdded(mock, function() { mock.expect([29]); });
 	yield assertCallSuccess(mock, [[29]], [29]);
 
 	yield assertCallAdded(mock, function() {
@@ -46,88 +44,84 @@ function test_expect()
 	yield assertCallSuccess(mock, [29], true);
 
 	yield assertCallAdded(mock,
-		() => mock.expect('string', () => 'returned'));
+		function() { mock.expect('string', () => 'returned'); });
 	yield assertCallSuccess(mock, ['string'], 'returned');
 
 	yield assertCallAdded(mock,
-		() => mock.expect(29));
+		function() { mock.expect(29); });
 	yield assertCallRaise(mock, [290], 'AssertionFailed');
 }
 
 function test_specialSpec()
 {
-	var mock = createSetterMock();
-
 	yield assertAnyCallAdded(mock,
-		() => mock.expect(Mock.ANY));
+		function() { mock.expect(Mock.ANY); });
 	yield assertAnyCallSuccess(mock, [0]);
 	yield assertAnyCallSuccess(mock, [29]);
 	yield assertAnyCallSuccess(mock, ['string']);
 
 	yield assertAnyCallAdded(mock,
-		() => mock.expect(Mock.ANY, 29));
+		function() { mock.expect(Mock.ANY, 29); });
 	yield assertAnyCallSuccess(mock, [0], 29);
 	yield assertAnyCallSuccess(mock, [29], 29);
 	yield assertAnyCallSuccess(mock, ['string'], 29);
 
 	yield assertCallAdded(mock,
-		() => mock.expect(Mock.ANY_ONETIME, 29));
+		function() { mock.expect(Mock.ANY_ONETIME, 29); });
 	yield assertCallSuccess(mock, [0], 29);
 	yield assertCallError(mock, [0]);
 
 	yield assertCallAdded(mock,
-		() => mock.expect(Mock.ANY_ONETIME, 'foobar'));
+		function() { mock.expect(Mock.ANY_ONETIME, 'foobar'); });
 	yield assertCallSuccess(mock, [29], 'foobar');
 	yield assertCallError(mock, [0]);
 
 	yield assertCallAdded(mock,
-		() => mock.expect(29, 'foobar'));
+		function() { mock.expect(29, 'foobar'); });
 	yield assertCallSuccess(mock, [29], 'foobar');
 
 	yield assertCallNotModified(mock,
-		() => mock.expect(Mock.NEVER));
+		function() { mock.expect(Mock.NEVER); });
 	yield assertCallError(mock, [0]);
 }
 
 function test_expectThrows()
 {
-	var mock = createSetterMock();
 	var message = Date.now();
 
 	yield assert.raises(
 		bundle.getString('mock_error_no_exception'),
-		() => mock.expectThrows()
+		function() { mock.expectThrows(); }
 	);
 	yield assert.raises(
 		bundle.getString('mock_error_no_exception'),
-		() => mock.expectThrows(message)
+		function() { mock.expectThrows(message); }
 	);
 	yield assert.notRaises(
 		bundle.getString('mock_error_no_exception'),
-		() => mock.expectThrows(null, message)
+		function() { mock.expectThrows(null, message); }
 	);
 	yield assertCallRaise(mock, [], message);
 
 	yield assertCallAdded(mock,
-		() => mock.expectThrows(29, message));
+		function() { mock.expectThrows(29, message); });
 	yield assertCallRaise(mock, [29], message);
 
 	yield assertCallAdded(mock,
-		() => mock.expectThrows([29], message));
+		function() { mock.expectThrows([29], message); });
 	yield assertCallRaise(mock, [29], message);
 
 	yield assertCallAdded(mock,
-		() => mock.expectThrows(29, Error, 'user defined error'));
+		function() { mock.expectThrows(29, Error, 'user defined error'); });
 	yield assertCallRaise(mock, [29], 'user defined error');
 
 	yield assertCallAdded(mock,
-		() => mock.expectThrows(29, message));
+		function() { mock.expectThrows(29, message); });
 	yield assertCallRaise(mock, [290], 'AssertionFailed');
 }
 
 function test_bindTo()
 {
-	var mock = createSetterMock();
 	var object = {};
 	mock.expect(29).boundTo(object);
 	yield assertCallRaise(mock, [], 'AssertionFailed');
@@ -137,19 +131,20 @@ function test_bindTo()
 	mock.expect(29).boundTo(object);
 	object.__defineSetter__('property', mock);
 	yield assertCallRemoved(mock,
-		() => { object.property = 29 });
+		function() { object.property = 29; });
 }
 
-function test_assert()
+function test_assertSuccess()
 {
-	var mock = createSetterMock();
 	mock.expect(0);
 	mock.expect(0);
 	mock(0);
 	mock(0);
 	yield assertSuccess(mock);
+}
 
-	mock = createSetterMock();
+function test_assertFail()
+{
 	mock.expect(0);
 	mock.expect(0);
 	mock(0);

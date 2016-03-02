@@ -18,7 +18,7 @@ var bundle = utils.import(topDir+'modules/lib/stringBundle.js', {})
 
 function assertSuccess(aMock)
 {
-	yield assert.notRaises(
+	return assert.notRaises(
 		'AssertionFailed',
 		() => aMock.assert()
 	);
@@ -26,7 +26,7 @@ function assertSuccess(aMock)
 
 function assertFail(aMock)
 {
-	yield assert.raises(
+	return assert.raises(
 		'AssertionFailed',
 		() => aMock.assert()
 	);
@@ -34,7 +34,7 @@ function assertFail(aMock)
 
 function assertCallSuccess(aMock, aArguments, aReturnValue)
 {
-	yield assertCallRemoved(aMock, function() {
+	return assertCallRemoved(aMock, function() {
 		var returnValue;
 		var done;
 		yield assert.notRaises(
@@ -51,7 +51,7 @@ function assertCallSuccess(aMock, aArguments, aReturnValue)
 
 function assertAnyCallSuccess(aMock, aArguments, aReturnValue)
 {
-	yield assertCallNotModified(aMock, function() {
+	return assertCallNotModified(aMock, function() {
 		var returnValue;
 		var done;
 		yield assert.notRaises(
@@ -68,7 +68,7 @@ function assertAnyCallSuccess(aMock, aArguments, aReturnValue)
 
 function assertCallRaise(aMock, aArguments, aException)
 {
-	yield assert.raises(
+	return assert.raises(
 		aException,
 		() => aMock.apply(null, aArguments || [])
 	);
@@ -76,13 +76,13 @@ function assertCallRaise(aMock, aArguments, aException)
 
 function assertCallError(aMock, aArguments)
 {
-	yield assertCallRaise(aMock, aArguments, 'Error');
+	return assertCallRaise(aMock, aArguments, 'Error');
 }
 
 function assertCallAdded(aMock, aTask)
 {
 	aMock = aMock._mock || aMock;
-	yield assert.difference(
+	return assert.difference(
 		() => (aMock.expectedCalls || aMock._expectedCalls).length,
 		1,
 		aTask
@@ -92,17 +92,16 @@ function assertCallAdded(aMock, aTask)
 function assertAnyCallAdded(aMock, aTask)
 {
 	aMock = aMock._mock || aMock;
-	yield assert.noDifference(
+	return assert.noDifference(
 		() => (aMock.expectedCalls || aMock._expectedCalls).length,
 		aTask
-	);
-	assert.isNotNull(aMock.anyCall);
+	).then(() => assert.isNotNull(aMock.anyCall))
 }
 
 function assertCallRemoved(aMock, aTask)
 {
 	aMock = aMock._mock || aMock;
-	yield assert.difference(
+	return assert.difference(
 		() => (aMock.expectedCalls || aMock._expectedCalls).length,
 		-1,
 		aTask
@@ -112,7 +111,7 @@ function assertCallRemoved(aMock, aTask)
 function assertCallNotModified(aMock, aTask)
 {
 	aMock = aMock._mock || aMock;
-	yield assert.noDifference(
+	return assert.noDifference(
 		() => (aMock.expectedCalls || aMock._expectedCalls).length,
 		aTask
 	);

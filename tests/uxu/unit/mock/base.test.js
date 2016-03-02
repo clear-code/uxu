@@ -20,7 +20,7 @@ function test_createMockNativeObject()
 			'mock_unexpected_call',
 			['document', 'write', utils.inspect([0])]
 		),
-		() => mock.write(0)
+		function() { mock.write(0); }
 	);
 }
 
@@ -32,7 +32,7 @@ function test_createMockArray()
 			'mock_unexpected_call',
 			['mock array', 'slice', utils.inspect([0])]
 		),
-		() => mock.slice(0)
+		function() { mock.slice(0); }
 	);
 }
 
@@ -58,28 +58,28 @@ function test_mockMethod()
 	{
 		mock = new Mock();
 		yield assertCallAdded(mock,
-			() => mock.expect('method'));
+			function() { mock.expect('method'); });
 		yield assertCallAdded(mock,
-			() => mock.expectThrows('error', [], 'error message'));
+			function() { mock.expectThrows('error', [], 'error message'); });
 		yield assertCallAdded(mock,
-			() => mock.expect('args', [0, 1, 2], true));
+			function() { mock.expect('args', [0, 1, 2], true); });
 	}
 
 	yield setUpMock();
-	yield assert.raises('MultiplexError', () => mock.assert());
-	yield assert.notRaises('MultiplexError', () => mock.assert());
+	yield assert.raises('MultiplexError', function() { mock.assert(); });
+	yield assert.notRaises('MultiplexError', function() { mock.assert(); });
 
 	yield setUpMock();
 	yield assert.notRaises(
 		'Error',
-		() => mock.method()
+		function() { mock.method(); }
 	);
 	yield assert.raises(
 		'error message',
-		() => mock.error()
+		function() { mock.error(); }
 	);
 	assert.isTrue(mock.args(0, 1, 2));
-	yield assert.notRaises('MultiplexError', () => mock.assert());
+	yield assert.notRaises('MultiplexError', function() { mock.assert(); });
 }
 
 function test_mockGetter()
@@ -89,16 +89,16 @@ function test_mockGetter()
 	{
 		mock = new Mock();
 		yield assertCallAdded(mock,
-			() => mock.expectGetThrows('getterError', Error, 'error message'));
+			function() { mock.expectGetThrows('getterError', Error, 'error message'); });
 		yield assertCallAdded(mock,
-			() => mock.expectGet('getterUndefined'));
+			function() { mock.expectGet('getterUndefined'); });
 		yield assertCallAdded(mock,
-			() => mock.expectGet('getterArray', [0, 1, 2]));
+			function() { mock.expectGet('getterArray', [0, 1, 2]); });
 	}
 
 	yield setUpMock();
-	yield assert.raises('MultiplexError', () => mock.assert());
-	yield assert.notRaises('MultiplexError', () => mock.assert());
+	yield assert.raises('MultiplexError', function() { mock.assert(); });
+	yield assert.notRaises('MultiplexError', function() { mock.assert(); });
 
 	yield setUpMock();
 	yield assert.raises(
@@ -107,10 +107,10 @@ function test_mockGetter()
 	);
 	yield assert.notRaises(
 		'Error',
-		() => assert.isUndefined(mock.getterUndefined)
+		function() { assert.isUndefined(mock.getterUndefined); }
 	);
 	assert.equals([0, 1, 2], mock.getterArray);
-	yield assert.notRaises('MultiplexError', () => mock.assert());
+	yield assert.notRaises('MultiplexError', function() { mock.assert(); });
 }
 
 function test_mockSetter()
@@ -120,17 +120,17 @@ function test_mockSetter()
 	{
 		mock = new Mock();
 		yield assertCallAdded(mock,
-			() => mock.expectSet('setterUndefined'));
+			function() { mock.expectSet('setterUndefined'); });
 		yield assertCallAdded(mock,
-			() => mock.expectSet('setterArray', [0, 1, 2]));
+			function() { mock.expectSet('setterArray', [0, 1, 2]); });
 	//	mock.expectSet('setterString', 'string', 'returned');
 		yield assertCallAdded(mock,
-			() => mock.expectSetThrows('setterError', 'error', Error, 'error message'));
+			function() { mock.expectSetThrows('setterError', 'error', Error, 'error message'); });
 	}
 
 	yield setUpMock();
-	yield assert.raises('MultiplexError', () => mock.assert());
-	yield assert.notRaises('MultiplexError', () => mock.assert());
+	yield assert.raises('MultiplexError', function() { mock.assert(); });
+	yield assert.notRaises('MultiplexError', function() { mock.assert(); });
 
 	yield setUpMock();
 	mock.setterUndefined = void(0);
@@ -140,7 +140,7 @@ function test_mockSetter()
 		'error message',
 		function() { mock.setterError = 'error'; }
 	);
-	yield assert.notRaises('MultiplexError', () => mock.assert());
+	yield assert.notRaises('MultiplexError', function() { mock.assert(); });
 }
 
 function test_mockAccessOrder()
@@ -150,7 +150,7 @@ function test_mockAccessOrder()
 	mock.expectGet('second');
 	yield assert.raises(
 		'AssertionFailed',
-		() => mock.second
+		function() { mock.second; }
 	);
 
 	mock = new Mock();
@@ -166,7 +166,7 @@ function test_mockAccessOrder()
 	mock.expect('second');
 	yield assert.raises(
 		'AssertionFailed',
-		() => mock.second()
+		function() { mock.second(); }
 	);
 
 	mock = new Mock();
@@ -179,11 +179,11 @@ function test_mockAccessOrder()
 	);
 	yield assert.notRaises(
 		'AssertionFailed',
-		() => mock.second
+		function() { mock.second; }
 	);
 	yield assert.raises(
 		'AssertionFailed',
-		() => mock.first()
+		function() { mock.first(); }
 	);
 }
 
@@ -195,11 +195,11 @@ function test_Mock_reset()
 	mock.expectSet('setter', true, true);
 	yield assert.raises(
 		'AssertionFailed',
-		() => mock.method()
+		function() { mock.method(); }
 	);
 	yield assert.raises(
 		'Error',
-		() => mock.unknown()
+		function() { mock.unknown(); }
 	);
 	mock.reset();
 	mock.assert();
@@ -232,39 +232,39 @@ function test_Mock_method()
 	assert.isFunction(object.method);
 	yield assert.raises(
 		'AssertionFailed',
-		() => object.method()
+		function() { object.method(); }
 	);
 	yield assert.raises(
 		'Error',
-		() => assert.equals('OK', object.method(0, 1))
+		function() { assert.equals('OK', object.method(0, 1)); }
 	);
 
 	Mock.expect(object, 'method', [2, 3], 'OK');
 	assert.equals('OK', object.method(2, 3));
 	yield assert.raises(
 		'Error',
-		() => object.method()
+		function() { object.method(); }
 	);
 
 	Mock.expectThrows(object, 'methodError', [4, 5], 'custom error');
 	assert.isFunction(object.methodError);
 	yield assert.raises(
 		'AssertionFailed',
-		() => object.methodError()
+		function() { object.methodError(); }
 	);
 	yield assert.raises(
 		'Error',
-		() => object.methodError(4, 5)
+		function() { object.methodError(4, 5); }
 	);
 
 	Mock.expectThrows(object, 'methodError', [4, 5], 'custom error');
 	yield assert.raises(
 		'custom error',
-		() => object.methodError(4, 5)
+		function() { object.methodError(4, 5); }
 	);
 	yield assert.notRaises(
 		'custom error',
-		() => object.methodError()
+		function() { object.methodError(); }
 	);
 }
 
@@ -277,18 +277,18 @@ function test_Mock_getter()
 	assert.equals('OK', object.getter);
 	yield assert.raises(
 		'Error',
-		() => object.getter
+		function() { object.getter; }
 	);
 
 	Mock.expectGetThrows(object, 'getterError', 'custom error');
 	assert.isFunction(object.__lookupGetter__('getterError'));
 	yield assert.raises(
 		'custom error',
-		() => object.getterError
+		function() { object.getterError; }
 	);
 	yield assert.notRaises(
 		'custom error',
-		() => object.getterError
+		function() { object.getterError; }
 	);
 }
 

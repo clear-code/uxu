@@ -65,23 +65,23 @@ function test_expect()
 {
 	var mock = createHTTPServerMock();
 	yield assertCallError(mock);
-	yield assertCallAdded(mock, () => mock.expect('/'));
+	yield assertCallAdded(mock, function() { mock.expect('/'); });
 	yield assertCallSuccess(mock, ['/'],
 		{ uri : '', file : null, status : 0, statusText : '' });
 	yield assertCallError(mock);
 
-	yield assertCallAdded(mock, () => mock.expect('/expected'));
+	yield assertCallAdded(mock, function() { mock.expect('/expected'); });
 	yield assertCallRemoved(mock, function() {
 		yield assertCallRaise(mock, ['/unexpected'], 'AssertionFailed');
 	});
 
 	mock = createHTTPServerMock();
-	yield assertCallAdded(mock, () => mock.expect(/FooBar/i, '/expected'));
+	yield assertCallAdded(mock, function() { mock.expect(/FooBar/i, '/expected'); });
 	yield assertCallRemoved(mock, function() {
 		yield assertCallRaise(mock, ['/foo'], 'AssertionFailed');
 	});
 
-	yield assertCallAdded(mock, () => mock.expect(/FooBar/i, '/expected'));
+	yield assertCallAdded(mock, function() { mock.expect(/FooBar/i, '/expected'); });
 	yield assertCallSuccess(mock, ['/foobar'],
 		{ uri : '/expected', file : null, status : 200, statusText : '' });
 
@@ -97,7 +97,7 @@ function test_specialSpec()
 	var mock = createHTTPServerMock();
 
 	yield assertAnyCallAdded(mock,
-		() => mock.expect(Mock.ANY));
+		function() { mock.expect(Mock.ANY); });
 	yield assertAnyCallSuccess(mock,
 		['/path1'], { uri : '/path1', file : null, status : 200, statusText : '' });
 	yield assertAnyCallSuccess(mock,
@@ -105,7 +105,7 @@ function test_specialSpec()
 	yield assertAnyCallSuccess(mock,
 		['/path3'], { uri : '/path3', file : null, status : 200, statusText : '' });
 
-	yield assertAnyCallAdded(mock, () => mock.expect(Mock.ANY, '/expected', 301));
+	yield assertAnyCallAdded(mock, function() { mock.expect(Mock.ANY, '/expected', 301); });
 	yield assertAnyCallSuccess(mock,
 		['/path1'], { uri : '/expected', file : null, status : 301, statusText : '' });
 	yield assertAnyCallSuccess(mock,
@@ -114,7 +114,7 @@ function test_specialSpec()
 		['/path3'], { uri : '/expected', file : null, status : 301, statusText : '' });
 
 	yield assertCallAdded(mock,
-		() => mock.expect(Mock.ANY_ONETIME, '/expected', 401));
+		function() { mock.expect(Mock.ANY_ONETIME, '/expected', 401); });
 	yield assertCallSuccess(mock,
 		['/any'], { uri : '/expected', file : null, status : 401, statusText : '' });
 	yield assertCallError(mock,
@@ -133,19 +133,19 @@ function test_expectThrows()
 	yield assertCallNotModified(mock, function() {
 		yield assert.raises(
 			bundle.getString('mock_error_no_exception'),
-			() => mock.expectThrows()
+			function() { mock.expectThrows(); }
 		);
 	});
 	yield assertCallNotModified(mock, function() {
 		yield assert.raises(
 			bundle.getString('mock_error_no_exception'),
-			() => mock.expectThrows('/error')
+			function() { mock.expectThrows('/error'); }
 		);
 	});
 	yield assertCallAdded(mock, function() {
 		yield assert.notRaises(
 			bundle.getString('mock_error_no_exception'),
-			() => mock.expectThrows('/error', 502)
+			function() { mock.expectThrows('/error', 502); }
 		);
 	});
 	yield assertCallRemoved(mock, function() {
@@ -154,14 +154,14 @@ function test_expectThrows()
 	});
 
 	yield assertCallAdded(mock,
-		() => mock.expectThrows(/errorpage/i, 503, 'some error'));
+		function() { mock.expectThrows(/errorpage/i, 503, 'some error'); });
 	yield assertCallRemoved(mock, function() {
 		yield assertCallSuccess(mock, ['/ErrorPage'],
 			{ uri : '', file : null, status : 503, statusText : 'some error' });
 	});
 
 	yield assertCallAdded(mock,
-		() => mock.expectThrows('/expected', 400));
+		function() { mock.expectThrows('/expected', 400); });
 	yield assertCallRemoved(mock, function() {
 		yield assertCallRaise(mock, ['/unexpected'], 'AssertionFailed');
 	});

@@ -5,6 +5,7 @@ var manager;
 
 function setUp()
 {
+	mock = new GetterMock();
 }
 
 function tearDown()
@@ -12,11 +13,9 @@ function tearDown()
 }
 
 
-function createGetterMock()
+function test_isFunction()
 {
-	var mock = new GetterMock();
 	assert.isFunction(mock);
-	return mock;
 }
 
 function test_name()
@@ -30,69 +29,64 @@ function test_name()
 
 function test_expect()
 {
-	var mock = createGetterMock();
 	yield assertCallError(mock);
-	yield assertCallAdded(mock, () => mock.expect(0));
+	yield assertCallAdded(mock, function() { mock.expect(0); });
 	yield assertCallSuccess(mock, [], 0);
 	yield assertCallError(mock);
 
-	yield assertCallAdded(mock, () => mock.expect(29));
+	yield assertCallAdded(mock, function() { mock.expect(29); });
 	yield assertCallSuccess(mock, [], 29);
 
-	yield assertCallAdded(mock, () => mock.expect([29]));
+	yield assertCallAdded(mock, function() { mock.expect([29]); });
 	yield assertCallSuccess(mock, [], [29]);
 
 	yield assertCallAdded(mock,
-		() => mock.expect(() => 'returned'));
+		function() { mock.expect(() => 'returned'); });
 	yield assertCallSuccess(mock, [], 'returned');
 
-	yield assertCallAdded(mock, () => mock.expect(29, true));
+	yield assertCallAdded(mock, function() { mock.expect(29, true); });
 	yield assertCallSuccess(mock, [], [29]);
 }
 
 function test_specialSpec()
 {
-	var mock = createGetterMock();
-
 	yield assertAnyCallAdded(mock,
-		() => mock.expect(Mock.ANY, true));
+		function() { mock.expect(Mock.ANY, true); });
 	yield assertAnyCallSuccess(mock, [], true);
 	yield assertAnyCallSuccess(mock, [], true);
 
 	yield assertAnyCallAdded(mock,
-		() => mock.expect(Mock.ANY, false));
+		function() { mock.expect(Mock.ANY, false); });
 	yield assertAnyCallSuccess(mock, [], false);
 	yield assertAnyCallSuccess(mock, [], false);
 
 	yield assertCallAdded(mock,
-		() => mock.expect(Mock.ANY_ONETIME, 29));
+		function() { mock.expect(Mock.ANY_ONETIME, 29); });
 	yield assertCallSuccess(mock, [], 29);
 	yield assertCallError(mock, []);
 
 	yield assertCallNotModified(mock,
-		() => mock.expect(Mock.NEVER));
+		function() { mock.expect(Mock.NEVER); });
 	yield assertCallError(mock, []);
 }
 
 function test_expectThrows()
 {
-	var mock = createGetterMock();
 	var message = Date.now();
 
 	yield assert.raises(
 		bundle.getString('mock_error_no_exception'),
-		() => mock.expectThrows()
+		function() { mock.expectThrows(); }
 	);
 	yield assert.notRaises(
 		bundle.getString('mock_error_no_exception'),
-		() => mock.expectThrows(message)
+		function() { mock.expectThrows(message); }
 	);
 	yield assertCallRaise(mock, [], message);
 }
 
 function test_bindTo()
 {
-	var mock = createGetterMock();
 	var object = {};
 	mock.expect(29).boundTo(object);
 	yield assertCallRaise(mock, [], 'AssertionFailed');
@@ -102,19 +96,20 @@ function test_bindTo()
 	mock.expect(29).boundTo(object);
 	object.__defineGetter__('property', mock);
 	yield assertCallRemoved(mock,
-		() => assert.equals(29, object.property));
+		function() { assert.equals(29, object.property); });
 }
 
-function test_assert()
+function test_assertSuccess()
 {
-	var mock = createGetterMock();
 	mock.expect(0);
 	mock.expect(0);
 	mock();
 	mock();
 	yield assertSuccess(mock);
+}
 
-	mock = createGetterMock();
+function test_assertFail()
+{
 	mock.expect(0);
 	mock.expect(0);
 	mock();
