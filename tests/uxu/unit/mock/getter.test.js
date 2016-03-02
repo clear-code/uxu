@@ -72,7 +72,7 @@ function test_throwError()
 	yield assert.raises(/dynamic/, function() { mock(); });
 }
 
-function test_invalidError()
+function test_missingErrorDefinition()
 {
 	yield assert.raises(/Error/, function() { mock.expectThrows(); });
 }

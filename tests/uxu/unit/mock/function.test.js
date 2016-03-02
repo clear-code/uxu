@@ -28,7 +28,7 @@ function test_expect()
 {
 	mock.expect([])
 		.expect('single')
-		.expect(['array'])
+		.expect(['array', 'args'])
 		.expect([], 'retVal for no argument')
 		.expect('single with retVal', 'retVal for single')
 		.expect(['array with retVal'], 'retVal for array');
@@ -37,7 +37,7 @@ function test_expect()
 	                 returnValue : undefined },
 	               { arguments   : ['single'],
 	                 returnValue : undefined },
-	               { arguments   : ['array'],
+	               { arguments   : ['array', 'args'],
 	                 returnValue : undefined },
 	               { arguments   : [],
 	                 returnValue : 'retVal for no argument' },
@@ -52,7 +52,7 @@ function test_expectThrows()
 {
 	mock.expectThrows([], Error, 'message for no argument')
 		.expectThrows('single', Error, 'message for single')
-		.expectThrows(['array'], Error, 'message for array');
+		.expectThrows(['array', 'args'], Error, 'message for array');
 
 	assert.equals([{ arguments        : [],
 	                 exceptionClass   : Error,
@@ -60,7 +60,7 @@ function test_expectThrows()
 	               { arguments        : ['single'],
 	                 exceptionClass   : Error,
 	                 exceptionMessage : 'message for single' },
-	               { arguments        : ['array'],
+	               { arguments        : ['array', 'args'],
 	                 exceptionClass   : Error,
 	                 exceptionMessage : 'message for array' }],
 	              mock._mock.expectedCalls.map((aCall) => aCall.toParams()));
@@ -163,15 +163,17 @@ function test_throwError()
 	yield assert.raises(/dynamic/, function() { mock('dynamic'); });
 }
 
-function test_invalidError()
+function test_missingErrorDefinition()
 {
 	yield assert.raises(/Error/, function() { mock.expectThrows([0]); });
 }
 
 function test_expectedArgs()
 {
-	mock.expect([0]);
+	mock.expect([0])
+		.expect([0, 1, 2]);
 	yield assert.notRaises('AssertionFailed', function() { mock(0); });
+	yield assert.notRaises('AssertionFailed', function() { mock(0, 1, 2); });
 	yield assert.raises('Error', function() { mock(0); });
 }
 

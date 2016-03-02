@@ -27,112 +27,148 @@ function test_name()
 
 function test_expect()
 {
-	yield assertCallError(mock);
-	yield assertCallAdded(mock, function() { mock.expect(0); });
-	yield assertCallSuccess(mock, [0], 0);
-	yield assertCallError(mock);
+	mock.expect([])
+		.expect('single')
+		.expect(['array'])
+		.expect([], 'retVal for no argument')
+		.expect('single with retVal', 'retVal for single')
+		.expect(['array with retVal'], 'retVal for array');
 
-	yield assertCallAdded(mock, function() { mock.expect(29); });
-	yield assertCallSuccess(mock, [29], 29);
-
-	yield assertCallAdded(mock, function() { mock.expect([29]); });
-	yield assertCallSuccess(mock, [[29]], [29]);
-
-	yield assertCallAdded(mock, function() {
-		mock.expect(29, true);
-	});
-	yield assertCallSuccess(mock, [29], true);
-
-	yield assertCallAdded(mock,
-		function() { mock.expect('string', () => 'returned'); });
-	yield assertCallSuccess(mock, ['string'], 'returned');
-
-	yield assertCallAdded(mock,
-		function() { mock.expect(29); });
-	yield assertCallRaise(mock, [290], 'AssertionFailed');
-}
-
-function test_specialSpec()
-{
-	yield assertAnyCallAdded(mock,
-		function() { mock.expect(Mock.ANY); });
-	yield assertAnyCallSuccess(mock, [0]);
-	yield assertAnyCallSuccess(mock, [29]);
-	yield assertAnyCallSuccess(mock, ['string']);
-
-	yield assertAnyCallAdded(mock,
-		function() { mock.expect(Mock.ANY, 29); });
-	yield assertAnyCallSuccess(mock, [0], 29);
-	yield assertAnyCallSuccess(mock, [29], 29);
-	yield assertAnyCallSuccess(mock, ['string'], 29);
-
-	yield assertCallAdded(mock,
-		function() { mock.expect(Mock.ANY_ONETIME, 29); });
-	yield assertCallSuccess(mock, [0], 29);
-	yield assertCallError(mock, [0]);
-
-	yield assertCallAdded(mock,
-		function() { mock.expect(Mock.ANY_ONETIME, 'foobar'); });
-	yield assertCallSuccess(mock, [29], 'foobar');
-	yield assertCallError(mock, [0]);
-
-	yield assertCallAdded(mock,
-		function() { mock.expect(29, 'foobar'); });
-	yield assertCallSuccess(mock, [29], 'foobar');
-
-	yield assertCallNotModified(mock,
-		function() { mock.expect(Mock.NEVER); });
-	yield assertCallError(mock, [0]);
+	assert.equals([{ arguments   : [[]],
+	                 returnValue : [] },
+	               { arguments   : ['single'],
+	                 returnValue : 'single' },
+	               { arguments   : ['array'],
+	                 returnValue : ['array'] },
+	               { arguments   : [[]],
+	                 returnValue : 'retVal for no argument' },
+	               { arguments   : ['single with retVal'],
+	                 returnValue : 'retVal for single' },
+	               { arguments   : ['array with retVal'],
+	                 returnValue : 'retVal for array' }],
+	              mock._mock.expectedCalls.map((aCall) => aCall.toParams()));
 }
 
 function test_expectThrows()
 {
-	var message = Date.now();
+	mock.expectThrows([], Error, 'message for no argument')
+		.expectThrows('single', Error, 'message for single')
+		.expectThrows(['array', 'args'], Error, 'message for array');
 
-	yield assert.raises(
-		bundle.getString('mock_error_no_exception'),
-		function() { mock.expectThrows(); }
-	);
-	yield assert.raises(
-		bundle.getString('mock_error_no_exception'),
-		function() { mock.expectThrows(message); }
-	);
-	yield assert.notRaises(
-		bundle.getString('mock_error_no_exception'),
-		function() { mock.expectThrows(null, message); }
-	);
-	yield assertCallRaise(mock, [], message);
-
-	yield assertCallAdded(mock,
-		function() { mock.expectThrows(29, message); });
-	yield assertCallRaise(mock, [29], message);
-
-	yield assertCallAdded(mock,
-		function() { mock.expectThrows([29], message); });
-	yield assertCallRaise(mock, [29], message);
-
-	yield assertCallAdded(mock,
-		function() { mock.expectThrows(29, Error, 'user defined error'); });
-	yield assertCallRaise(mock, [29], 'user defined error');
-
-	yield assertCallAdded(mock,
-		function() { mock.expectThrows(29, message); });
-	yield assertCallRaise(mock, [290], 'AssertionFailed');
+	assert.equals([{ arguments        : [[]],
+	                 exceptionClass   : Error,
+	                 exceptionMessage : 'message for no argument' },
+	               { arguments        : ['single'],
+	                 exceptionClass   : Error,
+	                 exceptionMessage : 'message for single' },
+	               { arguments        : [['array', 'args']],
+	                 exceptionClass   : Error,
+	                 exceptionMessage : 'message for array' }],
+	              mock._mock.expectedCalls.map((aCall) => aCall.toParams()));
 }
 
-function test_bindTo()
+function test_expectationChainWithAnyOnetime()
+{
+	mock.when(Mock.ANY_ONETIME)
+		.thenReturn('any onetime')
+		.when('regular')
+		.thenReturn('regular');
+
+	assert.equals([{ arguments   : [Mock.ANY_ONETIME],
+	                 returnValue : 'any onetime' },
+	               { arguments   : ['regular'],
+	                 returnValue : 'regular' }],
+	              mock._mock.expectedCalls.map((aCall) => aCall.toParams()));
+}
+
+function test_expectationChainWithAny()
+{
+	mock.when(Mock.ANY)
+		.thenReturn('any');
+
+	assert.equals([],
+	              mock._mock.expectedCalls.map((aCall) => aCall.toParams()));
+	assert.equals({ arguments   : [Mock.ANY],
+	                returnValue : 'any' },
+	              mock._mock.anyCall.toParams());
+}
+
+function test_returnValue()
+{
+	mock.expect([0], 'return 0')
+		.when('static')
+		.thenReturn('static')
+		.when('dynamic')
+		.thenReturn(() => 'dynamic');
+	assert.equal('return 0', mock([0]));
+	assert.equal('static', mock('static'));
+	assert.equal('dynamic', mock('dynamic'));
+}
+
+function test_throwError()
+{
+	mock.expectThrows([0], Error, 'error 0')
+		.when('static')
+		.thenThrow('static')
+		.when('dynamic')
+		.thenThrow(Error, 'dynamic');
+	yield assert.raises(/error 0/, function() { mock([0]); });
+	yield assert.raises(/static/, function() { mock('static'); });
+	yield assert.raises(/dynamic/, function() { mock('dynamic'); });
+}
+
+function test_missingErrorDefinition()
+{
+	yield assert.raises(/Error/, function() { mock.expectThrows([0]); });
+}
+
+function test_expectedArgs()
+{
+	mock.expect([0])
+		.expect([0, 1, 2]);
+	yield assert.notRaises('AssertionFailed', function() { mock([0]); });
+	yield assert.notRaises('AssertionFailed', function() { mock([0, 1, 2]); });
+	yield assert.raises('Error', function() { mock(0); });
+}
+
+function test_unexpectedArgs()
+{
+	mock.expect([0]);
+	yield assert.raises('AssertionFailed', function() { mock(1); });
+	yield assert.raises('Error', function() { mock(1); });
+}
+
+function test_withAnyArg()
+{
+	mock.expect([Mock.ANY]);
+	yield assert.notRaises('AssertionFailed', function() { mock(0); });
+	yield assert.notRaises('AssertionFailed', function() { mock(1); });
+}
+
+function test_unexpectedRun()
+{
+	mock.expect([Mock.NEVER]);
+	yield assert.raises('Error', function() { mock(0); });
+}
+
+
+function test_runWithExpectedContext()
 {
 	var object = {};
-	mock.expect(29).boundTo(object);
-	yield assertCallRaise(mock, [], 'AssertionFailed');
-	yield assertCallRaise(mock, [], 'Error');
-
-	mock = createSetterMock();
-	mock.expect(29).boundTo(object);
-	object.__defineSetter__('property', mock);
-	yield assertCallRemoved(mock,
-		function() { object.property = 29; });
+	mock.expect(0).boundTo(object);
+	object.method = mock;
+	yield assert.notRaises('AssertionFailed', function() { object.method(0); });
+	yield assert.raises('Error', function() { object.method(0); });
 }
+
+function test_runWithUnexpectedContext()
+{
+	var object = { object: true };
+	mock.expect(0).boundTo(object);
+	yield assert.raises('AssertionFailed', function() { mock.call(null, 0); });
+	yield assert.raises('Error', function() { mock.call(null, 0); });
+}
+
 
 function test_assertSuccess()
 {
