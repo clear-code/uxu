@@ -43,7 +43,7 @@ function tearDown()
 	yield closeAllComposeWindows();
 }
 
-testAddressFields.setUp = function() {
+testWindowOperations.setUp = function() {
 	yield compose.tearDown();
 };
 function testWindowOperations()
