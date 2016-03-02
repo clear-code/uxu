@@ -18,7 +18,7 @@ function testSend()
 			{ type : 'to', address : 'address1@test' },
 			{ type : 'to', address : 'address2@test' }
 		];
-	mail.compose.recipients = addresses;
+	yield mail.compose.setRecipients(addresses);
 	assert.equals(addresses, mail.compose.recipients);
 
 	mail.compose.subject = 'test subject';
