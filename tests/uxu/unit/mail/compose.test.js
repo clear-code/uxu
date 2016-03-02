@@ -43,10 +43,9 @@ function tearDown()
 	yield closeAllComposeWindows();
 }
 
-testWindowOperations.setUp = function()
-{
-	yield Do(compose.tearDown());
-}
+testAddressFields.setUp = function() {
+	yield compose.tearDown();
+};
 function testWindowOperations()
 {
 	assert.isNull(compose.window);
@@ -229,15 +228,14 @@ function testRecipients()
 	);
 
 	// single string type
-	yield compose.setRecipients('test@example.com');
-	assert.equals([{ type : 'to', address : 'test@example.com' }], compose.recipients);
+	yield compose.setRecipients('foo@example.com');
+	assert.equals([{ type : 'to', address : 'foo@example.com' }], compose.recipients);
 
 	// append type
 	yield compose.appendRecipients(['baz@example.com', 'hoge@example.com']);
 	assert.equals(
 		[
 			{ type : 'to', address : 'foo@example.com' },
-			{ type : 'to', address : 'bar@example.com' },
 			{ type : 'to', address : 'baz@example.com' },
 			{ type : 'to', address : 'hoge@example.com' }
 		],
