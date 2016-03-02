@@ -29,74 +29,78 @@ function test_name()
 
 function test_expect()
 {
-	yield assertCallError(mock);
-	yield assertCallAdded(mock, function() { mock.expect(0); });
-	yield assertCallSuccess(mock, [], 0);
-	yield assertCallError(mock);
+	var returner = () => 'returned';
+	mock.expect([])
+		.expect('single')
+		.expect(['array'])
+		.expect(returner);
 
-	yield assertCallAdded(mock, function() { mock.expect(29); });
-	yield assertCallSuccess(mock, [], 29);
-
-	yield assertCallAdded(mock, function() { mock.expect([29]); });
-	yield assertCallSuccess(mock, [], [29]);
-
-	yield assertCallAdded(mock,
-		function() { mock.expect(() => 'returned'); });
-	yield assertCallSuccess(mock, [], 'returned');
-
-	yield assertCallAdded(mock, function() { mock.expect(29, true); });
-	yield assertCallSuccess(mock, [], [29]);
-}
-
-function test_specialSpec()
-{
-	yield assertAnyCallAdded(mock,
-		function() { mock.expect(Mock.ANY, true); });
-	yield assertAnyCallSuccess(mock, [], true);
-	yield assertAnyCallSuccess(mock, [], true);
-
-	yield assertAnyCallAdded(mock,
-		function() { mock.expect(Mock.ANY, false); });
-	yield assertAnyCallSuccess(mock, [], false);
-	yield assertAnyCallSuccess(mock, [], false);
-
-	yield assertCallAdded(mock,
-		function() { mock.expect(Mock.ANY_ONETIME, 29); });
-	yield assertCallSuccess(mock, [], 29);
-	yield assertCallError(mock, []);
-
-	yield assertCallNotModified(mock,
-		function() { mock.expect(Mock.NEVER); });
-	yield assertCallError(mock, []);
+	assert.equals([{ arguments   : [],
+	                 returnValue : [] },
+	               { arguments   : [],
+	                 returnValue : 'single' },
+	               { arguments   : [],
+	                 returnValue : ['array'] },
+	               { arguments   : [],
+	                 returnValue : returner }],
+	              mock._mock.expectedCalls.map((aCall) => aCall.toParams()));
 }
 
 function test_expectThrows()
 {
-	var message = Date.now();
+	mock.expectThrows(Error, 'with error class');
 
-	yield assert.raises(
-		bundle.getString('mock_error_no_exception'),
-		function() { mock.expectThrows(); }
-	);
-	yield assert.notRaises(
-		bundle.getString('mock_error_no_exception'),
-		function() { mock.expectThrows(message); }
-	);
-	yield assertCallRaise(mock, [], message);
+	assert.equals([{ arguments        : [],
+	                 exceptionClass   : Error,
+	                 exceptionMessage : 'with error class' }],
+	              mock._mock.expectedCalls.map((aCall) => aCall.toParams()));
 }
 
-function test_bindTo()
+function test_returnValue()
+{
+	mock.expect('static')
+		.expect(() => 'dynamic');
+	assert.equal('static', mock());
+	assert.equal('dynamic', mock());
+}
+
+function test_throwError()
+{
+	mock.expectThrows('static')
+		.expectThrows(Error, 'dynamic');
+	yield assert.raises(/static/, function() { mock(); });
+	yield assert.raises(/dynamic/, function() { mock(); });
+}
+
+function test_invalidError()
+{
+	yield assert.raises(/Error/, function() { mock.expectThrows(); });
+}
+
+function test_unexpectedRun()
+{
+	mock.expect(Mock.NEVER);
+	yield assert.raises('Error', function() { mock(); });
+}
+
+
+function test_runWithExpectedContext()
 {
 	var object = {};
-	mock.expect(29).boundTo(object);
-	yield assertCallRaise(mock, [], 'AssertionFailed');
-	yield assertCallRaise(mock, [], 'Error');
-
-	mock = createGetterMock();
-	mock.expect(29).boundTo(object);
+	mock.expect(0).boundTo(object);
 	object.__defineGetter__('property', mock);
-	yield assertCallRemoved(mock,
-		function() { assert.equals(29, object.property); });
+	yield assert.notRaises('AssertionFailed', function() { object.property; });
+	yield assert.raises('Error', function() { object.property; });
+}
+
+function test_runWithUnexpectedContext()
+{
+	var object = { object: true };
+	mock.expect([0]).boundTo(object);
+	var another = { object: false };
+	another.__defineGetter__('property', mock);
+	yield assert.raises('AssertionFailed', function() { another.property; });
+	yield assert.raises('Error', function() { another.property; });
 }
 
 function test_assertSuccess()
