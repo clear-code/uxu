@@ -28,7 +28,7 @@ function setUp()
 	yield closeAllComposeWindows();
 
 	compose = new Compose(utils.mail, utils);
-	yield Do(compose.setUp());
+	yield compose.setUp();
 	composeWindow = compose.window;
 	mail.clear();
 }
@@ -52,7 +52,7 @@ function testWindowOperations()
 	assert.equals(0, compose.windows.length);
 
 	assert.isFunction(compose.setUp);
-	yield Do(compose.setUp());
+	yield compose.setUp();
 
 	var composeWindow = compose.window;
 	assert.isNotNull(composeWindow);
@@ -60,17 +60,17 @@ function testWindowOperations()
 	assert.equals(composeWindow, compose.windows[0]);
 
 	assert.isFunction(compose.tearDown);
-	yield Do(compose.tearDown());
+	yield compose.tearDown();
 
 	assert.isNull(compose.window);
 	assert.equals(0, compose.windows.length);
 
 
-	yield Do(compose.setUp());
+	yield compose.setUp();
 	assert.isNotNull(compose.window);
 
 	assert.isFunction(compose.tearDownAll);
-	yield Do(compose.tearDownAll());
+	yield compose.tearDownAll();
 
 	assert.isNull(compose.window);
 }
@@ -95,7 +95,7 @@ function testAddressFields()
 	assert.equals(nodes[0], compose.firstAddressField);
 	assert.equals(nodes[1], compose.lastAddressField);
 
-	yield Do(compose.tearDown());
+	yield compose.tearDown();
 	assert.isNull(compose.window);
 	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.addressFields;
@@ -129,7 +129,7 @@ function testBlankAddressFields()
 	assert.equals(fields[1], compose.firstBlankAddressField);
 	assert.equals(fields[1], compose.lastBlankAddressField);
 
-	yield Do(compose.tearDown());
+	yield compose.tearDown();
 	assert.isNull(compose.window);
 	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.blankAddressFields;
@@ -162,7 +162,7 @@ function testAddressTypes()
 	assert.equals(nodes, compose.addressTypes);
 	assert.equals(nodes[1], compose.lastAddressType);
 
-	yield Do(compose.tearDown());
+	yield compose.tearDown();
 	assert.isNull(compose.window);
 	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.addressTypes;
@@ -181,7 +181,7 @@ function testDummyRows()
 	assert.equals(nodes, compose.dummyRows);
 	assert.equals(nodes[0], compose.firstDummyRow);
 
-	yield Do(compose.tearDown());
+	yield compose.tearDown();
 	assert.isNull(compose.window);
 	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.dummyRows;

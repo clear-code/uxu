@@ -127,14 +127,10 @@ Compose.prototype = {
 	
 	_getWindows : function() 
 	{
-		var composeWindows = [];
-		this._suite.getChromeWindows({ type : 'msgcompose' })
-			.forEach(function(aWindow) {
-				if (this._isWindowReady(aWindow)) {
-					composeWindows.push(aWindow);
-				}
+		return this._suite.getChromeWindows({ type : 'msgcompose' })
+			.filter(function(aWindow) {
+				return this._isWindowReady(aWindow);
 			}, this);
-		return composeWindows;
 	},
 	
 	_getWindow : function() 
@@ -189,9 +185,7 @@ Compose.prototype = {
 				while (!(composeWindow = this._getWindow())) {
 					yield 10;
 				}
-
-				// wait until the initial recipient field is prepared
-				while (!this._getFirstBlankAddressField(composeWindow)) {
+				while (!this._isWindowReady(composeWindow)) {
 					yield 10;
 				}
 			}).bind(this))
