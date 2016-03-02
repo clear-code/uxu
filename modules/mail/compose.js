@@ -141,16 +141,21 @@ Compose.prototype = {
   
 	_isWindowReady : function(aComposeWindow) 
 	{
+		if (
+			aComposeWindow.closed ||
+			// recycled, cached window
+			aComposeWindow.arguments.length === 0 ||
+			aComposeWindow.arguments[0] === null
+			)
+			return false;
+
 		var textboxes = this._getAddressFields(aComposeWindow);
 		return (
-				!aComposeWindow.closed &&
+				textboxes.length > 1 ||
 				(
-					textboxes.length > 1 ||
-					(
-						textboxes.length > 0 &&
-						this._getLastAddressField(aComposeWindow) &&
-						this._getFirstDummyRow(aComposeWindow)
-					)
+					textboxes.length > 0 &&
+					this._getLastAddressField(aComposeWindow) &&
+					this._getFirstDummyRow(aComposeWindow)
 				)
 			);
 	},
