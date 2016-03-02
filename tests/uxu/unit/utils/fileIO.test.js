@@ -1,6 +1,6 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
-utils.include('utils_common.inc.js');
+utils.include('common.inc.js');
 
 var bundle = utils.import(topDir+'modules/lib/stringBundle.js', {})
 				.stringBundle.get('chrome://uxu/locale/uxu.properties');

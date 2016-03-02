@@ -1,6 +1,6 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 
-utils.include('utils_common.inc.js');
+utils.include('common.inc.js');
 
 var csvBase = topDir+'tests/uxu/fixtures/csv/';
 var values = { a: 29, b: true, c: "string" };

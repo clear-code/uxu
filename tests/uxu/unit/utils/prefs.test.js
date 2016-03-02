@@ -1,8 +1,8 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 var parallel = false;
 
-utils.include('utils_common.inc.js');
-utils.include('prefread.inc.js');
+utils.include('common.inc.js');
+utils.include('../modules/prefread.inc.js');
 
 var Pref = Cc['@mozilla.org/preferences;1'] 
 		.getService(Ci.nsIPrefBranch);

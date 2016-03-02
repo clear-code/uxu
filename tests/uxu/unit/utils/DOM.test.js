@@ -1,7 +1,7 @@
 // -*- indent-tabs-mode: t; tab-width: 4 -*-
 var parallel = false;
 
-utils.include('utils_common.inc.js');
+utils.include('common.inc.js');
 
 
 assert.inspectDOMNode = function(aExpected, aNode) {
