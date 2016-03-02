@@ -141,12 +141,7 @@ Compose.prototype = {
   
 	_isWindowReady : function(aComposeWindow) 
 	{
-		if (
-			aComposeWindow.closed ||
-			// recycled, cached window
-			aComposeWindow.arguments.length === 0 ||
-			aComposeWindow.arguments[0] === null
-			)
+		if (aComposeWindow.closed)
 			return false;
 
 		var textboxes = this._getAddressFields(aComposeWindow);
