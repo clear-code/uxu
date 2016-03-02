@@ -78,7 +78,7 @@ MockManager.prototype = {
 	{
 		var errors = [];
 		var self = this;
-		this._assert.doInternalAssertion(function() {
+		this._assert.doInternalAssertionSync(function() {
 			self.mocks.forEach(function(aMock) {
 				if ('assert' in aMock && typeof aMock.assert == 'function') {
 					try {
@@ -494,7 +494,7 @@ Mock.prototype = {
 	{
 		var errors = [];
 		var self = this;
-		this._assert.doInternalAssertion(function() {
+		this._assert.doInternalAssertionSync(function() {
 			for (let i in self._getters)
 			{
 				try {
@@ -632,42 +632,42 @@ Mock.export = function(aTarget, aAssertions) {
 
 function ExpectedCall(aOptions)
 {
-	this._arguments = [];
-	this.handlers   = [];
-	this.errorHandlers = [];
+	this._options = aOptions || {};
 
-	if ('arguments' in aOptions)
-		this.arguments = aOptions.arguments;
-	if ('returnValue' in aOptions)
-		this.returnValue = aOptions.returnValue;
-	if ('exceptionClass' in aOptions)
-		this.exceptionClass = aOptions.exceptionClass;
-	if ('exceptionMessage' in aOptions)
-		this.exceptionMessage = aOptions.exceptionMessage;
+	if (this._options.handler)
+		this._options.handlers = [this._options.handler];
+	else
+		this._options.handlers = this._options.handlers || [];
+
+	if (this._options.errorHandler)
+		this._options.errorHandlers = [this._options.errorHandler];
+	else
+		this._options.errorHandlers = this._options.errorHandlers || [];
 }
 ExpectedCall.prototype = {
 	addHandler : function(aHandler, aErrorHandler)
 	{
-		this.handlers.push(aHandler);
-		this.errorHandlers.push(aErrorHandler);
+		this._options.handlers.push(aHandler);
+		if (aErrorHandler)
+			this._options.errorHandlers.push(aErrorHandler);
 	},
 	onCall : function(aMock, aArguments)
 	{
-		this.handlers.forEach(function(aHandler) {
+		this._options.handlers.forEach(function(aHandler) {
 			if (aHandler && typeof aHandler == 'function')
 				aHandler.apply(aMock, aArguments);
 		}, aMock);
 	},
 	onError : function(aMock, aError)
 	{
-		this.errorHandlers.forEach(function(aHandler) {
+		this._options.errorHandlers.forEach(function(aHandler) {
 			if (aHandler && typeof aHandler == 'function')
 				aHandler.call(aMock, aError);
 		}, aMock);
 	},
 	finish : function(aArguments)
 	{
-		if ('exceptionClass' in this) {
+		if ('exceptionClass' in this._options) {
 			let exception = this.exceptionClass;
 			if (typeof exception == 'function')
 				exception = new this.exceptionClass(this.exceptionMessage);
@@ -677,20 +677,44 @@ ExpectedCall.prototype = {
 				this.returnValue.apply(null, aArguments) :
 				this.returnValue ;
 	},
-	get arguments()
-	{
-		return this._arguments;
-	},
+	get arguments() { return this._options.arguments; },
 	set arguments(aValue)
 	{
 		if (utils.isArray(aValue)) {
-			this._arguments = aValue.slice(0);
+			this._options.arguments = aValue.slice(0);
 		}
 		else {
-			this._arguments = [aValue];
+			this._options.arguments = [aValue];
 		}
-		return this._arguments;
+		return this._options.arguments;
 	},
+	get returnValue() { return this._options.returnValue; },
+	set returnValue(aValue)
+	{
+		delete this._options.exceptionClass;
+		delete this._options.exceptionMessage;
+		return this._options.returnValue = aValue;
+	},
+	get exceptionClass() { return this._options.exceptionClass; },
+	set exceptionClass(aValue)
+	{
+		delete this._options.returnValue;
+		return this._options.exceptionClass = aValue;
+	},
+	get exceptionMessage() { return this._options.exceptionMessage; },
+	set exceptionMessage(aValue)
+	{
+		delete this._options.returnValue;
+		return this._options.exceptionMessage = aValue;
+	},
+	get context() { return this._options.context; },
+	set context(aValue) { return this._options.context = aValue; },
+	get handlers() { return this._options.handlers; },
+	set handlers(aValue) { return this._options.handlers = aValue; },
+	set handler(aValue) { return this._options.handlers = [aValue]; },
+	get errorHandlers() { return this._options.errorHandlers; },
+	set errorHandlers(aValue) { return this._options.errorHandlers = aValue; },
+	set errorHandler(aValue) { return this._options.errorHandlers = [aValue]; },
 	isAnyCall : function()
 	{
 		return this.arguments[0] == Mock.prototype.ANY || this.arguments[0] == Mock.prototype.ALWAYS;
@@ -698,6 +722,35 @@ ExpectedCall.prototype = {
 	isOneTimeAnyCall : function()
 	{
 		return this.arguments[0] == Mock.prototype.ANY_ONETIME || this.arguments[0] == Mock.prototype.ONETIME;
+	},
+	hasContext : function() {
+		return 'context' in this._options;
+	},
+	toParams : function() {
+		var obj = {};
+
+		if (this.isAnyCall())
+			obj.arguments = [Mock.prototype.ANY];
+		else if (this.isOneTimeAnyCall())
+			obj.arguments = [Mock.prototype.ANY_ONETIME];
+		else if ('arguments' in this._options)
+			obj.arguments = this.arguments;
+
+		if ('returnValue' in this._options)
+			obj.returnValue = this.returnValue;
+		if ('exceptionClass' in this._options)
+			obj.exceptionClass = this.exceptionClass;
+		if ('exceptionMessage' in this._options)
+			obj.exceptionMessage = this.exceptionMessage;
+		if ('context' in this._options)
+			obj.context = this.context;
+
+		if (this._options.handlers.length > 0)
+			obj.handlers = this.handlers;
+		if (this._options.errorHandlers.length > 0)
+			obj.errorHandlers = this.errorHandlers;
+
+		return obj;
 	}
 };
 
@@ -732,11 +785,11 @@ FunctionMock.prototype = {
 	},
 	createFunction : function()
 	{
-		var self = this;
-		var func = function(...aArgs) { return self.onCall(this, aArgs); };
+		var func = function(...aArgs) {
+			return func._mock.onCall(this, aArgs);
+		};
 		func._mock = this;
 		this.export(func);
-
 		return func;
 	},
 	get firstExpectedCall()
@@ -801,9 +854,6 @@ FunctionMock.prototype = {
 		var self = aSelf || this;
 		return function(...aArgs) {
 			self.expect(aArgs);
-			var boundContext = this;
-			if (boundContext != self)
-				self.lastExpectedCall.context = boundContext;
 			self.inExpectationChain = false;
 			return self;
 		};
@@ -841,7 +891,7 @@ FunctionMock.prototype = {
 
 	bindTo : function(aTarget)
 	{
-		this.lastExpectedCall.context = aTarget;
+		(this.anyCall || this.lastExpectedCall).context = aTarget;
 		return this;
 	},
 	boundTo : function(...aArgs) { return this.bindTo.apply(this, aArgs); },
@@ -856,7 +906,7 @@ FunctionMock.prototype = {
 			throw new Error(bundle.getFormattedString('mock_error_times_invalid', [this.name, aTimes]));
 		for (var i = 0, maxi = aTimes-1; i < maxi; i++)
 		{
-			this.addExpectedCall(this.lastExpectedCall);
+			this.addExpectedCall(this.lastExpectedCall.toParams());
 		}
 		return this;
 	},
@@ -865,27 +915,30 @@ FunctionMock.prototype = {
 	// JSMock API
 	andReturn : function(aValue)
 	{
-		var call = this.lastExpectedCall;
+		var call = (this.anyCall || this.lastExpectedCall);
 		call.returnValue = aValue;
 		return this;
 	},
 	andReturns : function(...aArgs) { return this.andReturn.apply(this, aArgs); }, // extended from JSMock
 	andThrow : function(aExceptionClass, aExceptionMessage)
 	{
-		var call = this.lastExpectedCall;
+		var call = (this.anyCall || this.lastExpectedCall);
 		call.exceptionClass = aExceptionClass;
 		call.exceptionMessage = aExceptionMessage;
 		return this;
 	},
-	andThrows : function(...aArgs) { return this.andReturn.apply(this, aArgs); }, // extended from JSMock
-	andStub : function(aHandler)
+	andThrows : function(...aArgs) { return this.andThrow.apply(this, aArgs); }, // extended from JSMock
+	andStub : function(aHandler, aErrorHandler)
 	{
 		if (!aHandler)
 			throw new Error(bundle.getFormattedString('function_mock_no_stub', [this.name, 'andStub']));
 		if (typeof aHandler != 'function')
 			throw new Error(bundle.getFormattedString('function_mock_not_stub', [this.name, 'andStub', utils.inspect(aHandler)]));
-		var call = this.lastExpectedCall;
-		call.addHandler(aHandler);
+		if (aErrorHandler &&
+			typeof aErrorHandler != 'function')
+			throw new Error(bundle.getFormattedString('function_mock_not_stub', [this.name, 'andStub', utils.inspect(aErrorHandler)]));
+		var call = (this.anyCall || this.lastExpectedCall);
+		call.addHandler(aHandler, aErrorHandler);
 		return this;
 	},
 
@@ -894,13 +947,16 @@ FunctionMock.prototype = {
 	thenReturns : function(...aArgs) { return this.andReturn.apply(this, aArgs); }, // extended from JsMockito
 	thenThrow : function(...aArgs) { return this.andThrow.apply(this, aArgs); },
 	thenThrows : function(...aArgs) { return this.andThrow.apply(this, aArgs); }, // extended from JsMockito
-	then : function(aHandler)
+	then : function(aHandler, aErrorHandler)
 	{
 		if (!aHandler)
 			throw new Error(bundle.getFormattedString('function_mock_no_stub', [this.name, 'then']));
 		if (typeof aHandler != 'function')
 			throw new Error(bundle.getFormattedString('function_mock_not_stub', [this.name, 'then', utils.inspect(aHandler)]));
-		return this.andStub.apply(this, arguments);
+		if (aErrorHandler &&
+			typeof aErrorHandler != 'function')
+			throw new Error(bundle.getFormattedString('function_mock_not_stub', [this.name, 'then', utils.inspect(aErrorHandler)]));
+		return this.andStub(aHandler, aErrorHandler);
 	},
 
 	onCall : function(aContext, aArguments)
@@ -914,22 +970,22 @@ FunctionMock.prototype = {
 
 			if (!call.isAnyCall() && !call.isOneTimeAnyCall()) {
 				let message = bundle.getFormattedString('function_mock_wrong_arguments', [this.name]);
-				this._assert.doInternalAssertion('equals',
+				this._assert.doInternalAssertionSync('equals',
 					this.formatArgumentsArray(call.arguments, aArguments, message),
 					aArguments,
 					message
 				);
 			}
 
-			if ('context' in call) {
-				this._assert.doInternalAssertion('equals',
+			if (call.hasContext()) {
+				this._assert.doInternalAssertionSync('equals',
 					call.context,
 					aContext,
 					bundle.getFormattedString('function_mock_wrong_context', [this.name, utils.inspect(aArguments)])
 				);
 			}
 
-			call.onCall(this, aArguments);
+			call.onCall(aContext, aArguments);
 		}
 		catch(e) {
 			if (call) call.onError(this, e);
@@ -980,7 +1036,7 @@ FunctionMock.prototype = {
 		if (errors.length) {
 			throw errors.length > 1 ? new ns.MultiplexError(errors) : errors[0] ;
 		}
-		this._assert.doInternalAssertion(
+		this._assert.doInternalAssertionSync(
 			'equals',
 			expected,
 			success,
@@ -994,13 +1050,11 @@ FunctionMock.prototype = {
 	verify : function() { this.assert(); },
 	export : function(aTarget)
 	{
-		var self = this;
-
 		['reset',
 		 'assert', 'verify'].forEach(function(aMethod) {
 			aTarget['_'+aMethod] =
 				aTarget[aMethod] =
-					function(...aArgs) { return self[aMethod].apply(self, aArgs); };
+					(...aArgs) => this[aMethod](...aArgs);
 		}, this);
 
 		['expect', 'expects',
@@ -1016,22 +1070,20 @@ FunctionMock.prototype = {
 		 'then'].forEach(function(aMethod) {
 			aTarget['_'+aMethod] =
 				aTarget[aMethod] =
-					function(...aArgs) {
-						var value = self[aMethod].apply(self, aArgs);
-						return value == self ? this : value ;
-					};
+					(function(...aArgs) {
+						var value = this[aMethod](...aArgs);
+						return value === this ? this : value ;
+					}).bind(this);
 		}, this);
 
 		['firstExpectedCall',
 		 'lastExpectedCall',
 		 'expectedCalls',
 		 'errors'].forEach(function(aName) {
-			aTarget.__defineGetter__(aName, function() { return self[aName]; });
+			aTarget.__defineGetter__(aName, () => this[aName]);
 		}, this);
 
-		aTarget.__defineGetter__('when', function() {
-			return self.createExpectationChain(this);
-		});
+		aTarget.__defineGetter__('when', () => this.createExpectationChain(this));
 	}
 };
 
@@ -1082,8 +1134,8 @@ GetterMock.prototype = ns.inherit(FunctionMock.prototype, {
 		try {
 			call = this.getCurrentCall(bundle.getFormattedString('getter_mock_unexpected_call', [this.name]));
 
-			if ('context' in call) {
-				this._assert.doInternalAssertion('equals',
+			if (call.hasContext()) {
+				this._assert.doInternalAssertionSync('equals',
 					call.context,
 					aContext,
 					bundle.getFormattedString('getter_mock_wrong_context', [this.name])
@@ -1157,15 +1209,15 @@ SetterMock.prototype = ns.inherit(FunctionMock.prototype, {
 
 			if (!call.isAnyCall() && !call.isOneTimeAnyCall()) {
 				let message = bundle.getFormattedString('setter_mock_wrong_value', [this.name]);
-				this._assert.doInternalAssertion('equals',
+				this._assert.doInternalAssertionSync('equals',
 					this.formatArgumentsArray(call.arguments, aArguments, message)[0],
 					aArguments[0],
 					message
 				);
 			}
 
-			if ('context' in call) {
-				this._assert.doInternalAssertion('equals',
+			if (call.hasContext()) {
+				this._assert.doInternalAssertionSync('equals',
 					call.context,
 					aContext,
 					bundle.getFormattedString('setter_mock_wrong_context', [this.name, utils.inspect(aArguments[0])])
@@ -1271,14 +1323,14 @@ HTTPServerMock.prototype = ns.inherit(FunctionMock.prototype, {
 			if (!call.isAnyCall() && !call.isOneTimeAnyCall()) {
 				if (typeof call.arguments[0] == 'string') {
 					let message = bundle.getFormattedString('server_mock_wrong_value', [this.name]);
-					this._assert.doInternalAssertion('equals',
+					this._assert.doInternalAssertionSync('equals',
 						this.formatArgumentsArray(call.arguments, aArguments, message)[0],
 						aArguments[0],
 						message
 					);
 				}
 				else {
-					this._assert.doInternalAssertion('matches',
+					this._assert.doInternalAssertionSync('matches',
 						call.arguments[0],
 						String(aArguments[0]),
 						bundle.getFormattedString('server_mock_wrong_value', [this.name])
@@ -1387,29 +1439,29 @@ TypeOf.prototype = {
 				{
 					case 'bool':
 					case 'boolean':
-						aAssertions.doInternalAssertion('isBoolean', aActual, aMessage);
+						aAssertions.doInternalAssertionSync('isBoolean', aActual, aMessage);
 						break;
 					case 'number':
-						aAssertions.doInternalAssertion('isNumber', aActual, aMessage);
+						aAssertions.doInternalAssertionSync('isNumber', aActual, aMessage);
 						break;
 					case 'string':
-						aAssertions.doInternalAssertion('isString', aActual, aMessage);
+						aAssertions.doInternalAssertionSync('isString', aActual, aMessage);
 						break;
 					case 'object':
-						aAssertions.doInternalAssertion('isObject', aActual, aMessage);
+						aAssertions.doInternalAssertionSync('isObject', aActual, aMessage);
 						break;
 					case 'array':
-						aAssertions.doInternalAssertion('isArray', aActual, aMessage);
+						aAssertions.doInternalAssertionSync('isArray', aActual, aMessage);
 						break;
 					default:
-						aAssertions.doInternalAssertion('equals', expected, typeof aActual, aMessage);
+						aAssertions.doInternalAssertionSync('equals', expected, typeof aActual, aMessage);
 						break;
 				}
 				break;
 
 			case 'object':
 				if (expected instanceof Ci.nsIJSIID) { // Ci.*
-					aAssertions.doInternalAssertion('isInstanceOf', expected, aActual, aMessage);
+					aAssertions.doInternalAssertionSync('isInstanceOf', expected, aActual, aMessage);
 				}
 				else {
 					let errors = [];
@@ -1421,7 +1473,7 @@ TypeOf.prototype = {
 							if (expected[i] instanceof TypeOf)
 								expected[i].assert(aActual[i], aMessage);
 							else
-								aAssertions.doInternalAssertion('equals', expected[i], aActual[i], aMessage);
+								aAssertions.doInternalAssertionSync('equals', expected[i], aActual[i], aMessage);
 						}
 						catch(e) {
 							errors.push(e);
@@ -1433,7 +1485,7 @@ TypeOf.prototype = {
 				break;
 
 			default:
-				aAssertions.doInternalAssertion('isInstanceOf', expected, aActual, aMessage);
+				aAssertions.doInternalAssertionSync('isInstanceOf', expected, aActual, aMessage);
 				break;
 		}
 	}
