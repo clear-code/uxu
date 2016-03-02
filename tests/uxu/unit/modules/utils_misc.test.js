@@ -555,42 +555,15 @@ function test_setAndGetClipBoard()
 	utilsModule.setClipBoard(random);
 	assert.equals(random, utils.getClipBoard());
 
-	var isLinux = (navigator.platform.toLowerCase().indexOf('linux') > -1);
-
 	var selection = content.getSelection();
 	selection.removeAllRanges();
 
-	if (utils.checkPlatformVersion('1.9') < 0) {
-		let range = content.document.createRange();
-		range.selectNodeContents(content.document.getElementById('paragraph3'));
-		selection.addRange(range);
-	}
-	else {
+	var isLinux = (navigator.platform.toLowerCase().indexOf('linux') > -1);
+	if (isLinux) {
 		action.dblclickOn(content.document.getElementById('paragraph3'));
 		yield 100;
-	}
-	assert.equals('paragraph3', selection.toString());
-	if (isLinux) {
+		assert.equals('paragraph3', selection.toString());
 		assert.equals('paragraph3', utilsModule.getSelectionClipBoard());
-	}
-	else {
-		assert.equals('', utilsModule.getSelectionClipBoard());
-	}
-	assert.equals(random, utilsModule.getClipBoard());
-	selection.removeAllRanges();
-
-	if (utils.checkPlatformVersion('1.9') < 0) {
-		let range = content.document.createRange();
-		range.selectNodeContents(content.document.getElementById('paragraph4'));
-		selection.addRange(range);
-	}
-	else {
-		action.dblclickOn(content.document.getElementById('paragraph4'));
-		yield 100;
-	}
-	assert.equals('paragraph4', selection.toString());
-	if (isLinux) {
-		assert.equals('paragraph4', utilsModule.getSelectionClipBoard());
 	}
 	else {
 		assert.equals('', utilsModule.getSelectionClipBoard());
