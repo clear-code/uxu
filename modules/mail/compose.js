@@ -89,7 +89,9 @@ Compose.prototype = {
 	get windows() { return this._getWindows(); },
 
 	get recipients() { return this._getRecipients(); },
-	set recipients(aValue) { return this._setRecipients(aValue); },
+	set recipients(aValue) {
+		throw new Error('Setting new recipients via the property "recipients" no longer works. use "setRecipients()" instead.');
+	},
 
 	get subject() { return this._getSubject(); },
 	set subject(aValue) { return this._setSubject(aValue); },

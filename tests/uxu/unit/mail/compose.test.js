@@ -203,7 +203,7 @@ function testRecipients()
 			{ type : 'reply-to', address : 'reply@example.com' },
 			{ type : 'followup-to', address : 'followup@example.com' }
 		];
-	compose.recipients = addresses;
+	yield compose.setRecipients(addresses);
 
 	var fields = compose.addressFields;
 	assert.equals(addresses.length+1, fields.length);
@@ -219,7 +219,7 @@ function testRecipients()
 	assert.equals(addresses, compose.recipients);
 
 	// string type
-	compose.recipients = ['test1@example.com', 'test2@example.com'];
+	yield compose.setRecipients(['test1@example.com', 'test2@example.com']);
 	assert.equals(
 		[
 			{ type : 'to', address : 'test1@example.com' },
@@ -229,19 +229,11 @@ function testRecipients()
 	);
 
 	// single string type
-	compose.recipients = 'test@example.com';
+	yield compose.setRecipients('test@example.com');
 	assert.equals([{ type : 'to', address : 'test@example.com' }], compose.recipients);
 
-	// method type
-	compose.setRecipients(['foo@example.com', 'bar@example.com']);
-	assert.equals(
-		[
-			{ type : 'to', address : 'foo@example.com' },
-			{ type : 'to', address : 'bar@example.com' }
-		],
-		compose.recipients
-	);
-	compose.appendRecipients(['baz@example.com', 'hoge@example.com']);
+	// append type
+	yield compose.appendRecipients(['baz@example.com', 'hoge@example.com']);
 	assert.equals(
 		[
 			{ type : 'to', address : 'foo@example.com' },
@@ -375,7 +367,7 @@ function testAttachments()
 
 function testSend()
 {
-	compose.recipients = ['test@example.com'];
+	yield compose.setRecipients(['test@example.com']);
 	compose.subject = 'foo';
 	compose.body = 'bar';
 	assert.equals(0, mail.deliveries.length);
@@ -386,7 +378,7 @@ function testSend()
 testSendByButtonClick.shouldSkip = utils.checkPlatformVersion('1.9') < 0;
 function testSendByButtonClick()
 {
-	compose.recipients = ['test@example.com'];
+	yield compose.setRecipients(['test@example.com']);
 	compose.subject = 'foo';
 	compose.body = 'bar';
 	assert.equals(0, mail.deliveries.length);
