@@ -65,6 +65,17 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 				this._successCount = count;
 			}).bind(this));
 	},
+	doInternalAssertionSync : function(...aArgs)
+	{
+		var assertion = aArgs[0];
+		var args = Array.slice(aArgs, 1);
+		var count = this._successCount;
+		if (typeof assertion == 'function')
+			assertion();
+		else
+			this[assertion].apply(this, args);
+		this._successCount = count;
+	},
 
 	_onSuccess : function()
 	{
