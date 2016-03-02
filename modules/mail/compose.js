@@ -488,6 +488,8 @@ Compose.prototype = {
 		var listbox = utils.$('addressingWidget', aComposeWindow);
 		var promises = aAddresses.map(function(aAddress) {
 			let field = this._getFirstBlankAddressField(aComposeWindow);
+			if (!field)
+				return Promise.reject(new Error('missing blank field'));
 			this.getAddressTypeForField(field, aComposeWindow).value = aAddress.typeValue;
 			listbox.ensureElementIsVisible(utils.$X('ancestor::*[local-name()="listitem"]', field, Ci.nsIDOMXPathResult.FIRST_ORDERED_NODE_TYPE));
 			field.focus();
