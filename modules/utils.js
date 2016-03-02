@@ -109,8 +109,8 @@ _getDocument : function(aOwner)
 {
 	var doc = !aOwner ?
 				null :
-			aOwner.defaultView ? // Document
-				aOwner.defaultView.document :
+			aOwner.defaultView || (String(aOwner) === '[object XULDocument]') ? // Document
+				aOwner :
 			aOwner.ownerDocument ? // Node
 				aOwner.ownerDocument :
 			aOwner.document ? // Window
