@@ -97,13 +97,13 @@ function testAddressFields()
 
 	yield compose.tearDown();
 	assert.isNull(compose.window);
-	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+	yield assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.addressFields;
 	});
-	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+	yield assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.lastAddressField;
 	});
-	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+	yield assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.firstAddressField;
 	});
 }
@@ -131,13 +131,13 @@ function testBlankAddressFields()
 
 	yield compose.tearDown();
 	assert.isNull(compose.window);
-	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+	yield assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.blankAddressFields;
 	});
-	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+	yield assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.firstBlankAddressField;
 	});
-	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+	yield assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.lastBlankAddressField;
 	});
 }
@@ -164,13 +164,13 @@ function testAddressTypes()
 
 	yield compose.tearDown();
 	assert.isNull(compose.window);
-	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+	yield assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.addressTypes;
 	});
-	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+	yield assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.firstAddressType;
 	});
-	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+	yield assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.lastAddressType;
 	});
 }
@@ -183,10 +183,10 @@ function testDummyRows()
 
 	yield compose.tearDown();
 	assert.isNull(compose.window);
-	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+	yield assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.dummyRows;
 	});
-	assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
+	yield assert.raises(compose.ERROR_NO_COMPOSE_WINDOW, function() {
 		compose.firstDummyRow;
 	});
 }
