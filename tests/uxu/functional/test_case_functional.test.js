@@ -17,7 +17,7 @@ function tearDown()
 }
 
 test_testCaseWithHttpDaemons.shouldSkip = utils.checkPlatformVersion('1.9') < 0;
-test_testCaseWithHttpDaemons.assertions = 7;
+test_testCaseWithHttpDaemons.assertions = 5;
 function test_testCaseWithHttpDaemons()
 {
 	var base = baseURL+'../fixtures/';
