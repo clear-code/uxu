@@ -375,3 +375,19 @@ function test_JsMockitoStyle_functionMock_withoutManager_withCorrectContext()
 
 	mock.assert();
 }
+
+
+function test_JsMockitoStyleMock_integrated()
+{
+	var mock = mockFunction('mock function');
+	when(mock)(10, 100).thenReturn(1000);
+	assert.equals(1000, mock(10, 100));
+}
+
+function test_JSMockStyleMock_integrated()
+{
+	var controller = MockControl();
+	var mock = controller.createMock();
+	mock.expects().myMethod(10, 100).andReturn(1000);
+	assert.equals(1000, mock.myMethod(10, 100));
+}
