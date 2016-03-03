@@ -766,6 +766,9 @@ function onAllTestsFinish()
 	var lastResultFile = getLastResultFile();
 	utils.writeTo(gLog.toString(gLog.FORMAT_RAW), lastResultFile, 'UTF-8');
 
+	// clear old pref value
+	utils.setPref('extensions.uxu.runner.lastResults', '');
+
 	if (gOptions.log) {
 		utils.writeTo(
 			gLog.toString(utils.makeFileWithPath(gOptions.log)),
