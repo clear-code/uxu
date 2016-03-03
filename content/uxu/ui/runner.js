@@ -265,12 +265,12 @@ const fileDNDObserver =
  
 }; 
  
-function getLastResultFile
+function getLastResultFile()
 {
 	var file = utils.getFileFromKeyword('ProfD');
 	utils.append('uxu.lastResult.js');
 	return file;
-}
+};
    
 /* DOMAIN */ 
 	
