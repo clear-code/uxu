@@ -1041,7 +1041,7 @@ FunctionMock.prototype = {
 			'equals',
 			expected,
 			success,
-			bundle.getFormattedString(aFailMessageKey, [this.name])
+			bundle.getFormattedString(aFailMessageKey, [this.name, expected, success])
 		);
 	},
 	assert : function()
