@@ -314,13 +314,11 @@ Mock.prototype = {
 
 	_addExpectedCall : function(aMock, aCall)
 	{
-		var self = this;
 		this._expectedCalls.push(aCall);
-		aCall.addHandler(function() {
-			self._handleCall(aMock.firstExpectedCall);
-		}, function(aError) {
-			self._expectedCalls.shift();
-		});
+		var onCall = () => this._handleCall(aMock.firstExpectedCall);
+		var onError = (aError) => this._expectedCalls.shift();
+		onCall.internal = onError.internal = true;
+		aCall.addHandler(onCall, onError);
 	},
 	_handleCall : function(aCall)
 	{
@@ -994,11 +992,12 @@ FunctionMock.prototype = {
 			throw e;
 		}
 		finally {
-			if (!this.anyCall)
+			if (!this.anyCall) {
 				this.expectedCalls.shift();
+				this.successCount++;
+			}
 		}
 
-		this.successCount++;
 		return call.finish(aArguments);
 	},
 	formatArgumentsArray : function(aExpectedArray, aActualArray, aMessage)
@@ -1151,11 +1150,12 @@ GetterMock.prototype = ns.inherit(FunctionMock.prototype, {
 			throw e;
 		}
 		finally {
-			if (!this.anyCall)
+			if (!this.anyCall) {
 				this.expectedCalls.shift();
+				this.successCount++;
+			}
 		}
 
-		this.successCount++;
 		return call.finish([]);
 	},
 	assert : function()
@@ -1233,11 +1233,12 @@ SetterMock.prototype = ns.inherit(FunctionMock.prototype, {
 			throw e;
 		}
 		finally {
-			if (!this.anyCall)
+			if (!this.anyCall) {
 				this.expectedCalls.shift();
+				this.successCount++;
+			}
 		}
 
-		this.successCount++;
 		var returnValue = call.finish([]);
 		return !('returnValue' in call) && !this.isSpecialSpec(call.arguments[0]) ?
 				aArguments[0] :
@@ -1353,11 +1354,12 @@ HTTPServerMock.prototype = ns.inherit(FunctionMock.prototype, {
 			throw e;
 		}
 		finally {
-			if (!this.anyCall)
+			if (!this.anyCall) {
 				this.expectedCalls.shift();
+				this.successCount++;
+			}
 		}
 
-		this.successCount++;
 		var returnValue = call.finish([]);
 		return !returnValue.uri && !returnValue.file && this.isSpecialSpec(call.arguments[0]) ?
 				this.formatReturnValue(aArguments[0]) :
