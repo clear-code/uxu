@@ -16,102 +16,23 @@ var Assertions = utils.import(topDir+'modules/test/assertions.js', {}).Assertion
 var bundle = utils.import(topDir+'modules/lib/stringBundle.js', {})
 				.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
-function assertCallSuccess(aMock, aArguments, aReturnValue)
-{
-	return assertCallRemoved(aMock, function() {
-		var returnValue;
-		var done;
-		yield assert.notRaises(
-			'Error',
-			function() {
-				returnValue = aMock.apply(null, aArguments || []);
-				done = true;
-			},
-			null,
-			uneval([aMock, aArguments, aReturnValue])
-		);
-		assert.isTrue(done);
-		assert.equals(aReturnValue, returnValue);
-	});
+function toParamsWithoutInternalHandlers(aCall) {
+	var params = aCall.toParams()
+	if (params.handlers) {
+		params.handlers = params.handlers
+							.filter((aHandler) => !aHandler.internal);
+		if (params.handlers.length === 0)
+			delete params.handlers;
+	}
+	if (params.errorHandlers) {
+		params.errorHandlers = params.errorHandlers
+								.filter((aHandler) => !aHandler.internal);
+		if (params.errorHandlers.length === 0)
+			delete params.errorHandlers;
+	}
+	return params;
 }
 
-function assertAnyCallSuccess(aMock, aArguments, aReturnValue)
-{
-	return assertCallNotModified(aMock, function() {
-		var returnValue;
-		var done;
-		yield assert.notRaises(
-			'Error',
-			function() {
-				returnValue = aMock.apply(null, aArguments || []);
-				done = true;
-			},
-			null,
-			uneval([aMock, aArguments, aReturnValue])
-		);
-		assert.isTrue(done);
-		assert.equals(aReturnValue, returnValue);
-	});
+function toExpectedCallParams(aMock) {
+	return aMock.expectedCalls.map(toParamsWithoutInternalHandlers);
 }
-
-function assertCallRaise(aMock, aArguments, aException)
-{
-	return assert.raises(
-		aException,
-		function() { aMock.apply(null, aArguments || []); },
-		null,
-		uneval([aMock, aArguments, aException])
-	);
-}
-
-function assertCallError(aMock, aArguments)
-{
-	return assertCallRaise(aMock, aArguments, 'Error');
-}
-
-function assertCallAdded(aMock, aTask)
-{
-	aMock = aMock._mock || aMock;
-	return assert.difference(
-		() => (aMock.expectedCalls || aMock._expectedCalls).length,
-		1,
-		aTask,
-		null,
-		uneval([aMock, aTask])
-	);
-}
-
-function assertAnyCallAdded(aMock, aTask)
-{
-	aMock = aMock._mock || aMock;
-	return assert.noDifference(
-		() => (aMock.expectedCalls || aMock._expectedCalls).length,
-		aTask,
-		null,
-		uneval([aMock, aTask])
-	).then(() => assert.isNotNull(aMock.anyCall))
-}
-
-function assertCallRemoved(aMock, aTask)
-{
-	aMock = aMock._mock || aMock;
-	return assert.difference(
-		() => (aMock.expectedCalls || aMock._expectedCalls).length,
-		-1,
-		aTask,
-		null,
-		uneval([aMock, aTask])
-	);
-}
-
-function assertCallNotModified(aMock, aTask)
-{
-	aMock = aMock._mock || aMock;
-	return assert.noDifference(
-		() => (aMock.expectedCalls || aMock._expectedCalls).length,
-		aTask,
-		null,
-		uneval([aMock, aTask])
-	);
-}
-

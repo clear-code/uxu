@@ -12,27 +12,6 @@ function tearDown()
 {
 }
 
-function toParamsWithoutInternalHandlers(aCall) {
-	var params = aCall.toParams()
-	if (params.handlers) {
-		params.handlers = params.handlers
-							.filter((aHandler) => !aHandler.internal);
-		if (params.handlers.length === 0)
-			delete params.handlers;
-	}
-	if (params.errorHandlers) {
-		params.errorHandlers = params.errorHandlers
-								.filter((aHandler) => !aHandler.internal);
-		if (params.errorHandlers.length === 0)
-			delete params.errorHandlers;
-	}
-	return params;
-}
-
-function toExpectedCallParams(aMock) {
-	return aMock.expectedCalls.map(toParamsWithoutInternalHandlers);
-}
-
 function test_successCases()
 {
 	var mock = new Mock();
