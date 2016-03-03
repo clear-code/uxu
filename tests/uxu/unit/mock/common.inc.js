@@ -16,22 +16,6 @@ var Assertions = utils.import(topDir+'modules/test/assertions.js', {}).Assertion
 var bundle = utils.import(topDir+'modules/lib/stringBundle.js', {})
 				.stringBundle.get('chrome://uxu/locale/uxu.properties');
 
-function assertSuccess(aMock)
-{
-	return assert.notRaises(
-		'AssertionFailed',
-		() => aMock.assert()
-	);
-}
-
-function assertFail(aMock)
-{
-	return assert.raises(
-		'AssertionFailed',
-		() => aMock.assert()
-	);
-}
-
 function assertCallSuccess(aMock, aArguments, aReturnValue)
 {
 	return assertCallRemoved(aMock, function() {
