@@ -12,298 +12,252 @@ function tearDown()
 {
 }
 
-function test_JsMockitoStyle()
-{
-	var mock = new Mock();
-	yield assertCallAdded(mock, function() {
-		manager.when(mock).methodWithoutArg();
-	});
-	yield assertCallAdded(mock, function() {
-		manager.when(mock).methodWithArg(29).thenReturn(290);
-	});
-	yield assertCallAdded(mock, function() {
-		manager.when(mock).methodWithArg(290).thenThrow('my error');
-	});
-	var count = 0;
-	yield assertCallAdded(mock, function() {
-		manager.when(mock).methodWithArg(2900).then(function() {
-			count += 1;
-		});
-	});
-	yield assertCallAdded(mock, function() {
-		manager.when(mock).methodWithArg(29000).thenReturn(2.9).then(function() {
-			count += 10;
-		});
-	});
-	yield assertCallAdded(mock, function() {
-		manager.when(mock).methodWithArg(Mock.prototype.ANY_ONETIME).thenReturn('ANY');
-	});
-
-	yield assertCallRemoved(mock, function() {
-		assert.isUndefined(mock.methodWithoutArg());
-	});
-	yield assertCallRemoved(mock, function() {
-		assert.equals(290, mock.methodWithArg(29));
-	});
-	yield assertCallRemoved(mock, function() {
-		yield assert.raises(
-			'my error',
-			function() {
-				mock.methodWithArg(290);
-			}
-		);
-	});
-	yield assertCallRemoved(mock, function() {
-		mock.methodWithArg(2900);
-		assert.equals(1, count);
-	});
-	yield assertCallRemoved(mock, function() {
-		assert.equals(2.9, mock.methodWithArg(29000));
-		assert.equals(11, count);
-	});
-	yield assertCallRemoved(mock, function() {
-		mock.methodWithArg('anything');
-	});
-
-	mock.assert();
+function toParamsWithoutInternalHandlers(aCall) {
+	var params = aCall.toParams()
+	if (params.handlers) {
+		params.handlers = params.handlers
+							.filter((aHandler) => !aHandler.internal);
+		if (params.handlers.length === 0)
+			delete params.handlers;
+	}
+	if (params.errorHandlers) {
+		params.errorHandlers = params.errorHandlers
+								.filter((aHandler) => !aHandler.internal);
+		if (params.errorHandlers.length === 0)
+			delete params.errorHandlers;
+	}
+	return params;
 }
 
-function test_withoutManager()
+function toExpectedCallParams(aMock) {
+	return aMock.expectedCalls.map(toParamsWithoutInternalHandlers);
+}
+
+function test_successCases()
 {
 	var mock = new Mock();
-	yield assertCallAdded(mock, function() {
-		mock.when.methodWithoutArg();
-	});
-	yield assertCallAdded(mock, function() {
-		mock.when.methodWithArg(29).thenReturn(290);
-	});
-	yield assertCallAdded(mock, function() {
-		mock.when.methodWithArg(290).thenThrow('my error');
-	});
-	var count = 0;
-	yield assertCallAdded(mock, function() {
-		mock.when.methodWithArg(2900).then(function() {
-			count += 1;
-		});
-	});
-	yield assertCallAdded(mock, function() {
-		mock.when.methodWithArg(29000).thenReturn(2.9).then(function() {
-			count += 10;
-		});
-	});
-	yield assertCallAdded(mock, function() {
-		mock.when.methodWithArg(Mock.prototype.ANY_ONETIME).thenReturn('ANY');
-	});
 
-	yield assertCallRemoved(mock, function() {
+	manager.when(mock).methodWithoutArg();
+	mock.when.methodWithoutArg();
+	assert.equals([{ arguments   : [],
+	                 returnValue : undefined },
+	               { arguments   : [],
+	                 returnValue : undefined }],
+	              toExpectedCallParams(mock.methodWithoutArg._mock));
+	yield assert.succeeds(function() {
+		assert.isUndefined(mock.methodWithoutArg());
 		assert.isUndefined(mock.methodWithoutArg());
 	});
-	yield assertCallRemoved(mock, function() {
+
+	manager.when(mock).methodWithArg(29).thenReturn(290);
+	mock.when.methodWithArg(30).thenReturn(291);
+	assert.equals([{ arguments   : [29],
+	                 returnValue : 290 },
+	               { arguments   : [30],
+	                 returnValue : 291 }],
+	              toExpectedCallParams(mock.methodWithArg._mock));
+	yield assert.succeeds(function() {
 		assert.equals(290, mock.methodWithArg(29));
-	});
-	yield assertCallRemoved(mock, function() {
-		yield assert.raises(
-			'my error',
-			function() {
-				mock.methodWithArg(290);
-			}
-		);
-	});
-	yield assertCallRemoved(mock, function() {
-		mock.methodWithArg(2900);
-		assert.equals(1, count);
-	});
-	yield assertCallRemoved(mock, function() {
-		assert.equals(2.9, mock.methodWithArg(29000));
-		assert.equals(11, count);
-	});
-	yield assertCallRemoved(mock, function() {
-		mock.methodWithArg('anything');
+		assert.equals(291, mock.methodWithArg(30));
 	});
 
-	mock.assert();
+	manager.when(mock).methodWillRaise(290).thenThrow('my error');
+	mock.when.methodWillRaise(291).thenThrow('my error without manager');
+	assert.equals([{ arguments        : [290],
+	                 exceptionClass   : 'my error',
+	                 exceptionMessage : undefined },
+	               { arguments        : [291],
+	                 exceptionClass   : 'my error without manager',
+	                 exceptionMessage : undefined }],
+	              toExpectedCallParams(mock.methodWillRaise._mock));
+	yield assert.raises('my error', function() {
+		mock.methodWillRaise(290);
+	});
+	yield assert.raises('my error without manager', function() {
+		mock.methodWillRaise(291);
+	});
+
+	var stub = function() { stub.count++; };
+	stub.count = 0;
+	manager.when(mock).methodWithStub(2900).then(stub);
+	mock.when.methodWithStub(2901).then(stub);
+	assert.equals([{ arguments   : [2900],
+	                 returnValue : undefined,
+	                 handlers    : [stub] },
+	               { arguments   : [2901],
+	                 returnValue : undefined,
+	                 handlers    : [stub] }],
+	              toExpectedCallParams(mock.methodWithStub._mock));
+	yield assert.succeeds(function() {
+		assert.isUndefined(mock.methodWithStub(2900));
+		assert.isUndefined(mock.methodWithStub(2901));
+		assert.equals(2, stub.count);
+	});
+
+	stub.count = 0;
+	manager.when(mock).methodWithStub(29000).thenReturn(2.9).then(stub);
+	mock.when.methodWithStub(29001).thenReturn(29).then(stub);
+	assert.equals([{ arguments   : [29000],
+	                 returnValue : 2.9,
+	                 handlers    : [stub] },
+	               { arguments   : [29001],
+	                 returnValue : 29,
+	                 handlers    : [stub] }],
+	              toExpectedCallParams(mock.methodWithStub._mock));
+	yield assert.succeeds(function() {
+		assert.equals(2.9, mock.methodWithStub(29000));
+		assert.equals(29, mock.methodWithStub(29001));
+		assert.equals(2, stub.count);
+	});
+
+	manager.when(mock).methodAcceptsAnyArg(Mock.ANY_ONETIME).thenReturn('ANY ONETIME');
+	assert.equals([{ arguments   : [Mock.ANY_ONETIME],
+	                 returnValue : 'ANY ONETIME' }],
+	              toExpectedCallParams(mock.methodAcceptsAnyArg._mock));
+	yield assert.succeeds(function() {
+		assert.equals('ANY ONETIME', mock.methodAcceptsAnyArg('anything'));
+	});
+
+	mock.when.methodAcceptsAnyArgWithoutManager(Mock.ANY_ONETIME).thenReturn('ANY ONETIME');
+	assert.equals([{ arguments   : [Mock.ANY_ONETIME],
+	                 returnValue : 'ANY ONETIME' }],
+	              toExpectedCallParams(mock.methodAcceptsAnyArgWithoutManager._mock));
+	yield assert.succeeds(function() {
+		assert.equals('ANY ONETIME', mock.methodAcceptsAnyArgWithoutManager('anything'));
+	});
+
+	manager.when(mock).methodAcceptsAnyArgForever(Mock.ANY).thenReturn('ANY');
+	assert.equals([],
+	              toExpectedCallParams(mock.methodAcceptsAnyArgForever._mock));
+	assert.equals({ arguments   : [Mock.ANY],
+	                returnValue : 'ANY' },
+	              toParamsWithoutInternalHandlers(mock.methodAcceptsAnyArgForever._mock.anyCall));
+	yield assert.succeeds(function() {
+		assert.equals('ANY', mock.methodAcceptsAnyArgForever('anything'));
+		assert.equals('ANY', mock.methodAcceptsAnyArgForever(2900));
+	});
+
+	mock.when.methodAcceptsAnyArgForeverWithoutManager(Mock.ANY).thenReturn('ANY');
+	assert.equals([],
+	              toExpectedCallParams(mock.methodAcceptsAnyArgForeverWithoutManager._mock));
+	assert.equals({ arguments   : [Mock.ANY],
+	                returnValue : 'ANY' },
+	              toParamsWithoutInternalHandlers(mock.methodAcceptsAnyArgForeverWithoutManager._mock.anyCall));
+	yield assert.succeeds(function() {
+		assert.equals('ANY', mock.methodAcceptsAnyArgForeverWithoutManager('anything'));
+		assert.equals('ANY', mock.methodAcceptsAnyArgForeverWithoutManager(2900));
+	});
+
+	yield assert.success(function() { mock.assert(); });
+}
+
+function test_failCases()
+{
+	var mock = new Mock();
+
+	manager.when(mock).methodAcceptsAnyArg(Mock.ANY_ONETIME).thenReturn('ANY ONETIME');
+	assert.equals('ANY ONETIME', mock.methodAcceptsAnyArg('anything'));
+	yield assert.raises(/Error/, function() {
+		mock.methodAcceptsAnyArg(2900);
+	});
+
+	mock.when.methodAcceptsAnyArgWithoutManager(Mock.ANY_ONETIME).thenReturn('ANY ONETIME');
+	assert.equals('ANY ONETIME', mock.methodAcceptsAnyArgWithoutManager('anything'));
+	yield assert.raises(/Error/, function() {
+		mock.methodAcceptsAnyArgWithoutManager(2901);
+	});
+
+	yield assert.raises(/Error/, function() {
+		mock.assert();
+	});
 }
 
 function test_functionMock()
 {
 	var mock = new FunctionMock();
 
-	yield assertCallAdded(mock, function() {
-		manager.when(mock)();
-	});
-	yield assertCallAdded(mock, function() {
-		manager.when(mock)(29).thenReturn(290);
-	});
-	yield assertCallAdded(mock, function() {
-		manager.when(mock)(290).thenThrow('my error');
-	});
-	var count = 0;
-	yield assertCallAdded(mock, function() {
-		manager.when(mock)(2900).then(function() {
-			count += 1;
-		});
-	});
-	yield assertCallAdded(mock, function() {
-		manager.when(mock)(29000).thenReturn(2.9).then(function() {
-			count += 10;
-		});
-	});
+	manager.when(mock)();
+	mock.when();
+	manager.when(mock)(29).thenReturn(290);
+	mock.when(30).thenReturn(291);
+	manager.when(mock)(290).thenThrow('my error');
+	mock.when(291).thenThrow('my error without manager');
+	var stub = function() { stub.count++; };
+	manager.when(mock)(2900).then(stub);
+	mock.when(2901).then(stub);
+	manager.when(mock)(29000).thenReturn(2.9).then(stub);
+	mock.when(29001).thenReturn(29).then(stub);
 
-	yield assertCallRemoved(mock, function() {
+	assert.equals([{ arguments        : [],
+	                 returnValue      : undefined },
+	               { arguments        : [],
+	                 returnValue      : undefined },
+	               { arguments        : [29],
+	                 returnValue      : 290 },
+	               { arguments        : [30],
+	                 returnValue      : 291 },
+	               { arguments        : [290],
+	                 exceptionClass   : 'my error',
+	                 exceptionMessage : undefined },
+	               { arguments        : [291],
+	                 exceptionClass   : 'my error without manager',
+	                 exceptionMessage : undefined },
+	               { arguments        : [2900],
+	                 returnValue      : undefined,
+	                 handlers         : [stub] },
+	               { arguments        : [2901],
+	                 returnValue      : undefined,
+	                 handlers         : [stub] },
+	               { arguments        : [29000],
+	                 returnValue      : 2.9,
+	                 handlers         : [stub] },
+	               { arguments        : [29001],
+	                 returnValue      : 29,
+	                 handlers         : [stub] }],
+	              toExpectedCallParams(mock._mock));
+
+	yield assert.succeeds(function() {
 		assert.isUndefined(mock());
-	});
-	yield assertCallRemoved(mock, function() {
+		assert.isUndefined(mock());
 		assert.equals(290, mock(29));
-	});
-	yield assertCallRemoved(mock, function() {
-		yield assert.raises(
-			'my error',
-			function() {
-				mock(290);
-			}
-		);
-	});
-	yield assertCallRemoved(mock, function() {
+		assert.equals(291, mock(30));
+		yield assert.raises('my error', function() { mock(290); });
+		yield assert.raises('my error without manager', function() { mock(291); });
 		mock(2900);
-		assert.equals(1, count);
-	});
-	yield assertCallRemoved(mock, function() {
+		mock(2901);
 		assert.equals(2.9, mock(29000));
-		assert.equals(11, count);
+		assert.equals(29, mock(29001));
+	});
+
+	yield assert.succeeds(function() {
+		mock.assert();
 	});
 }
 
-function test_functionMock_withWrongContext()
+function test_functionMock_withContext()
 {
 	var mock = new FunctionMock();
-
 	var context = {};
-	yield assertCallAdded(mock, function() {
-		manager.when(mock).call(context, 10).thenReturn('OK');
-	});
 
-	yield assertCallRaise(mock, [10], 'AssertionFailed');
-}
-
-function test_functionMock_withCorrectContext()
-{
-	var mock = new FunctionMock();
-
-	var context = {};
-	yield assertCallAdded(mock, function() {
-		manager.when(mock).call(context, 10).thenReturn('OK');
-	});
-	yield assertCallAdded(mock, function() {
-		manager.when(mock)(Mock.prototype.ANY_ONETIME).thenReturn('ANY');
-	});
-
-	yield assertCallRemoved(mock, function() {
+	manager.when(mock).call(context, 10).thenReturn('10');
+	manager.when(mock).call(context, Mock.ANY_ONETIME).thenReturn('ANY');
+	assert.equals([{ arguments        : [10],
+	                 returnValue      : '10',
+	                 context          : context },
+	               { arguments        : [Mock.ANY_ONETIME],
+	                 returnValue      : 'ANY',
+	                 context          : context }],
+	              toExpectedCallParams(mock._mock));
+	yield assert.succeeds(function() {
 		context.method = mock;
 		context.method(10);
-	});
-	yield assertCallRemoved(mock, function() {
-		mock('anything');
+		context.method('anything');
 	});
 
-	mock.assert();
-}
-
-function test_functionMock_withoutManager()
-{
-	var mock = new FunctionMock();
-
-	yield assertCallAdded(mock, function() {
-		mock.when();
-	});
-	yield assertCallAdded(mock, function() {
-		mock.when(29).thenReturn(290);
-	});
-	yield assertCallAdded(mock, function() {
-		mock.when(290).thenThrow('my error');
-	});
-	var count = 0;
-	yield assertCallAdded(mock, function() {
-		mock.when(2900).then(function() {
-			count += 1;
-		});
-	});
-	yield assertCallAdded(mock, function() {
-		mock.when(29000).thenReturn(2.9).then(function() {
-			count += 10;
-		});
-	});
-
-	yield assertCallRemoved(mock, function() {
-		assert.isUndefined(mock());
-	});
-	yield assertCallRemoved(mock, function() {
-		assert.equals(290, mock(29));
-	});
-	yield assertCallRemoved(mock, function() {
-		yield assert.raises(
-			'my error',
-			function() {
-				mock(290);
-			}
-		);
-	});
-	yield assertCallRemoved(mock, function() {
-		mock(2900);
-		assert.equals(1, count);
-	});
-	yield assertCallRemoved(mock, function() {
-		assert.equals(2.9, mock(29000));
-		assert.equals(11, count);
+	yield assert.succeeds(function() {
+		mock.assert();
 	});
 }
-
-function test_functionMock_withoutManager_withWrongContext()
-{
-	var mock = new FunctionMock();
-
-	var context = {};
-	yield assertCallAdded(mock, function() {
-		mock.when.call(context, 10).thenReturn('OK');
-	});
-	yield assertCallRaise(mock, [10], 'AssertionFailed');
-}
-
-function test_functionMock_withoutManager_withCorrectContext()
-{
-	var mock = new FunctionMock();
-
-	var context = {};
-	yield assertCallAdded(mock, function() {
-		mock.when.call(context, 10).thenReturn('OK');
-	});
-	var context2 = { method : mock };
-	yield assertCallAdded(mock, function() {
-		context2.method.when(11).thenReturn('OK');
-	});
-	yield assertCallAdded(mock, function() {
-		context2.method.when.call(context, 12).thenReturn('OK');
-	});
-	yield assertCallAdded(mock, function() {
-		mock.when(Mock.prototype.ANY_ONETIME).thenReturn('ANY');
-	});
-
-	yield assertCallRemoved(mock, function() {
-		context.method = mock;
-		context.method(10);
-	});
-	yield assertCallRemoved(mock, function() {
-		context2.method(11);
-	});
-	yield assertCallRemoved(mock, function() {
-		context.method(12);
-	});
-	yield assertCallRemoved(mock, function() {
-		mock('anything');
-	});
-
-	mock.assert();
-}
-
 
 function test_integrated()
 {

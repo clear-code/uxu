@@ -851,11 +851,24 @@ FunctionMock.prototype = {
 	{
 		this.inExpectationChain = true;
 		var self = aSelf || this;
-		return function(...aArgs) {
+		var chainProvider = function(...aArgs) {
 			self.expect(aArgs);
 			self.inExpectationChain = false;
 			return self;
 		};
+		chainProvider.call = function(aContext, ...aArgs) {
+			self.expect(aArgs);
+			self.bindTo(aContext);
+			self.inExpectationChain = false;
+			return self;
+		};
+		chainProvider.apply = function(aContext, aArgs) {
+			self.expect(aArgs);
+			self.bindTo(aContext);
+			self.inExpectationChain = false;
+			return self;
+		};
+		return chainProvider;
 	},
 	get when()
 	{
