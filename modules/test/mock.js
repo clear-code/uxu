@@ -311,12 +311,12 @@ Mock.prototype = {
 				));
 	},
 
-	_addExpectedCall : function(aCall)
+	_addExpectedCall : function(aMock, aCall)
 	{
 		var self = this;
 		this._expectedCalls.push(aCall);
 		aCall.addHandler(function() {
-			self._handleCall.call(self, this.firstExpectedCall);
+			self._handleCall(aMock.firstExpectedCall);
 		}, function(aError) {
 			self._expectedCalls.shift();
 		});
@@ -345,7 +345,7 @@ Mock.prototype = {
 		var last = method.lastExpectedCall;
 		method.expect.apply(method, expectArgs);
 		if (method.lastExpectedCall != last)
-			this._addExpectedCall(method.lastExpectedCall);
+			this._addExpectedCall(method, method.lastExpectedCall);
 		return method;
 	},
 	_expect : function(...aArgs) { return this.expect.apply(this, aArgs); },
@@ -357,7 +357,7 @@ Mock.prototype = {
 		var last = method.lastExpectedCall;
 		method.expectThrows.apply(method, Array.slice(arguments, 1));
 		if (method.lastExpectedCall != last)
-			this._addExpectedCall(method.lastExpectedCall);
+			this._addExpectedCall(method, method.lastExpectedCall);
 		return method;
 	},
 	_expectThrows : function(...aArgs) {return  this.expectThrows.apply(this, aArgs); },
@@ -376,7 +376,7 @@ Mock.prototype = {
 		var last = getter.lastExpectedCall;
 		getter.expect.apply(getter, expectArgs);
 		if (getter.lastExpectedCall != last)
-			this._addExpectedCall(getter.lastExpectedCall);
+			this._addExpectedCall(getter, getter.lastExpectedCall);
 		return getter;
 	},
 	_expectGet : function(...aArgs) { return this.expectGet.apply(this, aArgs); },
@@ -386,7 +386,7 @@ Mock.prototype = {
 		var last = getter.lastExpectedCall;
 		getter.expectThrows.apply(getter, Array.slice(arguments, 1));
 		if (getter.lastExpectedCall != last)
-			this._addExpectedCall(getter.lastExpectedCall);
+			this._addExpectedCall(getter, getter.lastExpectedCall);
 		return getter;
 	},
 	_expectGetThrows : function(...aArgs) { return this.expectGetThrows.apply(this, aArgs); },
@@ -405,7 +405,7 @@ Mock.prototype = {
 		var last = setter.lastExpectedCall;
 		setter.expect.apply(setter, expectArgs);
 		if (setter.lastExpectedCall != last)
-			this._addExpectedCall(setter.lastExpectedCall);
+			this._addExpectedCall(setter, setter.lastExpectedCall);
 		return setter;
 	},
 	_expectSet : function(...aArgs) { return this.expectSet.apply(this, aArgs); },
@@ -415,7 +415,7 @@ Mock.prototype = {
 		var last = setter.lastExpectedCall;
 		setter.expectThrows.apply(setter, Array.slice(arguments, 1));
 		if (setter.lastExpectedCall != last)
-			this._addExpectedCall(setter.lastExpectedCall);
+			this._addExpectedCall(setter, setter.lastExpectedCall);
 		return setter;
 	},
 	_expectSetThrows : function(...aArgs) { return this.expectSetThrows.apply(this, aArgs); },
@@ -442,7 +442,7 @@ Mock.prototype = {
 				var last = method.lastExpectedCall;
 				method.expect(aArguments);
 				if (method.lastExpectedCall != last)
-					self._addExpectedCall(method.lastExpectedCall);
+					self._addExpectedCall(method, method.lastExpectedCall);
 				self._inExpectationChain = false;
 				return method;
 			};
