@@ -126,8 +126,8 @@ function test_expectedArgs()
 {
 	mock.expect([0])
 		.expect([0, 1, 2]);
-	yield assert.notRaises('AssertionFailed', function() { mock([0]); });
-	yield assert.notRaises('AssertionFailed', function() { mock([0, 1, 2]); });
+	yield assert.succeeds(function() { mock([0]); });
+	yield assert.succeeds(function() { mock([0, 1, 2]); });
 	yield assert.raises('Error', function() { mock(0); });
 }
 
@@ -141,8 +141,8 @@ function test_unexpectedArgs()
 function test_withAnyArg()
 {
 	mock.expect([Mock.ANY]);
-	yield assert.notRaises('AssertionFailed', function() { mock(0); });
-	yield assert.notRaises('AssertionFailed', function() { mock(1); });
+	yield assert.succeeds(function() { mock(0); });
+	yield assert.succeeds(function() { mock(1); });
 }
 
 function test_unexpectedRun()
@@ -157,7 +157,7 @@ function test_runWithExpectedContext()
 	var object = {};
 	mock.expect(0).boundTo(object);
 	object.method = mock;
-	yield assert.notRaises('AssertionFailed', function() { object.method(0); });
+	yield assert.succeeds(function() { object.method(0); });
 	yield assert.raises('Error', function() { object.method(0); });
 }
 
@@ -176,7 +176,7 @@ function test_assertSuccess()
 	mock.expect(0);
 	mock(0);
 	mock(0);
-	yield assertSuccess(mock);
+	yield assert.succeeds(function() { mock.assert(); });
 }
 
 function test_assertFail()
@@ -184,5 +184,5 @@ function test_assertFail()
 	mock.expect(0);
 	mock.expect(0);
 	mock(0);
-	yield assertFail(mock);
+	yield assert.raises('AssertionFailed', function() { mock.assert(); });
 }

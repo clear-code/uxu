@@ -248,7 +248,7 @@ function test_assertSuccess()
 	mock.expect([1]);
 	mock(0);
 	mock(1);
-	yield assertSuccess(mock);
+	yield assert.succeeds(function() { mock.assert(); });
 }
 
 function test_assertFail()
@@ -256,7 +256,7 @@ function test_assertFail()
 	mock.expect([0]);
 	mock.expect([1]);
 	mock(0);
-	yield assertFail(mock);
+	yield assert.raises('AssertionFailed', function() { mock.assert(); });
 }
 
 function test_addError()

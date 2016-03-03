@@ -174,11 +174,11 @@ function test_assert()
 	mock.expect('/expect1');
 	mock('/expect0');
 	mock('/expect1');
-	yield assertSuccess(mock);
+	yield assert.succeeds(function() { mock.assert(); });
 
 	mock = createHTTPServerMock();
 	mock.expect('/expect0');
 	mock.expect('/expect1');
 	mock('/expect0');
-	yield assertFail(mock);
+	yield assert.raises('AssertionFailed', function() { mock.assert(); });
 }
