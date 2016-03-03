@@ -327,7 +327,6 @@ function restoreLastResult()
 	var lastResult = utils.getPref('extensions.uxu.runner.lastResults');
 	if (!lastResult)
 		return false;
-		lastResult
 
 	var mainDeck = _('mainDeck');
 	mainDeck.selectedIndex = 0;
@@ -339,6 +338,7 @@ function restoreLastResult()
 		progress.setAttribute('mode', 'determined');
 
 		var lastResultTimer = window.setInterval(function() {
+				try {
 				var items = gLog.items.slice(current, step);
 				current += step;
 				if (items.length) {
@@ -348,6 +348,12 @@ function restoreLastResult()
 				else {
 					window.clearInterval(lastResultTimer);
 					updateUIForAllTestsFinish();
+					mainDeck.selectedIndex = 1;
+				}
+				}
+				catch(e) {
+					alert(e+'\n'+lastResult);
+					window.clearInterval(lastResultTimer);
 					mainDeck.selectedIndex = 1;
 				}
 			}, 50);
