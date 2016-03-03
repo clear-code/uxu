@@ -235,7 +235,8 @@ function Mock(aName, aSource, aAssertions)
 
 	return new Proxy(this, {
 		get: function(aTarget, aName) {
-			if (aName in aTarget)
+			if (aName in aTarget ||
+				typeof aName !== 'string') // iteration or etc.
 				return aTarget[aName];
 			return function(...aArgs) {
 				return aTarget.__noSuchMethod__.call(this, aName, aArgs);
