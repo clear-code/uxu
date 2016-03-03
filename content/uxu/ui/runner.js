@@ -268,7 +268,7 @@ const fileDNDObserver =
 function getLastResultFile()
 {
 	var file = utils.getFileFromKeyword('ProfD');
-	utils.append('uxu.lastResult.js');
+	file.append('uxu.lastResult.js');
 	return file;
 };
    
