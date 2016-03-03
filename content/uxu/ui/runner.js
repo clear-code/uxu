@@ -264,6 +264,13 @@ const fileDNDObserver =
 	}
  
 }; 
+ 
+function getLastResultFile
+{
+	var file = utils.getFileFromKeyword('ProfD');
+	utils.append('uxu.lastResult.js');
+	return file;
+}
    
 /* DOMAIN */ 
 	
@@ -324,7 +331,11 @@ var alwaysRaisedObserver = {
  
 function restoreLastResult()
 {
-	var lastResult = utils.getPref('extensions.uxu.runner.lastResults');
+	var lastResultFile = getLastResultFile();
+	if (!lastResultFile.exists())
+		return false;
+
+	var lastResult = utils.readFrom(lastResultFile, 'UTF-8');
 	if (!lastResult)
 		return false;
 
@@ -752,10 +763,8 @@ var gRemoteRun = {
  
 function onAllTestsFinish() 
 {
-	utils.setPref(
-		'extensions.uxu.runner.lastResults',
-		gLog.toString(gLog.FORMAT_RAW)
-	);
+	var lastResultFile = getLastResultFile();
+	utils.writeTo(gLog.toString(gLog.FORMAT_RAW), lastResultFile, 'UTF-8');
 
 	if (gOptions.log) {
 		utils.writeTo(
@@ -1221,7 +1230,8 @@ function setTestFile(aPath, aClear)
 	utils.setPref('extensions.uxu.runner.lastPath', aPath);
 
 	if (aClear) {
-		utils.setPref('extensions.uxu.runner.lastResults', '');
+		let lastResultFile = getLastResultFile();
+		lastResultFile.remove(true);
 	}
 }
  
