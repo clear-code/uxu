@@ -5,84 +5,15 @@ var manager;
 
 function setUp()
 {
+	manager = new MockManager();
 }
 
 function tearDown()
 {
 }
 
-function test_JSMockStyle()
-{
-	var manager = new MockManager();
-
-	var mock = manager.createMock();
-	yield assertCallAdded(mock, function() {
-		mock.expects().methodWithoutArg();
-	});
-	yield assertCallAdded(mock, function() {
-		mock.expects().methodWithArg(29).andReturn(290);
-	});
-	yield assertCallAdded(mock, function() {
-		mock.expects().methodWithArg(290).andThrow('my error');
-	});
-	var count = 0;
-	yield assertCallAdded(mock, function() {
-		mock.expects().methodWithArg(2900).andStub(function() {
-			count += 1;
-		});
-	});
-	yield assertCallAdded(mock, function() {
-		mock.expects().methodWithArg(29000).andReturn(2.9).andStub(function() {
-			count += 10;
-		});
-	});
-	yield assertCallAdded(mock, function() {
-		mock.expects().methodWithArg(TypeOf.isA(String));
-	});
-
-	yield assertCallRemoved(mock, function() {
-		assert.isUndefined(mock.methodWithoutArg());
-	});
-	yield assertCallRemoved(mock, function() {
-		assert.equals(290, mock.methodWithArg(29));
-	});
-	yield assertCallRemoved(mock, function() {
-		yield assert.raises(
-			'my error',
-			function() {
-				mock.methodWithArg(290);
-			}
-		);
-	});
-	yield assertCallRemoved(mock, function() {
-		mock.methodWithArg(2900);
-		assert.equals(1, count);
-	});
-	yield assertCallRemoved(mock, function() {
-		assert.equals(2.9, mock.methodWithArg(29000));
-		assert.equals(11, count);
-	});
-	yield assertCallRemoved(mock, function() {
-		mock.methodWithArg(new String('string'));
-	});
-
-	mock.verify();
-
-	mock.expects().method();
-	mock.reset();
-	mock.verify();
-
-	assert.raises('Error', function() {
-		mock.unknown();
-	});
-	manager.reset();
-	manager.verify();
-}
-
 function test_JsMockitoStyle()
 {
-	var manager = new MockManager();
-
 	var mock = new Mock();
 	yield assertCallAdded(mock, function() {
 		manager.when(mock).methodWithoutArg();
@@ -137,7 +68,7 @@ function test_JsMockitoStyle()
 	mock.assert();
 }
 
-function test_JsMockitoStyle_withoutManager()
+function test_withoutManager()
 {
 	var mock = new Mock();
 	yield assertCallAdded(mock, function() {
@@ -193,9 +124,8 @@ function test_JsMockitoStyle_withoutManager()
 	mock.assert();
 }
 
-function test_JsMockitoStyle_functionMock()
+function test_functionMock()
 {
-	var manager = new MockManager();
 	var mock = new FunctionMock();
 
 	yield assertCallAdded(mock, function() {
@@ -243,9 +173,8 @@ function test_JsMockitoStyle_functionMock()
 	});
 }
 
-function test_JsMockitoStyle_functionMock_withWrongContext()
+function test_functionMock_withWrongContext()
 {
-	var manager = new MockManager();
 	var mock = new FunctionMock();
 
 	var context = {};
@@ -256,9 +185,8 @@ function test_JsMockitoStyle_functionMock_withWrongContext()
 	yield assertCallRaise(mock, [10], 'AssertionFailed');
 }
 
-function test_JsMockitoStyle_functionMock_withCorrectContext()
+function test_functionMock_withCorrectContext()
 {
-	var manager = new MockManager();
 	var mock = new FunctionMock();
 
 	var context = {};
@@ -280,7 +208,7 @@ function test_JsMockitoStyle_functionMock_withCorrectContext()
 	mock.assert();
 }
 
-function test_JsMockitoStyle_functionMock_withoutManager()
+function test_functionMock_withoutManager()
 {
 	var mock = new FunctionMock();
 
@@ -329,7 +257,7 @@ function test_JsMockitoStyle_functionMock_withoutManager()
 	});
 }
 
-function test_JsMockitoStyle_functionMock_withoutManager_withWrongContext()
+function test_functionMock_withoutManager_withWrongContext()
 {
 	var mock = new FunctionMock();
 
@@ -340,7 +268,7 @@ function test_JsMockitoStyle_functionMock_withoutManager_withWrongContext()
 	yield assertCallRaise(mock, [10], 'AssertionFailed');
 }
 
-function test_JsMockitoStyle_functionMock_withoutManager_withCorrectContext()
+function test_functionMock_withoutManager_withCorrectContext()
 {
 	var mock = new FunctionMock();
 
@@ -377,17 +305,9 @@ function test_JsMockitoStyle_functionMock_withoutManager_withCorrectContext()
 }
 
 
-function test_JsMockitoStyleMock_integrated()
+function test_integrated()
 {
 	var mock = mockFunction('mock function');
 	when(mock)(10, 100).thenReturn(1000);
 	assert.equals(1000, mock(10, 100));
-}
-
-function test_JSMockStyleMock_integrated()
-{
-	var controller = MockControl();
-	var mock = controller.createMock();
-	mock.expects().myMethod(10, 100).andReturn(1000);
-	assert.equals(1000, mock.myMethod(10, 100));
 }
