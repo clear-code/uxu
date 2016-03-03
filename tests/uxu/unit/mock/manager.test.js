@@ -27,14 +27,17 @@ function test_createX()
 {
 	assert.equals([], manager.mocks);
 	var mock = manager.createMock('mock');
+	assert.strictlyEquals([mock], manager.mocks);
 	var func = manager.createFunctionMock('func');
+	assert.strictlyEquals([mock, func], manager.mocks);
 	var getter = manager.createGetterMock('getter');
+	assert.strictlyEquals([mock, func, getter], manager.mocks);
 	var setter = manager.createSetterMock('setter');
-	assert.equals([mock, func, getter, setter], manager.mocks);
-	assert.equals(assertions, mock._assert);
-	assert.equals(assertions, func._mock._assert);
-	assert.equals(assertions, getter._mock._assert);
-	assert.equals(assertions, setter._mock._assert);
+	assert.strictlyEquals([mock, func, getter, setter], manager.mocks);
+	assert.strictlyEquals(assertions, mock._assert);
+	assert.strictlyEquals(assertions, func._mock._assert);
+	assert.strictlyEquals(assertions, getter._mock._assert);
+	assert.strictlyEquals(assertions, setter._mock._assert);
 }
 
 function test_handlingInstancesCreatedFromExportedClasses()
@@ -42,18 +45,18 @@ function test_handlingInstancesCreatedFromExportedClasses()
 	var ns = {};
 	manager.export(ns);
 
-	assert.equals([], manager.mocks);
+	assert.strictlyEquals([], manager.mocks);
 	var mock = new ns.Mock('mock');
 	var mock2 = new ns.MockObject('mock2');
 	var func = new ns.FunctionMock('func');
 	var func2 = new ns.MockFunction('func2');
 	var getter = new ns.GetterMock('getter');
 	var setter = new ns.SetterMock('setter');
-	assert.equals([mock, mock2, func, func2, getter, setter], manager.mocks);
-	assert.equals(assertions, mock._assert);
-	assert.equals(assertions, mock2._assert);
-	assert.equals(assertions, func._mock._assert);
-	assert.equals(assertions, func2._mock._assert);
-	assert.equals(assertions, getter._mock._assert);
-	assert.equals(assertions, setter._mock._assert);
+	assert.strictlyEquals([mock, mock2, func, func2, getter, setter], manager.mocks);
+	assert.strictlyEquals(assertions, mock._assert);
+	assert.strictlyEquals(assertions, mock2._assert);
+	assert.strictlyEquals(assertions, func._mock._assert);
+	assert.strictlyEquals(assertions, func2._mock._assert);
+	assert.strictlyEquals(assertions, getter._mock._assert);
+	assert.strictlyEquals(assertions, setter._mock._assert);
 }
