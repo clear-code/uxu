@@ -623,6 +623,24 @@ Assertions.prototype = ns.inherit(ns.EventTarget.prototype, {
 		     bundle.getString('assert_not_raises'), aMessage);
 	},
 
+	succeeds : function(aTask, aContext, aMessage)
+	{
+		return utils.wait(function() {
+			if (typeof aTask === 'function' && aContext)
+				aTask = aTask.call(aContext);
+			return utils.wait(aTask);
+		})
+				.then((function() {
+					this._onSuccess();
+				}).bind(this))
+				.catch((function(aException) {
+					this._onNotRaisesFinish(Error, aException, aMessage);
+					return aException;
+				}).bind(this));
+	},
+	succeed : function(...aArgs) { return this.succeeds.apply(this, aArgs); },
+	success : function(...aArgs) { return this.succeeds.apply(this, aArgs); },
+
 	matches : function(aExpectedPattern, aActualString, aMessage)
 	{
 		if (!aActualString.match(aExpectedPattern))

@@ -1035,7 +1035,14 @@ function testRaises()
 		[/nointerface/i, function() { window.QueryInterface(Ci.nsIDOMDocument) }, {}, createRandomMessage()]
 	);
 
-	assert.equal(18, assertionsModule.successCount);
+	yield assertSuccess(assertionsModule.succeeds,
+		[function() { 'OK'; }, {}]
+	);
+	yield assertFailure(assertionsModule.succeeds,
+		[function() { eval('{'); }, {}, createRandomMessage()]
+	);
+
+	assert.equal(19, assertionsModule.successCount);
 }
 
 
