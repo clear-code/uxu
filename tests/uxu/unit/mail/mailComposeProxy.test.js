@@ -49,6 +49,7 @@ function testProperties()
 	assert.equals(mailComposeStub.abort, proxy.abort);
 	assert.equals(mailComposeStub.quoteMessage, proxy.quoteMessage);
 	assert.equals(mailComposeStub.AttachmentPrettyName, proxy.AttachmentPrettyName);
+	assert.equals(mailComposeStub.expandMailingLists, proxy.expandMailingLists);
 	assert.equals(mailComposeStub.checkAndPopulateRecipients, proxy.checkAndPopulateRecipients);
 	assert.equals(mailComposeStub.CheckAndPopulateRecipients, proxy.CheckAndPopulateRecipients);
 	assert.equals(mailComposeStub.bodyConvertible, proxy.bodyConvertible);
@@ -66,7 +67,12 @@ function testProperties()
 
 	assert.notEquals(mailComposeStub.SendMsg, proxy.SendMsg);
 	assert.isFunction(proxy.SendMsg);
+}
 
+function testSendMessage()
+{
+	assert.isTrue('expandMailingLists' in proxy);
+	assert.isTrue('SendMsg' in proxy);
 }
 
 function testSendMessage()

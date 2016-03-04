@@ -27,6 +27,7 @@ var methods = [
 		'abort',
 		'quoteMessage',
 		'AttachmentPrettyName',
+		'expandMailingLists',
 		'checkAndPopulateRecipients',
 		'CheckAndPopulateRecipients',
 		'bodyConvertible',
