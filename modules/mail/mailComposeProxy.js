@@ -177,6 +177,27 @@ MailComposeProxy.create = function(aReal) {
    *   https://github.com/tvcutsem/harmony-reflect/blob/master/doc/handler_api.md
    */
   return new Proxy({}, {
+    getPrototypeOf: function(aTarget) {
+      return Object.getPrototypeOf(aReal);
+    },
+    setPrototypeOf: function(aTarget, aPrototype) {
+      return Object.setPrototypeOf(aReal, aPrototype);
+    },
+    isExtensible: function(aTarget) {
+      return Object.isExtensible(aReal);
+    },
+    preventExtensions: function(aTarget) {
+      return Object.preventExtensions(aReal);
+    },
+    getOwnPropertyDescriptor: function(aTarget, aProperty) {
+      return Object.getOwnPropertyDescriptor(aReal, aProperty);
+    },
+    defineProperty: function(aTarget, aProperty, aDescriptor) {
+      return Object.defineProperty(aReal, aProperty, aDescriptor);
+    },
+    has: function(aTarget, aProperty) {
+      return aProperty in aReal;
+    },
     get: function(aTarget, aName, aReceiver) {
       if (typeof MailComposeProxy.prototype[aName] === 'function') {
         return proxyMethod(aName);
@@ -185,6 +206,21 @@ MailComposeProxy.create = function(aReal) {
     },
     set: function(aTarget, aName, aValue, aReceiver) {
       return aReal[aName] = aValue;
+    },
+    deleteProperty: function(aTarget, aProperty) {
+      delete aReal[aProperty];
+    },
+    enumerate: function(aTarget) {
+      return Reflect.enumerate(aReal);
+    },
+    ownKeys: function(aTarget) {
+      return Object.getOwnPropertyNames(aReal);
+    },
+    apply: function(aTarget, aThis, aArgs) {
+      return aReal.apply(aThis, aArgs);
+    },
+    construct: function(aTarget, aArgs) {
+      return new aReal(...aArgs);
     }
   });
 };
