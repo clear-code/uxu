@@ -11,7 +11,7 @@
    var interval = namespace.setInterval(callback, 1000, 'OK');
    namespace.clearInterval(interval);
 
- license: The MIT License, Copyright (c) 2010-2014 YUKI "Piro" Hiroshi
+ license: The MIT License, Copyright (c) 2010-2016 YUKI "Piro" Hiroshi
  original:
    http://github.com/piroor/fxaddonlib-jstimer
 */
@@ -27,23 +27,25 @@ var EXPORTED_SYMBOLS = [
 		'clearAllTimers'
 	];
 
-function setTimeout()
+function setTimeout(aCallback, aTimeout, ...aArgs)
 {
-	var args = Array.slice(arguments);
-	var callback = args.shift();
-	var timeout = args.shift();
-
-	if (typeof callback != 'function' && !('call' in callback))
+	if (typeof aCallback != 'function' && !('call' in aCallback))
 		throw new Error('String type callback is obsolete.');
 
-	var source = callback;
-	callback = function() { source.apply(getGlobal(), args); };
-	callback.source = source;
+	var source = aCallback;
+	aCallback = function() { source.apply(getGlobal(), aArgs); };
+	aCallback.source = source;
+	var owner;
+	try {
+		owner = getOwnerWindowFromCaller(arguments.callee.caller);
+	}
+	catch(e) {
+	}
 	return (new Timer(
-		callback,
-		timeout,
+		aCallback,
+		aTimeout,
 		Ci.nsITimer.TYPE_ONE_SHOT,
-		getOwnerWindowFromCaller(arguments.callee.caller)
+		owner
 	)).id;
 }
 
@@ -52,23 +54,25 @@ function clearTimeout(aId)
 	Timer.cancel(aId);
 }
 
-function setInterval()
+function setInterval(aCallback, aInterval, ...aArgs)
 {
-	var args = Array.slice(arguments);
-	var callback = args.shift();
-	var interval = args.shift();
-
-	if (typeof callback != 'function' && !('call' in callback))
+	if (typeof aCallback != 'function' && !('call' in aCallback))
 		throw new Error('String type callback is obsolete.');
 
-	var source = callback;
-	callback = function() { source.apply(getGlobal(), args); };
-	callback.source = source;
+	var source = aCallback;
+	aCallback = function() { source.apply(getGlobal(), aArgs); };
+	aCallback.source = source;
+	var owner;
+	try {
+		owner = getOwnerWindowFromCaller(arguments.callee.caller);
+	}
+	catch(e) {
+	}
 	return (new Timer(
-		callback,
-		interval,
+		aCallback,
+		aInterval,
 		Ci.nsITimer.TYPE_REPEATING_SLACK,
-		getOwnerWindowFromCaller(arguments.callee.caller)
+		owner
 	)).id;
 }
 
