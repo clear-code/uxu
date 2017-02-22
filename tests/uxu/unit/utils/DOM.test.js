@@ -20,7 +20,7 @@ function testInspectDOMNodeInXML()
 		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em class="class" lang="en">em</em></p>', p1);
 	}
 	else {
-	assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em lang="en" class="class">em</em></p>', p1);
+		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em lang="en" class="class">em</em></p>', p1);
 	}
 
 	var p2 = content.document.getElementById('paragraph2');
@@ -29,7 +29,7 @@ function testInspectDOMNodeInXML()
 		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em class="class" lang="en">em</em></p>', p2);
 	}
 	else {
-	assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em lang="en" class="class">em</em></p>', p2);
+		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em lang="en" class="class">em</em></p>', p2);
 	}
 
 	var fragment = content.document.createDocumentFragment();
@@ -39,7 +39,7 @@ function testInspectDOMNodeInXML()
 		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em class="class" lang="en">em</em></p><p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em class="class" lang="en">em</em></p>', fragment);
 	}
 	else {
-	assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em lang="en" class="class">em</em></p><p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em lang="en" class="class">em</em></p>', fragment);
+		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em lang="en" class="class">em</em></p><p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em lang="en" class="class">em</em></p>', fragment);
 	}
 }
 
@@ -56,7 +56,7 @@ function testInspectDOMNodeInHTML()
 			assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em class="class" lang="en">em</em></p>', p1);
 		}
 		else {
-		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em lang="en" class="class">em</em></p>', p1);
+			assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em lang="en" class="class">em</em></p>', p1);
 		}
 	}
 	else {
@@ -70,7 +70,7 @@ function testInspectDOMNodeInHTML()
 			assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em class="class" lang="en">em</em></p>', p2);
 		}
 		else {
-		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em lang="en" class="class">em</em></p>', p2);
+			assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em lang="en" class="class">em</em></p>', p2);
 		}
 	}
 	else {
@@ -85,7 +85,7 @@ function testInspectDOMNodeInHTML()
 			assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em class="class" lang="en">em</em></p><p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em class="class" lang="en">em</em></p>', fragment);
 		}
 		else {
-		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em lang="en" class="class">em</em></p><p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em lang="en" class="class">em</em></p>', fragment);
+			assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em lang="en" class="class">em</em></p><p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em lang="en" class="class">em</em></p>', fragment);
 		}
 	}
 	else {
