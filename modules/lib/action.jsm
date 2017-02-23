@@ -2373,7 +2373,6 @@ var action;
 						}
 
 						var char = characters.shift();
-						var beforeCount = input.value.length;
 						if (this._directInputPattern.test(char)) {
 							this.fireKeyEventOnElement(input, {
 								type     : 'keypress',
@@ -2387,8 +2386,6 @@ var action;
 							});
 							this.inputTextToField(input, char, true, true);
 						}
-						if (input.length == beforeCount)
-							characters.unshift(char); // retry!
 					}).bind(this), 1);
 				}
 				else {
