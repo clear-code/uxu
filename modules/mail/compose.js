@@ -494,7 +494,7 @@ Compose.prototype = {
 				);
 				this.getAddressTypeForField(field, aComposeWindow).value = address.typeValue;
 				field.focus();
-				this.action.inputTextToField(field, address.address);
+				yield this.action.inputTextToField(field, address.address);
 				yield utils.doIteration((function() {
 					while (!this._getFirstBlankAddressField(aComposeWindow)) {
 						field = this._getLastAddressField(aComposeWindow);
