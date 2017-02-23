@@ -84,7 +84,7 @@ function testAddressFields()
 	assert.equals(nodes[0], compose.firstAddressField);
 	assert.equals(nodes[0], compose.lastAddressField);
 
-	action.inputTo(nodes[0], 'test@example.com');
+	yield action.inputTo(nodes[0], 'test@example.com');
 	yield 500;
 	action.keypressOn(nodes[0], 'return');
 	yield 200;
@@ -116,7 +116,7 @@ function testBlankAddressFields()
 	assert.equals(field, compose.firstBlankAddressField);
 	assert.equals(field, compose.lastBlankAddressField);
 
-	action.inputTo(field, 'test@example.com');
+	yield action.inputTo(field, 'test@example.com');
 	yield 500;
 	action.keypressOn(field, 'return');
 	yield 200;
@@ -152,7 +152,7 @@ function testAddressTypes()
 
 	var field = $X('//*[@id="addressingWidget"]/descendant::*[local-name()="textbox"]', composeWindow.document, XPathResult.FIRST_ORDERED_NODE_TYPE);
 	assert.isNotNull(field);
-	action.inputTo(field, 'test@example.com');
+	yield action.inputTo(field, 'test@example.com');
 	yield 500;
 	action.keypressOn(field, 'return');
 	yield 200;
