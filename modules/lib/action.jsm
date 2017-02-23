@@ -1,7 +1,7 @@
 /**
  * @fileOverview User Action Emulator for Firefox 31 or later 
  * @author       ClearCode Inc.
- * @version      9
+ * @version      10
  *
  * @example
  *   Components.utils.import('resource://my-modules/action.jsm');
@@ -10,7 +10,7 @@
  *   // (ja: http://www.clear-code.com/software/uxu/helpers.html#actions )
  *
  * @license
- *   The MIT License, Copyright (c) 2010-2014 ClearCode Inc.
+ *   The MIT License, Copyright (c) 2010-2017 ClearCode Inc.
  *   https://github.com/clear-code/js-codemodules/blob/master/license.txt
  * @url https://github.com/clear-code/js-codemodules/blob/master/action.jsm
  * @url https://github.com/clear-code/js-codemodules/blob/master/action_tests/
@@ -45,7 +45,7 @@ Components.utils.import('resource://gre/modules/Promise.jsm');
  
 var action; 
 (function() {
-	const currentRevision = 9;
+	const currentRevision = 10;
 
 	var loadedRevision = 'action' in namespace ?
 			namespace.action.revision :
@@ -2358,7 +2358,11 @@ var action;
 				throw new Error('action.inputTextToField::['+aElement+'] is not an input field!');
 			}
 
-			if (!aIsAppend) aElement.value = '';
+			var inputOffset = aElement.value.length;
+			if (!aIsAppend) {
+				aElement.value = '';
+				inputOffset = 0;
+			}
 
 			if (!aDontFireKeyEvents && aInput) {
 				var input = aElement;
@@ -2366,12 +2370,15 @@ var action;
 
 				var array = String(aInput || '').match(this._inputArrayPattern);
 				if (!array) array = String(aInput || '').split('');
-				array.forEach(function(aChar) {
+				array.forEach(function(aChar, aIndex) {
 					if (this._directInputPattern.test(aChar)) {
+						do {
 						this.fireKeyEventOnElement(input, {
 							type     : 'keypress',
 							charCode : aChar.charCodeAt(0)
 						});
+						}
+						while (input.value.length < inputOffset + aIndex + 1);
 					}
 					else {
 						this.fireKeyEventOnElement(input, {
