@@ -405,7 +405,7 @@ Compose.prototype = {
 	_setSubject : function(aSubject, aComposeWindow) 
 	{
 		aComposeWindow = this._ensureWindowReady(aComposeWindow);
-		this.action.inputTextToField(utils.$('msgSubject', aComposeWindow), aSubject);
+		this.action.inputTextToField(utils.$('msgSubject', aComposeWindow), aSubject, false, true);
 	},
  
 	_getRecipients : function(aComposeWindow) 
