@@ -146,13 +146,16 @@ Compose.prototype = {
 
 		var textboxes = this._getAddressFields(aComposeWindow);
 		return (
+			aComposeWindow.gUxUComposeWindowReady &&
+			(
 				textboxes.length > 1 ||
 				(
 					textboxes.length > 0 &&
 					this._getLastAddressField(aComposeWindow) &&
 					this._getFirstDummyRow(aComposeWindow)
 				)
-			);
+			)
+		);
 	},
  
 	_ensureWindowReady : function(aComposeWindow) 
