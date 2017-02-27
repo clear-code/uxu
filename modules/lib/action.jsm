@@ -1,7 +1,7 @@
 /**
  * @fileOverview User Action Emulator for Firefox 31 or later 
  * @author       ClearCode Inc.
- * @version      11
+ * @version      12
  *
  * @example
  *   Components.utils.import('resource://my-modules/action.jsm');
@@ -45,7 +45,7 @@ Components.utils.import('resource://gre/modules/Promise.jsm');
  
 var action; 
 (function() {
-	const currentRevision = 11;
+	const currentRevision = 12;
 
 	var loadedRevision = 'action' in namespace ?
 			namespace.action.revision :
@@ -2374,6 +2374,11 @@ var action;
 
 						var char = characters.shift();
 						if (this._directInputPattern.test(char)) {
+							let focusedElement = Cc['@mozilla.org/focus-manager;1'].focusedElement;
+							if (focusedElement !== input) {
+								// On Gecko 52, sometimes we lose the focus and the input value is unexpectedly cleared.
+								input.click();
+							}
 							this.fireKeyEventOnElement(input, {
 								type     : 'keypress',
 								charCode : char.charCodeAt(0)
