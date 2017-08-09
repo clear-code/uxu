@@ -1,22 +1,21 @@
 /**
  * @fileOverview Command Line Handlers Helper for Firefox 3.5 or later
  * @author       ClearCode Inc.
- * @version      2
+ * @version      6
  *
  * @license
- *   The MIT License, Copyright (c) 2010 ClearCode Inc.
- *   http://www.clear-code.com/repos/svn/js-codemodules/license.txt
- * @url http://www.clear-code.com/repos/svn/js-codemodules/CLHHelper.jsm
- * @url http://www.clear-code.com/repos/svn/js-codemodules/CLHHelper.test.js
+ *   The MIT License, Copyright (c) 2016 ClearCode Inc.
+ * @url https://github.com/clear-code/js-codemodule-command-line-handler
  */
 
-if (typeof window == 'undefined')
+if (typeof window == 'undefined' ||
+	(window && typeof window.constructor == 'function'))
 	this.EXPORTED_SYMBOLS = ['CLHHelper'];
 
 // var namespace;
 if (typeof namespace == 'undefined') {
 	// If namespace.jsm is available, export symbols to the shared namespace.
-	// See: http://www.cozmixng.org/repos/piro/fx3-compatibility-lib/trunk/namespace.jsm
+	// See: https://github.com/piroor/fxaddonlibs/blob/master/namespace.jsm
 	try {
 		let ns = {};
 		Components.utils.import('resource://uxu-modules/lib/namespace.jsm', ns);
@@ -29,7 +28,7 @@ if (typeof namespace == 'undefined') {
 
 var CLHHelper;
 (function() {
-	const currentRevision = 2;
+	const currentRevision = 6;
 
 	var loadedRevision = 'CLHHelper' in namespace ?
 			namespace.CLHHelper.revision :
@@ -170,10 +169,17 @@ var CLHHelper;
 		{
 			if (!aDefaultValue) aDefaultValue = '';
 			var value = this._getValue(aOption, aCommandLine, aDefaultValue);
-			if (!value) return aDefaultValue;
+			if (!value) return null;
 			if (value.indexOf('/') < 0) {
-				value = aCommandLine.resolveFile(value);
-				return value.path;
+				// we cannot use resolveFile for missing file...
+				let file = aCommandLine.resolveFile('');
+				file.append(value);
+				try{
+					file.normalize();
+				}
+				catch(e){
+				}
+				return file.path;
 			}
 			else {
 				value = aCommandLine.resolveURI(value);

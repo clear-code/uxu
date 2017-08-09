@@ -36,6 +36,7 @@
 var ns = {};
 Components.utils.import('resource://uxu-modules/mail/mailComposeProxy.js', ns);
 var UXUMailComposeProxy = ns.MailComposeProxy;
+var gUxUComposeWindowReady = false;
 
 function UXUSimpleEnumeratorFromArray(aArray)
 {
@@ -103,4 +104,16 @@ window.addEventListener('DOMContentLoaded', function() {
 			'(__uxu__fileFromArgument ? new UXUSimpleEnumeratorFromArray([__uxu__fileFromArgument]) : fp.files )'
 		));
 	}
+
+	var originalComposeStartup = window.ComposeStartup;
+	window.ComposeStartup = function(...aArgs) {
+		window.gUxUComposeWindowReady = false;
+		originalComposeStartup.call(window, ...aArgs);
+	};
+
+	var originalComposeFieldsReady = window.ComposeFieldsReady;
+	window.ComposeFieldsReady = function(...aArgs) {
+		originalComposeFieldsReady.call(window, ...aArgs);
+		window.gUxUComposeWindowReady = true;
+	};
 }, false);

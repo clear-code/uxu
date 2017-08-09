@@ -1,7 +1,7 @@
 /**
  * @fileOverview User Action Emulator for Firefox 31 or later 
  * @author       ClearCode Inc.
- * @version      9
+ * @version      12
  *
  * @example
  *   Components.utils.import('resource://my-modules/action.jsm');
@@ -10,7 +10,7 @@
  *   // (ja: http://www.clear-code.com/software/uxu/helpers.html#actions )
  *
  * @license
- *   The MIT License, Copyright (c) 2010-2014 ClearCode Inc.
+ *   The MIT License, Copyright (c) 2010-2017 ClearCode Inc.
  *   https://github.com/clear-code/js-codemodules/blob/master/license.txt
  * @url https://github.com/clear-code/js-codemodules/blob/master/action.jsm
  * @url https://github.com/clear-code/js-codemodules/blob/master/action_tests/
@@ -45,7 +45,7 @@ Components.utils.import('resource://gre/modules/Promise.jsm');
  
 var action; 
 (function() {
-	const currentRevision = 9;
+	const currentRevision = 12;
 
 	var loadedRevision = 'action' in namespace ?
 			namespace.action.revision :
@@ -2238,13 +2238,12 @@ var action;
 		 * @param {string=} aInput (optional)
 		 *   A string to be input.
 		 *
-		 * @throws {Error}
-		 *   If no element is given, or the element is not editable.
+		 * @returns Promise
 		 */
 		inputTo : function() 
 		{
 			var options = this._getInputOptionsFromArguments.apply(this, arguments);
-			this.inputTextToField(options.element, options.input, false, false);
+			return this.inputTextToField(options.element, options.input, false, false);
 		},
  
 		/**
@@ -2256,13 +2255,12 @@ var action;
 		 * @param {string=} aInput (optional)
 		 *   A string to be input.
 		 *
-		 * @throws {Error}
-		 *   If no element is given, or the element is not editable.
+		 * @returns Promise
 		 */
 		appendTo : function() 
 		{
 			var options = this._getInputOptionsFromArguments.apply(this, arguments);
-			this.inputTextToField(options.element, options.input, true, false);
+			return this.inputTextToField(options.element, options.input, true, false);
 		},
  
 		/**
@@ -2275,13 +2273,12 @@ var action;
 		 * @param {string=} aInput (optional)
 		 *   A string to be pasted.
 		 *
-		 * @throws {Error}
-		 *   If no element is given, or the element is not editable.
+		 * @returns Promise
 		 */
 		pasteTo : function() 
 		{
 			var options = this._getInputOptionsFromArguments.apply(this, arguments);
-			this.inputTextToField(options.element, options.input, false, true);
+			return this.inputTextToField(options.element, options.input, false, true);
 		},
  
 		/**
@@ -2294,13 +2291,12 @@ var action;
 		 * @param {string=} aInput (optional)
 		 *   A string to be pasted.
 		 *
-		 * @throws {Error}
-		 *   If no element is given, or the element is not editable.
+		 * @returns Promise
 		 */
 		additionallyPasteTo : function() 
 		{
 			var options = this._getInputOptionsFromArguments.apply(this, arguments);
-			this.inputTextToField(options.element, options.input, true, true);
+			return this.inputTextToField(options.element, options.input, true, true);
 		},
  
 // low level API 
@@ -2347,49 +2343,68 @@ var action;
 		inputTextToField : function(aElement, aInput, aIsAppend, aDontFireKeyEvents) 
 		{
 			if (!aElement) {
-				throw new Error('action.inputTextToField::no target!');
+				return Promise.reject(new Error('action.inputTextToField::no target!'));
 			}
 			else if (this._isDOMElement(aElement)) {
 				if (aElement.localName != 'textbox' &&
 					!(aElement instanceof Ci.nsIDOMNSEditableElement))
-					throw new Error('action.inputTextToField::['+aElement+'] is not an input field!');
+					return Promise.reject(new Error('action.inputTextToField::['+aElement+'] is not an input field!'));
 			}
 			else {
-				throw new Error('action.inputTextToField::['+aElement+'] is not an input field!');
+				return Promise.reject(new Error('action.inputTextToField::['+aElement+'] is not an input field!'));
 			}
 
-			if (!aIsAppend) aElement.value = '';
-
-			if (!aDontFireKeyEvents && aInput) {
-				var input = aElement;
-				if (input.localName == 'textbox') input = input.inputField;
-
-				var array = String(aInput || '').match(this._inputArrayPattern);
-				if (!array) array = String(aInput || '').split('');
-				array.forEach(function(aChar) {
-					if (this._directInputPattern.test(aChar)) {
-						this.fireKeyEventOnElement(input, {
-							type     : 'keypress',
-							charCode : aChar.charCodeAt(0)
-						});
-					}
-					else {
-						this.fireKeyEventOnElement(input, {
-							type    : 'keypress',
-							keyCode : 0xE5
-						});
-						this.inputTextToField(input, aChar, true, true);
-					}
-				}, this);
-			}
-			else {
-				aElement.value += (aInput || '');
+			if (!aIsAppend) {
+				aElement.value = '';
 			}
 
-			var doc = this._getDocumentFromEventTarget(aElement);
-			var event = doc.createEvent('UIEvents');
-			event.initUIEvent('input', true, true, doc.defaultView, 0);
-			aElement.dispatchEvent(event);
+			var promise = new Promise((function(aResolve, aReject) {
+				if (!aDontFireKeyEvents && aInput) {
+					var input = aElement;
+					if (input.localName == 'textbox') input = input.inputField;
+
+					var characters = String(aInput || '').match(this._inputArrayPattern);
+					if (!characters) characters = String(aInput || '').split('');
+
+					var timer = input.ownerDocument.defaultView.setInterval((function() {
+						if (characters.length === 0) {
+							input.ownerDocument.defaultView.clearInterval(timer);
+							return aResolve();
+						}
+
+						var char = characters.shift();
+						if (this._directInputPattern.test(char)) {
+							let focusedElement = Cc['@mozilla.org/focus-manager;1'].focusedElement;
+							if (focusedElement !== input) {
+								// On Gecko 52, sometimes we lose the focus and the input value is unexpectedly cleared.
+								input.click();
+							}
+							this.fireKeyEventOnElement(input, {
+								type     : 'keypress',
+								charCode : char.charCodeAt(0)
+							});
+						}
+						else {
+							this.fireKeyEventOnElement(input, {
+								type    : 'keypress',
+								keyCode : 0xE5
+							});
+							this.inputTextToField(input, char, true, true);
+						}
+					}).bind(this), 1);
+				}
+				else {
+					aElement.value += (aInput || '');
+					aResolve();
+				}
+			}).bind(this));
+
+			return promise.then((function() {
+				var doc = this._getDocumentFromEventTarget(aElement);
+				var event = doc.createEvent('UIEvents');
+				event.initUIEvent('input', true, true, doc.defaultView, 0);
+				aElement.dispatchEvent(event);
+			}).bind(this));
 		},
    
 /* Operations for coordinates */ 

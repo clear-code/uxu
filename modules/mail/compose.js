@@ -146,13 +146,16 @@ Compose.prototype = {
 
 		var textboxes = this._getAddressFields(aComposeWindow);
 		return (
+			aComposeWindow.gUxUComposeWindowReady &&
+			(
 				textboxes.length > 1 ||
 				(
 					textboxes.length > 0 &&
 					this._getLastAddressField(aComposeWindow) &&
 					this._getFirstDummyRow(aComposeWindow)
 				)
-			);
+			)
+		);
 	},
  
 	_ensureWindowReady : function(aComposeWindow) 
@@ -405,7 +408,8 @@ Compose.prototype = {
 	_setSubject : function(aSubject, aComposeWindow) 
 	{
 		aComposeWindow = this._ensureWindowReady(aComposeWindow);
-		this.action.inputTextToField(utils.$('msgSubject', aComposeWindow), aSubject);
+		this.action.inputTextToField(utils.$('msgSubject', aComposeWindow), aSubject, false, true);
+		return aSubject;
 	},
  
 	_getRecipients : function(aComposeWindow) 
@@ -494,7 +498,7 @@ Compose.prototype = {
 				);
 				this.getAddressTypeForField(field, aComposeWindow).value = address.typeValue;
 				field.focus();
-				this.action.inputTextToField(field, address.address);
+				yield this.action.inputTextToField(field, address.address);
 				yield utils.doIteration((function() {
 					while (!this._getFirstBlankAddressField(aComposeWindow)) {
 						field = this._getLastAddressField(aComposeWindow);

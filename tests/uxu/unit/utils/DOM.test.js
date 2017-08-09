@@ -16,16 +16,31 @@ function testInspectDOMNodeInXML()
 {
 	var p1 = content.document.getElementById('paragraph1');
 	assert.isNotNull(p1);
-	assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em lang="en" class="class">em</em></p>', p1);
+	if (utils.checkPlatformVersion('45') > 0) {
+		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em class="class" lang="en">em</em></p>', p1);
+	}
+	else {
+		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em lang="en" class="class">em</em></p>', p1);
+	}
 
 	var p2 = content.document.getElementById('paragraph2');
 	assert.isNotNull(p2);
-	assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em lang="en" class="class">em</em></p>', p2);
+	if (utils.checkPlatformVersion('45') > 0) {
+		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em class="class" lang="en">em</em></p>', p2);
+	}
+	else {
+		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em lang="en" class="class">em</em></p>', p2);
+	}
 
 	var fragment = content.document.createDocumentFragment();
 	fragment.appendChild(p1.cloneNode(true));
 	fragment.appendChild(p2.cloneNode(true));
-	assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em lang="en" class="class">em</em></p><p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em lang="en" class="class">em</em></p>', fragment);
+	if (utils.checkPlatformVersion('45') > 0) {
+		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em class="class" lang="en">em</em></p><p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em class="class" lang="en">em</em></p>', fragment);
+	}
+	else {
+		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em lang="en" class="class">em</em></p><p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em lang="en" class="class">em</em></p>', fragment);
+	}
 }
 
 testInspectDOMNodeInHTML.priority = 'must';
@@ -37,7 +52,12 @@ function testInspectDOMNodeInHTML()
 	var p1 = content.document.getElementById('paragraph1');
 	assert.isNotNull(p1);
 	if (p1.localName == p1.localName.toLowerCase()) {
-		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em lang="en" class="class">em</em></p>', p1);
+		if (utils.checkPlatformVersion('45') > 0) {
+			assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em class="class" lang="en">em</em></p>', p1);
+		}
+		else {
+			assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em lang="en" class="class">em</em></p>', p1);
+		}
 	}
 	else {
 		assert.inspectDOMNode('<P id="paragraph1">test<EM lang="en" class="class">em</EM></P>', p1);
@@ -46,7 +66,12 @@ function testInspectDOMNodeInHTML()
 	var p2 = content.document.getElementById('paragraph2');
 	assert.isNotNull(p2);
 	if (p2.localName == p1.localName.toLowerCase()) {
-		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em lang="en" class="class">em</em></p>', p2);
+		if (utils.checkPlatformVersion('45') > 0) {
+			assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em class="class" lang="en">em</em></p>', p2);
+		}
+		else {
+			assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em lang="en" class="class">em</em></p>', p2);
+		}
 	}
 	else {
 		assert.inspectDOMNode('<P id="paragraph2">test<EM lang="en" class="class">em</EM></P>', p2);
@@ -56,7 +81,12 @@ function testInspectDOMNodeInHTML()
 	fragment.appendChild(p1.cloneNode(true));
 	fragment.appendChild(p2.cloneNode(true));
 	if (p1.localName == p1.localName.toLowerCase()) {
-		assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em lang="en" class="class">em</em></p><p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em lang="en" class="class">em</em></p>', fragment);
+		if (utils.checkPlatformVersion('45') > 0) {
+			assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em class="class" lang="en">em</em></p><p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em class="class" lang="en">em</em></p>', fragment);
+		}
+		else {
+			assert.inspectDOMNode('<p xmlns="http://www.w3.org/1999/xhtml" id="paragraph1">test<em lang="en" class="class">em</em></p><p xmlns="http://www.w3.org/1999/xhtml" id="paragraph2">test<em lang="en" class="class">em</em></p>', fragment);
+		}
 	}
 	else {
 		assert.inspectDOMNode('<P id="paragraph1">test<EM lang="en" class="class">em</EM></P><P id="paragraph2">test<EM lang="en" class="class">em</EM></P>', fragment);
