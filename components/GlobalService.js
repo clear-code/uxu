@@ -133,7 +133,7 @@ GlobalService.prototype = {
 				return;
 
 			case 'uxu-profile-setup':
-				this.setUpUXUPrefs(aSubject.QueryInterface(Ci.nsILocalFile));
+				this.setUpUXUPrefs(aSubject.QueryInterface(Ci.nsIFile));
 				return;
 
 			case 'uxu-start-runner-request':

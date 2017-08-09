@@ -482,7 +482,7 @@ function readBinaryFrom(aTarget)
 		stream = channel.open();
 	}
 	catch(e) {
-		aTarget = aTarget.QueryInterface(Ci.nsILocalFile)
+		aTarget = aTarget.QueryInterface(Ci.nsIFile)
 		stream = Cc['@mozilla.org/network/file-input-stream;1']
 					.createInstance(Ci.nsIFileInputStream);
 		try {

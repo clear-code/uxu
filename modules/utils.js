@@ -445,7 +445,7 @@ normalizeToFile : function(aFile)
 			aFile = this.makeFileWithPath(aFile);
 	}
 	try {
-		aFile = aFile.QueryInterface(Ci.nsILocalFile)
+		aFile = aFile.QueryInterface(Ci.nsIFile)
 	}
 	catch(e) {
 		aFile = aFile.QueryInterface(Ci.nsIURI);
@@ -499,7 +499,7 @@ getRealURLSpec : function(aURI)
 makeFileWithPath : function(aPath) 
 {
 	var newFile = Cc['@mozilla.org/file/local;1']
-					.createInstance(Ci.nsILocalFile);
+					.createInstance(Ci.nsIFile);
 	newFile.initWithPath(aPath);
 	return newFile;
 },
@@ -702,7 +702,7 @@ cosmeticClone : function(aOriginal, aDest, aName, aInternalCall)
 		var file;
 		while (files.hasMoreElements())
 		{
-			file = files.getNext().QueryInterface(Ci.nsILocalFile);
+			file = files.getNext().QueryInterface(Ci.nsIFile);
 			arguments.callee.call(this, file, destFile, file.leafName, true);
 		}
 		return destFile;
@@ -882,7 +882,7 @@ makeTempFile : function(aOriginal, aCosmetic)
 			}
 		}
 		try {
-			aOriginal = aOriginal.QueryInterface(Ci.nsILocalFile)
+			aOriginal = aOriginal.QueryInterface(Ci.nsIFile)
 		}
 		catch(e) {
 			try {

@@ -38,7 +38,7 @@ function test_makeURIFromSpec()
 
 function test_makeFileWithPath()
 {
-	var expected = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsILocalFile);
+	var expected = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsIFile);
 	var file;
 
 	if (onWindows) {
@@ -51,14 +51,13 @@ function test_makeFileWithPath()
 
 	assert.isTrue(file);
 	assert.isInstanceOf(Ci.nsIFile, file);
-	assert.isInstanceOf(Ci.nsILocalFile, file);
 	assert.equals(expected.path, file.path);
 	assert.equals(expected.exists(), file.exists());
 }
 
 function test_getFileFromURL()
 {
-	var expected = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsILocalFile),
+	var expected = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsIFile),
 		uriSpec,
 		filePathPattern;
 	if (onWindows) {
@@ -76,7 +75,6 @@ function test_getFileFromURL()
 	file = utilsModule.getFileFromURL(uri);
 	assert.isTrue(file);
 	assert.isInstanceOf(Ci.nsIFile, file);
-	assert.isInstanceOf(Ci.nsILocalFile, file);
 	assert.equals(expected.path, file.path);
 	assert.equals(expected.exists(), file.exists());
 
@@ -85,7 +83,6 @@ function test_getFileFromURL()
 	file = utilsModule.getFileFromURLSpec(uriSpec);
 	assert.isTrue(file);
 	assert.isInstanceOf(Ci.nsIFile, file);
-	assert.isInstanceOf(Ci.nsILocalFile, file);
 	assert.equals(expected.path, file.path);
 	assert.equals(expected.exists(), file.exists());
 
@@ -94,7 +91,7 @@ function test_getFileFromURL()
 
 function test_getURLFromFile()
 {
-	var file = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsILocalFile),
+	var file = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsIFile),
 		uriPattern,
 		path,
 		uri;
@@ -197,7 +194,7 @@ function test_cosmeticClone_file()
 
 	cloned = utilsModule.cosmeticClone(original, tempDir);
 	assert.isDefined(cloned);
-	assert.implementsInterface(Ci.nsILocalFile, cloned);
+	assert.implementsInterface(Ci.nsIFile, cloned);
 	assert.equals('normal.txt', cloned.leafName);
 
 	var existsPath = cloned.path;
@@ -210,7 +207,7 @@ function test_cosmeticClone_file()
 
 	cloned = utilsModule.cosmeticClone(original, tempDir, 'different.txt');
 	assert.isDefined(cloned);
-	assert.implementsInterface(Ci.nsILocalFile, cloned);
+	assert.implementsInterface(Ci.nsIFile, cloned);
 	assert.equals('different.txt', cloned.leafName);
 
 	original = utils.getFileFromURLSpec(baseURL+'../../fixtures/folder/.dot-file');
@@ -231,7 +228,7 @@ function test_cosmeticClone_folder()
 
 	cloned = utilsModule.cosmeticClone(original, tempDir);
 	assert.isDefined(cloned);
-	assert.implementsInterface(Ci.nsILocalFile, cloned);
+	assert.implementsInterface(Ci.nsIFile, cloned);
 	assert.equals('folder', cloned.leafName);
 
 	var normal = cloned.clone();
@@ -256,7 +253,7 @@ function test_cosmeticClone_folder()
 
 	cloned = utilsModule.cosmeticClone(original, tempDir, 'different');
 	assert.isDefined(cloned);
-	assert.implementsInterface(Ci.nsILocalFile, cloned);
+	assert.implementsInterface(Ci.nsIFile, cloned);
 	assert.equals('different', cloned.leafName);
 
 	original = utils.getFileFromURLSpec(baseURL+'../../fixtures/folder/.dot-file');

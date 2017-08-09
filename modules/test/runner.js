@@ -424,7 +424,7 @@ TestRunner.prototype = ns.inherit(ns.EventTarget.prototype, {
 		var integrationTests = [];
 		while (files.hasMoreElements())
 		{
-			file = files.getNext().QueryInterface(Ci.nsILocalFile);
+			file = files.getNext().QueryInterface(Ci.nsIFile);
 			if (aIgnoreHiddenFiles &&
 				(file.isHidden() || file.leafName.indexOf('.') == 0)) {
 				continue;

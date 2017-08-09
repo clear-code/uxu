@@ -27,7 +27,7 @@ Logger.prototype = {
 
   openFile: function (path) {
     var file = Cc["@mozilla.org/file/local;1"]
-          .createInstance(Ci.nsILocalFile);
+          .createInstance(Ci.nsIFile);
     file.initWithPath(path);
     return file;
   },

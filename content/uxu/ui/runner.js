@@ -147,7 +147,7 @@ function pickFile(aMode, aOptions)
 	if (aOptions.defaultFile) {
 		var defaultFile = aOptions.defaultFile;
 		try {
-			defaultFile = defaultFile.QueryInterface(Ci.nsILocalFile)
+			defaultFile = defaultFile.QueryInterface(Ci.nsIFile)
 			picker.defaultString = defaultFile.leafName;
 		}
 		catch(e) {
@@ -208,7 +208,7 @@ const fileDNDObserver =
 	mayBeTestCase : function(aFile) 
 	{
 		if (!aFile) return false;
-		aFile = aFile.QueryInterface(Ci.nsILocalFile);
+		aFile = aFile.QueryInterface(Ci.nsIFile);
 		return aFile.isDirectory() || /\.js$/.test(aFile.leafName);
 	},
  
@@ -1536,7 +1536,7 @@ function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine)
 
 	var editorPath;
 	var executable = Cc["@mozilla.org/file/local;1"].
-		createInstance(Ci.nsILocalFile);
+		createInstance(Ci.nsIFile);
 	var process = Cc["@mozilla.org/process/util;1"].
 		createInstance(Ci.nsIProcess);
 	try {
