@@ -70,18 +70,18 @@ test_addTab.setUp = utils.setUpTestWindow;
 test_addTab.tearDown = utils.tearDownTestWindow;
 function test_addTab()
 {
-	var tabs = gBrowser.visibleTabs || Array.slice(gBrowser.mTabContainer.childNodes);
+	var tabs = gBrowser.visibleTabs || Array.slice(gBrowser.tabContainer.childNodes);
 	assert.equals(1, tabs.length);
 
 	yield utils.addTab('about:');
-	tabs = gBrowser.visibleTabs || Array.slice(gBrowser.mTabContainer.childNodes);
+	tabs = gBrowser.visibleTabs || Array.slice(gBrowser.tabContainer.childNodes);
 	assert.equals(2, tabs.length);
 	assert.notEquals(tabs[1], gBrowser.selectedTab);
 	assert.equals('about:', tabs[1].linkedBrowser.currentURI.spec);
 	gBrowser.removeTab(tabs[1]);
 
 	yield utils.addTab('../../fixtures/frameTest.html?'+Date.now(), { selected : true });
-	tabs = gBrowser.visibleTabs || Array.slice(gBrowser.mTabContainer.childNodes);
+	tabs = gBrowser.visibleTabs || Array.slice(gBrowser.tabContainer.childNodes);
 	assert.equals(2, tabs.length);
 	assert.equals(tabs[1], gBrowser.selectedTab);
 	assert.contains('/fixtures/frameTest.html', tabs[1].linkedBrowser.currentURI.spec);
@@ -93,7 +93,7 @@ function test_addTab()
 	gBrowser.removeTab(tabs[1]);
 
 	yield utils.addTab('../../fixtures/frameTestInline.html?'+Date.now(), { selected : true });
-	tabs = gBrowser.visibleTabs || Array.slice(gBrowser.mTabContainer.childNodes);
+	tabs = gBrowser.visibleTabs || Array.slice(gBrowser.tabContainer.childNodes);
 	assert.equals(2, tabs.length);
 	assert.contains('/fixtures/frameTestInline.html', tabs[1].linkedBrowser.currentURI.spec);
 	assert.equals(2, content.frames.length);

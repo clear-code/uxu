@@ -663,7 +663,7 @@ getTabs : function(aOptions)
 	if (this._utils.product != 'Firefox') return [];
 	var win = this.getTestWindow(aOptions);
 	if (!win) return [];
-	return this._utils.$X('descendant::*[local-name()="tab"]', win.gBrowser.mTabContainer);
+	return this._utils.$X('descendant::*[local-name()="tab"]', win.gBrowser.tabContainer);
 },
   
 // override some functions of utils 
