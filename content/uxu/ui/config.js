@@ -58,12 +58,12 @@ function showFilePicker(aTarget, aTitle)
 
 	filePicker.appendFilters(filePicker.filterApps | filePicker.filterAll);
 	filePicker.init(window, aTitle, filePicker.modeOpen);
-
-	if (filePicker.show() != filePicker.returnCancel) {
-		target.file  = filePicker.file;
-//		target.label = target.file.path;
-		document.getElementById(target.getAttribute('preference')).value = filePicker.file;
-	}
+	filePicker.open({ done: function(aResult) {
+		if (aResult == picker.returnOK) {
+//			target.label = target.file.path;
+			document.getElementById(target.getAttribute('preference')).value = target.file = filePicker.file.QueryInterface(Ci.nsIFile);
+		}
+	}});
 }
 
 function resetFilePicker(aTarget)

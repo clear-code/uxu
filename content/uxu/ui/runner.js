@@ -187,19 +187,25 @@ function pickFile(aMode, aOptions)
 		}
 	}
 	picker.appendFilters((aOptions.filter || 0) | nsIFilePicker.filterAll);
-	var result = picker.show();
-	if (result == nsIFilePicker.returnOK ||
-		result == nsIFilePicker.returnReplace)
-		return picker.file;
-
-	return null;
+	return new Promise((function(aResolve, aReject) {
+		picker.open({ done: function(aResult) {
+			if (aResult == nsIFilePicker.returnOK ||
+				aResult == nsIFilePicker.returnReplace) {
+				aResolve(picker.file.QueryInterface(Ci.nsIFile));
+			}
+			else {
+				aResolve(null);
+			}
+		}});
+	}).bind(this));
 }
  
 function pickFileUrl(aMode, aOptions) 
 {
-	var file = pickFile(aMode, aOptions);
-	if (file)
-		return utils.getURLSpecFromFilePath(file.path);
+	return pickFile(aMode, aOptions).then(function(aFile) {
+		if (aFile)
+			return utils.getURLSpecFromFilePath(aFile.path);
+	});
 }
  
 const fileDNDObserver = 
@@ -473,16 +479,19 @@ function Shutdown()
 	
 function newTestCase() 
 {
-	var file = pickFile('save', makeTestCaseFileOptions());
-	if (file) {
-		reset();
-		if (file.exists()) file.remove(true);
-		setTestFile(file.path, true);
-		writeTemplate(file.path);
-		window.setTimeout(function() {
-			openInEditor(file.path, 4, 29);
-		}, 100);
-	}
+	pickFile('save', makeTestCaseFileOptions())
+		.then(function(aFile) {
+			if (!aFile)
+				return;
+			reset();
+			if (aFile.exists())
+				aFile.remove(true);
+			setTestFile(aFile.path, true);
+			writeTemplate(aFile.path);
+			window.setTimeout(function() {
+				openInEditor(aFile.path, 4, 29);
+			}, 100);
+		});
 }
 	
 function writeTemplate(aFilePath) 
@@ -493,22 +502,26 @@ function writeTemplate(aFilePath)
   
 function openTestCase(aIsFolder) 
 {
-	var file = pickFile((aIsFolder ? 'getFolder' : '' ), makeTestCaseFileOptions(aIsFolder));
-	if (file) {
-		setTestFile(file.path, true);
-		updateTestCommands();
-		reset();
-	}
+	pickFile((aIsFolder ? 'getFolder' : '' ), makeTestCaseFileOptions(aIsFolder))
+		.then(function(aFile) {
+			if (!aFile)
+				return;
+			setTestFile(aFile.path, true);
+			updateTestCommands();
+			reset();
+		});
 }
  
 function pickTestFile(aOptions) 
 {
-	var url = pickFileUrl(null, aOptions);
-	if (url) {
-		setTestFile(url, true);
-		updateTestCommands();
-		reset();
-	}
+	pickFileUrl(null, aOptions)
+		.then(function(aUrl) {
+			if (!aUrl)
+				return;
+			setTestFile(aUrl, true);
+			updateTestCommands();
+			reset();
+		});
 }
  
 function makeTestCaseFileOptions(aIsFolder) 
@@ -1438,7 +1451,7 @@ function stopServer()
 	
 function saveReport(aPath, aFormat) 
 {
-	var file;
+	var promisedFile;
 	if (!aPath) {
 		let last;
 		try {
@@ -1453,35 +1466,37 @@ function saveReport(aPath, aFormat)
 		filters[bundle.getString('filetype_csv')] = '*.csv';
 		filters[bundle.getString('filetype_tsv')] = '*.tsv';
 		filters[bundle.getString('filetype_json')] = '*.json';
-		let picked = pickFile(
-				'save', {
-					defaultFile : last || 'log.html',
-					defaultExtension : (last ? last.leafName.replace(/^.*\.([^\.]+)$/, '$1') : '') || 'html',
-					filters : filters,
-					title : bundle.getString('log_picker_title')
-				}
-			);
-
-		if (!picked) return;
-		file = picked;
+		promisedFile = pickFile(
+			'save', {
+				defaultFile : last || 'log.html',
+				defaultExtension : (last ? last.leafName.replace(/^.*\.([^\.]+)$/, '$1') : '') || 'html',
+				filters : filters,
+				title : bundle.getString('log_picker_title')
+			}
+		);
 	}
 	else {
 		try {
 			file = utils.makeFileWithPath(aPath);
+			promisedFile = Promise.resolve(file);
 		}
 		catch(e) {
 		}
 	}
-	if (!file) return;
+	if (!promisedFile)
+		return;
 
-	utils.setPref('extensions.uxu.runner.lastLog', file.path);
+	promisedFile.then(function(aFile) {
+		utils.setPref('extensions.uxu.runner.lastLog', aFile.path);
 
-	if (file.exists()) file.remove(true);
-	utils.writeTo(
-		gLog.toString(aFormat || file),
-		file.path,
-		'UTF-8'
-	);
+		if (aFile.exists())
+			aFile.remove(true);
+		utils.writeTo(
+			gLog.toString(aFormat || aFile),
+			aFile.path,
+			'UTF-8'
+		);
+	});
 }
  
 function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine) 
@@ -1550,18 +1565,20 @@ function openInEditor(aFilePath, aLineNumber, aColumnNumber, aCommandLine)
 		editorPath = '';
 	}
 	if (!editorPath || !executable.exists()) {
-		var editor = pickFile('open', {
-				title : bundle.getString('picker_title_external_editor'),
-				defaultExtension : 'exe',
-				filter : Ci.nsIFilePicker.filterApps
-			});
-		if (!editor || !editor.path) return;
-		utils.setPref(
-			'extensions.uxu.runner.editor',
-			'"'+editor.path+'" '+
-			(utils.getPref('extensions.uxu.runner.editor.defaultOptions.'+editor.leafName.toLowerCase()) || '"%F"')
-		);
-		arguments.callee(aFilePath, aLineNumber, aColumnNumber);
+		pickFile('open', {
+			title : bundle.getString('picker_title_external_editor'),
+			defaultExtension : 'exe',
+			filter : Ci.nsIFilePicker.filterApps
+		}).then(function(aEditor) {
+			if (!aEditor || !aEditor.path)
+				return;
+			utils.setPref(
+				'extensions.uxu.runner.editor',
+				'"'+aEditor.path+'" '+
+				(utils.getPref('extensions.uxu.runner.editor.defaultOptions.'+aEditor.leafName.toLowerCase()) || '"%F"')
+			);
+			openInEditor(aFilePath, aLineNumber, aColumnNumber);
+		});
 	}
 }
  
