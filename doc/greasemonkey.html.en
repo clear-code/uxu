@@ -1,9 +1,11 @@
----
-layout: default
-main_title: Testing Greasemonkey scripts by UxU
-sub_title: UxU - UnitTest.XUL
-lang: en
----
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>Testing Greasemonkey scripts by UxU</title>
+</head>
+<body>
+<h1>Testing Greasemonkey scripts by UxU</h1>
 
 <script type="text/javascript" src="./folding_en.js"></script>
 <script type="text/javascript">writeCollapseExpandAllButton()</script>
@@ -355,4 +357,4 @@ function testPageLoading() {
 </tbody>
 </table>
 
-
+</body></html>

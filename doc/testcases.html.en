@@ -1,9 +1,11 @@
----
-layout: default
-main_title: How to write testcases for UxU?
-sub_title: UxU - UnitTest.XUL
-lang: en
----
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>How to write testcases for UxU?</title>
+</head>
+<body>
+<h1>How to write testcases for UxU?</h1>
 
 <script type="text/javascript" src="./folding_en.js"></script>
 
@@ -602,3 +604,4 @@ function test_loadInBackground() {
 <p class="note">*In old versions of UxU, <code>redirect</code> was used for the feature, instead of <code>mapping</code>. <code>redirect</code> is still available on UxU 0.7.6 and later for backward compatibility.</p>
 
 <p>Additionally, <a href="mock.html.en#httpserver">mock features of local HTTP servers</a> will help you to write complex test about applications working with web services.</p>
+</body></html>

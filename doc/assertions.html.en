@@ -1,9 +1,13 @@
----
-layout: default
-main_title: Avalable assertions in UxU
-sub_title: UxU - UnitTest.XUL
-lang: en
----
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>Avalable assertions in UxU</title>
+</head>
+<body>
+<h1>Avalable assertions in UxU</h1>
+
+
 <script type="text/javascript" src="./folding_en.js"></script>
 
 
@@ -671,3 +675,4 @@ assert.notPattern('My Name (test at example.com)', regexp);</code></pre>
   var expected = 'OK';
   assert.equal(expected, aActualValue);
 }</code></pre>
+</body></html>

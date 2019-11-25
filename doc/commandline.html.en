@@ -1,9 +1,11 @@
----
-layout: default
-main_title: Command line options
-sub_title: UxU - UnitTest.XUL
-lang: en
----
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>Command line options</title>
+</head>
+<body>
+<h1>Command line options</h1>
 
 <ul>
 	<li><a href="#server">Starting UxU's server interface</a></li>
@@ -36,4 +38,4 @@ lang: en
 <p>This will help your continuous integration tests.</p>
 
 <p><a href="server.html.en#fire-test-runner">If you like, results are displayed to the shell, by the fire-test-runner.</a></p>
-
+</body></html>

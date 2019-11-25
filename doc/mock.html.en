@@ -1,9 +1,11 @@
----
-layout: default
-main_title: How to write testcases with mocks?
-sub_title: UxU - UnitTest.XUL
-lang: en
----
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>How to write testcases with mocks?</title>
+</head>
+<body>
+<h1>How to write testcases with mocks?</h1>
 
 <ul>
 	<li><a href="#howto">How to create and define mocks?</a>
@@ -325,3 +327,4 @@ server.expects()('(.*)\.en').andReturn(302, '$1')
 // JsMockito style
 when(server)('/deleted').thenThrow(404);</code></pre>
 
+</body></html>
