@@ -1,0 +1,1910 @@
+---
+layout: default
+main_title: Helper methods for testcases
+sub_title: UxU - UnitTest.XUL
+lang: en
+---
+
+<script type="text/javascript" src="./folding_en.js"></script>
+<script type="text/javascript">writeCollapseExpandAllButton()</script>
+
+<ul>
+	<li><a href="#sample">Explanatory Note</a></li>
+	<li><a href="#actions">Action helpers</a>
+		<ul>
+			<li><a href="#actions-mouse">Mouse events</a>
+				<ul>
+					<li><a href="#actions-mouse-on-element">Mouse events on DOMElement</a></li>
+					<li><a href="#actions-mouse-at-position">Mouse events at specified position</a></li>
+				</ul>
+			</li>
+			<li><a href="#actions-key">Keyboard events</a>
+				<ul>
+					<li><a href="#actions-key-general">General keyboard operations</a></li>
+					<li><a href="#actions-key-input">Input opereations by keyboard</a></li>
+				</ul>
+			</li>
+			<li><a href="#action-modaldialog">Operations for modal dialogs</a></li>
+			<li><a href="#action-position">Getting something from a position</a></li>
+			<li><a href="#action-old-api">Obsolete API</a></li>
+		</ul>
+	</li>
+	<li><a href="#location">Location of the testcase</a></li>
+	<li><a href="#window">Window helpers</a>
+		<ul>
+			<li><a href="#window-options">Options for windows</a></li>
+		</ul>
+	</li>
+	<li><a href="#dom">DOM Helpers</a></li>
+	<li><a href="#browser">Browser helpers</a> (Firefox only)</li>
+	<li><a href="#mail">Mail operation helpers</a> (Thunderbird only)
+		<ul>
+			<li><a href="#mail-folders">Folder Helpers</a></li>
+			<li><a href="#mail-compose-window">Compose Helpers</a></li>
+			<li><a href="#mail-send">Send Helpers</a></li>
+		</ul>
+	</li>
+	<li><a href="#file">File helpers</a>
+		<ul>
+			<li><a href="#file-IO">File I/O</a></li>
+			<li><a href="#file-creation">File creation, copying, and removing</a></li>
+			<li><a href="#file-conversion">Conversion of file URL and file path</a></li>
+			<li><a href="#file-hash">Compute hash of file contents</a></li>
+		</ul>
+	</li>
+	<li><a href="#string">String operation helpers</a></li>
+	<li><a href="#json">JSON operation helpers</a></li>
+	<li><a href="#csv">CSV operation helpers</a></li>
+	<li><a href="#server">Local HTTP server helpers</a></li>
+	<li><a href="#database">Database operation helpers</a></li>
+	<li><a href="#include">Script loading helpers</a></li>
+	<li><a href="#pref">Preferences helpers</a></li>
+	<li><a href="#application">Application informations</a></li>
+	<li><a href="#windows-registry">Windows registry helpers</a> (Windows only)</li>
+	<li><a href="#other">Others</a></li>
+</ul>
+
+<ul>
+	<li><a href="index.html.en">UxU Home</a></li>
+	<li><a href="testcases.html.en">How to write testcases for UxU?</a></li>
+	<li><a href="assertions.html.en">Available assertions in UxU</a></li>
+	<li><a href="greasemonkey.html.en">Testing Greasemonkey scripts by UxU</a></li>
+	<li><a href="mock.html.en">How to write testcases with mocks?</a></li>
+	<li><a href="server.html.en">How to control UxU from remote?</a></li>
+	<li><a href="commandline.html.en">Command line options</a></li>
+</ul>
+
+
+<h2 id="sample">Explanatory Note</h2>
+<dl class="api-list">
+	<dt><var>&lt;type of the returned value&gt;</var> <code><var>&lt;method name&gt;</var>(<var>&lt;argument&gt;</var>, <var>[&lt;optional argument&gt;]</var>)</code></dt>
+		<dd>
+			<p><var>&lt;descriptions.&gt;</var></p>
+		</dd>
+</dl>
+
+
+<h2 id="actions">Action helpers</h2>
+
+<h3 id="actions-mouse">Mouse events</h3>
+<p>You can emulate operations with modifier keys, by specifying an object which has following properties:</p>
+<dl>
+	<dt>Boolean <code>altKey</code></dt><dd>Alt key is pressed or not (default:false)</dd>
+	<dt>Boolean <code>ctrlKey</code></dt><dd>Ctrl key is pressed or not (default:false)</dd>
+	<dt>Boolean <code>metaKey</code></dt><dd>Meta key (Command key on Mac OS X) is pressed or not (default:false)</dd>
+	<dt>Boolean <code>shiftKey</code></dt><dd>Shift key is pressed or not (default:false)</dd>
+</dl>
+<p>Note: <em>On Firefox 2 and Thudnerbird 2, click events fired by these methods never fire <code>command</code> event.</em> This is a restriction of Gecko 1.8.</p>
+<h4 id="actions-mouse-on-element">Mouse events on DOMElement</h4>
+<dl class="api-list">
+	<dt id="action.clickOn">void <code>action.clickOn(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.leftClickOn()</code>,
+		                          <code>actionClickOn()</code>,
+		                          <code>actionLeftClickOn()</code></span></dt>
+	<dt id="action.middleClickOn">void <code>action.middleClickOn(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>actionMiddleClickOn()</code></span></dt>
+	<dt id="action.rightClickOn">void <code>action.rightClickOn(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>actionRightClickOn()</code></span></dt>
+		<dd>
+			<p>Does left-click, middle-click, or right-click on the specified element.</p>
+			<pre><code>action.clickOn($('button'));
+action.clickOn($('button'), { ctrlKey : true, shiftKey : true });
+// random order
+action.middleClickOn({ shiftKey : true }, $('link'));</code></pre>
+		</dd>
+	<dt id="action.dblclickOn">void <code>action.dblclickOn(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.dblClickOn()</code>,
+		                          <code>action.leftDblclickOn()</code>,
+		                          <code>action.leftDblClickOn()</code>,
+		                          <code>actionDblclickOn()</code>,
+		                          <code>actionDblClickOn()</code>,
+		                          <code>actionLeftDblclickOn()</code>,
+		                          <code>actionLeftDblClickOn()</code></span></dt>
+	<dt id="action.middleDblclickOn">void <code>action.middleDblclickOn(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.middleDblClickOn()</code>,
+		                          <code>actionMiddleDblclickOn()</code>,
+		                          <code>actionMiddleDblClickOn()</code></span></dt>
+	<dt id="action.rightDblclickOn">void <code>action.rightDblclickOn(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.rightDblClickOn()</code>,
+		                          <code>actionRightDblclickOn()</code>,
+		                          <code>actionRightDblClickOn()</code></span></dt>
+		<dd>
+			<p>Does left-double-click, middle-double-click, or right-double-click on the specified element.</p>
+			<pre><code>action.dblclickOn($('button'));
+action.dblclickOn($('button'), { ctrlKey : true, shiftKey : true });
+// random order
+action.middleDblclickOn({ shiftKey : true }, $('link'));</code></pre>
+		</dd>
+	<dt id="action.mousedownOn">void <code>action.mousedownOn(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.dblClickOn()</code>,
+		                          <code>action.leftMousedownOn()</code>,
+		                          <code>action.leftMouseDownOn()</code>,
+		                          <code>actionMousedownOn()</code>,
+		                          <code>actionMouseDownOn()</code>,
+		                          <code>actionLeftMousedownOn()</code>,
+		                          <code>actionLeftMouseDownOn()</code></span></dt>
+	<dt id="action.middleMousedownOn">void <code>action.middleMousedownOn(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.middleMouseDownOn()</code>,
+		                          <code>actionMiddleMousedownOn()</code>,
+		                          <code>actionMiddleMouseDownOn()</code></span></dt>
+	<dt id="action.rightMousedownOn">void <code>action.rightMousedownOn(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.rightMouseDownOn()</code>,
+		                          <code>actionRightMousedownOn()</code>,
+		                          <code>actionRightMouseDownOn()</code></span></dt>
+		<dd>
+			<p>Presses down the left, the middle, or the right button on the specified element. This doesn't click, but only presses the button.</p>
+			<pre><code>action.mousedownOn($('button'));
+action.mousedownOn($('button'), { ctrlKey : true, shiftKey : true });
+// random order
+action.middleMousedownOn({ shiftKey : true }, $('link'));</code></pre>
+		</dd>
+	<dt id="action.mouseupOn">void <code>action.mouseupOn(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.dblClickOn()</code>,
+		                          <code>action.leftMouseupOn()</code>,
+		                          <code>action.leftMouseUpOn()</code>,
+		                          <code>actionMouseupOn()</code>,
+		                          <code>actionMouseUpOn()</code>,
+		                          <code>actionLeftMouseupOn()</code>,
+		                          <code>actionLeftMouseUpOn()</code></span></dt>
+	<dt id="action.middleMouseupOn">void <code>action.middleMouseupOn(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.middleMouseUpOn()</code>,
+		                          <code>actionMiddleMouseupOn()</code>,
+		                          <code>actionMiddleMouseUpOn()</code></span></dt>
+	<dt id="action.rightMouseupOn">void <code>action.rightMouseupOn(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.rightMouseUpOn()</code>,
+		                          <code>actionRightMouseupOn()</code>,
+		                          <code>actionRightMouseUpOn()</code></span></dt>
+		<dd>
+			<p>Releases the left, the middle, or the right button on the specified element. If you call this method for same button specified to <code>action.mousedownOn()</code>, "click" event will fire.</p>
+			<pre><code>action.mouseupOn($('button'));
+action.mouseupOn($('button'), { ctrlKey : true, shiftKey : true });
+// random order
+action.middleMouseupOn({ shiftKey : true }, $('link'));</code></pre>
+		</dd>
+</dl>
+<h4 id="actions-mouse-at-position">Mouse events at specified position</h4>
+<p>These methods require two numbers as the position; X and Y. The position <code>0, 0</code> is the top-left edge of the screen. If you specify an DOMWindow object as an extra argument, then <code>0, 0</code> means the top-left edge of the frame (DOMWindow).</p>
+<dl class="api-list">
+	<dt id="action.clickAt">void <code>action.clickAt(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.leftClickAt()</code>,
+		                          <code>actionClickAt()</code>,
+		                          <code>actionLeftClickAt()</code></span></dt>
+	<dt id="action.middleClickAt">void <code>action.middleClickAt(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>actionMiddleClickAt()</code></span></dt>
+	<dt id="action.rightClickAt">void <code>action.rightClickAt(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>actionRightClickAt()</code></span></dt>
+		<dd>
+			<p>Does left-click, middle-click, or right-click at the specified position.</p>
+			<pre><code>action.clickAt(300, 250);
+action.clickAt(content, 20, 5, { ctrlKey : true, shiftKey : true });
+// random order
+action.middleClickAt({ shiftKey : true }, 100, 100, content.frames[2]);</code></pre>
+		</dd>
+	<dt id="action.dblclickAt">void <code>action.dblclickAt(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.dblClickAt()</code>,
+		                          <code>action.leftDblclickAt()</code>,
+		                          <code>action.leftDblClickAt()</code>,
+		                          <code>actionDblclickAt()</code>,
+		                          <code>actionDblClickAt()</code>,
+		                          <code>actionLeftDblclickAt()</code>,
+		                          <code>actionLeftDblClickAt()</code></span></dt>
+	<dt id="action.middleDblclickAt">void <code>action.middleDblclickAt(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.middleDblClickAt()</code>,
+		                          <code>actionMiddleDblclickAt()</code>,
+		                          <code>actionMiddleDblClickAt()</code></span></dt>
+	<dt id="action.rightDblclickAt">void <code>action.rightDblclickAt(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.rightDblClickAt()</code>,
+		                          <code>actionRightDblclickAt()</code>,
+		                          <code>actionRightDblClickAt()</code></span></dt>
+		<dd>
+			<p>Does left-double-click, middle-double-click, or right-double-click at the specified position.</p>
+			<pre><code>action.dblclickAt(300, 250);
+action.dblclickAt(content, 20, 5, { ctrlKey : true, shiftKey : true });
+// random order
+action.middleDblclickAt({ shiftKey : true }, 100, 100, content.frames[2]);</code></pre>
+		</dd>
+	<dt id="action.mousedownAt">void <code>action.mousedownAt(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.mouseDownAt()</code>,
+		                          <code>action.leftMousedownAt()</code>,
+		                          <code>action.leftMouseDownAt()</code>,
+		                          <code>actionMousedownAt()</code>,
+		                          <code>actionMouseDownAt()</code>,
+		                          <code>actionLeftMousedownAt()</code>,
+		                          <code>actionLeftMouseDownAt()</code></span></dt>
+	<dt id="action.middleMousedownAt">void <code>action.middleMousedownAt(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.middleMouseDownAt()</code>,
+		                          <code>actionMiddleMousedownAt()</code>,
+		                          <code>actionMiddleMouseDownAt()</code></span></dt>
+	<dt id="action.rightMousedownAt">void <code>action.rightMousedownAt(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.rightMouseDownAt()</code>,
+		                          <code>actionRightMousedownAt()</code>,
+		                          <code>actionRightMouseDownAt()</code></span></dt>
+		<dd>
+			<p>Presses down the left, the middle, or the right button at the specified position. This doesn't click, but only presses the button.</p>
+			<pre><code>action.mousedownAt(300, 250);
+action.mousedownAt(content, 20, 5, { ctrlKey : true, shiftKey : true });
+// random order
+action.middleMousedownAt({ shiftKey : true }, 100, 100, content.frames[2]);</code></pre>
+		</dd>
+	<dt id="action.mouseupAt">void <code>action.mouseupAt(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.mouseUpAt()</code>,
+		                          <code>action.leftMouseupAt()</code>,
+		                          <code>action.leftMouseUpAt()</code>,
+		                          <code>actionMouseupAt()</code>,
+		                          <code>actionMouseUpAt()</code>,
+		                          <code>actionLeftMouseupAt()</code>,
+		                          <code>actionLeftMouseUpAt()</code></span></dt>
+	<dt id="action.middleMouseupAt">void <code>action.middleMouseupAt(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.middleMouseUpAt()</code>,
+		                          <code>actionMiddleMouseupAt()</code>,
+		                          <code>actionMiddleMouseUpAt()</code></span></dt>
+	<dt id="action.rightMouseupAt">void <code>action.rightMouseupAt(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.rightMouseUpAt()</code>,
+		                          <code>actionRightMouseupAt()</code>,
+		                          <code>actionRightMouseUpAt()</code></span></dt>
+		<dd>
+			<p>Releases the left, the middle, or the right button at the specified position. If you call this method for same button specified to <code>action.mousedownAt()</code>, "click" event will fire.</p>
+			<pre><code>action.mouseupAt(300, 250);
+action.mouseupAt(content, 20, 5, { ctrlKey : true, shiftKey : true });
+// random order
+action.middleMouseupAt({ shiftKey : true }, 100, 100, content.frames[2]);</code></pre>
+		</dd>
+</dl>
+<h3 id="actions-key">Keyboard events</h3>
+<p>You can emulate operations with modifier keys, by specifying an object which has following properties:</p>
+<dl>
+	<dt>Boolean <code>altKey</code></dt><dd>Alt key is pressed or not (default:false)</dd>
+	<dt>Boolean <code>ctrlKey</code></dt><dd>Ctrl key is pressed or not (default:false)</dd>
+	<dt>Boolean <code>metaKey</code></dt><dd>Meta key (Command key on Mac OS X) is pressed or not (default:false)</dd>
+	<dt>Boolean <code>shiftKey</code></dt><dd>Shift key is pressed or not (default:false)</dd>
+</dl>
+<p>Note: <em>On Firefox 2 and Thudnerbird 2, keyboard events fired by these methods never fire <code>command</code> event.</em> This is a restriction of Gecko 1.8.</p>
+<h4 id="actions-key-general">General keyboard operations</h4>
+<dl class="api-list">
+	<dt id="action.keypressOn">void <code>action.keypressOn(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.keyPressOn()</code>,
+		                          <code>actionKeypressOn()</code>,
+		                          <code>actionKeyPressOn()</code></span></dt>
+		<dd>
+			<p>Presses and releases the specified key, on the specified element.</p>
+			<p>If you specify only one character, then the key in the keyboard will be pressed. Moreover, function keys and other special keys can be specified by its key code defined as constant properties of <code>Components.interfaces.nsIDOMKeyEvent</code> (e.g. <code>DOM_VK_RETURN</code>), or a string of the key code name (case insensitive).</p>
+			<pre><code>// Ctrl-A
+action.keypressOn($('input'), 'a', { ctrlKey : true });
+
+// input "FooBar", and delete "Bar"
+action.keypressOn($('input'), 'f', { shiftKey : true });
+action.keypressOn($('input'), 'o');
+action.keypressOn($('input'), 'o');
+action.keypressOn($('input'), 'b', { shiftKey : true });
+action.keypressOn($('input'), 'a');
+action.keypressOn($('input'), 'r');
+action.keypressOn($('input'), Ci.nsIDOMKeyEvent.DOM_VK_BACK_SPACE);
+action.keypressOn($('input'), Ci.nsIDOMKeyEvent.DOM_VK_BACK_SPACE);
+action.keypressOn($('input'), Ci.nsIDOMKeyEvent.DOM_VK_BACK_SPACE);
+
+// random order
+action.keypressOn('F3', { shiftKey : true }, $('searchbar'));</code></pre>
+		</dd>
+	<dt id="action.keydownOn">void <code>action.keydownOn(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.keyDownOn()</code>,
+		                          <code>actionKeydownOn()</code>,
+		                          <code>actionKeyDownOn()</code></span></dt>
+		<dd>
+			<p>Presses down the specified key, on the specified element. This doesn't releases the key, but only presses. This never repeats key-inputs like a real keyboard.</p>
+			<p>If you specify only one character, then the key in the keyboard will be pressed. Moreover, function keys and other special keys can be specified by its key code defined as constant properties of <code>Components.interfaces.nsIDOMKeyEvent</code> (e.g. <code>DOM_VK_RETURN</code>), or a string of the key code name (case insensitive).</p>
+			<pre><code>// Ctrl-Tab
+action.keydownOn($('tabbrowser'), 'Control');
+action.keypressOn($('tabbrowser'), 'Tab', { ctrlKey : true });
+action.keypressOn($('tabbrowser'), 'Tab', { ctrlKey : true });
+action.keyupOn($('tabbrowser'), 'Control');
+
+// random order
+action.keydownOn(Ci.nsIDOMKeyEvent.DOM_VK_TAB, $('field'), { shiftKey : true });</code></pre>
+		</dd>
+	<dt id="action.keyupOn">void <code>action.keyupOn(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>action.keyUpOn()</code>,
+		                          <code>actionKeyupOn()</code>,
+		                          <code>actionKeyUpOn()</code></span></dt>
+		<dd>
+			<p>Releases the specified key, on the specified element. If you call this method for the same key specified to <a href="#action.keydownOn"><code>action.keydownOn()</code></a>, then a <code>keypress</code> even will fire.</p>
+			<p>If you specify only one character, then the key in the keyboard will be released. Moreover, function keys and other special keys can be specified by its key code defined as constant properties of <code>Components.interfaces.nsIDOMKeyEvent</code> (e.g. <code>DOM_VK_RETURN</code>), or a string of the key code name (case insensitive).</p>
+			<pre><code>// Ctrl-Tab
+action.keydownOn($('tabbrowser'), 'Control');
+action.keypressOn($('tabbrowser'), 'Tab', { ctrlKey : true });
+action.keypressOn($('tabbrowser'), 'Tab', { ctrlKey : true });
+action.keyupOn($('tabbrowser'), 'Control');
+
+// random order
+action.keyupOn(Ci.nsIDOMKeyEvent.DOM_VK_TAB, $('field'), { shiftKey : true });</code></pre>
+		</dd>
+</dl>
+<h4 id="actions-key-input">Input opereations by keyboard</h4>
+<dl class="api-list">
+	<dt id="action.inputTo">void <code>action.inputTo(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>actionInputTo()</code></span></dt>
+		<dd>
+			<p>Inputs the specified text to the input field. <code>keydown</code>, <code>keyup</code>, <code>keypress</code> and <code>input</code> are fired for each character. For non-ASCII characters like kanji, this doesn't fire key events and fires only <code>input</code> events like input operations via IME.</p>
+			<p>This clears existing text in the field. <a href="#action.appendTo"><code>action.appendTo()</code></a> keeps the old text.</p>
+			<pre><code>action.inputTo($('yomigana'), 'Sakamoto Ryoma');
+action.inputTo($('kanji'), '&#22338;&#26412;&#40845;&#39340;');
+// random order
+action.inputTo('31', $('age'));</code></pre>
+		</dd>
+	<dt id="action.appendTo">void <code>action.appendTo(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>actionAppendTo()</code></span></dt>
+		<dd>
+			<p>Inputs the specified text to the input field. <code>keydown</code>, <code>keyup</code>, <code>keypress</code> and <code>input</code> are fired for each character. For non-ASCII characters like kanji, this doesn't fire key events and fires only <code>input</code> events like input operations via IME.</p>
+			<p>This keeps existing text in the field and append the specified text to it. <a href="#action.inputTo"><code>action.inputTo()</code></a> clears the old text automatically.</p>
+			<pre><code>action.appendTo($('comment'), 'My name is');
+action.appendTo($('comment'), ' Sakamoto, Ryoma.');
+// random order
+action.appendTo(' Nice to meet you!', $('comment'));</code></pre>
+		</dd>
+	<dt id="action.pasteTo">void <code>action.pasteTo(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>actionPasteTo()</code></span></dt>
+		<dd>
+			<p>Sets the specified text to the input field. Like a copy-and-paste, this fires only one <code>input</code> event.</p>
+			<p>This clears existing text in the field. <a href="#action.additionallyPasteTo"><code>action.additionallyPasteTo()</code></a> keeps the old text.</p>
+			<pre><code>action.pasteTo($('yomigana'), 'Sakamoto Ryoma');
+action.pasteTo($('kanji'), '&#22338;&#26412;&#40845;&#39340;');
+// random order
+action.pasteTo('31', $('age'));</code></pre>
+		</dd>
+	<dt id="action.additionallyPasteTo">void <code>action.additionallyPasteTo(<var>[options]</var>)</code>
+		<span class="alias">alias: <code>actionAdditionallyPasteTo()</code></span></dt>
+		<dd>
+			<p>Sets the specified text to the input field. Like a copy-and-paste, this fires only one <code>input</code> event.</p>
+			<p>This keeps existing text in the field and append the specified text to it. <a href="#action.pasteTo"><code>action.pasteTo()</code></a> clears the old text automatically.</p>
+			<pre><code>action.additionallyPasteTo($('comment'), 'My name is');
+action.additionallyPasteTo($('comment'), ' Sakamoto, Ryoma.');
+// random order
+action.additionallyPasteTo(' Nice to meet you!', $('comment'));</code></pre>
+		</dd>
+</dl>
+<h3 id="action-modaldialog">Operations for modal dialogs</h3>
+<dl class="api-list">
+	<dt id="action.readyToOK">Function <code>action.readyToOK(<var>[in Object aOptions]</var>)</code>
+		<span class="alias">alias: <code>action.readyToOk()</code>, <code>actionReadyToOK()</code>, <code>actionReadyToOk()</code></span></dt>
+		<dd>
+			<p>Prespecifies to close one modal dialog automatically, for dialogs opened by <code>window.alert()</code>, nsIPromptService::alert, or nsIPromptService::alertCheck.</p>
+			<pre><code>myModule.doCommand = function() {
+  window.alert('warning! this is a dangerous operation.');
+  // ...some operations...
+  return true;
+};
+
+action.readyToOK();
+var result = myModule.doCommand();
+assert.isTrue(result);</code></pre>
+			<p>You can specify which dialog to be closed is, by the option. Moreover, you can control the check state of the checkbox in the dialog (opened by nsIPromptService::alertCheck) by the option <code>checked</code>. Available options are:</p>
+			<dl>
+				<dt>String <code>title</code></dt><dd>The title of the dialog which will be closed. (default: ignore title)</dd>
+				<dt>String <code>message</code></dt><dd>The message text of the dialog which will be closed. (default: ignore message)</dd>
+				<dt>Boolean <code>checked</code></dt><dd>The new state of the checkbox. (default: do nothing)</dd>
+			</dl>
+			<pre><code>myModule.doCommand = function() {
+  var checked = {};
+  PromptService.alertCheck(null, 'my dialog', 'click OK', 'check', checked);
+  // ...some operations...
+  return checked.value;
+};
+
+action.readyToOK({ title : 'my dialog', checked : true });
+var result = myModule.doCommand();
+assert.isTrue(result);</code></pre>
+		</dd>
+	<dt id="action.readyToConfirm">Function <code>action.readyToConfirm(<var>in Boolean aOK</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">alias: <code>actionReadyToConfirm()</code></span></dt>
+		<dd>
+			<p>Prespecifies to close one modal dialog automatically, for dialogs opened by <code>window.confirm()</code>, nsIPromptService::confirm, nsIPromptService::confirmCheck, or nsIPromptService::confirmEx. By the first argument you can control which button to be clicked is: <code>true</code> is "OK", <code>false</code> is "Cancel". If the dialog has three buttons (opened by nsIPromptService::confirmEx), you can specify the index of the button (from <code>0</code> to <code>2</code>) as an integer.</p>
+			<pre><code>myModule.doCommand = function() {
+  var confirmed = window.confirm('OK?');
+  // ...some operations...
+  return confirmed;
+};
+
+action.readyToConfirm(true);
+var result = myModule.doCommand();
+assert.isTrue(result);</code></pre>
+			<p>You can specify which dialog to be closed is, by the option. Moreover, you can control the check state of the checkbox in the dialog (opened by nsIPromptService::confirmCheck or nsIPromptService::confirmEx) by the option <code>checked</code>. Available options are:</p>
+			<dl>
+				<dt>String <code>title</code></dt><dd>The title of the dialog which will be closed. (default: ignore title)</dd>
+				<dt>String <code>message</code></dt><dd>The message text of the dialog which will be closed. (default: ignore message)</dd>
+				<dt>Boolean <code>checked</code></dt><dd>The new state of the checkbox. (default: do nothing)</dd>
+			</dl>
+			<pre><code>myModule.doCommand = function() {
+  var checked = {};
+  var button = PromptService.confirmEx(null, 'my confirm', 'OK?', 
+                 (PromptService.BUTTON_POS_0 * PromptService.BUTTON_TITLE_SAVE) |
+                 (PromptService.BUTTON_POS_1 * PromptService.BUTTON_TITLE_DONT_SAVE) |
+                 (PromptService.BUTTON_POS_2 * PromptService.BUTTON_TITLE_CANCEL),
+                 null, null, null,
+                 'ask me again', checked);
+  // ...some operations...
+  return [button, checked.value];
+};
+
+action.readyToConfirm(2, { title : 'my confirm', checked : true });
+var result = myModule.doCommand();
+assert.equals([2, true], result);</code></pre>
+		</dd>
+	<dt id="action.readyToPrompt">Function <code>action.readyToPrompt(<var>in String aInput</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">alias: <code>actionReadyToPrompt()</code></span></dt>
+		<dd>
+			<p>Prespecifies to close one modal dialog automatically, for dialogs opened by <code>window.prompt()</code> or nsIPromptService::prompt. You can specify the text to be input by the first argument.</p>
+			<pre><code>myModule.doCommand = function() {
+  var name = window.prompt('What is your name?');
+  // ...some operations...
+  return name;
+};
+
+action.readyToPrompt('John');
+var name = myModule.doCommand();
+assert.equals('John', name);</code></pre>
+			<p>You can specify which dialog to be closed is, by the option. Moreover, you can control the check state of the checkbox in the dialog (opened by nsIPromptService::prompt) by the option <code>checked</code>. Available options are:</p>
+			<dl>
+				<dt>String <code>title</code></dt><dd>The title of the dialog which will be closed. (default: ignore title)</dd>
+				<dt>String <code>message</code></dt><dd>The message text of the dialog which will be closed. (default: ignore message)</dd>
+				<dt>Boolean <code>checked</code></dt><dd>The new state of the checkbox. (default: do nothing)</dd>
+			</dl>
+			<pre><code>myModule.doCommand = function() {
+  var input = {};
+  var checked = {};
+  var OK = PromptService.prompt(null, 'my prompt', 'What is your name?',
+             input, 'ask me again', checked);
+  // ...some operations...
+  return [input.value, checked.value];
+};
+
+action.readyToPrompt('Jane', { title : 'my prompt', checked : true });
+var result = myModule.doCommand();
+assert.equals(['Jane', true], result);</code></pre>
+		</dd>
+	<dt id="action.readyToPromptPassword">Function <code>action.readyToPromptPassword(<var>in String aPassword</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">alias: <code>actionReadyToPromptPassword()</code></span></dt>
+		<dd>
+			<p>Prespecifies to close one modal dialog automatically, for dialogs opened by nsIPromptService::promptPassword. You can specify the password string to be input by the first argument.</p>
+			<pre><code>myModule.doCommand = function() {
+  var password = {};
+  var checked = {};
+  var OK = PromptService.promptPassword(null, 'warning!', 'What is the password?',
+             password, 'never show this dialog', checked);
+  // ...some operations...
+  return [password.value, checked.value];
+};
+
+action.readyToPassword('password', { title : 'warning!', checked : true });
+var result = myModule.doCommand();
+assert.equals(['password', true], result);</code></pre>
+			<p>You can specify which dialog to be closed is, by the option. Moreover, you can control the check state of the checkbox in the dialog by the option <code>checked</code>. Available options are:</p>
+			<dl>
+				<dt>String <code>title</code></dt><dd>The title of the dialog which will be closed. (default: ignore title)</dd>
+				<dt>String <code>message</code></dt><dd>The message text of the dialog which will be closed. (default: ignore message)</dd>
+				<dt>Boolean <code>checked</code></dt><dd>The new state of the checkbox. (default: do nothing)</dd>
+			</dl>
+		</dd>
+	<dt id="action.readyToPromptUsernameAndPassword">Function <code>action.readyToPromptUsernameAndPassword(<var>in String aUsername</var>, <var>in String aPassword</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">alias: <code>actionReadyToPromptUsernameAndPassword()</code></span></dt>
+		<dd>
+			<p>Prespecifies to close one modal dialog automatically, for dialogs opened by nsIPromptService::promptUsernameAndPassword. You can specify the user name to be input by the first argument, and the password string by the second.</p>
+			<pre><code>myModule.doCommand = function() {
+  var username = {};
+  var password = {};
+  var checked = {};
+  var OK = PromptService.promptUsernameAndPassword(null, 'login', 'Who are you?',
+             username, password, 'never show this dialog', checked);
+  // ...some operations...
+  return [username.value, password.value, checked.value];
+};
+
+action.readyToPromptUsernameAndPassword('user', 'password', { title : 'login', checked : true });
+var result = myModule.doCommand();
+assert.equals(['user', 'password', true], result);</code></pre>
+			<p>You can specify which dialog to be closed is, by the option. Moreover, you can control the check state of the checkbox in the dialog by the option <code>checked</code>. Available options are:</p>
+			<dl>
+				<dt>String <code>title</code></dt><dd>The title of the dialog which will be closed. (default: ignore title)</dd>
+				<dt>String <code>message</code></dt><dd>The message text of the dialog which will be closed. (default: ignore message)</dd>
+				<dt>Boolean <code>checked</code></dt><dd>The new state of the checkbox. (default: do nothing)</dd>
+			</dl>
+		</dd>
+	<dt id="action.readyToSelect">Function <code>action.readyToSelect(<var>in Number aIndex</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">alias: <code>actionReadyToSelect()</code></span></dt>
+		<dd>
+			<p>Prespecifies to close one modal dialog automatically, for dialogs opened by nsIPromptService::select. You can specify the index of the itemto be selected by the first argument.</p>
+			<pre><code>myModule.doCommand = function() {
+  var selection = {};
+  var OK = PromptService.select(null, 'select!', 'Choose an item.',
+             5, ['a', 'b', 'c', 'd', 'e'], selection);
+  // ...some operations...
+  return selection.value;
+};
+
+action.readyToSelect(2, { title : 'select!', checked : true });
+var result = myModule.doCommand();
+assert.equals(2, result);
+// The index "2" means "third item", so "c" is selected.</code></pre>
+			<p>You can specify which dialog to be closed is, by the option. Available options are:</p>
+			<dl>
+				<dt>String <code>title</code></dt><dd>The title of the dialog which will be closed. (default: ignore title)</dd>
+				<dt>String <code>message</code></dt><dd>The message text of the dialog which will be closed. (default: ignore message)</dd>
+			</dl>
+		</dd>
+	<dt id="action.cancelReadiedAction">void <code>action.cancelReadiedAction(<var>in Function aAction</var>)</code>
+		<span class="alias">alias: <code>actionCancelReadiedAction()</code></span></dt>
+		<dd>
+			<p>Cancels a prespecification by <a href="#action.readyToOK"><code>action.readToOK</code></a>, <a href="#action.readyToConfirm"><code>action.readToConfirm</code></a>, <a href="#action.readyToPrompt"><code>action.readToPrompt</code></a>, <a href="#action.readyToPromptPassword"><code>action.readToPromptPassword</code></a>, <a href="#action.readyToPromptUsernameAndPassword"><code>action.readyToPromptUsernameAndPassword</code></a>, or <a href="#action.readyToSelect"><code>action.readyToSelect</code></a>. You have to specify the function object returned those methods as the first argument.</p>
+			<pre><code>var act = action.readyToOK();
+
+action.cancelRediedAction(act);</code></pre>
+		</dd>
+	<dt id="action.cancelReadiedActions">void <code>action.cancelReadiedActions()</code>
+		<span class="alias">alias: <code>actionCancelReadiedActions()</code></span></dt>
+		<dd>
+			<p>Cancels all of prespecifications by <a href="#action.readyToOK"><code>action.readToOK</code></a>, <a href="#action.readyToConfirm"><code>action.readToConfirm</code></a>, <a href="#action.readyToPrompt"><code>action.readToPrompt</code></a>, <a href="#action.readyToPromptPassword"><code>action.readToPromptPassword</code></a>, <a href="#action.readyToPromptUsernameAndPassword"><code>action.readyToPromptUsernameAndPassword</code></a>, and <a href="#action.readyToSelect"><code>action.readyToSelect</code></a>.</p>
+			<pre><code>action.readyToOK();
+action.readyToOK();
+action.readyToOK();
+...
+action.cancelRediedActions();</code></pre>
+		</dd>
+</dl>
+<h3 id="action-position">Getting something from a position</h3>
+<dl class="api-list">
+	<dt id="action.getFrameFromScreenPoint">DOMWindow <code>action.getFrameFromScreenPoint(<var>in Number aScreenX</var>, <var>in Number aScreenY</var>)</code>
+		<span class="alias">alias: <code>action.getWindowFromScreenPoint()</code>,
+		                          <code>actionGetFrameFromScreenPoint()</code>,
+		                          <code>actionGetWindowFromScreenPoint()</code></span></dt>
+	<dt id="action.getFrameFromScreenPoint-frame">DOMWindow <code>action.getFrameFromScreenPoint(<var>in DOMWindow aWindow</var>, <var>in Number aScreenX</var>, <var>in Number aScreenY</var>)</code></dt>
+		<dd>
+			<p>Returns the Window object of the frame at the specified screen position. When there is no frame, <code>null</code> will be returned.</p>
+			<p>This finds frames from the most front window. If you want to find a frame from an behind windows, then specify the parent frame or the window includes the frame you want to get.</p>
+			<p>Note: Even if you specify parent frame to this method, <em>(0, 0) still means the top-left edge of the screen.</em></p>
+			<pre><code>var frame = action.getWindowFromScreenPoint(500, 200);
+assert.isNotNull(frame);
+assert.equals($('sidebar', topWindow).contentWindow, frame);
+
+var frame2 = action.getWindowFromScreenPoint(bottomWindow, 500, 200);</code></pre>
+		</dd>
+	<dt id="action.getElementFromScreenPoint">DOMElement <code>action.getElementFromScreenPoint(<var>in Number aScreenX</var>, <var>in Number aScreenY</var>)</code>
+		<span class="alias">alias: <code>actionGetElementFromScreenPoint()</code></span></dt>
+	<dt id="action.getElementFromScreenPoint-frame">DOMElement <code>action.getElementFromScreenPoint(<var>in DOMWindow aWindow</var>, <var>in Number aScreenX</var>, <var>in Number aScreenY</var>)</code></dt>
+		<dd>
+			<p>Returns the element node at the specified screen position. When there is no element, <code>null</code> will be returned.</p>
+			<p>This finds elements from the most front window. If you want to find an element from an behind windows, then specify the parent frame or the window includes the element you want to get.</p>
+			<p>Note: Even if you specify parent frame to this method, <em>(0, 0) still means the top-left edge of the screen.</em></p>
+			<pre><code>var element = action.getElementFromScreenPoint(240, 10);
+assert.equals($('accept-button', topWindow), element);
+
+var element2 = action.getElementFromScreenPoint(bottomWindow, 240, 10);</code></pre>
+		</dd>
+</dl>
+<h3 id="action-old-api">Obsolete API</h3>
+<p>For backward compatibility, old APIs are still available.</p>
+<dl class="api-list">
+	<dt id="action.fireMouseEvent">void <code>action.fireMouseEvent(<var>in DOMWindow aWindow</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">alias: <code>actionFireMouseEvent()</code></span></dt>
+		<dd>
+			<p>Dispatches mouse event to the window. Event details are specified by a hash which have following parameters:</p>
+		<dl>
+			<dt>String <code>type</code></dt><dd>Event type (click, dblclick, mousedown or mouseup. default:click)</dd>
+<!--
+			<dt>Boolean <code>canBubble</code></dt><dd>Allow or not bubbling (default:true)</dd>
+			<dt>Boolean <code>cancelable</code></dt><dd>Allow or not canceling (default:true)</dd>
+-->
+			<dt>Number <code>button</code></dt><dd>Clicked button (default:0=left button</dd>
+			<dt>Number <code>detail</code></dt><dd>Click count (default:1)</dd>
+			<dt>Number <code>screenX</code></dt><dd>Clicked X (left) position on the screen (default:0)</dd>
+			<dt>Number <code>screenY</code></dt><dd>Clicked Y (top) position on the screen (default:0)</dd>
+			<dt>Number <code>x</code></dt><dd>Clicked X (left) position in the frame (default:0)</dd>
+			<dt>Number <code>y</code></dt><dd>Clicked Y (yop) position in the frame (default:0)</dd>
+			<dt>Boolean <code>altKey</code></dt><dd>Alt key is pressed or not (default:false)</dd>
+			<dt>Boolean <code>ctrlKey</code></dt><dd>Ctrl key is pressed or not (default:false)</dd>
+			<dt>Boolean <code>metaKey</code></dt><dd>Meta key (Command key on Mac OS X) is pressed or not (default:false)</dd>
+			<dt>Boolean <code>shiftKey</code></dt><dd>Shift key is pressed or not (default:false)</dd>
+		</dl>
+			<p>If you specify no option, then this works as "Single left click on (0, 0)". If there is no element on the position, this fires no event.</p>
+			<pre><code>function testDblClickOnTarget() {
+  action.fireMouseEvent(content, { type    : 'dblclick',
+                                   screenX : 120,
+                                   screenY : 250,
+                                   ctrlKey : true });
+}</code></pre>
+			<p><em>On Firefox 2 and Thudnerbird 2, click events fired by this method never fire <code>command</code> event.</em> This is a restriction of Gecko 1.8.</p>
+		</dd>
+	<dt id="action.fireMouseEventOnElement">void <code>action.fireMouseEventOnElement(<var>in DOMElement aElement</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">alias: <code>actionFireMouseEventOnElement()</code></span></dt>
+		<dd>
+			<p>Dispatches mouse event on the center of the specified element. You can specify options same as <a href="#action.fireMouseEvent">action.fireMouseEvent()</a>'s.</p>
+			<pre><code>action.fireMouseEventOnElement($('button'),
+                               { type    : 'dblclick',
+                                 ctrlKey : true });</code></pre>
+			<p><em>On Firefox 2 and Thudnerbird 2, click events fired by this method never fire <code>command</code> event.</em> This is a restriction of Gecko 1.8.</p>
+		</dd>
+	<dt id="action.fireKeyEventOnElement">void <code>action.fireKeyEventOnElement(<var>in DOMElement aElement</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">alias: <code>actionFireKeyEventOnElement()</code></span></dt>
+		<dd>
+			<p>Dispatches keyboard event on the specified element. Event details are specified by a hash which have following parameters:</p>
+		<dl>
+			<dt>String <code>type</code></dt><dd>Event type (keydown, keyup, or keypress. default:keypress)</dd>
+<!--
+			<dt>Boolean <code>canBubble</code></dt><dd>Allow or not bubbling (default:true)</dd>
+			<dt>Boolean <code>cancelable</code></dt><dd>Allow or not canceling (default:true)</dd>
+-->
+			<dt>Number <code>keyCode</code></dt><dd>Key code of the pressed key. (default:0)</dd>
+			<dt>Number <code>charCode</code></dt><dd>Character code of the pressed key. (default:0)</dd>
+			<dt>Boolean <code>altKey</code></dt><dd>Alt key is pressed or not (default:false)</dd>
+			<dt>Boolean <code>ctrlKey</code></dt><dd>Ctrl key is pressed or not (default:false)</dd>
+			<dt>Boolean <code>metaKey</code></dt><dd>Meta key (Command key on Mac OS X) is pressed or not (default:false)</dd>
+			<dt>Boolean <code>shiftKey</code></dt><dd>Shift key is pressed or not (default:false)</dd>
+		</dl>
+			<p>You can specify key codes by constant properties of <code>Components.interfaces.nsIDOMKeyEvent</code>, like <code>DOM_VK_RETURN</code>.</p>
+			<pre><code>action.fireKeyEventOnElement($('button'),
+                             { keyCode : Ci.nsIDOMKeyEvent.DOM_VK_ENTER,
+                               ctrlKey : true });</code></pre>
+			<p><em>On Firefox 2 and Thudnerbird 2, key events fired by this method never fire <code>command</code> event.</em> This is a restriction of Gecko 1.8.</p>
+		</dd>
+	<dt id="action.fireXULCommandEvent">Boolean <code>action.fireXULCommandEvent(<var>in DOMWindow aWindow</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">alias: <code>actionFireXULCommandEvent()</code></span></dt>
+		<dd>
+			<p>Dispatches <code>command</code> event caused by click events, to the specified window. You can specify options same as <a href="#action.fireMouseEvent">action.fireMouseEvent()</a>'s. This does nothing if the XUL element on the specified position cannot fire <code>command</code> event (unclickable elements like "label", disabled elements, etc.) This returns <code>true</code> if <code>command</code> event is successfully fired. If not, returns <code>false</code>.</p>
+			<pre><code>action.fireXULCommandEvent(testWindow,
+                           { screenX : buttonInTestWindow.boxObject.screenX+5,
+                             screenY : buttonInTestWindow.boxObject.screenY+5 });</code></pre>
+			<p><em>This doesn't work on Firefox 2 and Thudnerbird 2.</em> This is a restriction of Gecko 1.8.</p>
+		</dd>
+	<dt id="action.fireXULCommandEventOnElement">Boolean <code>action.fireXULCommandEventOnElement(<var>in DOMElement aElement</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">alias: <code>actionFireXULCommandEventOnElement()</code></span></dt>
+		<dd>
+			<p>Dispatches <code>command</code> event caused by click events, to the center of the specified element. You can specify options same as <a href="#action.fireMouseEvent">action.fireMouseEvent()</a>'s. This does nothing if the specified element cannot fire <code>command</code> event (unclickable elements like "label", disabled elements, etc.) This returns <code>true</code> if <code>command</code> event is successfully fired. If not, returns <code>false</code>.</p>
+			<pre><code>action.fireXULCommandEventOnElement($('toolbarbutton', testWindow));</code></pre>
+			<p><em>This doesn't work on Firefox 2 and Thudnerbird 2.</em> This is a restriction of Gecko 1.8.</p>
+		</dd>
+	<dt id="action.inputTextToField">void <code>action.inputTextToField(<var>in DOMElement aElement</var>, <var>in String aValue</var>, <var>[in Boolean aAppend]</var>, <var>[in Boolean aDontFireKeyEvents]</var>)</code>
+		<span class="alias">alias: <code>actionInputTextToField()</code></span></dt>
+		<dd>
+			<p>Emulates text input operation for the specified text field. <code>keydown</code>, <code>keyup</code>, <code>keypress</code> and <code>input</code> are fired for each character. For non-ASCII characters like kanji, this doesn't fire key events and fires only <code>input</code> events like input operations via IME. </p>
+			<p>This clears the old value in the field before doing new input, by default. If you specify <code>true</code> as the third argument, this doesn't clear the old value and appends new input to the existing one.</p>
+			<p>If you specify <code>true</code> as the fourth argument, key evenrs are never fired like copy-and-paste. This is same to the old behavior on Ver.0.2.8 or older.</p>
+			<pre><code>action.inputTextToField($('input'), 'message foobar');
+action.inputTextToField($('input'), ' and more...', true);</code></pre>
+		</dd>
+</dl>
+
+
+<h2 id="location">Location of the testcase</h2>
+<dl class="api-list">
+	<dt id="utils.fileURL">String <code>fileURL</code>
+		<span class="alias">alias: <code>utils.fileURL</code></span></dt>
+		<dd>
+			<p>Returns the URL of the current testcase.</p>
+			<pre><code>var data = utils.readCSV(fileURL+'.data.csv');</code></pre>
+		</dd>
+	<dt id="utils.baseURL">String <code>baseURL</code>
+		<span class="alias">alias: <code>utils.baseURL</code></span></dt>
+		<dd>
+			<p>Returns the URL of the folder which the current testcase exists in.</p>
+			<pre><code>utils.include(baseURL+'common.inc.js');
+utils.include(baseURL+'../content/myadoon/myModule.js');</code></pre>
+		</dd>
+</dl>
+
+
+<h2 id="window">Window helpers</h2>
+<dl class="api-list">
+	<dt id="utils.setUpTestWindow">Object <code>utils.setUpTestWindow(<var>[in Object aOptions]</var>)</code>
+		<span class="alias">alias: <code>setUpTestWindow()</code></span></dt>
+		<dd>
+			<p>Sets up a Firefox (or Thunderbird) window for testing. This opens new Firefox (or Thunderbird) window if it is not opened yet.</p>
+			<pre><code>// Wait that the testing window is completely loaded.
+// After that, go forward.
+function setUp() {
+  utils.setUpTestWindow();
+  var win = utils.getTestWindow();
+  assert.isTrue(win.MyAddonService.initialized);
+}</code></pre>
+			<p><a href="#window-options">You can specify window size, position, and other options for the newly opened window.</a></p>
+			<p><em>When you call this method, the running test is paused until the opened window is completely initialized.</em> If you specify an option <code>async</code> as <code>true</code>, this doesn't pauses the test. This returns an <a href="testcases.html.en#waiting-object">waiting object for deferred operations</a>, so, you can use if for <code>yield</code> or <code>utils.wait()</code>.</p>
+			<pre><code>function setUp() {
+  var completed = utils.setUpTestWindow({ async : true });
+  // some operations
+  yield completed;
+  var win = utils.getTestWindow();
+  assert.isTrue(win.MyAddonService.initialized);
+}</code></pre>
+		</dd>
+	<dt id="utils.tearDownTestWindow">void <code>utils.tearDownTestWindow(<var>[in Object aOptions]</var>)</code>
+		<span class="alias">alias: <code>utils.closeTestWindow()</code>, <code>closeTestWindow()</code>, <code>tearDownTestWindow()</code></span></dt>
+		<dd>
+			<p>Closes the testing window opened by <a href="#utils.setUpTestWindow"><code>utils.setUpTestWindow()</code></a>. If there is no testing window, this does nothing.</p>
+			<pre><code>function tearDown() {
+  utils.tearDownTestWindow();
+}</code></pre>
+			<p><a href="#window-options">You can specify which window have to be closed, by options.</a></p>
+		</dd>
+	<dt id="utils.getTestWindow">DOMWindow <code>utils.getTestWindow(<var>[in Object aOptions]</var>)</code>
+		<span class="alias">alias: <code>getTestWindow()</code></span></dt>
+		<dd>
+			<p>Returns the testing window opened by <a href="#utils.setUpTestWindow"><code>utils.setUpTestWindow()</code></a>. If there is no testing window, this returns <code>null</code>.</p>
+			<pre><code>var win = utils.getTestWindow();
+assert.isDefined(win.MyAddonService);</code></pre>
+			<p><a href="#window-options">You can specify which window have to be gotten by options.</a></p>
+		</dd>
+<!--
+	<dt id="utils.openTestWindow">DOMWindow <code>utils.openTestWindow(<var>[in Object aOptions]</var>)</code>
+		<span class="alias">alias: <code>openTestWindow()</code></span></dt>
+		<dd>
+			<p>Opens a new Firefox (or Thunderbird) window for testing. If it is already opened, returns the window.</p>
+			<p>This doesn't wait that the opened window is completely loaded. You have to use <code>load</code> event or other ways to do something after the window is loaded. <em>You should use <code>utils.setUpTestWindow()</code> instead of this.</em></p>
+		</dd>
+-->
+	<dt id="utils.getChromeWindows">DOMWindow Array <code>utils.getChromeWindows(<var>[in Object aOptions]</var>)</code>
+		<span class="alias">alias: <code>getChromeWindows()</code></span></dt>
+		<dd>
+			<p>Returns an array of existing XUL (chrome) windows' DOMWindow.</p>
+			<pre><code>var addonManager = utils.getChromeWindows({
+      type : 'Extension:Manager'
+    });
+addonManager = addonManager[0];</code></pre>
+			<p><a href="#window-options">You can specify what type or the URI to collect.</a></p>
+		</dd>
+</dl>
+
+<h3 id="window-options">Options for windows</h3>
+<p>You can specify detailed information to open/close/get windows. Options are specified by a hash and all options are just optional. If both of <code>uri</code> and <code>type</code> are not specified, or no option is specified, then UxU guesses that the main window (browser window of Firefox, 3-pane window of Thunderbird) is specified.</p>
+<pre><code>var options = {
+  uri       : 'chrome://browser/content/browser.xul', // default: auto detect
+  type      : 'navigator:browser',                    // default: null
+  name      : '_blank',                               // default: _blank
+  flags     : 'chrome,all,dialog=no',                 // default: chrome,all
+  arguments : ['http://...', 'http://...'],           // default: blank array
+  width     : 200,
+  height    : 400,
+  screenX   : 100,
+  screenY   : 100
+};</code></pre>
+
+
+
+<h2 id="dom">DOM Helpers</h2>
+<dl class="api-list">
+	<dt id="utils.$">DOMNode <code>$(<var>in nsIVariant aNodeOrIdString</var>, <var>[in nsIVariant aOwner]</var>)</code>
+		<span class="alias">alias: <code>utils.$()</code></span></dt>
+		<dd>
+			<p>Provides features like <code>$()</code> of some JavaScript libraries, prototype.js, etc. For example:</p>
+			<ul>
+				<li>When a DOMNode is handed, this returns it as is.</li>
+				<li>When a string is hahded, then returns the result of <code><var>DOMDocument</var>.getElementById()</code>.
+					<ul>
+						<li>When you don't specify the 2nd argument, returns the result of <code><a href="#utils.contentDocument">contentDocument</a>.getElementById()</code>.</li>
+						<li>When <var>aOwner</var> is a DOMDocument object, returns the result of <code>aOwner.getElementById()</code>.</li>
+						<li>When <var>aOwner</var> is a DOMWindow object, returns the result of <code>aOwner.document.getElementById()</code>.</li>
+						<li>When <var>aOwner</var> is a DOMNode object, returns the result of <code>aOwner.ownerDocument.getElementById()</code>.</li>
+					</ul>
+				</li>
+			</ul>
+			<pre><code>var button = $('button');
+var toolbar = $('navigator-toolbox', utils.getTestWindow());</code></pre>
+		</dd>
+	<dt id="utils.$X">nsIVariant <code>$X(<var>arguments</var>)</code>
+		<span class="alias">alias: <code>utils.$X()</code></span></dt>
+		<dd>
+			<p>Provides a feature like <a href="http://lowreal.net/logs/2006/03/16/1">syntax sugar for DOM3 XPath</a>. For example:</p>
+			<dl>
+				<dt>nsIVariant <code>$X(<var>in String aExpression</var>)</code></dt>
+					<dd>Returns a boolean, a number, a string, or a DOMNode value based on the result of <code><a href="#utils.contentDocument">contentDocument</a>.evaluate(<var>aExpression</var>, <a href="#utils.contentDocument">contentDocument</a>, null, XPathResult.ANY_TYPE, null)</code>.</dd>
+				<dt>nsIVariant <code>$X(<var>in String aExpression</var>, <var>in DOMNode aContext</var>)</code></dt>
+					<dd>Returns a boolean, a number, a string, or a DOMNode value based on the result of <code>(<var>aContext</var>.ownerDocument || <var>aContext</var>).evaluate(<var>aExpression</var>, <var>aContext</var>, null, XPathResult.ANY_TYPE, null)</code>.</dd>
+				<dt>nsIVariant <code>$X(<var>in String aExpression</var>, <var>in DOMNode aContext</var>, <var>in Number aResultType</var>)</code></dt>
+					<dd>Returns a boolean, a number, a string, a DOMNode, or an array of DOMNodes based on the result of <code>(<var>aContext</var>.ownerDocument || <var>aContext</var>).evaluate(<var>aExpression</var>, <var>aContext</var>, null, <var>aResultType</var>, null)</code>.</dd>
+				<dt>nsIVariant <code>$X(<var>in String aExpression</var>, <var>in DOMNode aContext</var>, <var>in DOMXPathNSResolver aNSResolver</var>, <var>in Number aResultType</var>)</code></dt>
+					<dd>Returns a boolean, a number, a string, a DOMNode, or an array of DOMNodes based on the result of <code>(<var>aContext</var>.ownerDocument || <var>aContext</var>).evaluate(<var>aExpression</var>, <var>aContext</var>, <var>aNSResolver</var>, <var>aResultType</var>, null)</code>.</dd>
+			</dl>
+			<pre><code>var disabledItems = $X(
+      '/descendant::*[local-name()="menuitem" and @disabled="true"]',
+      utils.getTestWindow()
+    );
+disabledItems.forEach(function(aItem) {
+  assert.isTrue(aItem.disabled);
+});</code></pre>
+		</dd>
+</dl>
+
+
+<h2 id="browser">Browser helpers</h2>
+<p><em>These features are available only on Firefox.</em></p>
+<dl class="api-list">
+	<dt id="utils.content">DOMWindow <code>content</code>
+		<span class="alias">alias: <code>contentWindow</code>, <code>utils.content</code>, <code>utils.contentWindow</code></span></dt>
+		<dd>
+			<p>Returns the content area of the testing Firefox window opened by <a href="#utils.setUpTestWindow"><code>utils.setUpTestWindow()</code></a>, as a DOMWindow object. <em>If there is no testing window, this returns the testing frame in the test runner window.</em></p>
+			<pre><code>assert.equals('selected', content.getSelection());
+content.close();</code></pre>
+		</dd>
+	<dt id="utils.contentDocument">DOMDocument <code>contentDocument</code>
+		<span class="alias">alias: <code>utils.contentDocument</code></span></dt>
+		<dd>
+			<p>Returns the document object of the content area in the testing Firefox window opened by <a href="#utils.setUpTestWindow"><code>utils.setUpTestWindow()</code></a>, as a DOMDocument. <em>If there is no testing window, this returns the document of the testing frame in the test runner window.</em></p>
+			<pre><code>assert.equals('UxU - UnitTest.XUL',
+              contentDocument.title);
+assert.contains('password', contentDocument.cookie);</code></pre>
+		</dd>
+	<dt id="utils.gBrowser">DOMElement <code>gBrowser</code>
+		<span class="alias">alias: <code>utils.gBrowser</code></span></dt>
+		<dd>
+			<p>Returns the <code>gBrowser</code> object (<code>&lt;tabbrowser/&gt;</code> element) in the testing Firefox window opened by <a href="#utils.setUpTestWindow"><code>utils.setUpTestWindow()</code></a>, as a DOMElement. <em>If there is no testing window, this returns the <code>&lt;browser/&gt;</code> element in the test runner window.</em></p>
+			<pre><code>assert.equals('www.example.com', gBrowser.currentURI.host);
+assert.equals('tabbrowser', gBrowser.localName);</code></pre>
+		</dd>
+	<dt id="utils.getBrowser">DOMElement <code>utils.getBrowser()</code>
+		<span class="alias">alias: <code>getBrowser()</code></span></dt>
+		<dd>
+			<p>Same to <a href="#utils.gBrowser"><code>gBrowser</code></a>.</p>
+			<pre><code>assert.equals('www.example.com', utils.getBrowser().currentURI.host);
+assert.equals('tabbrowser', utils.getBrowser().localName);</code></pre>
+		</dd>
+	<dt id="utils.getTabs">DOMElement Array <code>utils.getTabs()</code>
+		<span class="alias">alias: <code>getTabs()</code></span></dt>
+		<dd>
+			<p>Returns an array of existing tabs in the testing Firefox window opened by <a href="#utils.setUpTestWindow"><code>utils.setUpTestWindow()</code></a>, as an array of DOMElement. If there is no testing window, this returns a blank array.</p>
+			<pre><code>assert.equals(3, utils.getTabs().length);
+assert.equals('true', utils.getTabs()[1].getAttribute('selected'));</code></pre>
+		</dd>
+	<dt id="utils.loadURI">Object <code>utils.loadURI(<var>in String aURI</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">alias: <code>loadURI()</code></span></dt>
+		<dd>
+			<p>Loads the specified URI into the current tab of the testing Firefox window opened by <a href="#utils.setUpTestWindow"><code>utils.setUpTestWindow()</code></a>. <em>If there is no testing window, this loads the URI into the testing frame in the test runner window.</em> This returns an <a href="testcases.html.en#waiting-object">waiting object for deferred operations</a>.</p>
+			<pre><code>// Wait that the page is completely loaded
+utils.loadURI('https://www.clear-code.com/');
+var win = utils.getTestWindow();
+assert.equals('https://www.clear-code.com/', win.content.location.href);</code></pre>
+			<p>You can specify the referrer URI.</p>
+			<pre><code>utils.loadURI('https://www.clear-code.com/',
+         { referrer: 'https://www.clear-code.com/about.html' });</code></pre>
+			<p><em>When you call this method, the running test is paused until the page is completely initialized.</em> If you specify an option <code>async</code> as <code>true</code>, this doesn't pauses the test. This returns an <a href="testcases.html.en#waiting-object">waiting object for deferred operations</a>, so, you can use if for <code>yield</code> or <code>utils.wait()</code>.</p>
+			<pre><code>var completed = utils.loadURI('https://www.clear-code.com/', { async : true });
+// some operations
+utils.wait(completed);</code></pre>
+		</dd>
+	<dt id="utils.addTab">Object <code>utils.addTab(<var>in String aURI</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">alias: <code>addTab()</code></span></dt>
+		<dd>
+			<p>Opens new tab in the testing Firefox window opened by <a href="#utils.setUpTestWindow"><code>utils.setUpTestWindow()</code></a>, and loads the specified URI into the new tab. If there is no testing window, this returns <code>null</code>. Otherwise this returns an <a href="testcases.html.en#waiting-object">waiting object for deferred operations</a>. You can access the newly opened tab via the <code>tab</code> property of the returned object.</p>
+			<pre><code>// Open, and wait
+var win = utils.getTestWindow();
+var result = utils.addTab('https://www.clear-code.com/');
+assert.equals('ClearCode Inc.', result.tab.getAttribute('label'));</code></pre>
+			<p>You can specify the referrer URI.</p>
+			<pre><code>utils.addTab('https://www.clear-code.com/',
+         { referrer: 'https://www.clear-code.com/about.html' });</code></pre>
+			<p><em>When you call this method, the running test is paused until the page is completely initialized.</em> If you specify an option <code>async</code> as <code>true</code>, this doesn't pauses the test. This returns an <a href="testcases.html.en#waiting-object">waiting object</a>, so, you can use if for <code>yield</code> or <code>utils.wait()</code>.</p>
+			<pre><code>var result = utils.addTab('https://www.clear-code.com/', { async : true });
+// some operations
+utils.wait(result);</code></pre>
+		</dd>
+</dl>
+<p>If you put relative pathes to <code>utils.loadURI()</code> or <code>utils.addTab()</code>, then, they are resolved based on the place of the testcase file. It just same to <code><a href="#utils.baseURL">baseURL</a> + '<var>&lt;relative path&gt;</var>'</code>.</p>
+
+<h2 id="mail">Mail operation helpers</h2>
+<p><em>These features are available only on Thunderbird.</em></p>
+<h3 id="mail-folders">Folder Helpers</h3>
+<dl class="api-list">
+	<dt id="mail.getFolderByURI">nsIMsgFolder <code>mail.getFolderByURI(<var>in String aURI</var>)</code></dt>
+		<dd>
+			<p>Returns a message folder from URI strings like <code>mailbox://nobody@Local%20Folders/<var>...</var></code>.</p>
+		</dd>
+	<dt id="mail.localFolder">nsIMsgFolder <code>mail.localFolder</code></dt>
+		<dd>
+			<p>Returns the root folder of the local folder account.</p>
+		</dd>
+	<dt id="mail.deleteFolder">void <code>mail.deleteFolder(<var>in nsIMsgFolder aFolder</var>)</code></dt>
+		<dd>
+			<p>Deletes the specified folder. This doesn't move the folder into the Trash folder, just deletes the folder and all of messagees in it.</p>
+		</dd>
+	<dt id="mail.deleteFolderByURI">void <code>mail.deleteFolderByURI(<var>in String aURI</var>)</code></dt>
+		<dd>
+			<p>Deletes the folder specified by URI strings like <code>mailbox://nobody@Local%20Folders/<var>...</var></code>. This doesn't move the folder into the Trash folder, just deletes the folder and all of messagees in it.</p>
+		</dd>
+</dl>
+
+<h3 id="mail-compose-window">Compose Helpers</h3>
+<dl class="api-list">
+	<dt id="mail.compose.window">DOMWindow <code>mail.compose.window</code></dt>
+		<dd>
+			<p>Returns the topmost window of existing message composition windows.</p>
+		</dd>
+<!--
+	<dt id="mail.compose.windows">DOMWindow Array <code>mail.compose.windows</code></dt>
+		<dd>
+			<p>Returns an array of existing message composition windows.</p>
+		</dd>
+-->
+	<dt id="mail.compose.setUp">Object <code>mail.compose.setUp()</code></dt>
+		<dd>
+			<p>Opens new message composition window, and returns an <a href="testcases.html.en#waiting-object">waiting object for deferred operations</a>. If there is no main window, this opens the main window too.</p>
+		</dd>
+	<dt id="mail.compose.tearDown">void <code>mail.compose.tearDown()</code></dt>
+		<dd>
+			<p>Closes the topmost message composition window opened by <a href="#mail.compose.setUp"><code>mail.compose.setUp()</code></a>. If the main window was opened by <code>mail.compose.setUp()</code>, and all of composition windows are closed, then the main window is closed too.</p>
+		</dd>
+<!--
+	<dt id="mail.compose.tearDownAll">void <code>mail.compose.tearDownAll()</code></dt>
+		<dd>
+			<p>Closes all of message composition windows opened by <a href="#mail.compose.setUp"><code>mail.compose.setUp()</code></a>. If the main window was opened by <code>mail.compose.setUp()</code>, and all of composition windows are closed, then the main window is closed too.</p>
+		</dd>
+</dl>
+
+<h3 id="mail-compose-recipients">Get/set recipients</h3>
+<dl class="api-list">
+-->
+	<dt id="mail.compose.recipients-get">Object Array <code>mail.compose.recipients</code></dt>
+		<dd>
+			<p>Returns an array of object which have following properties, from all of recipients in the message composition window (<a href="#mail.compose.window"><code>mail.compose.window</code></a>)</p>
+			<dl>
+				<dt>String <code>type</code></dt>
+					<dd>Selected type (<code>to</code>, <code>cc</code>, <code>bcc</code>, <code>reply-to</code>, <code>followup-to</code> or <code>newsgroups</code>)</dd>
+				<dt>String <code>address</code></dt>
+					<dd>E-mail address</dd>
+			</dl>
+		</dd>
+	<dt id="mail.compose.recipients-set"><code>mail.compose.recipients = <var>Object Array</var></code></dt>
+		<dd>
+			<p>Inputs E-mail addresses specified as an array, to the message composition window (<a href="#mail.compose.window"><code>mail.compose.window</code></a>). When you set new value to this property, all of old recipients are cleared.</p>
+			<p>You can set an array of objects which have <a href="#mail.compose.recipients-get">both <code>type</code> and <code>address</code> properties</a>, or an array of E-mail address strings. If you set an array of strings, then they become "To:" addesses.</p>
+		</dd>
+<!--
+	<dt id="mail.compose.setRecipients">Object Array <code>mail.compose.setRecipients(<var>in Object Array aAddresses</var>, <var>[in DOMWindow aComposeWindow]</var>)</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.appendRecipients">Object Array <code>mail.compose.appendRecipients(<var>in Object Array aAddresses</var>, <var>[in DOMWindow aComposeWindow]</var>)</code></dt>
+		<dd></dd>
+</dl>
+
+<h3 id="mail-compose-body">Get/set body</h3>
+<dl class="api-list">
+-->
+	<dt id="mail.compose.subject-get">String <code>mail.compose.subject</code></dt>
+		<dd>
+			<p>Returns the contents of the subject field from the message composition window (<a href="#mail.compose.window"><code>mail.compose.window</code></a>).</p>
+		</dd>
+	<dt id="mail.compose.subject-set"><code>mail.compose.subject = <var>String</var></code></dt>
+		<dd>
+			<p>Sets the specified string to the subject field in the message composition window (<a href="#mail.compose.window"><code>mail.compose.window</code></a>). This clears the old subject.</p>
+		</dd>
+	<dt id="mail.compose.body-get">DOMElement <code>mail.compose.body</code></dt>
+		<dd>
+			<p>Returns the document body from the message composition window (<a href="#mail.compose.window"><code>mail.compose.window</code></a>), as a DOMElement object. Event if the message is plain-text type, this always returns DOMElement.</p>
+		</dd>
+	<dt id="mail.compose.body-set"><code>mail.compose.body = <var>contents</var></code></dt>
+		<dd>
+			<p>Sets specified contents as the body of the message composition window (<a href="#mail.compose.window"><code>mail.compose.window</code></a>). This clears the old contents.</p>
+			<p>You can specify contents as a string, a DOMNode, or a DOMDocumentFragment. Otherwise, it is converted to a string.</p>
+		</dd>
+<!--
+	<dt id="mail.compose.setBodyContents">nsIVariant <code>mail.compose.setBodyContents(<var>in nsIVariant aContents</var>, <var>[in DOMWindow aComposeWindow]</var>)</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.appendBodyContents">nsIVariant <code>mail.compose.appendBodyContents(<var>in nsIVariant aContents</var>, <var>[in DOMWindow aComposeWindow]</var>)</code></dt>
+		<dd></dd>
+</dl>
+
+<h3 id="mail-compose-attachments">Get/set attachments</h3>
+<dl class="api-list">
+-->
+	<dt id="mail.compose.attachments-get">nsIFile Array <code>mail.compose.attachments</code></dt>
+		<dd>
+			<p>Returns attached files an array of nsIFile objects, from the message composition window (<a href="#mail.compose.window"><code>mail.compose.window</code></a>).</p>
+		</dd>
+	<dt id="mail.compose.attachments-set"><code>mail.compose.attachments = <var>Object Array</var></code></dt>
+		<dd>
+			<p>Sets the specified array of files as attachments of the message composition window (<a href="#mail.compose.window"><code>mail.compose.window</code></a>). You can specify files as an array of strings of local file path, strings of File URL, or nsIFile objects. Old attachments are always cleared.</p>
+		</dd>
+<!--
+	<dt id="mail.compose.attachFile">void <code>mail.compose.attachFile(<var>in Object aFile</var>, <var>[in DOMWindow aComposeWindow]</var>)</code></dt>
+		<dd></dd>
+</dl>
+
+<h3 id="mail-compose-fields">Accessing to the input fields</h3>
+<dl class="api-list">
+	<dt id="mail.compose.addressFields">DOMElement Array <code>mail.compose.addressFields</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.firstAddressField">DOMElement <code>mail.compose.firstAddressField</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.lastAddressField">DOMElement <code>mail.compose.lastAddressField</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.blankAddressFields">DOMElement Array <code>mail.compose.blankAddressFields</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.firstBlankAddressField">DOMElement <code>mail.compose.firstBlankAddressField</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.lastBlankAddressField">DOMElement <code>mail.compose.lastBlankAddressField</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.addressTypes">DOMElement Array <code>mail.compose.addressTypes</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.firstAddressType">DOMElement <code>mail.compose.firstAddressType</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.lastAddressType">DOMElement <code>mail.compose.lastAddressType</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.dummyRows">DOMElement Array <code>mail.compose.dummyRows</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.firstDummyRow">DOMElement <code>mail.compose.firstDummyRow</code></dt>
+		<dd></dd>
+-->
+</dl>
+
+<h3 id="mail-send">Send Helpers</h3>
+<dl class="api-list">
+	<dt id="mail.compose.send">void <code>mail.compose.send(<var>in Boolean aAsync</var>, <var>[in DOMWindow aComposeWindow]</var>)</code></dt>
+		<dd>
+			<p>Sends the message which is edited by the message composition window (<a href="#mail.compose.window"><code>mail.compose.window</code></a>). <em>However, this doesn't send the message to the SMTP server. This only simulates the sending processes, and stores result objects of sent messages to <a href="#mail.deliveries"><code>mail.deliveries</code></a>.</em></p>
+		</dd>
+	<dt id="mail.deliveries">Object Array <code>mail.deliveries</code></dt>
+		<dd>
+			<p>Returns an array of messages sent by <a href="#mail.compose.send"><code>mail.compose.send()</code></a>. Each message have following properties:</p>
+			<ul>
+				<li>String <code>from</code></li>
+				<li>String <code>replyTo</code></li>
+				<li>String <code>to</code></li>
+				<li>String <code>cc</code></li>
+				<li>String <code>bcc</code></li>
+				<li>String <code>subject</code></li>
+				<li>String <code>organization</code></li>
+				<li>String <code>priority</code></li>
+				<li>String <code>messageId</code></li>
+				<li>String <code>characterSet</code></li>
+
+				<li>String <code>body</code></li>
+				<li>String <code>newsgroups</code></li>
+				<li>String <code>newshost</code></li>
+				<li>String <code>newspostUrl</code></li>
+				<li>String <code>followupTo</code></li>
+			</ul>
+		</dd>
+</dl>
+
+
+<h2 id="file">File helpers</h2>
+
+<h3 id="file-IO">File I/O</h3>
+<dl class="api-list">
+	<dt id="utils.readFrom">String <code>utils.readFrom(<var>in Object aFile</var>, <var>[in String aEncoding]</var>)</code>
+		<span class="alias">alias: <code>readFrom()</code></span></dt>
+		<dd>
+			<p>Returns the contents of the specified file, as a string. You can specify file as a native file path, a file URL, a nsIFileURL object, or a nsIFile object.</p>
+			<p>You can specify the encoding of the contents as the 2nd argument. When you don't specify the encoding, this reads and returns the contents as is. If you want to read a text file encoded in UTF-8, then do <code>utils.readFrom(file, <em>"UTF-8"</em>)</code>.</p>
+			<pre><code>var contents = utils.readFrom('../../fixtures/data.txt', 'Shift_JIS');</code></pre>
+		</dd>
+	<dt id="utils.writeTo">nsIFile <code>utils.writeTo(<var>in String aContent</var>, <var>in Object aFile</var>, <var>[in String aEncoding]</var>)</code>
+		<span class="alias">alias: <code>writeTo()</code></span></dt>
+		<dd>
+			<p>Writes the specified string to the specified file. You can specify output file as a native file path, a file URL, a nsIFileURL object, or a nsIFile object as the 2nd argument.</p>
+			<p>You can specify the encoding of the contents as the 3rd argument. When you don't specify the encoding, this outputs the string (internally encoded in UCS-2) to the file as is. If you want to write a text file encoded in UTF-8, then do <code>utils.writeTo(content, file, <em>"UTF-8"</em>)</code>.</p>
+			<p>This overwrites the existing file without confirming.</p>
+			<pre><code>utils.writeTo(result.join('\n'), 'tmp/data.txt', 'Shift_JIS');</code></pre>
+		</dd>
+</dl>
+<p>If you put relative pathes to these methods, then, they are resolved based on the place of the testcase file. It just same to <code><a href="#utils.baseURL">baseURL</a> + '<var>&lt;relative path&gt;</var>'</code>.</p>
+
+<h3 id="file-creation">File creation, copying, and removing</h3>
+<dl class="api-list">
+	<dt id="utils.cosmeticClone">nsIFile <code>utils.cosmeticClone(<var>in Object aOriginalFile</var>, <var>in Object aDestinationFolder</var>, <var>[in String aName]</var>)</code>
+		<span class="alias">alias: <code>cosmeticClone()</code></span></dt>
+		<dd>
+			<p>Clones the original file (1st argument), into the destination folder (2nd argument), as the specified name (3rd argument). If you don't specify the 3rd argument, cloned files will have the name same to the original.</p>
+			<p>If you specify a folder as the original file, whole contents excluding hidden files (files with "hidden" attribute on Windows, files which have name starting with "." on Linux) will be cloned.</p>
+			<p>This returns the cloned file or folder which is in the destination folder.</p>
+			<pre><code>utils.cosmeticClone('./logs', logDir, Date.now());</code></pre>
+		</dd>
+	<dt id="utils.makeTempFile">nsIFile <code>utils.makeTempFile(<var>[in Object aOriginalFile]</var>)</code>
+		<span class="alias">alias: <code>utils.createTempFile()</code>,
+		                           <code>makeTempFile()</code>,
+		                           <code>createTempFile()</code></span></dt>
+		<dd>
+			<p>Creates a new file in the system temporary folder, and returns it. If you specify a native file path, a file URL, or a nsIFile object, then the created temporary file will be a clone of the specified original file. If an folder is specified as the 1st argument, then this works as an alias of <a href="#utils.makeTempFolder"><code>utils.makeTempFolder()</code></a>.</p>
+			<pre><code>var newTempFile = utils.makeTempFile();
+var cloned = utils.makeTempFile('../fixtures/file.txt');</code></pre>
+		</dd>
+	<dt id="utils.makeTempFolder">nsIFile <code>utils.makeTempFolder(<var>[in Object aOriginalFolder]</var>, <var>[in Boolean aCosmetic]</var>)</code>
+		<span class="alias">alias: <code>utils.makeTempDirectory()</code>,
+		                           <code>utils.makeTempDir()</code>,
+		                           <code>utils.createTempFolder()</code>,
+		                           <code>utils.createTempDirectory()</code>,
+		                           <code>utils.createTempDir()</code>,
+		                           <code>makeTempFolder()</code>,
+		                           <code>makeTempDirectory()</code>,
+		                           <code>makeTempDir()</code>,
+		                           <code>createTempFolder()</code>,
+		                           <code>createTempDirectory()</code>,
+		                           <code>createTempDir()</code></span></dt>
+		<dd>
+			<p>Creates a new folder in the system temporary folder, and returns it. If you specify a native file path, a file URL, or a nsIFile object, then the created folder will be a clone of the specified original folder. Hidden files (files with "hidden" attribute on Windows, files which have name starting with "." on Linux) are not cloned if you specify <code>true</code> as the 2nd argument.</p>
+			<pre><code>var newTempFolder = utils.makeTempFolder();
+var cloned = utils.makeTempFolder('../fixtures', true);</code></pre>
+		</dd>
+	<dt id="utils.cleanUpTempFiles">void <code>utils.cleanUpTempFiles()</code>
+		<span class="alias">alias: <code>cleanUpTempFiles()</code></span></dt>
+		<dd>
+			<p>Deletes all of temporary files created by <a href="#utils.makeTempFile"><code>utils.makeTempFile()</code></a> or <a href="#utils.makeTempFolder"><code>utils.makeTempFolder()</code></a> in the testcase. However, files locked by someone will stay there.</p>
+			<pre><code>function tearDown() {
+  utils.cleanUpTempFiles();
+}</code></pre>
+		</dd>
+	<dt id="utils.scheduleToRemove">void <code>utils.scheduleToRemove(<var>in Object aFile</var>)</code>
+		<span class="alias">alias: <code>scheduleToRemove()</code></span></dt>
+		<dd>
+			<p>Deletes the specified file. Instead of <code>remove()</code> method of nsIFile, this tries to delete the file after a delay, and retries if the operation fails.</p>
+			<pre><code>utils.scheduleToRemove('temp/tempFile.zip');</code></pre>
+		</dd>
+</dl>
+<p>If you put relative pathes to these methods, then, they are resolved based on the place of the testcase file. It just same to <code><a href="#utils.baseURL">baseURL</a> + '<var>&lt;relative path&gt;</var>'</code>.</p>
+
+<h3 id="file-conversion">Conversion of file URL and file path</h3>
+<dl class="api-list">
+	<dt id="utils.normalizeToFile">nsIFile <code>utils.normalizeToFile(<var>in Object aFile</var>)</code>
+		<span class="alias">alias: <code>normalizeToFile()</code></span></dt>
+		<dd>
+			<p>Returns nsIFile object from a native file path string, a file URL, a nsIFileURL object, or a nsIFile obejct. If you put relative pathes to this method, then, they are resolved based on the place of the testcase file. It just same to <code><a href="#utils.baseURL">baseURL</a> + '<var>&lt;relative path&gt;</var>'</code>.</p>
+			<pre><code>var file1 = utils.normalizeToFile('c:\\file.txt');
+var file2 = utils.normalizeToFile(baseURL+'/file.txt');</code></pre>
+		</dd>
+	<dt id="utils.makeFileWithPath">nsIFile <code>utils.makeFileWithPath(<var>in String aFilePath</var>)</code>
+		<span class="alias">alias: <code>utils.getFileFromPath()</code>,
+		                          <code>makeFileWithPath()</code>,
+		                          <code>getFileFromPath()</code></span></dt>
+		<dd>
+			<p>Returns nsIFile object from a native file path on the platform.</p>
+			<pre><code>var file = utils.makeFileWithPath('d:\\test\\file.txt');</code></pre>
+		</dd>
+	<dt id="utils.getFileFromURL">nsIFile <code>utils.getFileFromURL(<var>in nsIFile aFileURL</var>)</code>
+		<span class="alias">alias: <code>getFileFromURL()</code></span></dt>
+		<dd>
+			<p>Returns nsIFile object from a nsIFileURL object.</p>
+			<pre><code>var file = utils.getFileFromURL(gBrowser.currentURI);</code></pre>
+		</dd>
+	<dt id="utils.getFileFromURLSpec">nsIFile <code>utils.getFileFromURLSpec(<var>in String aFileURLSpec</var>)</code>
+		<span class="alias">alias: <code>getFileFromURLSpec()</code></span></dt>
+		<dd>
+			<p>Returns nsIFile object from a file URL string.</p>
+			<pre><code>var file = utils.getFileFromURLSpec(gBrowser.currentURI.spec);</code></pre>
+		</dd>
+	<dt id="utils.getFileFromKeyword">nsIFile <code>utils.getFileFromKeyword(<var>in String aKeyword</var>)</code>
+		<span class="alias">alias: <code>getFileFromKeyword()</code></span></dt>
+		<dd>
+			<p>Returns nsIFile object from a keyword. Lists of available keywords are <a href="http://mxr.mozilla.org/mozilla/source/xpcom/io/nsDirectoryServiceDefs.h">nsDirectoryServiceDefs.h</a>, <a href="http://mxr.mozilla.org/mozilla-central/source/toolkit/xre/nsXULAppAPI.h">nsXULAppAPI.h</a>, and others.</p>
+			<pre><code>var extensions = utils.getFileFromKeyword('ProfD');
+extensions.append('extensions');</code></pre>
+		</dd>
+	<dt id="utils.getFilePathFromURL">String <code>utils.getFilePathFromURL(<var>in nsIFileURL aFileURL</var>)</code>
+		<span class="alias">alias: <code>getFilePathFromURL()</code></span></dt>
+		<dd>
+			<p>Returns a native file path from a nsIFileURL object.</p>
+			<pre><code>var path = utils.getFilePathFromURL(gBrowser.currentURI);</code></pre>
+		</dd>
+	<dt id="utils.getFilePathFromURLSpec">String <code>utils.getFilePathFromURLSpec(<var>in String aFileURLSpec</var>)</code>
+		<span class="alias">alias: <code>getFilePathFromURLSpec()</code></span></dt>
+		<dd>
+			<p>Returns a native file path from a file URL string.</p>
+			<pre><code>var path = utils.getFilePathFromURL(gBrowser.currentURI.spec);</code></pre>
+		</dd>
+	<dt id="utils.getFilePathFromKeyword">String <code>utils.getFilePathFromKeyword(<var>in String aKeyword</var>)</code>
+		<span class="alias">alias: <code>getFilePathFromKeyword()</code></span></dt>
+		<dd>
+			<p>Returns a native file path from a keyword. Lists of available keywords are <a href="http://mxr.mozilla.org/mozilla/source/xpcom/io/nsDirectoryServiceDefs.h">nsDirectoryServiceDefs.h</a>, <a href="http://mxr.mozilla.org/mozilla-central/source/toolkit/xre/nsXULAppAPI.h">nsXULAppAPI.h</a>, and others.</p>
+			<pre><code>var path = utils.getFilePathFromKeyword('ProfD');</code></pre>
+		</dd>
+	<dt id="utils.getURLFromFile">nsIURI <code>utils.getURLFromFile(<var>in nsIFile aFile</var>)</code>
+		<span class="alias">alias: <code>getURLFromFile()</code></span></dt>
+		<dd>
+			<p>Returns a nsIFileURL object from a nsIFile object.</p>
+			<pre><code>var parentURL = utils.getURLFromFile(profile.parent);</code></pre>
+		</dd>
+	<dt id="utils.getURLFromFilePath">nsIURI <code>utils.getURLFromFilePath(<var>in String aFilePath</var>)</code>
+		<span class="alias">alias: <code>getURLFromFilePath()</code></span></dt>
+		<dd>
+			<p>Returns a nsIFileURL object from a native file path on the platform.</p>
+			<pre><code>var fileURL = utils.getURLFromFilePath('d:\\test\\file.txt');</code></pre>
+		</dd>
+	<dt id="utils.getURLSpecFromFile">String <code>utils.getURLSpecFromFile(<var>in nsIFile aFileURL</var>)</code>
+		<span class="alias">alias: <code>getURLSpecFromFile()</code></span></dt>
+		<dd>
+			<p>Returns a file URL string from a nsIFile object.</p>
+			<pre><code>image.src = utils.getURLSpecFromFile(imageFile);</code></pre>
+		</dd>
+	<dt id="utils.getURLSpecFromFilePath">String <code>utils.getURLSpecFromFilePath(<var>in String aFileURL</var>)</code>
+		<span class="alias">alias: <code>getURLSpecFromFilePath()</code></span></dt>
+		<dd>
+			<p>Returns a file URL string from a native file path on the platform.</p>
+			<pre><code>image.src = utils.getURLSpecFromFilePath('d:\\test\\image.jpg');</code></pre>
+		</dd>
+</dl>
+
+<h3 id="file-hash">Compute hash of file contents</h3>
+<dl class="api-list">
+	<dt id="utils.computeHashFromFile">String <code>utils.computeHashFromFile(<var>in Object aFile</var>, <var>in String aAlgorithm</var>)</code>
+		<span class="alias">alias: <code>computeHash()</code>
+		</span></dt>
+		<dd>
+			<p>Computes the hash and returns hash string, from a file specified as the 1st argument, by the algorithm specified as the 2nd argument. Available hash algorithms are: <code>md2</code>, <code>md5</code>, <code>sha1</code>, <code>sha256</code>, <code>sha384</code>, and <code>sha512</code>.</p>
+			<pre><code>assert.equals('7BD6E50A060F9D63CDD89082CC215025A800333E',
+              utils.computeHashFromFile('../result.jpg', 'sha1'));</code></pre>
+		</dd>
+	<dt id="utils.md2FromFile">String <code>utils.md2FromFile(<var>in Object aFile</var>)</code>
+		<span class="alias">alias: <code>md2FromFile()</code>
+		</span></dt>
+		<dd>
+			<p>Computes and returns the MD2 hash string from the specified file. Just same to <a href="#utils.computeHashFromFile"><code>utils.computeHashFromFile(<var>aString</var>, 'md2')</code></a>.</p>
+		</dd>
+	<dt id="utils.md5FromFile">String <code>utils.md5FromFile(<var>in Object aFile</var>)</code>
+		<span class="alias">alias: <code>md5FromFile()</code>
+		</span></dt>
+		<dd>
+			<p>Computes and returns the MD5 hash string from the specified file. Just same to <a href="#utils.computeHashFromFile"><code>utils.computeHashFromFile(<var>aString</var>, 'md5')</code></a>.</p>
+		</dd>
+	<dt id="utils.sha1FromFile">String <code>utils.sha1FromFile(<var>in Object aFile</var>)</code>
+		<span class="alias">alias: <code>sha1FromFile()</code>
+		</span></dt>
+		<dd>
+			<p>Computes and returns the SHA-1 hash string from the specified file. Just same to <a href="#utils.computeHashFromFile"><code>utils.computeHashFromFile(<var>aString</var>, 'sha1')</code></a>.</p>
+		</dd>
+	<dt id="utils.sha256FromFile">String <code>utils.sha256FromFile(<var>in Object aFile</var>)</code>
+		<span class="alias">alias: <code>sha256FromFile()</code>
+		</span></dt>
+		<dd>
+			<p>Computes and returns the SHA-256 hash string from the specified file. Just same to <a href="#utils.computeHashFromFile"><code>utils.computeHashFromFile(<var>aString</var>, 'sha256')</code></a>.</p>
+		</dd>
+	<dt id="utils.sha384FromFile">String <code>utils.sha384FromFile(<var>in Object aFile</var>)</code>
+		<span class="alias">alias: <code>sha384FromFile()</code>
+		</span></dt>
+		<dd>
+			<p>Computes and returns the SHA-384 hash string from the specified file. Just same to <a href="#utils.computeHashFromFile"><code>utils.computeHashFromFile(<var>aString</var>, 'sha384')</code></a>.</p>
+		</dd>
+	<dt id="utils.sha512FromFile">String <code>utils.sha512FromFile(<var>in Object aFile</var>)</code>
+		<span class="alias">alias: <code>sha512FromFile()</code>
+		</span></dt>
+		<dd>
+			<p>Computes and returns the SHA-512 hash string from the specified file. Just same to <a href="#utils.computeHashFromFile"><code>utils.computeHashFromFile(<var>aString</var>, 'sha512')</code></a>.</p>
+		</dd>
+</dl>
+<p>If you put relative pathes to <code>utils.computeHashFromFile()</code>, then, they are resolved based on the place of the testcase file. It just same to <code><a href="#utils.baseURL">baseURL</a> + '<var>&lt;relative path&gt;</var>'</code>.</p>
+
+<h2 id="string">String operation helpers</h2>
+<dl class="api-list">
+	<dt id="utils.UTF8ToUCS2">String <code>utils.UTF8ToUCS2(<var>in String aInput</var>)</code>
+		<span class="alias">alias: <code>utils.UTF8ToUnicode()</code>, <code>UTF8ToUCS2()</code>, <code>UTF8ToUnicode()</code></span></dt>
+		<dd>
+			<p>Returns a UCS-2 (Unicode) string from an UTF-8 string.</p>
+			<pre><code>var string = utils.UTF8ToUCS2(someXPCOMComponent.getResult());</code></pre>
+		</dd>
+	<dt id="utils.UCS2ToUTF8">String <code>utils.UCS2ToUTF8(<var>in String aInput</var>)</code>
+		<span class="alias">alias: <code>utils.UnicodeToUTF8()</code>, <code>UCS2ToUTF8()</code>, <code>UnicodeToUTF8()</code></span></dt>
+		<dd>
+			<p>Returns a UTF-8 string from an UCS-2 (Unicode) string.</p>
+			<pre><code>someXPCOMComponent.setValue(utils.UCS2ToUTF8(string));</code></pre>
+		</dd>
+	<dt id="utils.XToUCS2">String <code>utils.XToUCS2(<var>in String aInput</var>, <var>in String aEncoding</var>)</code>
+		<span class="alias">alias: <code>utils.XToUnicode()</code>, <code>XToUCS2()</code>, <code>XToUnicode()</code></span></dt>
+		<dd>
+			<p>Returns a UCS-2 (Unicode) string from an encoded string specified as the 1st argument. You must specify the encoding of the string (ex. Shift_JIS, EUC-JP) as the 2nd argument.</p>
+			<pre><code>var string = utils.XToUCS2(string, 'EUC-JP');</code></pre>
+		</dd>
+	<dt id="utils.UCS2ToX">String <code>utils.UCS2ToX(<var>in String aInput</var>, <var>in String aEncoding</var>)</code>
+		<span class="alias">alias: <code>utils.UnicodeToX()</code>, <code>UCS2ToX()</code>, <code>UnicodeToX()</code></span></dt>
+		<dd>
+			<p>Returns an encoded string from aa UCS-2 (Unicode) string specified as the 1st argument. You must specify the target encoding (ex. Shift_JIS, EUC-JP) as the 2nd argument.</p>
+			<pre><code>var string = utils.UCS2ToX(string, 'EUC-JP');</code></pre>
+		</dd>
+	<dt id="utils.inspect">String <code>utils.inspect(<var>in Object aObject</var>, <var>[in String aIndent]</var>)</code>
+		<span class="alias">alias: <code>inspect()</code></span></dt>
+		<dd>
+			<p>Returns the result of inspection about the specified JavaScript object, in human-readable style. Stringization rules are:</p>
+			<dl>
+				<dt><code>Array</code></dt>
+					<dd><code>utils.inspect()</code> result of all elements are returned.</dd>
+				<dt><code>Object</code> (object literals, hash, instances of custom classes)</dt>
+					<dd><code>utils.inspect()</code> result of all properties are returned.</dd>
+			</dl>
+			<p>If you specify the 2nd argument, this returns formatted result with the indentation. For exmaple, if you specify <code>"  "</code> (two spaces), then the result becomes 2-indented text.</p>
+			<pre><code>utils.log(utils.inspect(result));</code></pre>
+		</dd>
+	<dt id="utils.inspectDOMNode">String <code>utils.inspectDOMNode(<var>in DOMNode aNode</var>)</code>
+		<span class="alias">alias: <code>inspectDOMNode()</code></span></dt>
+		<dd>
+			<p>Returns XML source string from the specified DOM node. This will be useful for assertions of HTML fragments structures.</p>
+			<pre><code>assert.equals(utils.inspectDOMNode($('template')),
+              utils.inspectDOMNode(generated));</code></pre>
+		</dd>
+	<dt id="utils.getClipBoard">String <code>utils.getClipBoard()</code>
+		<span class="alias">alias: <code>getClipBoard()</code></span></dt>
+		<dd>
+			<p>Returns the contents in the system clipboard as a string.</p>
+			<pre><code>assert.equals('copied', utils.getClipBoard());</code></pre>
+		</dd>
+	<dt id="utils.setClipBoard">void <code>utils.setClipBoard(<var>in String aString</var>)</code>
+		<span class="alias">alias: <code>setClipBoard()</code>
+		</span></dt>
+		<dd>
+			<p>Puts a string to the system clipboard.</p>
+			<pre><code>utils.setClipBoard('foobar');
+assert.equals('foobar', service.getStringFromClipBoard());</code></pre>
+		</dd>
+	<dt id="utils.processTemplate">void <code>utils.processTemplate(<var>in String aString</var>, <var>[in Object aScope]</var>)</code>
+		<span class="alias">alias: <code>processTemplate()</code>, <code>parseTemplate()</code>, <code id="utils.parseTemplate">utils.parseTemplate()</code>
+		</span></dt>
+		<dd>
+			<p>Evaluates embedded JavaScript codes in the specified string, and returns the result. You can embed script fragments into <code>&lt;%</code> ... <code>%&gt;</code>. If you wish some value to be embedded, put statements into <code>&lt;%<em>=</em></code> ... <code>%&gt;</code>.</p>
+			<p>This runs embedded codes in the scope specified as the 2nd argument or the current scope. You can access properties of the 2nd argument from embedded codes, as variables.</p>
+			<pre><code>var source = &lt;![CDATA[
+      I say it three times because it is very important.
+      <em>&lt;% for (var i = 0; i &lt; 3; i++) { %&gt;</em>
+        It is <em>&lt;%= today %&gt;</em>, today.
+      <em>&lt;% } %&gt;</em>
+      OK?
+    ]]&gt;.toString();
+var params = {
+      today : (new Date()).toString()
+    };
+var result = utils.processTemplate(source, params);</code></pre>
+	<dt id="utils.compareVersions">Boolean <code>utils.compareVersions(<var>in String aVersionA</var>, <var>in String aOperator</var>, <var>in String aVersionB</var>)</code>
+		<span class="alias">alias: <code>compareVersions()</code>
+		</span></dt>
+		<dd>
+			<p>Compares two strings as version numbers, with the operator specified as the 2nd argument, and returns the result as a boolean value. Available operators are <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, and <code>&gt;=</code>. Otherwise raises an error.</p>
+			<pre><code>utils.compareVersions('2.0.0.16', '&lt;', '3.0.10'); // true
+utils.compareVersions('3.0', '==', '3.0.0'); // true
+utils.compareVersions('3.6a1pre', '&gt;=', '3.5b5'); // true</code></pre>
+		</dd>
+	<dt id="utils.compareVersions-old">Number <code>utils.compareVersions(<var>in String aVersionA</var>, <var>in String aVersionB</var>)</code>
+		<span class="alias">alias: <code>compareVersions()</code>
+		</span></dt>
+		<dd>
+			<p><em>This is another behavior of <a href="#utils.compareVersions">utils.compareVersions()</a> when you call the method only with two arguments.</em></p>
+			<p>Compares two strings as version numbers, and returns the result as a number. If <code><var>aVersionA</var> &lt; <var>aVersionB</var></code>, returns <code>-1</code>. <code><var>aVersionA</var> &gt; <var>aVersionB</var></code> returns <code>1</code>. If they are same, returns <code>0</code>.</p>
+			<pre><code>utils.compareVersions('2.0.0.16', '3.0.10'); // -1
+utils.compareVersions('3.0', '3.0.0'); // 0
+utils.compareVersions('3.6a1pre', '3.5b5'); // 1</code></pre>
+		</dd>
+	<dt id="utils.computeHash">String <code>utils.computeHash(<var>in String aString</var>, <var>in String aAlgorithm</var>)</code>
+		<span class="alias">alias: <code>computeHash()</code>
+		</span></dt>
+		<dd>
+			<p>Computes the hash and returns hash string, from a string specified as the 1st argument, by the algorithm specified as the 2nd argument. Available hash algorithms are: <code>md2</code>, <code>md5</code>, <code>sha1</code>, <code>sha256</code>, <code>sha384</code>, and <code>sha512</code>.</p>
+			<pre><code>assert.equals('2AAE6C35C94FCFB415DBE95F408B9CE91EE846ED',
+              utils.computeHash('hello world', 'sha1'));</code></pre>
+		</dd>
+	<dt id="utils.md2">String <code>utils.md2(<var>in String aString</var>)</code>
+		<span class="alias">alias: <code>md2()</code>
+		</span></dt>
+		<dd>
+			<p>Computes and returns the MD2 hash string from the specified file. Just same to <a href="#utils.computeHash"><code>utils.computeHash(<var>aString</var>, 'md2')</code></a>.</p>
+		</dd>
+	<dt id="utils.md5">String <code>utils.md5(<var>in String aString</var>)</code>
+		<span class="alias">alias: <code>md5()</code>
+		</span></dt>
+		<dd>
+			<p>Computes and returns the MD5 hash string from the specified file. Just same to <a href="#utils.computeHash"><code>utils.computeHash(<var>aString</var>, 'md5')</code></a>.</p>
+		</dd>
+	<dt id="utils.sha1">String <code>utils.sha1(<var>in String aString</var>)</code>
+		<span class="alias">alias: <code>sha1()</code>
+		</span></dt>
+		<dd>
+			<p>Computes and returns the SHA-1 hash string from the specified file. Just same to <a href="#utils.computeHash"><code>utils.computeHash(<var>aString</var>, 'sha1')</code></a>.</p>
+		</dd>
+	<dt id="utils.sha256">String <code>utils.sha256(<var>in String aString</var>)</code>
+		<span class="alias">alias: <code>sha256()</code>
+		</span></dt>
+		<dd>
+			<p>Computes and returns the SHA-256 hash string from the specified file. Just same to <a href="#utils.computeHash"><code>utils.computeHash(<var>aString</var>, 'sha256')</code></a>.</p>
+		</dd>
+	<dt id="utils.sha384">String <code>utils.sha384(<var>in String aString</var>)</code>
+		<span class="alias">alias: <code>sha384()</code>
+		</span></dt>
+		<dd>
+			<p>Computes and returns the SHA-384 hash string from the specified file. Just same to <a href="#utils.computeHash"><code>utils.computeHash(<var>aString</var>, 'sha384')</code></a>.</p>
+		</dd>
+	<dt id="utils.sha512">String <code>utils.sha512(<var>in String aString</var>)</code>
+		<span class="alias">alias: <code>sha512()</code>
+		</span></dt>
+		<dd>
+			<p>Computes and returns the SHA-512 hash string from the specified file. Just same to <a href="#utils.computeHash"><code>utils.computeHash(<var>aString</var>, 'sha512')</code></a>.</p>
+		</dd>
+</dl>
+
+
+<h2 id="json">JSON operation helpers</h2>
+<dl class="api-list">
+	<dt id="utils.readJSON">Object <code>utils.readJSON(<var>in Object aFile</var>, <var>[in String aEncoding]</var>, <var>[in Object aScope]</var>)</code>
+		<span class="alias">alias: <code>readJSON()</code></span></dt>
+		<dd>
+			<p>Reads the specified file as a text, and returns the result of <code>eval()</code>. You can specify file as a native file path, a file URL, a nsIFileURL object, or a nsIFile object. By default UxU reads the file as UTF-8 encoded text, but you can override the encoding by the 2nd argument.</p>
+			<p>If you specify an object as the 3rd argument, then, this runs <a href="#utils.processTemplate"><code>utils.processTemplate(<var>script</var>, <var>aScope</var>)</code></a> internally before doing <code>eval()</code>.</p>
+			<pre><code>var data1 = <em>utils.readJSON('../fixtures/data.json')</em>;
+
+var data2 = <em>utils.readJSON(
+              '../fixtures/SJIS.json',
+              'Shift_JIS',
+              { date : Date.now() }
+            )</em>;</code></pre>
+		</dd>
+</dl>
+
+
+<h2 id="csv">CSV operation helpers</h2>
+<dl class="api-list">
+	<dt id="utils.parseCSV">String Array <code>utils.parseCSV(<var>in String aCSV</var>)</code>
+		<span class="alias">alias: <code>parseCSV()</code></span></dt>
+		<dd>
+			<p>Parses the specified string as a CSV (comma separated values) and returns an 2D array. Parsing rules are:</p>
+			<ul>
+				<li>Only the CVS format defined in <a href="http://tools.ietf.org/html/rfc4180">RFC4180</a> is available.</li>
+				<li>Fields are returned as strings.</li>
+				<li>Other special characters like Tab or expressions, they are returned as strings too.</li>
+			</ul>
+			<pre><code>var CSV = &lt;![CDATA[name,party,country
+"Aso, Taro",LDP,Japan
+"Hatoyama, Yukio",DPJ,Japan
+George W Bush,PP,USA
+Barack Obama,DP,USA]]&gt;.toString();
+
+assert.equals(
+  [['name', 'party', 'country'],
+   ['Aso, Taro', 'LDP', 'Japan'],
+   ['Hatoyama, Yukio', 'DPJ', 'Japan'],
+   ['George W Bush', 'PP', 'USA'],
+   ['Barack Obama', 'DP', 'USA']],
+  <em>utils.parseCSV(CSV)</em>
+);</code></pre>
+		</dd>
+	<dt id="utils.readCSV">String Array <code>utils.readCSV(<var>in Object aFile</var>, <var>[in String aEncoding]</var>, <var>[in Object aScope]</var>)</code>
+		<span class="alias">alias: <code>readCSV()</code></span></dt>
+		<dd>
+			<p>Reads the specified file, and returns the result of <a href="#utils.parseCSV"><code>utils.parseCSV()</code></a>. You can specify file as a native file path, a file URL, a nsIFileURL object, or a nsIFile object. By default UxU reads the file as UTF-8 encoded text, but you can override the encoding by the 2nd argument.</p>
+			<p>If you specify an object as the 3rd argument, then, this runs <a href="#utils.processTemplate"><code>utils.processTemplate(<var>script</var>, <var>aScope</var>)</code></a> internally before doing <a href="#utils.parseCSV"><code>utils.parseCSV()</code></a>.</p>
+			<pre><code>var data1 = <em>utils.readCSV('../fixtures/data.csv')</em>;
+
+var data2 = <em>utils.readCSV(
+              '../fixtures/SJIS.csv',
+              'Shift_JIS',
+              { date : Date.now() }
+            )</em>;</code></pre>
+		</dd>
+	<dt id="utils.readParametersFromCSV">Object <code>utils.readParametersFromCSV(<var>in Object aFile</var>, <var>[in String aEncoding]</var>, <var>[in Object aScope]</var>)</code>
+		<span class="alias">alias: <code>readParametersFromCSV()</code>,
+		                           <code>readParameterFromCSV()</code>,
+		                           <code>readParamsFromCSV()</code>,
+		                           <code>readParamFromCSV()</code>,
+		                           <code>utils.readParameterFromCSV()</code>,
+		                           <code>utils.readParamsFromCSV()</code>,
+		                           <code>utils.readParamFromCSV()</code></span></dt>
+		<dd>
+			<p>Reads the specified file, does <a href="#utils.parseCSV"><code>utils.parseCSV()</code></a>, and returns an array or a hash for <a href="testcases.html.en#data-driven">data driven tests</a>. You can specify file as a native file path, a file URL, a nsIFileURL object, or a nsIFile object. By default UxU reads the file as UTF-8 encoded text, but you can override the encoding by the 2nd argument.</p>
+			<p>If you specify an object as the 3rd argument, then, this runs <a href="#utils.processTemplate"><code>utils.processTemplate(<var>script</var>, <var>aScope</var>)</code></a> internally before doing <a href="#utils.parseCSV"><code>utils.parseCSV()</code></a>.</p>
+			<pre><code>var data = <em>utils.readParametersFromCSV('../fixtures/data.csv', 'UTF-8')</em>;
+test_myFunc.parameters = data;
+function test_myFunc(aParameter) {
+  assert.equals(aParameter.expected, myFunc(aParameter.input));
+}</code></pre>
+			<p>Parsing rules for <a href="testcases.html.en#data-driven">data driven tests</a> from CSV are:</p>
+			<ul>
+				<li>Each record becomes to a hash.</li>
+				<li>The first record is the definition of columns. Column names are used as hash keys of following records.</li>
+				<li>If the first field of the first record is blank, then, this returns a hash. First fields of records are used as hash key. Otherwise this returns an array.</li>
+				<li>"[<var>something</var>]" suffix of each column name is parsed as the type of the column. The suffix will be removed from the column name automatically.
+					<table border="1" summary="">
+						<thead>
+							<tr><th>type definition</th><th>type of values</th></tr>
+						</thead>
+						<tbody>
+							<tr><td>[string]</td><td rowspan="2">string</td></tr>
+							<tr><td>[char]</td></tr>
+							<tr><td>[number]</td><td rowspan="3">number</td></tr>
+							<tr><td>[float]</td></tr>
+							<tr><td>[double]</td></tr>
+							<tr><td>[int]</td><td>integer</td></tr>
+							<tr><td>[boolean]</td><td rowspan="2">boolean</td></tr>
+							<tr><td>[bool]</td></tr>
+							<tr><td>[object]</td><td rowspan="2">JSON string (parsed as JavaScript object)</td></tr>
+							<tr><td>[json]</td></tr>
+							<tr><td>otherwise</td><td>Auto detect. "true" or "false" become boolean, decimal real number become number, otherwise string.</td></tr>
+						</tbody>
+					</table></li>
+				<li>Each name of columns and records is unique. If there are duplicated names, they will be made unique with suffix like "(2)", "(3)" etc.</li>
+			</ul>
+			<p>For example, a CSV:</p>
+			<table border="1" summary="">
+				<tbody>
+					<tr><td>input</td><td>toString16 [string]</td><td>toUpperCase16 [string]</td></tr>
+					<tr><td>10</td><td>a</td><td>A</td></tr>
+					<tr><td>255</td><td>ff</td><td>FF</td></tr>
+				</tbody>
+			</table>
+			<p>to:</p>
+			<pre><code>[{ input: 10,  toString16: 'a',  toUpperCase16: 'A' },
+ { input: 255, toString16: 'ff', toUpperCase16: 'FF' }]</code></pre>
+			<p>Another CSV:</p>
+			<table border="1" summary="">
+				<tbody>
+					<tr><td>&nbsp;</td><td>input</td><td>toString16 [string]</td><td>toUpperCase16 [string]</td></tr>
+					<tr><td>first</td><td>10</td><td>a</td><td>A</td></tr>
+					<tr><td>second</td><td>255</td><td>ff</td><td>FF</td></tr>
+				</tbody>
+			</table>
+			<p>to:</p>
+			<pre><code>{ first:  { input: 10,  toString16: 'a',  toUpperCase16: 'A' },
+  second: { input: 255, toString16: 'ff', toUpperCase16: 'FF' }}</code></pre>
+		</dd>
+	<dt id="utils.parseTSV">String Array <code>utils.parseTSV(<var>in String aTSV</var>)</code>
+		<span class="alias">alias: <code>parseTSV()</code></span></dt>
+		<dd>
+			<p>Parses the specified string TSV (tab separated values) and returns an 2D array. This works just same as <a href="#utils.parseCSV"><code>utils.parseCSV()</code></a> excepting the delimiter: not commas (",") but tabs ("\t").</p>
+		</dd>
+	<dt id="utils.readTSV">String Array <code>utils.readTSV(<var>in Object aFile</var>, <var>[in String aEncoding]</var>, <var>[in Object aScope]</var>)</code>
+		<span class="alias">alias: <code>readTSV()</code></span></dt>
+		<dd>
+			<p>Reads the specified file, and returns the result of <a href="#utils.parseTSV"><code>utils.parseTSV()</code></a>. This works just same as <a href="#utils.readCSV"><code>utils.readCSV()</code></a> excepting the delimiter: not commas (",") but tabs ("\t").</p>
+		</dd>
+	<dt id="utils.readParametersFromTSV">Object <code>utils.readParametersFromTSV(<var>in Object aFile</var>, <var>[in String aEncoding]</var>, <var>[in Object aScope]</var>)</code>
+		<span class="alias">alias: <code>readParametersFromTSV()</code>,
+		                           <code>readParameterFromTSV()</code>,
+		                           <code>readParamsFromTSV()</code>,
+		                           <code>readParamFromTSV()</code>,
+		                           <code>utils.readParameterFromTSV()</code>,
+		                           <code>utils.readParamsFromTSV()</code>,
+		                           <code>utils.readParamFromTSV()</code></span></dt>
+		<dd>
+			<p>Reads the specified file, does <a href="#utils.parseTSV"><code>utils.parseTSV()</code></a>, and returns an array or a hash for <a href="testcases.html.en#data-driven">data driven tests</a>. This works just same as <a href="#utils.readParametersFromCSV"><code>utils.readParametersFromCSV()</code></a> excepting the delimiter: not commas (",") but tabs ("\t").</p>
+		</dd>
+</dl>
+
+
+<h2 id="server">Local HTTP server helpers</h2>
+<dl class="api-list">
+	<dt id="utils.setUpHttpServer">Object <code>utils.setUpHttpServer(<var>in Number aPort</var>, <var>in Object aDocumentRoot</var>, <var>[in Boolean aAsync]</var>)</code>
+		<span class="alias">alias: <code>utils.setUpHTTPServer()</code>, <code>setUpHttpServer()</code>, <code>setUpHTTPServer()</code></span></dt>
+		<dd>
+			<p>Starts an HTTP server daemon, with the port specified as the 1st argument and the document root specified by the 2nd argument (a native file path, a file URL, a nsIFileURL object, or a nsIFile object). This returns the instance of the started HTTP server itself. <a href="mock.html.en#httpserver">You also can use the started HTTP server as a mock.</a></p>
+			<pre><code>var server = utils.setUpHttpServer(4445, '../fixtures/');
+utils.loadURI('http://localhost:4445/sample.html');
+assert.equals('sample page', content.document.title);</code></pre>
+			<p>By default, this method works synchronously. All other operations are paused until the server is completely started. However, this works asynchronously if you specify <code>true</code> as the third argument. Then the returned object (server's instance) becomes an <a href="testcases.html.en#waiting-object">waiting object</a> for deferred operations after the daemon successfully started.</p>
+		</dd>
+	<dt id="utils.getHttpServer">Object <code>utils.getHttpServer(<var>in Number aPort</var>)</code>
+		<span class="alias">alias: <code>utils.getHTTPServer()</code>, <code>getHttpServer()</code>, <code>getHTTPServer()</code></span></dt>
+		<dd>
+			<p>Finds and returns the instance of the HTTP server listening the specified port. If no server listens the port, <code>null</code> will be returned. <a href="mock.html.en#httpserver">You also can use the HTTP server as a mock.</a></p>
+			<pre><code>var server = utils.getHttpServer(4445);</code></pre>
+		</dd>
+	<dt id="utils.tearDownHttpServer">Object <code>utils.tearDownHttpServer(<var>in Number aPort</var>, <var>[in Boolean aAsync])</code>
+		<span class="alias">alias: <code>utils.tearDownHTTPServer()</code>, <code>tearDownHttpServer()</code>, <code>tearDownHTTPServer()</code></span></dt>
+		<dd>
+			<p>Stops an HTTP server daemon started by <a href="#utils.setUpHttpServer"><code>utils.setUpHttpServer()</code></a> with the port specified as the 1st argument.</p>
+			<pre><code>utils.tearDownHttpServer(4445);</code></pre>
+			<p>By default, this method works synchronously. All other operations are paused until the server is completely stopped. However, this works asynchronously if you specify <code>true</code> as the second argument. Then the returned object will be an <a href="testcases.html.en#waiting-object">waiting object</a> for deferred operations after the daemon successfully stopped.</p>
+		</dd>
+	<dt id="utils.tearDownAllHttpServers">Function <code>utils.tearDownAllHttpServers(<var>[in Boolean aAsync])</code>
+		<span class="alias">alias: <code>utils.tearDownAllHTTPServers()</code>, <code>utils.tearDownHttpServers()</code>, <code>utils.tearDownHTTPServers()</code>, <code>tearDownHttpServers()</code>, <code>tearDownHTTPServers()</code>, <code>tearDownHttpServers()</code>, <code>tearDownHTTPServers()</code></span></dt>
+		<dd>
+			<p>Stops all HTTP server daemons started by <a href="#utils.setUpHttpServer"><code>utils.setUpHttpServer()</code></a>, from the test case.</p>
+			<pre><code>utils.tearDownAllHttpServers();</code></pre>
+			<p>By default, this method works synchronously. All other operations are paused until all servers are completely stopped. However, this works asynchronously if you specify <code>true</code> as the second argument. Then the returned object will be an <a href="testcases.html.en#waiting-function">waiting function</a> for deferred operations after all daemons successfully stopped.</p>
+		</dd>
+</dl>
+<p>All HTTP server daemons automatically stops after all tests in the testcase are done, even if they are not stopped manually.</p>
+
+<h2 id="database">Database operation helpers</h2>
+<dl class="api-list">
+	<dt id="utils.openDatabase">mozIStorageConnection <code>utils.openDatabase(<var>in Object aFile</var>)</code>
+		<span class="alias">alias: <code>openDatabase()</code></span></dt>
+		<dd>
+			<p>Creates and returns a connection object for an SQLite database from the specified file, a native file path, a file URL, a nsIFileURL object, or a nsIFile object.</p>
+			<pre><code>var dbconn = utils.openDatabase('../fixtures/test.sqlite');
+var statement = dbconn.createStatement('SELECT value FROM test_table WHERE key = "foo"');
+statement.executeStep();
+var value = statement.getString(0);</code></pre>
+		</dd>
+	<dt id="utils.createDatabase">mozIStorageConnection <code>utils.createDatabase()</code>
+		<span class="alias">alias: <code>createDatabase()</code></span></dt>
+		<dd>
+			<p>Creates a new temporary database into the temporary directory of the platform, and returns a connection object for the SQLite database.</p>
+			<pre><code>var dbconn = utils.createDatabase();
+dbconn.executeSimpleSQL('CREATE TABLE test_table (key TEXT PRIMARY KEY, value TEXT)');</code></pre>
+		</dd>
+	<dt id="utils.createDatabaseFromSQL">mozIStorageConnection <code>utils.createDatabaseFromSQL(<var>in String aSQL</var>)</code>
+		<span class="alias">alias: <code>createDatabaseFromSQL()</code></span></dt>
+		<dd>
+			<p>Creates a new temporary database into the temporary directory of the platform, runs the specified SQL, and returns a connection object for the SQLite database.</p>
+			<pre><code>var dbconn = utils.createDatabaseFromSQL(&lt;![CDATA[
+               DROP TABLE IF EXISTS "foo_table";
+               CREATE TABLE "foo_table" ("key" TEXT PRIMARY KEY  NOT NULL , "value" TEXT);
+               INSERT INTO "foo_table" VALUES('foo','bar');
+               INSERT INTO "foo_table" VALUES('hoge','fuga');
+             ]]&gt;.toString());
+var statement = dbconn.createStatement('SELECT value FROM foo_table WHERE key = "foo"');
+statement.executeStep();
+var value = statement.getString(0);</code></pre>
+		</dd>
+	<dt id="utils.createDatabaseFromSQLFile">mozIStorageConnection <code>utils.createDatabaseFromSQLFile(<var>in Object aFile</var>, <var>[in String aEncoding]</var>, <var>[in Object aScope]</var>)</code>
+		<span class="alias">alias: <code>createDatabaseFromSQLFile()</code></span></dt>
+		<dd>
+			<p>Creates a new temporary database into the temporary directory of the platform, runs an SQL in the specified file (a native file path, a file URL, a nsIFileURL object, or a nsIFile object), and returns a connection object for the SQLite database. By default UxU reads the file as UTF-8 encoded text, but you can override the encoding by the 2nd argument.</p>
+			<p>If you specify an object as the 3rd argument, then, this runs <a href="#utils.processTemplate"><code>utils.processTemplate(<var>SQLFromFile</var>, <var>aScope</var>)</code></a> internally.</p>
+			<pre><code>var dbconn = utils.createDatabaseFromSQLFile('../fixtures/test.sql', 'Shift_JIS');
+var statement = dbconn.createStatement('SELECT value FROM test_table WHERE key = "key1"');
+statement.executeStep();
+var value = statement.getString(0);</code></pre>
+		</dd>
+</dl>
+
+<h2 id="include">Script loading helpers</h2>
+<dl class="api-list">
+	<dt id="utils.import">Object <code>utils.import(<var>in Object aFile</var>, <var>[inout Object aNamespace]</var>)</code>
+		<span class="alias">alias: <code>import()</code></span></dt>
+		<dd>
+			<p>Loads the script specified as the 1st argument (a native file path, a file URL, a nsIFileURL object, or a nsIFile object), runs it in a clean environment, and returns the global object (runtime environment itself). Variables declared by <code>EXPORTED_SYMBOLS</code> in the script are exported to the global context of the test. If a scope is specified as the 2nd argument, those variables are exported to the scope. This detects the encoding of the file automatically.</p>
+			<pre><code>// the module includes:
+//   EXPORTED_SYMBOLS = ["myModule"];
+utils.import(baseURL+"../../modules/myModule.js");
+assert.isDefined(myModule);
+
+var ns = {};
+utils.import(baseURL+"../../modules/myModule.js", ns);
+assert.isDefined(ns.myModule);
+
+var module = utils.import(baseURL+"../../modules/myModule.js", {}).notExportedVariable;</code></pre>
+			<p>This works like as <a href="https://developer.mozilla.org/ja/Components.utils.import"><code>Components.utils.import()</code></a>, but there are some differences:</p>
+			<ul>
+				<li>This loads the script and creates new clean environment every time.</li>
+				<li>You can specify the script as a file path, a file URL, or a nsIFile.</li>
+			</ul>
+		</dd>
+	<dt id="utils.include">void <code>utils.include(<var>in Object aFile</var>, <var>[in String aEncoding]</var>, <var>[in Object aScope]</var>)</code>
+		<span class="alias">alias: <code>include()</code></span></dt>
+	<dt id="utils.include-old">void <code>utils.include(<var>in Object aFile</var>, <var>[in Object aScope]</var>)</code></dt>
+		<dd>
+			<p>Loads the script specified as the 1st argument (a native file path, a file URL, a nsIFileURL object, or a nsIFile object), and runs it in the scope specified as (the 2nd or) the 3rd argument. By default UxU detects the encoding of the file automatically, but you can override the encoding by the 2nd argument.</p>
+			<pre><code>utils.include('../test/basic.js');
+
+var namespace = { window : {} };
+utils.include('../../content/library.js', 'Shfit_JIS', namespace);
+var service = namespace.window.globalObject;</code></pre>
+		</dd>
+</dl>
+<p>If you put relative pathes to <code>utils.include()</code>, then, they are resolved based on the place of the testcase file. It just same to <code><a href="#utils.baseURL">baseURL</a> + '<var>&lt;relative path&gt;</var>'</code>.</p>
+
+<h2 id="pref">Preferences helpers</h2>
+<dl class="api-list">
+	<dt id="utils.getPref">value <code>utils.getPref(<var>in String aKey</var>)</code>
+		<span class="alias">alias: <code>getPref()</code></span></dt>
+		<dd>
+			<p>Reads and returns the specified preference. This works for any type of preferences.</p>
+			<pre><code>var locale = utils.getPref('general.useragent.locale');</code></pre>
+		</dd>
+	<dt id="utils.setPref">void <code>utils.setPref(<var>in String aKey</var>, <var>in Object aValue</var>)</code>
+		<span class="alias">alias: <code>setPref()</code></span></dt>
+		<dd>
+			<p>Saves the specified value to the preferences database. You don't have to care the type of the value (strings, number, or boolean). <em>All changes in testcases are rolled back after all tests finished.</em></p>
+			<pre><code>utils.setPref('extensions.myaddon.feature.enabled', true);</code></pre>
+		</dd>
+	<dt id="utils.clearPref">void <code>utils.clearPref(<var>in String aKey</var>)</code>
+		<span class="alias">alias: <code>clearPref()</code></span></dt>
+		<dd>
+			<p>Clears the user value of the specified preference. <em>All changes in testcases are rolled back after all tests finished.</em></p>
+			<pre><code>utils.clearPref('browser.tabs.loadInBackground');</code></pre>
+		</dd>
+	<dt id="utils.loadPrefs">Object <code>utils.loadPrefs(<var>in Object aOriginalFile</var>, <var>[out Object aPrefs]</var>)</code>
+		<span class="alias">alias: <code>loadPrefs()</code></span></dt>
+		<dd>
+			<p>Loads the specified preferences file (prefs.js, user.js, default prefs of addons, etc. including pref definitions like <code>pref(<var>aKey</var>, <var>aValue</var>);</code> or <code>user_pref(<var>aKey</var>, <var>aValue</var>);</code>) as a native file path, a file URL, a nsIFileURL object, or a nsIFile object. Defined values are temporally applied to the preferences database. This returns a hash of preferences loaded from the file.</p>
+			<p><em>All changes in testcases are rolled back after all tests finished.</em></p>
+			<p>If you specify any object as the 2nd argument, then, key-value pairs are added to the object as hash, from loaded preferences. In this case, loaded preferences are not applied to the database.</p>
+			<p>This method is completely compatible to the original feature of Firefox (Thunderbird) itself, like:</p>
+			<ul>
+				<li>Comments started with <code>#</code> are available.</li>
+				<li>Custom functions are not available. Only <code>pref(<var>aKey</var>, <var>aValue</var>);</code> and <code>user_pref(<var>aKey</var>, <var>aValue</var>);</code> work correctly.</li>
+				<li>Only following escapes are available: <code>\"</code>, <code>\'</code>, <code>\\</code>, <code>\r</code>, <code>\n</code>, <code>\x<var>XX</var></code> (escaped with hex number), and <code>\u<var>XXXX</var></code> (Unicode escape). Otherwise, <em>gotten as <code>\\<var>character</var></code></em>. For example, tab character \t will be gotten as <code>"\\t"</code>.</li>
+			</ul>
+			<pre><code>function setUp() {
+  utils.loadPrefs('../../defaults/preferences/myaddon.js');
+}
+
+var prefs = {};
+utils.loadPrefs('../fixtures/clearedPrefs.js', prefs);
+for (var i in prefs) {
+  utils.clearPref(prefs[i]);
+}</code></pre>
+		</dd>
+	<dt id="utils.allowRemoteXUL">void <code>utils.allowRemoteXUL(<var>[in String aDomain]</var>)</code>
+		<span class="alias">alias: <code>utils.allowRemoteXul()</code>, <code>allowRemoteXUL()</code>, <code>allowRemoteXul()</code></span></dt>
+		<dd>
+			<p>On Firefox 4, remote XUL files (put on file:, http:, etc.) are never available by <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=546857">Bug 546857</a>. This method changes Firefox's permission settings and allows remote XUL files temporary. All changes of permissions from testcases will be cleared automatically, after the test finished.</p>
+			<p>You can specify the domain name to allow remote XUL. If no domain or a virtual domain <code>"&lt;file&gt;"</code> is given, XUL files on your local machine become available.</p>
+			<pre><code>function startUp() {
+  utils.allowRemoteXUL();
+  utils.allowRemoteXUL('www.example.com');
+}
+
+function testMyFeature() {
+  utils.loadURI('../fixtures/sample.xul');
+  ...
+  utils.loadURI('http://www.example.com/test.xul');
+  ...
+}</code></pre>
+		</dd>
+</dl>
+
+<h2 id="application">Application informations</h2>
+<dl class="api-list">
+	<dt id="utils.product">String <code>utils.product</code>
+		<span class="alias">alias: <code>product</code></span></dt>
+		<dd>
+			<p>Returns the name of the application itself.</p>
+			<table summary="">
+				<thead><tr><th>Application</th><th>Value</th></tr></thead>
+				<tbody>
+					<tr><td>Firefox</td><td>Firefox</td></tr>
+					<tr><td>Thunderbird</td><td>Thunderbird</td></tr>
+					<tr><td>Sunbird</td><td>Sunbird</td></tr>
+					<tr><td>Mozilla Application Suite</td><td>Mozilla</td></tr>
+					<tr><td>SeaMonkey</td><td>SeaMonkey</td></tr>
+					<tr><td>Fennec</td><td>Fennec</td></tr>
+					<tr><td>Otherwise</td><td>blank string</td></tr>
+				</tbody>
+			</table>
+			<pre><code>var data = utils.readFrom('../fixtures/'+utils.product+'.txt');</code></pre>
+		</dd>
+	<dt id="utils.productVersion">String <code>utils.productVersion</code>
+		<span class="alias">alias: <code>productVersion</code></span></dt>
+		<dd>
+			<p>Returns the version string of the application itself.</p>
+			<pre><code>if (utils.compareVersions(utils.productVersion, '>=', '3.0')) {
+  // something for Firefox 3.0 or later
+}</code></pre>
+		</dd>
+	<dt id="utils.platformVersion">String <code>utils.platformVersion</code>
+		<span class="alias">alias: <code>platformVersion</code></span></dt>
+		<dd>
+			<p>Returns the version string of the Gecko.</p>
+			<pre><code>if (utils.compareVersions(utils.platformVersion, '>=', '1.9.2')) {
+  // something for Firefox 3.6 or later
+}</code></pre>
+		</dd>
+	<dt id="utils.productExecutable">nsIFile <code>utils.productExecutable</code>
+		<span class="alias">alias: <code>productExecutable</code></span></dt>
+		<dd>
+			<p>Returns the executable file of the application itself. For example, "C:\Program Files\Mozilla Firefox\firefox.exe" for Firefox on Windows.</p>
+			<pre><code>var applicationIni = utils.productExecutable.parent;
+applicationIni.append('application.ini');</code></pre>
+		</dd>
+<!-- obsolete
+	<dt id="utils.checkAppVersion">Number <code>utils.checkAppVersion(<var>in String aVersion</var>)</code>
+		<span class="alias">alias: <code>checkAppVersion()</code>, <code>utils.checkApplicationVersion()</code>, <code>checkApplicationVersion()</code></span></dt>
+		<dd>
+			<p>Compares the specified version with the version of running application, and returns the result as a number. This returns <code>-1</code> if the running application is older than the version, <code>1</code> if the application is newer than the version. When the version is same to the running version, returns <code>0</code>.</p>
+			<pre><code>// This returns 0 or 1 on Firefox 3 or later. Returns -1 on Firefox 2.
+// "shouldSkip" becomes to true if this is on Firefox 2. On Firefox 3, it becomes false.
+var shouldSkip = utils.checkAppVersion('3.0') &lt; 0;
+// Just same as:
+// var shouldSkip = utils.compareVersions(utils.productVersion, '&lt;', '3.0');</code></pre>
+		</dd>
+-->
+</dl>
+
+
+<h2 id="windows-registry">Windows registry helpers</h2>
+<p>Windows registry helpers are available only on Windows platform. If you call them on other platforms, they will raise exceptions.</p>
+<dl class="api-list">
+	<dt id="utils.getWindowsRegistry">Object <code>utils.getWindowsRegistry(<var>in String aKey</var>)</code>
+		<span class="alias">alias: <code>getWindowsRegistry()</code></span></dt>
+		<dd>
+			<p>Reads and returns the value of the specified registry key. The type of the returned value depends on the original type on the registry. This returns <code>null</code> for unexisting keys.</p>
+			<table border="1" summary="">
+				<thead><tr><th>data type on the registry</th><th>returned value</th></tr></thead>
+				<tbody>
+					<tr><td>string</td><td>string</td></tr>
+					<tr><td>integer</td><td>number</td></tr>
+					<tr><td>binary</td><td>bytes array</td></tr>
+					<tr><td>other</td><td><code>true</code> if the key exists</td></tr>
+				</tbody>
+			</table>
+			<pre><code>var type = <em>utils.getWindowsRegistry('HKCR\\.txt\\Content Type')</em>;
+// => maybe "text/plain"
+var proxySetting = <em>utils.getWindowsRegistry(
+                     'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\'+
+                       'CurrentVersion\\Internet Settings\\MigrateProxy'
+                   )</em>;</code></pre>
+		</dd>
+	<dt id="utils.setWindowsRegistry">Object <code>utils.setWindowsRegistry(<var>in String aKey</var>, <var>in Object aValue</var>)</code>
+		<span class="alias">alias: <code>setWindowsRegistry()</code></span></dt>
+		<dd>
+			<p>Saves the value specified as the 2nd argument, to the registry key specified as the 1st argument. The value will be saved as the type of existing value, if the key already exists. Otherwise, the value will be saved as one of type in the following table. This method returns the specified value as is.</p>
+			<table border="1" summary="">
+				<thead><tr><th>type of the 2nd argument</th><th>data type on the registry</th></tr></thead>
+				<tbody>
+					<tr><td>string</td><td>string</td></tr>
+					<tr><td>number</td><td>integer</td></tr>
+					<tr><td>bytes array</td><td>binary</td></tr>
+					<tr><td>other</td><td>Does nothing and raises exception.</td></tr>
+				</tbody>
+			</table>
+			<pre><code><em>utils.setWindowsRegistry(
+  'HKEY_CLASSES_ROOT\\.foobar\\Content Type',
+  'application/x-foobar'
+)</em>;</code></pre>
+		</dd>
+	<dt id="utils.clearWindowsRegistry">void <code>utils.clearWindowsRegistry(<var>in String aKey</var>)</code>
+		<span class="alias">alias: <code>clearWindowsRegistry()</code></span></dt>
+		<dd>
+			<p>Deletes the specified registry key. All of sub keys will be deleted too.</p>
+			<pre><code><em>utils.clearWindowsRegistry(
+  'HKEY_CURRENT_USER\\Software\\My Company\\My Product'
+)</em>;</code></pre>
+		</dd>
+</dl>
+
+
+<h2 id="other">Others</h2>
+<dl class="api-list">
+	<dt id="utils.wait">void <code>utils.wait(<var>in Object aWaitingCondition</var>)</code>
+		<span class="alias">alias: <code>wait()</code></span></dt>
+		<dd><p>Stops main thread on the line, and restarts by the specified condition. <em>This is available on Gecko 1.9 or later (ex. Firefox 3, Thunderbird 3).</em></p>
+			<p>Ref: <a href="testcases.html.en#wait">Complex testcases (functional-tests) with deferred operations</a></p></dd>
+	<dt id="utils.waitDOMEvent">Object <code>utils.waitDOMEvent(<var>[pairs of DOM event type and DOM event target]</var>)</code>
+		<span class="alias">alias: <code>utils.waitDOMEvents()</cpde>, <code>waitDOMEvent()</code>, <code>waitDOMEvents()</code></span></dt>
+		<dd><p>UxU waits until the specified event is fired on the paired target. If you specify multiple pairs, UxU will resume when the fastest one of them events is fired.</p>
+		<p>This method returns an <a href="testcases.html.en#waiting-object">waiting object for deferred operations</a>. Then you can get the fired event object as the <code>event</code> property of the returned object.</p>
+<pre><code>window.setTimeout(function() {
+  MyComponent.autoSubmit();
+}, 100);
+
+var result = <em>utils.waitDOMEvent('submit', content.document,
+                                'unload', content.document)</em>;
+assert.equals('submit', <em>result.event.type</em>);</code></pre>
+		<p>You can specify events with details, by using hashes.</p>
+<pre><code>utils.waitDOMEvent(<em>{ type    : 'keypress',
+                     keyCode : Ci.nsIDOMKeyEvent.DOM_VK_RETURN,
+                     shiftKey : true }</em>,
+                   $('input'),
+                   <em>{ type    : 'keypress',
+                     keyCode : Ci.nsIDOMKeyEvent.DOM_VK_ESCAPE,
+                     capturing : true }</em>, // observe the event in the capturing phase
+                   $('input') );</code></pre></dd>
+	<dt id="Deferred">deferred <code>Deferred()</code>
+		<span class="alias">alias: <code>utils.Deferred()</code></span></dt>
+		<dd><p>The constructor function of <a href="http://github.com/cho45/jsdeferred">JSDeferred</a>. You can call any class method, and you can create instances.</p>
+			<p>You can use Deferred object created from this constructor for <a href="testcases.html.en#wait">complex testcases with deferred operations</a>.</p>
+			<pre><code>utils.include('../modules/mymodule.js');
+MyModule.Deferred = Deferred; // Inject UxU's Deferred class to your module
+
+utils.wait(MyModule.deferredFunction());</code></pre></dd>
+	<dt id="utils.log">void <code>utils.log(<var>in String aMessage</var>)</code>
+		<span class="alias">alias: <code>log()</code></span></dt>
+	<dt id="utils.dump">void <code>utils.dump(<var>in String aMessage</var>)</code>
+		<span class="alias">alias: <code>dump()</code></span></dt>
+		<dd>
+			<p>Outputs a message to both test runner and error console. When you specify multiple arguments, they are joined with "\n" before output.</p>
+			<pre><code>utils.log('step 1:', object.value);</code></pre>
+		</dd>
+	<dt id="utils.notify">void <code>utils.notify(<var>in nsISupports aSubject</var>, <var>in String aTopic</var>, <var>in String aData</var>)</code>
+		<span class="alias">alias: <code>notify()</code></span></dt>
+		<dd>
+			<p>Sends a message to existing observers, via nsIObserverService. This is a syntax sugar of <code>ObserverService.notifyObservers()</code>.</p>
+			<pre><code>utils.notify(window, 'CustomEvent:CloseRequest', Date.now());</code></pre>
+		</dd>
+</dl>
+<p>To call <code>Window.dump()</code>, you have to write as <code>window.dump()</code>. If you write only <code>dump()</code>, then it works as <code>utils.dump()</code>.</p>
+

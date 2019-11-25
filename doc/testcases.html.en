@@ -1,0 +1,604 @@
+---
+layout: default
+main_title: How to write testcases for UxU?
+sub_title: UxU - UnitTest.XUL
+lang: en
+---
+
+<script type="text/javascript" src="./folding_en.js"></script>
+
+
+<ul>
+	<li><a href="#howto">Basic rules of testcases</a></li>
+	<li><a href="#unit">Simple testcases (unit-tests)</a>
+		<ul>
+			<li><a href="#mozunit">Compatibility for MozUnit(MozLab)'s testcases</a></li>
+		</ul>
+	</li>
+	<li><a href="#wait">Complex testcases (functional-tests) with deferred operations</a>
+		<ul>
+			<li><a href="#note-Do">*Note: before specifying functions or generators for "yield" keyword</a></li>
+		</ul>
+	</li>
+	<li><a href="#success-count">How to assert the number of processed assertions?</a></li>
+	<li><a href="#addons">How to write tests which depends on specific addons?</a></li>
+	<li><a href="#profile">How to run testcases in clean or ready-made profile?</a></li>
+	<li><a href="#data-driven">How to write data-driven tests?</a></li>
+	<li><a href="#parallel">How to run multiple tests parallelly?</a></li>
+	<li><a href="#skip">Skipping of tests by conditions</a>
+		<ul>
+			<li><a href="#priority">Priorities</a></li>
+			<li><a href="#product">Target applications</a></li>
+			<li><a href="#shouldSkip">Other conditions</a></li>
+		</ul>
+	</li>
+	<li><a href="#mapping">Mapping for URIs</a></li>
+</ul>
+
+<ul>
+	<li><a href="index.html.en">UxU Home</a></li>
+	<li><a href="greasemonkey.html.en">Testing Greasemonkey scripts by UxU</a></li>
+	<li><a href="helpers.html.en">Helper methods for testcases</a></li>
+	<li><a href="mock.html.en">How to write testcases with mocks?</a></li>
+	<li><a href="server.html.en">How to control UxU from remote?</a></li>
+	<li><a href="commandline.html.en">Command line options</a></li>
+</ul>
+
+
+<h2 id="howto">Basic rules of testcases</h2>
+
+<p>UxU recognizes and runs JavaScript files written in some rules, as testcases.</p>
+
+<p>Testcase files should be named like "<var>&lt;TEST'S NAME&gt;</var>.test.js". When UxU collects testcases from specified folders recursively, only "*.test.js" files will be done if there are both "*.js" and "*.test.js" files. (However, when there are only "*.js" files, UxU tries to parse all of them as testcase.)</p>
+
+<p>In the execution context of codes in testcases, many helper methods introduced by UxU are available. See <a href="helpers.html">the list of helper methods</a>.</p>
+
+<p>You can see and try actual testcases written for UxU. There are some testcases which test UxU itself, in the <a href="http://www.cozmixng.org/repos/mozilla/uxu/trunk/tests/uxu/">source code tree</a>. Let's checkout <a href="https://www.cozmixng.org/repos/mozilla/uxu/trunk/">UxU's Subversion repository</a> and run tests in tests/uxu/.</p>
+
+
+<h2 id="unit">Simple testcases (unit-tests)</h2>
+<p>This is an example. Each file becomes one "testcase".</p>
+<pre><code>var description = 'Description of this testcase';
+
+function setUp() {
+  // This function is always processed before each test.
+  // (ex. creating instances of the class now tested, etc.)
+}
+
+function tearDown() {
+  // This function is always processed after each test.
+  // (ex. destroying instances, etc.)
+}
+
+function startUp()
+{
+  // This function is processed only once before tests.
+  // (ex. loading the class you want to test now, etc.)
+}
+
+function shutDown()
+{
+  // This function is processed only once after all tests finish.
+}
+
+testWillSuccess.description = 'Successful test';
+testWillSuccess.priority    = 'normal';
+function testWillSuccess() {
+  assert.equals(0, [].length);
+  assert.notEquals(10, ''.length);
+  assert.isTrue(true);
+  assert.isFalse(false);
+  assert.isDefined(assert);
+  assert.isUndefined(void(0));
+  assert.isNull(null);
+  assert.raises('TypeError', (function() { null.property = true; }), this);
+  assert.matches(/patterns?/, 'pattern');
+}
+
+testWillFail.description = 'Failure test';
+testWillFail.priority    = 'low';
+function testWillFail() {
+  assert.isTrue(false);
+}</code></pre>
+<p>In the global namespace, some functions which have one of special names are recognized as "testcase function". Functions can be recognized not only by names, but by their property.</p>
+<table border="1" summary="">
+<caption>Names of functions which are recognized as special functions for the testcase</caption>
+<thead><tr><th>Name (begins from)</th><th>How works?</th><th>Specifying by properties</th></tr></thead>
+<tbody>
+	<tr>
+		<td><code>setUp</code></td>
+		<td>Operations to set up each test</td>
+		<td><code><var>function</var>.isSetUp = true;</code></td>
+	</tr>
+	<tr>
+		<td><code>tearDown</code></td>
+		<td>Opeartions to tear down each test</td>
+		<td><code><var>function</var>.isTearDown = true;</code></td>
+	</tr>
+	<tr>
+		<td><code>startUp</code></td>
+		<td>Operations to set up the whole testcase at first</td>
+		<td><code><var>function</var>.isStartUp = true;</code></td>
+	</tr>
+	<tr>
+		<td><code>shutDown</code></td>
+		<td>Operations to tear down the whole testcase on the end</td>
+		<td><code><var>function</var>.isShutDown = true;</code></td>
+	</tr>
+	<tr>
+		<td><code>test<var>...</var></code></td>
+		<td>Each test</td>
+		<td><code><var>function</var>.isTest = true;</code></td>
+	</tr>
+</tbody>
+</table>
+<p>They are processed in the order like this:</p>
+<ol>
+	<li class="level1">codes written on the global namespace</li>
+	<li class="level2">startUp (if exists)</li>
+	<li class="level3">setUp (if exists)</li>
+	<li class="level4">the first test</li>
+	<li class="level3">tearDown (if exists)</li>
+	<li class="level3">setUp (if exists)</li>
+	<li class="level4">the second test</li>
+	<li class="level3">tearDown (if exists)</li>
+	<li>...snip...</li>
+	<li class="level3">setUp (if exists)</li>
+	<li class="level4">the <var>N</var>th (final) test</li>
+	<li class="level3">tearDown (if exists)</li>
+	<li class="level2">shutDown (if exists)</li>
+</ol>
+<p>However it is not assured that tests are done in their defined order. The order is possibly shuffled.</p>
+
+<p>The name of the testcase itself or descriptions can be supplied by a global variable, <code>description</code>. It will be shown in the test runner GUI.</p>
+
+<p class="note">*On UxU 0.7.x and older versions, startUp/shutDown was called warmUp/coolDown. For backward compatibility, UxU 0.8.0 and later recognize warmUp/coolDown just same as startUp/shutDown.</p>
+
+<h3 id="mozunit">Compatibility for MozUnit(MozLab)'s testcases</h3>
+<p>Testcases written for MozUnit (a part of MozLab) are also available.</p>
+<p>Differently from MozUnit, UxU ignores <code>runStrategy</code> option. You don't have to use the option anymore because UxU is designed to run asynchronous tests by default. (But, for compatibility, you can get and call the continuation function as the argument in setUp functions.)</p>
+
+
+<h2 id="wait">Complex testcases (functional-tests) with deferred operations</h2>
+<p>Tests written for UxU can do deferred operations easily by <code>utils.wait()</code> or <code>yield</code>. (<code>utils.wait()</code> is available on Firefox 3/Thunderbid 3 and later. You should use it if you write tests only for Firefox 3/Thunderbird 3 and later. When you wish to support Firefox 2/Thunderbird 2, use <code>yield</code> instead.)</p>
+<p>When a <code>utils.wait()</code> or an <code>yield</code> appear in tests, setUp, tearDown, startUp, or shutDown, then UxU suspends the test. And, after some conditions are met, he resumes from the next statement of the <code>utils.wait()</code> (or <code>yield</code>). The condition for resuming is changed by the type of the specified value.</p>
+
+<table border="1" summary="">
+<caption>Available types of the value for <code>utils.wait()</code>/<code>yield</code> and conditions for resuming</caption>
+<thead><tr><th>Type</th><th>Descriptions and examples</th></tr></thead>
+<tbody>
+	<tr>
+		<th>Numeric value</th>
+		<td><p>Specified value is recognized as a wait time in milliseconds.</p>
+<pre><code>var beforeTime = (new Date()).getTime();
+<em>utils.wait(1000);</em> // Wait one second (equals to 1000 milliseconds) and resume.
+// <em>yield 1000;</em> // Wait one second (equals to 1000 milliseconds) and resume.
+var afterTime = (new Date()).getTime();
+assert.isTrue((afterTime - beforeTime) &gt; 500);
+assert.isTrue((afterTime - beforeTime) &lt; 1500);</code></pre>
+		</td>
+	</tr>
+	<tr id="waiting-object">
+		<th>Object which has the <code>value</code> property</th>
+		<td><p>UxU watches the value of the object's <code>value</code> property. While the value is <code>false</code>, he keeps himself suspended. When the value is set to <code>true</code>, he resumes automatically. Timeout: after 30 seconds.</p>
+<pre><code>var browser;
+functionalTest.tests = {
+  setUp : function() {
+    <em>var loaded = { value : false };</em>
+    browser = window.openDialog(
+            'chrome://browser/content/browser.xul');
+    browser.addEventListener('load', function() {
+        <em>loaded.value = true;</em>
+    }, false);
+    // Wait until the flag is set to true.
+    <em>utils.wait(loaded);</em>
+    // <em>yield loaded</em>;
+    browser.gFindBar.openFindBar();
+  },
+  tearDown : function() {
+    browser.close();
+  },
+  ...
+};</code></pre>
+		</td>
+	</tr>
+	<tr id="waiting-function">
+		<th>Function<a href="#note-Do">(*)</a></th>
+		<td><p>UxU watches the returned value of the function. While the function returns <code>false</code>, he keeps himself suspended. When it returns <code>true</code>, he resumes automatically. Timeout: after 30 seconds.</p>
+<pre><code>var win = utils.getTestWindw();
+var url = win.content.location.href;
+// Wait that the page is correctly loaded.
+var f = function() {
+        return url != win.content.location.href
+    };
+<em>utils.wait(f);</em>
+// <em>yield f;</em>
+assert.equals(uri_to_be_redirected,
+              win.content.location.href);</code></pre>
+		</td>
+	</tr>
+	<tr>
+		<th>Generator-iterator<a href="#note-Do">(*)</a></th>
+		<td><p>UxU does iteration for the <a href="https://developer.mozilla.org/en/New_in_JavaScript_1.7#Generators_and_iterators">generator-iterator</a> again and again, until <code>StopIteration</code> exception raises.</p>
+<pre><code>// Wait and go
+function assert_page_load(aURI) {
+  yield utils.loadURI(aURI);
+  var win = utils.getTestWindow();
+  assert.equals(aURI, win.content.location.href);
+}
+
+function assert_window_close() {
+  var win = utils.getTestWindow();
+  win.close();
+  yield 500;
+  assert.isTrue(win.closed);
+}
+
+<em>utils.wait(assert_page_load('https://www.clear-code.com/'))</em>;
+// <em>yield assert_page_load('https://www.clear-code.com/')</em>;
+<em>utils.wait(assert_window_close())</em>;
+// <em>yield assert_window_close()</em>;</code></pre>
+		</td>
+	</tr>
+	<tr>
+		<th>Generator<a href="#note-Do">(*)</a></th>
+		<td>UxU creates generator-iterator from the <a href="https://developer.mozilla.org/en/New_in_JavaScript_1.7#Generators_and_iterators">generator</a> automatically, and does it just like as cases for generator-iterators.
+<pre><code>function assert_window_close() {
+  ...
+}
+
+<em>yield assert_window_close</em>; // without "()"</code></pre>
+		</td>
+	</tr>
+	<tr>
+		<th>Deferred object of <a href="http://github.com/cho45/jsdeferred">JSDeferred</a></th>
+		<td><p>UxU waits until the given Deferred chain is completely finished. If the chain was already finished, then UxU immediately resumes. Timeout: after 30 seconds.</p>
+<pre><code>function myDeferredFunc()
+{
+  var d = new Deferred();
+  window.setTimeout(function() {
+    ...
+    d.call();
+  }, 100);
+  return d.next(function() { ... })
+          .error(function() { ... });
+}
+
+<em>utils.wait(myDeferredFunc())</em>;
+// <em>yield myDeferredFunc()</em>;</code></pre>
+		<p><em>Only instances created from the <a href="helpers.html#Deferred">"Deferred" class defined in UxU's namespace</a> are available for this purpose.</em> If the tested feature uses another "Deferred" class in its namespace, Deferred objects created from the class won't work as you expected. So, you will have to inject UxU's "Deferred" class into the tested implementation.</p>
+		</td>
+	</tr>
+	<tr>
+		<th>Pairs of DOM event type and DOM event target</th>
+		<td><p>UxU waits until the specified event is fired on the paired target. If you specify multiple pairs, UxU will resume when the fastest one of them events is fired. Then you can get the fired event object as the <code>event</code> property of the object returned by <code>utils.wait()</code>.</p>
+<pre><code>window.setTimeout(function() {
+  MyComponent.autoSubmit();
+}, 100);
+
+var result = <em>utils.wait('submit', content.document,
+                        'unload', content.document)</em>;
+assert.equals('submit', <em>result.event.type</em>);</code></pre>
+		<p>You can specify events with details, by using hashes.</p>
+<pre><code>utils.wait(<em>{ type    : 'keypress',
+             keyCode : Ci.nsIDOMKeyEvent.DOM_VK_RETURN,
+             shiftKey : true }</em>,
+           $('input'),
+           <em>{ type    : 'keypress',
+             keyCode : Ci.nsIDOMKeyEvent.DOM_VK_ESCAPE,
+             capturing : true }</em>, // observe the event in the capturing phase
+           $('input') );</code></pre>
+		</td>
+	</tr>
+	<tr>
+		<th>Others</th>
+		<td>If it is an object without <code>value</code> property, or a negative number, then UxU reports an error and stops test. Otherwise, the specified value will be converted to a number by <code>Number()</code>. If the result is not a nuber, then <code>0</code> will be used.</td>
+	</tr>
+</tbody>
+</table>
+
+<h3 id="note-Do">*Note: before specifying functions or generators for "yield" keyword</h3>
+<p><em>This is a note for <code>yield</code>. You don't have to mind it if you use <code>utils.wait()</code> instead.</em></p>
+<p><code>yield</code> possibly breaks the stack trace when an exception raises from inside of the function handed to <code>yield</code>.</p>
+<pre><code>// ex. test of mapping
+function assertRedirect(aOriginalURI, aToBeRedirectedTo) {
+  yield utils.loadURI(aOriginalURI);
+  assert.equals(aToBeRedirectedTo, browser.currentURI.spec);
+}
+yield assertRedirect('http://myhost/page1',
+                     'http://myhost/page1_redirected');
+yield assertRedirect('http://myhost/page2',
+                     'http://myhost/page2_redirected');
+yield assertRedirect('http://myhost/page3',
+                     'http://myhost/page3_redirected');</code></pre>
+<p>For example, the test above process three assertions, but, even if one of them failed, we cannot know which one failed because the stack-trace ends at the line <code>assert.equals()</code> exists. </p>
+<p>A special helper function, <code>Do()</code> solves this problem. Wraping returned value of <code>yield</code> keyword by the function always creates a new stack, so you can detect the line which the exception really raised from.</p>
+<pre><code>yield <em>Do(</em>assertRedirect('http://myhost/page1',
+                     'http://myhost/page1_redirected')<em>)</em>;
+yield <em>Do(</em>assertRedirect('http://myhost/page2',
+                     'http://myhost/page2_redirected')<em>)</em>;
+yield <em>Do(</em>assertRedirect('http://myhost/page3',
+                     'http://myhost/page3_redirected')<em>)</em>;</code></pre>
+<p>By the way, <code>Do()</code> does nothing and returns the handed object as-is if it is not a function, generator, or generator-iterator. It solves the problem without any harmful effect. You should write <code>Do()</code> for every <code>yield</code> in your testcases.</p>
+
+
+<h2 id="success-count">How to assert the number of processed assertions?</h2>
+<p>You can specify how many assertions should be processed for each test, by <code>assertions</code> property.</p>
+<pre><code>testRoop<em>.assertions = 10</em>;
+function testRoop() {
+  for (var i = 0, maxi = data.length; i &lt; maxi; i++)
+  {
+    assert.equals(expected[i], data[i], i);
+  }
+}</code></pre>
+<p>UxU will report the result as "failed", if the total number of processed assertions is different from the number specified by <code>assertions</code> property, even if there is no failed assertion. This feature will be useful to prevent unexpectedly successes of tests which are in developing. For example, a test will fail and you can realize that you've forgotten to remove comments including assertions, if you specify the number of assertions.</p>
+<p>Verification of the number of processed assertions works for assertions written in each test function. Assertions in <code>setUp</code>/<code>tearDown</code> are ignored.</p>
+<p>Even if you don't specify the number of assertions, UxU regards them as "success" but reports an warning, for tests which have no processed assertion.</p>
+<h3><code>minAssertions</code>, <code>maxAssertions</code></h3>
+<p>Additionally, there are two more features, <code>minAssertions</code> property (specifies minimum number of assertions which should succeed) and <code>maxAssertions</code> property (specifies maximum number of assertions which should succeed). They are available like as <code>assertions</code>, and you can use them in same time.</p>
+
+
+<h2 id="addons">How to write tests which depends on specific addons?</h2>
+<p>Some tests require specific actually-installed addons.</p>
+<p>UxU cannot install such addons automatically, but you can specify required addons for each testcase on UxU 1.0.1 and later.</p>
+<pre><code>var requiredAddons = ['uxu@clear-code.com', 'treestyletab@piro.sakura.ne.jp'];</code></pre>
+<p>If the list of required addons' ID strings is supplied by a global variable <code>requiredAddons</code>, UxU reports a fatal error when any specified addon is not installed or disabled, before running. So, you can easily know which is the reason why the test fails: actually fails the test, or there is any missing adodn.</p>
+
+
+<h2 id="profile">How to run testcases in clean or ready-made profile?</h2>
+<p>You can run the testcase with a Firefox (or Thunderbird) profile which is made for testing, not only the current profile.</p>
+<pre><code><em>var profile = '../profiles/test-profile/';</em>
+
+function setUp() {
+...</code></pre>
+<p>The path to the profile for the testcase is supplied by a global variable, <code>profile</code>. If <code>profile</code> is defined and the folder is available, then UxU automatically starts child process of Firefox (or Thunderbird) with the profile and run the testcase in the environment.</p>
+<p>The folder will be cloned as a temporary profile, so, the original files are not changed.</p>
+<pre><code>var profile = '../profiles/test-profile/';
+<em>var application = 'C:\\Program Files\\Mozilla Thunderbird\\thunderbird.exe';</em>
+
+...</code></pre>
+<p>If you speficy the path to the executable by a global variable <code>application</code>, UxU starts the specified application with the profile. (*However, <code>application</code> is ignored if you don't define <code>profile</code>.)</p>
+<p>If you specify <a href="#addons">addons required by the testcase</a> and they are installed to the current profile, then the temporary remote profile inherits those addons automatically. In other words, you can run tests with a clean profile and pre-installed addons easily.</p>
+
+
+<h2 id="data-driven">How to write data-driven tests?</h2>
+<p>UxU supports data-driven tests. If you want to do a test for various patterns, you can specify parameters for the test by <code>parameters</code> property, as an array or a hash.</p>
+<p>For example, you maybe write a test for a feature which works about webpages, like:</p>
+<pre><code>function testMyFunction() {
+  utils.wait(utils.loadURI('http://<var>...</var>'));
+  assert.equals('result1', myFunc(utils.content));
+
+  utils.wait(utils.loadURI('http://<var>...</var>'));
+  assert.equals('result2', myFunc(utils.content));
+
+  utils.wait(utils.loadURI('http://<var>...</var>'));
+  assert.equals('result3', myFunc(utils.content));
+
+  <var>...</var>
+}</code></pre>
+<p>However, this test will annoy you. You have to copy and paste same codes for new patterns, so, the test will become too long. If the third assertion fails, then all following assertions will be skipped. OK, you'll correct a bug, and redo the test. Then, the fourth assertion fails and followings are skipped again. You have to fix a bug and do the test, again and again. That is too annoying!</p>
+<p>You should write those tests in data-driven style. See:</p>
+<pre><code>testMyFunction.<em>parameters = [
+  { uri: 'http://<var>...</var>', expected: 'result1' },
+  { uri: 'http://<var>...</var>', expected: 'result2' },
+  { uri: 'http://<var>...</var>', expected: 'result3' },
+  <var>...</var>
+]</em>;
+function testMyFunction(<em>aParameter</em>) {
+  utils.wait(utils.loadURI(<em>aParameter.uri</em>));
+  assert.equals(<em>aParameter.expected</em>, myFunc(utils.content));
+}</code></pre>
+<p>If you specify parameters for the test (test function's <code>parameters</code> property) as an array, then, UxU runs the test function for each items of the array. The parameter will be handed as the first argument of the function. (If you specified private setUp or tearDown for the test, they also receive parameter same to the test function itself.) UxU runs the test each time as stand-alone test, with unique name like "testMyFunction (1)", "testMyFunction (2)", "testMyFunction (3)", etc. All tests will be done even if one of them failed.</p>
+<p>If you specify parameters as a hash, UxU uses each item of the hash as parameters.</p>
+<pre><code>testMyFunction.<em>parameters = {
+  google: { uri: 'http://<var>...</var>', expected: 'result1' },
+  yahoo:  { uri: 'http://<var>...</var>', expected: 'result2' },
+  mixi:   { uri: 'http://<var>...</var>', expected: 'result3' },
+  <var>...</var>
+}</em>;
+function testMyFunction(aParameter) {
+  utils.wait(utils.loadURI(aParameter.uri));
+  assert.equals(aParameter.expected, myFunc(utils.content));
+}</code></pre>
+<p>In this case, each test will be named with keys of the hash like "testMyFunction (google)", "testMyFunction (yahoo)", "testMyFunction (mixi)", etc, so you'll easily be able to find out the pattern which causes problem.</p>
+<p>To assist your development of data-driven tests, there is <a href="helpers.html.en#utils.readParametersFromCSV">a useful helper function which generates hash or array from external CSV files</a>. You can write and maintain testcases which include many many patterns, by OpenOffice.org Calc, Microsoft Excel, etc.</p>
+
+
+<h2 id="parallel">How to run multiple tests parallelly?</h2>
+<p>UxU can run multiple test cases parallelly. Tests will be processed parallelly and automatically, if the maximum count of running tests is larger than "1".</p>
+<p>However, you can disable this behavior for specific tests which can be broken by parallel runnings (ex. test database in a fixed location, and so on.) To disable parallel running for a specific test case, set the global property <kbd>parallel</kbd> to "false", like:</p>
+
+<pre><code>var parallel = false;
+
+...</code></pre>
+
+
+
+<h2 id="skip">Skipping of tests by conditions</h2>
+
+<h3 id="priority">Priorities</h3>
+<p>You can specify priority of each test, by <code>priority</code> property. For example:</p>
+<pre><code>testBasic<em>.priority = 'must'</em>;
+function testBasic() {
+  // This is the test for basic features.
+  // They are very important, so must be tested anytime.
+  assert.equals(3, calcService.add(1, 2));
+  <var>...</var>
+}
+
+testMinor<em>.priority = 'low'</em>;
+function testMinor() {
+  // This is the test for a minor feature.
+  // We don't need to test the feature frequently.
+  <var>...</var>
+}
+
+testUnderConstruction<em>.priority = 'never'</em>;
+function testUnderConstruction() {
+  // This test always fails because the feature is under construction.
+  // We cannot clearly know that other tests succeed or failed.
+  // So we should turn off this test before the feature is implemented.
+  <var>...</var>
+}</code></pre>
+<p>UxU is designed and configured for test-driven development by default. In this development style, you'll run tests again and again. Tests which succeed in the last time often success in the next, so they don't have to be processed every time. So, UxU often skips tests which succeed in the last time, but <em>always runs newly added or failed test anyway.</em> By this feature, each testing-time shortens and you can run tests many times without stresses.</p>
+<p>Test's priority is specified in a number, or a string listed below:</p>
+<table border="1" summary="">
+<caption>Priorities of tests</caption>
+<thead><tr><th>Priority</th><th>Probability</th><th>Numeric style</th></tr></thead>
+<tbody>
+	<tr>
+		<td><code>must</code></td>
+		<td>100%</td>
+		<td>1</td>
+	</tr>
+	<tr>
+		<td><code>important</code></td>
+		<td>90%</td>
+		<td>0.9</td>
+	</tr>
+	<tr>
+		<td><code>high</code></td>
+		<td>70%</td>
+		<td>0.7</td>
+	</tr>
+	<tr>
+		<td><code>normal</code> (by default)</td>
+		<td>50%</td>
+		<td>0.5</td>
+	</tr>
+	<tr>
+		<td><code>low</code></td>
+		<td>25%</td>
+		<td>0.25</td>
+	</tr>
+	<tr>
+		<td><code>never</code></td>
+		<td>0%</td>
+		<td>0</td>
+	</tr>
+</tbody>
+</table>
+<p>By the way, you can specify global priority of the test case by the global variable <code>proprity</code>. UxU applies global priority for each test which has no personal priority.</p>
+<pre><code>var priority = 'must';
+
+testFoo.priority = 'never';
+function testFoo() { <var>...</var> } // this will be skipped.
+
+function testBar() { <var>...</var> } // this will be performed.</code></pre>
+
+
+<h3 id="product">Target applications</h3>
+<p>You can forbid to run Firefox-specific testcases on Thunderbird.</p>
+<pre><code><em>var targetProduct = 'Thunderbird';</em>
+
+function setUp() {
+...</code></pre>
+<p>If you specify the application name by a global variable <code>targetProduct</code>, UxU skips to run the testcase if the current application isn't it. This feature is useful for addons which works on both Firefox and Thunderbird.</p>
+<p>Additionally, if you specify <a href="#profile">profile</a> in same time, UxU runs the testcase on the application automatically.</p>
+
+
+
+
+
+<p>You can specify the target application for each test by their <code>targetProduct</code> property. This is useful if your extension works on both Firefox and Thunderbird, and you have to write application-specific tests.</p>
+<pre><code>testForFirefox<em>.targetProduct = 'Firefox'</em>;
+function testForFirefoxSpecificFeature() { <var>...</var> }
+
+testMinor<em>.targetProduct = 'Thunderbird'</em>;
+function testForThunderbirdSpecificFeature() { <var>...</var> }
+
+function testForAllApplication() { <var>...</var> }</code></pre>
+<p>Moreover, you can specify the target application for whole of the test case by the global variable <code>targetProduct</code>. If you specify it, UxU determines that he should skip the test case or not at the startup process. Then, tests which have other applications as their <var>targetProduct</var> will be skipped.</p>
+<pre><code>var targetProduct = 'Thunderbird';
+
+testA.targetProduct = 'Firefox';
+function testA() { <var>...</var> } // this will be skipped.
+
+function testB() { <var>...</var> } // this will be performed.
+</code></pre>
+<p><em>If you specify both global <code>targetProduct</code> and <a href="#profile">the profile</a>, UxU automatically runs the test case on the application with the profile.</em></p>
+
+
+<h3 id="shouldSkip">Other conditions</h3>
+<p>You can skip each test by other conditions, specifying <code>shouldSkip</code> property of each tests. If you specify a function to <code>shouldSkip</code> property, it will be evaluated just before the test is performed (before <code>setUp()</code> is performed) and UxU skips the test if the returned value is <code>false</code>. Other cases, UxU evaluates the value of <code>shouldSkip</code> property as a boolean.</p>
+<pre><code>testA.shouldSkip = true;
+function testA() { /* skip this, because this is under construction. */ }
+
+// don't run after 2009-02-09
+testB.shouldSkip = function() {
+  return Date.now() &gt; (new Date('2009/2/9')).getTime();
+};
+function testB() { <var>...</var> }
+</code></pre>
+<p>If you wish to skip whole of the test case, specify the global variable <code>shouldSkip</code>. When the value (or returned value) of <code>shouldSkip</code> is <code>true</code>, UxU completely ignores all of contents of the test case.</p>
+<pre><code>var shoudSkip = true;
+
+// they are always skipped!
+testA.priority = 'must';
+function testA() { <var>...</var> }
+function testB() { <var>...</var> }</code></pre>
+
+
+
+
+<h2 id="mapping">Mapping for URIs</h2>
+
+<p class="note">*On UxU 0.8.x, <a href="mock.html.en#httpserver">you can use a local HTTP server as mock</a>. It possibly more useful than this simple mapping feature.</p>
+
+<p>For testing of a module which is designed to load resources from fixed URIs, UxU provides an simple mapping feature. For example, you can hand contents of a local file "012345.xml" to your module by loading an URI "http://myservice.example.com/myapi?userid=012345".</p>
+<pre><code><em>var mapping = {
+      '*.google.*/*' : baseURL+'../fixtures/google-pages.html',
+      '*.yahoo.*/*'  : baseURL+'../fixtures/yahoo-pages.html',
+      'https://addons.mozilla.org/ja/firefox/addon/*'
+                     : baseURL+'../fixtures/addons/$1.html'
+    };</em>
+
+function setUp() { <var>...</var> }
+function tearDown() { <var>...</var> }
+function test_loadInBackground() {
+  myModule.loadURL('https://addons.mozilla.org/ja/firefox/addon/6357');
+  utils.wait(function() { return myModule.loaded; });
+  assert.equals('summary of the loaded document', myModule.getSummary());
+}</code></pre>
+<p>Like above, mapping rules for the testcase is supplied by a global variable, <code>mapping</code>. If <code>mapping</code> is defined, then any request (including subframes, XMLHttpRequest, and so on) for URIs matching to the rules will be mapped.</p>
+<p>UxU's mapping works like replacing of contents by a proxy. In other words, UxU works as a local proxy. When your requesting is mapped, you will get the contents of the document from the URI after mapping, however the response URI will be still the original URI.</p>
+
+<table border="1" summary="">
+<caption>Styles of mapping rule(s)</caption>
+<thead><tr><th>Style</th><th>Descriptions and examples</th></tr></thead>
+<tbody>
+	<tr>
+		<th>Hash variable (associative array, object literals)</th>
+		<td><p>Keys of the hash are rules to detect mapping sources, and values are mapping targets. Two wildcards, "*" (matches to any number of characters or blank) and "?" (matches a character).</p>
+			<pre><code>var mapping = {
+      'http://release.example.com/'  : baseURL+'../fixtures/home.html',
+      'http://release.example.com/*' : 'http://test.example.com/$1',
+      'http://www??.example.com/*'   : 'http://test.example.com/server$1$2/$3'
+    };</code></pre>
+		</td>
+	</tr>
+	<tr>
+		<th>Array</th>
+		<td><p>Elements of odd indexes are rules to detect mapping sources, and even indexes are mapping targets. Two wildcards, "*" (matches to any number of characters or blank) and "?" (matches a character). Moreover, you can use regular expressions for mapping sources.</p>
+			<pre><code>var mapping = [
+      'http://release.example.com/'      , baseURL+'../fixtures/home.html',
+      'http://release.example.com/*'     , 'http://test.example.com/$1',
+      /^http://www(\d+).example.com/(.*)', 'http://test.example.com/server$1/$2'
+    ];</code></pre>
+		</td>
+	</tr>
+	<tr>
+		<th>Function</th>
+		<td><p>The function will receive the original URI as an nsIURI object, and have to return a new URI as a string. If the function returns the original URI, blank string, <code>false</code>, or <code>null</code>, UxU doesn't map the request.</p>
+			<pre><code>var mapping = function(aOriginalURI) {
+      return aOriginalURI.spec.indexOf('google') > -1 ?
+               baseURL+'../fixtures/google-pages.html' :
+               null ;
+    };</code></pre>
+		</td>
+	</tr>
+</tbody>
+</table>
+<p class="note">*In old versions of UxU, <code>redirect</code> was used for the feature, instead of <code>mapping</code>. <code>redirect</code> is still available on UxU 0.7.6 and later for backward compatibility.</p>
+
+<p>Additionally, <a href="mock.html.en#httpserver">mock features of local HTTP servers</a> will help you to write complex test about applications working with web services.</p>

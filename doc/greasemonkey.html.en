@@ -1,0 +1,358 @@
+---
+layout: default
+main_title: Testing Greasemonkey scripts by UxU
+sub_title: UxU - UnitTest.XUL
+lang: en
+---
+
+<script type="text/javascript" src="./folding_en.js"></script>
+<script type="text/javascript">writeCollapseExpandAllButton()</script>
+
+<ul>
+	<li><a href="#abstract">Abstract</a></li>
+	<li><a href="#helpers">Available helper methodsッド</a></li>
+	<li><a href="#gm_functions">Available GM_* functions</a></li>
+	<li><a href="#eventlistener">Event listeners捕捉</a></li>
+</ul>
+
+<ul>
+	<li><a href="index.html.en">UxU Home</a></li>
+	<li><a href="testcases.html.en">How to write testcases for UxU?</a></li>
+	<li><a href="assertions.html.en">Available assertions in UxU</a></li>
+	<li><a href="helpers.html.en">Helper methods for testcases</a></li>
+	<li><a href="mock.html.en">How to write testcases with mocks?</a></li>
+	<li><a href="server.html.en">How to control UxU from remote?</a></li>
+	<li><a href="commandline.html.en">Command line options</a></li>
+</ul>
+
+
+<h2 id="abstract">Abstract</h2>
+
+<p><a href="testcases.html">テストケース</a>の実行コンテキストでは<code>GM_xmlhttpRequest()</code>などの代表的なGM関数を利用できます（<a href="#gm_functions">利用可能なGM関数の一覧</a>）。<a href="helpers.html">ヘルパーメソッド</a>の<code>utils.include()</code>などを使用してGreasemonkeyスクリプトを読み込むことで、Greasemonkeyスクリプト内で定義された関数などのテストを行えます。</p>
+
+<ul class="note">
+	<li>※スクリプトの前後に<code>(function() { <var>...</var> })()</code>のようなコードを加えている場合、スクリプト内で定義された関数などにアクセスできませんので、それらをあらかじめ取り除いておいてください。この記法は、古いGreasemonkeyにおいて複数のスクリプト間で名前空間が衝突してしまう問題を回避するために使用されていたものですが、現在のGreasemonkeyでは個々のスクリプトは別々の名前空間で実行される仕様に変更されたため、この記法を使用する必要はなくなりました。</li>
+	<li>※UxUは代表的なGM関数の動作を独自にエミュレートするため、UxU上でのテストの実行時にはGreasemonkeyのインストールは不要です。ただし、一部のGM関数は実際には何も処理を行いませんのでご注意下さい。</li>
+</ul>
+
+<p>また、実際のWebページ上でのスクリプトの動作をテストするために、テスト用のページを読み込んでその上でスクリプトを動作させることもできます。以下は、<a href="sample1.user.js">sample1.user.js</a>と<a href="sample2.user.js">sample2.user.js</a>のテストの例です。</p>
+
+<pre><code>var description = 'Greasemonkey test';
+
+// ページの読み込み完了を待つため、非同期型のテストにする。
+var isAsync = true;
+
+var sandbox;
+
+function setUp() {
+  // まず、テスト用のページを読み込む。
+  yield Do(<em>greasemonkey.load('https://www.clear-code.com/')</em>);
+  // サンドボックス内にGreasemonkeyスクリプトを読み込む。
+  // greasemonkey.loadScript()の返り値はそのスクリプト用に
+  // 生成されたサンドボックス。
+  sandbox = <em>greasemonkey.loadScript('sample1.user.js')</em>;
+  <em>greasemonkey.loadScript('sample2.user.js')</em>;
+}
+
+function tearDown() {
+  // テスト用ページ、サンドボックスを破棄
+  yield Do(<em>greasemonkey.unload()</em>);
+}
+
+function testDefined() {
+  // スクリプト内で定義された関数や変数は、
+  // そのスクリプト用に作成されたサンドボックスの
+  // プロパティとしてアクセスできる。
+  assert.isDefined(<em>sandbox.</em>setAndGetValue);
+}
+
+function testGetTitleAndURI() {
+  // サンドボックスは、スクリプト名を指定して
+  // 必要な時点で取得することもできる。
+  var anotherSandbox = <em>greasemonkey.getSandboxFor('sample2.user.js')</em>;
+  assert.isTrue(anotherSandbox.getDocumentTitleAndURI());
+}
+
+function testGMFunction() {
+  // イベントリスナを登録してGM関数の処理をハンドリングできる。
+  var listener = {
+      key   : null,
+      value : null,
+      onGM_setValueCall : function(aEvent) {
+        // GM_setValueが呼ばれた時にここに来る。
+        this.key = aEvent.key;
+        this.value = aEvent.value;
+      }
+    };
+  <em>greasemonkey.addListener(listener)</em>;
+
+  sandbox.setAndGetValue();
+  assert.equals('testKey', listener.key);
+  assert.equals('testValue', listener.value);
+}
+
+function testPageLoading() {
+  assert.isNull(sandbox.loadedPageTitle);
+  // GM_xmlhttpRequestを使用する関数を実行し、
+  // 読み込みの完了を待って次に進む
+  yield Do(<em>greasemonkey.doAndWaitLoad(function() {
+             sandbox.loadAndGetPageTitle();
+           })</em>);
+  assert.equals('サービス -ClearCode Inc.', sandbox.loadedPageTitle);
+}</code></pre>
+
+
+<h2 id="helpers">Available helper methodsッド</h3>
+<dl class="api-list">
+	<dt id="greasemonkey.load">Object <code>greasemonkey.load(<var>in String aURI</var>)</code>
+		<span class="alias">別名：<code>greasemonkeyLoad()</code></span></dt>
+		<dd>テスト用のブラウザフレーム内に、指定したURIを読み込みます。実行すると、<a href="testcases.html#waiting-object">ロード完了まで待つための処理待ち用オブジェクト</a>を返します。ロード完了後、返り値として返したオブジェクトの<code>value</code>プロパティをtrueにセットします。なお、前回読み込まれたページに対して読み込まれたスクリプト用のサンドボックスやイベントリスナはすべて破棄されます。</dd>
+	<dt id="greasemonkey.unload">Object <code>greasemonkey.unload()</code>
+		<span class="alias">別名：<code>greasemonkeyUnload()</code></span></dt>
+		<dd>テスト用のブラウザフレーム内に読み込まれたページを破棄し、スクリプト用のサンドボックスやイベントリスナをすべて破棄します。実行すると、<a href="testcases.html#waiting-object">ロード完了まで待つための処理待ち用オブジェクト</a>を返します。ページの破棄完了後、返り値として返したオブジェクトの<code>value</code>プロパティをtrueにセットします。</dd>
+	<dt id="greasemonkey.open">Object <code>greasemonkey.open(<var>in String aURI</var>)</code>
+		<span class="alias">別名：<code>greasemonkeyOpen()</code></span></dt>
+		<dd>テスト用のブラウザウィンドウを開き、指定したURIを読み込みます。実行すると、<a href="testcases.html#waiting-object">ロード完了まで待つための処理待ち用オブジェクト</a>を返します。ウィンドウが開かれてページが読み込まれた後、返り値として返したオブジェクトの<code>value</code>プロパティをtrueにセットします。なお、前回読み込まれたページに対して読み込まれたスクリプト用のサンドボックスやイベントリスナはすべて破棄されます。</dd>
+	<dt id="greasemonkey.close">void <code>greasemonkey.close()</code>
+		<span class="alias">別名：<code>greasemonkeyClose()</code></span></dt>
+		<dd>テスト用のブラウザウィンドウを閉じ、スクリプト用のサンドボックスやイベントリスナをすべて破棄します。ウィンドウが開かれていない場合は何もしません。</dd>
+	<dt id="greasemonkey.loadScript">Object <code>greasemonkey.loadScript(<var>in String aURI</var>)</code>
+		<span class="alias">別名：<code>greasemonkeyLoadScript()</code></span></dt>
+		<dd>指定したURIのスクリプトに対してサンドボックスを生成し、そのサンドボックスを実行コンテキストとしてスクリプトを評価します。返り値は生成されたサンドボックスです。</dd>
+	<dt id="greasemonkey.getSandboxFor">Object <code>greasemonkey.getSandboxFor(<var>in String aURI</var>)</code>
+		<span class="alias">別名：<code>greasemonkeyGetSandboxFor()</code></span></dt>
+		<dd>指定したURIのスクリプトに対して生成されたサンドボックスを取得します。</dd>
+	<dt id="greasemonkey.doAndWaitLoad">Object <code>greasemonkey.doAndWaitLoad(<var>in Function aFunction</var>, <var>[in Object aContext]</var>)</code>
+		<span class="alias">別名：<code>greasemonkeyDoAndWaitLoad()</code></span></dt>
+		<dd>渡された関数を実行し、<a href="testcases.html#waiting-object">ロード完了まで待つための処理待ち用オブジェクト</a>を返します。<code>GM_xmlhttpRequest()</code>による通信が完了すると、返り値として返したオブジェクトの<code>value</code>プロパティがtrueになります。<em>渡された関数内やこのヘルパーメソッドの実行の直前に<code>GM_xmlhttpRequest()</code>が呼ばれていない場合、UxUはタイムアウトするまで待った後にテスト失敗と見なします。</em></dd>
+	<dt id="greasemonkey.addListener">void <code>greasemonkey.addListener(<var>in Object aEventListener</var>)</code>
+		<span class="alias">別名：<code>greasemonkeyAddListener()</code></span></dt>
+		<dd>イベントリスナ（後述）を登録します。</dd>
+	<dt id="greasemonkey.removeListener">void <code>greasemonkey.removeListener(<var>in Object aEventListener</var>)</code>
+		<span class="alias">別名：<code>greasemonkeyRemoveListener()</code></span></dt>
+		<dd>登録済みのイベントリスナ（後述）を削除します。</dd>
+</dl>
+
+
+<h2 id="gm_functions">Available GM_* functions</h3>
+<p>UxUは以下のGM関数に対応しています。Greasemonkeyがインストールされていない環境でも、UxUはこれらのGM関数を利用しているGreasemonkeyスクリプトをテストできます。</p>
+<ul>
+	<li><code>GM_addStyle()</code></li>
+	<li><code>GM_deleteValue()</code></li>
+	<li><code>GM_getResourceURL()</code></li>
+	<li><code>GM_getResourceText()</code></li>
+	<li><code>GM_getValue()</code></li>
+	<li><code>GM_listValues()</code></li>
+	<li><code>GM_log()</code></li>
+	<li><code>GM_openInTab()</code></li>
+	<li><code>GM_registerMenuCommand()</code> ※実際には何もしません。</li>
+	<li><code>GM_setValue()</code></li>
+	<li><code>GM_xmlhttpRequest()</code></li>
+</ul>
+
+
+<h2 id="eventlistener">Event listeners捕捉</h3>
+
+<p><code>greasemonkey.addListener()</code>には、以下のようなオブジェクトをイベントリスナとして登録できます。</p>
+<pre><code>var listener = {
+      onGM_xmlhttpRequestCall : function(aEvent) {
+      },
+      onGM_xmlhttpRequestBeforeLoad : function(aEvent) {
+      },
+      onGM_xmlhttpRequestLoad : function(aEvent) {
+      }
+    };
+</code></pre>
+<p>Event name名に対応するメソッドを定義する代わりに、<code>handleEvent()</code>でもイベントを捕捉できます。</p>
+<pre><code>var listener = {
+      handleEvent : function(aEvent) {
+        switch (aEvent.type)
+        {
+          case 'GM_xmlhttpRequestCall':
+            break;
+          case 'GM_xmlhttpRequestBeforeLoad':
+            break;
+          case 'GM_xmlhttpRequestLoad':
+            break;
+        }
+      }
+    };
+</code></pre>
+
+<p>イベントリスナが捕捉できるイベントは以下の通りです。</p>
+<table border="1" summary="">
+<caption>GM関数が発行するイベントの一覧</caption>
+<thead><tr><th>Event name名</th><th>発行タイミング</th><th>渡されるイベントオブジェクトが持つプロパティ</th></tr></thead>
+<tbody>
+	<tr>
+		<th>GM_logCall</th>
+		<td><code>GM_log()</code>が呼ばれた時。</td>
+		<td><dl>
+			<dt><code>type</code></dt>
+				<dd>Event name名</dd>
+			<dt><code>message</code></dt>
+				<dd>渡されたメッセージ</dd>
+		</dl></td>
+	</tr>
+	<tr>
+		<th>GM_getValueCall</th>
+		<td><code>GM_getValue()</code>が呼ばれた時。</td>
+		<td><dl>
+			<dt><code>type</code></dt>
+				<dd>Event name名</dd>
+			<dt><code>key</code></dt>
+				<dd>渡されたキー名</dd>
+		</dl></td>
+	</tr>
+	<tr>
+		<th>GM_setValueCall</th>
+		<td><code>GM_setValue()</code>が呼ばれた時。</td>
+		<td><dl>
+			<dt><code>type</code></dt>
+				<dd>Event name名</dd>
+			<dt><code>key</code></dt>
+				<dd>渡されたキー名</dd>
+			<dt><code>value</code></dt>
+				<dd>渡された値</dd>
+		</dl></td>
+	</tr>
+	<tr>
+		<th>GM_xmlhttpRequestCall</th>
+		<td><code>GM_xmlhttpRequest()</code>が呼ばれた時。</td>
+		<td><dl>
+			<dt><code>type</code></dt>
+				<dd>Event name名</dd>
+			<dt><code>details</code></dt>
+				<dd>引数として渡されたオブジェクト</dd>
+		</dl></td>
+	</tr>
+	<tr>
+		<th>GM_xmlhttpRequestBeforeLoad</th>
+		<td><code>GM_xmlhttpRequest()</code>による読み込みが完了し、loadイベントが発行された時。</td>
+		<td><dl>
+			<dt><code>type</code></dt>
+				<dd>Event name名</dd>
+			<dt><code>state</code></dt>
+				<dd><code>GM_xmlhttpRequest()</code>の引数で定義されたイベントリスナにこれから渡される、読み込みの状態を格納したオブジェクト</dd>
+		</dl></td>
+	</tr>
+	<tr>
+		<th>GM_xmlhttpRequestLoad</th>
+		<td><code>GM_xmlhttpRequest()</code>による読み込みが完了し、loadイベントが発行され、Greasemonkeyスクリプトで定義されたイベントリスナによる処理が完了した時。</td>
+		<td><dl>
+			<dt><code>type</code></dt>
+				<dd>Event name名</dd>
+			<dt><code>state</code></dt>
+				<dd>イベントリスナに渡された、読み込みの状態を格納したオブジェクト</dd>
+			<dt><code>handled</code></dt>
+				<dd>イベントリスナによって処理が行われたかどうかを示す真偽値</dd>
+		</dl></td>
+	</tr>
+	<tr>
+		<th>GM_xmlhttpRequestBeforeError</th>
+		<td><code>GM_xmlhttpRequest()</code>による読み込みが中断され、errorイベントが発行された時。</td>
+		<td><dl>
+			<dt><code>type</code></dt>
+				<dd>Event name名</dd>
+			<dt><code>state</code></dt>
+				<dd><code>GM_xmlhttpRequest()</code>の引数で定義されたイベントリスナにこれから渡される、読み込みの状態を格納したオブジェクト</dd>
+		</dl></td>
+	</tr>
+	<tr>
+		<th>GM_xmlhttpRequestError</th>
+		<td><code>GM_xmlhttpRequest()</code>による読み込みが中断され、errorイベントが発行され、Greasemonkeyスクリプトで定義されたイベントリスナによる処理が完了した時。</td>
+		<td><dl>
+			<dt><code>type</code></dt>
+				<dd>Event name名</dd>
+			<dt><code>state</code></dt>
+				<dd>イベントリスナに渡された、読み込みの状態を格納したオブジェクト</dd>
+			<dt><code>handled</code></dt>
+				<dd>イベントリスナによって処理が行われたかどうかを示す真偽値</dd>
+		</dl></td>
+	</tr>
+	<tr>
+		<th>GM_xmlhttpRequestBeforeReadystatechange</th>
+		<td><code>GM_xmlhttpRequest()</code>による読み込みが進行し、readystatechangeイベントが発行された時。</td>
+		<td><dl>
+			<dt><code>type</code></dt>
+				<dd>Event name名</dd>
+			<dt><code>state</code></dt>
+				<dd><code>GM_xmlhttpRequest()</code>の引数で定義されたイベントリスナにこれから渡される、読み込みの状態を格納したオブジェクト</dd>
+		</dl></td>
+	</tr>
+	<tr>
+		<th>GM_xmlhttpRequestReadystatechange</th>
+		<td><code>GM_xmlhttpRequest()</code>による読み込みが進行し、readystatechangeイベントが発行され、Greasemonkeyスクリプトで定義されたイベントリスナによる処理が完了した時。</td>
+		<td><dl>
+			<dt><code>type</code></dt>
+				<dd>Event name名</dd>
+			<dt><code>state</code></dt>
+				<dd>イベントリスナに渡された、読み込みの状態を格納したオブジェクト</dd>
+			<dt><code>handled</code></dt>
+				<dd>イベントリスナによって処理が行われたかどうかを示す真偽値</dd>
+		</dl></td>
+	</tr>
+	<tr>
+		<th>GM_registerMenuCommandCall</th>
+		<td><code>GM_registerMenuCommand()</code>が呼ばれた時。</td>
+		<td><dl>
+			<dt><code>type</code></dt>
+				<dd>Event name名</dd>
+			<dt><code>name</code></dt>
+				<dd>コマンドの名前</dd>
+			<dt><code>function</code></dt>
+				<dd>コマンド（関数）</dd>
+			<dt><code>accelKey</code></dt>
+				<dd>アクセラレータキー</dd>
+			<dt><code>accelModifiers</code></dt>
+				<dd>アクセラレータキーのための修飾キー</dd>
+			<dt><code>accessKey</code></dt>
+				<dd>アクセスキー</dd>
+		</dl></td>
+	</tr>
+	<tr>
+		<th>GM_addStyleCall</th>
+		<td><code>GM_addStyle()</code>が呼ばれた時。</td>
+		<td><dl>
+			<dt><code>type</code></dt>
+				<dd>Event name名</dd>
+			<dt><code>document</code></dt>
+				<dd>スタイルの適用対象として指定されたDOMDocument</dd>
+			<dt><code>style</code></dt>
+				<dd>渡されたスタイル指定</dd>
+		</dl></td>
+	</tr>
+	<tr>
+		<th>GM_getResourceURLCall</th>
+		<td><code>GM_getResourceURL()</code>が呼ばれた時。</td>
+		<td><dl>
+			<dt><code>type</code></dt>
+				<dd>Event name名</dd>
+			<dt><code>key</code></dt>
+				<dd>要求されたリソースのキー名</dd>
+		</dl></td>
+	</tr>
+	<tr>
+		<th>GM_getResourceTextCall</th>
+		<td><code>GM_getResourceText()</code>が呼ばれた時。</td>
+		<td><dl>
+			<dt><code>type</code></dt>
+				<dd>Event name名</dd>
+			<dt><code>key</code></dt>
+				<dd>要求されたリソースのキー名</dd>
+		</dl></td>
+	</tr>
+	<tr>
+		<th>GM_openInTabCall</th>
+		<td><code>GM_openInTab()</code>が呼ばれた時。</td>
+		<td><dl>
+			<dt><code>type</code></dt>
+				<dd>Event name名</dd>
+			<dt><code>uri</code></dt>
+				<dd>渡されたURI</dd>
+		</dl></td>
+	</tr>
+</tbody>
+</table>
+
+

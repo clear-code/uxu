@@ -1,0 +1,145 @@
+---
+layout: default
+main_title: UxU - UnitTest.XUL
+sub_title:
+lang: en
+---
+
+<script type="text/javascript">
+new Folding(
+	'/descendant::*[@id="all-list"]/child::*/child::*[contains(" ul UL ol OL dl DL ", concat(" ", local-name(), " "))]',
+	'Detail',
+	'Hide',
+	'history',
+	true,
+	false
+);
+new Folding(
+	'/descendant::*[@id="all-list"]',
+	'Show',
+	'Hide',
+	'all',
+	false,
+	false
+);
+</script>
+
+
+<p>UnitTest.XUL, aka UxU (pronounced as "wu-zu"), is an xUnit testing framework for developers of Firefox/Thunderbird addons and XULRunner applications.</p>
+
+<ul>
+	<li><a href="#download">Download</a></li>
+	<li><a href="#abstract">Abstract</a></li>
+	<li><a href="#start">How to start</a></li>
+	<li><a href="#screenshots">Screenshots</a></li>
+</ul>
+<ul>
+	<li><a href="testcases.html.en">How to write testcases for UxU?</a></li>
+	<li><a href="greasemonkey.html.en">Testing Greasemonkey scripts by UxU</a></li>
+	<li><a href="helpers.html.en">Helper methods for testcases</a></li>
+	<li><a href="mock.html.en">How to write testcases with mocks?</a></li>
+	<li><a href="server.html.en">How to control UxU from remote?</a></li>
+	<li><a href="commandline.html.en">Command line options</a></li>
+</ul>
+
+
+
+<h2 id="download">Download</h2>
+
+<ul>
+	<li><a href="uxu-1.0.4.xpi">UxU 1.0.4 (2015.5.7)</a></li>
+	<li><a href="uxu-utils-1.0.0.zip">UxU Command Line Utilities 1.0.0 (2012.7.24)</a></li>
+</ul>
+
+<ul>
+	<li><a href="https://addons.mozilla.org/firefox/addon/6357">Download from Mozilla Add-ons</a></li>
+	<li><a href="https://github.com/clear-code/uxu">Git Repository (GitHub)</a></li>
+</ul>
+
+<h3 id="all">All Versions</h3>
+<ul id="all-list">
+	<li><a href="uxu-1.0.4.xpi">UxU 1.0.4 (2015.5.7)</a><ul>
+		<li>Support Firefox 40.0a1 and Thunderbird 38.0(beta4).</li>
+	</ul></li>
+	<li><a href="uxu-1.0.3.xpi">UxU 1.0.3 (2014.8.22)</a><ul>
+		<li>Supports Firefox 31 and Thunderbird 31.</li>
+	</ul></li>
+	<li><a href="uxu-1.0.2.xpi">UxU 1.0.2 (2014.3.7)</a><ul>
+		<li>Works on Firefox 24, Thunderbird 24, and Nightly 31.0a1.</li>
+		<li>Give response objects to callback functions defined in imported GM scripts correctly.</li>
+		<li>Fix "out of memory" error on <code>utils.inspect()</code></li>
+		<li>Assertion failure of <code>isInstanceOf()</code> reports meaningful message (it was unexpectedly dropped).</li>
+		<li>Support <code>TypeOf('array')</code> style definition (for cross-compartment scripts).</li>
+		<li>Works with stack trace with column numbers.</li>
+		<li>Stabilize self tests around the logger module.</li>
+		<li>Normalize serialized result of empty elements.</li>
+		<li>Add "UnitTest.XUL Test Runner" item to the list of "Developer" on Australis.</li>
+		<li>Add "UnitTest.XUL" menu to the "Tools" menu in the application menu of Thunderbird.</li>
+	</ul></li>
+	<li><a href="uxu-1.0.1.xpi">UxU 1.0.1 (2012.8.7)</a><dl>
+			<dt>General</dt><dd><ul>
+				<li>Support <code>requiredAddons</code> (aka <code>dependingAddons</code>) option for test cases. Now you can specify required addons for the test case as an array of ID strings.</li>
+				<li>Inherit installed addons to the temporary profile, when the test case has both specified profile and <code>requiredAddons</code>.</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-1.0.0.xpi">UxU 1.0.0 (2012.7.24)</a><dl>
+			<dt>General</dt><dd><ul>
+				<li>Support Firefox 10 ~ 16<ul>
+					<li>Drop support for Firefox under 9</li>
+				</ul></li>
+				<li>Add assertions: assert.same() and assert.notSame()<ul>
+					<li>Check strict equality (===)</li>
+				</ul></li>
+				<li>Extend Greasemonkey helper methods<ul>
+					<li>Support GM_listValues()</li>
+					<li>Support GM_deleteValue()</li>
+				</ul></li>
+				<li>Add an option "ignoreLastResult" to the TestCase class<ul>
+					<li>If the option is true, the last result of a test in the test caseis not regarded while checking if the test should be run or not</li>
+				</ul></li>
+				<li>Allow users to limit the number of test cases running concurrently from the configuration dialog</li>
+				<li>Initialize file fields in the configuration dialog correctly</li>
+			</ul></dd>
+			<dt>Test Runner</dt><dd><ul>
+				<li>Now tests results can be filtered by the type of the each test</li>
+				<li>Now stack traces are resizable</li>
+				<li>Now lines correspond to internal functions in stack traces are displayed in a pale color</li>
+			</ul></dd>
+			<dt>Command Line</dt><dd><ul>
+				<li>Now tests can be aborted by sending a SIGINT signal</li>
+				<li>Add a <code>--run-all</code> option<ul>
+					<li>Forces all tests to run regardless of the priority of the each test</li>
+				</ul></li>
+				<li>Add a <code>--uxu-max-parallel-count</code> option<ul>
+					<li>Limits the number of test cases running concurrently</li>
+				</ul></li>
+			</ul></dd>
+		</dl></li>
+</ul>
+
+
+
+<h2 id="abstract">Abstract</h2>
+
+<p>UxU is an testing framework for Mozilla addons, based on <a href="https://addons.mozilla.org/firefox/addon/2692">MozLab</a>. Features:</p>
+
+<ul>
+	<li>You can write testcases in xUnit format.</li>
+	<li>Multiple testcases are available. When you specify a folder, UxU collects all testcases from the folder recursively and runs them.</li>
+	<li>Many useful features, "yield" which like a "sleep" and <a href="helpers.html.en">number of helper methods</a>, are available for automated test around GUI and deferred page-load. UxU is useful not only for unit testing but for functional testing.</li>
+	<li><a href="greasemonkey.html.en">UxU can test Greasemonkey scripts.</a></li>
+	<li>UxU can run testcases written for MozUnit. UxU's Test Runner GUI is compatible to MozUnit, so you can test your addons by XUL just now.</li>
+</ul>
+
+<h2 id="start">How to start</h2>
+
+<p>Test Runner GUI: "Tools" -&gt; "UnitTest.XUL" -&gt; "Test Runner"</p>
+<p>UxU Server, to control UxU from other processes: turn on the checkbox "Server" bottom left of the Test Runner window. You can connect to UxU Server as "localhost:4444" by telnet or other programs. See also <a href="server.html.en">How to control UxU from remote?</a></p>
+<p>See <a href="testcases.html.en">How to write testcases for UxU?</a> to study writing rules of testcases.</p>
+
+<h2 id="screenshots">Screenshots</h2>
+
+<ul>
+	<li><a href="mozunit.en.png"><img src="mozunit.en.tn.png" alt="">Test Runner</a></li>
+	<li><a href="colored-diff.png"><img src="colored-diff.tn.png" alt="">"Diff" of expected vs actual, for assertions</a></li>
+</ul>

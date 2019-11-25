@@ -1,0 +1,120 @@
+---
+layout: default
+main_title: UxUをリモート操作する
+sub_title: UxU - UnitTest.XUL
+---
+
+<ul>
+	<li><a href="#utilities">コマンドラインユーティリティの利用方法</a>
+		<ul>
+			<li><a href="#fire-test-runner">fire-test-runner - Firefoxテストランナー</a></li>
+			<li><a href="#ifx">ifx - インタラクティブFirefoxシェル</a></a></li>
+		</ul>
+	</li>
+	<li><a href="#helpers">利用可能なヘルパーメソッド</a></li>
+</ul>
+
+<ul>
+	<li><a href="./">UxUの紹介ページに戻る</a></li>
+	<li><a href="testcases.html">UxU用のテストケースの書き方</a></li>
+	<li><a href="assertions.html">アサーション一覧</a></li>
+	<li><a href="greasemonkey.html">UxUによるGreasemonkeyスクリプトのテスト</a></li>
+	<li><a href="helpers.html">テストケース内で利用可能なヘルパーメソッド</a></li>
+	<li><a href="mock.html">モックを使ったテスト</a></li>
+	<li><a href="commandline.html">UxUのコマンドラインオプション</a></li>
+</ul>
+
+
+<h2 id="utilities">コマンドラインユーティリティの利用方法</h2>
+
+<p>UxUには<a href="https://addons.mozilla.org/firefox/addon/2692">MozRepl</a>と同様のサーバ機能が含まれています。「ツール」メニューの「UnitTest.XUL」から「テストランナー」を選択してテストランナーを起動し、ウィンドウ左下の「サーバ」にチェックを入れて下さい。localhostの4444番ポートに接続すると、コマンドラインインターフェースやその他のアプリケーションからUxUをリモート操作することができます。</p>
+<p>接続にはtelnetなどの既存のコマンドも利用できますが、UxUにはより便利なコマンドラインユーティリティがいくつか付属しています。以下では、これらのユーティリティを使ってコマンドラインからUxUを利用する方法を解説します。</p>
+
+<ul>
+	<li><a href="./#download">コマンドラインユーティリティのダウンロードはこちらから</a></li>
+</ul>
+
+<p>なお、以下のユーティリティはすべてRubyによって実装されています。Windows環境では<a href="http://www.geocities.co.jp/SiliconValley-PaloAlto/9251/ruby/">ActiveScriptRuby</a>などを事前にインストールしておいてください。</p>
+
+
+<h3 id="fire-test-runner">fire-test-runner - Firefoxテストランナー</h3>
+
+<p>fire-test-runnerは、ファイルまたはフォルダを引数として渡すことで、単一の<a href="testcases.html">テストケース</a>またはフォルダの中に含まれるすべてのテストケースを実行するユーティリティです。カラー表示が可能な環境では、各結果は適宜カラー表示されます。</p>
+<p>fire-test-runnerは以下のように使用します。</p>
+<pre>$&gt; fire-test-runner <var>オプション</var> "./tests"</pre>
+<p>指定できるオプションは以下の通りです。</p>
+<dl>
+	<dt>-p<var>ポート番号</var></dt>
+	<dt>--port=<var>ポート番号</var></dt>
+		<dd>UxUサーバに接続するポート番号を指定します。接続できない場合、fire-test-runnerはUxUサーバが起動していないものとみなして、自動的にUxUサーバの起動を試みます。デフォルトでは4444番ポートに接続を試みます。</dd>
+	<dt>--firefox=<var>アプリケーションのパスまたはコマンド名</var></dt>
+		<dd>UxUサーバを実行するアプリケーションを指定します。Thunderbird上でテストを実行する場合や、特定のバージョンのFirefoxでテストを実行する場合などに使用します。デフォルトでは<code>firefox</code>を起動します。</dd>
+	<dt>--named-profile=<var>プロファイル名</var></dt>
+	<dt>--profile=<var>プロファイルフォルダへのパス</var></dt>
+		<dd>特定のプロファイルでFirefoxを起動します。--named-profileオプションは、Firefoxのプロファイルをプロファイル名で指定し、--profileオプションはプロファイルを具体的なパスで指定します。これらのオプションのいずれかによってプロファイルが指定されている場合、fire-test-runnerはFirefoxがすでに起動している場合であっても、新しいプロセスを起動します。デフォルトではプロファイルを指定せずにFirefoxを起動します。</dd>
+	<dt>--wait=<var>秒数</var></dt>
+		<dd>fire-test-runnerがFirefoxの新しいプロセスを起動した後、テストを再試行するまでの待ち時間を指定します。デフォルトでは3秒待ってから再試行します。</dd>
+	<dt>--retries=<var>回数</var></dt>
+		<dd>テストを実行できなかった場合（Firefox、UxUサーバが起動していなかった場合）に、Firefoxのプロセスの起動とテストの再試行を行う回数を指定します。デフォルトでは試行に3回失敗したら自動的にfire-test-runner自身を終了します。</dd>
+	<dt>--quit</dt>
+	<dt>--no-quit</dt>
+		<dd>すべてのテストの実行を終えた後、Firefoxを自動的に終了するかどうかを指定します。--quitが指定された場合、テスト実行完了と同時にFirefoxのプロセスを終了します。デフォルトでは、テスト完了後もFirefoxを起動したままにします。</dd>
+	<dt>--close-main-windows</dt>
+	<dt>--no-close-main-windows</dt>
+		<dd>テストを実行する前に、Firefoxのブラウザウィンドウを自動的に閉じるかどうかを指定します。--close-main-windowsが指定された場合、Firefoxのすべてのブラウザウィンドウを閉じてからテストを実行します。デフォルトでは、すでに開かれているウィンドウを残した状態のままテストを実行します。</dd>
+	<dt>--use-color</dt>
+	<dt>--no-use-color</dt>
+		<dd>テスト結果を色分けして表示するかどうかを指定します。カラー表示が有効な場合、成功したテスト結果は緑色、失敗したテストは赤色、エラーは黄色で表示されます。デフォルトでは、カラー表示を利用可能と思われる環境では自動的にカラー表示を有効にします。</dd>
+</dl>
+
+
+<h3 id="ifx">ifx - インタラクティブFirefoxシェル</h3>
+
+<p>ifxは、すでに起動しているUxUサーバに接続して対話的に操作を行うためのシェルです。「ツール」メニューの「UnitTest.XUL」から「UxUサーバを起動」を選択してUxUサーバが起動した状態でifxを起動すると、JavaScriptによってコマンドを対話的に入力できる状態になります。</p>
+
+<p>UxUサーバに接続した状態では、JavaScriptの変数スコープはUxUサーバウィンドウ内のものとなっています。例えば <code>alert("Hello!")</code> と入力すると、UxUサーバのウィンドウ上に重なる形でアラートが表示されます。</p>
+
+<p>UxUは自動テストの実行に重きを置いて開発されているため、UxUサーバでアクセスした際の変数スコープを変更するなどの機能はありません。コマンドラインでFirefoxを操作する事が主目的の場合は、<a href="https://addons.mozilla.org/firefox/addon/2692">MozRepl</a>を使用してください。</p>
+
+
+<h2 id="helpers">利用可能なヘルパーメソッド</h2>
+
+<p><a href="#ifx">ifx</a>やtelnetなどで接続した場面での実行コンテキストでは、以下のヘルパーメソッド（関数）が利用できます。また、これら以外に、<a href="helpers.html#actions">イベント発行系のヘルパーメソッド</a>と、<a href="helpers.html#file">ファイル操作</a>、<a href="helpers.html#string">文字列操作</a>のヘルパーメソッドも利用できます。</p>
+
+<h3 id="sample">凡例</h3>
+<dl>
+	<dt><var>返り値</var> <code><var>メソッド名</var>(<var>引数</var>, <var>[省略可能な引数]</var>)</code></dt>
+		<dd><var>説明</var></dd>
+</dl>
+
+<h3>ヘルパーメソッド一覧</h3>
+<dl class="api-list">
+	<dt>String <code>inspect(<var>in Object aObject</var>)</code></dt>
+		<dd>渡された内容を可読性の高い文字列に変換して返します。具体的には以下のルールに則って文字列化します。
+		<dl>
+			<dt><code>Array</code>型</dt>
+				<dd>配列のすべての要素を<code>inspect()</code>したものを返します。</dd>
+			<dt><code>Object</code>型（オブジェクトリテラル、ハッシュ、カスタムクラスのインスタンス）</dt>
+				<dd>持っているすべてのプロパティの名前と値（<code>inspect()</code>した結果）を列挙したものを返します。</dd>
+		</dl></dd>
+	<dt>String <code>inspectDOMNode(<var>in DOMNode aNode</var>)</code></dt>
+		<dd>渡されたDOMノードをXML文書のソースコード様の形式に変換して返します。</dd>
+	<dt>void <code>puts(<var>in Object aObject</var>)</code></dt>
+	<dt>void <code>print(<var>in Object aObject</var>)</code></dt>
+		<dd>渡された内容をそのまま文字列として表示します（<code>toString()</code>メソッドの実行結果と同じ形式になります）。複数の引数を渡すと、<code>puts()</code>は渡された内容を改行で連結して、<code>print()</code>は改行せずに連結して表示します。</dd>
+	<dt>void <code>p(<var>in Object aObject</var>)</code></dt>
+		<dd>渡された内容を<code>inspect()</code>した結果を表示します。複数の引数を渡すと、それぞれを改行で連結して表示します。</dd>
+	<dt>void <code>error(<var>in Exception aException</var>)</code></dt>
+		<dd>渡されたエラーなどの例外の内容を、可読性の高い形で表示します。</dd>
+	<dt>void <code>load(<var>in String aURI</var><var>[, in Object aContext]</var>)</code></dt>
+		<dd>URIで指定したスクリプトを読み込み、第2引数で渡したオブジェクトまたは現在のコンテキストで実行します。</dd>
+	<dt>void <code>quit()</code></dt>
+	<dt>void <code>exit()</code></dt>
+		<dd>接続を切断します。FirefoxおよびUxUサーバは終了せずにそのまま起動し続けます。</dd>
+	<dt>void <code>quitApplication(<var>in Boolean aForceQuit</var>)</code></dt>
+		<dd>Firefoxを終了し、接続を切断します。引数として<code>true</code>を渡すと、終了確認を行わず強制的に終了します。</dd>
+	<dt>void <code>closeMainWindows()</code></dt>
+		<dd>Firefoxのすべてのブラウザウィンドウを閉じます。</dd>
+	<dt>void <code>runTest(<var></var>)</code></dt>
+		<dd></dd>
+</dl>

@@ -1,0 +1,741 @@
+---
+layout: default
+main_title: UxU - UnitTest.XUL
+sub_title:
+---
+
+<script type="text/javascript">
+new Folding(
+	'/descendant::*[@id="all-list"]/child::*/child::*[contains(" ul UL ol OL dl DL ", concat(" ", local-name(), " "))]',
+	'詳細',
+	'隠す',
+	'history',
+	true,
+	false
+);
+new Folding(
+	'/descendant::*[@id="all-list"]',
+	'表示',
+	'隠す',
+	'all',
+	false,
+	false
+);
+</script>
+
+
+<p>UnitTest.XUL（略して「UxU（うず）」）は、Firefox・Thunderbird用のアドオン、およびXULRunnerアプリケーションの開発を支援するxUnitテスティングフレームワークです。</p>
+
+<ul>
+	<li><a href="#download">ダウンロード</a>
+		<ul>
+			<li><a href="#all">すべてのバージョン</a></li>
+		</ul>
+	</li>
+	<li><a href="#abstract">概要</a></li>
+	<li><a href="#start">利用方法</a></li>
+	<li><a href="#screenshots">スクリーンショット</a></li>
+	<li><a href="#appendix">付録</a></li>
+</ul>
+<ul>
+	<li><a href="testcases.html">UxU用のテストケースの書き方（別ページ）</a></li>
+	<li><a href="assertions.html">アサーション一覧（別ページ）</a></li>
+	<li><a href="greasemonkey.html">UxUによるGreasemonkeyスクリプトのテスト（別ページ）</a></li>
+	<li><a href="helpers.html">テストケース内で利用可能なヘルパーメソッド（別ページ）</a></li>
+	<li><a href="mock.html">モックを使ったテスト（別ページ）</a></li>
+	<li><a href="server.html">UxUをリモート操作する（別ページ）</a></li>
+	<li><a href="commandline.html">UxUのコマンドラインオプション（別ページ）</a></li>
+</ul>
+
+
+
+<h2 id="download">ダウンロード</h2>
+
+<ul>
+	<li><a href="uxu-1.0.4.xpi">UxU 1.0.4 (2015.5.7)</a></li>
+	<li><a href="uxu-utils-1.0.0.zip">UxU用コマンドラインユーティリティ 1.0.0 (2012.7.24)</a></li>
+</ul>
+
+<ul>
+	<li><a href="https://addons.mozilla.org/firefox/addon/6357">Mozilla Add-onsサイトからダウンロード</a></li>
+	<li><a href="https://github.com/clear-code/uxu">Gitリポジトリ (GitHub)</a></li>
+</ul>
+
+<h3 id="all">すべてのバージョン</h3>
+<ul id="all-list">
+	<li><a href="uxu-1.0.4.xpi">UxU 1.0.4 (2015.5.7)</a><ul>
+		<li>Firefox 40.0a1およびThunderbird 38.0(beta4)に対応。</li>
+	</ul></li>
+	<li><a href="uxu-1.0.3.xpi">UxU 1.0.3 (2014.8.22)</a><ul>
+		<li>Firefox 31およびThunderbird 31に対応。</li>
+	</ul></li>
+	<li><a href="uxu-1.0.2.xpi">UxU 1.0.2 (2014.3.7)</a><ul>
+		<li>Firefox 24, Thunderbird 24, Nightly 31.0a1に対応（動作を確認）。</li>
+		<li>Greasemonkeyスクリプト中で定義されたコールバック関数にレスポンスオブジェクトが渡されていなかったのを修正。</li>
+		<li><code>utils.inspect()</code>の"out of memory"エラーを修正。</li>
+		<li><code>isInstanceOf()</code>のアサーション失敗時に意味のある情報を出力するようにした。</li>
+		<li>コンパートメントをまたぐスクリプトについて、 <code>TypeOf('array')</code> の形式の記述に対応。</li>
+		<li>列番号付きのスタックトレースでも動作するようにした。</li>
+		<li>Loggerモジュール関係のテストと処理を安定させた。</li>
+		<li>XMLの空要素をシリアライズした時の結果を安定させた。</li>
+		<li>Australisの「Developer」のサブ項目一覧に「UnitTest.XUL Test Runner」を追加した。</li>
+		<li>Thunderbirdのアプリケーションメニューの「ツール」以下に「UnitTest.XUL」メニューを追加した。</li>
+	</ul></li>
+	<li><a href="uxu-1.0.1.xpi">UxU 1.0.1 (2012.8.7)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>テストケースに対して、<code>requiredAddons</code>（または<code>dependingAddons</code>）オプションで必要なアドオンを明示できるようにした</li>
+				<li>プロファイル指定を伴うテストケースについて、<code>requiredAddons</code>（または<code>dependingAddons</code>）オプションでの指定に従って、現在インストール済みのアドオンを指定されたプロファイルに継承するようにした</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-1.0.0.xpi">UxU 1.0.0 (2012.7.24)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>Firefox 10以降に対応</li>
+				<li>Firefox 9以前のバージョンへの対応を終了</li>
+				<li>アサーションの追加: assert.same(), assert.notSame()<ul>
+					<li>厳密等価 (===) な比較をおこなう</li>
+				</ul></li>
+				<li>Greasemonkey のテスト支援機能を強化<ul>
+					<li>GM_listValues() のサポート</li>
+					<li>GM_deleteValue() のサポート</li>
+				</ul></li>
+				<li>TestCaseクラスのコンストラクタが受け取るオプションに ignoreLastResult を追加（テストを実行するかどうか判断する際、このオプションが指定されている場合は前回のテストの実行結果を無視する）</li>
+				<li>テストの並行実行に正式に対応（同時に実行するテストケース数の上限は設定画面で変更可能）</li>
+				<li>設定ダイアログ内のファイル入力欄を正しく初期化するようにした</li>
+			</ul></dd>
+			<dt>テストランナー</dt><dd><ul>
+				<li>レポート画面でテスト結果の種類に応じてフィルタリングできるようにした</li>
+				<li>スタックトレースをリサイズできるようにした</li>
+				<li>スタックトレース内で、テストケースに対応する行はハイライト表示するようにした</li>
+			</ul></dd>
+			<dt>コマンドライン</dt><dd><ul>
+				<li>SIGINT を送信してテストを中断できるようにした</li>
+				<li><code>--run-all</code> オプションの追加<ul>
+					<li>テストの優先度を問わず、全てのテストを必ず実行するよう強制する</li>
+				</ul></li>
+				<li><code>--uxu-max-parallel-count</code> オプションの追加<ul>
+					<li>並行実行するテストケース数の上限を指定する</li>
+				</ul></li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.9.0.xpi">UxU 0.9.0 (2010.9.4)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li><code>utils.allowRemoteXUL()</code>追加</li>
+				<li><code>assert.raises()</code>で、例外の期待値をハッシュで指定できるようにした</li>
+				<li>コマンドライン引数によるログ出力でファイルの種類を自動判別するようにした</li>
+				<li>既に起動している状態でもコマンドライン引数を受け付けるようにした</li>
+				<li>Mockのクラスメソッドが機能していなかったのを修正</li>
+			</ul></dd>
+			<dt>テストランナー</dt><dd><ul>
+				<li>サーバ用UIをテストランナーに統合</li>
+				<li>HTML、CSV、TSV、JSONでテストの結果を保存できるようにした</li>
+				<li>テスト実行前の時点でエラーが発生した時にいつまでもThrobberが回転し続ける問題を修正</li>
+				<li>失敗したテストだけやり直す機能について、直前の結果をデータベースから取得して判断するようにした＆個々のテストごとに判断するようにした</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.8.12.xpi">UxU 0.8.12 (2010.8.27)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li><code>action.cancelRediedActions()</code>が機能しなくなっていたのを修正</li>
+			</ul></dd>
+			<dt>テストランナー</dt><dd><ul>
+				<li>失敗したテストだけを再実行する機能が動かなくなっていたのを修正</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.8.11.xpi">UxU 0.8.11 (2010.8.25)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>Minefield 4.0b5preで動作しなくなっていたのを修正</li>
+				<li>JSMockの<code>resetMocks()</code>、<code>verifyMocks()</code>に対応</li>
+				<li>モックの名前の自動検出処理を改善</li>
+				<li>HTTPサーバをモックとして動作させた時、返り値のパス中に書かれた$1等の箇所を、リクエストに対応する正規表現のマッチング結果で置き換えるようにした（RewriteRule的な利用への対応）</li>
+				<li><code>assert.finishesWithin()</code>の逆パターンとして<code>assert.finishesOver()</code>、<code>assert.notFinishesWithin()</code>を追加</li>
+				<li><code>assert.raises()</code>、<code>assert.notRaises()</code>のエイリアスとして<code>assert.throws()</code>、<code>assert.notThrows()</code>を追加</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.8.10.xpi">UxU 0.8.10 (2010.8.24)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li><code>assert.compare()</code>での検証に失敗した際のメッセージをより分かりやすくした</li>
+				<li><code>(new FunctionMock()).when()</code>や<code>(new Mock()).when.<var>method</var>()</code>でモックの振る舞いを定義できるようにした</li>
+				<li>テスト内で作成されたモックの検証に失敗した際に、モック作成時点のスタックトレースを繋げて表示するようにした</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.8.9.xpi">UxU 0.8.9 (2010.8.21)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li><code>utils.getHttpServer()</code>追加</li>
+				<li><code>yield</code>、<code>utils.wait()</code>の復帰条件としてDeferredチェインが終了したDeferredオブジェクトも利用できるようにした</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.8.8.xpi">UxU 0.8.8 (2010.8.20)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>サーバユーティリティのインターフェースを整理した</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.8.7.xpi">UxU 0.8.7 (2010.8.20)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li><code>action.readyToSelect()</code>等のモーダルダイアログの操作予約機能について、予約メソッドが複数回呼ばれていた場合はその回数分だけモーダルダイアログを閉じるようにした</li>
+				<li>ローカルで起動するHTTPサーバをモックとして動作させられるようにした</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.8.6.xpi">UxU 0.8.6 (2010.8.13)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>モックのAPIを整備</li>
+				<li>すべてのテストがスキップされた時に、スキップされたテストの個数が報告されなくなっていた問題を修正</li>
+				<li><code>action.readyToSelect()</code>がFirefox 3.6で動作していなかった</li>
+				<li><a href="http://github.com/cho45/jsdeferred">JSDeferred</a>を標準添付した</li>
+				<li><code>yield</code>、<code>utils.wait()</code>の復帰条件にJSDeferredのDeferredオブジェクトを渡せるようにした（※まだDeferredチェインが終了していない場合に限り有効）</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.8.5.xpi">UxU 0.8.5 (2010.8.12)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>モック作成機能を追加した</li>
+				<li>テストケース内のすべてのテストがスキップされる場合は、startUp/shutDownの処理を飛ばすようにした</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.8.4.xpi">UxU 0.8.4 (2010.8.10)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>フレームやタブの読み込みが完了した後に処理が先に進まない事がある問題に対処</li>
+				<li><code>utils.waitDOMEvent()</code>追加</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.8.3.xpi">UxU 0.8.3 (2010.8.9)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>HTTPサーバ機能について、Apacheと同じ形式の.htaccessでリダイレクトできるようにした（RedirectとRewriteRuleの一部の機能にのみ対応）</li>
+				<li>テストケースの名前空間において、<code>Cr</code>で<code>Components.results</code>にアクセスできるようにした</li>
+				<li>テストをランダムに実行するようにした</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.8.1.xpi">UxU 0.8.1 (2010.8.4)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>URIのマッピングにおいて、マッピング先のURIがさらにマッピングの対象となる場合は全てのマッピングを解決するようにした</li>
+				<li><code>assert.raises()</code>と<code>assert.notRaises()</code>で、例外の指定として<code>Components.results.NS_<var>XXX</var>および<code>"NS_<var>XXX</var>"</code>（文字列）を受け付けるようにした</li>
+				<li>setUp/tearDown/warmUp/coolDown/warmDown/startUp/shutDownを関数名から自動認識する際は、関数名の先頭一致ではなく完全一致で認識するようにした</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.8.0.xpi">UxU 0.8.0 (2010.8.3)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>Firefox 2、Thunderbird 2のサポートを終了</li>
+				<li>Minefield 4.0b3preに対応</li>
+				<li>Thunderbrid 3.1に対応</li>
+				<li>MozUnit互換形式のテストケースについて、テストの個数が0の場合は例外を投げるようにした</li>
+				<li>MozUnit互換形式のテストケースについて、テスト関数を使い回しても正常に動作するようにした</li>
+				<li><code>utils.wait()</code>やyieldに対して空文字やnullを渡した場合は、0が渡されたものと見なすようにした</li>
+				<li>管理者権限でインストールする機能を削除</li>
+				<li>設定ダイアログの構成を変更</li>
+				<li>設定ダイアログ等がブラウザウィンドウ内で開かれる問題を修正</li>
+				<li>URIのマッピング機能を常時有効にするようにした</li>
+				<li>warmUp/coolDownはstartUp/shutDownで指定するように仕様を変更（※ただし互換性のため以前の名前も使用可能）</li>
+				<li><code>utils.include()</code>の引数をハッシュ形式で指定できるようにした</li>
+				<li><code>utils.include()</code>でスクリプトを読み込む際に、スクリプト中の定数宣言を変数宣言に置き換えられるようにした</li>
+				<li>以下のヘルパーメソッドについて、常に処理の完了を待つようにした<ul>
+					<li><code>utils.setUpTestWindow()</code></li>
+					<li><code>utils.loadURI()</code></li>
+					<li><code>utils.addTab()</code></li>
+					<li><code>greasemonkey.load()</code></li>
+					<li><code>greasemonkey.unload()</code></li>
+					<li><code>greasemonkey.open()</code></li>
+				</ul></li>
+				<li><code>Components.utils.import()</code>と同じAPIで利用可能なヘルパーメソッド<code>utils.import()</code>を追加</li>
+				<li><code>utils.include()</code>でエンコーディングを指定しなかった場合に、自動で簡易的な文字コード判別を行うようにした</li>
+				<li>標準のモーダルダイアログに対して指定された操作を自動的に入力する機能を追加<ul>
+					<li><code>action.readyToOK()</code></li>
+					<li><code>action.readyToConfirm()</code></li>
+					<li><code>action.readyToPrompt()</code></li>
+					<li><code>action.readyToPromptPassword()</code></li>
+					<li><code>action.readyToPromptUsernameAndPassword()</code></li>
+					<li><code>action.readyToSelect()</code></li>
+					<li><code>action.cancelReadiedActions()</code></li>
+				</ul></li>
+				<li>以下のアサーションを追加<ul>
+					<li><code>assert.isInstanceOf()</code></li>
+					<li><code>assert.instanceOf()</code></li>
+					<li><code>assert.instanceof()</code></li>
+					<li><code>assert.isInstance()</code></li>
+					<li><code>assert.instance()</code></li>
+					<li><code>assert.difference()</code></li>
+					<li><code>assert.noDifference()</code></li>
+					<li><code>assertIsInstanceOf()</code></li>
+					<li><code>assertInstanceOf()</code></li>
+					<li><code>assertInstanceof()</code></li>
+					<li><code>assertIsInstance()</code></li>
+					<li><code>assertInstance()</code></li>
+					<li><code>assertDifference()</code></li>
+					<li><code>assertNoDifference()</code></li>
+				</ul></li>
+				<li><code>assert()</code>を<code>assert.isTrue()</code>のエイリアスとした</li>
+			</ul></dd>
+			<dt>テストランナー</dt><dd><ul>
+				<li>テキストエディタを選択した後、いくつかのメジャーなテキストエディタについては起動オプションを自動設定するようにした</li>
+			</ul></dd>
+			<dt>サーバ</dt><dd><ul>
+				<li>ifxで <code>if (...) {</code> → <code>... }</code> のような細切れでの入力に対応した</li>
+				<li>ifxで<code>quit()</code>した時に自動で接続を切るようにした</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.7.6.xpi">UxU 0.7.6 (2010.1.29)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>イテレータジェネレータを使わなくとも、<code>utils.wait()</code>で処理待ちを行えるようにした（Gecko 1.9以降限定）</li>
+				<li><code>utils.platformVersion</code>でGeckoのバージョンを取得できるようにした</li>
+				<li>URIのマッピングに使用する変数名を<code>redirect</code>から<code>mapping</code>に変更</li>
+				<li>タブの内容の読み込み完了を正しく検知できない事がある問題について改善</li>
+				<li>テストの件数が多い時に、最後の方に行くにつれて処理が遅くなる問題について改善</li>
+				<li>クリック位置や取得する要素の位置を画面上の座標のみで指定する場合、ウィンドウの重なり順を取得できない環境では、最前面のウィンドウの代わりに最も若いウィンドウに対して処理を行うようにした</li>
+				<li><code>utils.tearDownHttpserver()</code>でポート番号を指定するとエラーになっていたのを修正</li>
+				<li>URIのマッピング機能が有効な時、プロキシを使用していると通信が一切できなくなる問題を修正</li>
+				<li>64bit版Ubuntu等、nsUpdateService.jsが存在しない環境で機能しなくなる問題について暫定的に対処</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.7.5.xpi">UxU 0.7.5 (2009.10.30)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>クリック等のイベントをエミュレートするためのAPIを刷新し、以下のメソッドを追加した：
+					<ul>
+						<li><code>action.clickOn()</code> / <code>action.leftClickOn()</code></li>
+						<li><code>action.middleClickOn()</code></li>
+						<li><code>action.rightClickOn()</code></li>
+						<li><code>action.doubleClickOn()</code> / <code>action.leftDblclickOn()</code></li>
+						<li><code>action.middleDblclickOn()</code></li>
+						<li><code>action.rightDblclickOn()</code></li>
+						<li><code>action.mousedownOn()</code> / <code>action.leftMousedownOn()</code></li>
+						<li><code>action.middleMousedownOn()</code></li>
+						<li><code>action.rightMousedownOn()</code></li>
+						<li><code>action.mouseupOn()</code> / <code>action.leftMouseupOn()</code></li>
+						<li><code>action.middleMouseupOn()</code></li>
+						<li><code>action.rightMouseupOn()</code></li>
+						<li><code>action.clickAt()</code> / <code>action.leftClickAt()</code></li>
+						<li><code>action.middleClickAt()</code></li>
+						<li><code>action.rightClickAt()</code></li>
+						<li><code>action.doubleClickAt()</code> / <code>action.leftDblclickAt()</code></li>
+						<li><code>action.middleDblclickAt()</code></li>
+						<li><code>action.rightDblclickAt()</code></li>
+						<li><code>action.mousedownAt()</code> / <code>action.leftMousedownAt()</code></li>
+						<li><code>action.middleMousedownAt()</code></li>
+						<li><code>action.rightMousedownAt()</code></li>
+						<li><code>action.mouseupAt()</code> / <code>action.leftMouseupAt()</code></li>
+						<li><code>action.middleMouseupAt()</code></li>
+						<li><code>action.rightMouseupAt()</code></li>
+						<li><code>action.keypressOn()</code></li>
+						<li><code>action.keydownOn()</code></li>
+						<li><code>action.keyupOn()</code></li>
+						<li><code>action.inputTo()</code></li>
+						<li><code>action.appendTo()</code></li>
+						<li><code>action.pasteTo()</code></li>
+						<li><code>action.additionallyPasteTo()</code></li>
+					</ul>
+				</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.7.4.xpi">UxU 0.7.4 (2009.10.29)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li><code>utils.inspect()</code>の第2引数でインデント幅を指定できるようにした</li>
+				<li>TSVの読み込みのためのヘルパーメソッドを追加（<code>utils.parseTSV()</code>, <code>utils.readTSV()</code>, <code>utils.readParametersFromTSV()</code>, <code>utils.readParameterFromTSV()</code>, <code>utils.readParamsFromTSV()</code>, <code>utils.readParamFromTSV()</code>）</li>
+			</ul></dd>
+			<dt>テストランナー</dt><dd><ul>
+				<li>データ駆動テストの結果に対して、テストに渡されたパラメータの内容を表示するようにした</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.7.3.xpi">UxU 0.7.3 (2009.10.29)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>テストケースの実行用プロファイルの指定が間違っていた場合など、テスト実行前の段階で内部エラーを引き起こす深刻な問題があった場合に、エラーの内容をテスト結果に出力するようにした</li>
+				<li>スタックトレースからUxU内部のスクリプトを除外する設定の時、除外後のスタックトレースが空である場合のためのフォールバックが働いていなかったのを修正</li>
+				<li><code>utils.cosmeticClone()</code>で、複製しようとしているフォルダの中に不可視のファイルがあるとエラーになってしまっていたのを修正</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.7.2.xpi">UxU 0.7.2 (2009.10.23)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li><code>utils.productVersion</code>追加</li>
+				<li><code>utils.compareVersions()</code>で、演算子を指定する形の呼び出しに対応</li>
+				<li><code>utils.parseTemplate()</code>を<code>utils.processTemplate()</code>へ名称変更（後方互換のため、旧来の名前でも利用可能）</li>
+				<li><code>utils.createDatabaseFromSQLFile()</code>の第3引数で<code>utils.processTemplate()</code>用のスコープを指定できるようにした</li>
+				<li><code>utils.include()</code>について、第2引数でエンコーディングを、第3引数で実行時の変数スコープを指定できるようにした（後方互換のため、旧来の記法でも利用可能）</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.7.1.xpi">UxU 0.7.1 (2009.10.20)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>関数のネストの深さが一定数を超えるまでは、従来通りの高速な動作を行うようにした</li>
+				<li><code>utils.cosmeticClone()</code>で、第3引数を省略した場合は元のファイルと同じ名前でファイルを複製するようにした</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.7.0.xpi">UxU 0.7.0 (2009.10.16)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li><a href="testcases.html#data-driven">データ駆動型テスト</a>の記述に対応</li>
+				<li>テストの個数が90前後を超えると正常に動作しなくなっていたのを修正</li>
+				<li>Linuxで、UxUによって作成されたディレクトリのアクセス権がおかしくなることがあったのを修正</li>
+				<li>Firefox 3.6a1pre以降でHTMLのデフォルトの名前空間がXHTMLの物になった仕様変更に追従</li>
+				<li>Windowsのレジストリを読み書きするヘルパーメソッドを追加（<code>utils.getWindowsRegistry()</code>, <code>utils.setWindowsRegistry()</code>, <code>utils.clearWindowsRegistry()</code>）</li>
+				<li><code>utils.makeFileWithPath()</code>の別名として<code>utils.getFileFromPath()</code>を追加</li>
+				<li>CSVの読み込みのためのヘルパーメソッドを追加（<code>utils.parseCSV()</code>, <code>utils.readCSV()</code>, <code>utils.readParametersFromCSV()</code>, <code>utils.readParameterFromCSV()</code>, <code>utils.readParamsFromCSV()</code>, <code>utils.readParamFromCSV()</code>）</li>
+				<li>JSON読み込みのためのヘルパーメソッドを追加（<code>utils.readJSON()</code>）</li>
+				<li>新しいアサーションを追加：<code>assert.implementsInterface()</code></li>
+				<li>いくつかのエラーメッセージをローカライズした</li>
+				<li>XULRunnerアプリケーションすべてに対してインストールできるようにした</li>
+				<li><code>assert.raises()</code>で、未知の例外が発生した時はエラーではなくテスト失敗と見なすようにした</li>
+				<li><code>assert.raises()</code>, <code>assert.notRaises()</code>での検証時に、例外として渡されたオブジェクトの<code>message</code>プロパティを用いても比較するようにした</li>
+			</ul></dd>
+			<dt>テストランナー</dt><dd><ul>
+				<li>前回のテスト実行結果が長い場合に、テストランナー起動時の初期化処理でフリーズしてしまう問題を解消</li>
+				<li>何もせずにテストランナーを終了すると、前回のテスト結果が消えてしまう問題を修正</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.6.1.xpi">UxU 0.6.1 (2009.6.8)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li><code>action.fireKeyEventOnElement()</code>で、イベントの種類が指定されていない時に発行されたkeypressイベントについて、keyCodeがキー番号、charCodeが0になってしまっていたのを修正（0.6.0でのregression）</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.6.0.xpi">UxU 0.6.0 (2009.6.8)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>ローカルHTTPサーバを利用できるようにした（<code>utils.setUpHttpServer()</code>、<code>utils.tearDownHttpServer()</code>、<code>utils.tearDownAllHttpServers()</code>の追加）</li>
+				<li>テストの実行中に限り、特定のルールにマッチするURIにアクセスした際に、別のリソースの内容を返す機能を追加</li>
+				<li>テスト内でのアサーションの個数を検証する機能について、プロパティ名での指定において<code>assertionsCount</code>,、<code>minAssertionsCount</code>、<code>maxAssertionsCount</code>も利用できるようにした</li>
+				<li><code>utils.loadURI()</code>、<code>utils.loadURIInTestFrame()</code>、<code>utils.addTab()</code>でリファラを指定できるようにした</li>
+				<li><code>GM_registerMenuCommand()</code>を実装</li>
+				<li><code>GM_log()</code>の処理結果を後で取得できるようにした</li>
+				<li><code>action.fireMouseEvent()</code>、<code>action.fireMouseEventOnElement()</code>でdblclickイベントを送出する処理が期待通りに動作していなかったのを修正</li>
+				<li><code>action.fireKeyEventOnElement()</code>でkeypressイベントを送出する際に、keydown/keyupイベントにおいて押されたキーの情報が失われていたのを修正（なるべくネイティブの動作に近くした）</li>
+				<li><code>action.inputTextToField()</code>でinputイベントが発行されていなかったのを修正</li>
+				<li><code>action.fireXULCommandEvent()</code>、<code>action.fireXULCommandEventOnElement()</code>の実装を改善</li>
+				<li>画面上の位置からフレームを取得する時、Content-Typeがtext/htmlなページでフレームを取得できない場合があったのを修正</li>
+				<li>テスト用の別プロファイルを使用する際に、現在のUxUの設定を引き継ぐようにした</li>
+				<li>グローバルな場所からユーザプロファイルにインストール先を戻せるようにした</li>
+				<li>管理者権限が必要な機能は、管理者権限がある場合にのみ利用できるようにした</li>
+			</ul></dd>
+			<dt>テストランナー</dt><dd><ul>
+				<li>ツールバー上にThrobberを追加</li>
+				<li>テスト用フレームを常に一定の大きさ以上で表示するようにした</li>
+				<li>テストの実行前に発生したエラーが最後の1つしか表示されていなかったのを、すべて表示するようにした</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.5.12.xpi">UxU 0.5.12 (2009.5.22)</a><dl>
+			<dt>UI</dt><dd><ul>
+				<li>Thunderbirdでメニューからテストランナー等を起動できなくなっていたのを修正</li>
+			</ul></dd>
+			<dt>全般</dt><dd><ul>
+				<li><code>utils.parseTemplate()</code>追加</li>
+				<li>文字列からハッシュ値を得る<code>utils.computeHash()</code>、<code>utils.md2()</code>、<code>utils.md5()</code>、<code>utils.sha1()</code>、<code>utils.sha256()</code>、<code>utils.sha384()</code>、<code>utils.sha512()</code>を追加</li>
+				<li>ファイルの内容からハッシュ値を得る<code>utils.computeHashFromFile()</code>、<code>utils.md2FromFile()</code>、<code>utils.md5FromFile()</code>、<code>utils.sha1FromFile()</code>、<code>utils.sha256FromFile()</code>、<code>utils.sha384FromFile()</code>、<code>utils.sha512FromFile()</code>を追加</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.5.11.xpi">UxU 0.5.11 (2009.5.18)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>テンポラリファイルを削除できなかった時にテストが途中で止まってしまう問題に対処</li>
+				<li><code>assert.contained()</code>、<code>assert.notContained()</code>追加</li>
+				<li><code>utils.openDatabase()</code>、<code>utils.createDatabase()</code>、<code>utils.createDatabaseFromSQL()</code>、<code>utils.createDatabaseFromSQLFile()</code>追加</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.5.10.xpi">UxU 0.5.10 (2009.4.20)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>個々のテスト関数の<code>targetProduct</code>プロパティによって、テストの実行をスキップするかどうかを判別できるようにした</li>
+				<li>テスト関数の<code>shouldSkip</code>プロパティ、テストケースの<code>shouldSkip</code>グローバル変数によって、テストの実行をスキップできるようにした</li>
+				<li><code>assert.assertionsCountEquals()</code>、<code>assert.assertionsMinCount()</code>、<code>assert.assertionsMaxCount()</code>追加</li>
+				<li><code>utils.product</code>について、Sunbird、Mozilla Application Suite、SeaMonkey、Fennecの場合にも名前を取得できるようにした</li>
+				<li>Firefox、Thunderbird、Sunbird、Mozilla Application Suite、SeaMonkey、Fennecの各アプリケーションについて、実行ファイルのパスを明示的に設定できるようにした</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.5.8.xpi">UxU 0.5.8 (2009.4.16)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>テスト関数の<code>assertions</code>、<code>minAssertions</code>、<code>maxAssertions</code>プロパティで、実際に処理されたアサーションの数を検証できるようにした</li>
+				<li>テスト内でアサーションが1回も行われなかった時は警告を表示するようにした</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.5.7.xpi">UxU 0.5.7 (2009.4.15)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li><code>action.fireMouseEvent()</code>で、指定された座標の位置に要素を見つけられなかった時にエラーメッセージが正しく出力されていなかったのを修正</li>
+			</ul></dd>
+			<dt>テストランナー</dt><dd><ul>
+				<li>期待値と実測値の差分をカラー表示するようにした</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.5.6.xpi">UxU 0.5.6 (2009.4.13)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li><code>assert.inDelta()</code>で、境界値と等しい値が得られた場合もアサーション成功と見なすように仕様を変更</li>
+				<li><code>utils.log()</code>でテストランナー上やログにメッセージを出力できるようにした</li>
+				<li>優先度を無視してテストを実行する場合に、テストケース側で全体の実行優先度を<code>never</code>に設定されているテストが実行されてしまっていたのを修正</li>
+				<li>プロファイルを指定してテストを実行する場合において、テストの実行完了を検知できない場合があったのを修正</li>
+				<li>Firefox 2でマウス系のイベントが送出されない問題を修正</li>
+				<li>座標からのフレームの取得に失敗する場合があったのを修正</li>
+				<li>異なるウィンドウでインスタンスが作られたArrayやDateの比較に失敗する問題を修正</li>
+				<li><code>greasemonkey.open()</code>が機能しなくなっていたのを修正</li>
+				<li>存在しないファイルを指定された時に<code>utils.cosmeticClone()</code>がエラーになる問題を修正</li>
+				<li><code>yield</code>による処理待ちを含むテストで、一つ目の<code>yield</code>よりも前で例外が発生した時に二重にエラーが報告されていたのを修正</li>
+				<li>テストケース内で指定された実行対象プロダクトがインストールされていない場合、テストの実行をスキップするようにした</li>
+				<li><code>utils.setUpTestWindow()</code>、<code>utils.openTestWindow()</code>で、オプションでウィンドウの位置や大きさを指定できるようにした</li>
+			</ul></dd>
+			<dt>テストランナー</dt><dd><ul>
+				<li>名称を「MozUnitテストランナー」から「UxUテストランナー」に変更</li>
+				<li>テストケース以外のファイルがドロップされた時、ブラウザウィンドウがある場合はブラウザへのドロップと見なすようにした</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.5.5.xpi">UxU 0.5.5 (2009.3.3)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>ヘルパーメソッド追加：<ul></li>
+					<li>$()</li>
+					<li>$X()</li>
+					<li>utils.getSelectionClipBoard()</li>
+					<li>utils.sleep()（※Gecko 1.9以降）</li>
+				</ul></li>
+				<li>Thunderbirdのメール作成ウィンドウ用ヘルパーメソッド追加：<ul>
+					<li>mail.compose.setUp()</li>
+					<li>mail.compose.tearDown() / mail.compose.tearDownAll()</li>
+					<li>mail.compose.window / mail.compose.windows</li>
+					<li>mail.compose.addressFields / mail.compose.firstAddressField / mail.compose.lastAddressField</li>
+					<li>mail.compose.blankAddressFields / mail.compose.firstBlankAddressField / mail.compose.lastBlankAddressField</li>
+					<li>mail.compose.addressTypes / mail.compose.firstAddressType / mail.compose.lastAddressType</li>
+					<li>mail.compose.getAddressTypeForField()</li>
+					<li>mail.compose.dummyRows / mail.compose.firstDummyRow</li>
+					<li>mail.compose.recipients / mail.compose.setRecipients()</li>
+					<li>mail.compose.appendRecipients()</li>
+					<li>mail.compose.subject</li>
+					<li>mail.compose.body / mail.compose.setBodyContents()</li>
+					<li>mail.compose.appendBodyContents()</li>
+					<li>mail.compose.attachments</li>
+					<li>mail.compose.attachFile()</li>
+					<li>mail.compose.send() / mail.compose.sendByButtonClick()（※Gecko 1.9以降）</li>
+				</ul></li>
+				<li>Thunderbirdではcontent, gBrowser, contentWindowでテスト用フレームに対応する内容を返すようにした</li>
+				<li>テストケース固有のsetUpとtearDownに対応</li>
+				<li>MozLab（MozUnit）用に書かれたテストケースが動作しない場合があったのを修正</li>
+				<li>DOMWindowをutils.inspect()に渡すとエラーになる問題を修正</li>
+				<li>プロファイルを指定してテストを実行する場合において、テストの実行に時間がかかるとタイムアウトしてしまう問題を改善</li>
+			</ul></dd>
+			<dt>MozUnitテストランナー</dt><dd><ul>
+				<li>Thunderbird 2でファイルをドラッグ＆ドロップでテストケースを読み込ませることができない問題を修正</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.5.4.xpi">UxU 0.5.4 (2009.2.19)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li><code>utils.loadPrefs()</code>の挙動がMozilla本体の設定読み込みAPIの挙動と異なっていたのを修正 </li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.5.3.xpi">UxU 0.5.3 (2009.2.16)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>utils.setClipBoard()、utils.getClipBoard()、utils.loadPrefs()を追加</li>
+				<li>action.fireMouseEvent()でダブルクリックのイベントが正しく発行されない問題を修正</li>
+				<li>assert.contains()、assert.notContains()で、比較対象の値としてDOMRange、nsISelection、またはDOMNodeを受け付けるようにした</li>
+				<li>utils.loadURI()、utils.addTab()でサブフレームの内容読み込みがすべて終わるまで待つようにした</li>
+				<li>テストケース内で定義するsetUp、tearDown、warmUp、warmDown（coolDown）の各関数について、名前をsetup、teardown、warmup、warmdown（cooldown）と定義した場合でも認識するようにした。</li>
+			</ul></dd>
+			<dt>MozUnitテストランナー</dt><dd><ul>
+				<li>Linuxでウィンドウが常に最前面に表示されてしまう問題を修正</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.5.2.xpi">UxU 0.5.2 (2009.2.10<abbr title="日本標準時">JST</abbr>, 2009.2.9<abbr title="太平洋標準時">PST</abbr>)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>GM_getResourceURL()、GM_getResourceText()対応</li>
+				<li>action.fireMouseEventOnElement()について、部分的に画面外にはみ出している要素の場合は表示されている部分の中央をクリックしたものと見なすようにした</li>
+				<li>inspect()で表示するプロパティ一覧を名前順でソートするようにした</li>
+				<li>フォルダ内の複数テストを一括実行する場合に、ユニットテストと機能テストが両方ある場合はユニットテストから実行するようにした</li>
+				<li>Firefox以外でテスト用フレームへアクセスできない問題を修正</li>
+				<li>循環参照があるオブジェクトをassert.equals()などで比較しようとするとエラーになる問題を修正</li>
+				<li>アクセスするだけでエラーになるプロパティ（例：nsIFile::targetなど）があるオブジェクトをinspect()しようとするとエラーになる問題を修正</li>
+			</ul></dd>
+			<dt>MozUnitテストランナー</dt><dd><ul>
+				<li>実行中の各テストの名前を表示するようにした</li>
+				<li>エディタに渡す引数のプレースホルダ（%f, %u, %l, %c）の大文字小文字を区別しないようにした</li>
+				<li>スタックトレースから行番号を指定してファイルを開けるようにした</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.5.1.xpi">UxU 0.5.1 (2008.11.17)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>assert.finishesWithin(assert.finishWithin), assert.compare追加</li>
+				<li>assert.raises, assert.notRaises, assert.finishesWithinでジェネレータ・イテレータへを利用できるようにした</li>
+				<li>String, Number型で投げられた例外を全く拾えていなかったのを修正</li>
+				<li>DONノードの場合の期待値/実測値はinspectDOMNodeの結果を出すようにした</li>
+				<li>utils.addTabに指定できるオプションにおいて、selectedをtrueにするとタブを即選択するようにした。</li>
+			</ul></dd>
+			<dt>MozUnitテストランナー</dt><dd><ul>
+				<li>テストの実行にかかった時間をログに出力するようにした</li>
+				<li>スタックトレースに内部エラーを出力するかどうかの設定をメニューから変更できるようにした</li>
+				<li>setUp/tearDownの両方でエラーが出た場合に、両方とも結果を表示するようにした</li>
+			</ul></dd>
+			<dt>UxUサーバ</dt><dd><ul>
+				<li>再起動後のUxUサーバの自動復帰が一度だけでなく何度も行われてしまっていたのを修正</li>
+				<li>localhost以外からのアクセスを受け付ける設定を追加</li>
+				<li>テスト実行結果をGUI上でより見やすい形で表示するようにした</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.5.0.xpi">Ver.0.5.0 (2008.10.30)</a><dl>
+			<dt>全般</dt><dd><ul>
+				<li>テストに専用のプロファイルを指定する機能</li>
+				<li>テストの対象アプリケーションを指定する機能</li>
+				<li>テストケースにおける前初期化処理・後終了処理機能</li>
+				<li>assert.contains/assert.notContains追加</li>
+				<li>グローバルにインストールする機能</li>
+				<li>utils.inspectDOMNodeなどを追加</li>
+				<li>Thunderbird 2.0.0.xで初期化に失敗する問題を修正</li>
+				<li>メール編集ウィンドウからのメール送信をテストする機能</li>
+				<li>Minefield 3.1b2pre対応</li>
+				<li>Shredder 3.0b1pre対応</li>
+				<li>JavaScriptエラーのスタックトレースが表示されない問題を修正</li>
+			</ul></dd>
+			<dt>MozUnitテストランナー</dt><dd><ul>
+				<li>コマンドラインオプションでテストを自動実行できるようにした</li>
+				<li>テスト結果をテキストファイルとして保存できるようにした</li>
+			</ul></dd>
+			<dt>UxUサーバ</dt><dd><ul>
+				<li>UxUサーバの動作を全面的に改修</li>
+				<li>UxUサーバを起動したまま再起動した場合の自動復帰</li>
+				<li>コマンドラインオプションでポート番号を指定してUxUサーバを起動できるようにした</li>
+			</ul></dd>
+		</dl></li>
+	<li><a href="uxu-0.4.11.xpi">Ver.0.4.11 (2008.8.26)</a><ul>
+			<li>メニューからのアプリケーション全体の再起動に対応</li>
+			<li>アプリケーション再起動後のテストランナーの自動復帰に対応</li>
+			<li>期待値と実測値の差分表示に対応</li>
+			<li>Setup/Teardown中のエラーの詳細を表示するようにした</li>
+			<li>エラー時にスタックトレースが表示されない場合について改善</li>
+			<li>assert.inDelta()追加</li>
+			<li>utils.cosmeticClone()（不可視でないファイルのみを複製）を追加</li>
+			<li>utils.normalizeToFile()（nsIFileの生成）を追加</li>
+			<li>utils.log(), utils.dump()（エラーコンソールへのログ出力）を追加</li>
+			<li>utils.scheduleToRemove()（削除できるまでファイルの削除を試行する）追加</li>
+			<li>File URLとローカルファイルの相互変換について、XPCOMのオブジェクトと文字列の各組み合わせすべてに対応したメソッドを追加</li>
+			<li>UxUサーバにおいて出力のカラー表示に対応</li>
+		</ul></li>
+	<li><a href="uxu-0.4.10.xpi">Ver.0.4.10 (2008.7.25)</a><ul>
+			<li>以下の新しいアサーションを追加："strictlyEquals"、 "notStrictlyEquals"</li>
+			<li>"equals" と "notEquals" でArray、Date、Object型のオブジェクトの比較も行えるようにした</li>
+			<li>UxUサーバの実装を改善、"inspect"でより詳細な情報を表示するようにした </li>
+		</ul></li>
+	<li><a href="uxu-0.4.9.xpi">Ver.0.4.9 (2008.7.18)</a><ul>
+			<li>テスト関数の内容が変化したら次回必ずテストを実行するようにした</li>
+			<li>ソース表示で行番号が二重に付くことがあったのを修正</li>
+			<li>Linuxでファイルをドラッグ＆ドロップした時に固まる問題を修正</li>
+			<li>サーバとしての動作が復活</li>
+		</ul></li>
+	<li><a href="uxu-0.4.8.xpi">Ver.0.4.8 (2008.7.17)</a><ul>
+			<li>アサーション失敗時に期待値と実際の値を表組みで表示するようにした</li>
+			<li>アサーション追加</li>
+			<li>ソース表示時に自動的にウィンドウを広げるようにした</li>
+			<li>GUIから説明のページを表示できるようにした</li>
+		</ul></li>
+	<li><a href="uxu-0.4.7.xpi">Ver.0.4.7 (2008.7.16)</a><ul>
+			<li>仕様が厳密でなかった部分など細かいバグを修正</li>
+		</ul></li>
+	<li><a href="uxu-0.4.6.xpi">Ver.0.4.6 (2008.7.16)</a><ul>
+			<li>fireMouseEventなどの機能について、XUL上でより実用的な動作をするように改良した</li>
+			<li>宣言型テストを推奨するようにした</li>
+			<li>"runStrategy"オプションと非同期テスト定義用の書式を廃止した</li>
+			<li>場合に応じてMozUnitテストランナーの各ボタン等を無効化するようにした</li>
+			<li>コンテキストメニューからテストを外部エディタで開けるようにした</li>
+		</ul></li>
+	<li><a href="uxu-0.4.5.xpi">Ver.0.4.5 (2008.7.15)</a><ul>
+			<li>初回のテスト実行に失敗する問題を修正</li>
+			<li>オプション指定無しでfireMouseEventが正常に動かない問題を修正</li>
+		</ul></li>
+	<li><a href="uxu-0.4.4.xpi">Ver.0.4.4 (2008.7.15)</a><ul>
+			<li>fireClickEventが動かなくなっていたのを修正</li>
+			<li>クリックイベントの再現でXULのメニューを開いたりXULCommandイベントを発行したりするようにした</li>
+		</ul></li>
+	<li><a href="uxu-0.4.3.xpi">Ver.0.4.3 (2008.7.14)</a><ul>
+			<li>新しいヘルパーメソッドを追加</li>
+		</ul></li>
+	<li><a href="uxu-0.4.2.xpi">Ver.0.4.2 (2008.7.14)</a><ul>
+			<li>GM_addStyleを実装</li>
+			<li>MozUnitテストランナーを最前面表示できるようにした</li>
+			<li>エラーメッセージ等を選択してコピーできるようにした</li>
+		</ul></li>
+	<li><a href="uxu-0.4.1.xpi">Ver.0.4.1 (2008.7.11)</a><ul>
+			<li>Greasemonkeyスクリプトのテスト用の機能を加えた</li>
+		</ul></li>
+	<li><a href="uxu-0.4.0.xpi">Ver.0.4.0 (2008.7.11)</a><ul>
+			<li>宣言スタイルでの記述に対応</li>
+			<li>ユーティリティの機能をグローバル関数として利用できるようにした</li>
+			<li>テストの優先度を設定できるようにした</li>
+			<li>失敗したテストだけ再実行する機能を追加</li>
+			<li>読み込んだファイルが途中で切れる問題を修正</li>
+			<li>BOM付きのファイルの読み込みに失敗する問題を修正 </li>
+		</ul></li>
+	<li><a href="uxu-0.3.5.xpi">Ver.0.3.5 (2008.6.12)</a></li>
+	<li><a href="uxu-0.3.4.xpi">Ver.0.3.4 (2008.6.12)</a><ul>
+			<li>テストのデフォルトの拡張子を.test.jsとした</li>
+			<li>この拡張子のJavaScriptファイルとそうでないJavaScriptファイルが混在している時は、拡張子が.test.jsであるものだけをテストとして認識するようにした </li>
+		</ul></li>
+	<li><a href="uxu-0.3.3.xpi">Ver.0.3.3 (2008.5.16)</a><ul>
+			<li>テストケース用のヘルパー関数にDo()追加</li>
+			<li>UxUサーバを利用したテスト実行の仕組みを修正 </li>
+		</ul></li>
+	<li><a href="uxu-0.3.2.xpi">Ver.0.3.2 (2008.5.16)</a><ul>
+			<li>doIteration内のエラーが上まで伝わってきていなかったのを修正</li>
+			<li>テスト実行中はファイルのドロップを受け付けないようにした </li>
+		</ul></li>
+	<li><a href="uxu-0.3.1.xpi">Ver.0.3.1 (2008.5.14)</a><ul>
+			<li>ヘルパーメソッドにdoIterationを追加</li>
+			<li>全体の結果をステータスバーに表示するようにした</li>
+			<li>テストケースを指定し直したときは結果表示をリセットするようにした</li>
+		</ul></li>
+	<li><a href="uxu-0.3.0.xpi">Ver.0.3.0 (2008.5.14)</a><ul>
+			<li>アサーションに独自のメッセージを指定できるようにした</li>
+			<li>エラー発生時のスタックトレースを正確に辿れるようにした</li>
+			<li>レポートを自動的にスクロールするようにした</li>
+			<li>全体のプログレスメーターが表示されなくなっていたのを修正</li>
+			<li>Firefox 3のフルズームに対応 </li>
+		</ul></li>
+	<li><a href="uxu-0.2.9.xpi">Ver.0.2.9 (2008.5.12)</a><ul>
+			<li>include, readFrom, writeTo, addTab, loadURIで相対パスを受け付けるようにした</li>
+			<li>inputTextToFieldでキーボード操作をエミュレートするようにした</li>
+			<li>非同期型のテストを途中で中断できるようにした</li>
+			<li>clickイベントの発行時にmousedown/mouseupイベントを、keypressイベントの発行時にkeydown/keyupを発行するようにした</li>
+			<li>テストケースのファイルをドラッグ＆ドロップで読み込めるようにした</li>
+			<li>初回使用時のエディタ設定がうまくいかない問題を修正 </li>
+		</ul></li>
+	<li><a href="uxu-0.2.8.xpi">Ver.0.2.8 (2008.5.9)</a><ul>
+			<li>action.fireMouseEventOnElement()とaction.fireKeyEventOnElement()を正しく動くように修正</li>
+			<li>action.inputTextToField()を追加 </li>
+		</ul></li>
+	<li><a href="uxu-0.2.7.xpi">Ver.0.2.7 (2008.4.25)</a><ul>
+			<li>Thunderbirdで利用可能にした</li>
+			<li>"utils.writeTo()" で常にファイルを上書きするようにした</li>
+			<li>フォルダ内のテストケースの一括実行時はJavaScript以外のファイルを無視するようにした</li>
+			<li>テスト用ウィンドウに"arguments"オプションで引数を渡せるようにした</li>
+			<li>すべてのChromeWindowを取得する"utils.getChromeWindows()"を追加</li>
+			<li>ソース表示機能が正しく動いていなかったのを修正</li>
+			<li>エラーの詳細情報を改行して表示するようにした </li>
+		</ul></li>
+	<li><a href="uxu-0.2.6.xpi">Ver.0.2.6 (2008.3.19)</a><ul>
+			<li>略称を「UxU」に変更</li>
+			<li>テストケース内に書かれた日本語の説明文などが化けて表示される問題を修正</li>
+			<li>ヘルパーメソッドが動かない問題を修正</li>
+		</ul></li>
+	<li><a href="uxu-0.2.5.xpi">Ver.0.2.5 (2008.1.24)</a><ul>
+			<li>"utils.include", "utils.writeTo", "utils.readFrom" のAPIを修正。ファイルのエンコーディングを手動で指定できるようにした</li>
+		</ul></li>
+	<li><a href="uxu-0.2.4.xpi">Ver.0.2.4 (2008.1.22)</a><ul>
+			<li>Firefox 3 beta2で動作するように修正</li>
+			<li>プログレスメーターの色がテストの状態に応じて変わるように修正</li>
+		</ul></li>
+	<li><a href="uxu-0.2.3.xpi">Ver.0.2.3 (2008.1.19)</a><ul>
+			<li>yieldに関数を渡せるようにした</li>
+			<li>30秒以上応答がないとタイムアウトするようにした</li>
+			<li>スタイル指定が適用されていなかったのを修正</li>
+			<li>名前の間違いを修正</li>
+		</ul></li>
+</ul>
+
+
+
+
+<h2 id="abstract">概要</h2>
+
+<p>UxUは<a href="https://addons.mozilla.org/firefox/addon/2692">MozLab</a>をベースに開発されたテスティングフレームワークで、以下の特長があります。</p>
+
+<ul>
+	<li>xUnit形式でテストケースを作成できます。</li>
+	<li>GUIや遅延読み込みに関係した機能の自動テストを支援するために、sleepのような処理待ちや<a href="helpers.html">ヘルパーメソッド</a>などの便利な機能を備えています。ユニットテスト（単体テスト）だけでなく、結合テスト・機能テストにも幅広く利用できます。</li>
+	<li><a href="greasemonkey.html">Greasemonkeyスクリプトのテストを行うための機能</a>を持っています。</li>
+	<li>フォルダ内のすべてのテストケースを一度に実行できます。</li>
+	<li>MozUnitと上位互換性があります。MozUnit互換のテスト実行インターフェースを持っており、MozUnit用に書かれたテストケースも実行できます。</li>
+</ul>
+
+<h2 id="start">利用方法</h2>
+
+<p>「ツール」メニューの「UnitTest.XUL」から「テストランナー」を選択すると、テスト実行用のインターフェースが起動します。</p>
+<p>また、ソケット接続用のサーバを起動することもできます。テストランナーのウィンドウ左下にある「サーバ」のチェックをONにしてlocalhostの4444番ポートに接続すると、コンソールからテストを実行することができます。詳細は<a href="server.html">UxUをコマンドラインインターフェースから利用する</a>を参照してください。</p>
+<p>実際のテストケースの記述方法については、<a href="testcases.html">UxU用のテストケースの書き方（別ページ）</a>をご覧下さい。</p>
+
+<h2 id="screenshots">スクリーンショット</h2>
+
+<ul>
+	<li><a href="mozunit.ja.png"><img src="mozunit.ja.tn.png" alt="">テストランナー</a></li>
+	<li><a href="colored-diff.png"><img src="colored-diff.tn.png" alt="">期待値と実測値の差分のカラー表示</a></li>
+</ul>
+
+<h2 id="appendix">付録</h2>
+<p><a href="uxu.xul">1000人スピーカプロジェクト用発表資料</a></p>
+
+

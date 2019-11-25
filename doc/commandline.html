@@ -1,0 +1,37 @@
+---
+layout: default
+main_title: UxUのコマンドラインオプション
+sub_title: UxU - UnitTest.XUL
+---
+
+<ul>
+	<li><a href="#server">UxUのサーバインターフェースの起動</a></li>
+	<li><a href="#testcase">特定のテストを指定して実行する</a></li>
+</ul>
+
+<ul>
+	<li><a href="./">UxUの紹介ページに戻る</a></li>
+	<li><a href="testcases.html">UxU用のテストケースの書き方</a></li>
+	<li><a href="assertions.html">アサーション一覧</a></li>
+	<li><a href="greasemonkey.html">UxUによるGreasemonkeyスクリプトのテスト</a></li>
+	<li><a href="helpers.html">テストケース内で利用可能なヘルパーメソッド</a></li>
+	<li><a href="mock.html">モックを使ったテスト</a></li>
+	<li><a href="server.html">UxUをリモート操作する</a></li>
+</ul>
+
+<h2 id="server">UxUのサーバインターフェースの起動</h2>
+
+<p><code>-uxu-start-server</code>オプションを指定してFirefox（Thunderbird）を起動すると、テストランナーが単独で起動して、ソケット接続用のサーバとして動作するようになります。この場合は、以下のようにして同時に<code>-uxu-listen-port</code>オプションを指定すると、任意のポートでUxUサーバを起動することもできます。</p>
+<pre>$&gt; firefox <em>-uxu-start-server</em> <em>-uxu-listen-port 12345</em></pre>
+
+
+<h2 id="testcase">特定のテストを指定して実行する</h2>
+
+<p><code>-uxu-testcase</code>オプションでテストケースのファイルもしくはテストケースが置かれているフォルダを指定すると、テストランナーが単独で起動し、指定されたテストを自動的に実行します。</p>
+<pre>$&gt; firefox <em>-uxu-testcase "./tests"</em></pre>
+<p>テストの実行結果はテストランナー上に表示されます。<code>-uxu-log</code>オプションでログファイルを指定すると、テスト結果をその位置に出力し、テストランナーはテスト実行完了後に自動終了します。ログファイルはプレーンテキスト（.txt）、CSV（.csv）、TSV（.tsv）、JSON（.json）のいずれかの形式で出力することができます（ファイルの拡張子から形式が自動的に決定されます）。</p>
+<p><code>-uxu-priority</code>オプションを使うと、テスト全体の優先度を指定することができます。以下のようにすると、前回成功したテストも含めてすべてのテストを強制的に実行し、結果をファイルに出力して終了します。継続的なテストの実施に利用できるでしょう。</p>
+<pre>$&gt; firefox -uxu-testcase "./tests" <em>-uxu-log ./result.csv -uxu-priority must</em></pre>
+
+<p><a href="server.html#fire-test-runner">リモート操作用のコマンドラインユーティリティのfire-test-runner</a>を使うと、テストの実行結果をシェル上に表示することもできます。</p>
+

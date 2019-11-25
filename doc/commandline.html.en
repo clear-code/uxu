@@ -1,0 +1,39 @@
+---
+layout: default
+main_title: Command line options
+sub_title: UxU - UnitTest.XUL
+lang: en
+---
+
+<ul>
+	<li><a href="#server">Starting UxU's server interface</a></li>
+	<li><a href="#testcase">Run testcases from command line interface</a></li>
+</ul>
+
+<ul>
+	<li><a href="index.html.en">UxU Home</a></li>
+	<li><a href="testcases.html.en">How to write testcases for UxU?</a></li>
+	<li><a href="assertions.html.en">Available assertions in UxU</a></li>
+	<li><a href="greasemonkey.html.en">Testing Greasemonkey scripts by UxU</a></li>
+	<li><a href="helpers.html.en">Helper methods for testcases</a></li>
+	<li><a href="mock.html.en">How to write testcases with mocks?</a></li>
+	<li><a href="server.html.en">How to control UxU from remote?</a></li>
+</ul>
+
+<h2 id="server">Starting UxU's server interface</h2>
+
+<p>UxU's server interface starts if you start Firefox (or Thunderbird) with <code>-uxu-start-server</code> option. <code>-uxu-listen-port</code> option is also available to specify listening port, like:</p>
+<pre>$&gt; firefox <em>-uxu-start-server</em> <em>-uxu-listen-port 12345</em></pre>
+
+
+<h2 id="testcase">Run testcases from command line interface</h2>
+
+<p>UxU's Test Runner starts if you specify a testcase file or testcase folder by <code>-uxu-testcase</code> option. Runner runs specified test automatically.</p>
+<pre>$&gt; firefox <em>-uxu-testcase "./tests"</em></pre>
+<p>Results of tests are displayed in the Test Runner. To output results to a text file, use <code>-uxu-log</code> option and specify the path of the new result. If you specify file path of the result, Test Runner will quit Firefox automatically. You'll choose the format of the log file from one of supported types: plain text (.txt), CSV (.csv), TSV (.tsv), or JSON (.json). The format is automatically detected from the extension of the specified log file.</p>
+<p>You can specify priorities of whole the testcase by the option <code>-uxu-priority</code>. For example, this line will run any testcases in the folder, and quit Firefox itself after the result is completely exported:</p>
+<pre>$&gt; firefox -uxu-testcase "./tests" <em>-uxu-log ./result.csv -uxu-priority must</em></pre>
+<p>This will help your continuous integration tests.</p>
+
+<p><a href="server.html.en#fire-test-runner">If you like, results are displayed to the shell, by the fire-test-runner.</a></p>
+

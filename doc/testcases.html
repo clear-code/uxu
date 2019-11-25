@@ -1,0 +1,592 @@
+---
+layout: default
+main_title: UxU用のテストケースの書き方
+sub_title: UxU - UnitTest.XUL
+---
+
+<script type="text/javascript" src="./folding.js"></script>
+
+<ul>
+	<li><a href="#howto">テストケースの書き方</a></li>
+	<li><a href="#unit">単純なテスト</a>
+		<ul>
+			<li><a href="#mozunit">MozUnit（MozLab）互換の記法</a></li>
+		</ul>
+	</li>
+	<li><a href="#wait">処理待ちを使ったテスト</a>
+		<ul>
+			<li><a href="#note-Do">※関数やジェネレータを<code>yield</code>式に渡す場合の注意事項</a></li>
+		</ul>
+	</li>
+	<li><a href="#success-count">アサーション数の検証</a></li>
+	<li><a href="#addons">特定のアドオンのインストールが必要なテスト</a></li>
+	<li><a href="#profile">テスト用プロファイルの利用</a></li>
+	<li><a href="#data-driven">データ駆動テストの記述</a></li>
+	<li><a href="#parallel">テストの並列実行</a></li>
+	<li><a href="#skip">テストを実行しない場合</a>
+		<ul>
+			<li><a href="#priority">テストの優先度によるスキップ</a></li>
+			<li><a href="#product">対象アプリケーションによるスキップ</a></li>
+			<li><a href="#shouldSkip">その他の条件</a></li>
+		</ul>
+	</li>
+	<li><a href="#mapping">URIのマッピング</a></li>
+</ul>
+
+<ul>
+	<li><a href="./">UxUの紹介ページに戻る</a></li>
+	<li><a href="assertions.html">アサーション一覧</a></li>
+	<li><a href="greasemonkey.html">UxUによるGreasemonkeyスクリプトのテスト</a></li>
+	<li><a href="helpers.html">テストケース内で利用可能なヘルパーメソッド</a></li>
+	<li><a href="mock.html">モックを使ったテスト</a></li>
+	<li><a href="server.html">UxUをリモート操作する</a></li>
+	<li><a href="commandline.html">UxUのコマンドラインオプション</a></li>
+</ul>
+
+
+<h2 id="howto">テストケースの書き方</h2>
+
+<p>UxUは、特定のルールに則って記述されたJavaScriptファイルをテストケースとして実行します。</p>
+
+<p>テストケースとしての内容を含むスクリプトのファイル名は、「<var>&lt;テスト名&gt;</var>.test.js」という命名規則に則って付けることをお勧めします。UxUは特定のフォルダ内に含まれているテストを一括実行する機能を含んでいますが、この命名規則に則っておくと、UxUはテストケースとして実行可能なファイルだけを適切に認識することができます。</p>
+
+<p>テストケースの実行コンテキストでは、UxUによって定義されたヘルパーメソッドが利用できます。詳細は<a href="helpers.html">テストケース内で利用可能なヘルパーメソッド</a>をご覧下さい。</p>
+
+<p>実際にUxU用に書かれたテストケースの例として、UxU自身のテストが<a href="http://www.cozmixng.org/repos/mozilla/uxu/trunk/tests/uxu/">ソースツリー内にあります</a>。<a href="https://www.cozmixng.org/repos/mozilla/uxu/trunk/">UxUのSubversionリポジトリ全体</a>をチェックアウトした上で tests/uxu/ 内にあるテストを実行してみてください。</p>
+
+
+<h2 id="unit">単純なテスト</h2>
+<p>UxUでは、以下の要領で1ファイルにつき1つのテストケースを定義します。</p>
+<pre><code>var description = 'このテストケースの説明';
+
+function setUp() {
+  // 初期化処理
+  // （インスタンスの生成など、各テストを実行する前に必ず実行する内容）
+}
+
+function tearDown() {
+  // 終了処理
+  // （インスタンスの破棄など、各テストを実行する前に必ず実行する内容）
+}
+
+function startUp()
+{
+  // 前初期化処理
+  // （クラス定義の読み込みなど、テストケース全体の最初に実行する処理）
+}
+
+function shutDown()
+{
+  // 後終了処理
+  // （テストケース全体の最後に実行する処理）
+}
+
+testWillSuccess.description = '成功するテストの例';
+testWillSuccess.priority    = 'normal';
+function testWillSuccess() {
+  assert.equals(0, [].length);
+  assert.notEquals(10, ''.length);
+  assert.isTrue(true);
+  assert.isFalse(false);
+  assert.isDefined(assert);
+  assert.isUndefined(void(0));
+  assert.isNull(null);
+  assert.raises('TypeError', (function() { null.property = true; }), this);
+  assert.matches(/patterns?/, 'pattern');
+}
+
+testWillFail.description = '失敗するテストの例';
+testWillFail.priority    = 'low';
+function testWillFail() {
+  assert.isTrue(false);
+}</code></pre>
+<p>グローバルな名前空間において以下の表にある名前で始まる名前の関数は、テストケースの内容として自動的に認識されます。また、プロパティで明示的に指定を行うことで、これら以外の名前の関数をテスト用関数として認識させることも可能です。</p>
+<table border="1" summary="">
+<caption>テスト用関数として自動的に認識される関数の名前</caption>
+<thead><tr><th>関数名（前方一致）</th><th>テスト関数としての働き</th><th>プロパティでの指定</th></tr></thead>
+<tbody>
+	<tr>
+		<td><code>setUp</code></td>
+		<td>初期化処理</td>
+		<td><code><var>function</var>.isSetUp = true;</code></td>
+	</tr>
+	<tr>
+		<td><code>tearDown</code></td>
+		<td>終了処理</td>
+		<td><code><var>function</var>.isTearDown = true;</code></td>
+	</tr>
+	<tr>
+		<td><code>startUp</code></td>
+		<td>前初期化処理</td>
+		<td><code><var>function</var>.isStartUp = true;</code></td>
+	</tr>
+	<tr>
+		<td><code>shutDown</code></td>
+		<td>後終了処理</td>
+		<td><code><var>function</var>.isShutDown = true;</code></td>
+	</tr>
+	<tr>
+		<td><code>test<var>～</var></code></td>
+		<td>個々のテスト関数</td>
+		<td><code><var>function</var>.isTest = true;</code></td>
+	</tr>
+</tbody>
+</table>
+<p>これらのテスト用関数として認識された関数は、以下の順番で実行されます。</p>
+<ol>
+	<li class="level1">グローバルな名前空間に直接書かれたコード</li>
+	<li class="level2">startUp（前初期化処理）（あれば）</li>
+	<li class="level3">setUp（初期化処理）（あれば）</li>
+	<li class="level4">1個目のテスト関数</li>
+	<li class="level3">tearDown（終了処理）（あれば）</li>
+	<li class="level3">setUp（あれば）</li>
+	<li class="level4">2個目のテスト関数</li>
+	<li class="level3">tearDown（あれば）</li>
+	<li>…中略…</li>
+	<li class="level3">setUp（あれば）</li>
+	<li class="level4">N個目のテスト関数</li>
+	<li class="level3">tearDown（あれば）</li>
+	<li class="level2">shutDown（後終了処理）（あれば）</li>
+</ol>
+<p>ただし、個々のテスト関数の実行順序は保証されません。個々のテストはテストケース内でテスト関数を定義した順番と同じ順番で実行されるかもしれませんし、バラバラの順番で実行されるかもしれません。</p>
+
+<p>テストケースそのものの名前、説明など補足的な情報を提供する場合は、グローバルな名前空間において<code>description</code>という名前の変数に文字列で説明文を格納してください。テスト実行時などに自動的に利用されます。</p>
+
+<p class="note">※UxU 0.7.xまでは、startUp/shutDownはwarmUp/coolDownという名前でした。後方互換性のため、UxU 0.8.0以降でwarmUp/coolDownという名前を使用した場合はstartUp/shutDownとして扱われます。</p>
+
+<h3 id="mozunit">MozUnit（MozLab）互換の記法</h3>
+<p>UxUはMozUnit（MozLab）用の記法で書かれたテストケースも利用できます。</p>
+<p>UxUとMozUnitの相違点として、UxUでは<code>runStrategy</code>オプションは廃止されています。これは、後述する処理待ち機能によって、同期テストと非同期テストを定義時点で区別する必要がないためです。（ただし後方互換性のため、setUpが引数を受け取るようになっている場合は、MozUnit用の非同期テストと同様に振る舞うようになります。）</p>
+
+
+<h2 id="wait">処理待ちを使ったテスト</h2>
+<p>UxU用のテストケースでは、<code>utils.wait()</code>または<code>yield</code>式によって、テストの任意の位置で処理待ちを行うことができます。（<code>utils.wait()</code>はFirefox 3およびThunderbird 3以降でのみ利用できます。Firefox 3以降またはThunderbird 3以降専用のテストでは<code>utils.wait()</code>を使い、Firefox 2またはThunderbird 2もサポート対象に含める場合は<code>yield</code>を使うとよいでしょう。）</p>
+<p>テストケースや初期化処理の中に<code>utils.wait()</code>または<code>yield</code>式を書くと、UxUはその行で処理を一時停止し、一定の条件が満たされた後に次の行から処理を再開します。処理を再開する条件は<code>utils.wait()</code>または<code>yield</code>式に渡す値の内容によって変化します。詳細は以下の表の通りです。</p>
+
+<table border="1" summary="">
+<caption><code>utils.wait()</code>および<code>yeild</code>式に渡す値の内容と処理の再開条件の一覧</caption>
+<thead><tr><th>渡す値</th><th>説明と例</th></tr></thead>
+<tbody>
+	<tr>
+		<th>数値</th>
+		<td><p>渡された数値をミリ秒（1000ミリ秒＝1秒）単位のウェイト指定として解釈し、指定時間後に処理を再開します。</p>
+<pre><code>var beforeTime = (new Date()).getTime();
+<em>utils.wait(1000);</em> // 1秒待ってから処理を再開
+// <em>yield 1000;</em> // 1秒待ってから処理を再開
+var afterTime = (new Date()).getTime();
+assert.isTrue((afterTime - beforeTime) &gt; 500);
+assert.isTrue((afterTime - beforeTime) &lt; 1500);</code></pre>
+		</td>
+	</tr>
+	<tr id="waiting-object">
+		<th><code>value</code>プロパティを持つオブジェクト</th>
+		<td><p>渡されたオブジェクトの<code>value</code>プロパティの値が偽（false）である間は処理を一時停止し、値が真（true）になった時点で処理を再開します。いつまで待っても処理が再開されない（<code>value</code>プロパティの値が真にならない）場合は、30秒でタイムアウトします。</p>
+<pre><code>var browser;
+functionalTest.tests = {
+  setUp : function() {
+    <em>var loaded = { value : false };</em>
+    browser = window.openDialog(
+            'chrome://browser/content/browser.xul');
+    browser.addEventListener('load', function() {
+        <em>loaded.value = true;</em>
+    }, false);
+    // フラグが立つまで待ってから処理を再開
+    <em>utils.wait(loaded);</em>
+    // <em>yield loaded</em>;
+    browser.gFindBar.openFindBar();
+  },
+  tearDown : function() {
+    browser.close();
+  },
+  ...
+};</code></pre>
+		</td>
+	</tr>
+	<tr id="waiting-function">
+		<th>関数<a href="#note-Do">（※）</a></th>
+		<td><p>渡された関数を実行した返り値が偽（false）である間は処理を一時停止し、返り値が真（true）になった時点で処理を再開します。いつまで待っても処理が再開されない（返り値が真にならない）場合は、30秒でタイムアウトします。</p>
+<pre><code>var win = utils.getTestWindw();
+var url = win.content.location.href;
+// ブラウザで表示しているページが他のページに切り替わる
+// （ページを遷移する）まで待ってから処理を再開
+var f = function() {
+        return url != win.content.location.href
+    };
+<em>utils.wait(f);</em>
+// <em>yield f;</em>
+assert.equals(uri_to_be_redirected,
+              win.content.location.href);</code></pre>
+		</td>
+	</tr>
+	<tr>
+		<th>ジェネレータイテレータ<a href="#note-Do">（※）</a></th>
+		<td><p>渡された<a href="https://developer.mozilla.org/ja/New_in_JavaScript_1.7#.E3.82.B8.E3.82.A7.E3.83.8D.E3.83.AC.E3.83.BC.E3.82.BF">ジェネレータイテレータ</a>について、自動的にイテレーションを行い、その間処理を一時停止します。イテレーションが終了した段階（<code>StopIteration</code>例外が発生した時点）で、次の行から処理を再開します。</p>
+<pre><code>// 一連の処理の完了を待って次に進む
+function assert_page_load(aURI) {
+  yield utils.loadURI(aURI);
+  var win = utils.getTestWindow();
+  assert.equals(aURI, win.content.location.href);
+}
+
+function assert_window_close() {
+  var win = utils.getTestWindow();
+  win.close();
+  yield 500;
+  assert.isTrue(win.closed);
+}
+
+<em>utils.wait(assert_page_load('https://www.clear-code.com/'))</em>;
+// <em>yield assert_page_load('https://www.clear-code.com/')</em>;
+<em>utils.wait(assert_window_close())</em>;
+// <em>yield assert_window_close()</em>;</code></pre>
+		</td>
+	</tr>
+	<tr>
+		<th>ジェネレータ関数<a href="#note-Do">（※）</a></th>
+		<td>渡された<a href="https://developer.mozilla.org/ja/New_in_JavaScript_1.7#.E3.82.B8.E3.82.A7.E3.83.8D.E3.83.AC.E3.83.BC.E3.82.BF">ジェネレータ関数</a>の返り値として取得されるジェネレータイテレータを使用し、<code>yield</code>式にジェネレータイテレータを渡した場合と同様に処理します。
+<pre><code>function assert_window_close() {
+  ...
+}
+
+<em>utils.wait(assert_window_close)</em>; // without "()"
+// <em>yield assert_window_close</em>;</code></pre>
+		</td>
+	</tr>
+	<tr>
+		<th><a href="http://github.com/cho45/jsdeferred">JSDeferred</a>のDeferredオブジェクト</th>
+		<td><p>処理を一時停止し、渡されたDeferredオブジェクトのDeferredチェインの終端に達するまで待ってから処理を再開します。既にDeferredチェインが終端に達している場合、すぐに処理を再開します。Deferredチェインが途中でキャンセルされた場合や、いつまで待っても処理がチェインの終端に達しない場合は、30秒でタイムアウトします。</p>
+<pre><code>function myDeferredFunc()
+{
+  var d = new Deferred();
+  window.setTimeout(function() {
+    ...
+    d.call();
+  }, 100);
+  return d.next(function() { ... })
+          .error(function() { ... });
+}
+
+<em>utils.wait(myDeferredFunc())</em>;
+// <em>yield myDeferredFunc()</em>;</code></pre>
+		<p><em>処理待ちの復帰条件として使えるDeferredオブジェクトは、<a href="helpers.html#Deferred">UxUの名前空間で定義済みのDeferredクラス</a>から生成された物のみに限られます。</em>テスト対象のコードが独自にJSDeferredを読み込んでいる場合、そのDeferredオブジェクトは復帰条件としては利用できません。テストの際は、Deferredクラスへの参照をUxUの名前空間のDeferredクラスに差し替えるなどの方法を方法を採る必要があります。</p>
+		</td>
+	</tr>
+	<tr>
+		<th>DOMイベント指定とDOMイベントターゲットのペア</th>
+		<td><p>指定されたDOMイベントが対になるDOMイベントターゲットに対して発火するまで待って、処理を次に進めます。複数のDOMイベントとイベントターゲットの対を指定した場合、いずれか1つのイベントが発火した時点で処理を次に進めます。この時、発火したイベントのオブジェクトを<code>utils.wait()</code>の返り値の<code>event</code>プロパティで取得できます。</p>
+<pre><code>window.setTimeout(function() {
+  MyComponent.autoSubmit();
+}, 100);
+
+var result = <em>utils.wait('submit', content.document,
+                        'unload', content.document)</em>;
+assert.equals('submit', <em>result.event.type</em>);</code></pre>
+		<p>イベント名の文字列の代わりにハッシュを渡すと、より細かい条件で捕捉対象のイベントを指定することができます。</p>
+<pre><code>utils.wait(<em>{ type    : 'keypress',
+             keyCode : Ci.nsIDOMKeyEvent.DOM_VK_RETURN,
+             shiftKey : true }</em>,
+           $('input'),
+           <em>{ type    : 'keypress',
+             keyCode : Ci.nsIDOMKeyEvent.DOM_VK_ESCAPE,
+             capturing : true }</em>, // キャプチャリングフェイズでの監視
+           $('input') );</code></pre>
+		</td>
+	</tr>
+	<tr>
+		<th>上記以外</th>
+		<td>渡された値が<code>value</code>プロパティを持たないオブジェクトであるか、負の数値の場合、実行時にエラーとなります。それ以外の場合は、値を<code>Number()</code>で数値に変換した結果の値が指定されたものと見なします。<code>Number()</code>で数値に変換できなかった場合は、<code>0</code>が指定されたものと見なします。</td>
+	</tr>
+</tbody>
+</table>
+
+<h3 id="note-Do">※関数やジェネレータを<code>yield</code>式に渡す場合の注意事項</h3>
+<p><em>以下は、<code>yield</code>を使う時の注意点です。<code>utils.wait()</code>を使う場合はこの点を気にする必要はありません。</em></p>
+<p><code>yield</code>式は関数の実行ではないため、スタックを生成しません。よって、<code>yield</code>式に渡された関数やジェネレータ関数、ジェネレータイテレータの中で例外が発生した場合は、スタックトレースを辿っても<code>yield</code>式が評価された箇所まで到達できず、例外の発生箇所の特定が非常に困難となります。</p>
+<pre><code>// 例：マッピングのテスト
+function assertRedirect(aOriginalURI, aToBeRedirectedTo) {
+  yield utils.loadURI(aOriginalURI);
+  assert.equals(aToBeRedirectedTo, browser.currentURI.spec);
+}
+yield assertRedirect('http://myhost/page1',
+                     'http://myhost/page1_redirected');
+yield assertRedirect('http://myhost/page2',
+                     'http://myhost/page2_redirected');
+yield assertRedirect('http://myhost/page3',
+                     'http://myhost/page3_redirected');</code></pre>
+<p>例えばこのようなテストにおいては、<code>assert.equals()</code>でのアサーションに失敗して例外が発生しても、スタックトレースは<code>assert.equals()</code>がある行までしか辿ることができず、3回あるアサーションのどれが失敗したのかはレポートからは分からないということになります。</p>
+<p>このような場合のために、UxUは特殊なヘルパー関数である<code>Do()</code>を提供します。<code>Do()</code>を使用すると、<code>yield</code>式の評価の際にスタックを強制的に生成させることができ、例外の発生箇所の特定が容易になります。</p>
+<pre><code>yield <em>Do(</em>assertRedirect('http://myhost/page1',
+                     'http://myhost/page1_redirected')<em>)</em>;
+yield <em>Do(</em>assertRedirect('http://myhost/page2',
+                     'http://myhost/page2_redirected')<em>)</em>;
+yield <em>Do(</em>assertRedirect('http://myhost/page3',
+                     'http://myhost/page3_redirected')<em>)</em>;</code></pre>
+<p>なお、関数やジェネレータイテレータ以外のオブジェクトを渡した場合、<code>Do()</code>は渡されたオブジェクトをそのまま返しますので、テスト自体は<code>Do()</code>を使わない場合と同様に動作します。<code>Do()</code>を書き忘れるミスを防ぐためにも、テストケース中に<code>yield</code>式を書く際には、渡す値を必ず<code>Do()</code>でラップするようにしておくとよいでしょう。</p>
+
+
+<h2 id="success-count">アサーション数の検証</h2>
+<p>個々のテスト関数には、そのテストで行われなくてはならないアサーションの回数を<code>assertions</code>プロパティで明示することができます。</p>
+<pre><code>testRoop<em>.assertions = 10</em>;
+function testRoop() {
+  for (var i = 0, maxi = data.length; i &lt; maxi; i++)
+  {
+    assert.equals(expected[i], data[i], i);
+  }
+}</code></pre>
+<p>アサーションの回数が明示されたテストにおいて、個々のアサーションはすべて成功したものの、期待された回数のアサーションが実行されなかったという場合、UxUはそのテストを失敗と判断します。作業時に一時的にコメントアウトしたアサーションを元に戻し忘れていたという風に、必要なアサーションが実行されないままテストが成功と判断されてしまうことを防げます。</p>
+<p>なお、<code>assertions</code>プロパティによるアサーション数の検証は、テスト関数内でのアサーションに対して行われます。テストケース全体の<code>setUp</code>/<code>tearDown</code>や、個々のテスト関数の<code>setUp</code>/<code>tearDown</code>内に書かれたアサーションは、この検証の対象外となります。</p>
+<p>アサーションの回数が明示されていないテストにおいて、1つもアサーションが行われないままテストが完了した場合、UxUはその旨を警告した上で、テスト成功として処理します。</p>
+<h3><code>minAssertions</code>, <code>maxAssertions</code></h3>
+<p>必要に応じて、指定された数未満のアサーションしか実行されなかった場合にテスト失敗と見なす<code>minAssertions</code>プロパティと、指定された数より多くのアサーションが実行された場合にテスト失敗と見なす<code>maxAssertions</code>プロパティも利用できます。これらのプロパティの用法は<code>assertions</code>プロパティと同様で、それぞれ個別に指定することも、複数を組み合わせて使用することもできます。</p>
+
+
+<h2 id="addons">特定のアドオンのインストールが必要なテスト</h2>
+<p>テストの内容によっては、実際に特定のアドオンがインストールされていなくてはならない場合があります。</p>
+<p>UxUはアドオンの自動的なインストールまで行う事はできませんが、個々のテストケースに対して必要なアドオンを明示する事ができます（UxU バージョン1.0.1以降）。</p>
+<pre><code>var requiredAddons = ['uxu@clear-code.com', 'treestyletab@piro.sakura.ne.jp'];</code></pre>
+<p>必要なアドオンのID文字列の配列をグローバルな名前空間の変数<code>requiredAddons</code>に格納しておくと、UxUはそれらのアドオンがインストールされていなかったり無効化されていたりする場合、テストの実行前の段階で、その事実を致命的なエラーとして報告します。これにより、本当にテストが失敗しているのか、テストを実行するために必要な条件が満たされていないのかを、容易に識別する事ができます。</p>
+
+
+<h2 id="profile">テスト用プロファイルの利用</h2>
+<p>テストを一定の環境で実行することを強制するために、テストにはテスト実行用のプロファイルを指定することができます。</p>
+<pre><code><em>var profile = '../profiles/test-profile/';</em>
+
+function setUp() {
+...</code></pre>
+<p>この例のように、プロファイルとして使用するフォルダへのパスをグローバルな名前空間の変数<code>profile</code>に格納しておくと、UxUは自動的にそのプロファイルでFirefoxやThunderbirdを起動してテストを実行します。</p>
+<p>プロファイルとして指定したフォルダは、実際には、一時ファイルとして複製された物が利用されます。指定したフォルダそのものには変更は行われません。</p>
+<pre><code>var profile = '../profiles/test-profile/';
+<em>var application = 'C:\\Program Files\\Mozilla Thunderbird\\thunderbird.exe';</em>
+
+...</code></pre>
+<p>また、この例のようにアプリケーションの実行ファイルへのパスまたはファイルURLをグローバルな名前空間の変数<code>application</code>に格納しておくと、現在のアプリケーションではなくそのアプリケーションでテストを実行します。（※プロファイルが未指定の場合、<code>application</code>による指定は無視されます）</p>
+<p>なお、<a href="#addons">必要なアドオンが明示されており</a>、且つそのアドオンが現在の（UxUを実行している）プロファイルにインストール済みである場合、UxUは複製された一時的なプロファイルの中にそのアドオンを自動的に含めます。つまり、アドオンのインストールを必要とするテストを容易に実行する事ができます。</p>
+
+
+<h2 id="data-driven">データ駆動テストの記述</h2>
+<p>特定の処理に対して様々な種類の引数を渡してテストしたい場合のために、UxUはデータ駆動テストの記述もサポートしています。テスト関数の<code>parameters</code>プロパティに配列またはハッシュの形でパラメータ定義を代入すると、そのテストはデータ駆動テストとなります。</p>
+<p>例えば、Webページに対して何らかの処理を行う機能について、複数の異なるWebページにアクセスして結果を検証する場合、以下のようにテストを記述することができます。</p>
+<pre><code>function testMyFunction() {
+  utils.wait(utils.loadURI('http://<var>...</var>'));
+  assert.equals('result1', myFunc(utils.content));
+
+  utils.wait(utils.loadURI('http://<var>...</var>'));
+  assert.equals('result2', myFunc(utils.content));
+
+  utils.wait(utils.loadURI('http://<var>...</var>'));
+  assert.equals('result3', myFunc(utils.content));
+
+  <var>...</var>
+}</code></pre>
+<p>しかし、このように記述すると、検証したいWebページが増えれば増えるほどテストが長くなっていきます。また、仮に途中のいずれかの検証結果が失敗（failure）となった場合や、予期しないエラーが発生した場合などは、テストがそこで中断されてしまうため、残りの項目の検証が行われず、テストを繰り返し実施する際の効率が悪くなります。</p>
+<p>このようなケースでは、以下のようにパラメータ定義を記述すると効率よくテストを進められます。</p>
+<pre><code>testMyFunction.<em>parameters = [
+  { uri: 'http://<var>...</var>', expected: 'result1' },
+  { uri: 'http://<var>...</var>', expected: 'result2' },
+  { uri: 'http://<var>...</var>', expected: 'result3' },
+  <var>...</var>
+]</em>;
+function testMyFunction(<em>aParameter</em>) {
+  utils.wait(utils.loadURI(<em>aParameter.uri</em>));
+  assert.equals(<em>aParameter.expected</em>, myFunc(utils.content));
+}</code></pre>
+<p>テスト関数の<code>parameters</code>プロパティに配列としてパラメータ定義が代入されている場合、UxUは配列の各要素をテスト関数の引数として渡す形でそのテストを繰り返し実施します（テスト関数に個別のsetUpやtearDownが指定されている場合、それらにも同じ引数が渡されます）。このようにしておくと、上記の例であれば「testMyFunction (1)」「testMyFunction (2)」「testMyFunction (3)」という具合に各回がそれぞれ別個のテストとして実行されるため、途中のどれかの回でテストが失敗（failure）した場合でも、すべての検証結果を最後にまとめて見ることができます。</p>
+<p>テスト関数の<code>parameters</code>プロパティにハッシュとしてパラメータ定義を代入した場合、UxUはハッシュの各要素をテスト関数の引数に渡します。</p>
+<pre><code>testMyFunction.<em>parameters = {
+  google: { uri: 'http://<var>...</var>', expected: 'result1' },
+  yahoo:  { uri: 'http://<var>...</var>', expected: 'result2' },
+  mixi:   { uri: 'http://<var>...</var>', expected: 'result3' },
+  <var>...</var>
+}</em>;
+function testMyFunction(aParameter) {
+  utils.wait(utils.loadURI(aParameter.uri));
+  assert.equals(aParameter.expected, myFunc(utils.content));
+}</code></pre>
+<p>この場合、実行される各回のテストの名前にはハッシュのキーが付与されます。例えば、上記の例であれば各回のテスト名は「testMyFunction (google)」「testMyFunction (yahoo)」「testMyFunction (mixi)」となります。テストに失敗（failure）した場合などに表示される名前が分かりやすくなるため、デバッグの手間を軽減できます。</p>
+<p>データ駆動テストの記述を支援するため、UxUには<a href="helpers.html#utils.readParametersFromCSV">CSV形式のデータファイルから配列型やハッシュ型のパラメータ定義を生成するヘルパーメソッド</a>が含まれています。OpenOffice.org CalcやMicrosoft Excelなどでテストに与えるパラメータの内容を管理できるため、項目数の多いテストも容易にメンテナンスできます。</p>
+
+
+<h2 id="parallel">テストの並列実行</h2>
+<p>UxUは、複数のテストケースの並列実行に対応しています。テストの実行時に並列実行が許可されている場合（並列実行の最大数が1よりも大きな値に設定されている場合）、テストは自動的に並列実行されます。</p>
+<p>ただし、テスト中に使用するデータベースの位置が固定されているテスト同士など、並列実行すると問題が起こる可能性があるテストについては、明示的に並列実行を禁止する事もできます。並列実行されては困るテストケースでは、以下のように記述して下さい。</p>
+
+<pre><code>var parallel = false;
+
+...</code></pre>
+
+
+
+<h2 id="skip">テストを実行しない場合</h2>
+
+<h3 id="priority">テストの優先度によるスキップ</h3>
+<p>個々のテスト関数には<code>priority</code>プロパティによって優先度を設定できます。以下は、テストに優先度を設定する場合の例です。</p>
+<pre><code>testBasic<em>.priority = 'must'</em>;
+function testBasic() {
+  // とても重要な処理のテストは、必ず実施する。
+  assert.equals(3, calcService.add(1, 2));
+  <var>...</var>
+}
+
+testMinor<em>.priority = 'low'</em>;
+function testMinor() {
+  // あまり使われない機能のテストは、たまに実施する。
+  <var>...</var>
+}
+
+testUnderConstruction<em>.priority = 'never'</em>;
+function testUnderConstruction() {
+  // 未実装の機能のテストは、実装を終えるまでは実施しない。
+  // （毎回エラーが出ると、他のテストが成功したかどうかが
+  //   分からなくなるので）
+  <var>...</var>
+}</code></pre>
+<p>UxUの初期設定は、繰り返し何度もテストを実行する、テスト駆動の開発スタイルを念頭に置いています。多くの場合、前回成功したテストは次も成功する可能性が高いと考えられます。そこで、UxUは前回成功したテストについては一定の確率で実行をスキップするようになっています。ただし、<em>前回実行時に失敗したテストや新しく追加されたテストは必ず実行されます</em>。これにより、一回一回のテストの実行にかかる時間を短縮して気軽に実行できるようになるため、多くのテストを偏り無く実行することができます。</p>
+<p>優先度は以下のいずれかを文字列で指定するか、0から1までの数値で指定します。</p>
+<table border="1" summary="">
+<caption>テストの優先度の一覧</caption>
+<thead><tr><th>優先度</th><th>実行される確率</th><th>数値での指定</th></tr></thead>
+<tbody>
+	<tr>
+		<td><code>must</code></td>
+		<td>100％</td>
+		<td>1</td>
+	</tr>
+	<tr>
+		<td><code>important</code></td>
+		<td>90％</td>
+		<td>0.9</td>
+	</tr>
+	<tr>
+		<td><code>high</code></td>
+		<td>70％</td>
+		<td>0.7</td>
+	</tr>
+	<tr>
+		<td><code>normal</code>（初期値）</td>
+		<td>50％</td>
+		<td>0.5</td>
+	</tr>
+	<tr>
+		<td><code>low</code></td>
+		<td>25％</td>
+		<td>0.25</td>
+	</tr>
+	<tr>
+		<td><code>never</code></td>
+		<td>0％</td>
+		<td>0</td>
+	</tr>
+</tbody>
+</table>
+<p>なお、<code>proprity</code>という名前のグローバル変数を使用すると、そのテストケース全体の優先度を明示的に設定できます。個々のテストに優先度が明示的に指定されていない場合は、テストケース全体の優先度が適用されます。</p>
+<pre><code>var priority = 'must';
+
+testFoo.priority = 'never';
+function testFoo() { <var>...</var> } // このテストは"never"なのでスキップされる
+
+function testBar() { <var>...</var> } // このテストは"must"として扱われる</code></pre>
+
+
+<h3 id="product">対象アプリケーションによるスキップ</h3>
+<p>個々のテスト関数には<code>targetProduct</code>プロパティによって対象アプリケーションを指定できます。FirefoxとThunderbirdの両方に対応したアドオンなどのように、それぞれのアプリケーションに固有の機能をテストする場合に、この機能を利用できます。</p>
+<pre><code>testForFirefox<em>.targetProduct = 'Firefox'</em>;
+function testForFirefoxSpecificFeature() { <var>...</var> }
+
+testMinor<em>.targetProduct = 'Thunderbird'</em>;
+function testForThunderbirdSpecificFeature() { <var>...</var> }
+
+function testForAllApplication() { <var>...</var> }</code></pre>
+<p>また、<code>targetProduct</code>という名前のグローバル変数を使用すると、そのテストケース全体の対象アプリケーションを明示できます。テストケース内のテストを実行するかどうかの判断は最初の時点で行われるため、個々のテストに対して別の対象アプリケーションを指定していた場合、それらはすべて実行をスキップします。</p>
+<pre><code>var targetProduct = 'Thunderbird';
+
+testA.targetProduct = 'Firefox';
+function testA() { <var>...</var> } // このテストはスキップされる
+
+function testB() { <var>...</var> } // このテストは実行される
+</code></pre>
+<p>なお、<em><code>targetProduct</code>グローバル変数によって対象アプリケーションが明示されており、<a href="#profile">テスト用プロファイル</a>も同時に指定されている場合は、「テストケース全体をスキップする」ではなく、「テスト対象のアプリケーションを指定プロファイルで自動的に起動してテストを実行する」という動作になります。</em></p>
+
+
+<h3 id="shouldSkip">その他の条件</h3>
+<p>上記以外の条件でテストの実行をスキップするかどうかを指定したい場合、それぞれのテストケースの<code>shouldSkip</code>プロパティによって、そのテストをスキップすることを明示的に指定できます。<code>shouldSkip</code>プロパティに関数オブジェクトを指定した場合、テストの実行の直前（<code>setUp()</code>が処理されるより前）にその関数を実行し、その返り値を見てスキップするかどうかを判断します。それ以外の値を指定した場合は、相当する真偽値として評価します。</p>
+<pre><code>testA.shouldSkip = true;
+function testA() { /* 書きかけなので実行しない */ }
+
+// 2009年2月9日以降は実行しないテスト
+testB.shouldSkip = function() {
+  return Date.now() &gt; (new Date('2009/2/9')).getTime();
+};
+function testB() { <var>...</var> }
+</code></pre>
+<p>テストケース全体の実行をスキップさせたい場合は、グローバル変数<code>shouldSkip</code>を使用してください。<code>shouldSkip</code>グローバル変数によってスキップが明示された場合は、個々のテストでの指定は無視されます。</p>
+<pre><code>var shoudSkip = true;
+
+// 以下のテストは常にスキップされる
+testA.priority = 'must';
+function testA() { <var>...</var> }
+function testB() { <var>...</var> }</code></pre>
+
+
+
+
+<h2 id="mapping">URIのマッピング</h2>
+
+<p class="note">※UxU 0.8.x以降では、<a href="mock.html#httpserver">ローカルHTTPサーバをモックとして動作させる</a>ことが可能になりました。場合によっては、ローカルHTTPサーバのモックを使用した方が効率よくテストを記述できることもありますので、モックの説明も併せて参照して下さい。</p>
+
+<p>特定のURIのリソースを読み込むように設計されたモジュールのテストを容易に行えるよう、UxUは簡易的なマッピング機能を内蔵しています。この機能を使うことによって、例えば、http://myservice.example.com/myapi?userid=012345 というURIへのアクセスに対して、あらかじめ用意しておいたローカルのファイル 012345.xml の内容を返す、といったことができます。</p>
+<pre><code><em>var mapping = {
+      '*.google.*/*' : baseURL+'../fixtures/google-pages.html',
+      '*.yahoo.*/*'  : baseURL+'../fixtures/yahoo-pages.html',
+      'https://addons.mozilla.org/ja/firefox/addon/*'
+                     : baseURL+'../fixtures/addons/$1.html'
+    };</em>
+
+function setUp() { <var>...</var> }
+function tearDown() { <var>...</var> }
+function test_loadInBackground() {
+  myModule.loadURL('https://addons.mozilla.org/ja/firefox/addon/6357');
+  utils.wait(function() { return myModule.loaded; });
+  assert.equals('summary of the loaded document', myModule.getSummary());
+}</code></pre>
+<p>この例のように、URIの置き換えルールをグローバルな名前空間の変数<code>mapping</code>に格納しておくと、テストケースの実行中に行われるすべての読み込み処理（フレーム内のリソースの読み込み、XMLHttpRequestによる通信など）において、その置き換えルールが適用されます。</p>
+<p>マッピング処理はプロキシによる内容の置換と同等の形で行われます。マッピングが行われた場合には、ドキュメントのURIは置換元のURIのままで、ドキュメントの内容だけがマッピング先のURIで示されるリソースとなります。</p>
+
+<table border="1" summary="">
+<caption>URIの置き換えルールの定義方法</caption>
+<thead><tr><th>形式</th><th>説明と例</th></tr></thead>
+<tbody>
+	<tr>
+		<th>ハッシュ（連想配列、オブジェクトリテラル）</th>
+		<td><p>ハッシュのキーを置き換え前URIの検出ルール、対応する値を置き換え先のURIとして解釈します。置き換え前URIの検出ルールには、ワイルドカードとして「*」（0個以上の任意の文字にマッチ）と「?」（任意の1文字にマッチ）を利用できます。</p>
+			<pre><code>var mapping = {
+      'http://release.example.com/'  : baseURL+'../fixtures/home.html',
+      'http://release.example.com/*' : 'http://test.example.com/$1',
+      'http://www??.example.com/*'   : 'http://test.example.com/server$1$2/$3'
+    };</code></pre>
+		</td>
+	</tr>
+	<tr>
+		<th>配列</th>
+		<td><p>配列の奇数番目の要素を置き換え前URIの検出ルール、偶数番目の要素を置き換え先のURIとして解釈します。置き換え前URIの検出ルールには、ワイルドカードとして「*」（0個以上の任意の文字にマッチ）と「?」（任意の1文字にマッチ）を利用できます。また、置き換え前URIの検出ルールとして正規表現リテラルも利用できます。</p>
+			<pre><code>var mapping = [
+      'http://release.example.com/'      , baseURL+'../fixtures/home.html',
+      'http://release.example.com/*'     , 'http://test.example.com/$1',
+      /^http://www(\d+).example.com/(.*)', 'http://test.example.com/server$1/$2'
+    ];</code></pre>
+		</td>
+	</tr>
+	<tr>
+		<th>関数</th>
+		<td><p>URIの置き換えルールとして関数を使用する場合、その関数は引数としてnsIURI形式で元のURIを受け取り、文字列として置き換え後のURIを返す必要があります。元のURIと同じURI、空文字、<code>false</code>、<code>null</code>などを返すと、マッピングは行われません。</p>
+			<pre><code>var mapping = function(aOriginalURI) {
+      return aOriginalURI.spec.indexOf('google') > -1 ?
+               baseURL+'../fixtures/google-pages.html' :
+               null ;
+    };</code></pre>
+		</td>
+	</tr>
+</tbody>
+</table>
+<p class="note">※UxU 0.7.5以前では、<code>mapping</code>ではなく<code>redirect</code>という名前の変数を使用する必要がありました。後方互換性のため、UxU 0.7.6以降でも<code>redirect</code>による指定も有効となっています。</p>
+
+<p><a href="mock.html#httpserver">ローカルHTTPサーバをモックとして利用する</a>と、同じURIでのアクセスに対して場合に応じて様々な内容を返すようなHTTPサーバとの連携を前提としたテストをより容易に記述することができます。</p>
