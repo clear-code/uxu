@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>How to write testcases with mocks?</title>
+</head>
+<body>
+<h1>How to write testcases with mocks?</h1>
+
+<ul>
+	<li><a href="#howto">How to create and define mocks?</a>
+		<ul>
+			<li><a href="#howto-object">Mock objects</a>
+				<ul>
+					<li><a href="#howto-object-create">How to create mock objects</a></li>
+					<li><a href="#howto-object-expect">Expectations of methods</a></li>
+					<li><a href="#howto-object-expectSetGet">Expectations of properties</a></li>
+					<li><a href="#howto-object-assert">Verification of mock objects</a></li>
+				</ul>
+			</li>
+			<li><a href="#howto-function">Mock functions</a>
+				<ul>
+					<li><a href="#howto-function-create">How to create mock functions</a></li>
+					<li><a href="#howto-function-expect">Expectations of function calls</a></li>
+					<li><a href="#howto-function-assert">Verification of mock functions</a></li>
+				</ul>
+			</li>
+			<li><a href="#howto-override">Overriding methods of existing objects</a></li>
+		</ul>
+	</li>
+	<li><a href="#expectation-chain">Method chain of expectations</a></li>
+	<li><a href="#api">Compatibility to other mock libraries</a>
+		<ul>
+			<li><a href="#api-mockobjectjs">MockObject.js</a></li>
+			<li><a href="#api-jsmock">JSMock</a></li>
+			<li><a href="#api-jsmockito">JsMockito</a></li>
+		</ul>
+	</li>
+	<li><a href="#httpserver">Using local HTTP servers as mock</a></li>
+</ul>
+
+<ul>
+	<li><a href="index.html.en">UxU Home</a></li>
+	<li><a href="testcases.html.en">How to write testcases for UxU?</a></li>
+	<li><a href="greasemonkey.html.en">Testing Greasemonkey scripts by UxU</a></li>
+	<li><a href="helpers.html.en">Helper methods for testcases</a></li>
+	<li><a href="server.html.en">How to control UxU from remote?</a></li>
+	<li><a href="commandline.html.en">Command line options</a></li>
+</ul>
+
+
+<h2 id="howto">How to create and define mocks?</h2>
+
+<h3 id="howto-object">Mock objects</h3>
+
+<h4 id="howto-object-create">How to create mock objects</h4>
+<p>In testcases, a constructor function <code>Mock()</code> is available, and you can create new mock object from the function. You can give a name to the mock as you like, by the first argument of the constructor. The name will be shown in test results and help your debugging, so you should give names for mocks.</p>
+<pre><code>var mock = <em>new Mock('my mock')</em>;</code></pre>
+<p>If you give a constructor or an object to the constructor, then the mock inherits properties and methods of the source object, and it is also named automatically from the source.</p>
+<pre><code>// from class
+var arrayMock = <em>new Mock(Array)</em>;
+// from instance
+var windowMock = <em>new Mock(window)</em>;
+// you can give both name and source
+var documentMock = <em>new Mock('unique name', document)</em>;</code></pre>
+<p>Exceptions will be thrown if you access properties (ex. <code>windowMock.title</code>) or methods (ex. <code>windowMock.alert()</code>) inherited from its source, before you define any expectation.</p>
+
+<h4 id="howto-object-expect">Expectations of methods</h4>
+<p>Just after you create a new mock, it will throw "unexpected call" exceptions if you call any functions of the mock (except features of the mock itself). To use the mock for a test, you have to define <em>expectations</em> (a set of expected arguments and the return value).</p>
+<p>For example, if <code>gBrowser.addTab()</code> and <code>gBrowser.removeAllTabsBut()</code> are expected to be called with this order, then you will define two expectations as:</p>
+<pre><code>var mock = new Mock('gBrowser');
+mock.<em>expect('addTab', uri, tab)</em>; // mock.addTab(uri) =&gt; tab
+mock.<em>expect('removeAllTabsBut', tab)</em>; // mock.removeAllTabsBut(tab) =&gt; undefined
+gBrowser = mock; // replace gBrowser to the mock</code></pre>
+<p>The method <code>expect()</code> receives the name of the imitated method as the first argument, expected arguments as the second (if an array is expected to be given, you can specify it as a 2D-array. You'll specify a blank array for an imitated method which is expected to be called with no argument), and the value to be returned as the third (<code>undefined</code> by default).  When the imitated method is called with expected arguments, then it returns the specified value.</p>
+<pre><code>mock.expect('open', <em>[uri, name, features]</em>, null);
+// mock.open(uri, name, features) =&gt; null
+
+mock.expect('slice', [[item1, item2], 1], [item2]);
+// mock.slice([item1, item2], 1) =&gt; [item2]</code></pre>
+<p>If you want to imitate a case that a method call throws an error, then use <code>expectThrows()</code> instead of <code>expect()</code>. Then the imitated method will raise the specified exception if it is called with the specified arguments.</p>
+<pre><code>mock.<em>expectThrows('loadURI', 'urn:isbn:xxxxx', 'invalid URI')</em>;
+// mock.loadURI('urn:isbn:xxxxx') =&gt; throw new Error('invalid URI')
+
+// You can give a constructor for the exception (and its message).
+mock.<em>expectThrows('eval', '{', SyntaxError, 'missing } in compound statement')</em>;
+// mock.eval('{') =&gt; throw new SyntaxError('missing } in compound statement')</code></pre>
+
+<p>Anyway, each expectation matches to each call, including the order. All unexpected calls - calling in wrong order or calling with wrong arguments - will raise exceptions. <em>For cases that the called order and arguments are unmeaning, you should use stubs instead of mocks.</em></p>
+<pre><code>// this is a stub, not a mock.
+var gBrowser = {
+      addTab : function() {
+        return document.createElement('tab');
+      }
+    };</code></pre>
+
+<h4 id="howto-object-expectSetGet">Expectations of properties</h4>
+<p>You can define expectations for accesses to properties.</p>
+<pre><code>var loc = new Mock('location');
+
+// the "host" property will be accessed just one time,
+// then return "www.example.jp".
+loc.<em>expectGet('host', 'www.example.jp')</em>;
+// loc.host =&gt; 'www.example.jp'
+
+// a string "http://www.example.com" will be set to the "href" property.
+loc.<em>expectSet('href', 'http://www.example.com/')</em>;
+// loc.href = 'http://www.example.com/' =&gt; OK
+// loc.href = 'http://www.example.net/' =&gt; NG</code></pre>
+<p>Moreover, you can define cases which raise exceptions by accesses to properties.</p>
+<pre><code>loc.<em>expectGetThrows('host', 'permission denied')</em>;
+// loc.host =&gt; throw new Error('permission denied')
+
+loc.<em>expectSetThrows('href', 'urn:isbn:xxxx', 'invalid uri')</em>;
+// loc.href = 'urn:isbn:xxxx' =&gt; throw new Error('invalid uri')</code></pre>
+<p>Same as expectations for method calls, each expectation matches to each access, including the order. All unexpected accesses - accesses in wrong order or settings with wrong values - will raise exceptions. <em>For cases that the accessed order and values are unmeaning, you should use stubs instead of mocks.</em></p>
+<pre><code>// this is a stub, not a mock.
+var location = {
+      href : 'http://www.exemple.jp/',
+      host : 'www.exemple.jp'
+    };</code></pre>
+
+<h4 id="howto-object-assert">Verification of mock objects</h4>
+<p>You can verify the mock itself by its <code>assert()</code> method anytime. The assertion (verification) will succeed if all of defined expectations were processed correctly. Otherwise, if there are some unprocessed expectations the method raises an exception.</p>
+<pre><code>gBrowser = new Mock('gBrowser mock');
+gBrowser.expect('addTab', uri, tab);
+gBrowser.expect('removeAllTabsBut', tab);
+
+var newTab = openNewTabAndCloseOthers(uri);
+
+gBrowser.<em>assert()</em>;</code></pre>
+<p>Note, you don't have to call <code>assert()</code> manually. <em>UxU always calls <code>assert()</code> of all mocks created in the test before doing "tearDown", automatically.</em></p>
+
+
+<h3 id="howto-function">Mock functions</h3>
+<p>You can create a mock which works as a function which is not related to specific object, instead of full-featured mock objects. Mock functions will be useful for callback functions, etc.</p>
+
+<h4 id="howto-function-create">How to create mock functions</h4>
+<p>In testcases, two constructor functions <code>FunctionMock()</code> and <code>MockFunction()</code> are available, and you can create new mock function from them. These is no difference, so you can use one of them as you like. You can give a name to the mock as you like, by the first argument of the constructor. The name will be shown in test results and help your debugging, so you should give names for mocks.</p>
+<pre><code>var fmock = <em>new MockFunction('my mock function')</em>;</code></pre>
+<p>If you give a named function to the constructor, then the mock uses the name of it. <em>Mock function cannot get a name from an anonymous function, so it is strongly recommended to you that specifying names to mock functions manually.</em>/p>
+<pre><code>var openNewTabWith = <em>new MockFunction(openNewTabWith)</em>;
+var openUILink = <em>new MockFunction(openUILink)</em>;</code></pre>
+
+<h4 id="howto-function-expect">Expectations of function calls</h4>
+<p>Just after you create a new mock function, it will throw "unexpected call" exceptions if you call it with any argument. To use it for a test, you have to define expectations.</p>
+<p>For example, if <code>openNewTabWith()</code> is expected to be called two times with arguments <code>'http://www.example.com/'</code> and <code>'urn:isbn:xxxx'</code>, then you will define two expectations as:</p>
+<pre><code>var fmock = new MockFunction('openNewTabWith');
+fmock.<em>expect('http://www.example.com/', tab)</em>; // openNewTabWith('http://www.example.com/') =&gt; tab
+fmock.<em>expect('urn:isbn:xxxx')</em>; // openNewTabWith('urn:isbn:xxxx') =&gt; undefined
+openNewTabWith = fmock; // replace to the mock function</code></pre>
+<p>The method <code>expect()</code> receives expected arguments as the first argument (if an array is expected to be given, you can specify it as a 2D-array. You'll specify a blank array for an imitated function which is expected to be called with no argument), and the value to be returned as the second (undefined by default). When the imitated function is called with expected arguments, then it returns the specified value.</p>
+<pre><code>fmock.expect(<em>[uri, name, features]</em>, null);
+// fmock(uri, name, features) =&gt; null
+
+fmock.expect([[item1, item2], 1], [item2]);
+// fmock([item1, item2], 1) =&gt; [item2]</code></pre>
+<p>If you want to imitate a case that a call throws an error, then use <code>expectThrows()</code> instead of <code>expect()</code>. Then the imitated function will raise the specified exception if it is called with the specified arguments.</p>
+<pre><code>openMock.<em>expectThrows('urn:isbn:xxxxx', 'invalid URI')</em>;
+// openMock('urn:isbn:xxxxx') =&gt; throw new Error('invalid URI')
+
+// You can give a constructor for the exception (and its message).
+evalMock.<em>expectThrows('{', SyntaxError, 'missing } in compound statement')</em>;
+// evalMock('{') =&gt; throw new SyntaxError('missing } in compound statement')</code></pre>
+
+<p>Anyway, each expectation matches to each call, including the order. All unexpected calls - calling in wrong order or calling with wrong arguments - will raise exceptions. <em>For cases that the called order and arguments are unmeaning, you should use stubs instead of mocks.</em></p>
+<pre><code>// this is a stub, not a mock.
+var openUILink = function(aURI) {
+      return true;
+    };</code></pre>
+
+<h4 id="howto-function-assert">Verification of mock functions</h4>
+<p>You can verify the mock function itself by its <code>assert()</code> method anytime. The assertion (verification) will succeed if all of defined expectations were processed correctly. Otherwise, if there are some unprocessed expectations the method raises an exception.</p>
+<pre><code>openNewTabWith = new MockFunction('openNewTabWith');
+openNewTabWith.expect(uri1, document.createElement('tab'));
+openNewTabWith.expect(uri2, document.createElement('tab'));
+
+var newTabs = openNewTabs([uri1, uri2]);
+
+openNewTabWith.<em>assert()</em>;</code></pre>
+<p>Note, you don't have to call <code>assert()</code> manually. <em>UxU always calls <code>assert()</code> of all mocks created in the test before doing "tearDown", automatically.</em></p>
+
+
+<h3 id="howto-override">Overriding methods of existing objects</h3>
+<p>You can replace (or add) some methods or properties of existing objects, by static methods of <code>Mock</code>.</p>
+<pre><code><em>Mock.expect(</em>gBrowser, 'addTab', uri, document.createElement('tab')<em>)</em>;
+<em>Mock.expect(</em>gBrowser, 'removeAllTabsBut', tab<em>)</em>;
+<em>Mock.expectThrows(</em>gBrowser, 'loadURI', ['urn:isbn:xxxx', referrer], 'invalid URI'<em>)</em>;
+<em>Mock.expectGet(</em>gBrowser, 'contentDocument', content.document<em>)</em>;
+<em>Mock.expectGetThrows(</em>gBrowser, 'docShell', 'permission denied'<em>)</em>;
+<em>Mock.expectSet(</em>gBrowser, 'selectedTab', tab<em>)</em>;
+<em>Mock.expectSetThrows(</em>gBrowser, 'contentDocument', 'readonly'<em>)</em>;</code></pre>
+<p>Differently from <a href="#howto-object-expect">expectations of methods</a> or <a href="#howto-object-expectSetGet">expectations of properties</a>, static methods receive the object which is the owner of the method (or property) as the first argument.</p>
+
+<h2 id="expectation-chain">Method chain of expectations</h2>
+<p>You can specify details of expectations by method-chain of expectation itself.</p>
+<pre><code>var windowMock = new Mock(window);
+
+windowMock.expect('alert', 'OK')<em>.andReturn(true)</em>
+                                <em>.times(3)</em>;</code></pre>
+<p>Method-chain is available for methods of mock object: <code>expect()</code>, <code>expectThrows()</code>, <code>expectGet()</code>, <code>expectGetThrows()</code>, <code>expectSet()</code>, <code>expectSetThrows()</code>, and methods of mock functions: <code>expect()</code> and <code>expectThrows()</code>.</p>
+<dl class="api-list">
+	<dt>Object <code>times(<var>in Number aTimes</var>)</code></dt>
+		<dd><p>Specifies the multiplicity of the last expectation.</p>
+		<p><em>This doesn't multiply specs defined after this, so you have to be careful about the order of method-chain.</em> For example, following two cases are different:</p>
+		<pre><code>// "alert('OK') returns true" will be done three times.
+mock.expect('alert', 'OK').andReturn(true)
+                          .times(3);
+
+// "alert('OK')" will be called three times, and the last one returns true.
+mock.expect('alert', 'OK').times(3)
+                          .andReturn(true);</code></pre></dd>
+	<dt>Object <code>bindTo(<var>in Object aContext</var>)</code>
+		<span class="alias">alias: <code>boundTo()</code>,
+		                          <code>andBindTo()</code>,
+		                          <code>andBoundTo()</code></span></dt>
+		<dd><p>Specifies <code>this</code> for the last expectation of the method/function/getter/setter. If the method/function/getter/setter is called with different <code>this</code>, then this throws an exception.</p></dd>
+	<dt>Object <code>andReturn(<var>in Object aReturnValue</var>)</code>
+		<span class="alias">alias: <code>andReturns()</code>,
+		                          <code>thenReturn()</code>,
+		                          <code>thenReturns()</code></span></dt>
+		<dd><p>Specifies a returned value of the last expectation of the method/function/getter/setter. If you call this in a method-chain from <code>expectThrows()</code> or <code>expectGetThrows()</code>, this will be ignroed.</p></dd>
+	<dt>Object <code>andThrow(<var>in Object aException</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">alias: <code>andThrows()</code>,
+		                          <code>andRaise()</code>,
+		                          <code>andRaises()</code>,
+		                          <code>thenThrow()</code>,
+		                          <code>thenThrows()</code>,
+		                          <code>thenRaise()</code>,
+		                          <code>thenRaises()</code></span></dt>
+		<dd><p>Specifies an exception of the last expectation of the method/function/getter/setter. The given object itself will be thrown, but if you specify both a constructor function and a message, result of <code>new <var>aException</var>(<var>aMessage</var>)</code> will be thrown. If you call this in a method-chain from <code>expect()</code>, <code>expectGet()</code> or <code>expectSet()</code>, then the returned value of the expectation will be ignored.</p></dd>
+	<dt>Object <code>andStub(<var>in Function aOperation</var>)</code>
+		<span class="alias">alias: <code>then()</code></span></dt>
+		<dd><p>Specifies an side-effect of the last expectation of the method/function/getter/setter. Arguments for the imitated method will be given to the specified function as is.</p></dd>
+</dl>
+
+
+<h2 id="api">Compatibility to other mock libraries</h2>
+<p>Built-in mock features of UxU implements APIs compatible to some known libraries for JavaScript. If you are using one of those libraries, you'll be able to use UxU's mock easily.</p>
+
+<h3 id="api-mockobjectjs">MockObject.js</h3>
+<p>Available APIs compatible to <a href="http://micampe.it/projects/jsmock">MockObject.js</a> are:</p>
+<pre><code>var mock = <em>MockCreate(Window)</em>;
+mock.<em>_expect('open', [uri, name, features], null)</em>;
+mock.<em>_expectThrows('moveBy', [20, 20], 'permission denied')</em>;
+...
+mock.<em>_verify();</em></code></pre>
+
+<h3 id="api-jsmock">JSMock</h3>
+<p>Available APIs compatible to <a href="http://jsmock.sourceforge.net/">JSMock</a> are:</p>
+<pre><code><em>var mockControl = new MockControl()</em>;
+windowMock = <em>mockControl.createMock(Window)</em>;
+
+windowMock.<em>expects().open(uri, name, features).andReturn(null)</em>;
+windowMock.<em>expects().moveBy(20, 20).andThrow('permission denied')</em>;
+windowMock.<em>expects().setTimeout(TypeOf.isA(Function), 1000)
+             .andStub(function(aFunction, aTimeout) { aFunction(); })</em>;
+
+...
+
+<em>mockControl.verify()</em>;</code></pre>
+
+<p><code>createMock()</code>, <code>resetMocks()</code> and <code>verifyMocks()</code> are available even if <code>JSMock.extend()</code> is not called. (In testcases for UxU, <code>JSMock.extend()</code> does nothing.)</p>
+<pre><code>var windowMock, documentMock;
+
+function setUp() {
+  <em>JSMock.extend(this)</em>; // this is not needed
+
+  windowMock = <em>createMock()</em>;
+  windowMock.<em>addMockMethod('alert')</em>;
+
+  documentMock = <em>createMock()</em>;
+  documentMock.<em>addMockMethod('open')</em>;
+}
+
+function tearDown() {
+  <em>verifyMocks()</em>; // this is not needed
+}
+
+function testMyFeature() {
+  windowMock.<em>expects().alert('OK')</em>;
+  documentMock.<em>expects().open()</em>;
+  ...
+}</code></pre>
+
+<h3 id="api-jsmockito">JsMockito</h3>
+<p>Available APIs compatible to <a href="http://jsmockito.org/">JsMockito</a> are:</p>
+<pre><code>var windowMock = <em>mock(Window)</em>;
+<em>when(windowMock).open(uri, name, features).thenReturn(null)</em>;
+<em>when(windowMock).moveBy(20, 20).thenThrow('permission denied')</em>;
+<em>when(windowMock).setTimeout(anything(), 1000)
+             .then(function(aFunction, aTimeout) { aFunction(); })</em>;</code></pre>
+<pre><code>var addTab = <em>mockFunction()</em>;
+<em>when(addTab)(uri).thenReturn(document.createElement('tab'))</em>;
+<em>when(addTab)('urn:isbn:xxxx').thenThrow('invalid URI')</em>;
+<em>when(addTab).call(gBrowser, uri) // bind "this" to the gBrowser
+             .thenReturn(null)</em>;</code></pre>
+<p><em>Only pre-definding style mocks (like above) are available in UxU.</em> Verifications using <code>verify()</code> after operations are not supported. Flexible matching based on <a href="http://jshamcrest.destaquenet.com/">JsHamcrest</a> is also not available.</p>
+
+<h2 id="httpserver">Using local HTTP servers as mock</h2>
+<p>You can use a local HTTP server started in UxU, as a mock. The server object (returned value of <a href="helpers.html.en#utils.setUpHttpServer"><code>utils.setUpHttpServer()</code></a> and <a href="helpers.html.en#utils.getHttpServer"><code>utils.getHttpServer()</code></a>) has some methods to define expectations. After you specify some expectations, it works just like a mock.</p>
+<pre><code>var server = setUpHttpServer(4445, baseURL);
+
+server.expect('/index.html.en', '/index.html'); // 200 OK
+// same to server.expect('/index.html.en', 200, '/index.html');
+
+server.expect(/^\/subdir\/.*/, '/index.html'); // regular expression is available
+server.expect(/([^\/\.]+)\.jpg/, '/images/$1.jpg'); // like RewriteRule
+
+server.expect('/users', 301, '/accounts'); // redirect
+
+server.expectThrows('/deleted', 404);
+
+gBrowser.loadURI('http://localhost:4445/index.html.en'); // =&gt; "/index.html" 200 OK</code></pre>
+<p><code>expect()</code> and <code>expectThrows()</code> receive an expected request (string or regular expression) as the first argument, and rest are details of response on the time. If you specify a file (nsIFile) instead of path string, then the server will return the contents of the file. The schemer and the host of the response URI will be ignored if the response is not a redirect (3XX status).</p>
+<p>If the server has any expectation, "500 Internal Server Error" will be returned for any unexpected access. All of internal errors from unexpected accesses are reported after the server is stopped by <a href="helpers.html.en#utils.tearDownHttpServer"><code>utils.tearDownHttpServer()</code></a>.</p>
+<p>A hash is available to define expectation's response. By the <code>delay</code> property, you can specify a delay for the response. This will help you to test codes working with slow (narrow) network.</p>
+<pre><code>server.expect('/index.html.en', { path : '/index.html', delay : 3000 });
+// same to server.expect('/index.html.en', { status : 200, path : '/index.html', delay : 3000 });
+
+server.expect('/moved', { status: 301, path : '/index.html', delay : 3000 }); // redirection with delay</code></pre>
+
+<p><a href="#api">Some APIs compatible to other mock libraries</a> are available for HTTP server mocks.</p>
+<pre><code>// JSMock style
+server.expects()('(.*)\.en').andReturn(302, '$1')
+
+// JsMockito style
+when(server)('/deleted').thenThrow(404);</code></pre>
+
+</body></html>

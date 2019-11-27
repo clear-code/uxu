@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>アサーション一覧</title>
+</head>
+<body>
+<h1>アサーション一覧</h1>
+
+<script type="text/javascript" src="./folding.js"></script>
+
+<ul>
+	<li><a href="#compare">内容の比較</a></li>
+	<li><a href="#type">型の比較</a></li>
+	<li><a href="#exception">例外の発生と確認</a></li>
+	<li><a href="#finishesWithin">所要時間の確認</a></li>
+	<li><a href="#assertionsCount">アサーション数の確認</a></li>
+	<li><a href="#match">正規表現によるマッチング</a></li>
+	<li><a href="#misc">アサーションのその他の機能</a></li>
+</ul>
+
+<ul>
+	<li><a href="./">UxUの紹介ページに戻る</a></li>
+	<li><a href="testcases.html">UxU用のテストケースの書き方</a></li>
+	<li><a href="greasemonkey.html">UxUによるGreasemonkeyスクリプトのテスト</a></li>
+	<li><a href="helpers.html">テストケース内で利用可能なヘルパーメソッド</a></li>
+	<li><a href="mock.html">モックを使ったテスト</a></li>
+	<li><a href="server.html">UxUをリモート操作する</a></li>
+	<li><a href="commandline.html">UxUのコマンドラインオプション</a></li>
+</ul>
+
+<script type="text/javascript">writeCollapseExpandAllButton()</script>
+
+<h2 id="compare">内容の比較</h2>
+<dl class="api-list">
+	<dt id="assert.equal">void <code>assert.equal(<var>in Object aExpected</var>, <var>in Object aActual</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assertEqual()</code></span></dt>
+	<dt id="assert.strictlyEqual">void <code>assert.strictlyEqual(<var>in Object aExpected</var>, <var>in Object aActual</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assertStrictlyEqual()</code></span></dt>
+		<dd>
+			<p>期待値と実測値が同値であることを検証します。第2引数として与えられた値が第1引数として与えられた期待値と同値でない場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<p>プリミティブ値、オブジェクト、DOMノード、配列の比較に対応しています。ただし、配列同士の比較では個々の要素の値を比較し、オブジェクト同士の比較では各プロパティの値を比較します。</p>
+			<p>値の比較は、<code>assert.equal()</code>ではJavaScriptの<code>==</code>演算子で行い、
+				<code>assert.strictlyEqual()</code>ではJavaScriptの<code>===</code>演算子で行います。</p>
+			<pre><code>var object = {
+    stringProperty: 'expected value',
+    nodeProperty: document.getElementById('node'),
+    arrayProperty: [0, 1, 2, 3],
+    objectProperty: {
+      name: 'foo',
+      value: 'bar'
+    }
+};
+
+assert.equal('expected value', object.stringProperty); // success
+assert.equal(new String('expected value'), object.stringProperty); // success
+assert.strictlyEqual(new String('expected value'), object.stringProperty); // failure
+
+assert.equal($('node'), object.nodeProperty); // success
+
+// 配列の場合は、値同士の比較となる。
+var primitiveArray = [0, 1, 2, 3];
+var objectArray = [new Number(0), new Number(1), new Number(2), new Number(3)];
+assert.equal(primitiveArray, object.arrayProperty); // success
+assert.equal(objectArray, object.arrayProperty); // success
+assert.strictlyEqual(objectArray, object.arrayProperty); // failure
+
+// オブジェクトの場合は、各プロパティの値同士の比較となる。
+var primitiveHash = { name : 'foo', value : 'bar' };
+var objectHash = { name : new String('foo'), value : new String('bar') };
+assert.equal(primitiveHash, object.objectProperty); // success
+assert.equal(objectHash, object.objectProperty); // success
+assert.strictlyEqual(objectHash, object.objectProperty); // failure</code></pre>
+		</dd>
+	<dt id="assert.same">void <code>assert.same(<var>in Object aExpected</var>, <var>in Object aActual</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assertSame()</code></span></dt>
+		<dd>
+			<p>期待値と実測値が同一であることを検証します。第2引数として与えられた値が第1引数として与えられた期待値と同一でない場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>var obj1 = { value: '1' };
+var obj2 = { value: '1' };
+
+assert.equal(obj1, obj2); // success
+assert.strictlyEqual(obj1, obj2); // success
+
+assert.same(obj1, obj2); // failure
+assert.same(obj1, obj1); // success</code></pre>
+		</dd>
+	<dt id="assert.notEqual">void <code>assert.notEqual(<var>in Object aExpected</var>, <var>in Object aActual</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assertNotEqual()</code></span></dt>
+	<dt id="assert.notStrictlyEqual">void <code>assert.notStrictlyEqual(<var>in Object aExpected</var>, <var>in Object aActual</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assertNotStrictlyEqual()</code></span></dt>
+		<dd>
+			<p>期待値と実測値が同値でない事を検証します。第2引数として与えられた値が第1引数として与えられた期待値と同値である場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<p>プリミティブ値、オブジェクト、DOMノード、配列の比較に対応しています。ただし、配列同士の比較では個々の要素の値を比較し、オブジェクト同士の比較では各プロパティの値を比較します。</p>
+			<p>値の比較は、<code>assert.equal()</code>ではJavaScriptの<code>==</code>演算子で行い、
+				<code>assert.strictlyEqual()</code>ではJavaScriptの<code>===</code>演算子で行います。</p>
+			<pre><code>var object = {
+    stringProperty: 'expected value',
+    nodeProperty: document.getElementById('node'),
+    arrayProperty: [0, 1, 2, 3],
+    objectProperty: {
+      name: 'foo',
+      value: 'bar'
+    }
+};
+
+assert.notEqual('unexpected value', object.stringProperty); // success
+assert.notEqual(new String('unexpected value'), object.stringProperty); // success
+assert.notEqual('expected value', object.stringProperty); // failure
+assert.notStrictlyEqual(new String('expected value'), object.stringProperty); // success
+assert.notStrictlyEqual('expected value', object.stringProperty); // failure
+
+assert.notEqual($('another'), object.nodeProperty); // success
+
+// 配列の場合は、値同士の比較となる。
+var primitiveDifferentArray = [4, 5, 6, 7];
+var primitiveEqualArray = [0, 1, 2, 3];
+var objectEqualArray = [new Number(0), new Number(1), new Number(2), new Number(3)];
+assert.notEqual(primitiveDifferentArray, object.arrayProperty); // success
+assert.notEqual(primitiveEqualArray, object.arrayProperty); // failure
+assert.notEqual(objectEqualArray, object.arrayProperty); // failure
+assert.notStrictlyEqual(primitiveEqualArray, object.arrayProperty); // failure
+assert.notStrictlyEqual(objectEqualArray, object.arrayProperty); // success
+
+// オブジェクトの場合は、各プロパティの値同士の比較となる。
+var primitiveDifferentHash = { name : 'buzz', value : 'fizz' };
+var primitiveEqualHash = { name : 'foo', value : 'bar' };
+var objectEqualHash = { name : new String('foo'), value : new String('bar') };
+assert.notEqual(primitiveDifferentHash, object.objectProperty); // success
+assert.notEqual(primitiveEqualHash, object.objectProperty); // failure
+assert.notEqual(objectEqualHash, object.objectProperty); // failure
+assert.notStrictlyEqual(primitiveEqualHash, object.objectProperty); // failure
+assert.notStrictlyEqual(objectEqualHash, object.objectProperty); // success</code></pre>
+		</dd>
+	<dt id="assert.notSame">void <code>assert.notSame(<var>in Object aExpected</var>, <var>in Object aActual</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assertNotSame()</code></span></dt>
+		<dd>
+			<p>期待値と実測値が同一でないことを検証します。第2引数として与えられた値が第1引数として与えられた期待値と同一である場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>var obj1 = { value: '1' };
+var obj2 = { value: '1' };
+assert.notSame(obj1, obj2); // success
+assert.notSame(obj1, obj1); // failure</code></pre>
+		</dd>
+	<dt id="assert.contains">void <code>assert.contains(<var>in Object aElementShouldBeContained</var>, <var>in Object aElementsOrRange</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assertContain()</code></span></dt>
+		<dd>
+			<p>特定の値が含まれていることが期待される場面で使用します。第1引数で渡されたオブジェクトが第2引数で渡されたオブジェクトの中に含まれていない場合は、<code>AssertionFailed</code>例外を発生させます。</p>
+			<p>第2引数にはnsISelection、DOM Range、DOM Node、配列、または文字列のいずれかを渡すことができます（それ以外の型のオブジェクトはすべて文字列として扱われます）。それぞれの場合の具体的な検証内容は以下の表の通りです。</p>
+			<table border="1" summary="配列、nsISelection、DOM Range、DOM Node、文字列に対応しています。">
+				<thead><tr><th>第2引数</th><th>第1引数</th><th>検証の内容</th></tr></thead>
+				<tbody>
+					<tr>
+						<td rowspan="2">nsISelection</td>
+						<td>DOM Range</td>
+						<td>Rangeが、nsISelectionの示す範囲の中に包含されているかどうか。（※nsISelectionが持つRangeのうち1つでも第1引数のRangeに<em>等しい</em>物があるかどうかではなく、nsISelectionが持つRangeのうち1つでも第1引数のRangeを<em>包含する</em>物があるかどうかを検証します。）</td>
+					</tr>
+					<tr>
+						<td>DOM Node</td>
+						<td>NodeがnsISelectionの示す範囲の中に包含されているかどうか。</td>
+					</tr>
+					<tr>
+						<td rowspan="2">DOM Range</td>
+						<td>DOM Range</td>
+						<td>第1引数のRangeが、第2引数のRangeの中に包含されているかどうか。</td>
+					</tr>
+					<tr>
+						<td>DOM Node</td>
+						<td>NodeがRangeの中に包含されているかどうか。</td>
+					</tr>
+					<tr>
+						<td rowspan="2">DOM Node</td>
+						<td>DOM Range</td>
+						<td>第1引数のRangeが、第2引数のNodeの子孫に含まれているかどうか。</td>
+					</tr>
+					<tr>
+						<td>DOM Node</td>
+						<td>第1引数のNodeが第2引数のNodeの子孫かどうか。</td>
+					</tr>
+					<tr>
+						<td>配列</td>
+						<td>すべての型のオブジェクト</td>
+						<td>第1引数のオブジェクトが、第2引数の配列の要素かどうか。</td>
+					</tr>
+					<tr>
+						<td colspan="2">それ以外の組み合わせ</td>
+						<td>第1引数を文字列化した内容が、第2引数を文字列化した内容の中に含まれているかどうか。（※大文字小文字の違いは区別されます。）</td>
+					</tr>
+				</tbody>
+			</table>
+			<pre><code>assert.contains('- Firefox', window.document.title);
+
+var terms = ['extracted', 'extended', 'expected'];
+assert.contains('expected', terms); // success
+
+assert.contains(doc.body.firstChild,
+                doc.body); // success
+
+var range = doc.createRange();
+range.selectNode(doc.body);
+assert.contains(doc.body, range); // success
+assert.contains(doc.body.firstChild, range); // success
+assert.contains(doc.documentElement, range); // failure</code></pre>
+		</dd>
+	<dt id="assert.notContains">void <code>assert.notContains(<var>in Object aElementShouldNotBeContained</var>, <var>in Object aElementsOrRange</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assertNotContain()</code></span></dt>
+		<dd>
+			<p>特定の値が含まれていないことが期待される場面で使用します。<code>assert.contains()</code>を反転した動作をします。</p>
+			<pre><code>assert.notContains('error', object.getResultsArray());
+assert.notContains('out of selection', content.getSelection());</code></pre>
+		</dd>
+	<dt id="assert.contained">void <code>assert.contained(<var>in Object aElementsOrRangeShouldContain</var>, <var>in Object aElement</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assertContained()</code></span></dt>
+		<dd>
+			<p>特定の範囲や文字列などの中に含まれる値が期待される場面で使用します。第2引数で渡されたオブジェクトが第1引数で渡されたオブジェクトに含まれていない場合、<code>AssertionFailed</code>例外を発生させます。</p>
+			<p>第1引数と第2引数の種類によって若干動作が変わります。詳しくは<a href="#assert.contains"><code>assert.contains()</code>の説明</a>をご覧下さい。</p>
+			<pre><code>assert.contained('Start - Firefox', myAddon.brandName);
+
+var terms = ['extracted', 'extended', 'expected'];
+assert.contained(terms, myAddon.lastTerm);
+
+assert.contained(doc.body,
+                 doc.body.firstChild); // success
+
+var range = doc.createRange();
+range.selectNode(doc.body);
+assert.contained(range, doc.body.firstChild); // success
+assert.contained(range, doc.documentElement); // failure</code></pre>
+		</dd>
+	<dt id="assert.notContained">void <code>assert.notContained(<var>in Object aElementsOrRangeShouldNotContain</var>, <var>in Object aElement</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assertNotContaied()</code></span></dt>
+		<dd>
+			<p>特定の範囲や文字列などの中に含まれない値が期待される場面で使用します。<code>assert.contained()</code>を反転した動作をします。</p>
+			<pre><code>assert.notContained('error,failure', myAddon.lastStatus);
+assert.notContained(content.getSelection(), myAddon.getNextNodeOfSelection());</code></pre>
+		</dd>
+	<dt id="assert.isTrue">void <code>assert.isTrue(<var>in aExpression</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.true()</code>, <code>assert()</code>, <code>assertTrue()</code></span></dt>
+		<dd>
+			<p>値として真（または空でない文字列、0以外の数値など、真偽値として見たときに真となる値）が期待される場面で使用します。期待に反して偽が渡された場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>checkbox.setAttribute('checked', true);
+assert.isTrue(checkbox.checked);</code></pre>
+		</dd>
+	<dt id="assert.isFalse">void <code>assert.isFalse(<var>in aExpression</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.false()</code>, <code>assertFalse()</code></span></dt>
+		<dd>
+			<p>値として偽（または空文字列、数値の0、null、undefinedなど、真偽値として見たときに偽となる値）が期待される場面で使用します。期待に反して真が渡された場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>checkbox.removeAttribute('checked');
+assert.isTrue(checkbox.checked);</code></pre>
+		</dd>
+	<dt id="assert.inDelta">void <code>assert.inDelta(<var>in Number aExpected</var>, <var>in Number aActual</var>, <var>in Number aDelta</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assertInDelta()</code></span></dt>
+		<dd>
+			<p>値として一定の範囲内に収まる数値が期待される場面で使用します。値が指定された範囲の外にある（<code><var>aActual</var> &lt; <var>aExpected</var> - <var>aDelta</var></code> または <code><var>aActual</var> &gt; <var>aExpected</var> + <var>aDelta</var></code> である）場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>var array = '0,1,2,3,4,5,6,7,8,9'.split(',');
+// 約半分の項目をランダムに抽出する
+var extracted = array.filter(function(aItem) {
+		return Math.random() &gt; 0.5;
+	});
+// 誤差として±2までを許容
+assert.inDelta(5, extracted.length, 2);</code></pre>
+		</dd>
+	<dt id="assert.difference">void <code>assert.difference(<var>in Fuction aGetter</var>, <var>in Number aExpectedDifference</var>, <var>in Function aTestTask</var>, <var>[in Object aScope]</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assertDifference()</code></span></dt>
+		<dd>
+			<p>TBD</p>
+			<pre><code>TBD</code></pre>
+		</dd>
+	<dt id="assert.noDifference">void <code>assert.noDifference(<var>in Fuction aGetter</var>, <var>in Function aTestTask</var>, <var>[in Object aScope]</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assertNoDifference()</code></span></dt>
+		<dd>
+			<p>TBD</p>
+			<pre><code>TBD</code></pre>
+		</dd>
+	<dt id="assert.compare">void <code>assert.compare(<var>in Number aExpected</var>, <var>in String aOperator</var>, <var>in Number aActual</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assertCompare()</code></span></dt>
+		<dd>
+			<p>第1引数と第3引数を第2引数の演算子で比較します。期待に反して結果が偽の場合は<code>AssertionFailed</code>例外を発生させます。比較演算子には <code>==</code>, <code>===</code>, <code>!=</code>, <code>!==</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code> のいずれかを指定します。比較演算子以外を渡した場合はエラーになります。</p>
+			<pre><code>assert.compare(100, '&lt;=', func1());
+assert.compare(100, '&gt;', func2());</code></pre>
+		</dd>
+</dl>
+<h4>値の比較の注意事項</h4>
+<p><code>assert.equal()</code>、<code>assert.notEqual()</code>、<code>assert.strictlyEqual()</code>、<code>assert.notStrictlyEqual()</code>、<code>assert.compare()</code>に以下の型のオブジェクトを渡した場合は、特別なルールに則って比較が行われます。</p>
+<dl>
+	<dt><code>Date</code>型</dt>
+		<dd>
+			<p>両者のオブジェクトが保持している時刻を比較します。</p>
+		</dd>
+	<dt><code>Array</code>型</dt>
+		<dd>
+			<p>配列の長さ、各要素を比較します。</p>
+		</dd>
+	<dt><code>Object</code>型（オブジェクトリテラル、ハッシュ、カスタムクラスのインスタンス）</dt>
+		<dd>
+			<p>持っているすべてのプロパティの名前と値を比較します。</p>
+		</dd>
+</dl>
+
+
+<h2 id="type">型の比較</h2>
+<dl class="api-list">
+	<dt id="assert.isBoolean">void <code>assert.isBoolean(<var>in aExpression</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.boolean()</code>, <code>assertBoolean()</code></span></dt>
+		<dd>
+			<p>値が真偽値であることが期待される場面で使用します。期待に反して真偽型でない値が渡された場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>assert.isBoolean(checkbox.checked);
+assert.isBoolean(checkbox.disabled);
+assert.isBoolean(utility.getPref('some.boolean.pref'));</code></pre>
+		</dd>
+	<dt id="assert.isNotBoolean">void <code>assert.isNotBoolean(<var>in aExpression</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.notBoolean()</code>, <code>assertNotBoolean()</code></span></dt>
+		<dd>
+			<p>値が真偽型でないことが期待される場面で使用します。渡された値が期待に反して真偽値である場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>assert.isNotBoolean(notInitializedObject.booleanProperty);</code></pre>
+		</dd>
+	<dt id="assert.isString">void <code>assert.isString(<var>in aExpression</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.string()</code>, <code>assertString()</code></span></dt>
+		<dd>
+			<p>値が文字列であることが期待される場面で使用します。期待に反して文字列型でない値が渡された場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>assert.isString(input.value);
+assert.isString(element.getAttribute('undefined-attribute'));
+assert.isString(utility.getPref('some.string.pref'));</code></pre>
+		</dd>
+	<dt id="assert.isNotString">void <code>assert.isNotString(<var>in aExpression</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.notString()</code>, <code>assertNotString()</code></span></dt>
+		<dd>
+			<p>値が文字列型でないことが期待される場面で使用します。渡された値が期待に反して文字列である場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>assert.isNotString(notInitializedObject.stringProperty);</code></pre>
+		</dd>
+	<dt id="assert.isNumber">void <code>assert.isNumber(<var>in aExpression</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.notNumber()</code>, <code>assertNumber()</code></span></dt>
+		<dd>
+			<p>値が数値であることが期待される場面で使用します。期待に反して数値型でない値が渡された場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>assert.isNumber(httpClient.errorCode);
+assert.isNumber(utility.getPref('some.integer.pref'));</code></pre>
+		</dd>
+	<dt id="assert.isNotNumber">void <code>assert.isNotNumber(<var>in aExpression</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assertNotNumber()</code></span></dt>
+		<dd>
+			<p>値が数値型でないことが期待される場面で使用します。渡された値が期待に反して数値である場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>assert.isNotString(notInitializedObject.intProperty);</code></pre>
+		</dd>
+	<dt id="assert.isFunction">void <code>assert.isFunction(<var>in aExpression</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.function()</code>, <code>assertFuction()</code></span></dt>
+		<dd>
+			<p>値が関数であることが期待される場面で使用します。期待に反して関数でない値が渡された場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>assert.isFunction(element.hasAttribute);
+assert.isFunction(instance.inheritedMethod);</code></pre>
+		</dd>
+	<dt id="assert.isNotFunction">void <code>assert.isNotFunction(<var>in aExpression</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.notFunction()</code>, <code>assertNotFunction()</code></span></dt>
+		<dd>
+			<p>値が関数でないことが期待される場面で使用します。渡された値が期待に反して関数である場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>assert.isNotFunction(instanceOfSuperClass.methodOfSubClass);</code></pre>
+		</dd>
+	<dt id="assert.isDefined">void <code>assert.isDefined(<var>in aExpression</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.defined()</code>, <code>assertDefined()</code></span></dt>
+		<dd>
+			<p>定義済み（数値、文字列、真偽値、nullなど）の値が期待される場面で使用します。渡された値が期待に反して未定義（undefined）である場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>assert.isDefined(instance.inheritedProperty);
+assert.isDefined(Ci.myICustomInterface);</code></pre>
+		</dd>
+	<dt id="assert.isUndefined">void <code>assert.isUndefined(<var>in aExpression</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.undefined()</code>, <code>assertUndefined()</code></span></dt>
+		<dd>
+			<p>未定義（undefined）の値が期待される場面で使用します。何らかの値が期待に反して渡された場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>assert.isUndefined(checkbox.valid);
+assert.isUndefined(Ci.myIOldCustomInterface);</code></pre>
+		</dd>
+	<dt id="assert.isNull">void <code>assert.isNull(<var>in aExpression</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.null()</code>, <code>assertNull()</code></span></dt>
+		<dd>
+			<p>nullが期待される場面で使用します。nullでない値（falseやundefinedなども含む）が期待に反して渡された場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>assert.isNull(element.nodeValue);
+assert.isNull(utility.getPref('some.undefined.pref'));</code></pre>
+		</dd>
+	<dt id="assert.isNotNull">void <code>assert.isNotNull(<var>in aExpression</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.notNull()</code>, <code>assertNotNull()</code></span></dt>
+		<dd>
+			<p>nullが期待されない場面で使用します。nullが期待に反して渡された場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>assert.isNotNull(element.getAttribute('undefined-attribute'));
+assert.isNotNull(utility.getPref('some.defined.pref'));</code></pre>
+		</dd>
+	<dt id="assert.isInstanceOf">void <code>assert.isInstanceOf(<var>in Object aExpectedClass</var>, <var>in aObject aInstance</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.instanceOf()</code>, <code>assert.instanceof()</code>, <code>assert.instance()</code>, <code>assertInstanceOf()</code>, <code>assertInstanceof()</code>, <code>assertInstance()</code></span></dt>
+		<dd>
+			<p>TBD</p>
+			<pre><code>TBD</code></pre>
+		</dd>
+	<dt id="assert.inplementsInterface">void <code>assert.inplementsInterface(<var>in Object aInterface</var>, <var>in aObject aInstance</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.inplementInterface()</code>, <code>assertInplementsInterface()</code>, <code>assertInplementInterface()</code></span></dt>
+		<dd>
+			<p>オブジェクトが特定のXPCOMインターフェースを備えていることが期待される場面で使用します。インターフェースは<code>Components.interfaces.nsI<var>*</var></code>のリファレンス、もしくはインターフェース名の文字列（<code>"nsI<var>*</var>"</code>）で指定します。</p>
+			<p>第2引数に渡されたオブジェクトが指定のインターフェースを備えていない場合は、<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>assert.implementsInterface(Ci.nsIDOMWindow, getWindow());
+assert.implementsInterface('nsIDOMWindow', getWindow());
+assert.implementsInterface(Ci.nsIDOMRange, getWindow()); // this will fail</code></pre>
+		</dd>
+</dl>
+
+<h2 id="exception">例外の発生と確認</h2>
+<dl class="api-list">
+	<dt id="assert.raises">Object <code>assert.raises(<var>in Exception aExpected</var>, <var>in Function aTestTask</var>, <var>[in Object aScope]</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.throws()</code>, <code>assertRaise()</code>, <code>assertThrow()</code></span></dt>
+		<dd>
+			<p>特定の例外の発生が期待される場面で使用します。第2引数として渡された関数を、第3引数の値をスコープとして実行し、第1引数で指定された物と同じ例外が期待に反して発生しなかった場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>loader.INVALID_URI_ERROR = 'invalid uri';
+loader.open = function(aURI) {
+  if (aURI) this.uri = aURI;
+  if (!/^https?:/.test(this.uri))
+    throw new Error(this.INVALID_URI_ERROR);
+  window.open(this.uri);
+};
+loader.uri = 'mailto:test@example.com';
+
+assert.raises(
+  loader.INVALID_URI_ERROR,
+  loader.open,
+  loader
+);
+assert.raises(
+  loader.INVALID_URI_ERROR,
+  function() {
+    loader.open('ftp://ftp.example.com');
+  },
+  {}
+);</code></pre>
+			<p>例外の判定は、JavaScriptの例外オブジェクト自身、例外のコンストラクタ関数、<code>name</code>プロパティ, <code>message</code>プロパティ, <code>result</code>プロパティ、またはハッシュで指定された任意のプロパティに一致するかどうかで行います。以下はすべて妥当な例です。</p>
+			<pre><code>assert.raises('error',
+              function() { throw 'error'; });
+assert.raises('error',
+              function() { throw new Error('error'); });
+assert.raises('SyntaxError',
+              function() { eval('{'); });
+assert.raises(SyntaxError,
+              function() { eval('{'); });
+assert.raises(Components.results.NS_NOINTERFACE,
+              function() { window.QueryInterface(Ci.nsIDOMDocument); });
+assert.raises('NS_NOINTERFACE',
+              function() { window.QueryInterface(Ci.nsIDOMDocument); });
+assert.raises({ expected : true, actual : false },
+              function() { var e = new Error();
+                           e.expected = true;
+                           e.actual = false;
+                           throw e; });</code></pre>
+			<p>また、このアサーションは返り値として<a href="#waiting-object">処理待ち用のオブジェクト</a>を返します。実行したい処理が処理待ちを伴う物である場合に利用できます。</p>
+			<pre><code>yield Do(assert.raises(
+    loader.INVALID_URI_ERROR,
+    function() {
+      loader.open('http://www.example.com');
+      yield 500;
+      loader.open('ftp://ftp.example.com');
+    },
+    {}
+  ));</code></pre>
+		</dd>
+	<dt id="assert.notRaises">Object <code>assert.notRaises(<var>in Exception aExpected</var>, <var>in Function aTestTask</var>, <var>in Object aScope</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.notThrows()</code>, <code>assertNotRaise()</code>, <code>assertNotThrow()</code></span></dt>
+		<dd>
+			<p>特定の例外の発生が期待されない場面で使用します。第2引数として渡された関数を、第3引数の値をスコープとして実行し、第1引数で指定された物と同じ例外が期待に反して発生した場合は<code>AssertionFailed</code>例外を発生させます。例外が一致しているかどうかの判定は<a href="#assert.raises">assert.raise()</a>と同じ判断基準で行います。</p>
+			<pre><code>loader.INVALID_URI_ERROR = 'invalid uri';
+loader.open = function(aURI) {
+  if (aURI) this.uri = aURI;
+  if (!/^https?:/.test(this.uri))
+    throw new Error(this.INVALID_URI_ERROR);
+  window.open(this.uri);
+};
+loader.uri = 'http://www.example.com';
+
+assert.notRaises(
+  loader.INVALID_URI_ERROR,
+  loader.open,
+  loader
+);
+assert.notRaises(
+  loader.INVALID_URI_ERROR,
+  function() {
+    loader.open('https://secure.example.com');
+  },
+  {}
+);</code></pre>
+			<p>また、このアサーションは返り値として<a href="#waiting-object">処理待ち用のオブジェクト</a>を返します。実行したい処理が処理待ちを伴う物である場合に利用できます。</p>
+			<pre><code>yield Do(assert.notRaises(
+    loader.INVALID_URI_ERROR,
+    function() {
+      loader.open('http://www1.example.com');
+      yield 500;
+      loader.open('http://www2.example.com');
+    },
+    {}
+  ));</code></pre>
+		</dd>
+</dl>
+
+<h2 id="finishesWithin">所要時間の確認</h2>
+<dl class="api-list">
+	<dt id="assert.finishesWithin">Object <code>assert.finishesWithin(<var>in Number aExpectedTime</var>, <var>in Function aTestTask</var>, <var>in Object aScope</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.finishWithin()</code>, <code>assertFinishWithin()</code></span></dt>
+		<dd>
+			<p>一定時間内に処理が完了することが期待される場面で使用します。第2引数として渡された関数を、第3引数の値をスコープとして実行し、処理を完了するまでに第1引数で指定された時間（単位：ミリ秒）以上の時間がかかった場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>function functionContainsLongLoop() {
+  for (var i = 0, maxi = 5000; i &lt; maxi; i++) {
+    process(data[i]);
+  }
+}
+assert.finishesWithin(
+  5 * 1000, // 5sec.
+  functionContainsLongLoop,
+  {}
+);</code></pre>
+			<p>また、このアサーションは返り値として<a href="#waiting-object">処理待ち用のオブジェクト</a>を返します。実行したい処理が処理待ちを伴う場合に利用できます。</p>
+			<pre><code>var manager = {
+    tasks : [],
+    func  : loadAndParse,
+    timer : null,
+    start : function() {
+      this.timer = window.setInterval(function(aSelf) {
+          if (!aSelf.tasks.length) {
+            window.clearInterval(aSelf.timer);
+            return;
+          }
+          aSelf.func(aSelf.tasks.shift());
+        }, 10, this);
+    }
+  };
+manager.tasks.push('http://www.example.com/');
+manager.tasks.push('http://www.example.jp/');
+manager.tasks.push('http://www.example.net/');
+
+utils.wait(assert.finishesWithin(
+    10 * 1000, // 10sec.
+    function() {
+      manager.start();
+      while (manager.tasks.length) {
+        utils.wait(100);
+      }
+    },
+    {}
+  ));</code></pre>
+		</dd>
+	<dt id="assert.finishesOver">Object <code>assert.finishesOver(<var>in Number aExpectedTime</var>, <var>in Function aTestTask</var>, <var>in Object aScope</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.finishOver()</code>, <code>assertFinishOver()</code>, <code>assert.notFinishesWithin()</code>, <code>assert.notFinishWithin()</code>, <code>assertNotFinishWithin()</code></span></dt>
+		<dd>
+			<p>一定以上の時間が経過した後で処理が完了することが期待される場面で使用します。第2引数として渡された関数を、第3引数の値をスコープとして実行し、処理を完了するまでに第1引数で指定された時間（単位：ミリ秒）を要しなかった場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>function doWait(aTimeout) {
+  ...
+}
+assert.finishesOver(
+  5 * 1000, // 5sec.
+  function() {
+    doWait(5);
+  }
+);</code></pre>
+			<p>また、このアサーションは返り値として<a href="#waiting-object">処理待ち用のオブジェクト</a>を返します。実行したい処理が処理待ちを伴う場合に利用できます。</p>
+		</dd>
+</dl>
+
+<h2 id="assertionsCount">アサーション数の確認</h2>
+<dl class="api-list">
+	<dt id="assert.assertionsCountEquals">Object <code>assert.assertionsCountEquals(<var>in Number aExpectedCount</var>, <var>in Function aTestTask</var>, <var>in Object aScope</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.assertionsCountEqual()</code>, <code>assertAssertionsCountEqual()</code></span></dt>
+		<dd>
+			<p><a href="#success-count"><code>assertions</code>プロパティによるアサーション数の明示</a>の局所版です。</p>
+			<p>テスト仕様やデータ数により、特定の回数のアサーションが行われることが期待される場面で使用します。第2引数として渡された関数を、第3引数の値をスコープとして実行します。その上で、第1引数で指定された回数のアサーションが実行されなかった場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>assert.assertionsCountEquals(
+  2,
+  function() {
+    assert.isNotNull(value);
+    assert.isFunction(value);
+  },
+  {}
+);</code></pre>
+			<p>また、このアサーションは返り値として<a href="#waiting-object">処理待ち用のオブジェクト</a>を返します。実行したい処理が処理待ちを伴う場合に利用できます。</p>
+			<pre><code>utils.wait(assert.assertionsCountEquals(
+    10,
+    function() {
+      assert.isNotNull(value);
+      utils.wait(500);
+      assert.isFunction(value);
+    },
+    {}
+  ));</code></pre>
+		</dd>
+	<dt id="assert.assertionsMinCount">Object <code>assert.assertionsMinCount(<var>in Number aExpectedMinCount</var>, <var>in Function aTestTask</var>, <var>in Object aScope</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.assertionsMinCount()</code>, <code>assertAssertionsMinCount()</code></span></dt>
+		<dd>
+			<p><a href="#success-count"><code>minAssertions</code>プロパティによるアサーション回数の明示</a>の局所版です。</p>
+			<p>テスト仕様やデータ数により、特定の回数以上のアサーションが行われることが期待される場面で使用します。第2引数として渡された関数を、第3引数の値をスコープとして実行します。その上で、第1引数で指定された回数未満のアサーションしか実行されなかった場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>assert.assertionsMinCount(
+  2,
+  function() {
+    myCustomAssertion(value); // includes 2 or more assertions
+  },
+  {}
+);</code></pre>
+			<p>また、このアサーションは返り値として<a href="#waiting-object">処理待ち用のオブジェクト</a>を返します。実行したい処理が処理待ちを伴う場合に利用できます。</p>
+			<pre><code>utils.wait(assert.assertionsCountEquals(
+    10,
+    function() {
+      utils.wait(myCustomAssertion(value));
+    },
+    {}
+  ));</code></pre>
+		</dd>
+	<dt id="assert.assertionsMaxCount">Object <code>assert.assertionsMaxCount(<var>in Number aExpectedMaxCount</var>, <var>in Function aTestTask</var>, <var>in Object aScope</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assert.assertionsMaxCount()</code>, <code>assertAssertionsMaxCount()</code></span></dt>
+		<dd>
+			<p><a href="#success-count"><code>maxAssertions</code>プロパティによるアサーション回数の明示</a>の局所版です。</p>
+			<p>テスト仕様やデータ数により、特定の回数以下のアサーションが行われることが期待される場面で使用します。第2引数として渡された関数を、第3引数の値をスコープとして実行します。その上で、第1引数で指定された回数より多くアサーションが実行された場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>assert.assertionsMinCount(
+  2,
+  function() {
+    myCustomAssertion(value); // includes 2 or less assertions
+  },
+  {}
+);</code></pre>
+			<p>また、このアサーションは返り値として<a href="#waiting-object">処理待ち用のオブジェクト</a>を返します。実行したい処理が処理待ちを伴う場合に利用できます。</p>
+			<pre><code>utils.wait(assert.assertionsCountEquals(
+    10,
+    function() {
+      utils.wait(myCustomAssertion(value));
+    },
+    {}
+  ));</code></pre>
+		</dd>
+</dl>
+
+<h2 id="match">正規表現によるマッチング</h2>
+<dl class="api-list">
+	<dt id="assert.matches">void <code>assert.matches(<var>in RegExp aExpected</var>, <var>in String aActual</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assertMatch()</code></span></dt>
+		<dd>
+			<p>特定のパターンの文字列が期待される場面で使用します。第2引数の値が第1引数の正規表現に期待に反してマッチしなかった場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>assert.matches(/^(success|skip)$/i, module.result);
+assert.matches(/https?:\/\//, module.message);</code></pre>
+		</dd>
+	<dt id="assert.notMatches">void <code>assert.notMatches(<var>in RegExp aUnexpected</var>, <var>in String aActual</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assertNotMatch()</code></span></dt>
+		<dd>
+			<p>特定のパターンでない文字列が期待される場面で使用します。第2引数の値が第1引数の正規表現に期待に反してマッチした場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>assert.notMatches(/^(failure|error)$/i, module.result);
+assert.notMatches(/(ftp|nntp):/, module.message);</code></pre>
+		</dd>
+	<dt id="assert.pattern">void <code>assert.pattern(<var>in String aExpected</var>, <var>in RegExp aActual</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assertPattern()</code></span></dt>
+		<dd>
+			<p>特定のパターンの正規表現が期待される場面で使用します。第2引数の値（正規表現）が第1引数として与えられた文字列に期待に反してマッチしない場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>var regexp = module.mailAddressRegExp;
+assert.pattern('test@example.com', regexp);
+assert.pattern('My Name &lt;test@example.com&gt;', regexp);</code></pre>
+		</dd>
+	<dt id="assert.notPattern">void <code>assert.notPattern(<var>in String aUnexpected</var>, <var>in RegExp aActual</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>assertNotPattern()</code></span></dt>
+		<dd>
+			<p>特定のパターンの正規表現が期待されない場面で使用します。第2引数の値（正規表現）がが第1引数として与えられた文字列に期待に反してマッチする場合は<code>AssertionFailed</code>例外を発生させます。</p>
+			<pre><code>var regexp = module.mailAddressRegExp;
+assert.notPattern('foobar@', regexp);
+assert.notPattern('My Name (test at example.com)', regexp);</code></pre>
+		</dd>
+</dl>
+
+<h2 id="misc">アサーションのその他の機能</h2>
+<p>すべてのアサーションは、追加の引数として例外発生時に表示するメッセージを指定できます。スタックトレース以外で例外が発生した時の詳しい状況を知る必要がある場合などに利用できます。</p>
+
+<p>また、以下のようにしてカスタムアサーションを定義することもできます。</p>
+<pre><code>assert.isOK = function(aActualValue) {
+  var expected = 'OK';
+  assert.equal(expected, aActualValue);
+}</code></pre>
+
+</body></html>

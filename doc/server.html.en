@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>How to control UxU from remote?</title>
+</head>
+<body>
+<h1>How to control UxU from remote?</h1>
+
+<ul>
+	<li><a href="#utilities">Command line utilities</a>
+		<ul>
+			<li><a href="#fire-test-runner">fire-test-runner</a></li>
+			<li><a href="#ifx">ifx - Interactive Firefox Shell</a></li>
+		</ul>
+	</li>
+	<li><a href="#helpers">Helper methods</a></li>
+</ul>
+
+<ul>
+	<li><a href="index.html.en">UxU Home</a></li>
+	<li><a href="testcases.html.en">How to write testcases for UxU?</a></li>
+	<li><a href="assertions.html.en">Available assertions in UxU</a></li>
+	<li><a href="greasemonkey.html.en">Testing Greasemonkey scripts by UxU</a></li>
+	<li><a href="helpers.html.en">Helper methods for testcases</a></li>
+	<li><a href="mock.html.en">How to write testcases with mocks?</a></li>
+	<li><a href="commandline.html.en">Command line options</a></li>
+</ul>
+
+
+<h2 id="utilities">Command line utilities</h2>
+
+<p>UxX includes a server interface, like <a href="https://addons.mozilla.org/firefox/addon/2692">MozRepl</a>. You can control Firefox and UxU by command line interfaces, e.g. telnet. Start UxU Server ("Tools" -&gt; "UnitTest.XUL" -&gt; "Test Runner" and turn on the checkbox "Server" on the bottom left of the Test Runner's window) and connect to the port 4444 (by default) of localhost, then you can run JavaScript codes directly on the UxU Server.</p>
+<p>UxU provides some utilities for remote controlling, written in Ruby. Install <a href="http://arton.hp.infoseek.co.jp/index.html">ActiveScriptRuby</a> or another Ruby runtime beforehand.</p>
+
+<ul>
+	<li><a href="./index.html.en#download">Download Command Line Utilities</a></li>
+</ul>
+
+
+<h3 id="fire-test-runner">fire-test-runner</h3>
+
+<p>"fire-test-runner" runs any <a href="testcases.html.en">testcase</a>s in the file or the folder specified as options. Usage:</p>
+<pre>$&gt; fire-test-runner <var>Options</var> "./tests"</pre>
+<p>Available options are:</p>
+<dl>
+	<dt>-p<var>&lt;PORT&gt;</var></dt>
+	<dt>--port=<var>&lt;PORT&gt;</var></dt>
+		<dd>Default: "4444". He connects to the port. If connection failed, then he tries to start Fireflx and UxU Server automatically.</dd>
+	<dt>--firefox=<var>&lt;PATH TO FIREFOX OR COMMAND TO START FIREFOX&gt;</var></dt>
+		<dd>Default: "firefox". He tries to start the specified executable or command, if connection failed.</dd>
+	<dt>--named-profile=<var>&lt;PROFILE'S NAME&gt;</var></dt>
+	<dt>--profile=<var>&lt;PATH TO A PROFILE FOLDER&gt;</var></dt>
+		<dd>Default: the default profile. If you specify an existing profile, then he starts Firefox with the profile, in "-no-remote" mode.</dd>
+	<dt>--wait=<var>&lt;SECONDS&gt;</var></dt>
+		<dd>Default: "3". He waits 3 seconds by default, before trying to start Firefox.</dd>
+	<dt>--retries=<var>&lt;TIMES TO RETRYING&gt;</var></dt>
+		<dd>Default: "3". He retries starting Firefox 3 times by default.</dd>
+	<dt>--quit</dt>
+	<dt>--no-quit</dt>
+		<dd>Default: --no-quit. "--quit" will stop and quit Firefox automatically after all tests are finished. "--no-quit" will keep Firefox running.</dd>
+	<dt>--close-main-windows</dt>
+	<dt>--no-close-main-windows</dt>
+		<dd>Default: --no-close-main-windows. "--close-main-windows" closes any Firefox window before starting tests. "--no-close-main-windows" keeps open them.</dd>
+	<dt>--use-color</dt>
+	<dt>--no-use-color</dt>
+		<dd>Default: auto. "--use-color" colorizes the result of tests. In the mode, successed tests are green, failed tests are red, and errors in specified tests are yellow. By default, he automatically colorize results if the platform can do it.</dd>
+</dl>
+
+
+<h3 id="ifx">ifx - Interactive Firefox Shell</h3>
+
+<p>"ifx" is a shell program, which can connect to running UxU Server. Start UxU Server ("Tools" -&gt; "UnitTest.XUL" -&gt; "UxU Server") and run ifx, then an prompt "firefox&gt;" will appear. Typed strings are evaluated as JavaScript codes.</p>
+
+<p>JavaScript codes are run in the window of UxU Server itself. For example, if you type <code>alert("Hello!")</code>, then the alert dialog appears on the UxU Server window. <code>location.href</code> will return "chrome://uxu/content/ui/uxu.xul".</p>
+
+<p>UxU is designed for automated test, so, there are less utilities for remote-controlling. If you wish to control Firefox from remote processes flexibly, try <a href="https://addons.mozilla.org/firefox/addon/2692">MozRepl</a>.</p>
+
+
+<h2 id="helpers">Helper methods</h2>
+
+<p>In the execution context while connecting from <a href="#ifx">ifx</a>, telnet or others, following helper methods (functions) are available, moreover <a href="helpers.html.en#actions">action helpers</a>, <a href="helpers.html.en#file">file I/O helpers</a>, and <a href="helpers.html#string">string operation helpers</a> too.</p>
+
+<h3 id="sample">Explanatory Note</h3>
+<dl>
+	<dt><var>&lt;type of the returned value&gt;</var> <code><var>&lt;method name&gt;</var>(<var>&lt;argument&gt;</var>, <var>[&lt;optional argument&gt;]</var>)</code></dt>
+		<dd><var>&lt;descriptions.&gt;</var></dd>
+</dl>
+
+<h3>List of helper methods</h3>
+<dl class="api-list">
+	<dt>String <code>inspect(<var>in Object aObject</var>)</code></dt>
+		<dd>Returns inspected result of the specified object.
+		<dl>
+			<dt><code>Array</code></dt>
+				<dd>A list of <code>inspect()</code>ed result of each element will be returned.</dd>
+			<dt><code>Object</code> (object literals, hashes, instances of custom classes)</dt>
+				<dd>A list of <code>inspect()</code>ed result of each property will be returned.</dd>
+		</dl></dd>
+	<dt>String <code>inspectDOMNode(<var>in DOMNode aNode</var>)</code></dt>
+		<dd>Returns XML source code of specified DOM node.</dd>
+	<dt>void <code>puts(<var>in Object aObject</var>)</code></dt>
+	<dt>void <code>print(<var>in Object aObject</var>)</code></dt>
+		<dd>Dumps <code>toString()</code>ed results of the specified objects. If you hand multiple objects to them, then <code>puts()</code> dumps results in lines, <code>print()</code> dumps results in just one line.</dd>
+	<dt>void <code>p(<var>in Object aObject</var>)</code></dt>
+		<dd>Dumps <code>inspect()</code>ed strings of specified objects. If you hand multiple objects, then results are shown in multi-lines.</dd>
+	<dt>void <code>error(<var>in Exception aException</var>)</code></dt>
+		<dd>Dumps detailed information of the exception object.</dd>
+	<dt>void <code>load(<var>in String aURI</var><var>[, in Object aContext]</var>)</code></dt>
+		<dd>Loads and runs the JavaScript file specified by an URI string. The script will be run in the specified context or the current context.</dd>
+	<dt>void <code>quit()</code></dt>
+	<dt>void <code>exit()</code></dt>
+		<dd>Disconnects from UxU Server. Even if you disconnect, UxU Server and Firefox stay running.</dd>
+	<dt>void <code>quitApplication(<var>in Boolean aForceQuit</var>)</code></dt>
+		<dd>Quits Firefox and disconnects. If you don't want confirmation dialog for each window, specify <code>true</code>.</dd>
+	<dt>void <code>closeMainWindows()</code></dt>
+		<dd>Closes all of Firefox windows.</dd>
+	<dt>void <code>runTest(<var></var>)</code></dt>
+		<dd></dd>
+</dl>
+</body></html>

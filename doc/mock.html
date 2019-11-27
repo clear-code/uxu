@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>モックを使ったテスト</title>
+</head>
+<body>
+<h1>モックを使ったテスト</h1>
+
+<ul>
+	<li><a href="#howto">モックの作成</a>
+		<ul>
+			<li><a href="#howto-object">モックオブジェクト</a>
+				<ul>
+					<li><a href="#howto-object-create">モックオブジェクトの作成</a></li>
+					<li><a href="#howto-object-expect">メソッド呼び出しのエクスペクテーション</a></li>
+					<li><a href="#howto-object-expectSetGet">プロパティのエクスペクテーション</a></li>
+					<li><a href="#howto-object-assert">モックの検証</a></li>
+				</ul>
+			</li>
+			<li><a href="#howto-function">モック関数</a>
+				<ul>
+					<li><a href="#howto-function-create">モック関数の作成</a></li>
+					<li><a href="#howto-function-expect">関数呼び出しのエクスペクテーション</a></li>
+					<li><a href="#howto-function-assert">モック関数の検証</a></li>
+				</ul>
+			</li>
+			<li><a href="#howto-override">既存オブジェクトの機能をモックで置き換える</a></li>
+		</ul>
+	</li>
+	<li><a href="#expectation-chain">メソッドチェインによるエクスペクテーションの定義</a></li>
+	<li><a href="#api">他のモックライブラリの記法によるモックの定義</a>
+		<ul>
+			<li><a href="#api-mockobjectjs">MockObject.js</a></li>
+			<li><a href="#api-jsmock">JSMock</a></li>
+			<li><a href="#api-jsmockito">JsMockito</a></li>
+		</ul>
+	</li>
+	<li><a href="#httpserver">ローカルHTTPサーバをモックとして利用する</a></li>
+</ul>
+
+<ul>
+	<li><a href="./">UxUの紹介ページに戻る</a></li>
+	<li><a href="testcases.html">UxU用のテストケースの書き方</a></li>
+	<li><a href="assertions.html">アサーション一覧</a></li>
+	<li><a href="greasemonkey.html">UxUによるGreasemonkeyスクリプトのテスト</a></li>
+	<li><a href="helpers.html">テストケース内で利用可能なヘルパーメソッド</a></li>
+	<li><a href="server.html">UxUをリモート操作する</a></li>
+	<li><a href="commandline.html">UxUのコマンドラインオプション</a></li>
+</ul>
+
+
+<h2 id="howto">モックの作成</h2>
+<p>UxUに組み込まれているモック機能の基本的な利用方法は<a href="http://micampe.it/projects/jsmock">MockObject.js</a>のAPIに基づいています。ただし、互換性および実用上の利便のため、<a href="#api">他にもいくつかのモックライブラリと共通のAPIを備えています</a>。</p>
+
+<h3 id="howto-object">モックオブジェクト</h3>
+
+<h4 id="howto-object-create">モックオブジェクトの作成</h4>
+<p>UxUのテスト実行時の名前空間では、コンストラクタ関数<code>Mock()</code>が利用できます。コンストラクタ関数の引数として文字列を与えると、モックに任意の名前を付けることができます。この時付けた名前はテスト失敗時のメッセージに表示されることになりますので、デバッグをより容易にするために、すべてのモックには名前を付けておくことをお勧めします。</p>
+<pre><code>var mock = <em>new Mock('my mock')</em>;</code></pre>
+<p>既存のクラスのコンストラクタ関数やインスタンスのオブジェクトをモックのコンストラクタ関数に渡すと、そのプロパティやメソッドが継承されると同時に、コンストラクタから自動的にモックの名前が決定されます。</p>
+<pre><code>// from class
+var arrayMock = <em>new Mock(Array)</em>;
+// from instance
+var windowMock = <em>new Mock(window)</em>;
+// 名前との同時指定も可能
+var documentMock = <em>new Mock('unique name', document)</em>;</code></pre>
+<p>後述する方法でエクスペクテーションを設定していない状態で、継承元のクラスやオブジェクトで定義されていた<code>windowMock.title</code>などのプロパティや<code>windowMock.alert()</code>などのメソッドにアクセスすると、予期しないアクセスが行われたものとして例外が発生します。</p>
+
+<h4 id="howto-object-expect">メソッド呼び出しのエクスペクテーション</h4>
+<p>作成されたばかりのモックは、（モック自体の操作に使用するメソッドを除いて）どのメソッドを呼んでも、予期しないメソッド呼び出しが行われたものとして例外が発生します。実際のモジュールの代用としてモックを使うためには、必要に応じて<ruby><rb>エクスペクテーション</rb><rp>（</rp><rt>expectation</rt><rp>）</rp></ruby>（期待される呼び出され方と、その時の挙動）を設定する必要があります。</p>
+<p>例えば<code>gBrowser.addTab()</code>と<code>gBrowser.removeAllTabsBut()</code>がそれぞれ1回ずつこの順番の通りに呼ばれることが期待されるのであれば、以下のようにして2つのエクスペクテーションを設定します。</p>
+<pre><code>var mock = new Mock('gBrowser');
+mock.<em>expect('addTab', uri, tab)</em>; // mock.addTab(uri) =&gt; tab
+mock.<em>expect('removeAllTabsBut', tab)</em>; // mock.removeAllTabsBut(tab) =&gt; undefined
+gBrowser = mock; // モックを本来のgBrowserの代わりに使う</code></pre>
+<p><code>expect()</code>メソッドは、第1引数にメソッド名を、第2引数に期待される引数を、第3引数に返り値を受け取ります。複数個の引数が期待される場合は、第2引数には配列を渡します（引数に配列が渡されることが期待される場合は2次元の配列として指定します）。引数を伴わない呼び出しが期待される場合は、空の配列を渡します。このようにしてエクスペクテーションを設定しておくと、期待される引数と同じ引数を伴ってメソッドが呼び出された際に、第3引数で指定された返り値（省略時は<code>undefined</code>）が返されます。</p>
+<pre><code>mock.expect('open', <em>[uri, name, features]</em>, null);
+// mock.open(uri, name, features) =&gt; null
+
+mock.expect('slice', [[item1, item2], 1], [item2]);
+// mock.slice([item1, item2], 1) =&gt; [item2]</code></pre>
+<p>メソッドの呼び出し時に例外が発生する場面を再現させたい場合は、<code>expect()</code>メソッドの代わりに<code>expectThrows()</code>メソッドを使います。この場合、期待される引数と同じ引数を伴ってメソッドが呼び出されると例外が投げられるようになります。</p>
+<pre><code>mock.<em>expectThrows('loadURI', 'urn:isbn:xxxxx', 'invalid URI')</em>;
+// mock.loadURI('urn:isbn:xxxxx') =&gt; throw new Error('invalid URI')
+
+// 例外のクラスとメッセージを指定すると、そのクラスのインスタンスを例外として投げる
+mock.<em>expectThrows('eval', '{', SyntaxError, 'missing } in compound statement')</em>;
+// mock.eval('{') =&gt; throw new SyntaxError('missing } in compound statement')</code></pre>
+
+<p>値を返す場合でも例外を発生させる場合でも、1つのエクスペクテーションは1回の呼び出しに対応します。また、エクスペクテーションを設定した順番がそのまま、呼び出し時に期待される順番となります。<em>何回呼び出されても常に固定の値を返すという風な、呼び出し順も引数も重要でない物は、モックではなくスタブとして定義して下さい</em>。</p>
+<pre><code>// こういう物はモックではなくスタブ（stub）
+var gBrowser = {
+      addTab : function() {
+        return document.createElement('tab');
+      }
+    };</code></pre>
+
+<h4 id="howto-object-expectSetGet">プロパティのエクスペクテーション</h4>
+<p>メソッドではないプロパティの参照やプロパティへの代入に対しても、エクスペクテーションを設定することができます。</p>
+<pre><code>var loc = new Mock('location');
+
+// hostプロパティが1回参照されるはずなので、その時は'www.example.jp'を返す
+loc.<em>expectGet('host', 'www.example.jp')</em>;
+// loc.host =&gt; 'www.example.jp'
+
+// hrefプロパティに'http://www.example.com'が1回代入されるはず
+loc.<em>expectSet('href', 'http://www.example.com/')</em>;
+// loc.href = 'http://www.example.com/' =&gt; OK
+// loc.href = 'http://www.example.net/' =&gt; NG</code></pre>
+<p>また、メソッドの呼び出しと同様に、プロパティの参照や代入についても例外の発生をエクスペクテーションとして設定することができます。</p>
+<pre><code>loc.<em>expectGetThrows('host', 'permission denied')</em>;
+// loc.host =&gt; throw new Error('permission denied')
+
+loc.<em>expectSetThrows('href', 'urn:isbn:xxxx', 'invalid uri')</em>;
+// loc.href = 'urn:isbn:xxxx' =&gt; throw new Error('invalid uri')</code></pre>
+<p>これらの場合も、1つのエクスペクテーションの設定が1回の参照（代入）に対応します。また、エクスペクテーションを設定した順番がそのまま、プロパティの参照や代入が期待される順番となります。<em>何回参照されても同じ値を返すプロパティや、何を代入しても問題ないプロパティのように、参照順も回数も重要でない物は、モックではなくスタブとして定義して下さい</em>。</p>
+<pre><code>// こういう物はモックではなくスタブ（stub）
+var location = {
+      href : 'http://www.exemple.jp/',
+      host : 'www.exemple.jp'
+    };</code></pre>
+
+<h4 id="howto-object-assert">モックの検証</h4>
+<p>作成したモックの<code>assert()</code>メソッドを呼ぶと、任意の時点でモックの検証を行えます。検証を実施した時点ですべてのエクスペクテーションが処理済みであれば、検証は成功し、処理が先に進みます。検証時に未処理のエクスペクテーションが1つでも残っている場合は、期待された通りに処理が行われなかったものとして例外が発生します。</p>
+<pre><code>gBrowser = new Mock('gBrowser mock');
+gBrowser.expect('addTab', uri, tab);
+gBrowser.expect('removeAllTabsBut', tab);
+
+var newTab = openNewTabAndCloseOthers(uri);
+
+gBrowser.<em>assert()</em>;</code></pre>
+<p><code>assert()</code>メソッドは通常、テストの中で手動で呼ぶ必要はありません。テストの中で1度も<code>assert()</code>メソッドが呼ばれなかった場合は、<em>tearDownが実施される前のタイミングでUxUが自動的に<code>assert()</code>メソッドを呼び、強制的に検証を行います</em>。</p>
+
+
+<h3 id="howto-function">モック関数</h3>
+<p>UxUでは、特定のオブジェクトのメソッドとして紐付けられていない単独の関数オブジェクトとして振る舞う、モック関数オブジェクトを扱うことができます。モック関数はコールバック関数などの代わりとして利用できます。</p>
+
+<h4 id="howto-function-create">モック関数の作成</h4>
+<p>UxUのテスト実行時の名前空間では、コンストラクタ関数<code>FunctionMock()</code>および<code>MockFunction()</code>が利用できます。（両者は同じ物ですので、どちらを使っても構いません。以下の例では便宜的に<code>MockFunction()</code>に統一します。）コンストラクタ関数の引数として文字列を与えると、モックに任意の名前を付けることができます。この時付けた名前はテスト失敗時のメッセージに表示されることになりますので、デバッグをより容易にするために、すべてのモックには名前を付けておくことをお勧めします。</p>
+<pre><code>var fmock = <em>new MockFunction('my mock function')</em>;</code></pre>
+<p>既存の名前付き関数をモックのコンストラクタ関数に渡すと、関数の名前から自動的にモックの名前が決定されます。ただし、<em>匿名の関数からは名前を取得できませんので、特に必要のない限りは前述の方法で明示的に名前を付けることをお勧めします</em>。</p>
+<pre><code>var openNewTabWith = <em>new MockFunction(openNewTabWith)</em>;
+var openUILink = <em>new MockFunction(openUILink)</em>;</code></pre>
+
+<h4 id="howto-function-expect">関数呼び出しのエクスペクテーション</h4>
+<p>作成されたばかりのモック関数は、どんな引数を渡して呼んでも、予期しない呼び出しが行われたものとして例外が発生します。実際の関数の代用としてモック関数を使うためには、必要に応じてエクスペクテーションを設定する必要があります。</p>
+<p>例えば<code>openNewTabWith()</code>が<code>'http://www.example.com/'</code>と<code>'urn:isbn:xxxx'</code>のそれぞれを引数として呼ばれることが期待されるのであれば、以下のようにして2つのエクスペクテーションを設定します。</p>
+<pre><code>var fmock = new MockFunction('openNewTabWith');
+fmock.<em>expect('http://www.example.com/', tab)</em>; // openNewTabWith('http://www.example.com/') =&gt; tab
+fmock.<em>expect('urn:isbn:xxxx')</em>; // openNewTabWith('urn:isbn:xxxx') =&gt; undefined
+openNewTabWith = fmock; // モック関数を本来のopenNewTabWithの代わりに使う</code></pre>
+<p><code>expect()</code>メソッドは、第1引数に期待される引数を、第2引数に返り値を受け取ります。複数個の引数が期待される場合は、第1引数には配列を渡します（引数に配列が渡されることが期待される場合は2次元の配列として指定します）。引数を伴わない呼び出しが期待される場合は、空の配列を渡します。このようにしてエクスペクテーションを設定しておくと、期待される引数と同じ引数を伴って関数が呼び出された際に、第2引数で指定された返り値（省略時は<code>undefined</code>）が返されます。</p>
+<pre><code>fmock.expect(<em>[uri, name, features]</em>, null);
+// fmock(uri, name, features) =&gt; null
+
+fmock.expect([[item1, item2], 1], [item2]);
+// fmock([item1, item2], 1) =&gt; [item2]</code></pre>
+<p>関数の呼び出し時に例外が発生する場面を再現させたい場合は、<code>expect()</code>メソッドの代わりに<code>expectThrows()</code>メソッドを使います。この場合、期待される引数と同じ引数を伴ってメソッドが呼び出されると例外が投げられるようになります。</p>
+<pre><code>openMock.<em>expectThrows('urn:isbn:xxxxx', 'invalid URI')</em>;
+// openMock('urn:isbn:xxxxx') =&gt; throw new Error('invalid URI')
+
+// 例外のクラスとメッセージを指定すると、そのクラスのインスタンスを例外として投げる
+evalMock.<em>expectThrows('{', SyntaxError, 'missing } in compound statement')</em>;
+// evalMock('{') =&gt; throw new SyntaxError('missing } in compound statement')</code></pre>
+
+<p>値を返す場合でも例外を発生させる場合でも、1つのエクスペクテーションは1回の呼び出しに対応します。また、エクスペクテーションを設定した順番がそのまま、呼び出し時に期待される順番となります。<em>何回呼び出されても常に固定の値を返すという風な、呼び出し順も引数も重要でない物は、モックではなくスタブとして定義して下さい</em>。</p>
+<pre><code>// こういう物はモックではなくスタブ（stub）
+var openUILink = function(aURI) {
+      return true;
+    };</code></pre>
+
+<h4 id="howto-function-assert">モック関数の検証</h4>
+<p>作成したモック関数の<code>assert()</code>メソッドを呼ぶと、任意の時点でモック関数の検証を行えます。検証を実施した時点ですべてのエクスペクテーションが処理済みであれば、検証は成功し、処理が先に進みます。検証時に未処理のエクスペクテーションが1つでも残っている場合は、期待された通りに処理が行われなかったものとして例外が発生します。</p>
+<pre><code>openNewTabWith = new MockFunction('openNewTabWith');
+openNewTabWith.expect(uri1, document.createElement('tab'));
+openNewTabWith.expect(uri2, document.createElement('tab'));
+
+var newTabs = openNewTabs([uri1, uri2]);
+
+openNewTabWith.<em>assert()</em>;</code></pre>
+<p><code>assert()</code>メソッドは通常、テストの中で手動で呼ぶ必要はありません。テストの中で1度も<code>assert()</code>メソッドが呼ばれなかった場合は、<em>tearDownが実施される前のタイミングでUxUが自動的に<code>assert()</code>メソッドを呼び、強制的に検証を行います</em>。</p>
+
+
+<h3 id="howto-override">既存オブジェクトの機能をモックで置き換える</h3>
+<p>既存のオブジェクトの一部のメソッドやプロパティだけをモックで置き換えたい（付け加えたい）場合は、<code>Mock</code>のクラスメソッドを使用します。</p>
+<pre><code><em>Mock.expect(</em>gBrowser, 'addTab', uri, document.createElement('tab')<em>)</em>;
+<em>Mock.expect(</em>gBrowser, 'removeAllTabsBut', tab<em>)</em>;
+<em>Mock.expectThrows(</em>gBrowser, 'loadURI', ['urn:isbn:xxxx', referrer], 'invalid URI'<em>)</em>;
+<em>Mock.expectGet(</em>gBrowser, 'contentDocument', content.document<em>)</em>;
+<em>Mock.expectGetThrows(</em>gBrowser, 'docShell', 'permission denied'<em>)</em>;
+<em>Mock.expectSet(</em>gBrowser, 'selectedTab', tab<em>)</em>;
+<em>Mock.expectSetThrows(</em>gBrowser, 'contentDocument', 'readonly'<em>)</em>;</code></pre>
+<p><a href="#howto-object-expect">通常のモックのメソッド呼び出しのエクスペクテーション</a>や<a href="#howto-object-expectSetGet">プロパティアクセスのエクスペクテーション</a>とは異なり、メソッドの最初の引数としてメソッドやプロパティを保持するオブジェクトを指定することに注意して下さい。</p>
+
+
+<h2 id="expectation-chain">メソッドチェインによるエクスペクテーションの定義</h2>
+<p>エクスペクテーションを定義する際は、メソッドチェインによってより細かい挙動を指定することができます。</p>
+<pre><code>var windowMock = new Mock(window);
+
+windowMock.expect('alert', 'OK')<em>.andReturn(true)</em>
+                                <em>.times(3)</em>;</code></pre>
+<p>モックの<code>expect()</code>、<code>expectThrows()</code>、<code>expectGet()</code>、<code>expectGetThrows()</code>、<code>expectSet()</code>、<code>expectSetThrows()</code>、およびモック関数の<code>expect()</code>、<code>expectThrows()</code>の返り値に対しては、以下のメソッドチェインを任意に繋げることができます。</p>
+<dl class="api-list">
+	<dt>Object <code>times(<var>in Number aTimes</var>)</code></dt>
+		<dd><p>最後のエクスペクテーションについて、そこまでの時点で定義されている内容が特定の回数繰り返されることを指定します。</p>
+		<p><em>このメソッドが呼ばれた後に書かれた指定の内容は繰り返しの対象になりませんので、メソッドチェインを各順番には気をつけて下さい。</em>以下の2つはそれぞれ意味が異なります。</p>
+		<pre><code>// alert('OK')が呼ばれてtrueを返す、という呼び出しが3回行われる
+mock.expect('alert', 'OK').andReturn(true)
+                          .times(3);
+
+// alert('OK')が3回呼ばれて、そのうち最後の1回だけtrueを返す
+mock.expect('alert', 'OK').times(3)
+                          .andReturn(true);</code></pre></dd>
+	<dt>Object <code>bindTo(<var>in Object aContext</var>)</code>
+		<span class="alias">別名：<code>boundTo()</code>,
+		                          <code>andBindTo()</code>,
+		                          <code>andBoundTo()</code></span></dt>
+		<dd><p>最後のエクスペクテーションについて、そのメソッド（関数）やゲッタ・セッタ関数を実行する時の<code>this</code>が指定のオブジェクトとなることを指定します。指定されたオブジェクト以外が<code>this</code>になる形でメソッドが呼ばれると、例外を発生させます。</p></dd>
+	<dt>Object <code>andReturn(<var>in Object aReturnValue</var>)</code>
+		<span class="alias">別名：<code>andReturns()</code>,
+		                          <code>thenReturn()</code>,
+		                          <code>thenReturns()</code></span></dt>
+		<dd><p>最後のエクスペクテーションについて、そのメソッド（関数）を実行したりプロパティを参照したりした時に返されることが期待される返り値を指定します。<code>expectThrows()</code>、<code>expectGetThrows()</code>からのメソッドチェインの場合、この指定は無視されます。</p></dd>
+	<dt>Object <code>andThrow(<var>in Object aException</var>, <var>[in String aMessage]</var>)</code>
+		<span class="alias">別名：<code>andThrows()</code>,
+		                          <code>andRaise()</code>,
+		                          <code>andRaises()</code>,
+		                          <code>thenThrow()</code>,
+		                          <code>thenThrows()</code>,
+		                          <code>thenRaise()</code>,
+		                          <code>thenRaises()</code></span></dt>
+		<dd><p>最後のエクスペクテーションについて、そのメソッド（関数）を実行したりプロパティを参照したりした時に投げられることが期待される例外を指定します。第1引数だけが指定された場合はそれを例外として投げ、第1引数にコンストラクタ関数・第2引数にメッセージ文字列が指定された場合は<code>new <var>aException</var>(<var>aMessage</var>)</code>した物を例外として投げます。<code>expect()</code>、<code>expectGet()</code>、<code>expectSet()</code>からのメソッドチェインの場合、この指定の方が優先されます（例外が投げられるため、返り値は返されません）。</p></dd>
+	<dt>Object <code>andStub(<var>in Function aOperation</var>)</code>
+		<span class="alias">別名：<code>then()</code></span></dt>
+		<dd><p>最後のエクスペクテーションについて、そのメソッド（関数）を実行したりプロパティを参照したりした時に同時に実行させる処理を、関数で指定します。メソッドやプロパティの副作用を再現する為に利用できます。関数が実行される時は、そのエクスペクテーションで指定されているメソッドに渡された引数がそのまま関数に対しても渡されます。</p></dd>
+</dl>
+
+
+<h2 id="api">他のモックライブラリの記法によるモックの定義</h2>
+<p>UxUに内蔵されているモック機能は、JavaScriptにおける既存の代表的ないくつかのモックライブラリと共通のAPIを備えています。既存のモックライブラリを使用した経験がある場合には、慣れ親しんだ記法でモックを定義することができます。</p>
+<h3 id="api-mockobjectjs">MockObject.js</h3>
+<p><a href="http://micampe.it/projects/jsmock">MockObject.js</a>の以下の記法に対応しています。</p>
+<pre><code>var mock = <em>MockCreate(Window)</em>;
+mock.<em>_expect('open', [uri, name, features], null)</em>;
+mock.<em>_expectThrows('moveBy', [20, 20], 'permission denied')</em>;
+...
+mock.<em>_verify();</em></code></pre>
+
+<h3 id="api-jsmock">JSMock</h3>
+<p><a href="http://jsmock.sourceforge.net/">JSMock</a>の以下の記法に対応しています。</p>
+<pre><code><em>var mockControl = new MockControl()</em>;
+windowMock = <em>mockControl.createMock(Window)</em>;
+
+windowMock.<em>expects().open(uri, name, features).andReturn(null)</em>;
+windowMock.<em>expects().moveBy(20, 20).andThrow('permission denied')</em>;
+windowMock.<em>expects().setTimeout(TypeOf.isA(Function), 1000)
+             .andStub(function(aFunction, aTimeout) { aFunction(); })</em>;
+
+...
+
+<em>mockControl.verify()</em>;</code></pre>
+
+<p><code>JSMock.extend()</code>を実行していない状態でも、<code>createMock()</code>、<code>resetMocks()</code>および<code>verifyMocks()</code>を利用することができます。（UxUのテストケースにおいては、<code>JSMock.extend()</code>は実際には何も行いません。）</p>
+<pre><code>var windowMock, documentMock;
+
+function setUp() {
+  <em>JSMock.extend(this)</em>; // 省略可能
+
+  windowMock = <em>createMock()</em>;
+  windowMock.<em>addMockMethod('alert')</em>;
+
+  documentMock = <em>createMock()</em>;
+  documentMock.<em>addMockMethod('open')</em>;
+}
+
+function tearDown() {
+  <em>verifyMocks()</em>; // 省略可能
+}
+
+function testMyFeature() {
+  windowMock.<em>expects().alert('OK')</em>;
+  documentMock.<em>expects().open()</em>;
+  ...
+}</code></pre>
+
+<h3 id="api-jsmockito">JsMockito</h3>
+<p><a href="http://jsmockito.org/">JsMockito</a>の以下の記法に対応しています。</p>
+<pre><code>var windowMock = <em>mock(Window)</em>;
+<em>when(windowMock).open(uri, name, features).thenReturn(null)</em>;
+<em>when(windowMock).moveBy(20, 20).thenThrow('permission denied')</em>;
+<em>when(windowMock).setTimeout(anything(), 1000)
+             .then(function(aFunction, aTimeout) { aFunction(); })</em>;</code></pre>
+<pre><code>var addTab = <em>mockFunction()</em>;
+<em>when(addTab)(uri).thenReturn(document.createElement('tab'))</em>;
+<em>when(addTab)('urn:isbn:xxxx').thenThrow('invalid URI')</em>;
+<em>when(addTab).call(gBrowser, uri) // bind "this" to the gBrowser
+             .thenReturn(null)</em>;</code></pre>
+<p>UxUはJsMockitoの機能のうち、上記の例のような<em>あらかじめモックの振る舞いを定義しておくスタイルの利用方法</em>にのみ対応しています。<code>verify()</code>を使って後から検証を行う利用方法には対応していませんので、ご注意下さい。また、<a href="http://jshamcrest.destaquenet.com/">JsHamcrest</a>互換のAPIは備わっていないため、引数の柔軟なマッチングにも対応していません。</p>
+
+<h2 id="httpserver">ローカルHTTPサーバをモックとして利用する</h2>
+<p>UxU内で起動されたローカルHTTPサーバのインスタンス（<a href="helpers.html#utils.setUpHttpServer"><code>utils.setUpHttpServer()</code></a>および<a href="helpers.html#utils.getHttpServer"><code>utils.getHttpServer()</code></a>の返り値）に対してエクスペクテーションを設定することで、ローカルHTTPサーバをモックとして利用することができます。</p>
+<pre><code>var server = utils.setUpHttpServer(4445, baseURL);
+
+server.expect('/index.html.en', '/index.html'); // 200 OK
+// server.expect('/index.html.en', 200, '/index.html'); と同じ意味
+
+server.expect(/^\/subdir\/.*/, '/index.html'); // 正規表現も利用可能
+server.expect(/([^\/\.]+)\.jpg/, '/images/$1.jpg'); // RewriteRuleのような置換
+
+server.expect('/users', 301, '/accounts'); // リダイレクト
+
+server.expectThrows('/deleted', 404);
+
+gBrowser.loadURI('http://localhost:4445/index.html.en'); // =&gt; "/index.html" 200 OK</code></pre>
+<p><code>expect()</code>および<code>expectThrows()</code>の第1引数は期待されるリクエストの内容（絶対パスの文字列または正規表現）で、第2引数以降の引数はその時返すレスポンスの内容です。レスポンスとしてファイル（nsIFileのオブジェクト）を渡すと、そのファイルの内容が返されます。ステータスコードが3XX以外の場合、レスポンスのURIのスキーマおよびホスト名は無視されます。</p>
+<p>エクスペクテーションを設定している場合、期待されないアクセスはすべて500 Internal Server Errorとなります。また、期待されないアクセスによってHTTPサーバ内で発生した例外は、<a href="helpers.html#utils.tearDownHttpServer"><code>utils.tearDownHttpServer()</code></a>でサーバを終了する際にまとめて報告されます。</p>
+<p>エクスペクテーションの設定においては、返り値をハッシュの形式で指定することもできます。この場合、<code>delay</code>プロパティによってミリ秒単位でレスポンスの遅延を指定できますので、反応が遅いWWWサーバと通信する場合のテストも行えます。</p>
+<pre><code>server.expect('/index.html.en', { path : '/index.html', delay : 3000 });
+// server.expect('/index.html.en', { status : 200, path : '/index.html', delay : 3000 }); と同じ
+
+server.expect('/moved', { status: 301, path : '/index.html', delay : 3000 }); // 遅延されたリダイレクト</code></pre>
+
+<p>エクスペクテーションの設定には、<a href="#api">他のモックライブラリの記法</a>と同様のAPIも利用できます。</p>
+<pre><code>// JSMock風
+server.expects()('(.*)\.en').andReturn(302, '$1')
+
+// JsMockito風
+when(server)('/deleted').thenThrow(404);</code></pre>
+
+</body></html>

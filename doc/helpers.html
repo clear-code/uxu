@@ -1,0 +1,1922 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>テストケース内で利用可能なヘルパーメソッド</title>
+</head>
+<body>
+<h1>テストケース内で利用可能なヘルパーメソッド</h1>
+
+<script type="text/javascript" src="./folding.js"></script>
+<script type="text/javascript">writeCollapseExpandAllButton()</script>
+
+<ul>
+	<li><a href="#sample">凡例</a></li>
+	<li><a href="#actions">イベントの発行</a>
+		<ul>
+			<li><a href="#actions-mouse">マウスのイベント</a>
+				<ul>
+					<li><a href="#actions-mouse-on-element">要素の上でのマウス操作</a></li>
+					<li><a href="#actions-mouse-at-position">指定の座標の位置でのマウス操作</a></li>
+				</ul>
+			</li>
+			<li><a href="#actions-key">キー操作のイベント</a>
+				<ul>
+					<li><a href="#actions-key-general">一般的なキー操作</a></li>
+					<li><a href="#actions-key-input">文字入力のキー操作</a></li>
+				</ul>
+			</li>
+			<li><a href="#action-modaldialog">モーダルダイアログの操作予約</a></li>
+			<li><a href="#action-position">座標からの操作</a></li>
+			<li><a href="#action-old-api">古いAPI</a></li>
+		</ul>
+	</li>
+	<li><a href="#location">テストケースの位置</a></li>
+	<li><a href="#window">テスト用ウィンドウの制御</a>
+		<ul>
+			<li><a href="#window-options">ウィンドウのオプション</a></li>
+		</ul>
+	</li>
+	<li><a href="#dom">DOM操作</a></li>
+	<li><a href="#browser">ブラウザ関連操作</a>（Firefox限定）</li>
+	<li><a href="#mail">メール関連操作</a>（Thunderbird限定）
+		<ul>
+			<li><a href="#mail-folders">フォルダ操作</a></li>
+			<li><a href="#mail-compose-window">メッセージ編集ウィンドウの操作</a></li>
+			<li><a href="#mail-send">メール送信操作</a></li>
+		</ul>
+	</li>
+	<li><a href="#file">ファイル操作</a>
+		<ul>
+			<li><a href="#file-IO">ファイルの読み書き</a></li>
+			<li><a href="#file-creation">ファイルの生成/コピー/削除</a></li>
+			<li><a href="#file-conversion">ファイルURLとファイルパスの相互変換</a></li>
+			<li><a href="#file-hash">ファイルのハッシュの取得</a></li>
+		</ul>
+	</li>
+	<li><a href="#string">文字列操作</a></li>
+	<li><a href="#json">JSONの利用</a></li>
+	<li><a href="#csv">CSVの利用</a></li>
+	<li><a href="#server">ローカルHTTPサーバの操作</a></li>
+	<li><a href="#database">データベース操作</a></li>
+	<li><a href="#include">スクリプトの読み込み</a></li>
+	<li><a href="#pref">設定の読み書き</a></li>
+	<li><a href="#application">アプリケーションの情報の取得</a></li>
+	<li><a href="#windows-registry">Windowsのレジストリの操作</a>（Windows限定）</li>
+	<li><a href="#other">その他</a></li>
+</ul>
+
+<ul>
+	<li><a href="./">UxUの紹介ページに戻る</a></li>
+	<li><a href="testcases.html">UxU用のテストケースの書き方</a></li>
+	<li><a href="assertions.html">アサーション一覧</a></li>
+	<li><a href="greasemonkey.html">UxUによるGreasemonkeyスクリプトのテスト</a></li>
+	<li><a href="mock.html">モックを使ったテスト</a></li>
+	<li><a href="server.html">UxUをリモート操作する</a></li>
+	<li><a href="commandline.html">UxUのコマンドラインオプション</a></li>
+</ul>
+
+
+<h2 id="sample">凡例</h2>
+<dl>
+	<dt><var>返り値</var> <code><var>メソッド名</var>(<var>引数</var>, <var>[省略可能な引数]</var>)</code></dt>
+		<dd>
+			<p><var>説明</var></p>
+		</dd>
+</dl>
+
+
+<h2 id="actions">イベントの発行</h2>
+
+<h3 id="actions-mouse">マウスのイベント</h3>
+<p>マウスのイベントを発行するメソッドは、以下の各プロパティを持つオブジェクトを追加の引数として渡すことによって、修飾キーを押しながらの操作にすることができます。</p>
+<dl>
+	<dt>Boolean <code>altKey</code></dt><dd>Altキーを押していたかどうか（省略時はfalse）</dd>
+	<dt>Boolean <code>ctrlKey</code></dt><dd>Ctrlキーを押していたかどうか（省略時はfalse）</dd>
+	<dt>Boolean <code>metaKey</code></dt><dd>Metaキー（MacではCommandキー）を押していたかどうか（省略時はfalse）</dd>
+	<dt>Boolean <code>shiftKey</code></dt><dd>Shiftキーを押していたかどうか（省略時はfalse）</dd>
+</dl>
+<p>なお、<em>Firefox 2およびThudnerbird 2では、クリックのエミュレートによって発行されたイベントではXUL要素の<code>command</code>イベントが発行されません。</em>これはGeckoのバージョンによる制限です。</p>
+<h4 id="actions-mouse-on-element">要素の上でのマウス操作</h4>
+<dl class="api-list">
+	<dt id="action.clickOn">void <code>action.clickOn(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.leftClickOn()</code>,
+		                          <code>actionClickOn()</code>,
+		                          <code>actionLeftClickOn()</code></span></dt>
+	<dt id="action.middleClickOn">void <code>action.middleClickOn(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>actionMiddleClickOn()</code></span></dt>
+	<dt id="action.rightClickOn">void <code>action.rightClickOn(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>actionRightClickOn()</code></span></dt>
+		<dd>
+			<p>引数で指定した要素の上で左クリック、中クリック、あるいは右クリックします。</p>
+			<pre><code>action.clickOn($('button'));
+action.clickOn($('button'), { ctrlKey : true, shiftKey : true });
+// 引数はどの順番で渡しても構いません。
+action.middleClickOn({ shiftKey : true }, $('link'));</code></pre>
+		</dd>
+	<dt id="action.dblclickOn">void <code>action.dblclickOn(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.dblClickOn()</code>,
+		                          <code>action.leftDblclickOn()</code>,
+		                          <code>action.leftDblClickOn()</code>,
+		                          <code>actionDblclickOn()</code>,
+		                          <code>actionDblClickOn()</code>,
+		                          <code>actionLeftDblclickOn()</code>,
+		                          <code>actionLeftDblClickOn()</code></span></dt>
+	<dt id="action.middleDblclickOn">void <code>action.middleDblclickOn(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.middleDblClickOn()</code>,
+		                          <code>actionMiddleDblclickOn()</code>,
+		                          <code>actionMiddleDblClickOn()</code></span></dt>
+	<dt id="action.rightDblclickOn">void <code>action.rightDblclickOn(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.rightDblClickOn()</code>,
+		                          <code>actionRightDblclickOn()</code>,
+		                          <code>actionRightDblClickOn()</code></span></dt>
+		<dd>
+			<p>引数で指定した要素の上でダブルクリック、中ボタンのダブルクリック、あるいは右ボタンのダブルクリックを行います。</p>
+			<pre><code>action.dblclickOn($('button'));
+action.dblclickOn($('button'), { ctrlKey : true, shiftKey : true });
+// 引数はどの順番で渡しても構いません。
+action.middleDblclickOn({ shiftKey : true }, $('link'));</code></pre>
+		</dd>
+	<dt id="action.mousedownOn">void <code>action.mousedownOn(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.dblClickOn()</code>,
+		                          <code>action.leftMousedownOn()</code>,
+		                          <code>action.leftMouseDownOn()</code>,
+		                          <code>actionMousedownOn()</code>,
+		                          <code>actionMouseDownOn()</code>,
+		                          <code>actionLeftMousedownOn()</code>,
+		                          <code>actionLeftMouseDownOn()</code></span></dt>
+	<dt id="action.middleMousedownOn">void <code>action.middleMousedownOn(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.middleMouseDownOn()</code>,
+		                          <code>actionMiddleMousedownOn()</code>,
+		                          <code>actionMiddleMouseDownOn()</code></span></dt>
+	<dt id="action.rightMousedownOn">void <code>action.rightMousedownOn(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.rightMouseDownOn()</code>,
+		                          <code>actionRightMousedownOn()</code>,
+		                          <code>actionRightMouseDownOn()</code></span></dt>
+		<dd>
+			<p>引数で指定した要素の上で左ボタン、中ボタン、あるいは右ボタンを押下します。クリックではなく、ボタンを押し下げるだけの操作です。</p>
+			<pre><code>action.mousedownOn($('button'));
+action.mousedownOn($('button'), { ctrlKey : true, shiftKey : true });
+// 引数はどの順番で渡しても構いません。
+action.middleMousedownOn({ shiftKey : true }, $('link'));</code></pre>
+		</dd>
+	<dt id="action.mouseupOn">void <code>action.mouseupOn(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.dblClickOn()</code>,
+		                          <code>action.leftMouseupOn()</code>,
+		                          <code>action.leftMouseUpOn()</code>,
+		                          <code>actionMouseupOn()</code>,
+		                          <code>actionMouseUpOn()</code>,
+		                          <code>actionLeftMouseupOn()</code>,
+		                          <code>actionLeftMouseUpOn()</code></span></dt>
+	<dt id="action.middleMouseupOn">void <code>action.middleMouseupOn(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.middleMouseUpOn()</code>,
+		                          <code>actionMiddleMouseupOn()</code>,
+		                          <code>actionMiddleMouseUpOn()</code></span></dt>
+	<dt id="action.rightMouseupOn">void <code>action.rightMouseupOn(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.rightMouseUpOn()</code>,
+		                          <code>actionRightMouseupOn()</code>,
+		                          <code>actionRightMouseUpOn()</code></span></dt>
+		<dd>
+			<p>引数で指定した要素の上で左ボタン、中ボタン、あるいは右ボタンを放します。<code>action.mousedownOn()</code>等で<code>mousedown</code>イベントを発行させた直後に、これらのメソッドで同じボタンを放す操作を行うと、クリックとして扱われます。</p>
+			<pre><code>action.mouseupOn($('button'));
+action.mouseupOn($('button'), { ctrlKey : true, shiftKey : true });
+// 引数はどの順番で渡しても構いません。
+action.middleMouseupOn({ shiftKey : true }, $('link'));</code></pre>
+		</dd>
+</dl>
+<h4 id="actions-mouse-at-position">指定の座標の位置でのマウス操作</h4>
+<p>座標指定系のメソッドは、引数として数値を2つ取り、1つ目の数値がX座標、2つ目の数値がY座標になります。座標は画面の左上が原点（<code>0, 0</code>）となりますが、DOMWindowを引数に渡すと、そのDOMWindowに対応するフレームの左上が原点となります。</p>
+<dl class="api-list">
+	<dt id="action.clickAt">void <code>action.clickAt(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.leftClickAt()</code>,
+		                          <code>actionClickAt()</code>,
+		                          <code>actionLeftClickAt()</code></span></dt>
+	<dt id="action.middleClickAt">void <code>action.middleClickAt(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>actionMiddleClickAt()</code></span></dt>
+	<dt id="action.rightClickAt">void <code>action.rightClickAt(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>actionRightClickAt()</code></span></dt>
+		<dd>
+			<p>指定された座標の位置で左クリック、中クリック、あるいは右クリックします。</p>
+			<pre><code>action.clickAt(300, 250);
+action.clickAt(content, 20, 5, { ctrlKey : true, shiftKey : true });
+// 引数はどの順番で渡しても構いません。
+action.middleClickAt({ shiftKey : true }, 100, 100, content.frames[2]);</code></pre>
+		</dd>
+	<dt id="action.dblclickAt">void <code>action.dblclickAt(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.dblClickAt()</code>,
+		                          <code>action.leftDblclickAt()</code>,
+		                          <code>action.leftDblClickAt()</code>,
+		                          <code>actionDblclickAt()</code>,
+		                          <code>actionDblClickAt()</code>,
+		                          <code>actionLeftDblclickAt()</code>,
+		                          <code>actionLeftDblClickAt()</code></span></dt>
+	<dt id="action.middleDblclickAt">void <code>action.middleDblclickAt(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.middleDblClickAt()</code>,
+		                          <code>actionMiddleDblclickAt()</code>,
+		                          <code>actionMiddleDblClickAt()</code></span></dt>
+	<dt id="action.rightDblclickAt">void <code>action.rightDblclickAt(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.rightDblClickAt()</code>,
+		                          <code>actionRightDblclickAt()</code>,
+		                          <code>actionRightDblClickAt()</code></span></dt>
+		<dd>
+			<p>指定された座標の位置でダブルクリック、中ボタンのダブルクリック、あるいは右ボタンのダブルクリックを行います。</p>
+			<pre><code>action.dblclickAt(300, 250);
+action.dblclickAt(content, 20, 5, { ctrlKey : true, shiftKey : true });
+// 引数はどの順番で渡しても構いません。
+action.middleDblclickAt({ shiftKey : true }, 100, 100, content.frames[2]);</code></pre>
+		</dd>
+	<dt id="action.mousedownAt">void <code>action.mousedownAt(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.mouseDownAt()</code>,
+		                          <code>action.leftMousedownAt()</code>,
+		                          <code>action.leftMouseDownAt()</code>,
+		                          <code>actionMousedownAt()</code>,
+		                          <code>actionMouseDownAt()</code>,
+		                          <code>actionLeftMousedownAt()</code>,
+		                          <code>actionLeftMouseDownAt()</code></span></dt>
+	<dt id="action.middleMousedownAt">void <code>action.middleMousedownAt(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.middleMouseDownAt()</code>,
+		                          <code>actionMiddleMousedownAt()</code>,
+		                          <code>actionMiddleMouseDownAt()</code></span></dt>
+	<dt id="action.rightMousedownAt">void <code>action.rightMousedownAt(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.rightMouseDownAt()</code>,
+		                          <code>actionRightMousedownAt()</code>,
+		                          <code>actionRightMouseDownAt()</code></span></dt>
+		<dd>
+			<p>指定された座標の位置で左ボタン、中ボタン、あるいは右ボタンを押下します。クリックではなく、ボタンを押し下げるだけの操作です。</p>
+			<pre><code>action.mousedownAt(300, 250);
+action.mousedownAt(content, 20, 5, { ctrlKey : true, shiftKey : true });
+// 引数はどの順番で渡しても構いません。
+action.middleMousedownAt({ shiftKey : true }, 100, 100, content.frames[2]);</code></pre>
+		</dd>
+	<dt id="action.mouseupAt">void <code>action.mouseupAt(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.mosueUpAt()</code>,
+		                          <code>action.leftMouseupAt()</code>,
+		                          <code>action.leftMouseUpAt()</code>,
+		                          <code>actionMouseupAt()</code>,
+		                          <code>actionMouseUpAt()</code>,
+		                          <code>actionLeftMouseupAt()</code>,
+		                          <code>actionLeftMouseUpAt()</code></span></dt>
+	<dt id="action.middleMouseupAt">void <code>action.middleMouseupAt(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.middleMouseUpAt()</code>,
+		                          <code>actionMiddleMouseupAt()</code>,
+		                          <code>actionMiddleMouseUpAt()</code></span></dt>
+	<dt id="action.rightMouseupAt">void <code>action.rightMouseupAt(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.rightMouseUpAt()</code>,
+
+		                          <code>actionRightMouseupAt()</code>,
+		                          <code>actionRightMouseUpAt()</code></span></dt>
+		<dd>
+			<p>指定された座標の位置で左ボタン、中ボタン、あるいは右ボタンを放します。<code>action.mousedownAt()</code>等で<code>mousedown</code>イベントを発行させた直後に、これらのメソッドで同じボタンを放す操作を行うと、クリックとして扱われます。</p>
+			<pre><code>action.mouseupAt(300, 250);
+action.mouseupAt(content, 20, 5, { ctrlKey : true, shiftKey : true });
+// 引数はどの順番で渡しても構いません。
+action.middleMouseupAt({ shiftKey : true }, 100, 100, content.frames[2]);</code></pre>
+		</dd>
+</dl>
+<h3 id="actions-key">キー操作のイベント</h3>
+<p>キーボード操作のイベントを発行するメソッドは、以下の各プロパティを持つオブジェクトを追加の引数として渡すことによって、修飾キーを押しながらの操作にすることができます。</p>
+<dl>
+	<dt>Boolean <code>altKey</code></dt><dd>Altキーを押していたかどうか（省略時はfalse）</dd>
+	<dt>Boolean <code>ctrlKey</code></dt><dd>Ctrlキーを押していたかどうか（省略時はfalse）</dd>
+	<dt>Boolean <code>metaKey</code></dt><dd>Metaキー（MacではCommandキー）を押していたかどうか（省略時はfalse）</dd>
+	<dt>Boolean <code>shiftKey</code></dt><dd>Shiftキーを押していたかどうか（省略時はfalse）</dd>
+</dl>
+<p>なお、<em>Firefox 2およびThudnerbird 2では、キー操作のエミュレートによって発行されたイベントではXUL要素の<code>command</code>イベントが発行されません。</em>これはGeckoのバージョンによる制限です。</p>
+<h4 id="actions-key-general">一般的なキー操作</h4>
+<dl class="api-list">
+	<dt id="action.keypressOn">void <code>action.keypressOn(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.keyPressOn()</code>,
+		                          <code>actionKeypressOn()</code>,
+		                          <code>actionKeyPressOn()</code></span></dt>
+		<dd>
+			<p>指定された要素にフォーカスした状態で、指定されたキーを打鍵します。</p>
+			<p>キー指定は、アルファベットや数字、記号などを1文字だけ渡した場合はそのキーを押したものとして扱います。ファンクションキーなどの特殊なキーを押す場合は、<code>Components.interfaces.nsIDOMKeyEvent</code>で<code>DOM_VK_RETURN</code>などの定数プロパティとして定義されているキーコードか、定数プロパティで使われているキー名の文字列（大文字小文字は区別されません）で指定します。</p>
+			<pre><code>// Ctrl-A
+action.keypressOn($('input'), 'a', { ctrlKey : true });
+
+// FooBarと入力してBarを消す。
+action.keypressOn($('input'), 'f', { shiftKey : true });
+action.keypressOn($('input'), 'o');
+action.keypressOn($('input'), 'o');
+action.keypressOn($('input'), 'b', { shiftKey : true });
+action.keypressOn($('input'), 'a');
+action.keypressOn($('input'), 'r');
+action.keypressOn($('input'), Ci.nsIDOMKeyEvent.DOM_VK_BACK_SPACE);
+action.keypressOn($('input'), Ci.nsIDOMKeyEvent.DOM_VK_BACK_SPACE);
+action.keypressOn($('input'), Ci.nsIDOMKeyEvent.DOM_VK_BACK_SPACE);
+
+// 引数はどの順番で渡しても構いません。
+action.keypressOn('F3', { shiftKey : true }, $('searchbar'));</code></pre>
+		</dd>
+	<dt id="action.keydownOn">void <code>action.keydownOn(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.keyDownOn()</code>,
+		                          <code>actionKeydownOn()</code>,
+		                          <code>actionKeyDownOn()</code></span></dt>
+		<dd>
+			<p>指定された要素にフォーカスした状態で、指定されたキーを押下します。文字入力などの通常の打鍵操作ではなく、キーを押し下げてそのままにする操作です。実際のキー操作とは異なり、キーリピートは発生しません。</p>
+			<p>キー指定は、アルファベットや数字、記号などを1文字だけ渡した場合はそのキーを押したものとして扱います。ファンクションキーなどの特殊なキーを押す場合は、<code>Components.interfaces.nsIDOMKeyEvent</code>で<code>DOM_VK_RETURN</code>などの定数プロパティとして定義されているキーコードか、定数プロパティで使われているキー名の文字列（大文字小文字は区別されません）で指定します。</p>
+			<pre><code>// Ctrl-Tab
+action.keydownOn($('tabbrowser'), 'Control');
+action.keypressOn($('tabbrowser'), 'Tab', { ctrlKey : true });
+action.keypressOn($('tabbrowser'), 'Tab', { ctrlKey : true });
+action.keyupOn($('tabbrowser'), 'Control');
+
+// 引数はどの順番で渡しても構いません。
+action.keydownOn(Ci.nsIDOMKeyEvent.DOM_VK_TAB, $('field'), { shiftKey : true });</code></pre>
+		</dd>
+	<dt id="action.keyupOn">void <code>action.keyupOn(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>action.keyUpOn()</code>,
+		                          <code>actionKeyupOn()</code>,
+		                          <code>actionKeyUpOn()</code></span></dt>
+		<dd>
+			<p>指定された要素にフォーカスした状態で、指定されたキーを放します。<a href="#action.keydownOn"><code>action.keydownOn()</code></a>でキーを押下した直後に同じキーを放すと、<code>keypress</code>イベントが発行されます。</p>
+			<p>キー指定は、アルファベットや数字、記号などを1文字だけ渡した場合はそのキーが放されたものとして扱います。ファンクションキーなどの特殊なキーを放す場合は、<code>Components.interfaces.nsIDOMKeyEvent</code>で<code>DOM_VK_RETURN</code>などの定数プロパティとして定義されているキーコードか、定数プロパティで使われているキー名の文字列（大文字小文字は区別されません）で指定します。</p>
+			<pre><code>// Ctrl-Tab
+action.keydownOn($('tabbrowser'), 'Control');
+action.keypressOn($('tabbrowser'), 'Tab', { ctrlKey : true });
+action.keypressOn($('tabbrowser'), 'Tab', { ctrlKey : true });
+action.keyupOn($('tabbrowser'), 'Control');
+
+// 引数はどの順番で渡しても構いません。
+action.keyupOn(Ci.nsIDOMKeyEvent.DOM_VK_TAB, $('field'), { shiftKey : true });</code></pre>
+		</dd>
+</dl>
+<h4 id="actions-key-input">文字入力のキー操作</h4>
+<dl class="api-list">
+	<dt id="action.inputTo">void <code>action.inputTo(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>actionInputTo()</code></span></dt>
+		<dd>
+			<p>指定されたテキストフィールドに文字列を入力します。入力はキー入力操作のエミュレーションによって行われ、各文字入力に対して<code>keydown</code>, <code>keyup</code>, <code>keypress</code>, <code>input</code>イベントが発行されます（キーボードから直接入力できない日本語の文字などについては、IMEを通した入力の操作とみなします）。</p>
+			<p><a href="#action.appendTo"><code>action.appendTo()</code></a>とは事なり、以前に入力されていた内容は消去されます。</p>
+			<pre><code>action.inputTo($('yomigana'), 'Sakamoto Ryoma');
+action.inputTo($('kanji'), '坂本龍馬');
+// 引数はどの順番で渡しても構いません。
+action.inputTo('31', $('age'));</code></pre>
+		</dd>
+	<dt id="action.appendTo">void <code>action.appendTo(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>actionAppendTo()</code></span></dt>
+		<dd>
+			<p>指定されたテキストフィールドに文字列を入力します。入力はキー入力操作のエミュレーションによって行われ、各文字入力に対して<code>keydown</code>, <code>keyup</code>, <code>keypress</code>, <code>input</code>イベントが発行されます（キーボードから直接入力できない日本語の文字などについては、IMEを通した入力の操作とみなします）。</p>
+			<p><a href="#action.inputTo"><code>action.inputTo()</code></a>とは事なり、以前に入力されていた内容はそのまま残して、その後に続けて文字を入力します。</p>
+			<pre><code>action.appendTo($('comment'), 'My name is');
+action.appendTo($('comment'), ' Sakamoto, Ryoma.');
+// 引数はどの順番で渡しても構いません。
+action.appendTo(' Nice to meet you!', $('comment'));</code></pre>
+		</dd>
+	<dt id="action.pasteTo">void <code>action.pasteTo(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>actionPasteTo()</code></span></dt>
+		<dd>
+			<p>指定されたテキストフィールドに文字列を貼り付けます。コピー＆ペーストした時と同じ扱いで<code>input</code>イベントが発行されます。</p>
+			<p><a href="#action.additionallyPasteTo"><code>action.additionallyPasteTo()</code></a>とは事なり、以前に入力されていた内容は消去されます。</p>
+			<pre><code>action.pasteTo($('yomigana'), 'Sakamoto Ryoma');
+action.pasteTo($('kanji'), '坂本龍馬');
+// 引数はどの順番で渡しても構いません。
+action.pasteTo('31', $('age'));</code></pre>
+		</dd>
+	<dt id="action.additionallyPasteTo">void <code>action.additionallyPasteTo(<var>[options]</var>)</code>
+		<span class="alias">別名：<code>actionAdditionallyPasteTo()</code></span></dt>
+		<dd>
+			<p>指定されたテキストフィールドに文字列を貼り付けます。コピー＆ペーストした時と同じ扱いで<code>input</code>イベントが発行されます。</p>
+			<p><a href="#action.pasteTo"><code>action.pasteTo()</code></a>とは事なり、以前に入力されていた内容はそのまま残して、その後に続けて文字を貼り付けます。</p>
+			<pre><code>action.additionallyPasteTo($('comment'), 'My name is');
+action.additionallyPasteTo($('comment'), ' Sakamoto, Ryoma.');
+// 引数はどの順番で渡しても構いません。
+action.additionallyPasteTo(' Nice to meet you!', $('comment'));</code></pre>
+		</dd>
+</dl>
+<h3 id="action-modaldialog">モーダルダイアログの操作予約</h3>
+<dl class="api-list">
+	<dt id="action.readyToOK">Function <code>action.readyToOK(<var>[in Object aOptions]</var>)</code>
+		<span class="alias">別名：<code>action.readyToOk()</code>, <code>actionReadyToOK()</code>, <code>actionReadyToOk()</code></span></dt>
+		<dd>
+			<p>このメソッドが呼ばれた後に<code>window.alert()</code>、nsIPromptService::alert、またはnsIPromptService::alertCheckによって表示されたモーダルダイアログ1つを、自動的に閉じるように予約します。</p>
+			<pre><code>myModule.doCommand = function() {
+  window.alert('warning! this is a dangerous operation.');
+  // ...some operations...
+  return true;
+};
+
+action.readyToOK();
+var result = myModule.doCommand();
+assert.isTrue(result);</code></pre>
+			<p>オプションを指定することで、ダイアログのタイトルやメッセージの内容によって自動的に閉じる対象のダイアログを限定することができます。また、<code>checked</code>プロパティに真偽値が設定されている場合は、nsIPromptService::alertCheckで開かれたダイアログのチェックボックスの状態を<code>checked</code>プロパティの値に応じて変更してからダイアログを閉じます。オプションに指定できる内容は以下の通りです。</p>
+			<dl>
+				<dt>String <code>title</code></dt><dd>自動的に閉じるダイアログのタイトル（省略時はすべてにマッチ）</dd>
+				<dt>String <code>message</code></dt><dd>自動的に閉じるダイアログのメッセージ（省略時はすべてにマッチ）</dd>
+				<dt>Boolean <code>checked</code></dt><dd>チェックボックスの状態の指定（省略時はチェック状態を変更しない）</dd>
+			</dl>
+			<pre><code>myModule.doCommand = function() {
+  var checked = {};
+  PromptService.alertCheck(null, 'my dialog', 'click OK', 'check', checked);
+  // ...some operations...
+  return checked.value;
+};
+
+action.readyToOK({ title : 'my dialog', checked : true });
+var result = myModule.doCommand();
+assert.isTrue(result);</code></pre>
+			<p><a href="#action.cancelReadiedAction"><code>action.cancelReadiedAction</code></a>に渡す為の関数オブジェクトが戻り値として返されます。</p>
+		</dd>
+	<dt id="action.readyToConfirm">Function <code>action.readyToConfirm(<var>in Boolean aOK</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">別名：<code>actionReadyToConfirm()</code></span></dt>
+		<dd>
+			<p>このメソッドが呼ばれた後に<code>window.confirm()</code>、nsIPromptService::confirm、nsIPromptService::confirmCheck、またはnsIPromptService::confirmExによって表示されるモーダルダイアログ1つを、自動的に閉じるように予約します。第1引数に<code>true</code>を渡した場合は「OK」ボタンを、<code>false</code>を渡した場合は「キャンセル」ボタンを押下します。nsIPromptService::confirmExで3つのボタンを表示するダイアログが開かれる場合、第1引数にはボタンの番号を示す<code>0</code>～<code>2</code>の整数値を渡します。</p>
+			<pre><code>myModule.doCommand = function() {
+  var confirmed = window.confirm('OK?');
+  // ...some operations...
+  return confirmed;
+};
+
+action.readyToConfirm(true);
+var result = myModule.doCommand();
+assert.isTrue(result);</code></pre>
+			<p>オプションを指定することで、ダイアログのタイトルやメッセージの内容によって自動的に閉じる対象のダイアログを限定することができます。また、<code>checked</code>プロパティに真偽値が設定されている場合は、nsIPromptService::confirmCheckやnsIPromptService::confirmExで開かれたダイアログのチェックボックスの状態を<code>checked</code>プロパティの値に応じて変更してからダイアログを閉じます。オプションに指定できる内容は以下の通りです。</p>
+			<dl>
+				<dt>String <code>title</code></dt><dd>自動的に閉じるダイアログのタイトル（省略時はすべてにマッチ）</dd>
+				<dt>String <code>message</code></dt><dd>自動的に閉じるダイアログのメッセージ（省略時はすべてにマッチ）</dd>
+				<dt>Boolean <code>checked</code></dt><dd>チェックボックスの状態の指定（省略時はチェック状態を変更しない）</dd>
+			</dl>
+			<pre><code>myModule.doCommand = function() {
+  var checked = {};
+  var button = PromptService.confirmEx(null, 'my confirm', 'OK?', 
+                 (PromptService.BUTTON_POS_0 * PromptService.BUTTON_TITLE_SAVE) |
+                 (PromptService.BUTTON_POS_1 * PromptService.BUTTON_TITLE_DONT_SAVE) |
+                 (PromptService.BUTTON_POS_2 * PromptService.BUTTON_TITLE_CANCEL),
+                 null, null, null,
+                 'ask me again', checked);
+  // ...some operations...
+  return [button, checked.value];
+};
+
+action.readyToConfirm(2, { title : 'my confirm', checked : true });
+var result = myModule.doCommand();
+assert.equals([2, true], result);</code></pre>
+			<p><a href="#action.cancelReadiedAction"><code>action.cancelReadiedAction</code></a>に渡す為の関数オブジェクトが戻り値として返されます。</p>
+		</dd>
+	<dt id="action.readyToPrompt">Function <code>action.readyToPrompt(<var>in String aInput</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">別名：<code>actionReadyToPrompt()</code></span></dt>
+		<dd>
+			<p>このメソッドが呼ばれた後に<code>window.prompt()</code>、またはnsIPromptService::promptによって表示されるモーダルダイアログ1つを、自動的に閉じるように予約します。第1引数でプロンプトに入力する文字列を指定できます。</p>
+			<pre><code>myModule.doCommand = function() {
+  var name = window.prompt('What is your name?');
+  // ...some operations...
+  return name;
+};
+
+action.readyToPrompt('John');
+var name = myModule.doCommand();
+assert.equals('John', name);</code></pre>
+			<p>オプションを指定することで、ダイアログのタイトルやメッセージの内容によって自動的に閉じる対象のダイアログを限定することができます。また、<code>checked</code>プロパティに真偽値が設定されている場合は、nsIPromptService::promptで開かれたダイアログのチェックボックスの状態を<code>checked</code>プロパティの値に応じて変更してからダイアログを閉じます。オプションに指定できる内容は以下の通りです。</p>
+			<dl>
+				<dt>String <code>title</code></dt><dd>自動的に閉じるダイアログのタイトル（省略時はすべてにマッチ）</dd>
+				<dt>String <code>message</code></dt><dd>自動的に閉じるダイアログのメッセージ（省略時はすべてにマッチ）</dd>
+				<dt>Boolean <code>checked</code></dt><dd>チェックボックスの状態の指定（省略時はチェック状態を変更しない）</dd>
+			</dl>
+			<pre><code>myModule.doCommand = function() {
+  var input = {};
+  var checked = {};
+  var OK = PromptService.prompt(null, 'my prompt', 'What is your name?',
+             input, 'ask me again', checked);
+  // ...some operations...
+  return [input.value, checked.value];
+};
+
+action.readyToPrompt('Jane', { title : 'my prompt', checked : true });
+var result = myModule.doCommand();
+assert.equals(['Jane', true], result);</code></pre>
+			<p><a href="#action.cancelReadiedAction"><code>action.cancelReadiedAction</code></a>に渡す為の関数オブジェクトが戻り値として返されます。</p>
+		</dd>
+	<dt id="action.readyToPromptPassword">Function <code>action.readyToPromptPassword(<var>in String aPassword</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">別名：<code>actionReadyToPromptPassword()</code></span></dt>
+		<dd>
+			<p>このメソッドが呼ばれた後にnsIPromptService::promptPasswordによって表示されるモーダルダイアログ1つを、自動的に閉じるように予約します。第1引数でプロンプトに入力するパスワード文字列を指定できます。</p>
+			<pre><code>myModule.doCommand = function() {
+  var password = {};
+  var checked = {};
+  var OK = PromptService.promptPassword(null, 'warning!', 'What is the password?',
+             password, 'never show this dialog', checked);
+  // ...some operations...
+  return [password.value, checked.value];
+};
+
+action.readyToPassword('password', { title : 'warning!', checked : true });
+var result = myModule.doCommand();
+assert.equals(['password', true], result);</code></pre>
+			<p>オプションを指定することで、ダイアログのタイトルやメッセージの内容によって自動的に閉じる対象のダイアログを限定することができます。また、<code>checked</code>プロパティに真偽値が設定されている場合は、ダイアログのチェックボックスの状態を<code>checked</code>プロパティの値に応じて変更してからダイアログを閉じます。オプションに指定できる内容は以下の通りです。</p>
+			<dl>
+				<dt>String <code>title</code></dt><dd>自動的に閉じるダイアログのタイトル（省略時はすべてにマッチ）</dd>
+				<dt>String <code>message</code></dt><dd>自動的に閉じるダイアログのメッセージ（省略時はすべてにマッチ）</dd>
+				<dt>Boolean <code>checked</code></dt><dd>チェックボックスの状態の指定（省略時はチェック状態を変更しない）</dd>
+			</dl>
+			<p><a href="#action.cancelReadiedAction"><code>action.cancelReadiedAction</code></a>に渡す為の関数オブジェクトが戻り値として返されます。</p>
+		</dd>
+	<dt id="action.readyToPromptUsernameAndPassword">Function <code>action.readyToPromptUsernameAndPassword(<var>in String aUsername</var>, <var>in String aPassword</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">別名：<code>actionReadyToPromptUsernameAndPassword()</code></span></dt>
+		<dd>
+			<p>このメソッドが呼ばれた後にnsIPromptService::promptUsernameAndPasswordによって表示されるモーダルダイアログ1つを、自動的に閉じるように予約します。第1引数でプロンプトに入力するユーザ名を、第2引数でパスワード文字列を指定できます。</p>
+			<pre><code>myModule.doCommand = function() {
+  var username = {};
+  var password = {};
+  var checked = {};
+  var OK = PromptService.promptUsernameAndPassword(null, 'login', 'Who are you?',
+             username, password, 'never show this dialog', checked);
+  // ...some operations...
+  return [username.value, password.value, checked.value];
+};
+
+action.readyToPromptUsernameAndPassword('user', 'password', { title : 'login', checked : true });
+var result = myModule.doCommand();
+assert.equals(['user', 'password', true], result);</code></pre>
+			<p>オプションを指定することで、ダイアログのタイトルやメッセージの内容によって自動的に閉じる対象のダイアログを限定することができます。また、<code>checked</code>プロパティに真偽値が設定されている場合は、ダイアログのチェックボックスの状態を<code>checked</code>プロパティの値に応じて変更してからダイアログを閉じます。オプションに指定できる内容は以下の通りです。</p>
+			<dl>
+				<dt>String <code>title</code></dt><dd>自動的に閉じるダイアログのタイトル（省略時はすべてにマッチ）</dd>
+				<dt>String <code>message</code></dt><dd>自動的に閉じるダイアログのメッセージ（省略時はすべてにマッチ）</dd>
+				<dt>Boolean <code>checked</code></dt><dd>チェックボックスの状態の指定（省略時はチェック状態を変更しない）</dd>
+			</dl>
+			<p><a href="#action.cancelReadiedAction"><code>action.cancelReadiedAction</code></a>に渡す為の関数オブジェクトが戻り値として返されます。</p>
+		</dd>
+	<dt id="action.readyToSelect">Function <code>action.readyToSelect(<var>in Number aIndex</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">別名：<code>actionReadyToSelect()</code></span></dt>
+		<dd>
+			<p>このメソッドが呼ばれた後にnsIPromptService::selectによって表示されるモーダルダイアログ1つを、自動的に閉じるように予約します。第1引数で選択する項目のインデックスを指定できます。</p>
+			<pre><code>myModule.doCommand = function() {
+  var selection = {};
+  var OK = PromptService.select(null, 'select!', 'Choose an item.',
+             5, ['a', 'b', 'c', 'd', 'e'], selection);
+  // ...some operations...
+  return selection.value;
+};
+
+action.readyToSelect(2, { title : 'select!', checked : true });
+var result = myModule.doCommand();
+assert.equals(2, result);
+// The index "2" means "third item", so "c" is selected.</code></pre>
+			<p>オプションを指定することで、ダイアログのタイトルやメッセージの内容によって自動的に閉じる対象のダイアログを限定することができます。オプションに指定できる内容は以下の通りです。</p>
+			<dl>
+				<dt>String <code>title</code></dt><dd>自動的に閉じるダイアログのタイトル（省略時はすべてにマッチ）</dd>
+				<dt>String <code>message</code></dt><dd>自動的に閉じるダイアログのメッセージ（省略時はすべてにマッチ）</dd>
+			</dl>
+			<p><a href="#action.cancelReadiedAction"><code>action.cancelReadiedAction</code></a>に渡す為の関数オブジェクトが戻り値として返されます。</p>
+		</dd>
+	<dt id="action.cancelReadiedAction">void <code>action.cancelReadiedAction(<var>in Function aAction</var>)</code>
+		<span class="alias">別名：<code>actionCancelReadiedAction()</code></span></dt>
+		<dd>
+			<p><a href="#action.readyToOK"><code>action.readToOK</code></a>、<a href="#action.readyToConfirm"><code>action.readToConfirm</code></a>、<a href="#action.readyToPrompt"><code>action.readToPrompt</code></a>、<a href="#action.readyToPromptPassword"><code>action.readToPromptPassword</code></a>、<a href="#action.readyToPromptUsernameAndPassword"><code>action.readyToPromptUsernameAndPassword</code></a>、<a href="#action.readyToSelect"><code>action.readyToSelect</code></a>によって行われた操作の予約を取り消します。これらの各メソッドの戻り値である関数を渡すと、その操作を1つだけキャンセルします。</p>
+			<pre><code>var act = action.readyToOK();
+
+action.cancelRediedAction(act);</code></pre>
+		</dd>
+	<dt id="action.cancelReadiedActions">void <code>action.cancelReadiedActions()</code>
+		<span class="alias">別名：<code>actionCancelReadiedActions()</code></span></dt>
+		<dd>
+			<p><a href="#action.readyToOK"><code>action.readToOK</code></a>、<a href="#action.readyToConfirm"><code>action.readToConfirm</code></a>、<a href="#action.readyToPrompt"><code>action.readToPrompt</code></a>、<a href="#action.readyToPromptPassword"><code>action.readToPromptPassword</code></a>、<a href="#action.readyToPromptUsernameAndPassword"><code>action.readyToPromptUsernameAndPassword</code></a>、<a href="#action.readyToSelect"><code>action.readyToSelect</code></a>によって行われた操作の予約を取り消します。それまでの時点で行われたすべての操作予約が取り消されます。</p>
+			<pre><code>action.readyToOK();
+action.readyToOK();
+action.readyToOK();
+...
+action.cancelRediedActions();</code></pre>
+		</dd>
+</dl>
+<h3 id="action-position">座標からの操作</h3>
+<dl class="api-list">
+	<dt id="action.getFrameFromScreenPoint">DOMWindow <code>action.getFrameFromScreenPoint(<var>in Number aScreenX</var>, <var>in Number aScreenY</var>)</code>
+		<span class="alias">別名：<code>action.getWindowFromScreenPoint()</code>,
+		                          <code>actionGetFrameFromScreenPoint()</code>,
+		                          <code>actionGetWindowFromScreenPoint()</code></span></dt>
+	<dt id="action.getFrameFromScreenPoint-frame">DOMWindow <code>action.getFrameFromScreenPoint(<var>in DOMWindow aWindow</var>, <var>in Number aScreenX</var>, <var>in Number aScreenY</var>)</code></dt>
+		<dd>
+			<p>画面上の座標から、その位置にあるフレームのWindowオブジェクトを取得します。その位置にフレームがない場合は<code>null</code>を返します。</p>
+			<p>フレームの検索は、その位置にある最も手前のFirefox（Thunderbird）のウィンドウに対して行われます。別のウィンドウの下になっているウィンドウの中のフレームを検索する場合は、引数として親ウィンドウまたは親フレームのWindowオブジェクトを指定して下さい。なお、親ウィンドウを指定した場合でも、<em>X座標とY座標は常に画面左上を原点とした指定として扱います</em>。</p>
+			<pre><code>var frame = action.getWindowFromScreenPoint(500, 200);
+assert.isNotNull(frame);
+assert.equals($('sidebar', topWindow).contentWindow, frame);
+
+var frame2 = action.getWindowFromScreenPoint(bottomWindow, 500, 200);</code></pre>
+		</dd>
+	<dt id="action.getElementFromScreenPoint">DOMElement <code>action.getElementFromScreenPoint(<var>in Number aScreenX</var>, <var>in Number aScreenY</var>)</code>
+		<span class="alias">別名：<code>actionGetElementFromScreenPoint()</code></span></dt>
+	<dt id="action.getElementFromScreenPoint-frame">DOMElement <code>action.getElementFromScreenPoint(<var>in DOMWindow aWindow</var>, <var>in Number aScreenX</var>, <var>in Number aScreenY</var>)</code></dt>
+		<dd>
+			<p>画面上の座標から、その位置にある要素のDOMノードを取得します。その位置に要素がない場合は<code>null</code>を返します。</p>
+			<p>要素の検索は、その位置にある最も手前のFirefox（Thunderbird）のウィンドウに対して行われます。別のウィンドウの下になっているウィンドウの中の要素を検索する場合は、引数として親ウィンドウまたは親フレームのWindowオブジェクトを指定して下さい。なお、親ウィンドウを指定した場合でも、<em>X座標とY座標は常に画面左上を原点とした指定として扱います</em>。</p>
+			<pre><code>var element = action.getElementFromScreenPoint(240, 10);
+assert.equals($('accept-button', topWindow), element);
+
+var element2 = action.getElementFromScreenPoint(bottomWindow, 240, 10);</code></pre>
+		</dd>
+</dl>
+<h3 id="action-old-api">古いAPI</h3>
+<p>以下は、旧バージョンとの互換性のために残されている古いAPIです。</p>
+<dl class="api-list">
+	<dt id="action.fireMouseEvent">void <code>action.fireMouseEvent(<var>in DOMWindow aWindow</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">別名：<code>actionFireMouseEvent()</code></span></dt>
+		<dd>
+			<p>指定されたウィンドウに対してマウス操作のイベントを発行します。以下の各プロパティを持つオブジェクトを引数として渡すことで、発生するイベントの内容を指定できます。</p>
+		<dl>
+			<dt>String <code>type</code></dt><dd>イベント名（click, dblclick, mousedown, mouseupのいずれか。省略時はclick）</dd>
+<!--
+			<dt>Boolean <code>canBubble</code></dt><dd>バブリングの許可（省略時はtrue）</dd>
+			<dt>Boolean <code>cancelable</code></dt><dd>イベント停止操作の許可（省略時はtrue）</dd>
+-->
+			<dt>Number <code>button</code></dt><dd>クリックしたボタン（省略時は0）</dd>
+			<dt>Number <code>detail</code></dt><dd>クリック回数（省略時は1）</dd>
+			<dt>Number <code>screenX</code></dt><dd>クリックした位置の画面上でのX座標（省略時は0）</dd>
+			<dt>Number <code>screenY</code></dt><dd>クリックした位置の画面上でのY座標（省略時は0）</dd>
+			<dt>Number <code>x</code></dt><dd>クリックした位置のフレーム内でのX座標（省略時は0）</dd>
+			<dt>Number <code>y</code></dt><dd>クリックした位置のフレーム内でのY座標（省略時は0）</dd>
+			<dt>Boolean <code>altKey</code></dt><dd>Altキーを押していたかどうか（省略時はfalse）</dd>
+			<dt>Boolean <code>ctrlKey</code></dt><dd>Ctrlキーを押していたかどうか（省略時はfalse）</dd>
+			<dt>Boolean <code>metaKey</code></dt><dd>Metaキー（MacではCommandキー）を押していたかどうか（省略時はfalse）</dd>
+			<dt>Boolean <code>shiftKey</code></dt><dd>Shiftキーを押していたかどうか（省略時はfalse）</dd>
+		</dl>
+			<p>すべてのオプションを省略すると、「(0, 0)の位置で左ボタンでシングルクリック」となります。指定された座標に要素がない場合はイベントを発行しません。</p>
+			<pre><code>function testDblClickOnTarget() {
+  action.fireMouseEvent(content, { type    : 'dblclick',
+                                   screenX : 120,
+                                   screenY : 250,
+                                   ctrlKey : true });
+}</code></pre>
+			<p><em>Firefox 2およびThudnerbird 2では、この機能によってエミュレートされたクリックイベントでは<code>command</code>イベントが発行されません。</em>これはGeckoのバージョンによる制限です。</p>
+		</dd>
+	<dt id="action.fireMouseEventOnElement">void <code>action.fireMouseEventOnElement(<var>in DOMElement aElement</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">別名：<code>actionFireMouseEventOnElement()</code></span></dt>
+		<dd>
+			<p>指定された要素の中央でマウス操作のイベントを発行します。<a href="#action.fireMouseEvent">action.fireMouseEvent()</a>と同様のオプションを指定できます。</p>
+			<pre><code>action.fireMouseEventOnElement($('button'),
+                               { type    : 'dblclick',
+                                 ctrlKey : true });</code></pre>
+			<p><em>Firefox 2およびThudnerbird 2では、この機能によってエミュレートされたクリックイベントでは<code>command</code>イベントが発行されません。</em>これはGeckoのバージョンによる制限です。</p>
+		</dd>
+	<dt id="action.fireKeyEventOnElement">void <code>action.fireKeyEventOnElement(<var>in DOMElement aElement</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">別名：<code>actionFireKeyEventOnElement()</code></span></dt>
+		<dd>
+			<p>指定された要素に対してキーボード操作のイベントを発行します。以下の各プロパティを持つオブジェクトを引数として渡すことで、発生するイベントの内容を指定できます。</p>
+		<dl>
+			<dt>String <code>type</code></dt><dd>イベント名（keydown, keyup, keypressのいずれか。省略時はkeypress）</dd>
+<!--
+			<dt>Boolean <code>canBubble</code></dt><dd>バブリングの許可（省略時はtrue）</dd>
+			<dt>Boolean <code>cancelable</code></dt><dd>イベント停止操作の許可（省略時はtrue）</dd>
+-->
+			<dt>Number <code>keyCode</code></dt><dd>押されたキーのキーコード（省略時は0）</dd>
+			<dt>Number <code>charCode</code></dt><dd>押されたキーの文字の文字コード（省略時は0）</dd>
+			<dt>Boolean <code>altKey</code></dt><dd>Altキーを押していたかどうか（省略時はfalse）</dd>
+			<dt>Boolean <code>ctrlKey</code></dt><dd>Ctrlキーを押していたかどうか（省略時はfalse）</dd>
+			<dt>Boolean <code>metaKey</code></dt><dd>Metaキー（MacではCommandキー）を押していたかどうか（省略時はfalse）</dd>
+			<dt>Boolean <code>shiftKey</code></dt><dd>Shiftキーを押していたかどうか（省略時はfalse）</dd>
+		</dl>
+			<p>キーコードは <code>Components.interfaces.nsIDOMKeyEvent</code> の <code>DOM_VK_RETURN</code> などの定数プロパティで指定できます。</p>
+			<pre><code>action.fireKeyEventOnElement($('button'),
+                             { keyCode : Ci.nsIDOMKeyEvent.DOM_VK_ENTER,
+                               ctrlKey : true });</code></pre>
+			<p><em>Firefox 2およびThudnerbird 2では、この機能によってエミュレートされたキーイベントでは<code>command</code>イベントが発行されません。</em>これはGeckoのバージョンによる制限です。</p>
+		</dd>
+	<dt id="action.fireXULCommandEvent">Boolean <code>action.fireXULCommandEvent(<var>in DOMWindow aWindow</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">別名：<code>actionFireXULCommandEvent()</code></span></dt>
+		<dd>
+			<p>指定されたウィンドウに対して、マウスでのクリック操作による<code>command</code>イベントを発行します。<a href="#action.fireMouseEvent">action.fireMouseEvent()</a>と同様のオプションを指定できます。指定された座標にあるXUL要素が操作を受け付けない状態である場合（label要素などの<code>command</code>イベントを発行しない要素である、あるいは、<code>disabled</code>属性が設定されているなどの場合）にはイベントを発行しません。イベントを発行できた場合は<code>true</code>、イベントを発行しなかった場合は<code>false</code>を返します。</p>
+			<pre><code>action.fireXULCommandEvent(testWindow,
+                           { screenX : buttonInTestWindow.boxObject.screenX+5,
+                             screenY : buttonInTestWindow.boxObject.screenY+5 });</code></pre>
+			<p><em>Firefox 2およびThudnerbird 2では、この機能は利用できません。</em>これはGeckoのバージョンによる制限です。</p>
+		</dd>
+	<dt id="action.fireXULCommandEventOnElement">Boolean <code>action.fireXULCommandEventOnElement(<var>in DOMElement aElement</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">別名：<code>actionFireXULCommandEventOnElement()</code></span></dt>
+		<dd>
+			<p>指定された要素に対して、マウスでのクリック操作による<code>command</code>イベントを発行します（要素の中央がクリックされたものと見なします）。<a href="#action.fireMouseEvent">action.fireMouseEvent()</a>と同様のオプションを指定できます。指定されたXUL要素が操作を受け付けない状態である場合（label要素などの<code>command</code>イベントを発行しない要素である、あるいは、<code>disabled</code>属性が設定されているなどの場合）にはイベントを発行しません。イベントを発行できた場合は<code>true</code>、イベントを発行しなかった場合は<code>false</code>を返します。</p>
+			<pre><code>action.fireXULCommandEventOnElement($('toolbarbutton', testWindow));</code></pre>
+			<p><em>Firefox 2およびThudnerbird 2では、この機能は利用できません。</em>これはGeckoのバージョンによる制限です。</p>
+		</dd>
+	<dt id="action.inputTextToField">void <code>action.inputTextToField(<var>in DOMElement aElement</var>, <var>in String aValue</var>, <var>[in Boolean aAppend]</var>, <var>[in Boolean aDontFireKeyEvents]</var>)</code>
+		<span class="alias">別名：<code>actionInputTextToField()</code></span></dt>
+		<dd>
+			<p>指定されたテキストフィールドに文字列を入力します。入力はキー入力操作のエミュレーションによって行われ、各文字入力に対して<code>keydown</code>, <code>keyup</code>, <code>keypress</code>, <code>input</code>イベントが発行されます（キーボードから直接入力できない日本語の文字などについては、IMEを通した入力の操作とみなします）。</p>
+			<p>通常はテキストフィールドに元々入力されていた内容を削除してから新しい内容を入力しますが、第3引数に<code>true</code>を渡すと元々の内容に追加して入力されます。</p>
+			<p>第4引数に<code>true</code>を渡すと、コピー＆ペースト時のように、キーイベントを発行せずに文字を挿入します（Ver.0.2.8以前と互換の動作）。</p>
+			<pre><code>action.inputTextToField($('input'), 'message foobar');
+action.inputTextToField($('input'), ' and more...', true);</code></pre>
+		</dd>
+</dl>
+
+
+<h2 id="location">テストケースの位置</h2>
+<dl class="api-list">
+	<dt id="utils.fileURL">String <code>fileURL</code>
+		<span class="alias">別名：<code>utils.fileURL</code></span></dt>
+		<dd>
+			<p>実行中のテストケースのファイルの位置を返します。</p>
+			<pre><code>var data = utils.readCSV(fileURL+'.data.csv');</code></pre>
+		</dd>
+	<dt id="utils.baseURL">String <code>baseURL</code>
+		<span class="alias">別名：<code>utils.baseURL</code></span></dt>
+		<dd>
+			<p>実行中のテストケースのファイルが存在しているフォルダの位置を返します。</p>
+			<pre><code>utils.include(baseURL+'common.inc.js');
+utils.include(baseURL+'../content/myadoon/myModule.js');</code></pre>
+		</dd>
+</dl>
+
+
+<h2 id="window">テスト用ウィンドウの制御</h2>
+<dl class="api-list">
+	<dt id="utils.setUpTestWindow">Object <code>utils.setUpTestWindow(<var>[in Object aOptions]</var>)</code>
+		<span class="alias">別名：<code>setUpTestWindow()</code></span></dt>
+		<dd>
+			<p>テスト用のFirefoxまたはThunderbirdウィンドウを初期化します。実行するとウィンドウが開かれていない場合はウィンドウを開きます。</p>
+			<pre><code>// テスト用ウィンドウの初期化が終わるのを待って次に進む
+function setUp() {
+  utils.setUpTestWindow();
+  var win = utils.getTestWindow();
+  assert.isTrue(win.MyAddonService.initialized);
+}</code></pre>
+			<p><a href="#window-options">オプションによって、ウィンドウとして開くリソースのURI、ウィンドウの位置や大きさなどを指定できます</a>。</p>
+			<p><em>このメソッドは、ウィンドウの初期化処理が完了するまでの間、実行中のテストを一時的に停止します。</em>オプションの<code>async</code>プロパティに<code>true</code>を指定すると、ウィンドウの初期化が完了するのを待たずに次の行に進みます。このメソッドは<a href="testcases.html#waiting-object">ロード完了まで待つための処理待ち用オブジェクト</a>を返しますので、返り値を<code>yield</code>や<code>utils.wait()</code>に渡して処理の完了を待つ事ができます。</p>
+			<pre><code>function setUp() {
+  var completed = utils.setUpTestWindow({ async : true });
+  // some operations
+  yield completed;
+  var win = utils.getTestWindow();
+  assert.isTrue(win.MyAddonService.initialized);
+}</code></pre>
+		</dd>
+	<dt id="utils.tearDownTestWindow">void <code>utils.tearDownTestWindow(<var>[in Object aOptions]</var>)</code>
+		<span class="alias">別名：<code>utils.closeTestWindow()</code>, <code>closeTestWindow()</code>, <code>tearDownTestWindow()</code></span></dt>
+		<dd>
+			<p><a href="#utils.setUpTestWindow"><code>utils.setUpTestWindow()</code></a>によって開かれたテスト用のウィンドウを閉じます。テスト用ウィンドウが開かれていない場合は何もしません。</p>
+			<pre><code>function tearDown() {
+  utils.tearDownTestWindow();
+}</code></pre>
+			<p><a href="#window-options">オプションによって、閉じるウィンドウを指定できます</a>。</p>
+		</dd>
+	<dt id="utils.getTestWindow">DOMWindow <code>utils.getTestWindow(<var>[in Object aOptions]</var>)</code>
+		<span class="alias">別名：<code>getTestWindow()</code></span></dt>
+		<dd>
+			<p><a href="#utils.setUpTestWindow"><code>utils.setUpTestWindow()</code></a>によって開かれたテスト用のウィンドウを取得します。テスト用ウィンドウが開かれていない場合は<code>null</code>を返します。</p>
+			<pre><code>var win = utils.getTestWindow();
+assert.isDefined(win.MyAddonService);</code></pre>
+			<p><a href="#window-options">オプションによって、条件を指定してウィンドウを取得することができます</a>。</p>
+		</dd>
+<!--
+	<dt id="utils.openTestWindow">DOMWindow <code>utils.openTestWindow(<var>[in Object aOptions]</var>)</code>
+		<span class="alias">別名：<code>openTestWindow()</code></span></dt>
+		<dd>
+			<p>テスト用のFirefoxまたはThunderbirdウィンドウを開きます。テスト用ウィンドウがすでに開かれている場合はそのウィンドウを返します。</p>
+			<p>ウィンドウの内容の読み込み完了を待たずに先に処理が進むため、読み込み完了後に処理を行いたい場合は別途、<code>load</code>イベントなどを監視する必要があります。<em>特に理由がない限りは、処理待ちに対応している<code>utils.setUpTestWindow()</code>を使用することをお勧めします。</em></p>
+		</dd>
+-->
+	<dt id="utils.getChromeWindows">DOMWindow Array <code>utils.getChromeWindows(<var>[in Object aOptions]</var>)</code>
+		<span class="alias">別名：<code>getChromeWindows()</code></span></dt>
+		<dd>
+			<p>特にテスト用としては開かれていない、すでにあるウィンドウを取得します。返り値はDOMWindowの配列です。</p>
+			<pre><code>var addonManager = utils.getChromeWindows({
+      type : 'Extension:Manager'
+    });
+addonManager = addonManager[0];</code></pre>
+			<p><a href="#window-options">オプションによって、条件を指定してウィンドウを取得することができます</a>。</p>
+		</dd>
+</dl>
+
+<h3 id="window-options">ウィンドウのオプション</h3>
+<p>ウィンドウを開く時やウィンドウを取得する時は、オプションで詳細を指定できます。オプションは以下の書式で指定し、いずれのプロパティも省略可能です。<code>uri</code>と<code>type</code>の両方が省略された場合や、全くオプションを指定しなかった場合は、ブラウザウィンドウ（Thunderbirdではメインウィンドウ）が指定されたものと見なされます。</p>
+<pre><code>var options = {
+  uri       : 'chrome://browser/content/browser.xul', // 省略時は自動で推定
+  type      : 'navigator:browser',                    // 省略時は null
+  name      : '_blank',                               // 省略時は _blank
+  flags     : 'chrome,all,dialog=no',                 // 省略時は chrome,all
+  arguments : ['http://...', 'http://...'],           // 省略時は空の配列
+  width     : 200,
+  height    : 400,
+  screenX   : 100,
+  screenY   : 100
+};</code></pre>
+
+
+
+<h2 id="dom">DOM操作</h2>
+<dl class="api-list">
+	<dt id="utils.$">DOMNode <code>$(<var>in nsIVariant aNodeOrIdString</var>, <var>[in nsIVariant aOwner]</var>)</code>
+		<span class="alias">別名：<code>utils.$()</code></span></dt>
+		<dd>
+			<p>prototype.jsなどの<code>$()</code>に相当する機能を提供します。以下のような挙動を示します。</p>
+			<ul>
+				<li>DOMNodeを渡した場合、それをそのまま返します。</li>
+				<li>文字列を渡した場合、IDがその文字列である要素ノードを返します。
+					<ul>
+						<li>第2引数を省略すると、<code><a href="#utils.contentDocument">contentDocument</a>.getElementById()</code>と同じ結果になります。</li>
+						<li>第2引数にDOMDocumentを渡すと、<code>aOwner.getElementById()</code>と同じ結果になります。</li>
+						<li>第2引数にDOMWindowを渡すと、<code>aOwner.document.getElementById()</code>と同じ結果になります。</li>
+						<li>第2引数にDOMNodeを渡すと、<code>aOwner.ownerDocument.getElementById()</code>と同じ結果になります。</li>
+					</ul>
+				</li>
+			</ul>
+			<pre><code>var button = $('button');
+var toolbar = $('navigator-toolbox', utils.getTestWindow());</code></pre>
+		</dd>
+	<dt id="utils.$X">nsIVariant <code>$X(<var>arguments</var>)</code>
+		<span class="alias">別名：<code>utils.$X()</code></span></dt>
+		<dd>
+			<p><a href="http://lowreal.net/logs/2006/03/16/1">DOM3 XPathのためのシンタックスシュガー</a>に相当する機能を提供します。以下のような挙動を示します。</p>
+			<dl>
+				<dt>nsIVariant <code>$X(<var>in String aExpression</var>)</code></dt>
+					<dd><code><a href="#utils.contentDocument">contentDocument</a>.evaluate(<var>aExpression</var>, <a href="#utils.contentDocument">contentDocument</a>, null, XPathResult.ANY_TYPE, null)</code>の結果に応じて、値を真偽値、数値、文字列、または単一のDOMノードで返します。</dd>
+				<dt>nsIVariant <code>$X(<var>in String aExpression</var>, <var>in DOMNode aContext</var>)</code></dt>
+					<dd><code>(<var>aContext</var>.ownerDocument || <var>aContext</var>).evaluate(<var>aExpression</var>, <var>aContext</var>, null, XPathResult.ANY_TYPE, null)</code>の結果に応じて、値を真偽値、数値、文字列、または単一のDOMノードで返します。</dd>
+				<dt>nsIVariant <code>$X(<var>in String aExpression</var>, <var>in DOMNode aContext</var>, <var>in Number aResultType</var>)</code></dt>
+					<dd><code>(<var>aContext</var>.ownerDocument || <var>aContext</var>).evaluate(<var>aExpression</var>, <var>aContext</var>, null, <var>aResultType</var>, null)</code>の結果に応じて、値を真偽値、数値、文字列、単一のDOMノード、またはノードの配列で返します。</dd>
+				<dt>nsIVariant <code>$X(<var>in String aExpression</var>, <var>in DOMNode aContext</var>, <var>in DOMXPathNSResolver aNSResolver</var>, <var>in Number aResultType</var>)</code></dt>
+					<dd><code>(<var>aContext</var>.ownerDocument || <var>aContext</var>).evaluate(<var>aExpression</var>, <var>aContext</var>, <var>aNSResolver</var>, <var>aResultType</var>, null)</code>の結果に応じて、値を真偽値、数値、文字列、単一のDOMノード、またはノードの配列で返します。</dd>
+			</dl>
+			<pre><code>var disabledItems = $X(
+      '/descendant::*[local-name()="menuitem" and @disabled="true"]',
+      utils.getTestWindow()
+    );
+disabledItems.forEach(function(aItem) {
+  assert.isTrue(aItem.disabled);
+});</code></pre>
+		</dd>
+</dl>
+
+
+<h2 id="browser">ブラウザ関連操作</h2>
+<p><em>これらの機能はFirefox上でテストを実行する場合にのみ利用可能です。</em></p>
+<dl class="api-list">
+	<dt id="utils.content">DOMWindow <code>content</code>
+		<span class="alias">別名：<code>contentWindow</code>, <code>utils.content</code>, <code>utils.contentWindow</code></span></dt>
+		<dd>
+			<p>プロパティとしてアクセスすると、<a href="#utils.setUpTestWindow"><code>utils.setUpTestWindow()</code></a>によって開かれたテスト用Firefoxウィンドウの内容領域のDOMWindowオブジェクトを返します。<em>テスト用ウィンドウが開かれていない場合はテストランナー内のテスト用フレームの内容を返します。</em></p>
+			<pre><code>assert.equals('selected', content.getSelection());
+content.close();</code></pre>
+		</dd>
+	<dt id="utils.contentDocument">DOMDocument <code>contentDocument</code>
+		<span class="alias">別名：<code>utils.contentDocument</code></span></dt>
+		<dd>
+			<p>プロパティとしてアクセスすると、<a href="#utils.setUpTestWindow"><code>utils.setUpTestWindow()</code></a>によって開かれたテスト用Firefoxウィンドウの内容領域のDOMDocumentオブジェクトを返します。<em>テスト用ウィンドウが開かれていない場合はテストランナー内のテスト用フレームの内容を返します。</em></p>
+			<pre><code>assert.equals('UxU - UnitTest.XUL',
+              contentDocument.title);
+assert.contains('password', contentDocument.cookie);</code></pre>
+		</dd>
+	<dt id="utils.gBrowser">DOMElement <code>gBrowser</code>
+		<span class="alias">別名：<code>utils.gBrowser</code></span></dt>
+		<dd>
+			<p><a href="#utils.setUpTestWindow"><code>utils.setUpTestWindow()</code></a>によって開かれたテスト用FirefoxウィンドウのgBrowserオブジェクト（<code>&lt;tabbrowser/&gt;</code>要素）を返します。<em>テスト用ウィンドウが開かれていない場合は、テストランナー内のテスト用フレームを含む<code>&lt;browser/&gt;</code>要素を返します。</em></p>
+			<pre><code>assert.equals('www.example.com', gBrowser.currentURI.host);
+assert.equals('tabbrowser', gBrowser.localName);</code></pre>
+		</dd>
+	<dt id="utils.getBrowser">DOMElement <code>utils.getBrowser()</code>
+		<span class="alias">別名：<code>getBrowser()</code></span></dt>
+		<dd>
+			<p><a href="#utils.gBrowser"><code>gBrowser</code></a>と同じ内容を返します。</p>
+			<pre><code>assert.equals('www.example.com', utils.getBrowser().currentURI.host);
+assert.equals('tabbrowser', utils.getBrowser().localName);</code></pre>
+		</dd>
+	<dt id="utils.getTabs">DOMElement Array <code>utils.getTabs()</code>
+		<span class="alias">別名：<code>getTabs()</code></span></dt>
+		<dd>
+			<p><a href="#utils.setUpTestWindow"><code>utils.setUpTestWindow()</code></a>によって開かれたテスト用Firefoxウィンドウで開かれているタブの配列を返します。ウィンドウが開かれていない場合は空の配列を返します。</p>
+			<pre><code>assert.equals(3, utils.getTabs().length);
+assert.equals('true', utils.getTabs()[1].getAttribute('selected'));</code></pre>
+		</dd>
+	<dt id="utils.loadURI">Object <code>utils.loadURI(<var>in String aURI</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">別名：<code>loadURI()</code></span></dt>
+		<dd>
+			<p><a href="#utils.setUpTestWindow"><code>utils.setUpTestWindow()</code></a>によって開かれたテスト用Firefoxウィンドウの現在のタブで、指定したURIを読み込みます。<em>テスト用ウィンドウが開かれていない場合は、テストランナー内のテスト用フレームにURIを読み込みます。</em></p>
+			<pre><code>// 読み込み完了を待って次に進む
+utils.loadURI('https://www.clear-code.com/');
+var win = utils.getTestWindow();
+assert.equals('https://www.clear-code.com/', win.content.location.href);</code></pre>
+			<p>オプションとしてリファラを指定することもできます。</p>
+			<pre><code>utils.loadURI('https://www.clear-code.com/',
+              { referrer: 'https://www.clear-code.com/about.html' });</code></pre>
+			<p><em>このメソッドは、ページの読み込みが完了するまでの間、実行中のテストを一時的に停止します。</em>オプションの<code>async</code>プロパティに<code>true</code>を指定すると、読み込みが完了するのを待たずに次の行に進みます。このメソッドは<a href="testcases.html#waiting-object">ロード完了まで待つための処理待ち用オブジェクト</a>を返しますので、返り値を<code>yield</code>や<code>utils.wait()</code>に渡して処理の完了を待つ事ができます。</p>
+			<pre><code>var completed = utils.loadURI('https://www.clear-code.com/', { async : true });
+// some operations
+utils.wait(completed);</code></pre>
+		</dd>
+	<dt id="utils.addTab">Object <code>utils.addTab(<var>in String aURI</var>, <var>[in Object aOptions]</var>)</code>
+		<span class="alias">別名：<code>addTab()</code></span></dt>
+		<dd>
+			<p><a href="#utils.setUpTestWindow"><code>utils.setUpTestWindow()</code></a>によって開かれたテスト用Firefoxウィンドウで新しいタブを開き、指定したURIをそのタブに読み込みます。実行すると、テスト用ウィンドウが開かれている場合は<a href="testcases.html#waiting-object">ロード完了まで待つための処理待ち用オブジェクト</a>を、テスト用ウィンドウが開かれていない場合は<code>null</code>を返します。また、タブのロード完了後は、戻り値のオブジェクトの<code>tab</code>プロパティで、開かれたタブにアクセスすることもできます。</p>
+			<pre><code>// 読み込み完了を待って次に進む
+var win = utils.getTestWindow();
+var result = utils.addTab('https://www.clear-code.com/');
+assert.equals('ClearCode Inc.', obj.tab.getAttribute('label'));</code></pre>
+			<p>オプションとしてリファラを指定することもできます。</p>
+			<pre><code>utils.addTab('https://www.clear-code.com/',
+        { referrer: 'https://www.clear-code.com/about.html' });</code></pre>
+			<p><em>このメソッドは、ページの読み込みが完了するまでの間、実行中のテストを一時的に停止します。</em>オプションの<code>async</code>プロパティに<code>true</code>を指定すると、読み込みが完了するのを待たずに次の行に進みます。このメソッドは<a href="testcases.html#waiting-object">処理待ち用オブジェクト</a>を返しますので、返り値を<code>yield</code>や<code>utils.wait()</code>に渡して処理の完了を待つ事ができます。</p>
+			<pre><code>var result = utils.addTab('https://www.clear-code.com/', { async : true });
+// some operations
+utils.wait(result);</code></pre>
+		</dd>
+</dl>
+<p><code>utils.loadURI()</code>および<code>utils.addTab()</code>に相対パスを渡すと、現在読み込まれているテストケースのファイルからの相対パスとして解釈します（<code><a href="#utils.baseURL">baseURL</a> + '<var>&lt;相対パス&gt;</var>'</code> と表記するのと同等です）。</p>
+
+
+<h2 id="mail">メール関連操作</h2>
+<p><em>これらの機能はThunderbird上でテストを実行する場合にのみ利用可能です。</em></p>
+<h3 id="mail-folders">フォルダ操作</h3>
+<dl class="api-list">
+	<dt id="mail.getFolderByURI">nsIMsgFolder <code>mail.getFolderByURI(<var>in String aURI</var>)</code></dt>
+		<dd>
+			<p><code>mailbox://nobody@Local%20Folders/<var>...</var></code>のような形式のURIでメールフォルダを取得します。</p>
+		</dd>
+	<dt id="mail.localFolder">nsIMsgFolder <code>mail.localFolder</code></dt>
+		<dd>
+			<p>ローカルフォルダアカウントのルートフォルダを返します。</p>
+		</dd>
+	<dt id="mail.deleteFolder">void <code>mail.deleteFolder(<var>in nsIMsgFolder aFolder</var>)</code></dt>
+		<dd>
+			<p>nsIMsgFolder形式で渡されたメールフォルダを削除します。ごみ箱への移動ではなく、フォルダ内のメッセージも含めての完全削除となります。</p>
+		</dd>
+	<dt id="mail.deleteFolderByURI">void <code>mail.deleteFolderByURI(<var>in String aURI</var>)</code></dt>
+		<dd>
+			<p><code>mailbox://nobody@Local%20Folders/<var>...</var></code>のような形式のURIで指定されたメールフォルダを削除します。ごみ箱への移動ではなく、フォルダ内のメッセージも含めての完全削除となります。</p>
+		</dd>
+</dl>
+
+<h3 id="mail-compose-window">メッセージ編集ウィンドウの操作</h3>
+<dl class="api-list">
+	<dt id="mail.compose.window">DOMWindow <code>mail.compose.window</code></dt>
+		<dd>
+			<p>すでに開かれているメッセージ編集ウィンドウの中で、最初の1つを返します。</p>
+		</dd>
+<!--
+	<dt id="mail.compose.windows">DOMWindow Array <code>mail.compose.windows</code></dt>
+		<dd>
+			<p>すでに開かれているすべてのメッセージ編集ウィンドウの配列を返します。</p>
+		</dd>
+-->
+	<dt id="mail.compose.setUp">Object <code>mail.compose.setUp()</code></dt>
+		<dd>
+			<p>実行すると、新しくメッセージ編集ウィンドウを開き、<a href="testcases.html#waiting-object">準備が完了するまで待つための処理待ち用オブジェクト</a>を返します。Thunderbirdのメインウィンドウが1つも開かれていない場合は、メインウィンドウも同時に開きます。</p>
+		</dd>
+	<dt id="mail.compose.tearDown">void <code>mail.compose.tearDown()</code></dt>
+		<dd>
+			<p>実行すると、<a href="#mail.compose.setUp"><code>mail.compose.setUp()</code></a>によって開かれたメッセージ編集ウィンドウを1つ閉じます。<code>mail.compose.setUp()</code>によってメインウィンドウも同時に開かれ、すべてのメッセージ編集ウィンドウが閉じられた場合は、そのメインウィンドウも閉じられます。</p>
+		</dd>
+<!--
+	<dt id="mail.compose.tearDownAll">void <code>mail.compose.tearDownAll()</code></dt>
+		<dd>
+			<p>実行すると、<a href="#mail.compose.setUp"><code>mail.compose.setUp()</code></a>によって開かれたすべてのメッセージ編集ウィンドウを閉じます。<code>mail.compose.setUp()</code>によってメインウィンドウも同時に開かれた場合は、そのメインウィンドウも閉じられます。</p>
+		</dd>
+</dl>
+
+<h3 id="mail-compose-recipients">宛先の入力と取得</h3>
+<dl class="api-list">
+-->
+	<dt id="mail.compose.recipients-get">Object Array <code>mail.compose.recipients</code></dt>
+		<dd>
+			<p><a href="#mail.compose.window"><code>mail.compose.window</code></a>で参照されるメッセージ編集ウィンドウについて、送信先として入力されているすべてのメールアドレスを収集し、以下のプロパティを持つオブジェクトの配列として返します。</p>
+			<dl>
+				<dt>String <code>type</code></dt>
+					<dd>選択されている種類（<code>to</code>、<code>cc</code>、<code>bcc</code>、<code>reply-to</code>、<code>followup-to</code>、<code>newsgroups</code>のいずれか）</dd>
+				<dt>String <code>address</code></dt>
+					<dd>入力されているメールアドレス</dd>
+			</dl>
+		</dd>
+	<dt id="mail.compose.recipients-set"><code>mail.compose.recipients = <var>Object Array</var></code></dt>
+		<dd>
+			<p><a href="#mail.compose.window"><code>mail.compose.window</code></a>で参照されるメッセージ編集ウィンドウについて、送信先として、与えられた配列のメールアドレスを入力します。すでに入力されていたアドレスはすべて消去されます。</p>
+			<p>配列の内容は<a href="#mail.compose.recipients-get"><code>type</code>と<code>address</code>の各プロパティを持つオブジェクト</a>か、またはメールアドレスの文字列です。メールアドレスの文字列の配列を渡した場合は、すべてのアドレスが「To」として入力されます。</p>
+		</dd>
+<!--
+	<dt id="mail.compose.setRecipients">Object Array <code>mail.compose.setRecipients(<var>in Object Array aAddresses</var>, <var>[in DOMWindow aComposeWindow]</var>)</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.appendRecipients">Object Array <code>mail.compose.appendRecipients(<var>in Object Array aAddresses</var>, <var>[in DOMWindow aComposeWindow]</var>)</code></dt>
+		<dd></dd>
+</dl>
+
+<h3 id="mail-compose-body">本文の入力と取得</h3>
+<dl class="api-list">
+-->
+	<dt id="mail.compose.subject-get">String <code>mail.compose.subject</code></dt>
+		<dd>
+			<p><a href="#mail.compose.window"><code>mail.compose.window</code></a>で参照されるメッセージ編集ウィンドウについて、件名として入力されている内容を返します。</p>
+		</dd>
+
+	<dt id="mail.compose.subject-set"><code>mail.compose.subject = <var>String</var></code></dt>
+		<dd>
+			<p><a href="#mail.compose.window"><code>mail.compose.window</code></a>で参照されるメッセージ編集ウィンドウについて、与えられた文字列を件名として入力します。すでに入力されていた件名は失われます。</p>
+		</dd>
+	<dt id="mail.compose.body-get">DOMElement <code>mail.compose.body</code></dt>
+		<dd>
+			<p><a href="#mail.compose.window"><code>mail.compose.window</code></a>で参照されるメッセージ編集ウィンドウについて、本文として入力されている内容を返します。返り値の形式は、本文編集用のフレームにおけるBODY要素（DOMElement）です。プレーンテキスト形式のメールの場合でもBODY要素を返すことに注意してください。</p>
+		</dd>
+	<dt id="mail.compose.body-set"><code>mail.compose.body = <var>contents</var></code></dt>
+		<dd>
+			<p><a href="#mail.compose.window"><code>mail.compose.window</code></a>で参照されるメッセージ編集ウィンドウについて、与えられた内容を本文に入力します。すでに入力されていた内容はすべて失われます。</p>
+			<p>内容には、文字列、DOMNode、DOMDocumentFragmentのいずれかを受け付けます。これら以外の形式の値を渡した場合は、文字列として扱います。</p>
+		</dd>
+<!--
+	<dt id="mail.compose.setBodyContents">nsIVariant <code>mail.compose.setBodyContents(<var>in nsIVariant aContents</var>, <var>[in DOMWindow aComposeWindow]</var>)</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.appendBodyContents">nsIVariant <code>mail.compose.appendBodyContents(<var>in nsIVariant aContents</var>, <var>[in DOMWindow aComposeWindow]</var>)</code></dt>
+		<dd></dd>
+</dl>
+
+<h3 id="mail-compose-attachments">添付ファイルの入力と取得</h3>
+<dl class="api-list">
+-->
+	<dt id="mail.compose.attachments-get">nsIFile Array <code>mail.compose.attachments</code></dt>
+		<dd>
+			<p><a href="#mail.compose.window"><code>mail.compose.window</code></a>で参照されるメッセージ編集ウィンドウについて、添付ファイルをnsIFile形式のオブジェクトの配列として取得します。</p>
+		</dd>
+	<dt id="mail.compose.attachments-set"><code>mail.compose.attachments = <var>Object Array</var></code></dt>
+		<dd>
+			<p><a href="#mail.compose.window"><code>mail.compose.window</code></a>で参照されるメッセージ編集ウィンドウについて、与えられた内容を添付ファイルとして設定します。添付ファイルとしては、パス文字列、File URL、またはnsIFileのオブジェクトを指定することができます。なお、すでに入力されていた添付ファイルはすべては失われます。</p>
+		</dd>
+<!--
+	<dt id="mail.compose.attachFile">void <code>mail.compose.attachFile(<var>in Object aFile</var>, <var>[in DOMWindow aComposeWindow]</var>)</code></dt>
+		<dd></dd>
+</dl>
+
+<h3 id="mail-compose-fields">メッセージ編集ウィンドウの入力フィールド（要素ノードとしてのアクセス）</h3>
+<dl class="api-list">
+	<dt id="mail.compose.addressFields">DOMElement Array <code>mail.compose.addressFields</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.firstAddressField">DOMElement <code>mail.compose.firstAddressField</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.lastAddressField">DOMElement <code>mail.compose.lastAddressField</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.blankAddressFields">DOMElement Array <code>mail.compose.blankAddressFields</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.firstBlankAddressField">DOMElement <code>mail.compose.firstBlankAddressField</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.lastBlankAddressField">DOMElement <code>mail.compose.lastBlankAddressField</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.addressTypes">DOMElement Array <code>mail.compose.addressTypes</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.firstAddressType">DOMElement <code>mail.compose.firstAddressType</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.lastAddressType">DOMElement <code>mail.compose.lastAddressType</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.dummyRows">DOMElement Array <code>mail.compose.dummyRows</code></dt>
+		<dd></dd>
+	<dt id="mail.compose.firstDummyRow">DOMElement <code>mail.compose.firstDummyRow</code></dt>
+		<dd></dd>
+-->
+</dl>
+
+<h3 id="mail-send">メール送信操作</h3>
+<dl class="api-list">
+	<dt id="mail.compose.send">void <code>mail.compose.send(<var>in Boolean aAsync</var>, <var>[in DOMWindow aComposeWindow]</var>)</code></dt>
+		<dd>
+			<p><a href="#mail.compose.window"><code>mail.compose.window</code></a>で参照されるメッセージ編集ウィンドウについて、編集中のメッセージを送信します。ただし、<em>実際にはSMTPによるメール送信は行わず、送信されていたはずの内容を模したオブジェクトを<a href="#mail.deliveries"><code>mail.deliveries</code></a>に格納して処理を終えます</em>。</p>
+		</dd>
+	<dt id="mail.deliveries">Object Array <code>mail.deliveries</code></dt>
+		<dd>
+			<p><a href="#mail.compose.send"><code>mail.compose.send()</code></a>で送信したメールの内容を返します。各メールに相当するオブジェクトは以下のプロパティを持ちます。</p>
+			<ul>
+				<li>String <code>from</code></li>
+				<li>String <code>replyTo</code></li>
+				<li>String <code>to</code></li>
+				<li>String <code>cc</code></li>
+				<li>String <code>bcc</code></li>
+				<li>String <code>subject</code></li>
+				<li>String <code>organization</code></li>
+				<li>String <code>priority</code></li>
+				<li>String <code>messageId</code></li>
+				<li>String <code>characterSet</code></li>
+				<li>String <code>body</code></li>
+				<li>String <code>newsgroups</code></li>
+				<li>String <code>newshost</code></li>
+				<li>String <code>newspostUrl</code></li>
+				<li>String <code>followupTo</code></li>
+			</ul>
+		</dd>
+</dl>
+
+
+<h2 id="file">ファイル操作</h2>
+
+<h3 id="file-IO">ファイルの読み書き</h3>
+<dl class="api-list">
+	<dt id="utils.readFrom">String <code>utils.readFrom(<var>in Object aFile</var>, <var>[in String aEncoding]</var>)</code>
+		<span class="alias">別名：<code>readFrom()</code></span></dt>
+		<dd>
+			<p>指定されたファイルの内容をテキストファイルとして読み込み、内容を返します。第1引数にはパス文字列、File URL、またはnsIFileのオブジェクトを指定します。</p>
+			<p>第2引数としてエンコーディングを指定すると、そのエンコーディングからFirefoxの内部処理用エンコーディング（UCS-2）に変換した結果を返します。エンコーディング指定を省略すると読み込んだままのデータを返します。例えばUTF-8で記述されたファイルを読み込む場合は<code>utils.readFrom(file, <em>"UTF-8"</em>)</code>と指定して下さい。</p>
+			<pre><code>var contents = utils.readFrom('../../fixtures/data.txt', 'Shift_JIS');</code></pre>
+		</dd>
+	<dt id="utils.writeTo">nsIFile <code>utils.writeTo(<var>in String aContent</var>, <var>in Object aFile</var>, <var>[in String aEncoding]</var>)</code>
+		<span class="alias">別名：<code>writeTo()</code></span></dt>
+		<dd>
+			<p>渡された文字列を、指定されたファイルに書き出します。第2引数にはパス文字列、File URL、またはnsIFileのオブジェクトを指定します。</p>
+			<p>第3引数としてエンコーディングを指定すると、内部エンコーディング（UCS-2）からそのエンコーディングに変換して出力します。エンコーディング指定を省略すると内部エンコーディングのまま出力します。例えばUTF-8でファイルを出力する場合は<code>utils.writeTo(content, file, <em>"UTF-8"</em>)</code>と指定して下さい。</p>
+			<p>なお、すでに存在するファイルを指定した場合は確認無しに上書きされます。</p>
+			<pre><code>utils.writeTo(result.join('\n'), tempFile, 'Shift_JIS');</code></pre>
+		</dd>
+</dl>
+<p>これらのメソッドに相対パスを渡すと、現在読み込まれているテストケースのファイルからの相対パスとして解釈します（<code>baseURL + '<var>&lt;相対パス&gt;</var>'</code> と表記するのと同等です）。</p>
+
+<h3 id="file-creation">ファイルの生成/コピー/削除</h3>
+<dl class="api-list">
+	<dt id="utils.cosmeticClone">nsIFile <code>utils.cosmeticClone(<var>in Object aOriginalFile</var>, <var>in Object aDestinationFolder</var>, <var>in String aName</var>)</code>
+		<span class="alias">別名：<code>cosmeticClone()</code></span></dt>
+		<dd>
+			<p>第1引数で渡されたファイルまたはフォルダを、第2引数で渡されたフォルダの中に、第3引数で渡された名前で複製します。第3引数を省略した場合は、元のファイルと同じ名前で複製します。</p>
+			<p>フォルダを複製する場合、中に含まれているファイルやフォルダのうち、不可視のファイル（Windowsの隠しファイル、Linuxの「.」で始まる名前のファイルなど）は複製されません。</p>
+			<p>返り値は複製されたファイルまたはフォルダです。</p>
+			<pre><code>utils.cosmeticClone('./logs', logDir, Date.now());</code></pre>
+		</dd>
+	<dt id="utils.makeTempFile">nsIFile <code>utils.makeTempFile(<var>[in Object aOriginalFile]</var>)</code>
+		<span class="alias">別名：<code>utils.createTempFile()</code>,
+		                          <code>makeTempFile()</code>,
+		                          <code>createTempFile()</code></span></dt>
+		<dd>
+			<p>プラットフォームのテンポラリフォルダ内にテンポラリファイルを生成し、それを返します。第1引数にパス文字列、File URL、またはnsIFileのオブジェクトを渡した場合、生成されるテンポラリファイルはそのファイルの複製になります。第1引数でフォルダを指定した場合、<a href="#utils.makeTempFolder"><code>utils.makeTempFolder()</code></a>と同じ動作になります。</p>
+			<pre><code>var newTempFile = utils.makeTempFile();
+var cloned = utils.makeTempFile('../fixtures/file.txt');</code></pre>
+		</dd>
+	<dt id="utils.makeTempFolder">nsIFile <code>utils.makeTempFolder(<var>[in Object aOriginalFolder]</var>, <var>[in Boolean aCosmetic]</var>)</code>
+		<span class="alias">別名：<code>utils.makeTempDirectory()</code>,
+		                          <code>utils.makeTempDir()</code>,
+		                          <code>utils.createTempFolder()</code>,
+		                          <code>utils.createTempDirectory()</code>,
+		                          <code>utils.createTempDir()</code>,
+		                          <code>makeTempFolder()</code>,
+		                          <code>makeTempDirectory()</code>,
+		                          <code>makeTempDir()</code>,
+		                          <code>createTempFolder()</code>,
+		                          <code>createTempDirectory()</code>,
+		                          <code>createTempDir()</code></span></dt>
+		<dd>
+			<p>プラットフォームのテンポラリフォルダ内にテンポラリフォルダを生成し、それを返します。第1引数にパス文字列、File URL、またはnsIFileのオブジェクトを渡した場合、生成されるテンポラリフォルダはそのフォルダの複製になります。第2引数にtrueを渡した場合、不可視のファイル（Windowsの隠しファイル、Linuxの「.」で始まる名前のファイルなど）は複製されません。</p>
+			<pre><code>var newTempFolder = utils.makeTempFolder();
+var cloned = utils.makeTempFolder('../fixtures', true);</code></pre>
+		</dd>
+	<dt id="utils.cleanUpTempFiles">void <code>utils.cleanUpTempFiles()</code>
+		<span class="alias">別名：<code>cleanUpTempFiles()</code></span></dt>
+		<dd>
+			<p>そのテストケース内で<a href="#utils.makeTempFile"><code>utils.makeTempFile()</code></a>および<a href="#utils.makeTempFolder"><code>utils.makeTempFolder()</code></a>によって生成されたすべてのテンポラリファイルを消去します。ただし、使用中であるなどの理由でロックされていて削除できないファイルはそのまま残ります。</p>
+			<pre><code>function tearDown() {
+  utils.cleanUpTempFiles();
+}</code></pre>
+		</dd>
+	<dt id="utils.scheduleToRemove">void <code>utils.scheduleToRemove(<var>in Object aFile</var>)</code>
+		<span class="alias">別名：<code>scheduleToRemove()</code></span></dt>
+		<dd>
+			<p>渡されたファイルを削除します。nsIFileの<code>remove()</code>メソッドによってその場ですぐに削除するのではなく、数ミリ秒後に遅れて削除を実行し、失敗した場合は一定回数・一定時間の間自動的に削除を再試行します。</p>
+			<pre><code>utils.scheduleToRemove('temp/tempFile.zip');</code></pre>
+		</dd>
+</dl>
+<p>これらのメソッドに相対パスを渡すと、現在読み込まれているテストケースのファイルからの相対パスとして解釈します（<code>baseURL + '<var>&lt;相対パス&gt;</var>'</code> と表記するのと同等です）。</p>
+
+<h3 id="file-conversion">ファイルURLとファイルパスの相互変換</h3>
+<dl class="api-list">
+	<dt id="utils.normalizeToFile">nsIFile <code>utils.normalizeToFile(<var>in Object aFile</var>)</code>
+		<span class="alias">別名：<code>normalizeToFile()</code></span></dt>
+		<dd>
+			<p>パス文字列、File URL、nsIFileURL、またはnsIFileのオブジェクトで渡された内容を、nsIFileファイルのオブジェクトとして返します。相対パスを渡すと、現在読み込まれているテストケースのファイルからの相対パスとして解釈します（<code>baseURL + '<var>&lt;相対パス&gt;</var>'</code> と表記するのと同等です）。</p>
+			<pre><code>var file1 = utils.normalizeToFile('c:\\file.txt');
+var file2 = utils.normalizeToFile(baseURL+'/file.txt');</code></pre>
+		</dd>
+	<dt id="utils.makeFileWithPath">nsIFile <code>utils.makeFileWithPath(<var>in String aFilePath</var>)</code>
+		<span class="alias">別名：<code>utils.getFileFromPath()</code>,
+		                          <code>makeFileWithPath()</code>,
+		                          <code>getFileFromPath()</code></span></dt>
+		<dd>
+			<p>プラットフォームのパス文字列で指定されたファイルに対応するnsIFileのオブジェクトを生成します。</p>
+			<pre><code>var file = utils.makeFileWithPath('d:\\test\\file.txt');</code></pre>
+		</dd>
+	<dt id="utils.getFileFromURL">nsIFile <code>utils.getFileFromURL(<var>in nsIFile aFileURL</var>)</code>
+		<span class="alias">別名：<code>getFileFromURL()</code></span></dt>
+		<dd>
+			<p>nsIFileURL形式で指定されたファイルに対応するnsIFileのオブジェクトを生成します。</p>
+			<pre><code>var file = utils.getFileFromURL(gBrowser.currentURI);</code></pre>
+		</dd>
+	<dt id="utils.getFileFromURLSpec">nsIFile <code>utils.getFileFromURLSpec(<var>in String aFileURLSpec</var>)</code>
+		<span class="alias">別名：<code>getFileFromURLSpec()</code></span></dt>
+		<dd>
+			<p>File URL文字列で指定されたファイルに対応するnsIFileのオブジェクトを生成します。</p>
+			<pre><code>var file = utils.getFileFromURLSpec(gBrowser.currentURI.spec);</code></pre>
+		</dd>
+	<dt id="utils.getFileFromKeyword">nsIFile <code>utils.getFileFromKeyword(<var>in String aKeyword</var>)</code>
+		<span class="alias">別名：<code>getFileFromKeyword()</code></span></dt>
+		<dd>
+			<p>指定されたキーワードに対応するnsIFileのオブジェクトを生成します。利用可能なキーワードについては<a href="http://mxr.mozilla.org/mozilla/source/xpcom/io/nsDirectoryServiceDefs.h">nsDirectoryServiceDefs.h</a>や<a href="http://mxr.mozilla.org/mozilla-central/source/toolkit/xre/nsXULAppAPI.h">nsXULAppAPI.h</a>などを参照してください。</p>
+			<pre><code>var extensions = utils.getFileFromKeyword('ProfD');
+extensions.append('extensions');</code></pre>
+		</dd>
+	<dt id="utils.getFilePathFromURL">String <code>utils.getFilePathFromURL(<var>in nsIFileURL aFileURL</var>)</code>
+		<span class="alias">別名：<code>getFilePathFromURL()</code></span></dt>
+		<dd>
+			<p>nsIFileURL形式で指定されたファイルについて、そのプラットフォームでのパス文字列を得ます。</p>
+			<pre><code>var path = utils.getFilePathFromURL(gBrowser.currentURI);</code></pre>
+		</dd>
+	<dt id="utils.getFilePathFromURLSpec">String <code>utils.getFilePathFromURLSpec(<var>in String aFileURLSpec</var>)</code>
+		<span class="alias">別名：<code>getFilePathFromURLSpec()</code></span></dt>
+		<dd>
+			<p>File URL文字列で指定されたファイルについて、そのプラットフォームでのパス文字列を得ます。</p>
+			<pre><code>var path = utils.getFilePathFromURL(gBrowser.currentURI.spec);</code></pre>
+		</dd>
+	<dt id="utils.getFilePathFromKeyword">String <code>utils.getFilePathFromKeyword(<var>in String aKeyword</var>)</code>
+		<span class="alias">別名：<code>getFilePathFromKeyword()</code></span></dt>
+		<dd>
+			<p>指定されたキーワードに対応するファイルについて、そのプラットフォームでのパス文字列を得ます。利用可能なキーワードについては<a href="http://mxr.mozilla.org/mozilla/source/xpcom/io/nsDirectoryServiceDefs.h">nsDirectoryServiceDefs.h</a>や<a href="http://mxr.mozilla.org/mozilla-central/source/toolkit/xre/nsXULAppAPI.h">nsXULAppAPI.h</a>などを参照してください。</p>
+			<pre><code>var path = utils.getFilePathFromKeyword('ProfD');</code></pre>
+		</dd>
+	<dt id="utils.getURLFromFile">nsIURI <code>utils.getURLFromFile(<var>in nsIFile aFile</var>)</code>
+		<span class="alias">別名：<code>getURLFromFile()</code></span></dt>
+		<dd>
+			<p>nsIFile形式で指定されたファイルについて、対応するFile URLのnsIFileURL形式のオブジェクトを得ます。</p>
+			<pre><code>var parentURL = utils.getURLFromFile(profile.parent);</code></pre>
+		</dd>
+	<dt id="utils.getURLFromFilePath">nsIURI <code>utils.getURLFromFilePath(<var>in String aFilePath</var>)</code>
+		<span class="alias">別名：<code>getURLFromFilePath()</code></span></dt>
+		<dd>
+			<p>プラットフォームのパス文字列で指定されたファイルについて、対応するFile URLのnsIFileURL形式のオブジェクトを得ます。</p>
+			<pre><code>var fileURL = utils.getURLFromFilePath('d:\\test\\file.txt');</code></pre>
+		</dd>
+	<dt id="utils.getURLSpecFromFile">String <code>utils.getURLSpecFromFile(<var>in nsIFile aFileURL</var>)</code>
+		<span class="alias">別名：<code>getURLSpecFromFile()</code></span></dt>
+		<dd>
+			<p>nsIFile形式で指定されたファイルについて、対応するFile URLのURL文字列を得ます。</p>
+			<pre><code>image.src = utils.getURLSpecFromFile(imageFile);</code></pre>
+		</dd>
+	<dt id="utils.getURLSpecFromFilePath">String <code>utils.getURLSpecFromFilePath(<var>in String aFileURL</var>)</code>
+		<span class="alias">別名：<code>getURLSpecFromFilePath()</code></span></dt>
+		<dd>
+			<p>プラットフォームのパス文字列で指定されたファイルについて、対応するFile URLのURL文字列を得ます。</p>
+			<pre><code>image.src = utils.getURLSpecFromFilePath('d:\\test\\image.jpg');</code></pre>
+		</dd>
+</dl>
+
+<h3 id="file-hash">ファイルのハッシュの取得</h3>
+<dl class="api-list">
+	<dt id="utils.computeHashFromFile">String <code>utils.computeHashFromFile(<var>in Object aFile</var>, <var>in String aAlgorithm</var>)</code>
+		<span class="alias">別名：<code>computeHash()</code>
+		</span></dt>
+		<dd>
+			<p>第2引数で指定されたハッシュ関数を用いて、第1引数のファイルの内容のハッシュ値を計算し、その文字列を返します。ハッシュ関数名として<code>md2</code>、<code>md5</code>、<code>sha1</code>、<code>sha256</code>、<code>sha384</code>、<code>sha512</code>のうちのいずれかを利用できます。</p>
+			<pre><code>assert.equals('7BD6E50A060F9D63CDD89082CC215025A800333E',
+              utils.computeHashFromFile('../result.jpg', 'sha1'));</code></pre>
+		</dd>
+	<dt id="utils.md2FromFile">String <code>utils.md2FromFile(<var>in Object aFile</var>)</code>
+		<span class="alias">別名：<code>md2FromFile()</code>
+		</span></dt>
+		<dd>
+			<p>渡されたファイルの内容のMD2ハッシュ値の文字列を返します。<a href="#utils.computeHashFromFile"><code>utils.computeHashFromFile(<var>aFile</var>, 'md2')</code></a>と同じ働きをします。</p>
+		</dd>
+	<dt id="utils.md5FromFile">String <code>utils.md5FromFile(<var>in Object aFile</var>)</code>
+		<span class="alias">別名：<code>md5FromFile()</code>
+		</span></dt>
+		<dd>
+			<p>渡されたファイルの内容のMD5ハッシュ値の文字列を返します。<a href="#utils.computeHashFromFile"><code>utils.computeHashFromFile(<var>aFile</var>, 'md5')</code></a>と同じ働きをします。</p>
+		</dd>
+	<dt id="utils.sha1FromFile">String <code>utils.sha1FromFile(<var>in Object aFile</var>)</code>
+		<span class="alias">別名：<code>sha1FromFile()</code>
+		</span></dt>
+		<dd>
+			<p>渡されたファイルの内容のSHA-1ハッシュ値の文字列を返します。<a href="#utils.computeHashFromFile"><code>utils.computeHashFromFile(<var>aFile</var>, 'sha1')</code></a>と同じ働きをします。</p>
+		</dd>
+	<dt id="utils.sha256FromFile">String <code>utils.sha256FromFile(<var>in Object aFile</var>)</code>
+		<span class="alias">別名：<code>sha256FromFile()</code>
+		</span></dt>
+		<dd>
+			<p>渡されたファイルの内容のSHA-256ハッシュ値の文字列を返します。<a href="#utils.computeHashFromFile"><code>utils.computeHashFromFile(<var>aFile</var>, 'sha256')</code></a>と同じ働きをします。</p>
+		</dd>
+	<dt id="utils.sha384FromFile">String <code>utils.sha384FromFile(<var>in Object aFile</var>)</code>
+		<span class="alias">別名：<code>sha384FromFile()</code>
+		</span></dt>
+		<dd>
+			<p>渡されたファイルの内容のSHA-384ハッシュ値の文字列を返します。<a href="#utils.computeHashFromFile"><code>utils.computeHashFromFile(<var>aFile</var>, 'sha384')</code></a>と同じ働きをします。</p>
+		</dd>
+	<dt id="utils.sha512FromFile">String <code>utils.sha512FromFile(<var>in Object aFile</var>)</code>
+		<span class="alias">別名：<code>sha512FromFile()</code>
+		</span></dt>
+		<dd>
+			<p>渡されたファイルの内容のSHA-512ハッシュ値の文字列を返します。<a href="#utils.computeHashFromFile"><code>utils.computeHashFromFile(<var>aFile</var>, 'sha512')</code></a>と同じ働きをします。</p>
+		</dd>
+</dl>
+<p><code>utils.computeHashFromFile()</code>に相対パスを渡すと、現在読み込まれているテストケースのファイルからの相対パスとして解釈します（<code>baseURL + '<var>&lt;相対パス&gt;</var>'</code> と表記するのと同等です）。</p>
+
+
+<h2 id="string">文字列操作</h2>
+<dl class="api-list">
+	<dt id="utils.UTF8ToUCS2">String <code>utils.UTF8ToUCS2(<var>in String aInput</var>)</code>
+		<span class="alias">別名：<code>utils.UTF8ToUnicode()</code>, <code>UTF8ToUCS2()</code>, <code>UTF8ToUnicode()</code></span></dt>
+		<dd>
+			<p>UTF-8バイト列をMozilla内部で一般的に使われているUCS-2（Unicode）の文字列に変換します。</p>
+			<pre><code>var string = utils.UTF8ToUCS2(someXPCOMComponent.getResult());</code></pre>
+		</dd>
+	<dt id="utils.UCS2ToUTF8">String <code>utils.UCS2ToUTF8(<var>in String aInput</var>)</code>
+		<span class="alias">別名：<code>utils.UnicodeToUTF8()</code>, <code>UCS2ToUTF8()</code>, <code>UnicodeToUTF8()</code></span></dt>
+		<dd>
+			<p>UCS-2（Unicode）の文字列をUTF-8バイト列に変換します。</p>
+			<pre><code>someXPCOMComponent.setValue(utils.UCS2ToUTF8(string));</code></pre>
+		</dd>
+	<dt id="utils.XToUCS2">String <code>utils.XToUCS2(<var>in String aInput</var>, <var>in String aEncoding</var>)</code>
+		<span class="alias">別名：<code>utils.XToUnicode()</code>, <code>XToUCS2()</code>, <code>XToUnicode()</code></span></dt>
+		<dd>
+			<p>Shift_JISやEUC-JPでエンコードされた文字列を、Mozilla内部で一般的に使われているUCS-2（Unicode）の文字列に変換します。第1引数は変換する文字列、第2引数は変換元のエンコーディング名です。</p>
+			<pre><code>var string = utils.XToUCS2(string, 'EUC-JP');</code></pre>
+		</dd>
+	<dt id="utils.UCS2ToX">String <code>utils.UCS2ToX(<var>in String aInput</var>, <var>in String aEncoding</var>)</code>
+		<span class="alias">別名：<code>utils.UnicodeToX()</code>, <code>UCS2ToX()</code>, <code>UnicodeToX()</code></span></dt>
+		<dd>
+			<p>UCS-2（Unicode）の文字列を、Shift_JISやEUC-JPでエンコードされた文字列に変換します。第1引数は変換する文字列、第2引数は変換先のエンコーディング名です。</p>
+			<pre><code>var string = utils.UCS2ToX(string, 'EUC-JP');</code></pre>
+		</dd>
+	<dt id="utils.inspect">String <code>utils.inspect(<var>in Object aObject</var>, <var>[in String aIndent]</var>)</code>
+		<span class="alias">別名：<code>inspect()</code></span></dt>
+		<dd>
+			<p>渡された内容を可読性の高い文字列に変換します。具体的には以下のルールに則って文字列化します。</p>
+			<dl>
+				<dt><code>Array</code>型</dt>
+					<dd>配列のすべての要素を<code>utils.inspect()</code>したものを返します。</dd>
+				<dt><code>Object</code>型（オブジェクトリテラル、ハッシュ、カスタムクラスのインスタンス）</dt>
+					<dd>持っているすべてのプロパティの名前と値（<code>utils.inspect()</code>した結果）を列挙したものを返します。</dd>
+			</dl>
+			<p>第2引数として文字列を渡すと、その文字列でインデントして整形した結果を返します。例えば<code>"  "</code>（半角スペース2つ）を渡せば、2インデントの結果が返されます。</p>
+			<pre><code>utils.log(utils.inspect(result));</code></pre>
+		</dd>
+	<dt id="utils.inspectDOMNode">String <code>utils.inspectDOMNode(<var>in DOMNode aNode</var>)</code>
+		<span class="alias">別名：<code>inspectDOMNode()</code></span></dt>
+		<dd>
+			<p>渡されたDOMノードからソース文字列を得ます。HTML文書やXML文書の処理結果を構造まで含めて簡易的に比較する場合などに利用できます。</p>
+			<pre><code>assert.equals(utils.inspectDOMNode($('template')),
+              utils.inspectDOMNode(generated));</code></pre>
+		</dd>
+	<dt id="utils.getClipBoard">String <code>utils.getClipBoard()</code>
+		<span class="alias">別名：<code>getClipBoard()</code></span></dt>
+		<dd>
+			<p>システムのクリップボードに格納された内容を文字列として取得します。クリップボードの内容が文字列でない場合、相当する内容が文字列化された物、もしくは空文字が返ります。</p>
+			<pre><code>assert.equals('copied', utils.getClipBoard());</code></pre>
+		</dd>
+	<dt id="utils.setClipBoard">void <code>utils.setClipBoard(<var>in String aString</var>)</code>
+		<span class="alias">別名：<code>setClipBoard()</code>
+		</span></dt>
+		<dd>
+			<p>システムのクリップボードに文字列をコピーします。</p>
+			<pre><code>utils.setClipBoard('foobar');
+assert.equals('foobar', service.getStringFromClipBoard());</code></pre>
+		</dd>
+	<dt id="utils.processTemplate">String <code>utils.processTemplate(<var>in String aString</var>, <var>[in Object aScope]</var>)</code>
+		<span class="alias">別名：<code>processTemplate()</code>
+		</span></dt>
+		<dd>
+			<p>文字列の中に埋め込まれたJavaScriptのコードを解釈し、結果の文字列を返します。<code>&lt;%</code>で始まり<code>%&gt;</code>で終わる箇所は、通常のJavaScriptとして評価されます。<code>&lt;%<em>=</em></code>で始まり<code>%&gt;</code>で終わる箇所は、内容として書かれたJavaScriptを式として評価した時の値に置き換えられます。</p>
+			<p>埋め込まれたコードは第2引数として渡されたオブジェクトまたはテストケースの実行コンテキストで実行され、第2引数のオブジェクトのプロパティは埋め込まれたコードから変数として参照できます。</p>
+			<pre><code>var source = &lt;![CDATA[
+      大切な事なので3回言います。
+      <em>&lt;% for (var i = 0; i &lt; 3; i++) { %&gt;</em>
+        今日は<em>&lt;%= today %&gt;</em>です。
+      <em>&lt;% } %&gt;</em>
+      オーケー？
+    ]]&gt;.toString();
+var params = {
+      today : (new Date()).toString()
+    };
+var result = utils.processTemplate(source, params);</code></pre>
+		</dd>
+	<dt id="utils.compareVersions">Boolean <code>utils.compareVersions(<var>in String aVersionA</var>, <var>in String aOperator</var>, <var>in String aVersionB</var>)</code>
+		<span class="alias">別名：<code>compareVersions()</code>
+		</span></dt>
+		<dd>
+			<p>2つのバージョン番号文字列を第2引数で指定した比較演算子で比較して、結果を真偽値で返します。比較演算子には <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code> のいずれかを指定します。比較演算子以外を渡した場合はエラーになります。</p>
+			<pre><code>utils.compareVersions('2.0.0.16', '&lt;', '3.0.10'); // true
+utils.compareVersions('3.0', '==', '3.0.0'); // true
+utils.compareVersions('3.6a1pre', '&gt;=', '3.5b5'); // true</code></pre>
+		</dd>
+	<dt id="utils.compareVersions-old">Number <code>utils.compareVersions(<var>in String aVersionA</var>, <var>in String aVersionB</var>)</code></dt>
+		<dd>
+			<p><em><a href="#utils.compareVersions">utils.compareVersions()</a>のに引数を2つだけ渡した場合、こちらの挙動になります。</em></p>
+			<p>2つのバージョン番号文字列を比較して、<code><var>aVersionA</var> &lt; <var>aVersionB</var></code>であれば<code>-1</code>を、<code><var>aVersionA</var> &gt; <var>aVersionB</var></code>であれば<code>1</code>を、両者が等しければ<code>0</code>を返します。</p>
+			<pre><code>utils.compareVersions('2.0.0.16', '3.0.10'); // -1
+utils.compareVersions('3.0', '3.0.0'); // 0
+utils.compareVersions('3.6a1pre', '3.5b5'); // 1</code></pre>
+		</dd>
+	<dt id="utils.computeHash">String <code>utils.computeHash(<var>in String aString</var>, <var>in String aAlgorithm</var>)</code>
+		<span class="alias">別名：<code>computeHash()</code>
+		</span></dt>
+		<dd>
+			<p>第2引数で指定されたハッシュ関数を用いて、第1引数の文字列のハッシュ値を計算し、その文字列を返します。ハッシュ関数名として<code>md2</code>、<code>md5</code>、<code>sha1</code>、<code>sha256</code>、<code>sha384</code>、<code>sha512</code>のうちのいずれかを利用できます。</p>
+			<pre><code>assert.equals('2AAE6C35C94FCFB415DBE95F408B9CE91EE846ED',
+              utils.computeHash('hello world', 'sha1'));</code></pre>
+		</dd>
+	<dt id="utils.md2">String <code>utils.md2(<var>in String aString</var>)</code>
+		<span class="alias">別名：<code>md2()</code>
+		</span></dt>
+		<dd>
+			<p>渡された文字列のMD2ハッシュ値の文字列を返します。<a href="#utils.computeHash"><code>utils.computeHash(<var>aString</var>, 'md2')</code></a>と同じ働きをします。</p>
+		</dd>
+	<dt id="utils.md5">String <code>utils.md5(<var>in String aString</var>)</code>
+		<span class="alias">別名：<code>md5()</code>
+		</span></dt>
+		<dd>
+			<p>渡された文字列のMD5ハッシュ値の文字列を返します。<a href="#utils.computeHash"><code>utils.computeHash(<var>aString</var>, 'md5')</code></a>と同じ働きをします。</p>
+		</dd>
+	<dt id="utils.sha1">String <code>utils.sha1(<var>in String aString</var>)</code>
+		<span class="alias">別名：<code>sha1()</code>
+		</span></dt>
+		<dd>
+			<p>渡された文字列のSHA-1ハッシュ値の文字列を返します。<a href="#utils.computeHash"><code>utils.computeHash(<var>aString</var>, 'sha1')</code></a>と同じ働きをします。</p>
+		</dd>
+	<dt id="utils.sha256">String <code>utils.sha256(<var>in String aString</var>)</code>
+		<span class="alias">別名：<code>sha256()</code>
+		</span></dt>
+		<dd>
+			<p>渡された文字列のSHA-256ハッシュ値の文字列を返します。<a href="#utils.computeHash"><code>utils.computeHash(<var>aString</var>, 'sha256')</code></a>と同じ働きをします。</p>
+		</dd>
+	<dt id="utils.sha384">String <code>utils.sha384(<var>in String aString</var>)</code>
+		<span class="alias">別名：<code>sha384()</code>
+		</span></dt>
+		<dd>
+			<p>渡された文字列のSHA-384ハッシュ値の文字列を返します。<a href="#utils.computeHash"><code>utils.computeHash(<var>aString</var>, 'sha384')</code></a>と同じ働きをします。</p>
+		</dd>
+	<dt id="utils.sha512">String <code>utils.sha512(<var>in String aString</var>)</code>
+		<span class="alias">別名：<code>sha512()</code>
+		</span></dt>
+		<dd>
+			<p>渡された文字列のSHA-512ハッシュ値の文字列を返します。<a href="#utils.computeHash"><code>utils.computeHash(<var>aString</var>, 'sha512')</code></a>と同じ働きをします。</p>
+		</dd>
+</dl>
+
+
+<h2 id="json">JSONの利用</h2>
+<dl class="api-list">
+	<dt id="utils.readJSON">Object <code>utils.readJSON(<var>in Object aFile</var>, <var>[in String aEncoding]</var>, <var>[in Object aScope]</var>)</code>
+		<span class="alias">別名：<code>readJSON()</code></span></dt>
+		<dd>
+			<p>指定されたファイルの内容をテキストとして読み込み、<code>eval()</code>した結果を返します。第1引数にはパス文字列、File URL、またはnsIFileのオブジェクトを指定します。ファイルのエンコーディングは初期状態ではUTF-8として認識しますが、第2引数でエンコーディングを明示することもできます。</p>
+			<p>第3引数としてオブジェクトを渡すと、ファイルの内容を<code>eval()</code>する前に、その引数を実行コンテキストとして<a href="#utils.processTemplate"><code>utils.processTemplate()</code></a>を実行します。</p>
+			<pre><code>var data1 = <em>utils.readJSON('../fixtures/data.json')</em>;
+
+var data2 = <em>utils.readJSON(
+              '../fixtures/SJIS.json',
+              'Shift_JIS',
+              { date : Date.now() }
+            )</em>;</code></pre>
+		</dd>
+</dl>
+
+
+<h2 id="csv">CSVの利用</h2>
+<dl class="api-list">
+	<dt id="utils.parseCSV">String Array <code>utils.parseCSV(<var>in String aCSV</var>)</code>
+		<span class="alias">別名：<code>parseCSV()</code></span></dt>
+		<dd>
+			<p>渡された文字列をCSVとして解釈し、結果を2次元の配列として返します。解釈のルールは以下の通りです。</p>
+			<ul>
+				<li>CSVの形式は<a href="http://tools.ietf.org/html/rfc4180">RFC4180</a>と見なす。</li>
+				<li>各フィールド（セル）の値はすべて文字列として解釈する。</li>
+				<li>フィールド内の改行文字はすべて<code>\n</code>に変換する。</li>
+				<li>タブや数式などは、通常の文字列として解釈する。</li>
+			</ul>
+			<pre><code>var CSV = &lt;![CDATA[name,party,country
+麻生 太郎,自民党,Japan
+鳩山 由紀夫,民主党,Japan
+ジョージ・W・ブッシュ,共和党,USA
+バラク・オバマ,民主党,USA]]&gt;.toString();
+
+assert.equals(
+  [['name', 'party', 'country'],
+   ['麻生 太郎', '自民党', 'Japan'],
+   ['鳩山 由紀夫', '民主党', 'Japan'],
+   ['ジョージ・W・ブッシュ', '共和党', 'USA'],
+   ['バラク・オバマ', '民主党', 'USA']],
+  <em>utils.parseCSV(CSV)</em>
+);</code></pre>
+		</dd>
+	<dt id="utils.readCSV">String Array <code>utils.readCSV(<var>in Object aFile</var>, <var>[in String aEncoding]</var>, <var>[in Object aScope]</var>)</code>
+		<span class="alias">別名：<code>readCSV()</code></span></dt>
+		<dd>
+			<p>指定されたファイルの内容をテキストとして読み込み、<a href="#utils.parseCSV"><code>utils.parseCSV()</code></a>した結果を返します。第1引数にはパス文字列、File URL、またはnsIFileのオブジェクトを指定します。ファイルのエンコーディングは初期状態ではUTF-8として認識しますが、第2引数でエンコーディングを明示することもできます。</p>
+			<p>第3引数としてオブジェクトを渡すと、ファイルの内容を<a href="#utils.parseCSV"><code>utils.parseCSV()</code></a>する前に、その引数を実行コンテキストとして<a href="#utils.processTemplate"><code>utils.processTemplate()</code></a>を実行します。</p>
+			<pre><code>var data1 = <em>utils.readCSV('../fixtures/data.csv')</em>;
+
+var data2 = <em>utils.readCSV(
+              '../fixtures/SJIS.csv',
+              'Shift_JIS',
+              { date : Date.now() }
+            )</em>;</code></pre>
+		</dd>
+	<dt id="utils.readParametersFromCSV">Object <code>utils.readParametersFromCSV(<var>in Object aFile</var>, <var>[in String aEncoding]</var>, <var>[in Object aScope]</var>)</code>
+		<span class="alias">別名：<code>readParametersFromCSV()</code>,
+		                          <code>readParameterFromCSV()</code>,
+		                          <code>readParamsFromCSV()</code>,
+		                          <code>readParamFromCSV()</code>,
+		                          <code>utils.readParameterFromCSV()</code>,
+		                          <code>utils.readParamsFromCSV()</code>,
+		                          <code>utils.readParamFromCSV()</code></span></dt>
+		<dd>
+			<p>指定されたファイルの内容をテキストとして読み込み、<a href="#utils.parseCSV"><code>utils.parseCSV()</code></a>した上で、後述のルールに則り解釈した結果のオブジェクト（<a href="testcases.html#data-driven">データ駆動型テスト</a>用のパラメータ）を返します。第1引数にはパス文字列、File URL、またはnsIFileのオブジェクトを指定します。ファイルのエンコーディングは初期状態ではUTF-8として認識しますが、第2引数でエンコーディングを明示することもできます。</p>
+			<p>第3引数としてオブジェクトを渡すと、ファイルの内容を<a href="#utils.parseCSV"><code>utils.parseCSV()</code></a>する前に、その引数を実行コンテキストとして<a href="#utils.processTemplate"><code>utils.processTemplate()</code></a>を実行します。</p>
+			<pre><code>var data = <em>utils.readParametersFromCSV('../fixtures/data.csv', 'UTF-8')</em>;
+test_myFunc.parameters = data;
+function test_myFunc(aParameter) {
+  assert.equals(aParameter.expected, myFunc(aParameter.input));
+}</code></pre>
+			<p>CSVからの変換のルールは以下の通りです。</p>
+			<ul>
+				<li>各レコードをハッシュに変換する。</li>
+				<li>最初のレコード（行）はカラムの定義と見なし、カラム名を以降のレコードに対応するハッシュのキーとする。</li>
+				<li>最初のレコードの1番目のフィールド（セル）が空の場合は、戻り値をハッシュにして、各レコードの1番目のフィールドの内容をハッシュのキーとする。そうでない場合は、戻り値を配列にする。</li>
+				<li>カラム名の末尾に以下の文字列（大文字小文字は区別しない）がある場合、その部分をカラム名から取り除いた上で、フィールドの値をその型として解釈する。
+					<table border="1" summary="">
+						<thead>
+							<tr><th>指定する文字列</th><th>値の型</th></tr>
+						</thead>
+						<tbody>
+							<tr><td>[string]</td><td rowspan="2">文字列値</td></tr>
+							<tr><td>[char]</td></tr>
+							<tr><td>[number]</td><td rowspan="3">数値（小数）</td></tr>
+							<tr><td>[float]</td></tr>
+							<tr><td>[double]</td></tr>
+							<tr><td>[int]</td><td>整数値</td></tr>
+							<tr><td>[boolean]</td><td rowspan="2">真偽値</td></tr>
+							<tr><td>[bool]</td></tr>
+							<tr><td>[object]</td><td rowspan="2">JSON文字列（JavaScriptのオブジェクトに変換）</td></tr>
+							<tr><td>[json]</td></tr>
+							<tr><td>それ以外、または無指定</td><td>trueまたはfalseの場合は真偽値、10進実数の場合は数値、それ以外は文字列値として自動判別</td></tr>
+						</tbody>
+					</table></li>
+				<li>同名のカラムが複数ある場合や、同名のレコードが複数ある場合（戻り値がハッシュの場合）は、2つ目以降の名前の末尾に「(2)」「(3)」のような文字列を付与し、すべてのカラム・すべてのレコードの名前が一意になるようにする。</li>
+			</ul>
+			<p>具体的な変換例：</p>
+			<table border="1" summary="">
+				<tbody>
+					<tr><td>input</td><td>toString16 [string]</td><td>toUpperCase16 [string]</td></tr>
+					<tr><td>10</td><td>a</td><td>A</td></tr>
+					<tr><td>255</td><td>ff</td><td>FF</td></tr>
+				</tbody>
+			</table>
+			<p>↓</p>
+			<pre><code>[{ input: 10,  toString16: 'a',  toUpperCase16: 'A' },
+ { input: 255, toString16: 'ff', toUpperCase16: 'FF' }]</code></pre>
+			<table border="1" summary="">
+				<tbody>
+					<tr><td>　</td><td>input</td><td>toString16 [string]</td><td>toUpperCase16 [string]</td></tr>
+					<tr><td>1桁</td><td>10</td><td>a</td><td>A</td></tr>
+					<tr><td>2桁</td><td>255</td><td>ff</td><td>FF</td></tr>
+				</tbody>
+			</table>
+			<p>↓</p>
+			<pre><code>{ '1桁': { input: 10,  toString16: 'a',  toUpperCase16: 'A' },
+  '2桁': { input: 255, toString16: 'ff', toUpperCase16: 'FF' }}</code></pre>
+		</dd>
+	<dt id="utils.parseTSV">String Array <code>utils.parseTSV(<var>in String aTSV</var>)</code>
+		<span class="alias">別名：<code>parseTSV()</code></span></dt>
+		<dd>
+			<p>渡された文字列をタブ区切りのCSVとして解釈し、結果を2次元の配列として返します。区切り文字が異なる以外は<a href="#utils.parseCSV"><code>utils.parseCSV()</code></a>と同じ動作をしますので、詳細はそちらを参照して下さい。</p>
+		</dd>
+	<dt id="utils.readTSV">String Array <code>utils.readTSV(<var>in Object aFile</var>, <var>[in String aEncoding]</var>, <var>[in Object aScope]</var>)</code>
+		<span class="alias">別名：<code>readTSV()</code></span></dt>
+		<dd>
+			<p>指定されたファイルの内容をテキストとして読み込み、<a href="#utils.parseTSV"><code>utils.parseTSV()</code></a>した結果を返します。区切り文字が異なる以外は<a href="#utils.readCSV"><code>utils.readCSV()</code></a>と同じ動作をしますので、詳細はそちらを参照して下さい。</p>
+		</dd>
+	<dt id="utils.readParametersFromTSV">Object <code>utils.readParametersFromTSV(<var>in Object aFile</var>, <var>[in String aEncoding]</var>, <var>[in Object aScope]</var>)</code>
+		<span class="alias">別名：<code>readParametersFromTSV()</code>,
+		                          <code>readParameterFromTSV()</code>,
+		                          <code>readParamsFromTSV()</code>,
+		                          <code>readParamFromTSV()</code>,
+		                          <code>utils.readParameterFromTSV()</code>,
+		                          <code>utils.readParamsFromTSV()</code>,
+		                          <code>utils.readParamFromTSV()</code></span></dt>
+		<dd>
+			<p>指定されたファイルの内容をテキストとして読み込み、<a href="#utils.parseTSV"><code>utils.parseTSV()</code></a>した上で、<a href="#utils.readParametersFromCSV"><code>utils.readParametersFromCSV()</code></a>と同様の解釈した結果のオブジェクト（<a href="testcases.html#data-driven">データ駆動型テスト</a>用のパラメータ）を返します。区切り文字が異なる以外は<a href="#utils.readParametersFromCSV"><code>utils.readParametersFromCSV()</code></a>と同じ動作をしますので、詳細はそちらを参照して下さい。</p>
+		</dd>
+</dl>
+
+
+<h2 id="server">ローカルHTTPサーバの操作</h2>
+<dl class="api-list">
+	<dt id="utils.setUpHttpServer">Object <code>utils.setUpHttpServer(<var>in Number aPort</var>, <var>in Object aDocumentRoot</var>, <var>[in Boolean aAsync]</var>)</code>
+		<span class="alias">別名：<code>utils.setUpHTTPServer()</code>, <code>setUpHttpServer()</code>, <code>setUpHTTPServer()</code></span></dt>
+		<dd>
+			<p>第2引数で指定したフォルダ（パス、File URL、またはnsIFileのオブジェクトで指定）をドキュメントルートとして、第1引数のポート番号でHTTPサーバデーモンを起動します。実行すると、起動したHTTPサーバデーモンのインスタンスを返します。返り値のHTTPサーバオブジェクトが持つメソッドを使うと、<a href="mock.html#httpserver">起動したローカルHTTPサーバをモックとして利用できます</a>。</p>
+			<pre><code>var server = utils.setUpHttpServer(4445, '../fixtures/');
+utils.loadURI('http://localhost:4445/sample.html');
+assert.equals('sample page', content.document.title);</code></pre>
+			<p>通常、このメソッドはサーバの起動の完了を待ってから値を返して処理を次に進めます。第3引数に<code>true</code>を渡すと、サーバの起動の完了を待たずに処理を次に進めます。この場合、返り値のオブジェクト自体を<a href="testcases.html#waiting-object">サーバの起動の完了を待つための処理待ち用オブジェクト</a>として利用できます。</p>
+		</dd>
+	<dt id="utils.getHttpServer">Object <code>utils.getHttpServer(<var>in Number aPort</var>)</code>
+		<span class="alias">別名：<code>utils.getHTTPServer()</code>, <code>getHttpServer()</code>, <code>getHTTPServer()</code></span></dt>
+		<dd>
+			<p>第1引数のポート番号で起動しているHTTPサーバデーモンのインスタンスを取得します。そのポートで起動しているHTTPサーバが存在しない場合は<code>null</code>を返します。返り値のHTTPサーバオブジェクトが持つメソッドを使うと、<a href="mock.html#httpserver">ローカルHTTPサーバをモックとして利用できます</a>。</p>
+			<pre><code>var server = utils.getHttpServer(4445);</code></pre>
+		</dd>
+	<dt id="utils.tearDownHttpServer">Object <code>utils.tearDownHttpServer(<var>in Number aPort</var>, <var>[in Boolean aAsync])</code>
+		<span class="alias">別名：<code>utils.tearDownHTTPServer()</code>, <code>tearDownHttpServer()</code>, <code>tearDownHTTPServer()</code></span></dt>
+		<dd>
+			<p><a href="#utils.setUpHttpServer"><code>utils.setUpHttpServer()</code></a>によって起動されたHTTPサーバデーモンのうち、第1引数のポート番号で起動したものを終了します。</p>
+			<pre><code>utils.tearDownHttpServer(4445);</code></pre>
+			<p>通常、このメソッドはサーバの終了処理の完了を待ってから処理を次に進めます。第2引数に<code>true</code>を渡すと、終了処理の完了を待たずに処理を次に進めます。この場合、返り値を<a href="testcases.html#waiting-object">終了処理の完了を待つための処理待ち用オブジェクト</a>として利用できます。</p>
+		</dd>
+	<dt id="utils.tearDownAllHttpServers">Function <code>utils.tearDownAllHttpServers(<var>[in Boolean aAsync])</code>
+		<span class="alias">別名：<code>utils.tearDownAllHTTPServers()</code>, <code>utils.tearDownHttpServers()</code>, <code>utils.tearDownHTTPServers()</code>, <code>tearDownHttpServers()</code>, <code>tearDownHTTPServers()</code>, <code>tearDownHttpServers()</code>, <code>tearDownHTTPServers()</code></span></dt>
+		<dd>
+			<p>そのテストケース中で起動したすべてのHTTPサーバデーモンを終了します。</p>
+			<pre><code>utils.tearDownAllHttpServers();</code></pre>
+			<p>通常、このメソッドはすべてのサーバの終了処理の完了を待ってから処理を次に進めます。第1引数に<code>true</code>を渡すと、終了処理の完了を待たずに処理を次に進めます。この場合、返り値を<a href="testcases.html#waiting-function">終了処理の完了を待つための処理待ち用関数</a>として利用できます。</p>
+		</dd>
+</dl>
+<p>テストケース中で起動されたすべてのサーバデーモンは、テストケース全体の実行終了時に自動的に終了されます。</p>
+
+
+<h2 id="database">データベース操作</h2>
+<dl class="api-list">
+	<dt id="utils.openDatabase">mozIStorageConnection <code>utils.openDatabase(<var>in Object aFile</var>)</code>
+		<span class="alias">別名：<code>openDatabase()</code></span></dt>
+		<dd>
+			<p>パス、File URL、またはnsIFileのオブジェクトで指定されたSQLiteデータベースのファイルへ接続し、コネクションオブジェクトを返します。</p>
+			<pre><code>var dbconn = utils.openDatabase('../fixtures/test.sqlite');
+var statement = dbconn.createStatement('SELECT value FROM test_table WHERE key = "foo"');
+statement.executeStep();
+var value = statement.getString(0);</code></pre>
+		</dd>
+	<dt id="utils.createDatabase">mozIStorageConnection <code>utils.createDatabase()</code>
+		<span class="alias">別名：<code>createDatabase()</code></span></dt>
+		<dd>
+			<p>プラットフォームのテンポラリフォルダ内にテンポラリファイルを生成し、SQLiteデータベースとして接続してコネクションオブジェクトを返します。</p>
+			<pre><code>var dbconn = utils.createDatabase();
+dbconn.executeSimpleSQL('CREATE TABLE test_table (key TEXT PRIMARY KEY, value TEXT)');</code></pre>
+		</dd>
+	<dt id="utils.createDatabaseFromSQL">mozIStorageConnection <code>utils.createDatabaseFromSQL(<var>in String aSQL</var>)</code>
+		<span class="alias">別名：<code>createDatabaseFromSQL()</code></span></dt>
+		<dd>
+			<p>プラットフォームのテンポラリフォルダ内にテンポラリファイルを生成し、SQLiteデータベースとして接続した上で、指定されたSQL文を実行してからコネクションオブジェクトを返します。</p>
+			<pre><code>var dbconn = utils.createDatabaseFromSQL(&lt;![CDATA[
+               DROP TABLE IF EXISTS "foo_table";
+               CREATE TABLE "foo_table" ("key" TEXT PRIMARY KEY  NOT NULL , "value" TEXT);
+               INSERT INTO "foo_table" VALUES('foo','bar');
+               INSERT INTO "foo_table" VALUES('hoge','fuga');
+             ]]&gt;.toString());
+var statement = dbconn.createStatement('SELECT value FROM foo_table WHERE key = "foo"');
+statement.executeStep();
+var value = statement.getString(0);</code></pre>
+		</dd>
+	<dt id="utils.createDatabaseFromSQLFile">mozIStorageConnection <code>utils.createDatabaseFromSQLFile(<var>in Object aFile</var>, <var>[in String aEncoding]</var>, <var>[in Object aScope]</var>)</code>
+		<span class="alias">別名：<code>createDatabaseFromSQLFile()</code></span></dt>
+		<dd>
+			<p>プラットフォームのテンポラリフォルダ内にテンポラリファイルを生成し、SQLiteデータベースとして接続した上で、指定されたファイルの内容をSQL文として実行してからコネクションオブジェクトを返します。ファイルのエンコーディングは初期状態ではUTF-8として認識しますが、第2引数でエンコーディングを明示することもできます。</p>
+			<p>第3引数としてオブジェクトを渡すと、その引数を実行コンテキストとして、ファイルから読み込まれたSQL文に対し<a href="#utils.processTemplate"><code>utils.processTemplate()</code></a>を実行します。</p>
+			<pre><code>var dbconn = utils.createDatabaseFromSQLFile('../fixtures/test.sql', 'Shift_JIS');
+var statement = dbconn.createStatement('SELECT value FROM test_table WHERE key = "key1"');
+statement.executeStep();
+var value = statement.getString(0);</code></pre>
+		</dd>
+</dl>
+
+
+<h2 id="include">スクリプトの読み込み</h2>
+<dl class="api-list">
+	<dt id="utils.import">Object <code>utils.import(<var>in Object aFile</var>, <var>[inout Object aNamespace]</var>)</code>
+		<span class="alias">別名：<code>import()</code></span></dt>
+		<dd>
+			<p>パス、File URL、nsIFileのオブジェクトで指定されたファイルの内容をスクリプトとして読み込んでクリーンな環境で実行した上で、実行時のグローバルオブジェクトを返します。スクリプト中で<code>EXPORTED_SYMBOLS</code>で宣言された変数は、テストの実行環境にエクスポートされます。第2引数としてオブジェクトを渡した場合、<code>EXPORTED_SYMBOLS</code>で宣言された変数はそのオブジェクトにエクスポートされます。ファイルのエンコーディングは自動判別されます。</p>
+			<pre><code>// the module includes:
+//   EXPORTED_SYMBOLS = ["myModule"];
+utils.import(baseURL+"../../modules/myModule.js");
+assert.isDefined(myModule);
+
+var ns = {};
+utils.import(baseURL+"../../modules/myModule.js", ns);
+assert.isDefined(ns.myModule);
+
+var module = utils.import(baseURL+"../../modules/myModule.js", {}).notExportedVariable;</code></pre>
+			<p>このメソッドは<a href="https://developer.mozilla.org/ja/Components.utils.import"><code>Components.utils.import()</code></a>と同じ要領で利用できます。ただし、<code>Components.utils.import()</code>とは以下の点が異なります。</p>
+			<ul>
+				<li>実行すると、その都度スクリプトを読み込み、新しいグローバルオブジェクトを生成します。</li>
+				<li>第1引数として、パス、File URL、nsIFileのオブジェクトを受け取ります。</li>
+			</ul>
+		</dd>
+	<dt id="utils.include">void <code>utils.include(<var>in Object aFile</var>, <var>[in String aEncoding]</var>, <var>[in Object aScope]</var>)</code>
+		<span class="alias">別名：<code>include()</code></span></dt>
+	<dt id="utils.include-old">void <code>utils.include(<var>in Object aFile</var>, <var>[in Object aScope]</var>)</code></dt>
+		<dd>
+			<p>パス、File URL、nsIFileのオブジェクトで指定されたファイルの内容をスクリプトとして読み込み、テストケースの実行コンテキストで実行します。第2引数としてオブジェクトを渡した場合、そのオブジェクトが実行コンテキストになります。ファイルのエンコーディングは自動判別されますが、第3引数でエンコーディングを明示することもできます。</p>
+			<pre><code>utils.include('../test/basic.js');
+
+var namespace = { window : {} };
+utils.include('../../content/library.js', 'Shfit_JIS', namespace);
+var service = namespace.window.globalObject;</code></pre>
+		</dd>
+</dl>
+<p><code>utils.include()</code>に相対パスを渡すと、現在読み込まれているテストケースのファイルからの相対パスとして解釈します（<code>baseURL + '<var>&lt;相対パス&gt;</var>'</code> と表記するのと同等です）。</p>
+
+
+<h2 id="pref">設定の読み書き</h2>
+<dl class="api-list">
+	<dt id="utils.getPref">value <code>utils.getPref(<var>in String aKey</var>)</code>
+		<span class="alias">別名：<code>getPref()</code></span></dt>
+		<dd>
+			<p>FirefoxまたはThunderbirdの設定値を取得します。値の型（真偽値、整数値、文字列値）を問わず動作します。</p>
+			<pre><code>var locale = utils.getPref('general.useragent.locale');</code></pre>
+		</dd>
+	<dt id="utils.setPref">void <code>utils.setPref(<var>in String aKey</var>, <var>in Object aValue</var>)</code>
+		<span class="alias">別名：<code>setPref()</code></span></dt>
+		<dd>
+			<p>渡された値をFirefoxまたはThunderbirdの設定値として保存します。値の型（真偽値、整数値、文字列値）は自動判別されます。<em>テストの中で行った変更はテスト終了後に元に戻されます。</em></p>
+			<pre><code>utils.setPref('extensions.myaddon.feature.enabled', true);</code></pre>
+		</dd>
+	<dt id="utils.clearPref">void <code>utils.clearPref(<var>in String aKey</var>)</code>
+		<span class="alias">別名：<code>clearPref()</code></span></dt>
+		<dd>
+			<p>FirefoxまたはThunderbirdの設定値を削除します。<em>テストの中で行った変更はテスト終了後に元に戻されます。</em></p>
+			<pre><code>utils.clearPref('browser.tabs.loadInBackground');</code></pre>
+		</dd>
+	<dt id="utils.loadPrefs">Object <code>utils.loadPrefs(<var>in Object aOriginalFile</var>, <var>[out Object aPrefs]</var>)</code>
+		<span class="alias">別名：<code>loadPrefs()</code></span></dt>
+		<dd>
+			<p>引数で指定されたパス文字列、File URL、またはnsIFileのオブジェクトが示す設定ファイル（prefs.jsやuser.js、アドオンのデフォルト設定ファイルなど、<code>pref(<var>aKey</var>, <var>aValue</var>);</code>もしくは<code>user_pref(<var>aKey</var>, <var>aValue</var>);</code>の形で設定が記述されているファイル）の内容をすべて読み込み、設定データベースに一時的に反映します。また、返り値として、読み込まれたすべての設定名と値のハッシュを返します。</p>
+			<p>なお、<em>このメソッドで読み込まれた設定は、テスト終了後に元に戻されます。</em></p>
+			<p>第2引数にハッシュとして何らかのオブジェクトを渡した場合、返り値のハッシュと同じ内容を第2引数のオブジェクトに追加します。この場合、読み込まれた設定の内容は設定データベースには反映されません。</p>
+			<p>設定ファイルの読み込み時の挙動は、Firefox（Thunderbird）が自分自身の初期設定を読み込む時や、アドオンの初期設定が読み込まれる時の挙動を再現します。具体的には、以下のような挙動となります。</p>
+			<ul>
+				<li><code>#</code>で始まるコメントを許容する。</li>
+				<li>関数で動的に値を生成するなど、不正な表記の設定ファイルを読み込ませようとするとエラーになる。</li>
+				<li><code>\"</code>、<code>\'</code>、<code>\\</code>、<code>\r</code>、<code>\n</code>、<code>\x<var>XX</var></code>（16進数表記でのエスケープ）、<code>\u<var>XXXX</var></code>（Unicodeエスケープ）以外のエスケープは<em>エスケープ文字を含んだ文字列として取得される</em>（例：<code>\t</code>はタブ文字ではなく<code>"\\t"</code>になる）。</li>
+			</ul>
+			<pre><code>function setUp() {
+  utils.loadPrefs('../../defaults/preferences/myaddon.js');
+}
+
+var prefs = {};
+utils.loadPrefs('../fixtures/clearedPrefs.js', prefs);
+for (var i in prefs) {
+  utils.clearPref(prefs[i]);
+}</code></pre>
+		</dd>
+	<dt id="utils.allowRemoteXUL">void <code>utils.allowRemoteXUL(<var>[in String aDomain]</var>)</code>
+		<span class="alias">別名：<code>utils.allowRemoteXul()</code>, <code>allowRemoteXUL()</code>, <code>allowRemoteXul()</code></span></dt>
+		<dd>
+			<p>Firefox 4では<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=546857">Bug 546857</a>によって、file:やhttp:で始まるURLの位置に置かれたXULファイルを利用できなくなります。このメソッドは、一時的にFirefoxのパーミッション設定を変更して、file:やhttp:で示されたXULファイルを読み込めるようにします。テストの最中に変更されたパーミッション設定は、テストの実行完了後に元の状態に自動的に復元されます。</p>
+			<p>ドメイン名の文字列を渡すと、そのドメインでXULファイルを利用できるようにします。ドメインを指定しない、もしくは<code>"&lt;file&gt;"</code>をドメインとして指定すると、ローカルファイルでXULファイルを利用できるようにします。</p>
+			<pre><code>function startUp() {
+  utils.allowRemoteXUL();
+  utils.allowRemoteXUL('www.example.com');
+}
+
+function testMyFeature() {
+  utils.loadURI('../fixtures/sample.xul');
+  ...
+  utils.loadURI('http://www.example.com/test.xul');
+  ...
+}</code></pre>
+		</dd>
+</dl>
+
+
+<h2 id="application">アプリケーションの情報の取得</h2>
+<dl class="api-list">
+	<dt id="utils.product">String <code>utils.product</code>
+		<span class="alias">別名：<code>product</code></span></dt>
+		<dd>
+			<p>現在テストが動作しているアプリケーションの名前を取得します。取得できる値は以下の通りです。</p>
+			<table summary="">
+				<thead><tr><th>アプリケーション</th><th>取得できる値</th></tr></thead>
+				<tbody>
+					<tr><td>Firefox</td><td>Firefox</td></tr>
+					<tr><td>Thunderbird</td><td>Thunderbird</td></tr>
+					<tr><td>Sunbird</td><td>Sunbird</td></tr>
+					<tr><td>Mozilla Application Suite</td><td>Mozilla</td></tr>
+					<tr><td>SeaMonkey</td><td>SeaMonkey</td></tr>
+					<tr><td>Fennec</td><td>Fennec</td></tr>
+					<tr><td>それ以外</td><td>空文字</td></tr>
+				</tbody>
+			</table>
+			<pre><code>var data = utils.readFrom('../fixtures/'+utils.product+'.txt');</code></pre>
+		</dd>
+	<dt id="utils.productVersion">String <code>utils.productVersion</code>
+		<span class="alias">別名：<code>productVersion</code></span></dt>
+		<dd>
+			<p>現在テストが動作しているアプリケーションのバージョン番号を文字列で取得します。</p>
+			<pre><code>if (utils.compareVersions(utils.productVersion, '>=', '3.0')) {
+  // Firefox 3.0以降用の処理
+}</code></pre>
+		</dd>
+	<dt id="utils.platformVersion">String <code>utils.platformVersion</code>
+		<span class="alias">別名：<code>platformVersion</code></span></dt>
+		<dd>
+			<p>現在テストが動作しているアプリケーションの、Geckoのバージョン番号を文字列で取得します。</p>
+			<pre><code>if (utils.compareVersions(utils.platformVersion, '>=', '1.9.2')) {
+  // Firefox 3.6以降用の処理
+}</code></pre>
+		</dd>
+	<dt id="utils.productExecutable">nsIFile <code>utils.productExecutable</code>
+		<span class="alias">別名：<code>productExecutable</code></span></dt>
+		<dd>
+			<p>現在テストが動作しているアプリケーションの実行ファイルをnsIFile形式で取得します。例えばWindows版Firefoxであれば、C:\Program Files\Mozilla Firefox\firefox.exeなどです。</p>
+			<pre><code>var applicationIni = utils.productExecutable.parent;
+applicationIni.append('application.ini');</code></pre>
+		</dd>
+<!-- obsolete
+	<dt id="utils.checkAppVersion">Number <code>utils.checkAppVersion(<var>in String aVersion</var>)</code>
+		<span class="alias">別名：<code>checkAppVersion()</code>, <code>utils.checkApplicationVersion()</code>, <code>checkApplicationVersion()</code></span></dt>
+		<dd>
+			<p>現在テストが動作しているアプリケーションのバージョンと、指定されたバージョン番号とを比較して、結果を返します。アプリケーションのバージョンが指定のバージョンよりも小さければ<code>-1</code>を、アプリケーションのバージョンが指定のバージョンよりも大きければ<code>1</code>を、両者が等しければ<code>0</code>を返します。</p>
+			<pre><code>// Firefox 3以降では0または1を返し、Firefox 2以前では-1を返す。
+// よって、Firefox 3以降ではshouldSkipは偽、Firefox 2以前では真となる。
+var shouldSkip = utils.checkAppVersion('3.0') &lt; 0;
+// 以下のように書いても同じ結果になる。
+// var shouldSkip = utils.compareVersions(utils.productVersion, '&lt;', '3.0');</code></pre>
+		</dd>
+-->
+</dl>
+
+
+<h2 id="windows-registry">Windowsのレジストリの操作</h2>
+<p>Windowsのレジストリを操作するヘルパーメソッドは、Windows上でのみ利用できます。他のプラットフォームで実行した場合、例外が発生します。</p>
+<dl class="api-list">
+	<dt id="utils.getWindowsRegistry">Object <code>utils.getWindowsRegistry(<var>in String aKey</var>)</code>
+		<span class="alias">別名：<code>getWindowsRegistry()</code></span></dt>
+		<dd>
+			<p>指定したキーの値を読み込み、返します。戻り値の型はレジストリのデータの型によって変化します（下記の表を参照）。なお、存在しないキーの値を読み込もうとした場合は<code>null</code>を返します。</p>
+			<table border="1" summary="">
+				<thead><tr><th>レジストリ上のデータ型</th><th>戻り値</th></tr></thead>
+				<tbody>
+					<tr><td>文字列</td><td>文字列</td></tr>
+					<tr><td>整数値</td><td>数値</td></tr>
+					<tr><td>バイナリ</td><td>バイト列（配列）</td></tr>
+					<tr><td>その他</td><td>実際の値の内容に関わらず、キーが存在する場合は<code>true</code></td></tr>
+				</tbody>
+			</table>
+			<pre><code>var type = <em>utils.getWindowsRegistry('HKCR\\.txt\\Content Type')</em>;
+// => maybe "text/plain"
+var proxySetting = <em>utils.getWindowsRegistry(
+                     'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\'+
+                       'CurrentVersion\\Internet Settings\\MigrateProxy'
+                   )</em>;</code></pre>
+		</dd>
+	<dt id="utils.setWindowsRegistry">Object <code>utils.setWindowsRegistry(<var>in String aKey</var>, <var>in Object aValue</var>)</code>
+		<span class="alias">別名：<code>setWindowsRegistry()</code></span></dt>
+		<dd>
+			<p>第1引数で指定したキーに、第2引数で指定した値を保存します。すでにキーが存在している場合、既存の値の型に合わせて値の型を変換します。キーが存在していない場合は、渡されたオブジェクトの種類に応じて型を決定します（下記の表を参照）。第2引数の値をそのまま戻り値として返します。</p>
+			<table border="1" summary="">
+				<thead><tr><th>第2引数の型</th><th>レジストリ上のデータ型</th></tr></thead>
+				<tbody>
+					<tr><td>文字列</td><td>文字列</td></tr>
+					<tr><td>数値</td><td>整数値</td></tr>
+					<tr><td>バイト列（配列）</td><td>バイナリ</td></tr>
+					<tr><td>その他</td><td>値を保存せず、例外を発生させる</td></tr>
+				</tbody>
+			</table>
+			<pre><code><em>utils.setWindowsRegistry(
+  'HKEY_CLASSES_ROOT\\.foobar\\Content Type',
+  'application/x-foobar'
+)</em>;</code></pre>
+		</dd>
+	<dt id="utils.clearWindowsRegistry">void <code>utils.clearWindowsRegistry(<var>in String aKey</var>)</code>
+		<span class="alias">別名：<code>clearWindowsRegistry()</code></span></dt>
+		<dd>
+			<p>指定したキーを消去します。サブキーが存在する場合、それらもすべて消去します。</p>
+			<pre><code><em>utils.clearWindowsRegistry(
+  'HKEY_CURRENT_USER\\Software\\My Company\\My Product'
+)</em>;</code></pre>
+		</dd>
+</dl>
+
+
+<h2 id="other">その他</h2>
+<dl class="api-list">
+	<dt id="utils.wait">void <code>utils.wait(<var>in Object aWaitingCondition</var>)</code>
+		<span class="alias">別名：<code>wait()</code></span></dt>
+		<dd><p>その箇所で処理を一時的に停止し、指定された条件に従って待った後、次の行に進みます。<em>Firefox 3、Thunderbird 3など、Gecko 1.9以降の環境でのみ有効です。</em></p>
+			<p>詳細は<a href="testcases.html#wait">処理待ちの方法の説明</a>をご覧下さい。</p></dd>
+	<dt id="utils.waitDOMEvent">Object <code>utils.waitDOMEvent(<var>[DOMイベント指定とDOMイベントターゲットのペア]</var>)</code>
+		<span class="alias">別名：<code>utils.waitDOMEvents()</cpde>, <code>waitDOMEvent()</code>, <code>waitDOMEvents()</code></span></dt>
+		<dd><p>指定されたDOMイベントが対になるDOMイベントターゲットに対して発火するまで待って、処理を次に進めます。複数のDOMイベントとイベントターゲットの対を指定した場合、いずれか1つのイベントが発火した時点で処理を次に進めます。</p>
+		<p>このメソッドは<a href="testcases.html#waiting-object">ロード完了まで待つための処理待ち用オブジェクト</a>を返します。また、発火したイベントのオブジェクトを返り値のオブジェクトの<code>event</code>プロパティで取得できます。</p>
+<pre><code>window.setTimeout(function() {
+  MyComponent.autoSubmit();
+}, 100);
+
+var result = <em>utils.waitDOMEvent('submit', content.document,
+                                'unload', content.document)</em>;
+assert.equals('submit', <em>result.event.type</em>);</code></pre>
+		<p>イベント名の文字列の代わりにハッシュを渡すと、より細かい条件で捕捉対象のイベントを指定することができます。</p>
+<pre><code>utils.waitDOMEvent(<em>{ type    : 'keypress',
+                     keyCode : Ci.nsIDOMKeyEvent.DOM_VK_RETURN,
+                     shiftKey : true }</em>,
+                   $('input'),
+                   <em>{ type    : 'keypress',
+                     keyCode : Ci.nsIDOMKeyEvent.DOM_VK_ESCAPE,
+                     capturing : true }</em>, // キャプチャリングフェイズでの監視
+                   $('input') );</code></pre></dd>
+	<dt id="Deferred">deferred <code>Deferred()</code>
+		<span class="alias">別名：<code>utils.Deferred()</code></span></dt>
+		<dd><p><a href="http://github.com/cho45/jsdeferred">JSDeferred</a>のコンストラクタ関数です。すべてのクラスメソッドを利用可能です。また、インスタンスも任意に作成できます。</p>
+			<p>このコンストラクタ関数から生成したDeferredオブジェクトは、<a href="testcases.html#wait">処理待ち</a>の復帰条件として利用できます。</p>
+			<pre><code>utils.include('../modules/mymodule.js');
+MyModule.Deferred = Deferred; // UxUの名前空間のDeferredクラスに置換
+
+utils.wait(MyModule.deferredFunction());</code></pre></dd>
+	<dt id="utils.log">void <code>utils.log(<var>in String aMessage</var>)</code>
+		<span class="alias">別名：<code>log()</code></span></dt>
+	<dt id="utils.dump">void <code>utils.dump(<var>in String aMessage</var>)</code>
+		<span class="alias">別名：<code>dump()</code></span></dt>
+		<dd>
+			<p>テストランナーとエラーコンソールにメッセージを出力します。複数の引数を渡した場合は改行して出力します。</p>
+			<pre><code>utils.log('step 1:', object.value);</code></pre>
+		</dd>
+	<dt id="utils.notify">void <code>utils.notify(<var>in nsISupports aSubject</var>, <var>in String aTopic</var>, <var>in String aData</var>)</code>
+		<span class="alias">別名：<code>notify()</code></span></dt>
+		<dd>
+			<p>すでに登録されているオブザーバに対して、nsIObserverServiceの機能を使ってメッセージを送出します。<code>ObserverService.notifyObservers()</code>のシンタックスシュガーです。</p>
+			<pre><code>utils.notify(window, 'CustomEvent:CloseRequest', Date.now());</code></pre>
+		</dd>
+</dl>
+<p><code>Window.dump()</code>を使用する場合は、明示的に<code>window.dump()</code>と書く必要があることに注意してください。単に<code>dump()</code>とだけ書いた場合は、上記のユーティリティメソッドの方が実行されます。</p>
+
+</body></html>
